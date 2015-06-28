@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -49,6 +50,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     static final Log log = Log.getLog(DatabaseConsumerSettings.class);
 
+    private String containerNodePath;
     private DBNDatabaseNode containerNode;
     private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();
     private boolean openNewConnections = true;
@@ -162,31 +164,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     @Override
     public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
     {
-        final String containerPath = dialogSettings.get("container");
-        if (!CommonUtils.isEmpty(containerPath)) {
-            try {
-                RuntimeUtils.run(runnableContext, true, true, new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
-                                monitor,
-                                containerPath);
-                            if (node instanceof DBNDatabaseNode) {
-                                containerNode = (DBNDatabaseNode) node;
-                            }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                log.error("Error getting container node", e.getTargetException());
-            } catch (InterruptedException e) {
-                // skip
-            }
-        }
+        containerNodePath = dialogSettings.get("container");
         if (dialogSettings.get("openNewConnections") != null) {
             openNewConnections = dialogSettings.getBoolean("openNewConnections");
         }
@@ -223,4 +201,30 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 DBUtils.getObjectFullName(container) + " [" + container.getDataSource().getContainer().getName() + "]";
     }
 
+    public void loadNode() {
+        if (containerNode == null && !CommonUtils.isEmpty(containerNodePath)) {
+            if (!CommonUtils.isEmpty(containerNodePath)) {
+                try {
+                    DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+                        {
+                            try {
+                                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
+                                    monitor,
+                                    containerNodePath);
+                                if (node instanceof DBNDatabaseNode) {
+                                    containerNode = (DBNDatabaseNode) node;
+                                }
+                            } catch (DBException e) {
+                                throw new InvocationTargetException(e);
+                            }
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    log.error("Error getting container node", e.getTargetException());
+                }
+            }
+        }
+    }
 }
