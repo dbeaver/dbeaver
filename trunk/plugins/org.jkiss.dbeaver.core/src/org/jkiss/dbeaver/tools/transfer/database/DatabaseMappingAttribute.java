@@ -209,6 +209,10 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
 
         if (dataKind == DBPDataKind.STRING) {
             typeName += "(" + source.getMaxLength() + ")";
+        } else if (dataKind == DBPDataKind.NUMERIC) {
+            if (typeName.equals("DECIMAL") && source.getMaxLength() > 0 && source.getScale() > 0) {
+                typeName += "(" + source.getMaxLength() + "," + source.getScale() + ")";
+            }
         }
         return typeName;
     }
