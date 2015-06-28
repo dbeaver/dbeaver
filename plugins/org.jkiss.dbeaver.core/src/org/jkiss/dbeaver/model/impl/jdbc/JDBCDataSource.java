@@ -45,6 +45,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * JDBC data source
@@ -477,11 +479,6 @@ public abstract class JDBCDataSource
     protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData)
     {
         return new JDBCSQLDialect(this, "JDBC", metaData);
-    }
-
-    public DBSProcedure describeCall(JDBCCallableStatementImpl call) {
-        String queryString = call.getQueryString();
-        return null;
     }
 
     /////////////////////////////////////////////////

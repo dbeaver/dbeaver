@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -48,7 +50,7 @@ import java.util.List;
 /**
  * OracleSchema
  */
-public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject
+public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
 {
     static final Log log = Log.getLog(OracleSchema.class);
 
@@ -220,6 +222,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         throws DBException
     {
         return proceduresCache.getObjects(monitor, this);
+    }
+
+    @Override
+    public OracleProcedureStandalone getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
+        return proceduresCache.getObject(monitor, this, uniqueName);
     }
 
     @Association
