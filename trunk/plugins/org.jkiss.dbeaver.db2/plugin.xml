@@ -128,7 +128,7 @@
                            </items>
                        </folder>
                        <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.appobjects.node.name" icon="#appobjects" description="Application Objects">
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icon/udf.gif" description="Functions">
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
                              <items label="%tree.function.node.name" path="UDF" property="UDFs" icon="#procedure">
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                              </items>
@@ -140,7 +140,7 @@
                                   visibleIf="object.dataSource.atLeastV9_7" >
                              <items label="%tree.module.node.name" path="module" property="modules" icon="#module">
                                 <items label="%tree.conditions.node.name" path="condition" property="conditions" icon="#condition" navigable="false"/>
-                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icon/udf.gif" description="Functions">
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Routine" label="%tree.functions.node.name" icon="icons/udf.gif" description="Functions">
                                    <items label="%tree.functions.node.name" path="function" property="functions" icon="#procedure" navigable="true">
                                       <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                                    </items>
@@ -169,7 +169,7 @@
                                 <items label="%tree.arguments.node.name" itemLabel="%tree.argument.node.name" path="parameter" property="parameters" icon="#argument" navigable="true" inline="false"/>
                              </items>
                           </folder>
-                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.udts.node.name" icon="icon/udt.gif" description="User Defined Types">
+                          <folder type="org.jkiss.dbeaver.ext.db2.model.DB2DataType" label="%tree.udts.node.name" icon="icons/udt.gif" description="User Defined Types">
                              <items label="%tree.udt.node.name" path="UDT" property="UDTs" icon="#data_type" />
                           </folder>
                        </folder>
@@ -177,7 +177,7 @@
                 </folder>
                 <folder type="org.jkiss.dbeaver.model.struct.DBSObject" label="%tree.federation.node.name" icon="#federation" description="Federation">
                     <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper" label="%tree.wrappers.node.name" icon="#folder_wrapper" description="Wrappers">
-                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="icon/wrapper.gif" >
+                        <items label="%tree.wrapper.node.name" path="wrapper" property="wrappers" icon="icons/wrapper.gif" >
                            <folder type="org.jkiss.dbeaver.ext.db2.model.fed.DB2WrapperOption" label="%tree.options.node.name" icon="#options" description="Wrapper Options">
                                 <items label="%tree.option.node.name" path="option" property="options" icon="#option"/>
                            </folder>
