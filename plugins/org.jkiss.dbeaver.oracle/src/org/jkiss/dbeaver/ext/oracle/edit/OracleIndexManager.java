@@ -72,7 +72,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
         final OracleTableIndex index = new OracleTableIndex(
             parent.getSchema(),
             parent,
-            DBObjectNameCaseTransformer.transformName((DBPDataSource) parent.getDataSource(), idxName.toString()),
+            DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
             false,
             editDialog.getIndexType());
         int colIndex = 1;

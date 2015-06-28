@@ -21,6 +21,8 @@ package org.jkiss.dbeaver.model.impl.local;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -30,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 /**
  * LocalResultSetColumn
  */
-public class LocalResultSetColumn implements DBCAttributeMetaData
+public class LocalResultSetColumn implements DBCAttributeMetaData, DBPImageProvider
 {
     private final LocalResultSet resultSet;
     private final int index;
@@ -158,5 +160,11 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     public long getMaxLength()
     {
         return typedObject == null ? 0 : typedObject.getMaxLength();
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        return DBUtils.getDataIcon(this);
     }
 }

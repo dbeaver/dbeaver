@@ -67,7 +67,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         DBSDataType columnType = findBestDataType(parent.getDataSource(), "varchar"); //$NON-NLS-1$
 
         final MySQLTableColumn column = new MySQLTableColumn(parent);
-        column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
+        column.setName(DBObjectNameCaseTransformer.transformObjectName(column, getNewColumnName(context, parent)));
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
