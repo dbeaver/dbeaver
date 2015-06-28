@@ -70,6 +70,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -271,7 +272,12 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Override
     protected Map<String, String> getInternalConnectionProperties()
     {
-        return DB2DataSourceProvider.getConnectionsProps();
+        Map<String, String> props = new HashMap<String, String>();
+        props.putAll(DB2DataSourceProvider.getConnectionsProps());
+        if (getContainer().isConnectionReadOnly()) {
+            props.put(DB2Constants.PROP_READ_ONLY, "true");
+        }
+        return props;
     }
 
     @Override

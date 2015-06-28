@@ -37,6 +37,7 @@ public class DB2Constants {
     public static final String PROP_TRACE_FILE = DBConstants.INTERNAL_PROP_PREFIX + "trace.file";
     public static final String PROP_TRACE_APPEND = DBConstants.INTERNAL_PROP_PREFIX + "trace.append";
     public static final String PROP_TRACE_LEVEL = DBConstants.INTERNAL_PROP_PREFIX + "trace.level";
+    public static final String PROP_READ_ONLY = "readOnly";
 
     // Explain Tables
     public static final String EXPLAIN_SCHEMA_NAME_DEFAULT = "SYSTOOLS";
