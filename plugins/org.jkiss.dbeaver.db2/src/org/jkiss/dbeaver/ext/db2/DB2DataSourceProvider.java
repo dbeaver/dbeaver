@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,7 +38,7 @@ import java.util.Map;
  */
 public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
-    private static Map<String, String> connectionsProps;
+    private static Map<String, String> connectionsProps = new HashMap<String, String>();
 
     // ------------
     // Constructors
