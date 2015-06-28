@@ -146,7 +146,7 @@ public abstract class JDBCDataSource
             }
 
             // Set read-only flag
-            if (container.isConnectionReadOnly()) {
+            if (container.isConnectionReadOnly() && !isConnectionReadOnlyBroken()) {
                 connection.setReadOnly(true);
             }
 
@@ -173,6 +173,10 @@ public abstract class JDBCDataSource
                 log.error(ex);
             }
         }
+    }
+
+    protected boolean isConnectionReadOnlyBroken() {
+        return false;
     }
 
     protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
