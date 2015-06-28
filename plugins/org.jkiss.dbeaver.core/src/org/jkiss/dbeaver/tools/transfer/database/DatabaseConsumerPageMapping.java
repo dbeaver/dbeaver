@@ -64,6 +64,8 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
 
     public static final String TARGET_NAME_BROWSE = "[browse]";
     private TreeViewer mappingViewer;
+    private Label containerIcon;
+    private Text containerName;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
@@ -99,14 +101,12 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             containerPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createControlLabel(containerPanel, "Target container");
 
-            DBNDatabaseNode containerNode = settings.getContainerNode();
-            final Label containerIcon = new Label(containerPanel, SWT.NONE);
+            containerIcon = new Label(containerPanel, SWT.NONE);
             containerIcon.setImage(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN));
-            if (containerNode != null) containerIcon.setImage(DBeaverIcons.getImage(containerNode.getNodeIconDefault()));
 
-            final Text containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
+            containerName = new Text(containerPanel, SWT.BORDER | SWT.READ_ONLY);
             containerName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            if (containerNode != null) containerName.setText(settings.getContainerFullName());
+            containerName.setText("");
 
             Button browseButton = new Button(containerPanel, SWT.PUSH);
             browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
@@ -595,9 +595,15 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     @Override
     public void activatePage()
     {
-        if (mappingViewer.getInput() == null) {
-            final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
+        settings.loadNode();
+        DBNDatabaseNode containerNode = settings.getContainerNode();
+        if (containerNode != null) {
+            containerIcon.setImage(DBeaverIcons.getImage(containerNode.getNodeIconDefault()));
+            containerName.setText(containerNode.getNodeFullName());
+        }
 
+        if (mappingViewer.getInput() == null) {
             Map<DBSDataContainer,DatabaseMappingContainer> dataMappings = settings.getDataMappings();
             for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
                 if (pipe.getProducer() == null) {
