@@ -47,6 +47,9 @@ public class QMMSessionInfo extends QMMObject {
         this.container = new SoftReference<DBSDataSourceContainer>(context.getDataSource().getContainer());
         this.previous = previous;
         this.transactional = transactional;
+        if (transactional) {
+            this.transaction = new QMMTransactionInfo(this, null);
+        }
     }
 
     @Override
