@@ -41,11 +41,13 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     static final Log log = Log.getLog(QMMCollectorImpl.class);
 
     private static final long EVENT_DISPATCH_PERIOD = 250;
+    private static final int MAX_HISTORY_EVENTS = 1000;
 
     private Map<String, QMMSessionInfo> sessionMap = new HashMap<String, QMMSessionInfo>();
     private List<QMMetaListener> listeners = new ArrayList<QMMetaListener>();
     private List<QMMetaEvent> eventPool = new ArrayList<QMMetaEvent>();
-    private final List<QMMetaEvent> pastEvents = new ArrayList<QMMetaEvent>();
+    private final Object historySync = new Object();
+    private List<QMMetaEvent> pastEvents = new ArrayList<QMMetaEvent>();
     private boolean running = true;
 
     public QMMCollectorImpl()
@@ -134,7 +136,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
 
     public List<QMMetaEvent> getPastEvents()
     {
-        synchronized (pastEvents) {
+        synchronized (historySync) {
             return new ArrayList<QMMetaEvent>(pastEvents);
         }
     }
@@ -300,8 +302,14 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                     }
                 }
             }
-            synchronized (pastEvents) {
+            synchronized (historySync) {
                 pastEvents.addAll(events);
+                int size = pastEvents.size();
+                if (size > MAX_HISTORY_EVENTS) {
+                    pastEvents = new ArrayList<QMMetaEvent>(pastEvents.subList(
+                        size - MAX_HISTORY_EVENTS,
+                        size));
+                }
             }
             if (isRunning()) {
                 this.schedule(EVENT_DISPATCH_PERIOD);
