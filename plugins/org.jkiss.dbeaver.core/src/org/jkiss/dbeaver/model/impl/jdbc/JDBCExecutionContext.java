@@ -66,6 +66,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             log.error("Reopening not-closed connection");
             close();
         }
+        boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         ACTIVE_CONTEXT.set(this);
         try {
             this.connection = dataSource.openConnection(monitor, purpose);
@@ -107,10 +108,18 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 }
             }
 
-            this.initContextBootstrap(monitor, autoCommit);
+            try {
+                this.initContextBootstrap(monitor, autoCommit);
+            } catch (DBCException e) {
+                log.error("Error while running context bootstrap", e);
+            }
 
-            // Copy context state
-            this.dataSource.initializeContextState(monitor, this, forceActiveObject);
+            try {
+                // Copy context state
+                this.dataSource.initializeContextState(monitor, this, forceActiveObject && !connectionReadOnly);
+            } catch (DBCException e) {
+                log.error("Error while initializing context state", e);
+            }
 
             // Add self to context list
             this.dataSource.allContexts.add(this);

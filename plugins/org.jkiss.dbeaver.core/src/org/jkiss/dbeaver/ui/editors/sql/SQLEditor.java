@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -612,6 +613,22 @@ public class SQLEditor extends SQLEditorBase implements
         if (queries.isEmpty()) {
             // Nothing to process
             return;
+        }
+        DBSDataSourceContainer container = getDataSourceContainer();
+        if (container != null && container.isConnectionReadOnly()) {
+/*
+            // Allow only selects
+            for (SQLQuery query : queries) {
+                if (query.getType() != SQLQueryType.SELECT && query.getType() != SQLQueryType.UNKNOWN) {
+                    UIUtils.showErrorDialog(
+                        getSite().getShell(),
+                        CoreMessages.editors_sql_error_cant_execute_query_title,
+                        "Read-only connection '" + container.getName() + "' restricts execution of non-select statements. " +
+                        "Query [" + query.getQuery() + "] is " + query.getType() + " and can't be processed");
+                    return;
+                }
+            }
+*/
         }
         try {
             checkSession();

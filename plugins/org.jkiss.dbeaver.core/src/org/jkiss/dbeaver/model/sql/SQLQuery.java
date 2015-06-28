@@ -22,7 +22,12 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Database;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -105,8 +110,15 @@ public class SQLQuery {
                 type = SQLQueryType.UPDATE;
             } else if (statement instanceof Delete) {
                 type = SQLQueryType.DELETE;
-            } else {
+            } else if (statement instanceof Alter ||
+                statement instanceof CreateTable ||
+                statement instanceof CreateView ||
+                statement instanceof Drop ||
+                statement instanceof CreateIndex)
+            {
                 type = SQLQueryType.DDL;
+            } else {
+                type = SQLQueryType.UNKNOWN;
             }
         } catch (Throwable e) {
             this.type = SQLQueryType.UNKNOWN;
@@ -119,7 +131,7 @@ public class SQLQuery {
      * @return true is this query is a plain select
      */
     public boolean isPlainSelect() {
-        if (statement != null && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+        if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
             return selectBody.getFromItem() != null && CommonUtils.isEmpty(selectBody.getIntoTables()) && selectBody.getLimit() == null && selectBody.getTop() == null;
         }
