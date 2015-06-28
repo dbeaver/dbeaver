@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -468,7 +469,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             return null;
         }
         if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
-            sqlQuery.setParameters(parseParameters(getDocument(), sqlQuery.getOffset(), sqlQuery.getLength()));
+            sqlQuery.setParameters(parseParameters(getDocument(), sqlQuery));
         }
         return sqlQuery;
     }
@@ -620,15 +621,16 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
     }
 
-    protected List<SQLQueryParameter> parseParameters(IDocument document, int offset, int length) {
+    protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
+        boolean execQuery = DBUtils.isExecQuery(getDataSource(), query.getQuery());
         List<SQLQueryParameter> parameters = null;
-        syntaxManager.setRange(document, offset, length);
+        syntaxManager.setRange(document, query.getOffset(), query.getLength());
         int blockDepth = 0;
         for (;;) {
             IToken token = syntaxManager.nextToken();
             int tokenOffset = syntaxManager.getTokenOffset();
             final int tokenLength = syntaxManager.getTokenLength();
-            if (token.isEOF() || tokenOffset > offset + length) {
+            if (token.isEOF() || tokenOffset > query.getOffset() + query.getLength()) {
                 break;
             }
             // Handle only parameters which are not in SQL blocks
@@ -639,15 +641,20 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
             if (token instanceof SQLParameterToken && tokenLength > 0 && blockDepth <= 0) {
                 try {
+                    String paramName = document.get(tokenOffset, tokenLength);
+                    if (execQuery && paramName.equals("?")) {
+                        // Skip ? parameters for stored procedures (they have special meaning? [DB2])
+                        continue;
+                    }
+
                     if (parameters == null) {
                         parameters = new ArrayList<SQLQueryParameter>();
                     }
 
-                    String paramName = document.get(tokenOffset, tokenLength);
                     SQLQueryParameter parameter = new SQLQueryParameter(
                         parameters.size(),
                         paramName,
-                        tokenOffset - offset,
+                        tokenOffset - query.getOffset(),
                         tokenLength);
 
                     SQLQueryParameter previous = null;

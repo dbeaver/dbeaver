@@ -88,7 +88,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
                                                   Object copyFrom)
     {
         DB2TableColumn column = new DB2TableColumn(parent);
-        column.setName(DBObjectNameCaseTransformer.transformName(column, getNewColumnName(context, parent)));
+        column.setName(DBObjectNameCaseTransformer.transformObjectName(column, getNewColumnName(context, parent)));
         return column;
     }
 

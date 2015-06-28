@@ -96,7 +96,7 @@ public class DB2UniqueKeyManager extends SQLConstraintManager<DB2TableUniqueKey,
 
         DB2TableUniqueKey constraint = new DB2TableUniqueKey(db2Table, editDialog.getConstraintType());
 
-        String constraintName = DBObjectNameCaseTransformer.transformName(constraint,
+        String constraintName = DBObjectNameCaseTransformer.transformObjectName(constraint,
             CommonUtils.escapeIdentifier(db2Table.getName()) + suffix);
         constraint.setName(constraintName);
 

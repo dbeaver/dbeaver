@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
@@ -40,6 +41,8 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * DBUtils
@@ -47,6 +50,7 @@ import java.util.*;
 public final class DBUtils {
 
     static final Log log = Log.getLog(DBUtils.class);
+    private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
 
     public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
     {
@@ -803,9 +807,13 @@ public final class DBUtils {
         String query,
         boolean scrollable) throws DBCException
     {
+        DBCStatementType statementType = DBCStatementType.SCRIPT;
         query = SQLUtils.makeUnifiedLineFeeds(query);
+        if (isExecQuery(session.getDataSource(), query)) {
+            statementType = DBCStatementType.EXEC;
+        }
         return session.prepareStatement(
-            DBCStatementType.SCRIPT,
+            statementType,
             query,
             scrollable && session.getDataSource().getInfo().supportsResultSetScroll(),
             false,
@@ -829,7 +837,7 @@ public final class DBUtils {
             statementType = DBCStatementType.EXEC;
         }
 */
-        if (isExecQuery(session, query)) {
+        if (isExecQuery(session.getDataSource(), query)) {
             statementType = DBCStatementType.EXEC;
         }
 
@@ -841,8 +849,7 @@ public final class DBUtils {
             false);
     }
 
-    public static boolean isExecQuery(DBCSession session, String query) {
-        DBPDataSource dataSource = session.getDataSource();
+    public static boolean isExecQuery(DBPDataSource dataSource, String query) {
         if (dataSource instanceof SQLDataSource) {
             // Check for EXEC query
             final Collection<String> executeKeywords = ((SQLDataSource) dataSource).getSQLDialect().getExecuteKeywords();
@@ -1253,4 +1260,43 @@ public final class DBUtils {
         return null;//VoidTransactionManager.INSTANCE;
     }
 
+    public static DBSProcedure findProcedure(DBCSession session, String queryString) throws DBException {
+        DBPDataSource dataSource = session.getDataSource();
+        if (!CommonUtils.isEmpty(queryString)) {
+            Matcher matcher = EXEC_PATTERN.matcher(queryString);
+            if (matcher.find()) {
+                String procName = matcher.group(1);
+                char divChar = 0;
+                if (dataSource instanceof SQLDataSource) {
+                    divChar = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
+                }
+                if (procName.indexOf(divChar) != -1) {
+                    return findProcedureByNames(session, procName.split("\\" + divChar));
+                } else {
+                    return findProcedureByNames(session, procName);
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static DBSProcedure findProcedureByNames(DBCSession session, String... names) throws DBException {
+        if (!(session.getDataSource() instanceof DBSObjectContainer)) {
+            return null;
+        }
+        DBSObjectContainer container = (DBSObjectContainer) session.getDataSource();
+        for (int i = 0; i < names.length - 1; i++) {
+            DBSObject child = container.getChild(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[i]));
+            if (child instanceof DBSObjectContainer) {
+                container = (DBSObjectContainer) child;
+            } else {
+                return null;
+            }
+        }
+        if (container instanceof DBSProcedureContainer) {
+            return ((DBSProcedureContainer) container).getProcedure(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[names.length - 1]));
+        }
+        return null;
+    }
 }

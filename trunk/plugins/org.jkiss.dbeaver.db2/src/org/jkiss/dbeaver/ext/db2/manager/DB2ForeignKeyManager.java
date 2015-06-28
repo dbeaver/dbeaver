@@ -103,7 +103,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
         DB2TableForeignKey foreignKey = new DB2TableForeignKey(db2Table, ukConstraint, deleteRule, updateRule);
 
         String fkBaseName = String.format(CONS_FK_NAME, tableName, targetTableName);
-        String fkName = DBObjectNameCaseTransformer.transformName(foreignKey, fkBaseName);
+        String fkName = DBObjectNameCaseTransformer.transformObjectName(foreignKey, fkBaseName);
 
         foreignKey.setName(fkName);
 

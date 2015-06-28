@@ -67,9 +67,9 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
             null,
             (OracleTableConstraint) editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule());
-        foreignKey.setName(DBObjectNameCaseTransformer.transformName(foreignKey,
-                CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+        foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
+            CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
+                CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(

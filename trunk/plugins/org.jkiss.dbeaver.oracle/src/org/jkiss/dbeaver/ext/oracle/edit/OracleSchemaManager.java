@@ -142,7 +142,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         @Override
         protected void okPressed()
         {
-            user.setName(DBObjectNameCaseTransformer.transformName(user, nameText.getText()));
+            user.setName(DBObjectNameCaseTransformer.transformObjectName(user, nameText.getText()));
             user.setPassword(passwordText.getText());
             super.okPressed();
         }

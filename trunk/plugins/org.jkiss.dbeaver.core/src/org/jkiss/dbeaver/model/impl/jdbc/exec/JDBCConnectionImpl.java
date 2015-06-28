@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -687,54 +688,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         if (original == null) {
             throw new IllegalArgumentException("Null statement");
         }
-        JDBCCallableStatementImpl call = new JDBCCallableStatementImpl(this, original, sql, !isLoggingEnabled());
-        // Try to bind parameters
-        try {
-            DBSProcedure procedure = findCallable(call);
-            if (procedure != null) {
-                call.bindProcedure(procedure);
-            }
-        } catch (Exception e) {
-            log.debug(e);
-        }
-        return call;
-    }
-
-
-    private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
-
-    public final DBSProcedure findCallable(JDBCCallableStatementImpl call) throws DBException {
-        String queryString = call.getQueryString();
-        if (!CommonUtils.isEmpty(queryString)) {
-            Matcher matcher = EXEC_PATTERN.matcher(queryString);
-            if (matcher.find()) {
-                String procName = matcher.group(1);
-                char divChar = getDataSource().getSQLDialect().getStructSeparator();
-                if (procName.indexOf(divChar) != -1) {
-                    return findCallable(procName.split("\\" + divChar));
-                } else {
-                    return findCallable(procName);
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private DBSProcedure findCallable(String ... names) throws DBException {
-        DBSObjectContainer container = getDataSource();
-        for (int i = 0; i < names.length - 1; i++) {
-            DBSObject child = container.getChild(getProgressMonitor(), names[i]);
-            if (child instanceof DBSObjectContainer) {
-                container = (DBSObjectContainer) child;
-            } else {
-                return null;
-            }
-        }
-        if (container instanceof DBSProcedureContainer) {
-            return ((DBSProcedureContainer) container).getProcedure(getProgressMonitor(), names[names.length - 1]);
-        }
-        return null;
+        return new JDBCCallableStatementImpl(this, original, sql, !isLoggingEnabled());
     }
 
 
