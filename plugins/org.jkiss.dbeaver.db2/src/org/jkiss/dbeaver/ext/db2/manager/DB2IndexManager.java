@@ -89,7 +89,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2Table> {
         String colName = CommonUtils.escapeIdentifier(editDialog.getSelectedAttributes().iterator().next().getName());
 
         String indexBaseName = String.format(CONS_IX_NAME, tableName, colName);
-        String indexName = DBObjectNameCaseTransformer.transformName((DBPDataSource) db2Table.getDataSource(), indexBaseName);
+        String indexName = DBObjectNameCaseTransformer.transformName(db2Table.getDataSource(), indexBaseName);
 
         DB2Index index = new DB2Index(db2Table, indexName, editDialog.getIndexType());
 

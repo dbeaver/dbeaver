@@ -82,7 +82,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
                     false));
         }
         idxName.append("_IDX"); //$NON-NLS-1$
-        index.setName(DBObjectNameCaseTransformer.transformName(index, idxName.toString()));
+        index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
         return index;
     }
 

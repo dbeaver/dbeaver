@@ -20,12 +20,12 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
@@ -55,6 +55,15 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         boolean disableLogging)
     {
         super(connection, original, query, disableLogging);
+        // Try to bind parameters
+        try {
+            DBSProcedure procedure = DBUtils.findProcedure(connection, query);
+            if (procedure != null) {
+                bindProcedure(procedure);
+            }
+        } catch (Exception e) {
+            log.debug(e);
+        }
     }
 
     @Override
@@ -66,6 +75,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     ////////////////////////////////////////////////////////////////////
     // Procedure bindings
     ////////////////////////////////////////////////////////////////////
+
 
     void bindProcedure(@NotNull DBSProcedure procedure) throws DBException {
         this.procedure = procedure;

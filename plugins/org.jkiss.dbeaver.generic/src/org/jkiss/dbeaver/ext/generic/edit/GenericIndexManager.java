@@ -85,7 +85,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
                     true));
         }
         idxName.append("_IDX");
-        index.setName(DBObjectNameCaseTransformer.transformName(index, idxName.toString()));
+        index.setName(DBObjectNameCaseTransformer.transformObjectName(index, idxName.toString()));
         return index;
     }
 

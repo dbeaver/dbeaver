@@ -38,7 +38,7 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         return transformName(object.getDataSource(), value);
     }
 
-    public static String transformName(DBSObject object, String value)
+    public static String transformObjectName(DBSObject object, String value)
     {
         return transformName(object.getDataSource(), value);
     }

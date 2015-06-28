@@ -133,7 +133,7 @@ public class OracleUtils {
                 String objectName = matcher.group(2);
                 if (objectName.indexOf('.') == -1) {
                     if (!objectName.equalsIgnoreCase(object.getName())) {
-                        object.setName(DBObjectNameCaseTransformer.transformName(object, objectName));
+                        object.setName(DBObjectNameCaseTransformer.transformObjectName(object, objectName));
                         object.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object));
                     }
                     return source;//.substring(0, matcher.start(1)) + object.getSchema().getName() + "." + objectName + source.substring(matcher.end(2));
@@ -270,7 +270,7 @@ public class OracleUtils {
             try {
                 dbStat.setString(1, objectType.getTypeName());
                 dbStat.setString(2, object.getSchema().getName());
-                dbStat.setString(3, DBObjectNameCaseTransformer.transformName(object, object.getName()));
+                dbStat.setString(3, DBObjectNameCaseTransformer.transformObjectName(object, object.getName()));
                 final JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     if (dbResult.next()) {
