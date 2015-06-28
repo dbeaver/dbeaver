@@ -1,3 +1,4 @@
+Procedures execute support (describe params + resultset)
 DBeaver features usage model
 Extract non-visual part to a separate plugin (preferences + editors)
 RSV find/replace action
