@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,15 +31,15 @@ import java.util.List;
 /**
  * LocalResultSet
  */
-public class LocalResultSet implements DBCResultSet
+public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResultSet
 {
-    private final DBCSession session;
-    private final DBCStatement statement;
+    protected final DBCSession session;
+    protected final SOURCE_STMT statement;
     private final List<DBCAttributeMetaData> metaColumns = new ArrayList<DBCAttributeMetaData>();
-    private final List<Object[]> rows = new ArrayList<Object[]>();
-    private int curPosition = -1;
+    protected final List<Object[]> rows = new ArrayList<Object[]>();
+    protected int curPosition = -1;
 
-    public LocalResultSet(DBCSession session, DBCStatement statement)
+    public LocalResultSet(DBCSession session, SOURCE_STMT statement)
     {
         this.session = session;
         this.statement = statement;
@@ -51,7 +52,7 @@ public class LocalResultSet implements DBCResultSet
     }
 
     @Override
-    public DBCStatement getSourceStatement()
+    public SOURCE_STMT getSourceStatement()
     {
         return statement;
     }
@@ -86,7 +87,7 @@ public class LocalResultSet implements DBCResultSet
     }
 
     @Override
-    public boolean nextRow() throws DBCException
+    public boolean nextRow()
     {
         if (curPosition + 1 >= rows.size()) {
             return false;
@@ -134,6 +135,13 @@ public class LocalResultSet implements DBCResultSet
     public DBCAttributeMetaData addColumn(String label, DBPDataKind dataKind)
     {
         LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size(), label, dataKind);
+        metaColumns.add(column);
+        return column;
+    }
+
+    public DBCAttributeMetaData addColumn(String label, DBSTypedObject typedObject)
+    {
+        LocalResultSetColumn column = new LocalResultSetColumn(this, metaColumns.size(), label, typedObject);
         metaColumns.add(column);
         return column;
     }

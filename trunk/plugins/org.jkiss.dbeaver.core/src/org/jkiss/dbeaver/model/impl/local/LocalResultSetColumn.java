@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
  * LocalResultSetColumn
@@ -35,6 +36,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     private final int index;
     private final String label;
     private final DBPDataKind dataKind;
+    private final DBSTypedObject typedObject;
 
     public LocalResultSetColumn(LocalResultSet resultSet, int index, String label, DBPDataKind dataKind)
     {
@@ -42,6 +44,16 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         this.index = index;
         this.label = label;
         this.dataKind = dataKind;
+        this.typedObject = null;
+    }
+
+    public LocalResultSetColumn(LocalResultSet resultSet, int index, String label, DBSTypedObject typedObject)
+    {
+        this.resultSet = resultSet;
+        this.index = index;
+        this.label = label;
+        this.dataKind = typedObject.getDataKind();
+        this.typedObject = typedObject;
     }
 
     @Override
@@ -121,7 +133,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public int getTypeID()
     {
-        return 0;
+        return typedObject == null ? 0 : typedObject.getTypeID();
     }
 
     @Override
@@ -133,18 +145,18 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
     @Override
     public int getScale()
     {
-        return 0;
+        return typedObject == null ? 0 : typedObject.getScale();
     }
 
     @Override
     public int getPrecision()
     {
-        return 0;
+        return typedObject == null ? 0 : typedObject.getPrecision();
     }
 
     @Override
     public long getMaxLength()
     {
-        return 0;
+        return typedObject == null ? 0 : typedObject.getMaxLength();
     }
 }
