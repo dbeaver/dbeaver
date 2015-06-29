@@ -149,6 +149,7 @@ public class DB2Messages extends NLS {
     public static String no_ddl_for_system_tables;
     public static String no_ddl_for_nicknames;
     public static String no_ddl_for_nonsql_routines;
+    public static String no_ddl_for_spaces_in_name;
 
     public static String dialog_tools_msg_title;
     public static String dialog_tools_msg_code;
