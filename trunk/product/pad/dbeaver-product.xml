@@ -51,7 +51,8 @@
                 - Embedded databases support was improved
                 - Possibility to disable editors reopen was added
                 - Keyboard shortcuts were fixed
-                - DB2 table names escaping added
+                - DB2 table names escaping was added
+                - DB2 read-only connection was fixed
                 - LOB export was fixed
                 - Multi-connection initialization was fixed (auto-commit, transactions isolation level, current schema)
                 - Cassandra multi-connection issue fixed
