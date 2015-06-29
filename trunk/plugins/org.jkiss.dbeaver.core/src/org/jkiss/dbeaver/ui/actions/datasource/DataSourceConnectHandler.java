@@ -121,6 +121,10 @@ public class DataSourceConnectHandler extends DataSourceHandler
                     public IStatus getResult() {
                         return connectJob.getConnectStatus();
                     }
+
+                    public IStatus getJobGroupResult() {
+                        return null;
+                    }
                 });
             } else {
                 connectJob.addJobChangeListener(jobChangeAdapter);
