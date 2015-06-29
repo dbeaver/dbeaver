@@ -48,8 +48,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.Clob;
 import java.sql.SQLException;
@@ -151,6 +151,17 @@ public class DB2Utils {
             return DB2Messages.no_ddl_for_system_tables;
         }
 
+        // The DB2LK_GENERATE_DDL SP does not work when the name contains a space, even after trying to apply what is sais in the
+        // doc:
+        // As a workaround, dipslay a message to the end-user
+        // Enclose multiword table names with the backslash and two sets of double quotation marks (for example, "\"My Table\"")
+        // to prevent the pairing from being evaluated word-by-word by the command line processor (CLP).
+        // If you use only one set of double quotation marks (for example, "My Table"), all words are converted into uppercase,
+        // and the db2look command looks for an uppercase table name (for example, MY TABLE).
+        if (db2Table.getFullQualifiedName().contains(" ")) {
+            return DB2Messages.no_ddl_for_spaces_in_name;
+        }
+
         monitor.beginTask("Generating DDL", 3);
 
         Integer token = 0;
@@ -228,7 +239,8 @@ public class DB2Utils {
 
     public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException
     {
-        JDBCSession session = db2DataSource.getDefaultContext(false).openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Get Error Code");
+        JDBCSession session = db2DataSource.getDefaultContext(false).openSession(VoidProgressMonitor.INSTANCE,
+            DBCExecutionPurpose.UTIL, "Get Error Code");
         return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
     }
 
@@ -265,7 +277,8 @@ public class DB2Utils {
 
         monitor.beginTask("Check EXPLAIN tables", 1);
 
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Verify EXPLAIN tables");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
+            "Verify EXPLAIN tables");
 
         try {
             // First Check with given schema
@@ -304,7 +317,8 @@ public class DB2Utils {
 
         monitor.beginTask("Create EXPLAIN Tables", 1);
 
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Create EXPLAIN tables");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
+            "Create EXPLAIN tables");
         try {
             JDBCCallableStatement stmtSP = session.prepareCall(CALL_INST_OBJ);
             try {
@@ -449,8 +463,8 @@ public class DB2Utils {
         return null;
     }
 
-    public static DB2TableColumn findColumnxBySchemaNameAndTableNameAndName(DBRProgressMonitor monitor,
-        DB2DataSource db2DataSource, String db2SchemaName, String db2TableName, String db2ColumnName) throws DBException
+    public static DB2TableColumn findColumnxBySchemaNameAndTableNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
+        String db2SchemaName, String db2TableName, String db2ColumnName) throws DBException
     {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
@@ -563,8 +577,8 @@ public class DB2Utils {
         return db2Schema.getUDF(monitor, db2FunctionName);
     }
 
-    public static DB2View findViewBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,
-        String db2SchemaName, String db2ViewName) throws DBException
+    public static DB2View findViewBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String db2SchemaName,
+        String db2ViewName) throws DBException
     {
         DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
         if (db2Schema == null) {
