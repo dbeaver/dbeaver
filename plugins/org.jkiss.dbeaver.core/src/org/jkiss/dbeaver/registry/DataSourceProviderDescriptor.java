@@ -49,7 +49,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 
     private DataSourceProviderRegistry registry;
-    private final DataSourceProviderDescriptor parentProvider;
+    private DataSourceProviderDescriptor parentProvider;
     private final String id;
     private final ObjectType implType;
     private final String name;
@@ -64,21 +64,14 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private final List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
     private final Map<String, ToolGroupDescriptor> toolGroups = new LinkedHashMap<String, ToolGroupDescriptor>();
     private final List<ToolDescriptor> tools = new ArrayList<ToolDescriptor>();
+    private final String parentId;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
         super(config);
         this.registry = registry;
 
-        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
-        if (!CommonUtils.isEmpty(parentId)) {
-            this.parentProvider = registry.getDataSourceProvider(parentId);
-            if (this.parentProvider == null) {
-                log.warn("Provider '" + parentId + "' not found");
-            }
-        } else {
-            this.parentProvider = null;
-        }
+        parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
@@ -205,13 +198,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
     }
 
+    public DataSourceProviderDescriptor getParentProvider() {
+        if (parentProvider == null && !CommonUtils.isEmpty(parentId)) {
+            this.parentProvider = registry.getDataSourceProvider(parentId);
+            if (this.parentProvider == null) {
+                log.warn("Provider '" + parentId + "' not found");
+            }
+        }
+        return parentProvider;
+    }
+
     public DBXTreeNode getTreeDescriptor()
     {
-        return treeDescriptor != null ?
-            treeDescriptor :
-            parentProvider == null ?
-                null :
-                parentProvider.getTreeDescriptor();
+        if (treeDescriptor != null) {
+            return treeDescriptor;
+        }
+        DataSourceProviderDescriptor parentProvider = getParentProvider();
+        if (parentProvider != null) {
+            return parentProvider.getTreeDescriptor();
+        }
+        return null;
     }
 
     public boolean isDriversManagable()
