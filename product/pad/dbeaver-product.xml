@@ -40,6 +40,27 @@
     <versions>
 
         <version>
+            <number>3.4.2</number>
+            <type>major</type>
+            <date>30.06.2015</date>
+
+            <release-notes>
+                - Stored procedures support was added in SQL Editor
+                - Connections wizard and driver editor were improved
+                - Bootstrap SQL queries config was added
+                - Embedded databases support was improved
+                - Possibility to disable editors reopen was added
+                - Keyboard shortcuts were fixed
+                - DB2 table names escaping added
+                - LOB export was fixed
+                - Multi-connection initialization was fixed (auto-commit, transactions isolation level, current schema)
+                - Cassandra multi-connection issue fixed
+                - Persistent Query Manager history was added (no UI yet)
+                - Many other minor UI fixes
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.4.1</number>
             <type>major</type>
             <date>03.06.2015</date>

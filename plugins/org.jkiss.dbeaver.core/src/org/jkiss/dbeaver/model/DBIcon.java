@@ -268,7 +268,8 @@ public class DBIcon implements DBPImage
                 DBIcon icon = (DBIcon) field.get(null);
                 URL fileURL = FileLocator.toFileURL(new URL(icon.getLocation()));
                 try {
-                    File file = new File(new URI(fileURL.toString()));
+                    String filePath = fileURL.toString().replace(" ", "%20");
+                    File file = new File(new URI(filePath));
                     if (!file.exists()) {
                         log.warn("Bad image '" + icon.getToken() + "' location: " + icon.getLocation());
                         continue;

@@ -821,6 +821,7 @@ public class DataSourceDescriptor
             return true;
         }
 
+        Boolean commitTxn = null;
         for (DBCExecutionContext context : dataSource.getAllContexts()) {
             // First rollback active transaction
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
@@ -849,24 +850,25 @@ public class DataSourceDescriptor
                             }
                         }
                         if (hasUserExec) {
-                            // Ask for confirmation
-                            TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(getName());
-                            UIUtils.runInUI(null, closeConfirmer);
                             DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
                             try {
-                                boolean commit;
-                                switch (closeConfirmer.result) {
-                                    case IDialogConstants.YES_ID:
-                                        commit = true;
-                                        break;
-                                    case IDialogConstants.NO_ID:
-                                        commit = false;
-                                        break;
-                                    default:
-                                        return false;
+                                if (commitTxn == null) {
+                                    // Ask for confirmation
+                                    TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(getName());
+                                    UIUtils.runInUI(null, closeConfirmer);
+                                    switch (closeConfirmer.result) {
+                                        case IDialogConstants.YES_ID:
+                                            commitTxn = true;
+                                            break;
+                                        case IDialogConstants.NO_ID:
+                                            commitTxn = false;
+                                            break;
+                                        default:
+                                            return false;
+                                    }
                                 }
                                 monitor.subTask("End active transaction");
-                                EndTransactionTask task = new EndTransactionTask(session, commit);
+                                EndTransactionTask task = new EndTransactionTask(session, commitTxn);
                                 RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
                             } finally {
                                 session.close();
