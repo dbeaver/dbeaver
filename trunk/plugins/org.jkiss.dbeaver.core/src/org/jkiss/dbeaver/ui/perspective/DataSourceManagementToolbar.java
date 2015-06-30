@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -399,6 +400,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         // but in fact it doesn't. I don't know better way than trigger update explicitly.
         // TODO: replace with something smarter
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
+            DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
             Display.getDefault().asyncExec(
                 new Runnable() {
                     @Override
