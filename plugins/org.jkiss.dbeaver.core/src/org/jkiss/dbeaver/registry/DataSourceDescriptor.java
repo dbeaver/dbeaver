@@ -794,8 +794,8 @@ public class DataSourceDescriptor
                     DBPEvent.Action.OBJECT_UPDATE,
                     this,
                     false);
-                firePropertyChange();
             }
+            firePropertyChange();
 
             return true;
         }

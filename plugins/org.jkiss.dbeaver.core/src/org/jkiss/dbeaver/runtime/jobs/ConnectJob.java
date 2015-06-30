@@ -77,9 +77,6 @@ public class ConnectJob extends EventProcessorJob
         catch (Throwable ex) {
             connectStatus = RuntimeUtils.makeExceptionStatus(ex);
         }
-        // Add 100ms pause to bring job progress dialog up.
-        // Stupid workaround to update workbench actions
-        RuntimeUtils.pause(100);
 
         return Status.OK_STATUS;
     }
