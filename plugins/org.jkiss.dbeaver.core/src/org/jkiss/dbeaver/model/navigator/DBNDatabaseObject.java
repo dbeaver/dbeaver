@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.utils.CommonUtils;
 
 /**

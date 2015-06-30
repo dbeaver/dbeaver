@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBeaverConstants;
@@ -31,17 +31,19 @@ import java.util.List;
  */
 public abstract class AbstractContextDescriptor extends AbstractDescriptor
 {
+    private static final String OBJECT_TYPE = "objectType";
+
     private List<ObjectType> objectTypes = new ArrayList<ObjectType>();
 
     public AbstractContextDescriptor(IConfigurationElement config)
     {
         super(config == null ? DBeaverConstants.PLUGIN_ID : config.getContributor().getName());
         if (config != null) {
-            String objectType = config.getAttribute(RegistryConstants.ATTR_OBJECT_TYPE);
+            String objectType = config.getAttribute(OBJECT_TYPE);
             if (objectType != null) {
                 objectTypes.add(new ObjectType(objectType));
             }
-            for (IConfigurationElement typeCfg : config.getChildren(RegistryConstants.TAG_OBJECT_TYPE)) {
+            for (IConfigurationElement typeCfg : config.getChildren(OBJECT_TYPE)) {
                 objectTypes.add(new ObjectType(typeCfg));
             }
         }

@@ -15,11 +15,11 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry.tree;
+package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.jkiss.dbeaver.model.DBPTermProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
 /**
  * DBXTreeItem
