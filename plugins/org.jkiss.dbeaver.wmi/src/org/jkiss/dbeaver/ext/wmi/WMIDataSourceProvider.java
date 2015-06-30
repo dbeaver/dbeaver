@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.wmi.model.WMIDataSource;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.wmi.service.WMIService;
@@ -68,7 +69,7 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
     {
         if (!libLoaded) {
             DBPDriver driver = container.getDriver();
-            driver.loadDriver(RuntimeUtils.makeContext(monitor));
+            driver.loadDriver(new MonitorRunnableContext(monitor));
             loadNativeLib(driver);
             libLoaded = true;
         }

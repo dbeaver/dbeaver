@@ -48,8 +48,6 @@ public interface DBPDriver extends DBPObject
 
     String getDriverClassName();
 
-    Object getDriverInstance(DBRRunnableContext runnableContext) throws DBException;
-
     String getDefaultPort();
 
     String getSampleURL();
@@ -86,6 +84,8 @@ public interface DBPDriver extends DBPObject
     ClassLoader getClassLoader();
 
     Collection<? extends DBPDriverFile> getFiles();
+
+    Object getDriverInstance(DBRRunnableContext runnableContext) throws DBException;
 
     void validateFilesPresence(DBRRunnableContext runnableContext);
 

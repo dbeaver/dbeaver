@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -47,9 +48,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -153,17 +152,6 @@ public class RuntimeUtils {
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor)
     {
         return new DefaultProgressMonitor(monitor);
-    }
-
-    public static DBRRunnableContext makeContext(final DBRProgressMonitor monitor)
-    {
-        return new DBRRunnableContext() {
-            @Override
-            public void run(boolean fork, boolean cancelable, DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
-            {
-                runnable.run(monitor);
-            }
-        };
     }
 
     public static void run(
