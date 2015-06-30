@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
@@ -73,7 +73,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
     {
         return dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
     }

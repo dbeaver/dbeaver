@@ -26,13 +26,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -42,7 +42,7 @@ import java.util.Collection;
  */
 public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 {
-    private final DataSourceDescriptor dataSource;
+    private final DBSDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
 
     public DBNDataSource(DBNNode parentNode, DataSourceDescriptor dataSource)
@@ -75,7 +75,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     }
 
     @Override
-    public DataSourceDescriptor getObject()
+    public DBSDataSourceContainer getObject()
     {
         return dataSource;
     }
@@ -128,8 +128,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
             return false;
         }
         if (!dataSource.isConnected()) {
-            DataSourceConnectHandler.execute(monitor, dataSource, onFinish);
-            //dataSource.connect(monitor);
+            dataSource.initConnection(monitor, onFinish);
         } else {
             if (onFinish != null) {
                 onFinish.onTaskFinished(Status.OK_STATUS);
@@ -141,21 +140,31 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = super.getNodeIcon();
-        if (dataSource.isConnectionReadOnly() || dataSource.hasNetworkHandlers()) {
+        boolean hasNetworkHandlers = hasNetworkHandlers();
+        if (dataSource.isConnectionReadOnly() || hasNetworkHandlers) {
             if (image instanceof DBIconComposite) {
-                ((DBIconComposite) image).setTopRight(dataSource.hasNetworkHandlers() ? DBIcon.OVER_EXTERNAL : null);
+                ((DBIconComposite) image).setTopRight(hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null);
                 ((DBIconComposite) image).setBottomLeft(dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null);
             } else {
                 image = new DBIconComposite(
                     image,
                     false,
                     null,
-                    dataSource.hasNetworkHandlers() ? DBIcon.OVER_EXTERNAL : null,
+                    hasNetworkHandlers ? DBIcon.OVER_EXTERNAL : null,
                     dataSource.isConnectionReadOnly() ? DBIcon.OVER_LOCK : null,
                     null);
             }
         }
         return image;
+    }
+
+    public boolean hasNetworkHandlers() {
+        for (DBWHandlerConfiguration handler : dataSource.getConnectionConfiguration().getDeclaredHandlers()) {
+            if (handler.isEnabled()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -170,7 +179,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 
     @Override
     @NotNull
-    public DataSourceDescriptor getDataSourceContainer()
+    public DBSDataSourceContainer getDataSourceContainer()
     {
         return dataSource;
     }
@@ -189,7 +198,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
             return;
         }
         dataSource.setName(newName);
-        dataSource.getRegistry().updateDataSource(dataSource);
+        dataSource.persistConfiguration();
     }
 
     @Override
@@ -207,10 +216,8 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
         // we need to read datasource children immediately.
         // It breaks loading process. So we refresh datasource state manually
         // right after children nodes read
-        dataSource.getRegistry().fireDataSourceEvent(
-            DBPEvent.Action.OBJECT_UPDATE,
-            dataSource,
-            true);
+        dataSource.fireEvent(
+            new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource, true));
     }
 
     @Override

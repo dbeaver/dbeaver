@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
@@ -55,7 +55,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             }
         }
         if (!scripts.isEmpty()) {
-            DataSourceDescriptor dataSourceDescriptor = SelectDataSourceDialog.selectDataSource(activeShell);
+            DBSDataSourceContainer dataSourceDescriptor = SelectDataSourceDialog.selectDataSource(activeShell);
             if (dataSourceDescriptor != null) {
                 for (IFile script : scripts) {
                     SQLEditorInput.setScriptDataSource(script, dataSourceDescriptor, true);

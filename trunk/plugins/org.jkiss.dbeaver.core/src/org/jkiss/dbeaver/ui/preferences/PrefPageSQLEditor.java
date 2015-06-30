@@ -29,12 +29,11 @@ import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -65,9 +64,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
     {
-        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) ||
             store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||

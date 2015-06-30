@@ -24,12 +24,11 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -56,9 +55,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
     {
-        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE) ||
             store.contains(DBeaverPreferences.STATEMENT_TIMEOUT) ||

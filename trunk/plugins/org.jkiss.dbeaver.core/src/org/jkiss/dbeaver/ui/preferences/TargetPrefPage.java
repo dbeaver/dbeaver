@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ui.preferences;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.osgi.util.NLS;
@@ -44,7 +43,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
@@ -72,7 +70,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         return containerNode != null;
     }
 
-    protected abstract boolean hasDataSourceSpecificOptions(DataSourceDescriptor project);
+    protected abstract boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dsContainer);
 
     protected abstract boolean supportsDataSourceSpecificOptions();
 
@@ -88,7 +86,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     protected abstract String getPropertyPageID();
 
-    public DataSourceDescriptor getDataSourceContainer()
+    public DBSDataSourceContainer getDataSourceContainer()
     {
         return containerNode.getObject();
     }
@@ -281,7 +279,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 null);
         } else if (supportsDataSourceSpecificOptions()) {
             // Select datasource
-            DataSourceDescriptor dataSource = SelectDataSourceDialog.selectDataSource(getShell());
+            DBSDataSourceContainer dataSource = SelectDataSourceDialog.selectDataSource(getShell());
             if (dataSource != null) {
                 DBNNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSource);
                 if (dsNode instanceof DBNDataSource) {
