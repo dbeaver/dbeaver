@@ -162,10 +162,6 @@ public class RegistryConstants {
 
     public static final String TAG_VIRTUAL_META_DATA = "virtual-meta-data"; //$NON-NLS-1$
     public static final String TAG_MODEL = "model"; //$NON-NLS-1$
-    public static final String TAG_CONTAINER = "container"; //$NON-NLS-1$
-    public static final String TAG_ENTITY = "entity"; //$NON-NLS-1$
-    public static final String TAG_CONSTRAINT = "constraint"; //$NON-NLS-1$
-    public static final String TAG_ATTRIBUTE = "attribute"; //$NON-NLS-1$
 
     public static final String MAPPED_URL = "*";
     public static final String ATTR_FORMAT = "format";

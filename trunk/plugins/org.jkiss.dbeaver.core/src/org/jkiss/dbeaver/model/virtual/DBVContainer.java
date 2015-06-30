@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.utils.xml.XMLBuilder;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -137,29 +134,6 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     void addEntity(DBVEntity entity)
     {
         entities.put(entity.getName().toLowerCase(), entity);
-    }
-
-    @Override
-    public void persist(XMLBuilder xml) throws IOException
-    {
-        if (!this.hasValuableData()) {
-            // nothing to save
-            return;
-        }
-        xml.startElement(RegistryConstants.TAG_CONTAINER);
-        xml.addAttribute(RegistryConstants.ATTR_NAME, getName());
-        // Containers
-        for (DBVContainer container : getContainers()) {
-            container.persist(xml);
-        }
-
-        for (DBVEntity entity : getEntities()) {
-            if (entity.hasValuableData()) {
-                entity.persist(xml);
-            }
-        }
-
-        xml.endElement();
     }
 
     @Override

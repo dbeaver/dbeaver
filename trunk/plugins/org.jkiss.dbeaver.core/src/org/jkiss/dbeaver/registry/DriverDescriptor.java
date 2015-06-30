@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -1009,8 +1010,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         try {
             runnableContext.run(true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         downloadLibraryFile(monitor, file);
                     } catch (IOException e) {

@@ -523,7 +523,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         // Virtual model
         if (dataSource.getVirtualModel().hasValuableData()) {
             xml.startElement(RegistryConstants.TAG_VIRTUAL_META_DATA);
-            dataSource.getVirtualModel().persist(xml);
+            dataSource.getVirtualModel().serialize(xml);
             xml.endElement();
         }
 

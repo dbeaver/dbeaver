@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
-import org.jkiss.dbeaver.registry.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.w3c.dom.Element;
 
 /**

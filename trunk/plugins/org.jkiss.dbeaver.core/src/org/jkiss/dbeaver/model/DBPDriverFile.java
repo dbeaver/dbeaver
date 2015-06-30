@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.registry.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
 import java.io.File;
 
