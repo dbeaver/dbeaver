@@ -146,9 +146,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         drivers.clear();
         tools.clear();
         toolGroups.clear();
-        if (this.instance != null) {
-            this.instance.close();
-        }
+        instance = null;
     }
 
     public DataSourceProviderRegistry getRegistry()
