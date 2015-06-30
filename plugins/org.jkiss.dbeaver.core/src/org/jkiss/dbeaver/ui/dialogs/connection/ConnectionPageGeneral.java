@@ -505,14 +505,18 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
         dataSource.setName(connectionNameText.getText());
         dataSource.setSavePassword(savePasswordCheck.getSelection());
-        dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true);
-        if (dataSource.isConnected()) {
-            int levelIndex = isolationLevel.getSelectionIndex();
-            if (levelIndex <= 0) {
-                dataSource.setDefaultTransactionsIsolation(null);
-            } else {
-                dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
+        try {
+            dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true);
+            if (dataSource.isConnected()) {
+                int levelIndex = isolationLevel.getSelectionIndex();
+                if (levelIndex <= 0) {
+                    dataSource.setDefaultTransactionsIsolation(null);
+                } else {
+                    dataSource.setDefaultTransactionsIsolation(supportedLevels.get(levelIndex - 1));
+                }
             }
+        } catch (DBException e) {
+            log.error(e);
         }
         dataSource.setDefaultActiveObject(defaultSchema.getText());
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());

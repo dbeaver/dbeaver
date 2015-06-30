@@ -23,6 +23,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 
 import java.util.Map;
@@ -53,8 +55,8 @@ public class DataSourceAutoCommitHandler extends DataSourceHandler implements IE
                     }
                     container.setDefaultAutoCommit(newAutocommit, context, true);
                     container.persistConfiguration();
-                } catch (DBCException e) {
-                    log.warn("Error changing auto-commit state", e);
+                } catch (DBException e) {
+                    UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e);
                 }
             }
         }

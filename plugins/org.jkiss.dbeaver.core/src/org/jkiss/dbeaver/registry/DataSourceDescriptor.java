@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -38,6 +37,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
+import org.jkiss.dbeaver.model.qm.QMMCollector;
+import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
+import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,15 +48,10 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.qm.QMMCollector;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -294,8 +292,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultAutoCommit(final boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection)
-    {
+    public void setDefaultAutoCommit(final boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection) throws DBException {
         if (updateContext != null) {
             final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
@@ -316,8 +313,7 @@ public class DataSourceDescriptor
                         }
                     });
                 } catch (InvocationTargetException e) {
-                    UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e.getTargetException());
-                    return;
+                    throw new DBException("Can't set auto-commit", e.getTargetException());
                 }
             }
         }
@@ -353,8 +349,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultTransactionsIsolation(@Nullable final DBPTransactionIsolation isolationLevel)
-    {
+    public void setDefaultTransactionsIsolation(@Nullable final DBPTransactionIsolation isolationLevel) throws DBException {
         try {
             if (isolationLevel == null) {
                 connectionInfo.getBootstrap().setDefaultTransactionIsolation(null);
@@ -379,11 +374,7 @@ public class DataSourceDescriptor
                 }
             }
         } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(
-                null,
-                "Transactions Isolation",
-                "Can't set transaction isolation level to '" + isolationLevel.getTitle() + "'",
-                e.getTargetException());
+            throw new DBException("Can't set transaction isolation level", e.getTargetException());
         } catch (InterruptedException e) {
             // ok
         }
@@ -631,7 +622,6 @@ public class DataSourceDescriptor
                     DataSourceDescriptor.this,
                     true);
             }
-            firePropertyChange();
 
             return true;
         } catch (Exception e) {
@@ -795,7 +785,6 @@ public class DataSourceDescriptor
                     this,
                     false);
             }
-            firePropertyChange();
 
             return true;
         }
@@ -1017,12 +1006,6 @@ public class DataSourceDescriptor
         long rnd = new Random().nextLong();
         if (rnd < 0) rnd = -rnd;
         return driver.getId() + "-" + Long.toHexString(System.currentTimeMillis()) + "-" + Long.toHexString(rnd);
-    }
-
-    private void firePropertyChange()
-    {
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
-        DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
     }
 
     @Property(viewable = true, order = 2, category = "Driver")

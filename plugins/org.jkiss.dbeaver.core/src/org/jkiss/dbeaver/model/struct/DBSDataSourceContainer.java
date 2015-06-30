@@ -68,7 +68,8 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isDefaultAutoCommit();
 
-    void setDefaultAutoCommit(boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection);
+    void setDefaultAutoCommit(boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection)
+        throws DBException;
 
     @Nullable
     DBPTransactionIsolation getActiveTransactionsIsolation();
@@ -76,7 +77,8 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     @Nullable
     Integer getDefaultTransactionsIsolation();
 
-    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel);
+    void setDefaultTransactionsIsolation(DBPTransactionIsolation isolationLevel)
+        throws DBException;
 
     /**
      * Search for object filter which corresponds specified object type and parent object.
