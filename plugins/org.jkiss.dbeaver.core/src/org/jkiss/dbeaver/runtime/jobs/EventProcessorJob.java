@@ -27,10 +27,12 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.utils.CommonUtils;
 
@@ -87,6 +89,17 @@ public abstract class EventProcessorJob extends AbstractJob {
     private DBRProcessDescriptor processCommand(DBRShellCommand command, Map<String, Object> variables) {
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
         final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
+        processDescriptor.setProcessListener(new DBRProcessListener() {
+            @Override
+            public void onProcessStarted() {
+                ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
+            }
+
+            @Override
+            public void onProcessTerminated(int resultCode) {
+                ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
+            }
+        });
         // Direct execute
         try {
             processDescriptor.execute();
