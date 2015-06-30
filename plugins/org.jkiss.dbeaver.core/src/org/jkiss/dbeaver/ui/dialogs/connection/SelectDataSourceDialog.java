@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -48,7 +49,7 @@ import java.util.List;
  */
 public class SelectDataSourceDialog extends Dialog {
 
-    private DataSourceDescriptor dataSource = null;
+    private DBSDataSourceContainer dataSource = null;
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
 
@@ -128,12 +129,12 @@ public class SelectDataSourceDialog extends Dialog {
         return ctl;
     }
 
-    public DataSourceDescriptor getDataSource()
+    public DBSDataSourceContainer getDataSource()
     {
         return dataSource;
     }
 
-    public static DataSourceDescriptor selectDataSource(Shell parentShell)
+    public static DBSDataSourceContainer selectDataSource(Shell parentShell)
     {
         DataSourceRegistry activeDataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
 		if (activeDataSourceRegistry == null) {

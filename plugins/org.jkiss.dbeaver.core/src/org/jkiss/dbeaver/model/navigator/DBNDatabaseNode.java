@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
@@ -419,7 +416,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
 
-        DataSourceDescriptor dataSourceContainer = getDataSourceContainer();
+        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         boolean showSystem = dataSourceContainer == null || dataSourceContainer.isShowSystemObjects();
         for (Object childItem : itemList) {
             if (childItem == null) {
@@ -498,7 +495,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return dataSource == null ? null : dataSource.getDefaultContext(true);
     }
 
-    public DataSourceDescriptor getDataSourceContainer()
+    public DBSDataSourceContainer getDataSourceContainer()
     {
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? null : (DataSourceDescriptor) dataSource.getContainer();
@@ -511,7 +508,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch)
     {
-        DataSourceDescriptor dataSource = getDataSourceContainer();
+        DBSDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {
@@ -528,7 +525,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter)
     {
-        DataSourceDescriptor dataSource = getDataSourceContainer();
+        DBSDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {

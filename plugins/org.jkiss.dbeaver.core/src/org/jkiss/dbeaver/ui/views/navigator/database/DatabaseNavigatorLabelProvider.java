@@ -26,8 +26,8 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -133,7 +133,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     public Color getBackground(Object element)
     {
         if (element instanceof DBNDataSource) {
-            DataSourceDescriptor ds = ((DBNDatabaseNode) element).getDataSourceContainer();
+            DBSDataSourceContainer ds = ((DBNDatabaseNode) element).getDataSourceContainer();
             if (ds != null) {
                 return UIUtils.getConnectionColor(ds.getConnectionConfiguration());
             }

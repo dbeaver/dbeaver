@@ -24,10 +24,9 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 
 /**
  * PrefPageDataEditor
@@ -49,9 +48,9 @@ public class PrefPageDataEditor extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
     {
-        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
                 store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
                 store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||

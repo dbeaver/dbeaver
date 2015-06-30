@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -51,9 +51,8 @@ import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.utils.CommonUtils;
 
@@ -69,7 +68,6 @@ public class DataSourceDescriptor
         DBSDataSourceContainer,
         DBPImageProvider,
         IAdaptable,
-        DBEPrivateObjectEditor,
         DBSObjectStateful,
         DBPRefreshableObject
 {
@@ -402,12 +400,6 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    public DBSObjectFilter getObjectFilter(Class<?> type, DBSObject parentObject)
-    {
-        return getObjectFilter(type, parentObject, false);
-    }
-
-    @Nullable
     public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch)
     {
         if (filterMap.isEmpty()) {
@@ -436,6 +428,7 @@ public class DataSourceDescriptor
         return null;
     }
 
+    @Override
     public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter)
     {
         updateObjectFilter(type, parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
@@ -489,15 +482,6 @@ public class DataSourceDescriptor
     public void setDescription(@Nullable String description)
     {
         this.description = description;
-    }
-
-    public boolean hasNetworkHandlers() {
-        for (DBWHandlerConfiguration handler : connectionInfo.getDeclaredHandlers()) {
-            if (handler.isEnabled()) {
-                return true;
-            }
-        }
-        return false;
     }
 
     public Date getCreateDate()
@@ -570,6 +554,11 @@ public class DataSourceDescriptor
     public boolean isConnected()
     {
         return dataSource != null && dataSource.getDefaultContext(false).isConnected();
+    }
+
+    @Override
+    public void initConnection(DBRProgressMonitor monitor, DBRProgressListener onFinish) {
+        DataSourceConnectHandler.execute(monitor, this, onFinish);
     }
 
     @Override
@@ -1109,13 +1098,6 @@ public class DataSourceDescriptor
     public String getPropertyConnectType()
     {
         return connectionInfo.getConnectionType().getName();
-    }
-
-    @Override
-    public void editObject()
-    {
-        EditConnectionDialog dialog = new EditConnectionDialog(DBeaverUI.getActiveWorkbenchWindow(), new EditConnectionWizard(this));
-        dialog.open();
     }
 
     public void addChildProcess(DBRProcessDescriptor process)

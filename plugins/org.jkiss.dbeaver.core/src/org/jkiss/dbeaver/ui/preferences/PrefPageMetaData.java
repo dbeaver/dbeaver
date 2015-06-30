@@ -26,10 +26,9 @@ import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
 
 /**
  * PrefPageMetaData
@@ -48,9 +47,9 @@ public class PrefPageMetaData extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
     {
-        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.READ_EXPENSIVE_PROPERTIES) ||
             store.contains(DBeaverPreferences.META_SEPARATE_CONNECTION) ||

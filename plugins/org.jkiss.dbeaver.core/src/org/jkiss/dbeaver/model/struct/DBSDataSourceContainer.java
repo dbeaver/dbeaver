@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 
@@ -31,7 +32,7 @@ import java.util.Collection;
 /**
  * DBSDataSourceContainer
  */
-public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
+public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, DBPNamedObject2
 {
     /**
      * Container unique ID
@@ -85,13 +86,20 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * @return object filter or null if not filter was set for specified type
      */
     @Nullable
-    DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject);
+    DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
+
+    void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter);
 
     DBVModel getVirtualModel();
 
     DBPClientHome getClientHome();
 
     boolean isConnected();
+
+    /**
+     * Initiate connection job.
+     */
+    void initConnection(DBRProgressMonitor monitor, DBRProgressListener onFinish);
 
     /**
      * Connects to datasource.
@@ -119,6 +127,10 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences
      * @throws org.jkiss.dbeaver.DBException on any DB error
      */
     boolean reconnect(DBRProgressMonitor monitor) throws DBException;
+
+    String getFolderPath();
+
+    void setFolderPath(String folderPath);
 
     Collection<DBPDataSourceUser> getUsers();
 
