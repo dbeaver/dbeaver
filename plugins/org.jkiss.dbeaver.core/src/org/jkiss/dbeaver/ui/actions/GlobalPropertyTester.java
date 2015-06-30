@@ -18,24 +18,21 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.core.resources.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * GlobalPropertyTester
  */
-public class GlobalPropertyTester extends PropertyTester
-{
+public class GlobalPropertyTester extends PropertyTester {
     //static final Log log = LogFactory.get vLog(ObjectPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.global";
     public static final String PROP_STANDALONE = "standalone";
     public static final String PROP_HAS_ACTIVE_PROJECT = "hasActiveProject";
     public static final String PROP_HAS_MULTI_PROJECTS = "hasMultipleProjects";
-
-    public GlobalPropertyTester() {
-        super();
-    }
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -54,4 +51,29 @@ public class GlobalPropertyTester extends PropertyTester
         ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
+    public static class ResourceListener implements IPluginService, IResourceChangeListener {
+
+        @Override
+        public void activateService() {
+            ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+        }
+
+        @Override
+        public void deactivateService() {
+            ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        }
+
+        @Override
+        public void resourceChanged(IResourceChangeEvent event) {
+            if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+                for (IResourceDelta childDelta : event.getDelta().getAffectedChildren()) {
+                    if (childDelta.getResource() instanceof IProject) {
+                        if (childDelta.getKind() == IResourceDelta.ADDED || childDelta.getKind() == IResourceDelta.REMOVED) {
+                            firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
