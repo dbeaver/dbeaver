@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.wmi.service.WMIService;
 
 public class WMIDataSourceProvider implements DBPDataSourceProvider {
@@ -87,12 +86,6 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
                 }
             }
         }
-    }
-
-    @Override
-    public void close()
-    {
-        //WMIService.unInitializeThread();
     }
 
 }
