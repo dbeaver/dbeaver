@@ -55,11 +55,11 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
@@ -79,6 +79,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
 
     @NotNull
     private final SQLSyntaxManager syntaxManager;
+    @NotNull
+    private final SQLRuleManager ruleManager;
     private ProjectionSupport projectionSupport;
 
     private ProjectionAnnotationModel annotationModel;
@@ -94,6 +96,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     {
         super();
         syntaxManager = new SQLSyntaxManager();
+        ruleManager = new SQLRuleManager(syntaxManager);
         themeListener = new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event)
@@ -107,9 +110,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeListener);
 
         setDocumentProvider(new SQLDocumentProvider());
-        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(
-            this,
-            syntaxManager));
+        setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this));
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
 
@@ -135,6 +136,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     public SQLSyntaxManager getSyntaxManager()
     {
         return syntaxManager;
+    }
+
+    @NotNull
+    public SQLRuleManager getRuleManager() {
+        return ruleManager;
     }
 
     public ProjectionAnnotationModel getAnnotationModel()
@@ -315,7 +321,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             decorationSupport.dispose();
             decorationSupport = null;
         }
-        syntaxManager.dispose();
         if (themeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
             themeListener = null;
@@ -383,13 +388,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         DBPDataSource dataSource = executionContext == null ? null : executionContext.getDataSource();
         // Refresh syntax
         if (dataSource instanceof SQLDataSource) {
+            SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
             syntaxManager.setDataSource((SQLDataSource) dataSource);
-            syntaxManager.refreshRules();
+            ruleManager.refreshRules();
 
             Document document = getDocument();
             if (document != null) {
                 IDocumentPartitioner partitioner = new FastPartitioner(
-                    new SQLPartitionScanner(syntaxManager),
+                    new SQLPartitionScanner(dialect),
                     SQLPartitionScanner.SQL_PARTITION_TYPES);
                 partitioner.connect(document);
                 document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
@@ -408,8 +414,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
         }
 
-        Color fgColor = getSyntaxManager().getColor(SQLConstants.CONFIG_COLOR_TEXT);
-        Color bgColor = getSyntaxManager().getColor(!syntaxManager.isUnassigned() && dataSource == null ?
+        Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
+        Color bgColor = ruleManager.getColor(!syntaxManager.isUnassigned() && dataSource == null ?
             SQLConstants.CONFIG_COLOR_DISABLED :
             SQLConstants.CONFIG_COLOR_BACKGROUND);
         if (fgColor != null) {
@@ -529,14 +535,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             return null;
         }
         // Parse range
-        syntaxManager.setRange(document, startPos, endPos - startPos);
+        ruleManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         int bracketDepth = 0;
         boolean hasValuableTokens = false;
         for (; ; ) {
-            IToken token = syntaxManager.nextToken();
-            int tokenOffset = syntaxManager.getTokenOffset();
-            final int tokenLength = syntaxManager.getTokenLength();
+            IToken token = ruleManager.nextToken();
+            int tokenOffset = ruleManager.getTokenOffset();
+            final int tokenLength = ruleManager.getTokenLength();
             boolean isDelimiter = token instanceof SQLDelimiterToken;
             if (tokenLength == 1) {
                 try {
@@ -624,12 +630,12 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
         boolean execQuery = DBUtils.isExecQuery(getDataSource(), query.getQuery());
         List<SQLQueryParameter> parameters = null;
-        syntaxManager.setRange(document, query.getOffset(), query.getLength());
+        ruleManager.setRange(document, query.getOffset(), query.getLength());
         int blockDepth = 0;
         for (;;) {
-            IToken token = syntaxManager.nextToken();
-            int tokenOffset = syntaxManager.getTokenOffset();
-            final int tokenLength = syntaxManager.getTokenLength();
+            IToken token = ruleManager.nextToken();
+            int tokenOffset = ruleManager.getTokenOffset();
+            final int tokenLength = ruleManager.getTokenLength();
             if (token.isEOF() || tokenOffset > query.getOffset() + query.getLength()) {
                 break;
             }

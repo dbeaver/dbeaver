@@ -16,10 +16,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
+package org.jkiss.dbeaver.model.sql.format.tokenized;
 
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatter;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.Pair;
 

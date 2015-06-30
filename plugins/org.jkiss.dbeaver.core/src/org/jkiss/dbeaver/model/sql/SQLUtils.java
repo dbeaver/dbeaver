@@ -32,9 +32,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 

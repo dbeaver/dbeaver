@@ -16,9 +16,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
+package org.jkiss.dbeaver.model.sql.format.tokenized;
 
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 
 import java.util.ArrayList;
 import java.util.List;

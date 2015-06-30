@@ -19,7 +19,7 @@
 /*
  * FormatterToken
  */
-package org.jkiss.dbeaver.ui.editors.sql.format.tokenized;
+package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 class FormatterToken {
 

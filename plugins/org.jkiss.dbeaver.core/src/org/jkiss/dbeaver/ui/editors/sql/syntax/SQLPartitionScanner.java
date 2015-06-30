@@ -23,6 +23,7 @@ import org.eclipse.jface.text.ITypedRegion;
 import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.*;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -130,7 +131,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         setPredicateRules(result);
     }
 
-    private void initRules(SQLSyntaxManager sqlSyntax)
+    private void initRules(SQLDialect dialect)
     {
         /*
         //Add rule for identifier which is enclosed in double quotes.
@@ -149,7 +150,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
         rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
 
-        for (String lineComment : sqlSyntax.getDialect().getSingleLineComments()) {
+        for (String lineComment : dialect.getSingleLineComments()) {
             rules.add(new EndOfLineRule(lineComment, commentToken));
         }
 
@@ -158,24 +159,24 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         rules.add(wordRule);
 
         // Add rules for multi-line comments
-        Pair<String, String> multiLineComments = sqlSyntax.getDialect().getMultiLineComments();
+        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         if (multiLineComments != null) {
             rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, true));
         }
     }
 
-    public SQLPartitionScanner(SQLSyntaxManager sqlSyntax)
+    public SQLPartitionScanner(SQLDialect dialect)
     {
-        initRules(sqlSyntax);
+        initRules(dialect);
         //database specific rules
-        setCommentsScanner(sqlSyntax);
+        setCommentsScanner(dialect);
         setupRules();
 
     }
 
-    private void setCommentsScanner(SQLSyntaxManager sqlSyntax)
+    private void setCommentsScanner(SQLDialect dialect)
     {
-        String[] singleLineComments = sqlSyntax.getDialect().getSingleLineComments();
+        String[] singleLineComments = dialect.getSingleLineComments();
 
         for (String singleLineComment : singleLineComments) {
             // Add rule for single line comments.
