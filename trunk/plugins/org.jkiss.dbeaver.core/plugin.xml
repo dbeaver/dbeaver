@@ -2475,6 +2475,7 @@
 
     <extension point="org.jkiss.dbeaver.pluginService">
         <service class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester$ResourceListener"/>
+        <service class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester$QMService"/>
     </extension>
 
 </plugin>

@@ -21,20 +21,19 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.runtime.IPluginService;
+import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 
@@ -49,18 +48,6 @@ public class DataSourcePropertyTester extends PropertyTester
     public static final String PROP_CONNECTED = "connected";
     public static final String PROP_TRANSACTIONAL = "transactional";
     public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
-
-    public DataSourcePropertyTester() {
-        super();
-        final QMEventsHandler qmHandler = new QMEventsHandler();
-        QMUtils.registerHandler(qmHandler);
-        DBeaverUI.getInstance().addDisposeListener(new IDisposable() {
-            @Override
-            public void dispose() {
-                QMUtils.unregisterHandler(qmHandler);
-            }
-        });
-    }
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -123,6 +110,22 @@ public class DataSourcePropertyTester extends PropertyTester
                     commandService.refreshElements(commandID, null);
                 }
             });
+        }
+    }
+
+    public static class QMService implements IPluginService {
+
+        private QMEventsHandler qmHandler;
+
+        @Override
+        public void activateService() {
+            qmHandler = new QMEventsHandler();
+            QMUtils.registerHandler(qmHandler);
+        }
+
+        @Override
+        public void deactivateService() {
+            QMUtils.unregisterHandler(qmHandler);
         }
     }
 
