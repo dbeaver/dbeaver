@@ -20,14 +20,10 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPEventListener;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,18 +35,18 @@ import java.util.*;
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
     private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
-    private DataSourceRegistry dataSourceRegistry;
+    private DBPDataSourceRegistry dataSourceRegistry;
     private volatile List<DBNNode> children;
     private final List<DBNLocalFolder> folders = new ArrayList<DBNLocalFolder>();
 
-    public DBNProjectDatabases(DBNProject parentNode, DataSourceRegistry dataSourceRegistry)
+    public DBNProjectDatabases(DBNProject parentNode, DBPDataSourceRegistry dataSourceRegistry)
     {
         super(parentNode);
         this.dataSourceRegistry = dataSourceRegistry;
         this.dataSourceRegistry.addDataSourceListener(this);
 
-        List<DataSourceDescriptor> projectDataSources = this.dataSourceRegistry.getDataSources();
-        for (DataSourceDescriptor ds : projectDataSources) {
+        List<? extends DBSDataSourceContainer> projectDataSources = this.dataSourceRegistry.getDataSources();
+        for (DBSDataSourceContainer ds : projectDataSources) {
             addDataSource(ds, false);
         }
     }
@@ -77,7 +73,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return "connections";
     }
 
-    public DataSourceRegistry getDataSourceRegistry()
+    public DBPDataSourceRegistry getDataSourceRegistry()
     {
         return dataSourceRegistry;
     }
@@ -95,9 +91,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public Class<DataSourceDescriptor> getChildrenClass()
+    public Class<DBSDataSourceContainer> getChildrenClass()
     {
-        return DataSourceDescriptor.class;
+        return DBSDataSourceContainer.class;
     }
 
     @Override
@@ -200,7 +196,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return null;
     }
 
-    private DBNDataSource addDataSource(DataSourceDescriptor descriptor, boolean reflect)
+    private DBNDataSource addDataSource(DBSDataSourceContainer descriptor, boolean reflect)
     {
         DBNDataSource newNode = new DBNDataSource(this, descriptor);
         dataSources.add(newNode);
@@ -211,7 +207,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         return newNode;
     }
 
-    void removeDataSource(DataSourceDescriptor descriptor)
+    void removeDataSource(DBSDataSourceContainer descriptor)
     {
         DBNDataSource removedNode = null;
         for (Iterator<DBNDataSource> iter = dataSources.iterator(); iter.hasNext(); ) {
@@ -233,8 +229,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     {
         switch (event.getAction()) {
             case OBJECT_ADD:
-                if (event.getObject() instanceof DataSourceDescriptor) {
-                    addDataSource((DataSourceDescriptor) event.getObject(), true);
+                if (event.getObject() instanceof DBSDataSourceContainer) {
+                    addDataSource((DBSDataSourceContainer) event.getObject(), true);
                 } else if (DBNModel.getInstance().getNodeByObject(event.getObject()) == null) {
                     final DBNDatabaseNode parentNode = DBNModel.getInstance().getParentNode(event.getObject());
 
@@ -266,8 +262,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 }
                 break;
             case OBJECT_REMOVE:
-                if (event.getObject() instanceof DataSourceDescriptor) {
-                    removeDataSource((DataSourceDescriptor) event.getObject());
+                if (event.getObject() instanceof DBSDataSourceContainer) {
+                    removeDataSource((DBSDataSourceContainer) event.getObject());
                 } else {
                     final DBNDatabaseNode node = DBNModel.getInstance().getNodeByObject(event.getObject());
                     if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {

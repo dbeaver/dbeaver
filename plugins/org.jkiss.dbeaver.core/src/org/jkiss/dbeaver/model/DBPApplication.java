@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 
@@ -29,5 +30,6 @@ public interface DBPApplication
     @NotNull
     DBNModel getNavigatorModel();
 
+    IWorkspace getWorkspace();
 
 }

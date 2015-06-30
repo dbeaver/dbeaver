@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -571,6 +572,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public boolean isCustomDriverLoader()
     {
         return customDriverLoader;
+    }
+
+    @Override
+    public DBXTreeNode getNavigatorRoot() {
+        return providerDescriptor.getTreeDescriptor();
     }
 
     public void setCustomDriverLoader(boolean customDriverLoader)
