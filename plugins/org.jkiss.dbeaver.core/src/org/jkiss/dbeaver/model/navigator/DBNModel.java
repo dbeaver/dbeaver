@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
-import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -448,7 +447,6 @@ public class DBNModel implements IResourceChangeListener {
                             if (getProjectRegistry().getActiveProject() == null) {
                                 getProjectRegistry().setActiveProject(project);
                             }
-                            GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                         } else {
                             // Project not found - report an error
                             log.error("Project '" + childDelta.getResource().getName() + "' not found in navigator");
@@ -460,7 +458,6 @@ public class DBNModel implements IResourceChangeListener {
                             if (project == getProjectRegistry().getActiveProject()) {
                                 getProjectRegistry().setActiveProject(null);
                             }
-                            GlobalPropertyTester.firePropertyChange(GlobalPropertyTester.PROP_HAS_MULTI_PROJECTS);
                         } else {
                             if (childDelta.getFlags() == IResourceDelta.OPEN) {
                                 //projectNode.openProject();

@@ -2473,4 +2473,8 @@
         </stylesheet>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.pluginService">
+        <service class="org.jkiss.dbeaver.ui.actions.GlobalPropertyTester$ResourceListener"/>
+    </extension>
+
 </plugin>
