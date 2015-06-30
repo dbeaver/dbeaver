@@ -27,12 +27,11 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
-import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -68,9 +67,9 @@ public class PrefPageResultSet extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DataSourceDescriptor dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
     {
-        SimplePreferenceStore store = dataSourceDescriptor.getPreferenceStore();
+        DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||

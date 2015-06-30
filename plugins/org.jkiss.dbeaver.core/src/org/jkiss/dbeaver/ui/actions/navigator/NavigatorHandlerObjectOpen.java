@@ -34,15 +34,17 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.edit.DBEPrivateObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
+import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
@@ -124,8 +126,11 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         @Nullable Map<String, Object> attributes,
         IWorkbenchWindow workbenchWindow)
     {
-        if (selectedNode.getObject() instanceof DBEPrivateObjectEditor) {
-            ((DBEPrivateObjectEditor)selectedNode.getObject()).editObject();
+        if (selectedNode instanceof DBNDataSource) {
+            EditConnectionDialog dialog = new EditConnectionDialog(
+                workbenchWindow,
+                new EditConnectionWizard((DataSourceDescriptor) selectedNode.getDataSource()));
+            dialog.open();
             return null;
         }
         if (!selectedNode.isPersisted()) {
@@ -224,16 +229,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             DBNNode node = NavigatorUtils.getSelectedNode(selection);
             if (node != null) {
                 String actionName = CoreMessages.actions_navigator_open;
-                if (node instanceof DBNDatabaseNode) {
+                if (node instanceof DBNDataSource) {
+                    actionName = CoreMessages.actions_navigator_edit;
+                } else if (node instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) node).getObject();
-                    if (object instanceof DBEPrivateObjectEditor) {
-                        actionName = CoreMessages.actions_navigator_edit;
-                    } else {
-                        DBEObjectEditor objectManager = EntityEditorsRegistry.getInstance().getObjectManager(
-                            object.getClass(),
-                            DBEObjectEditor.class);
-                        actionName = objectManager == null || !objectManager.canEditObject(object)? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
-                    }
+                    DBEObjectEditor objectManager = EntityEditorsRegistry.getInstance().getObjectManager(
+                        object.getClass(),
+                        DBEObjectEditor.class);
+                    actionName = objectManager == null || !objectManager.canEditObject(object)? CoreMessages.actions_navigator_view : CoreMessages.actions_navigator_edit;
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {

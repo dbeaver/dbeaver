@@ -25,6 +25,4 @@ package org.jkiss.dbeaver.model.edit;
  */
 public interface DBEPrivateObjectEditor {
 
-    void editObject();
-
 }

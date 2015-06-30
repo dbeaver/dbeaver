@@ -26,18 +26,18 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.ui.INavigatorModelView;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler;
 import org.jkiss.utils.CommonUtils;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider
@@ -139,12 +139,12 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                             ((DBNResource) node).getResource(),
                             getSite().getWorkbenchWindow());
                     } else if (node instanceof DBNDataSource) {
-                        DataSourceDescriptor dataSource = ((DBNDataSource) node).getObject();
+                        DBSDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
                         NavigatorViewBase.DoubleClickBehavior doubleClickBehavior =
                             NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                         switch (doubleClickBehavior) {
                             case EDIT:
-                                dataSource.editObject();
+                                NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource)node, null, DBeaverUI.getActiveWorkbenchWindow());
                                 break;
                             case CONNECT:
                                 if (dataSource.isConnected()) {
