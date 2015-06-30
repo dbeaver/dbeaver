@@ -278,10 +278,6 @@ public class DBeaverUI implements DBUICallback {
         getInstance().trayItem.notify(message, status);
     }
 
-    public void addDisposeListener(IDisposable disposable) {
-        globalDisposables.add(disposable);
-    }
-
     @Override
     public void showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
         UIUtils.showErrorDialog(null, title, message, status);
