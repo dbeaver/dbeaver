@@ -21,7 +21,9 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +45,11 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems)
     {
-        IEditorPart activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+        IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+        if (window == null) {
+            return;
+        }
+        IEditorPart activePart = window.getActivePage().getActiveEditor();
         DBSDataSourceContainer container = DataSourceHandler.getDataSourceContainer(activePart);
 
         DBPDataSource dataSource = null;
@@ -57,7 +64,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
         if (txnManager != null) {
             menuItems.add(ActionUtils.makeCommandContribution(
-                DBeaverUI.getActiveWorkbenchWindow(),
+                window,
                 ICommandIds.CMD_TOGGLE_AUTOCOMMIT,
                 CommandContributionItem.STYLE_CHECK));
 
@@ -115,7 +122,16 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         @Override
         public void run()
         {
-            dataSource.getContainer().setDefaultTransactionsIsolation(level);
+            try {
+                dataSource.getContainer().setDefaultTransactionsIsolation(level);
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(
+                    null,
+                    "Transactions Isolation",
+                    "Can't set transaction isolation level to '" + level + "'",
+                    e);
+                return;
+            }
             dataSource.getContainer().persistConfiguration();
         }
     }
