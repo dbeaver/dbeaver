@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -54,7 +54,7 @@ public class PropertySourceCustom implements DBPPropertySource {
             for (DBPPropertyDescriptor prop : props) {
                 if (prop.getId().equals(value.getKey())) {
                     if (propValue instanceof String) {
-                        propValue = RuntimeUtils.convertString((String) value.getValue(), prop.getDataType());
+                        propValue = GeneralUtils.convertString((String) value.getValue(), prop.getDataType());
                     }
                     originalValues.put(value.getKey(), propValue);
                     break;

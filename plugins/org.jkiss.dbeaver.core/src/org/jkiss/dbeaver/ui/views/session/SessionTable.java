@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 
@@ -51,16 +51,16 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
     @Override
     protected LoadingJob<Collection<DBAServerSession>> createLoadService()
     {
-        return LoadingUtils.createService(
-                new LoadSessionsService(),
-                new ObjectsLoadVisualizer());
+        return RuntimeUtils.createService(
+            new LoadSessionsService(),
+            new ObjectsLoadVisualizer());
     }
 
     protected LoadingJob<Void> createAlterService(DBAServerSession session, Map<String, Object> options)
     {
-        return LoadingUtils.createService(
-                new KillSessionService(session, options),
-                new ObjectActionVisualizer());
+        return RuntimeUtils.createService(
+            new KillSessionService(session, options),
+            new ObjectActionVisualizer());
     }
 
     public void init(DBAServerSessionManager<DBAServerSession> sessionManager)

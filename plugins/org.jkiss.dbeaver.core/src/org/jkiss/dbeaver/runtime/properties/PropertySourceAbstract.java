@@ -29,9 +29,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.utils.ArrayUtils;
 
@@ -183,7 +183,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                         if (lazyLoadJob == null) {
                             // We assume that it can be called ONLY by properties viewer
                             // So, start lazy loading job to update it after value will be loaded
-                            lazyLoadJob = LoadingUtils.createService(
+                            lazyLoadJob = RuntimeUtils.createService(
                                 new PropertySheetLoadService(),
                                 new PropertySheetLoadVisualizer());
                             lazyLoadJob.addJobChangeListener(new JobChangeAdapter() {

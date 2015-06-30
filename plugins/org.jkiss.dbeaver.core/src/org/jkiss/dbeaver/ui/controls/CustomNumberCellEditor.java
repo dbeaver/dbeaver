@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -62,7 +62,7 @@ public class CustomNumberCellEditor extends TextCellEditor {
     @Override
     protected Object doGetValue()
     {
-        return RuntimeUtils.convertString((String) super.doGetValue(), valueType);
+        return GeneralUtils.convertString((String) super.doGetValue(), valueType);
     }
 
     @Override

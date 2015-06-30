@@ -38,8 +38,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -120,12 +120,11 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
             // Do not start new one while old is running
             return;
         }
-        diagramLoadingJob = LoadingUtils.createService(
+        diagramLoadingJob = RuntimeUtils.createService(
             new AbstractLoadService<EntityDiagram>("Load diagram '" + getEditorInput().getName() + "'") {
                 @Override
                 public EntityDiagram evaluate()
-                    throws InvocationTargetException, InterruptedException
-                {
+                    throws InvocationTargetException, InterruptedException {
                     try {
                         return loadContentFromFile(getProgressMonitor());
                     } catch (DBException e) {
@@ -136,8 +135,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
                 }
 
                 @Override
-                public Object getFamily()
-                {
+                public Object getFamily() {
                     return ERDEditorStandalone.this;
                 }
             },
