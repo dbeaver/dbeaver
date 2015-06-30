@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -48,7 +48,7 @@ public class CompareObjectsExecutor {
     private final List<DBNDatabaseNode> rootNodes;
     private final Map<DBPDataSource, DataSourcePropertyFilter> dataSourceFilters = new IdentityHashMap<DBPDataSource, DataSourcePropertyFilter>();
 
-    private final DBRProcessListener initializeFinisher;
+    private final DBRProgressListener initializeFinisher;
     private final ILazyPropertyLoadListener lazyPropertyLoadListener;
 
     private volatile int initializedCount = 0;
@@ -121,9 +121,9 @@ public class CompareObjectsExecutor {
         this.settings = settings;
         this.rootNodes = settings.getNodes();
 
-        initializeFinisher = new DBRProcessListener() {
+        initializeFinisher = new DBRProgressListener() {
             @Override
-            public void onProcessFinish(IStatus status)
+            public void onTaskFinished(IStatus status)
             {
                 if (!status.isOK()) {
                     initializeError = status;

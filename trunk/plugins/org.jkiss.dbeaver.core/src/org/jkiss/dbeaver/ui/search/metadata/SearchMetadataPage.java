@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -155,9 +155,9 @@ public class SearchMetadataPage extends AbstractSearchPage {
                             for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
                                 if (node instanceof DBNDataSource) {
                                     DBNDataSource dsNode = (DBNDataSource) node;
-                                    dsNode.initializeNode(null, new DBRProcessListener() {
+                                    dsNode.initializeNode(null, new DBRProgressListener() {
                                         @Override
-                                        public void onProcessFinish(IStatus status)
+                                        public void onTaskFinished(IStatus status)
                                         {
                                             if (status.isOK()) {
                                                 Display.getDefault().asyncExec(new Runnable() {

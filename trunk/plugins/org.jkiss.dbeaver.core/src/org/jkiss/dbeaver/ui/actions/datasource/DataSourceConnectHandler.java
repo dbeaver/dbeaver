@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -51,7 +51,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
     public static void execute(
         @Nullable DBRProgressMonitor monitor,
         @NotNull DBSDataSourceContainer dataSourceContainer,
-        @Nullable final DBRProcessListener onFinish)
+        @Nullable final DBRProgressListener onFinish)
     {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
@@ -95,7 +95,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
                         }
                     }
                     if (onFinish != null) {
-                        onFinish.onProcessFinish(result);
+                        onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
                         DBUserInterface.getInstance().showError(
                             connectJob.getName(),
