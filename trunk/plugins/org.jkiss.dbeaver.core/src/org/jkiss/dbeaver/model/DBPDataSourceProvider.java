@@ -79,9 +79,4 @@ public interface DBPDataSourceProvider
         @NotNull DBSDataSourceContainer container)
         throws DBException;
 
-    /**
-     * Closes data source provider
-     */
-    void close();
-
 }
