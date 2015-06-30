@@ -32,6 +32,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -375,6 +376,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     @Override
     public void handleDataSourceEvent(final DBPEvent event)
     {
+        if (PlatformUI.getWorkbench().isClosing()) {
+            return;
+        }
         if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
             event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
             (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == getDataSourceContainer()) ||
@@ -391,6 +395,24 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 }
             );
         }
+        // This is a hack. We need to update main toolbar. By design toolbar should be updated along with command state
+        // but in fact it doesn't. I don't know better way than trigger update explicitly.
+        // TODO: replace with something smarter
+        if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
+            Display.getDefault().asyncExec(
+                new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+                        if (workbenchWindow instanceof WorkbenchWindow) {
+                            ((WorkbenchWindow) workbenchWindow).updateActionBars();
+                        }
+                    }
+                }
+            );
+        }
+
     }
 
     private void updateControls(boolean force)

@@ -274,15 +274,6 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     @Override
     public void close()
     {
-/*
-        if (!fake) {
-            try {
-                Thread.sleep(10000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-*/
         if (original != null) {
 /*
             // Check for warnings
