@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -32,6 +33,8 @@ import java.util.List;
  */
 public class DataFormatterDescriptor extends AbstractDescriptor
 {
+    static final Log log = Log.getLog(DataFormatterDescriptor.class);
+
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataFormatter"; //$NON-NLS-1$
 
     private String id;

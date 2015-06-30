@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.utils.ArrayUtils;
@@ -39,6 +40,8 @@ import java.util.List;
  */
 public class ResourceHandlerDescriptor extends AbstractDescriptor
 {
+    static final Log log = Log.getLog(ResourceHandlerDescriptor.class);
+
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
     private ObjectType handlerType;
