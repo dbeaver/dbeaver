@@ -31,9 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
@@ -57,8 +55,6 @@ import java.util.Locale;
  */
 public class RuntimeUtils {
     static final Log log = Log.getLog(RuntimeUtils.class);
-
-    private static JexlEngine jexlEngine;
 
     @SuppressWarnings("unchecked")
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)
@@ -293,21 +289,6 @@ public class RuntimeUtils {
         final int month = c.get(Calendar.MONTH) + 1;
         return "" + c.get(Calendar.YEAR) + (month < 10 ? "0" + month : month) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE);
 */
-    }
-
-    public static Expression parseExpression(String exprString) throws DBException
-    {
-        synchronized (RuntimeUtils.class) {
-            if (jexlEngine == null) {
-                jexlEngine = new JexlEngine(null, null, null, null);
-                jexlEngine.setCache(100);
-            }
-        }
-        try {
-            return jexlEngine.createExpression(exprString);
-        } catch (JexlException e) {
-            throw new DBException("Bad expression", e);
-        }
     }
 
     public static boolean isTypeSupported(Class<?> type, Class[] supportedTypes)

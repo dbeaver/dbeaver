@@ -1257,7 +1257,7 @@ public final class DBUtils {
         if (executionContext != null && executionContext.isConnected()) {
             return getAdapter(DBCTransactionManager.class, executionContext);
         }
-        return null;//VoidTransactionManager.INSTANCE;
+        return null;
     }
 
     public static DBSProcedure findProcedure(DBCSession session, String queryString) throws DBException {

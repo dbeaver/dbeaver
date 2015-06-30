@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry.tree;
+package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
@@ -26,8 +26,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.registry.AbstractDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -65,7 +64,7 @@ public abstract class DBXTreeNode
         this.virtual = virtual;
         if (!CommonUtils.isEmpty(visibleIf)) {
             try {
-                this.visibleIf = RuntimeUtils.parseExpression(visibleIf);
+                this.visibleIf = AbstractDescriptor.parseExpression(visibleIf);
             } catch (DBException e) {
                 log.warn(e);
             }

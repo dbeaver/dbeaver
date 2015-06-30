@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
-import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

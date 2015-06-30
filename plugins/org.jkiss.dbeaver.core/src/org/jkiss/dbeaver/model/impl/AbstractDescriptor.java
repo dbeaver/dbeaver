@@ -15,10 +15,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.model.impl;
 
 import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
+import org.apache.commons.jexl2.JexlEngine;
+import org.apache.commons.jexl2.JexlException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
@@ -26,7 +28,6 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -40,7 +41,27 @@ public abstract class AbstractDescriptor {
     public static final String VAR_OBJECT = "object";
     public static final String VAR_CONTEXT = "context";
 
+    private static JexlEngine jexlEngine;
+
+    public static Expression parseExpression(String exprString) throws DBException
+    {
+        synchronized (AbstractDescriptor.class) {
+            if (jexlEngine == null) {
+                jexlEngine = new JexlEngine(null, null, null, null);
+                jexlEngine.setCache(100);
+            }
+        }
+        try {
+            return jexlEngine.createExpression(exprString);
+        } catch (JexlException e) {
+            throw new DBException("Bad expression", e);
+        }
+    }
+
     protected class ObjectType {
+        private static final String ATTR_NAME = "name";
+        private static final String ATTR_IF = "if";
+
         private final String implName;
         private Class<?> implClass;
         private Expression expression;
@@ -52,11 +73,11 @@ public abstract class AbstractDescriptor {
 
         ObjectType(IConfigurationElement cfg)
         {
-            this.implName = cfg.getAttribute(RegistryConstants.ATTR_NAME);
-            String condition = cfg.getAttribute(RegistryConstants.ATTR_IF);
+            this.implName = cfg.getAttribute(ATTR_NAME);
+            String condition = cfg.getAttribute(ATTR_IF);
             if (!CommonUtils.isEmpty(condition)) {
                 try {
-                    this.expression = RuntimeUtils.parseExpression(condition);
+                    this.expression = parseExpression(condition);
                 } catch (DBException ex) {
                     log.warn("Can't parse object type expression: " + condition, ex); //$NON-NLS-1$
                 }
