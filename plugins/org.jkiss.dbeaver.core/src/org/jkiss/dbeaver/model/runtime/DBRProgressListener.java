@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.IStatus;
 /**
  * Process execution listener
  */
-public interface DBRProcessListener {
+public interface DBRProgressListener {
 
-    void onProcessFinish(IStatus status);
+    void onTaskFinished(IStatus status);
 
 }
