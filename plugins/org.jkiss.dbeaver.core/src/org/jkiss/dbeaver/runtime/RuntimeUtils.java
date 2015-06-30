@@ -33,6 +33,9 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.load.ILoadService;
+import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -100,14 +103,6 @@ public class RuntimeUtils {
             new IStatus[]{makeExceptionStatus(ex)},
             message,
             null);
-    }
-
-    public static Throwable getRootCause(Throwable ex) {
-        for (Throwable e = ex; ; e = e.getCause()) {
-            if (e.getCause() == null) {
-                return e;
-            }
-        }
     }
 
     public static IStatus getRootStatus(IStatus status) {
@@ -280,53 +275,6 @@ public class RuntimeUtils {
         }
     }
 
-    public static Object convertString(String value, Class<?> valueType)
-    {
-        try {
-            if (CommonUtils.isEmpty(value)) {
-                return null;
-            }
-            if (valueType == null || CharSequence.class.isAssignableFrom(valueType)) {
-                return value;
-            } else if (valueType == Boolean.class || valueType == Boolean.TYPE) {
-                return Boolean.valueOf(value);
-            } else if (valueType == Long.class) {
-                return Long.valueOf(value);
-            } else if (valueType == Long.TYPE) {
-                return Long.parseLong(value);
-            } else if (valueType == Integer.class) {
-                return new Integer(value);
-            } else if (valueType == Integer.TYPE) {
-                return Integer.parseInt(value);
-            } else if (valueType == Short.class) {
-                return Short.valueOf(value);
-            } else if (valueType == Short.TYPE) {
-                return Short.parseShort(value);
-            } else if (valueType == Byte.class) {
-                return Byte.valueOf(value);
-            } else if (valueType == Byte.TYPE) {
-                return Byte.parseByte(value);
-            } else if (valueType == Double.class) {
-                return Double.valueOf(value);
-            } else if (valueType == Double.TYPE) {
-                return Double.parseDouble(value);
-            } else if (valueType == Float.class) {
-                return Float.valueOf(value);
-            } else if (valueType == Float.TYPE) {
-                return Float.parseFloat(value);
-            } else if (valueType == BigInteger.class) {
-                return new BigInteger(value);
-            } else if (valueType == BigDecimal.class) {
-                return new BigDecimal(value);
-            } else {
-                return value;
-            }
-        } catch (RuntimeException e) {
-            log.error(e);
-            return value;
-        }
-    }
-
     public static File getUserHomeDir()
     {
         String userHome = System.getProperty("user.home"); //$NON-NLS-1$
@@ -485,6 +433,13 @@ public class RuntimeUtils {
             }
         }
         return monitoringTask.finished;
+    }
+
+    public static <RESULT> LoadingJob<RESULT> createService(
+        ILoadService<RESULT> loadingService,
+        ILoadVisualizer<RESULT> visualizer)
+    {
+        return new LoadingJob<RESULT>(loadingService, visualizer);
     }
 
     private static class MonitoringTask implements DBRRunnableWithProgress {

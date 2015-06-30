@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -61,9 +61,9 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
     @Override
     protected LoadingJob<Collection<DBCPlanNode>> createLoadService()
     {
-        return LoadingUtils.createService(
-                new ExplainPlanService(),
-                new PlanLoadVisualizer());
+        return RuntimeUtils.createService(
+            new ExplainPlanService(),
+            new PlanLoadVisualizer());
     }
 
     public boolean isInitialized()

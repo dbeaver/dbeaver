@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -117,12 +117,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             // Do not start new one while old is running
             return;
         }
-        diagramLoadingJob = LoadingUtils.createService(
+        diagramLoadingJob = RuntimeUtils.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
                 public EntityDiagram evaluate()
-                    throws InvocationTargetException, InterruptedException
-                {
+                    throws InvocationTargetException, InterruptedException {
                     try {
                         return loadFromDatabase(getProgressMonitor());
                     } catch (DBException e) {

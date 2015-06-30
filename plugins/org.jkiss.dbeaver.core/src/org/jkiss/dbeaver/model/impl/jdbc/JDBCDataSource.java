@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCCallableStatementImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,14 +38,12 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * JDBC data source
@@ -495,7 +492,7 @@ public abstract class JDBCDataSource
             return ErrorType.CONNECTION_LOST;
         }
         if (error instanceof DBCConnectException) {
-            Throwable rootCause = RuntimeUtils.getRootCause(error);
+            Throwable rootCause = GeneralUtils.getRootCause(error);
             if (rootCause instanceof ClassNotFoundException) {
                 // Looks like bad driver configuration
                 return ErrorType.DRIVER_CLASS_MISSING;
