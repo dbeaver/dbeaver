@@ -104,8 +104,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (annotationModel == null) {
             return;
         }
-        Set<SQLScriptPosition> removedPositions = editor.getSyntaxManager().getRemovedPositions(true);
-        Set<SQLScriptPosition> addedPositions = editor.getSyntaxManager().getAddedPositions(true);
+        Set<SQLScriptPosition> removedPositions = editor.getRuleManager().getRemovedPositions(true);
+        Set<SQLScriptPosition> addedPositions = editor.getRuleManager().getAddedPositions(true);
 
         Annotation[] removedAnnotations = null;
         if (!removedPositions.isEmpty()) {

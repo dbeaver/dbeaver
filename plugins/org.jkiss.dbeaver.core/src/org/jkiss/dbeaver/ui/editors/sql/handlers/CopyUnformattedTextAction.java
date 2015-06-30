@@ -25,9 +25,10 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLCommentToken;
 import org.jkiss.utils.Pair;
 
@@ -65,19 +66,20 @@ public class CopyUnformattedTextAction extends Action {
         }
 
         StringBuilder result = new StringBuilder();
-        SQLSyntaxManager syntaxManager = sqlEditor.getSyntaxManager();
-        syntaxManager.setRange(document, startPos, endPos - startPos);
-        String[] singleLineComments = syntaxManager.getDialect().getSingleLineComments();
-        Pair<String, String> multiLineComments = syntaxManager.getDialect().getMultiLineComments();
+        SQLRuleManager ruleManager = sqlEditor.getRuleManager();
+        SQLDialect dialect = sqlEditor.getSyntaxManager().getDialect();
+        ruleManager.setRange(document, startPos, endPos - startPos);
+        String[] singleLineComments = dialect.getSingleLineComments();
+        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         boolean lastWhitespace = false;
         try {
             for (;;) {
-                IToken token = syntaxManager.nextToken();
+                IToken token = ruleManager.nextToken();
                 if (token.isEOF()) {
                     break;
                 }
-                int tokenOffset = syntaxManager.getTokenOffset();
-                final int tokenLength = syntaxManager.getTokenLength();
+                int tokenOffset = ruleManager.getTokenOffset();
+                final int tokenLength = ruleManager.getTokenLength();
                 if (token.isWhitespace()) {
                     if (!lastWhitespace) {
                         result.append(' ');

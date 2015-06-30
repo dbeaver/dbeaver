@@ -19,8 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.ui.editors.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatter;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 
 import java.util.StringTokenizer;
 

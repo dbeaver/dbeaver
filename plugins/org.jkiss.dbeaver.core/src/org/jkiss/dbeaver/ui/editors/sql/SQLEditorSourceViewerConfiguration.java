@@ -65,7 +65,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * The editor with which this configuration is associated.
      */
     private SQLEditorBase editor;
-    private SQLSyntaxManager syntaxManager;
+    private SQLRuleManager ruleManager;
 
     private IContentAssistProcessor completionProcessor;
     private IHyperlinkDetector hyperlinkDetector;
@@ -87,13 +87,12 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * @param editor the SQLEditor to configure
      */
     public SQLEditorSourceViewerConfiguration(
-        SQLEditorBase editor,
-        SQLSyntaxManager syntaxManager)
+        SQLEditorBase editor)
     {
         this.editor = editor;
-        this.syntaxManager = syntaxManager;
+        this.ruleManager = editor.getRuleManager();
         this.completionProcessor = new SQLCompletionProcessor(editor);
-        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, syntaxManager);
+        this.hyperlinkDetector = new SQLHyperlinkDetector(editor, editor.getSyntaxManager());
     }
 
     @Override
@@ -240,7 +239,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         ContentFormatter formatter = new ContentFormatter();
         formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
 
-        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(syntaxManager);
+        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(editor.getSyntaxManager());
         for (String ct : SQLPartitionScanner.SQL_PARTITION_TYPES) {
             formatter.setFormattingStrategy(formattingStrategy, ct);
         }
@@ -279,7 +278,7 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         reconciler.setDocumentPartitioning(docPartitioning);
 
         // Add a "damager-repairer" for changes in default text (SQL code).
-        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(syntaxManager);
+        DefaultDamagerRepairer dr = new DefaultDamagerRepairer(ruleManager);
 
         reconciler.setDamager(dr, IDocument.DEFAULT_CONTENT_TYPE);
         reconciler.setRepairer(dr, IDocument.DEFAULT_CONTENT_TYPE);
@@ -288,27 +287,27 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
         // We just need a scanner that does nothing but returns a token with
         // the corresponding text attributes
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
-            new TextAttribute(syntaxManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
+            new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
 
         // Add a "damager-repairer" for changes within one-line SQL comments.
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
-            new TextAttribute(syntaxManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
+            new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_COMMENT);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_COMMENT);
 
         // Add a "damager-repairer" for changes within quoted literals.
         dr = new DefaultDamagerRepairer(
             new SingleTokenScanner(
-                new TextAttribute(syntaxManager.getColor(SQLConstants.CONFIG_COLOR_STRING))));
+                new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_STRING))));
         reconciler.setDamager(dr, SQLPartitionScanner.SQL_STRING);
         reconciler.setRepairer(dr, SQLPartitionScanner.SQL_STRING);
 
 //        // Add a "damager-repairer" for changes within delimited identifiers.
 //        dr = new DefaultDamagerRepairer(
 //            new SingleTokenScanner(
-//                new TextAttribute(syntaxManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
+//                new TextAttribute(ruleManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
 //        reconciler.setDamager(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
 //        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
 
