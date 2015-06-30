@@ -23,14 +23,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -498,7 +497,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     public DBSDataSourceContainer getDataSourceContainer()
     {
         DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : (DataSourceDescriptor) dataSource.getContainer();
+        return dataSource == null ? null : dataSource.getContainer();
     }
 
     public DBPDataSource getDataSource() {

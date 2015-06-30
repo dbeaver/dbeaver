@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 import java.util.Collection;
@@ -62,6 +63,8 @@ public interface DBPDriver extends DBPObject
     boolean isAnonymousAccess();
 
     boolean isCustomDriverLoader();
+
+    DBXTreeNode getNavigatorRoot();
 
     Collection<DBPPropertyDescriptor> getConnectionPropertyDescriptors();
 

@@ -26,13 +26,12 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -45,11 +44,11 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     private final DBSDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
 
-    public DBNDataSource(DBNNode parentNode, DataSourceDescriptor dataSource)
+    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBSDataSourceContainer dataSource)
     {
         super(parentNode);
         this.dataSource = dataSource;
-        this.treeRoot = dataSource.getDriver().getProviderDescriptor().getTreeDescriptor();
+        this.treeRoot = dataSource.getDriver().getNavigatorRoot();
         DBNModel.getInstance().addNode(this, false);
     }
 

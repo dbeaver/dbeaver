@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -102,7 +102,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
         final BookmarkStorage storage = new BookmarkStorage((IFile) resource, false);
         try {
-            final DataSourceDescriptor dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
+            final DBSDataSourceContainer dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
             if (dataSourceContainer == null) {
                 throw new DBException("Can't find datasource '" + storage.getDataSourceId() + "'"); //$NON-NLS-2$
             }
