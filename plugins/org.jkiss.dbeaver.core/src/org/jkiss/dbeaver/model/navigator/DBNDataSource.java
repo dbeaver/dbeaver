@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -122,7 +122,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     }
 
     @Override
-    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProcessListener onFinish)
+    public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish)
     {
         if (dataSource == null) {
             return false;
@@ -132,7 +132,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
             //dataSource.connect(monitor);
         } else {
             if (onFinish != null) {
-                onFinish.onProcessFinish(Status.OK_STATUS);
+                onFinish.onTaskFinished(Status.OK_STATUS);
             }
         }
         return dataSource.isConnected();

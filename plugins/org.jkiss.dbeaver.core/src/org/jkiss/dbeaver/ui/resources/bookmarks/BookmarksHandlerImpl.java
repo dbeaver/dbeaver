@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -110,9 +110,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             if (dsNode == null) {
                 throw new DBException("Can't find datasource node for '" + dataSourceContainer.getName() + "'"); //$NON-NLS-2$
             }
-            dsNode.initializeNode(null, new DBRProcessListener() {
+            dsNode.initializeNode(null, new DBRProgressListener() {
                 @Override
-                public void onProcessFinish(IStatus status)
+                public void onTaskFinished(IStatus status)
                 {
                     if (status.isOK()) {
                         UIUtils.runInUI(null, new Runnable() {

@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -224,10 +224,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return locked || super.isLocked();
     }
 
-    public boolean initializeNode(DBRProgressMonitor monitor, DBRProcessListener onFinish)
+    public boolean initializeNode(DBRProgressMonitor monitor, DBRProgressListener onFinish)
     {
         if (onFinish != null) {
-            onFinish.onProcessFinish(Status.OK_STATUS);
+            onFinish.onTaskFinished(Status.OK_STATUS);
         }
         return true;
     }

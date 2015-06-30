@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -112,9 +112,9 @@ public class DatabaseEditorInputFactory implements IElementFactory
                 try {
                     dsNode = (DBNDataSource)DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dsObject);
                     if (dsNode != null) {
-                        dsNode.initializeNode(monitor, new DBRProcessListener() {
+                        dsNode.initializeNode(monitor, new DBRProgressListener() {
                             @Override
-                            public void onProcessFinish(IStatus status)
+                            public void onTaskFinished(IStatus status)
                             {
                                 if (!status.isOK()) {
                                     errorStatus = status;
