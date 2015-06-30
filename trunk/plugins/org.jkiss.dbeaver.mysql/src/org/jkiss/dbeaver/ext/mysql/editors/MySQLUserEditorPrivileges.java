@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.edit.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -245,19 +245,17 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 
     private void showCatalogTables()
     {
-        LoadingUtils.createService(
+        RuntimeUtils.createService(
             new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getDataSource()) {
                 @Override
                 public Collection<MySQLTableBase> evaluate()
-                    throws InvocationTargetException, InterruptedException
-                {
+                    throws InvocationTargetException, InterruptedException {
                     if (selectedCatalog == null) {
                         return Collections.emptyList();
                     }
                     try {
                         return selectedCatalog.getTableCache().getObjects(getProgressMonitor(), selectedCatalog);
-                    }
-                    catch (DBException e) {
+                    } catch (DBException e) {
                         log.error(e);
                     }
                     return null;
@@ -289,15 +287,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             return;
         }
         isLoaded = true;
-        LoadingUtils.createService(
+        RuntimeUtils.createService(
             new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getDataSource()) {
                 @Override
-                public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException
-                {
+                public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {
                     try {
                         return getDatabaseObject().getDataSource().getPrivileges(getProgressMonitor());
-                    }
-                    catch (DBException e) {
+                    } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
                 }

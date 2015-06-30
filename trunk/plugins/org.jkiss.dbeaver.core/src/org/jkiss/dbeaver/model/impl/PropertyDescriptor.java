@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -118,13 +118,13 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
                 type = String.class;
             }
         }
-        this.defaultValue = RuntimeUtils.convertString(config.getAttribute(ATTR_DEFAULT_VALUE), type);
+        this.defaultValue = GeneralUtils.convertString(config.getAttribute(ATTR_DEFAULT_VALUE), type);
         String valueList = config.getAttribute(ATTR_VALID_VALUES);
         if (valueList != null) {
             final String[] values = valueList.split(VALUE_SPLITTER);
             validValues = new Object[values.length];
             for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {
-                validValues[i] = RuntimeUtils.convertString(values[i], type);
+                validValues[i] = GeneralUtils.convertString(values[i], type);
             }
         }
         this.editable = true;

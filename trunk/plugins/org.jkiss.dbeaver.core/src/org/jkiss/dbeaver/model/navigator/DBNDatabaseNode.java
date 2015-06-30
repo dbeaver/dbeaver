@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.registry.tree.DBXTreeFolder;
 import org.jkiss.dbeaver.registry.tree.DBXTreeItem;
 import org.jkiss.dbeaver.registry.tree.DBXTreeNode;
 import org.jkiss.dbeaver.registry.tree.DBXTreeObject;
-import org.jkiss.dbeaver.runtime.load.LoadingUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -394,7 +394,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
         String propertyName = meta.getPropertyName();
-        Object propertyValue = LoadingUtils.extractPropertyValue(monitor, valueObject, propertyName);
+        Object propertyValue = GeneralUtils.extractPropertyValue(monitor, valueObject, propertyName);
         if (propertyValue == null) {
             return false;
         }
@@ -629,7 +629,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return null;
         }
         String propertyName = childMeta.getPropertyName();
-        Method getter = LoadingUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
+        Method getter = GeneralUtils.findPropertyReadMethod(valueObject.getClass(), propertyName);
         if (getter == null) {
             return null;
         }

@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -744,7 +745,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void setDriverParameter(String name, String value, boolean setDefault)
     {
         DBPPropertyDescriptor prop = getProviderDescriptor().getDriverProperty(name);
-        Object valueObject = prop == null ? value : RuntimeUtils.convertString(value, prop.getDataType());
+        Object valueObject = prop == null ? value : GeneralUtils.convertString(value, prop.getDataType());
         customParameters.put(name, valueObject);
         if (setDefault) {
             defaultParameters.put(name, valueObject);
