@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.utils.TextUtils;
 
 import java.io.IOException;
@@ -35,6 +34,7 @@ public class DBRProcessDescriptor
     private ProcessBuilder processBuilder;
     private Process process;
     private int exitValue = -1;
+    private DBRProcessListener processListener;
 
     public DBRProcessDescriptor(DBRShellCommand command)
     {
@@ -60,6 +60,14 @@ public class DBRProcessDescriptor
     public DBRShellCommand getCommand()
     {
         return command;
+    }
+
+    public DBRProcessListener getProcessListener() {
+        return processListener;
+    }
+
+    public void setProcessListener(DBRProcessListener processListener) {
+        this.processListener = processListener;
     }
 
     public ProcessBuilder getProcessBuilder()
@@ -92,6 +100,9 @@ public class DBRProcessDescriptor
         } catch (IOException e) {
             throw new DBException("Can't start process", e);
         }
+        if (processListener != null) {
+            processListener.onProcessStarted();
+        }
     }
 
     public synchronized void terminate()
@@ -105,7 +116,9 @@ public class DBRProcessDescriptor
             }
             //exitValue = process.exitValue();
             process = null;
-            ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
+            if (processListener != null) {
+                processListener.onProcessTerminated(exitValue);
+            }
         }
     }
 
@@ -117,6 +130,9 @@ public class DBRProcessDescriptor
             } catch (InterruptedException e) {
                 // Skip
             }
+        }
+        if (processListener != null) {
+            processListener.onProcessTerminated(exitValue);
         }
         return exitValue;
     }
