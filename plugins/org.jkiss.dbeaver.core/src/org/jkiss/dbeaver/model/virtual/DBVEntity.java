@@ -26,11 +26,8 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.XMLBuilder;
 
-import java.io.IOException;
 import java.util.*;
 
 /**
@@ -54,8 +51,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private String name;
     private String description;
     private String descriptionColumnNames;
-    private List<DBVEntityConstraint> entityConstraints;
-    private Map<String, String> properties;
+    List<DBVEntityConstraint> entityConstraints;
+    Map<String, String> properties;
 
     public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
         this.container = container;
@@ -262,38 +259,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
         // No columns match pattern
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
-    }
-
-    @Override
-    public void persist(XMLBuilder xml) throws IOException
-    {
-        xml.startElement(RegistryConstants.TAG_ENTITY);
-        xml.addAttribute(RegistryConstants.ATTR_NAME, getName());
-        if (!CommonUtils.isEmpty(getDescriptionColumnNames())) {
-            xml.addAttribute(RegistryConstants.ATTR_DESCRIPTION, getDescriptionColumnNames());
-        }
-        if (!CommonUtils.isEmpty(properties)) {
-            for (Map.Entry<String, String> prop : properties.entrySet()) {
-                xml.startElement(RegistryConstants.TAG_PROPERTY);
-                xml.addAttribute(RegistryConstants.ATTR_NAME, prop.getKey());
-                xml.addAttribute(RegistryConstants.ATTR_VALUE, prop.getValue());
-                xml.endElement();
-            }
-        }
-        for (DBVEntityConstraint c : CommonUtils.safeCollection(entityConstraints)) {
-            if (c.hasAttributes()) {
-                xml.startElement(RegistryConstants.TAG_CONSTRAINT);
-                xml.addAttribute(RegistryConstants.ATTR_NAME, c.getName());
-                xml.addAttribute(RegistryConstants.ATTR_TYPE, c.getConstraintType().getName());
-                for (DBVEntityConstraintColumn cc : CommonUtils.safeCollection(c.getAttributeReferences(null))) {
-                    xml.startElement(RegistryConstants.TAG_ATTRIBUTE);
-                    xml.addAttribute(RegistryConstants.ATTR_NAME, cc.getAttributeName());
-                    xml.endElement();
-                }
-                xml.endElement();
-            }
-        }
-        xml.endElement();
     }
 
     @Override

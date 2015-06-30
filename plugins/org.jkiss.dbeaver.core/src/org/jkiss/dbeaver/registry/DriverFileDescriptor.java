@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
 import java.io.File;
