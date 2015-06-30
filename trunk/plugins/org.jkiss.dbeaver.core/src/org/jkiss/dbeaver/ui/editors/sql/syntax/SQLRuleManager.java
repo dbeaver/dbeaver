@@ -27,12 +27,9 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 import org.jkiss.utils.Pair;
@@ -45,71 +42,25 @@ import java.util.*;
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
-public class SQLSyntaxManager extends RuleBasedScanner {
+public class SQLRuleManager extends RuleBasedScanner {
 
     @NotNull
     private final IThemeManager themeManager;
-    @Nullable
-    private SQLDataSource dataSource;
     @NotNull
-    private SQLDialect sqlDialect;
-    @Nullable
-    private String quoteSymbol;
-    private char structSeparator;
-    @NotNull
-    private String catalogSeparator;
-    @NotNull
-    private Set<String> statementDelimiters = new LinkedHashSet<String>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+    private SQLSyntaxManager syntaxManager;
     @NotNull
     private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
-
     private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<SQLScriptPosition>();
-    private char escapeChar;
-    private boolean unassigned;
 
-    public SQLSyntaxManager()
+    public SQLRuleManager(SQLSyntaxManager syntaxManager)
     {
-        themeManager = PlatformUI.getWorkbench().getThemeManager();
+        this.syntaxManager = syntaxManager;
+        this.themeManager = PlatformUI.getWorkbench().getThemeManager();
     }
 
     public void dispose()
     {
-    }
-
-    /**
-     * Returns true if this syntax manager wasn't assigned to a some particular data source container/ SQL dialect
-     */
-    public boolean isUnassigned() {
-        return unassigned;
-    }
-
-    @NotNull
-    public SQLDialect getDialect() {
-        return sqlDialect;
-    }
-
-    public char getStructSeparator()
-    {
-        return structSeparator;
-    }
-
-    @NotNull
-    public String getCatalogSeparator()
-    {
-        return catalogSeparator;
-    }
-
-    @NotNull
-    public Set<String> getStatementDelimiters()
-    {
-        return statementDelimiters;
-    }
-
-    @Nullable
-    public String getQuoteSymbol()
-    {
-        return quoteSymbol;
     }
 
     @NotNull
@@ -136,37 +87,6 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             addedPositions = new HashSet<SQLScriptPosition>();
         }
         return posList;
-    }
-
-    public void setDataSource(@Nullable SQLDataSource dataSource)
-    {
-        this.unassigned = dataSource == null;
-        this.dataSource = dataSource;
-        this.statementDelimiters.clear();
-        if (this.dataSource == null) {
-            sqlDialect = new BasicSQLDialect();
-            quoteSymbol = null;
-            structSeparator = SQLConstants.STRUCT_SEPARATOR;
-            catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
-            escapeChar = '\\';
-            statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
-        } else {
-            sqlDialect = this.dataSource.getSQLDialect();
-            quoteSymbol = sqlDialect.getIdentifierQuoteString();
-            structSeparator = sqlDialect.getStructSeparator();
-            catalogSeparator = sqlDialect.getCatalogSeparator();
-            sqlDialect.getSearchStringEscape();
-            escapeChar = '\\';
-            if (!this.dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
-                statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
-            }
-
-            String extraDelimiters = this.dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER);
-            StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
-            while (st.hasMoreTokens()) {
-                statementDelimiters.add(st.nextToken());
-            }
-        }
     }
 
     public void refreshRules()
@@ -200,8 +120,9 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<IRule>();
 
+        SQLDialect dialect = syntaxManager.getDialect();
         // Add rule for single-line comments.
-        for (String lineComment : sqlDialect.getSingleLineComments()) {
+        for (String lineComment : dialect.getSingleLineComments()) {
             if (lineComment.startsWith("^")) {
                 rules.add(new LineCommentRule(lineComment, commentToken)); //$NON-NLS-1$
             } else {
@@ -210,6 +131,8 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         }
 
         // Add rules for delimited identifiers and string literals.
+        char escapeChar = syntaxManager.getEscapeChar();
+        String quoteSymbol = syntaxManager.getQuoteSymbol();
         if (quoteSymbol != null) {
             rules.add(new SingleLineRule(quoteSymbol, quoteSymbol, quotedToken, escapeChar));
         }
@@ -220,7 +143,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
             rules.add(new SingleLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
         }
 
-        Pair<String, String> multiLineComments = sqlDialect.getMultiLineComments();
+        Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         if (multiLineComments != null) {
             // Add rules for multi-line comments
             rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
@@ -232,7 +155,7 @@ public class SQLSyntaxManager extends RuleBasedScanner {
         // Add numeric rule
         rules.add(new NumberRule(numberToken));
 
-        for (final String delimiter : statementDelimiters) {
+        for (final String delimiter : syntaxManager.getStatementDelimiters()) {
             WordRule delimRule;
             if (Character.isLetterOrDigit(delimiter.charAt(0))) {
                 delimRule = new WordRule(new SQLWordDetector(), Token.UNDEFINED, true);
@@ -257,13 +180,13 @@ public class SQLSyntaxManager extends RuleBasedScanner {
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
-        for (String reservedWord : sqlDialect.getReservedWords()) {
+        for (String reservedWord : dialect.getReservedWords()) {
             wordRule.addWord(reservedWord, keywordToken);
         }
-        for (String function : sqlDialect.getFunctions()) {
+        for (String function : dialect.getFunctions()) {
             wordRule.addWord(function, typeToken);
         }
-        for (String type : sqlDialect.getTypes()) {
+        for (String type : dialect.getTypes()) {
             wordRule.addWord(type, typeToken);
         }
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);

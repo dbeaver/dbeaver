@@ -163,9 +163,7 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
     {
         IDocument document = new Document();
         SQLEditorSourceViewer viewer = new SQLEditorSourceViewer(parent, null, null, false, SWT.V_SCROLL | SWT.H_SCROLL);
-        SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(
-            sqlEditor,
-            sqlEditor.getSyntaxManager());
+        SQLEditorSourceViewerConfiguration configuration = new SQLEditorSourceViewerConfiguration(sqlEditor);
         viewer.configure(configuration);
         viewer.setEditable(false);
         viewer.setDocument(document);
