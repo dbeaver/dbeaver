@@ -291,6 +291,7 @@ public class DBeaverCore implements DBPApplication {
         log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
+    @Override
     public IWorkspace getWorkspace()
     {
         return workspace;
