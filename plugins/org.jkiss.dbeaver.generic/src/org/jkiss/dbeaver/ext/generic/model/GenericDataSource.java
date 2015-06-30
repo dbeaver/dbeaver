@@ -550,8 +550,10 @@ public class GenericDataSource extends JDBCDataSource
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container instanceof GenericCatalog) {
                 container = ((GenericCatalog)container).getSchema(monitor, schemaName);
-            } else {
+            } else if (!CommonUtils.isEmpty(schemas)) {
                 container = this.getSchema(schemaName);
+            } else {
+                container = structureContainer;
             }
             if (container == null) {
                 log.error("Schema '" + schemaName + "' not found");
