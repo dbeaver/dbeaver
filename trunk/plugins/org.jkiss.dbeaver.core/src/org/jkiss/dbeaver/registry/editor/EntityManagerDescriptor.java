@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.registry.editor;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
-import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**

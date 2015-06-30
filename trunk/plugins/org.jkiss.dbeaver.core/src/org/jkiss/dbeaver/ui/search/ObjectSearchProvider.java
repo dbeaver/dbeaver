@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.registry.AbstractDescriptor;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public class ObjectSearchProvider extends AbstractDescriptor

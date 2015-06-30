@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
 /**
  * DataSourceViewDescriptor
