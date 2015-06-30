@@ -58,7 +58,7 @@ public abstract class AbstractDescriptor {
         }
     }
 
-    protected class ObjectType {
+    public class ObjectType {
         private static final String ATTR_NAME = "name";
         private static final String ATTR_IF = "if";
 

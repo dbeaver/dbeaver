@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.runtime.IPluginService;
 
@@ -29,6 +30,8 @@ import java.util.List;
 
 public class PluginServiceRegistry
 {
+    static final Log log = Log.getLog(PluginServiceRegistry.class);
+
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.pluginService"; //$NON-NLS-1$
 
     private static PluginServiceRegistry instance = null;
@@ -62,7 +65,7 @@ public class PluginServiceRegistry
                 IPluginService pluginService = serviceDescriptor.type.createInstance(IPluginService.class);
                 services.add(pluginService);
             } catch (DBException e) {
-                ServiceDescriptor.log.error("Can't create plugin service", e);
+                log.error("Can't create plugin service", e);
             }
         }
     }
