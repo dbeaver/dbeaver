@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.qm.QMController;
 
 import java.util.Collection;
 
@@ -35,7 +36,14 @@ public interface DBPApplication
 
     IWorkspace getWorkspace();
 
+    @NotNull
     DBPProjectManager getProjectManager();
+    @NotNull
     Collection<IProject> getLiveProjects();
 
+    @NotNull
+    QMController getQueryManager();
+
+    @NotNull
+    DBPPreferenceStore getPreferenceStore();
 }

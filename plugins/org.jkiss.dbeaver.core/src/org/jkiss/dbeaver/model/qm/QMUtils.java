@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPApplication;
 
 import java.util.List;
 
@@ -27,38 +27,43 @@ import java.util.List;
  */
 public class QMUtils {
 
+    private static DBPApplication application;
     private static QMExecutionHandler defaultHandler; 
-
+    
+    public static void initApplication(DBPApplication application) {
+        QMUtils.application = application;
+    }
+    
     public static QMExecutionHandler getDefaultHandler()
     {
         if (defaultHandler == null) {
-            defaultHandler = DBeaverCore.getInstance().getQueryManager().getDefaultHandler();
+            defaultHandler = application.getQueryManager().getDefaultHandler();
         }
         return defaultHandler;
     }
 
     public static void registerHandler(QMExecutionHandler handler)
     {
-        DBeaverCore.getInstance().getQueryManager().registerHandler(handler);
+        application.getQueryManager().registerHandler(handler);
     }
 
     public static void unregisterHandler(QMExecutionHandler handler)
     {
-        DBeaverCore.getInstance().getQueryManager().unregisterHandler(handler);
+        application.getQueryManager().unregisterHandler(handler);
     }
 
     public static void registerMetaListener(QMMetaListener metaListener)
     {
-        DBeaverCore.getInstance().getQueryManager().registerMetaListener(metaListener);
+        application.getQueryManager().registerMetaListener(metaListener);
     }
 
     public static void unregisterMetaListener(QMMetaListener metaListener)
     {
-        DBeaverCore.getInstance().getQueryManager().unregisterMetaListener(metaListener);
+        application.getQueryManager().unregisterMetaListener(metaListener);
     }
 
     public static List<QMMetaEvent> getPastMetaEvents()
     {
-        return DBeaverCore.getInstance().getQueryManager().getPastMetaEvents();
+        return application.getQueryManager().getPastMetaEvents();
     }
 }
