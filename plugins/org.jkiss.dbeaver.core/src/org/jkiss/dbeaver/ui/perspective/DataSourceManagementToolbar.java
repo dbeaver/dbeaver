@@ -61,7 +61,7 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
@@ -208,7 +208,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     {
         final IAdaptable activeObject = getActiveObject();
         if (activeObject instanceof IEditorInput) {
-            final IFile file = ContentUtils.getFileFromEditorInput((IEditorInput) activeObject);
+            final IFile file = EditorUtils.getFileFromEditorInput((IEditorInput) activeObject);
             if (file != null) {
                 // If this is a content editor file may belong to temp project
                 if (file.getProject() != DBeaverCore.getInstance().getTempProject()) {

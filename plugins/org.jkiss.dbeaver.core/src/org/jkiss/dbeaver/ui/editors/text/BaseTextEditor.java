@@ -47,8 +47,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -292,7 +294,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
 
     public void loadFromExternalFile()
     {
-        final File loadFile = ContentUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*.*"});
+        final File loadFile = DialogUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*.*"});
         if (loadFile == null) {
             return;
         }
@@ -328,11 +330,11 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
     public void saveToExternalFile()
     {
         IEditorInput editorInput = getEditorInput();
-        IFile curFile = ContentUtils.getFileFromEditorInput(editorInput);
+        IFile curFile = EditorUtils.getFileFromEditorInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
 
         final Document document = getDocument();
-        final File saveFile = ContentUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[] { "*.sql", "*.txt", "*.*"}, fileName);
+        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*.*"}, fileName);
         if (document == null || saveFile == null) {
             return;
         }

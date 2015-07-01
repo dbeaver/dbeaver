@@ -23,12 +23,12 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -94,7 +94,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             curValue.getClass() :
             valueController.getValueHandler().getValueObjectType(valueController.getValueType());
         try {
-            return GeneralUtils.convertStringToNumber(text, hintType, formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER));
+            return DBUtils.convertStringToNumber(text, hintType, formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER));
         } catch (Exception e) {
             log.error(e);
             return null;

@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
-import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -80,10 +79,10 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -144,7 +143,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     public IProject getProject()
     {
-        IFile file = ContentUtils.getFileFromEditorInput(getEditorInput());
+        IFile file = EditorUtils.getFileFromEditorInput(getEditorInput());
         return file == null ? null : file.getProject();
     }
 
@@ -205,7 +204,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (input == null) {
             return false;
         }
-        IFile file = ContentUtils.getFileFromEditorInput(input);
+        IFile file = EditorUtils.getFileFromEditorInput(input);
         if (file == null || !file.exists()) {
             log.warn("File '" + input.getPath() + "' doesn't exists");
             return false;
@@ -519,7 +518,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (!(editorInput instanceof IPathEditorInput)) {
             throw new PartInitException("Invalid Input: Must be " + IPathEditorInput.class.getSimpleName());
         }
-        IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+        IFile file = EditorUtils.getFileFromEditorInput(editorInput);
         if (file == null || !file.exists()) {
             throw new PartInitException("File '" + ((IPathEditorInput) editorInput).getPath() + "' doesn't exists");
         }

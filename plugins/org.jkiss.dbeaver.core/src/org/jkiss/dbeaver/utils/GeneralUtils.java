@@ -18,28 +18,15 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,7 +51,6 @@ public class GeneralUtils {
       '8', '9', 'a', 'b',
       'c', 'd', 'e', 'f'
     };
-    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
 
     static {
         // Compose byte to hex map
@@ -115,21 +101,6 @@ public class GeneralUtils {
         }
     }
 
-    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
-    {
-        DBPPreferenceStore preferenceStore;
-        if (dataSource == null) {
-            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
-        } else {
-            preferenceStore = dataSource.getContainer().getPreferenceStore();
-        }
-        String fileEncoding = preferenceStore.getString(DBeaverPreferences.CONTENT_HEX_ENCODING);
-        if (CommonUtils.isEmpty(fileEncoding)) {
-            fileEncoding = getDefaultFileEncoding();
-        }
-        return fileEncoding;
-    }
-
     public static String convertToString(byte[] bytes, int offset, int length)
     {
         char[] chars = new char[length];
@@ -162,53 +133,6 @@ public class GeneralUtils {
             bytes[i] = (byte)c;
         }
         return bytes;
-    }
-
-    @Nullable
-    public static Number convertStringToNumber(String text, Class<? extends Number> hintType, DBDDataFormatter formatter)
-    {
-        if (text == null || text.length() == 0) {
-            return null;
-        }
-        try {
-            if (hintType == Long.class) {
-                try {
-                    return Long.valueOf(text);
-                } catch (NumberFormatException e) {
-                    return new BigInteger(text);
-                }
-            } else if (hintType == Integer.class) {
-                return Integer.valueOf(text);
-            } else if (hintType == Short.class) {
-                return Short.valueOf(text);
-            } else if (hintType == Byte.class) {
-                return Byte.valueOf(text);
-            } else if (hintType == Float.class) {
-                return Float.valueOf(text);
-            } else if (hintType == Double.class) {
-                return toDouble(text);
-            } else if (hintType == BigInteger.class) {
-                return new BigInteger(text);
-            } else {
-                return new BigDecimal(text);
-            }
-        } catch (NumberFormatException e) {
-            log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
-            try {
-                return (Number)formatter.parseValue(text, hintType);
-            } catch (ParseException e1) {
-                log.debug("Can't parse numeric value [" + text + "] using formatter", e);
-                return null;
-            }
-        }
-    }
-
-    private static Number toDouble(String text)
-    {
-        if (text.equals(BAD_DOUBLE_VALUE)) {
-            return Double.MIN_VALUE;
-        }
-        return Double.valueOf(text);
     }
 
     public static Object makeDisplayString(Object object)
@@ -299,68 +223,4 @@ public class GeneralUtils {
         }
     }
 
-    public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName)
-        throws DBException
-    {
-        // Read property using reflection
-        if (object == null) {
-            return null;
-        }
-        try {
-            Method getter = findPropertyReadMethod(object.getClass(), propertyName);
-            if (getter == null) {
-                log.warn("Can't find property '" + propertyName + "' read method in '" + object.getClass().getName() + "'");
-                return null;
-            }
-            Class<?>[] paramTypes = getter.getParameterTypes();
-            if (paramTypes.length == 0) {
-                // No params - just read it
-                return getter.invoke(object);
-            } else if (paramTypes.length == 1 && paramTypes[0] == DBRProgressMonitor.class) {
-                // Read with progress monitor
-                return getter.invoke(object, monitor);
-            } else {
-                log.warn("Can't read property '" + propertyName + "' - bad method signature: " + getter.toString());
-                return null;
-            }
-        }
-        catch (IllegalAccessException ex) {
-            log.warn("Error accessing items " + propertyName, ex);
-            return null;
-        }
-        catch (InvocationTargetException ex) {
-            if (ex.getTargetException() instanceof DBException) {
-                throw (DBException) ex.getTargetException();
-            }
-            throw new DBException("Can't read " + propertyName, ex.getTargetException());
-        }
-    }
-
-    public static Method findPropertyReadMethod(Class<?> clazz, String propertyName)
-    {
-        String methodName = BeanUtils.propertyNameToMethodName(propertyName);
-        return findPropertyGetter(clazz, "get" + methodName, "is" + methodName);
-    }
-
-    private static Method findPropertyGetter(Class<?> clazz, String getName, String isName)
-    {
-        Method[] methods = clazz.getDeclaredMethods();
-
-        for (Method method : methods) {
-            if (
-                (!Modifier.isPublic(method.getModifiers())) ||
-                (!Modifier.isPublic(method.getDeclaringClass().getModifiers())) ||
-                (method.getReturnType().equals(void.class)))
-            {
-                // skip
-            } else if (method.getName().equals(getName) || (method.getName().equals(isName) && method.getReturnType().equals(boolean.class))) {
-                // If it matches the get name, it's the right method
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                if (parameterTypes.length == 0 || (parameterTypes.length == 1 && parameterTypes[0] == DBRProgressMonitor.class)) {
-                    return method;
-                }
-            }
-        }
-        return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
-    }
 }

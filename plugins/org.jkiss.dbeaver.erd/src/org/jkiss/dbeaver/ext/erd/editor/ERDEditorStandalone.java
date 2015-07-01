@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.ByteArrayInputStream;
@@ -180,7 +181,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
 
     private IFile getEditorFile()
     {
-        return ContentUtils.getFileFromEditorInput(getEditorInput());
+        return EditorUtils.getFileFromEditorInput(getEditorInput());
     }
 
     @Override

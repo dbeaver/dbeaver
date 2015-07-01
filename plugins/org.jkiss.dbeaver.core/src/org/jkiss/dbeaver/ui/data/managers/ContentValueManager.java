@@ -17,19 +17,34 @@
  */
 package org.jkiss.dbeaver.ui.data.managers;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
+import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
 import org.jkiss.dbeaver.utils.ContentUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * JDBC Content value handler.
@@ -43,11 +58,61 @@ public class ContentValueManager extends BaseValueManager {
 
     public static final String PROP_CATEGORY_CONTENT = "LOB";
 
+    public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
+        throws DBCException
+    {
+        if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
+            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(DBIcon.SAVE_AS)) {
+                @Override
+                public void run() {
+                    DialogUtils.saveToFile(controller);
+                }
+            });
+        }
+        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(DBIcon.LOAD)) {
+            @Override
+            public void run() {
+                DialogUtils.loadFromFile(controller);
+            }
+        });
+    }
+
+    public static IValueEditor openContentEditor(@NotNull IValueController controller)
+    {
+        Object value = controller.getValue();
+        IValueController.EditType binaryEditType = IValueController.EditType.valueOf(
+            controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
+        if (binaryEditType != IValueController.EditType.EDITOR && value instanceof DBDContentCached) {
+            // Use string editor for cached content
+            return new TextViewDialog(controller);
+        } else if (value instanceof DBDContent) {
+            DBDContent content = (DBDContent)value;
+            boolean isText = ContentUtils.isTextContent(content);
+            List<ContentEditorPart> parts = new ArrayList<ContentEditorPart>();
+            if (isText) {
+                parts.add(new ContentTextEditorPart());
+                if (ContentUtils.isXML(content)) {
+                    parts.add(new ContentXMLEditorPart());
+                }
+            } else {
+                parts.add(new ContentBinaryEditorPart());
+                parts.add(new ContentTextEditorPart());
+                parts.add(new ContentImageEditorPart());
+            }
+            return ContentEditor.openEditor(
+                controller,
+                parts.toArray(new ContentEditorPart[parts.size()]));
+        } else {
+            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
+            return null;
+        }
+    }
+
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
         throws DBCException
     {
-        ContentUtils.contributeContentActions(manager, controller);
+        contributeContentActions(manager, controller);
     }
 
     @Override
@@ -90,7 +155,7 @@ public class ContentValueManager extends BaseValueManager {
                     return null;
                 }
             case EDITOR:
-                return ContentUtils.openContentEditor(controller);
+                return openContentEditor(controller);
             case PANEL:
                 return new ContentPanelEditor(controller);
             default:
