@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -63,7 +62,7 @@ public class DBNResource extends DBNNode
                 children = null;
             }
             if (reflect) {
-                DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
+                getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
             }
         }
         super.dispose(reflect);
@@ -147,7 +146,6 @@ public class DBNResource extends DBNNode
 
     protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
-        //final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         List<DBNNode> result = new ArrayList<DBNNode>();
         try {
             IResource[] members = ((IContainer) resource).members();
@@ -192,7 +190,7 @@ public class DBNResource extends DBNNode
                 // Sub folder
                 return handler.makeNavigatorNode(this, resource);
             }
-            DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+            DBPResourceHandler resourceHandler = getModel().getApplication().getProjectManager().getResourceHandler(resource);
             if (resourceHandler == null) {
                 log.debug("Skip resource '" + resource.getName() + "'");
                 return null;
@@ -349,9 +347,10 @@ public class DBNResource extends DBNNode
 
     void handleResourceChange(IResourceDelta delta)
     {
+        DBNModel model = getModel();
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator
-            DBNModel.getInstance().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.UPDATE, this));
+            model.fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.UPDATE, this));
         }
         if (children == null) {
             // Child nodes are not yet read so nothing to change here - just return
@@ -366,7 +365,7 @@ public class DBNResource extends DBNNode
                     if (newChild != null) {
                         children.add(newChild);
                         sortChildren(children);
-                        DBNModel.getInstance().fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
+                        model.fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
 
                         if (childDelta.getKind() == IResourceDelta.CHANGED) {
                             // Notify just created resource

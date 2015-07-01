@@ -36,7 +36,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 {
     static final Log log = Log.getLog(DBNNode.class);
 
-    private DBNNode parentNode;
+    private final DBNNode parentNode;
 
     protected DBNNode()
     {
@@ -55,17 +55,15 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 
     void dispose(boolean reflect)
     {
-        this.parentNode = null;
+    }
+
+    public DBNModel getModel() {
+        return parentNode == null ? null : parentNode.getModel();
     }
 
     public DBNNode getParentNode()
     {
         return parentNode;
-    }
-
-    protected void setParentNode(DBNNode parentNode)
-    {
-        this.parentNode = parentNode;
     }
 
     public boolean isLocked()

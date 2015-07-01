@@ -52,6 +52,20 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         super(parentNode);
     }
 
+    protected void registerNode() {
+        DBNModel model = getModel();
+        if (model != null) {
+            model.addNode(this);
+        }
+    }
+
+    protected void unregisterNode(boolean reflect) {
+        DBNModel model = getModel();
+        if (model != null) {
+            model.removeNode(this, reflect);
+        }
+    }
+
     @Override
     void dispose(boolean reflect)
     {
@@ -178,7 +192,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             synchronized (this) {
                 childNodes.add(newChild);
             }
-            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
         } else {
             log.error("Cannot add child item to " + getNodeName() + ". Conditions doesn't met"); //$NON-NLS-1$ //$NON-NLS-2$
         }
@@ -262,7 +276,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return;
         }
         this.locked = true;
-        DBNModel model = DBNModel.getInstance();
+        DBNModel model = getModel();
         try {
             model.fireNodeUpdate(source, this, DBNEvent.NodeChange.LOCK);
 
@@ -361,7 +375,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         monitor.done();
         
         if (filtered) {
-            DBNModel.getInstance().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
+            getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         }
     }
 
@@ -449,7 +463,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                             // Refresh children recursive
                             oldChild.reloadChildren(monitor);
                         }
-                        DBNModel.getInstance().fireNodeUpdate(this, oldChild, DBNEvent.NodeChange.REFRESH);
+                        getModel().fireNodeUpdate(this, oldChild, DBNEvent.NodeChange.REFRESH);
 
                         toList.add(oldChild);
                         added = true;

@@ -19,23 +19,23 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
-
-import java.util.Collection;
+import org.eclipse.core.resources.IResource;
+import org.jkiss.dbeaver.model.project.DBPProjectListener;
+import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 
 /**
- * DBPApplication
+ * ProjectManager
  */
-public interface DBPApplication
+public interface DBPProjectManager
 {
-    @NotNull
-    DBNModel getNavigatorModel();
+    DBPResourceHandler getResourceHandler(IResource resource);
 
-    IWorkspace getWorkspace();
+    IProject getActiveProject();
+    void setActiveProject(IProject project);
+    void addProject(IProject project);
+    void removeProject(IProject project);
+    void addProjectListener(DBPProjectListener listener);
+    void removeProjectListener(DBPProjectListener listener);
 
-    DBPProjectManager getProjectManager();
-    Collection<IProject> getLiveProjects();
-
+    DBPDataSourceRegistry getDataSourceRegistry(IProject project);
 }

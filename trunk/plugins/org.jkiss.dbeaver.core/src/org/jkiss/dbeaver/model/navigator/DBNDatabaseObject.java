@@ -37,13 +37,13 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     {
         super(parent);
         this.meta = meta;
-        DBNModel.getInstance().addNode(this);
+        registerNode();
     }
 
     @Override
     protected void dispose(boolean reflect)
     {
-        DBNModel.getInstance().removeNode(this, reflect);
+        unregisterNode(reflect);
         super.dispose(reflect);
     }
 

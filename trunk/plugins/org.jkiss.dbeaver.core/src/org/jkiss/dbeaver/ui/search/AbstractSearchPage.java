@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.ui.search;
 
 import org.eclipse.jface.dialogs.DialogPage;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -77,12 +77,12 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
                         while (st.hasMoreTokens()) {
                             String nodePath = st.nextToken();
                             try {
-                                DBNDataSource dsNode = DBNModel.getInstance().getDataSourceByPath(nodePath);
+                                DBNDataSource dsNode = DBeaverCore.getInstance().getNavigatorModel().getDataSourceByPath(nodePath);
                                 if (brokenDataSources.contains(dsNode)) {
                                     continue;
                                 }
 
-                                DBNNode node = DBNModel.getInstance().getNodeByPath(monitor, nodePath);
+                                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
                                 if (node != null) {
                                     result.add(node);
                                 } else {

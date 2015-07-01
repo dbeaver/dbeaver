@@ -18,18 +18,17 @@
 
 package org.jkiss.dbeaver.tools.scripts;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
 
 /**
  * Utils
@@ -42,7 +41,7 @@ class ScriptsExportUtils {
     {
         final IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         if (activeProject == null) {
-			return DBNModel.getInstance().getRoot();
+			return DBeaverCore.getInstance().getNavigatorModel().getRoot();
 		}
         final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(activeProject);
         DBNNode scriptsNode = projectNode;
