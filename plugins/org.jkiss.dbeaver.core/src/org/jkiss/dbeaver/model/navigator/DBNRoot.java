@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,12 +30,14 @@ import java.util.*;
  */
 public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 {
+    private final DBNModel model;
     private List<DBNProject> projects = new ArrayList<DBNProject>();
 
-    public DBNRoot()
+    public DBNRoot(DBNModel model)
     {
         super();
-        DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
+        this.model = model;
+        model.getApplication().getProjectManager().addProjectListener(this);
     }
 
     @Override
@@ -46,7 +47,12 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             project.dispose(reflect);
         }
         projects.clear();
-        DBeaverCore.getInstance().getProjectRegistry().removeProjectListener(this);
+        model.getApplication().getProjectManager().removeProjectListener(this);
+    }
+
+    @Override
+    public DBNModel getModel() {
+        return model;
     }
 
     @Override
@@ -130,7 +136,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         DBNProject projectNode = new DBNProject(
             this,
             project,
-            DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(project));
+            model.getApplication().getProjectManager().getResourceHandler(project));
         projects.add(projectNode);
         Collections.sort(projects, new Comparator<DBNProject>() {
             @Override
@@ -139,7 +145,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
                 return o1.getNodeName().compareTo(o2.getNodeName());
             }
         });
-        DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
+        model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, projectNode));
 
         return projectNode;
     }
@@ -150,7 +156,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             DBNProject projectNode = iter.next();
             if (projectNode.getProject() == project) {
                 iter.remove();
-                DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
+                model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
                 projectNode.dispose(true);
                 break;
             }
@@ -163,10 +169,10 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         DBNProject projectNode = getProject(newValue);
         DBNProject oldProjectNode = getProject(oldValue);
         if (projectNode != null) {
-            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, projectNode));
+            model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, projectNode));
         }
         if (oldProjectNode != null) {
-            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, oldProjectNode));
+            model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, oldProjectNode));
         }
     }
 }

@@ -23,15 +23,14 @@ import org.eclipse.core.resources.IResourceChangeListener;
 import org.eclipse.core.resources.IResourceDelta;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -51,18 +50,18 @@ import java.util.Map;
 public class DBNModel implements IResourceChangeListener {
     static final Log log = Log.getLog(DBNModel.class);
 
+    private final DBPApplication application;
     private DBNRoot root;
     private final List<INavigatorListener> listeners = new ArrayList<INavigatorListener>();
     private transient INavigatorListener[] listenersCopy = null;
     private final Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
 
-    public DBNModel()
-    {
+    public DBNModel(DBPApplication application) {
+        this.application = application;
     }
 
-    public static DBNModel getInstance()
-    {
-        return DBeaverCore.getInstance().getNavigatorModel();
+    public DBPApplication getApplication() {
+        return application;
     }
 
     public void initialize()
@@ -70,25 +69,19 @@ public class DBNModel implements IResourceChangeListener {
         if (this.root != null) {
             throw new IllegalStateException("Can't initialize navigator model more than once");
         }
-        this.root = new DBNRoot();
+        this.root = new DBNRoot(this);
 
         // Add all existing projects to root node
-        final DBeaverCore core = DBeaverCore.getInstance();
-        for (IProject project : core.getLiveProjects()) {
+        for (IProject project : application.getLiveProjects()) {
             root.addProject(project, false);
         }
-/*
-        for (DataSourceDescriptor dataSource : registry.getDataSources()) {
-            root.addProject(dataSource);
-        }
-*/
 
-        core.getWorkspace().addResourceChangeListener(this);
+        application.getWorkspace().addResourceChangeListener(this);
     }
 
     public void dispose()
     {
-        DBeaverCore.getInstance().getWorkspace().removeResourceChangeListener(this);
+        application.getWorkspace().removeResourceChangeListener(this);
         this.root.dispose(false);
         synchronized (nodeMap) {
             this.nodeMap.clear();
@@ -193,7 +186,7 @@ public class DBNModel implements IResourceChangeListener {
     @Nullable
     public DBNDataSource getDataSourceByPath(String path) throws DBException
     {
-        DBNProject project = getRoot().getProject(getProjectRegistry().getActiveProject());
+        DBNProject project = getRoot().getProject(application.getProjectManager().getActiveProject());
         if (project == null) {
             log.debug("Project node not found");
             return null;
@@ -204,7 +197,7 @@ public class DBNModel implements IResourceChangeListener {
     @Nullable
     public DBNNode getNodeByPath(DBRProgressMonitor monitor, String path) throws DBException
     {
-        DBNProject project = getRoot().getProject(getProjectRegistry().getActiveProject());
+        DBNProject project = getRoot().getProject(application.getProjectManager().getActiveProject());
         if (project == null) {
             log.debug("Project node not found");
             return null;
@@ -444,8 +437,8 @@ public class DBNModel implements IResourceChangeListener {
                             // New projectNode
                             getRoot().addProject(project, true);
 
-                            if (getProjectRegistry().getActiveProject() == null) {
-                                getProjectRegistry().setActiveProject(project);
+                            if (application.getProjectManager().getActiveProject() == null) {
+                                application.getProjectManager().setActiveProject(project);
                             }
                         } else {
                             // Project not found - report an error
@@ -455,8 +448,8 @@ public class DBNModel implements IResourceChangeListener {
                         if (childDelta.getKind() == IResourceDelta.REMOVED) {
                             // Project deleted
                             getRoot().removeProject(project);
-                            if (project == getProjectRegistry().getActiveProject()) {
-                                getProjectRegistry().setActiveProject(null);
+                            if (project == application.getProjectManager().getActiveProject()) {
+                                application.getProjectManager().setActiveProject(null);
                             }
                         } else {
                             if (childDelta.getFlags() == IResourceDelta.OPEN) {
@@ -501,10 +494,6 @@ public class DBNModel implements IResourceChangeListener {
                 break;
             }
         }
-    }
-
-    private static ProjectRegistry getProjectRegistry() {
-        return DBeaverCore.getInstance().getProjectRegistry();
     }
 
 }

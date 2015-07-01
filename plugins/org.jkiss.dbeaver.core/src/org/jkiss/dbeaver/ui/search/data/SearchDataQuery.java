@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -71,7 +72,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
             }
 
             // Search
-            DBNModel dbnModel = DBNModel.getInstance();
+            DBNModel dbnModel = DBeaverCore.getInstance().getNavigatorModel();
 
             monitor.beginTask(
                 "Search \"" + searchString + "\" in " + params.sources.size() + " table(s) / " + dataSources.size() + " database(s)",

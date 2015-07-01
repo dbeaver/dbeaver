@@ -66,7 +66,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
-        this.model = DBNModel.getInstance();
+        this.model = DBeaverCore.getInstance().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(new DisposeListener() {
             @Override

@@ -49,7 +49,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getNavigatorRoot();
-        DBNModel.getInstance().addNode(this, false);
+        registerNode();
     }
 
     @Override
@@ -68,7 +68,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     protected void dispose(boolean reflect)
     {
-        DBNModel.getInstance().removeNode(this, reflect);
+        unregisterNode(reflect);
 
         super.dispose(reflect);
     }
