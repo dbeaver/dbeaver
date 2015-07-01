@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.net;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDriver;
-import org.jkiss.dbeaver.registry.NetworkHandlerDescriptor;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,7 +29,7 @@ import java.util.Map;
  */
 public class DBWHandlerConfiguration {
 
-    private final NetworkHandlerDescriptor descriptor;
+    private final DBWHandlerDescriptor descriptor;
     private final DBPDriver driver;
     private boolean enabled;
     private String userName;
@@ -38,7 +37,7 @@ public class DBWHandlerConfiguration {
     private boolean savePassword;
     private final Map<String, String> properties;
 
-    public DBWHandlerConfiguration(NetworkHandlerDescriptor descriptor, DBPDriver driver)
+    public DBWHandlerConfiguration(DBWHandlerDescriptor descriptor, DBPDriver driver)
     {
         this.descriptor = descriptor;
         this.driver = driver;
