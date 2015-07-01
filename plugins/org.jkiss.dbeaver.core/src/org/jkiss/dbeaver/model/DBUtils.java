@@ -32,9 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -464,10 +462,11 @@ public final class DBUtils {
     public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
-        DataTypeProviderDescriptor typeProvider = DataSourceProviderRegistry.getInstance().getDataTypeProvider(
+
+        DBDValueHandlerProvider typeProvider = DataTypeProviderRegistry.getInstance().getDataTypeProvider(
             dataSource, column);
         if (typeProvider != null) {
-            typeHandler = typeProvider.getInstance().getHandler(preferences, column);
+            typeHandler = typeProvider.getHandler(preferences, column);
         }
         if (typeHandler == null) {
             if (preferences == null) {
