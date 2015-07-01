@@ -23,13 +23,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,7 @@ public class DBNProject extends DBNResource implements IAdaptable
     public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
         super(parentNode, project, handler);
-        DBeaverCore.getInstance().getProjectRegistry().addProject(project);
+        getModel().getApplication().getProjectManager().addProject(project);
     }
 
     @Override
@@ -50,7 +49,7 @@ public class DBNProject extends DBNResource implements IAdaptable
     {
         IProject project = getProject();
         super.dispose(reflect);
-        DBeaverCore.getInstance().getProjectRegistry().removeProject(project);
+        getModel().getApplication().getProjectManager().removeProject(project);
     }
 
     public IProject getProject()
@@ -109,7 +108,7 @@ public class DBNProject extends DBNResource implements IAdaptable
     public boolean supportsRename()
     {
         // Do not rename active projects
-        return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != getProject();
+        return getModel().getApplication().getProjectManager().getActiveProject() != getProject();
     }
 
     @Override
@@ -134,7 +133,7 @@ public class DBNProject extends DBNResource implements IAdaptable
                 throw new DBException("Can't open project '" + getProject().getName() + "'", e);
             }
         }
-        DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(getProject());
+        DBPDataSourceRegistry dataSourceRegistry = getModel().getApplication().getProjectManager().getDataSourceRegistry(getProject());
         List<DBNNode> children = super.readChildNodes(monitor);
         if (dataSourceRegistry != null) {
             children.add(0, new DBNProjectDatabases(this, dataSourceRegistry));

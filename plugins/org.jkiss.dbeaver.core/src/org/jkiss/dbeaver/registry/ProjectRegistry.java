@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPProjectManager;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
@@ -34,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class ProjectRegistry {
+public class ProjectRegistry implements DBPProjectManager {
     static final Log log = Log.getLog(ProjectRegistry.class);
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
@@ -153,6 +154,7 @@ public class ProjectRegistry {
         }
     }
 
+    @Override
     public void addProjectListener(DBPProjectListener listener)
     {
         synchronized (projectListeners) {
@@ -160,6 +162,7 @@ public class ProjectRegistry {
         }
     }
 
+    @Override
     public void removeProjectListener(DBPProjectListener listener)
     {
         synchronized (projectListeners) {
@@ -167,6 +170,7 @@ public class ProjectRegistry {
         }
     }
 
+    @Override
     public DBPResourceHandler getResourceHandler(IResource resource)
     {
         if (resource == null || resource.isHidden() || resource.isPhantom()) {
@@ -255,6 +259,7 @@ public class ProjectRegistry {
         return dataSourceRegistry;
     }
 
+    @Override
     public IProject getActiveProject()
     {
         return activeProject;
@@ -319,6 +324,7 @@ public class ProjectRegistry {
      * Otherwise set of workspace synchronize problems occur
      * @param project project
      */
+    @Override
     public void addProject(IProject project)
     {
         if (busyProjects.contains(project)) {
@@ -332,6 +338,7 @@ public class ProjectRegistry {
         projectDatabases.put(project, new DataSourceRegistry(project));
     }
 
+    @Override
     public void removeProject(IProject project)
     {
         // Remove project from registry

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -160,7 +159,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     public void refreshChildren()
     {
         this.children = null;
-        DBeaverCore.getInstance().getNavigatorModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.STRUCT_REFRESH);
+        getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.STRUCT_REFRESH);
     }
 
     @Override
@@ -202,7 +201,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
         dataSources.add(newNode);
         children = null;
         if (reflect) {
-            DBNModel.getInstance().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, newNode));
+            getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, newNode));
         }
         return newNode;
     }
@@ -227,12 +226,13 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
+        DBNModel model = getModel();
         switch (event.getAction()) {
             case OBJECT_ADD:
                 if (event.getObject() instanceof DBSDataSourceContainer) {
                     addDataSource((DBSDataSourceContainer) event.getObject(), true);
-                } else if (DBNModel.getInstance().getNodeByObject(event.getObject()) == null) {
-                    final DBNDatabaseNode parentNode = DBNModel.getInstance().getParentNode(event.getObject());
+                } else if (model.getNodeByObject(event.getObject()) == null) {
+                    final DBNDatabaseNode parentNode = model.getParentNode(event.getObject());
 
                     if (parentNode != null) {
                         if (parentNode.getChildNodes() == null && parentNode.allowsChildren()) {
@@ -265,7 +265,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 if (event.getObject() instanceof DBSDataSourceContainer) {
                     removeDataSource((DBSDataSourceContainer) event.getObject());
                 } else {
-                    final DBNDatabaseNode node = DBNModel.getInstance().getNodeByObject(event.getObject());
+                    final DBNDatabaseNode node = model.getNodeByObject(event.getObject());
                     if (node != null && node.getParentNode() instanceof DBNDatabaseNode) {
                         ((DBNDatabaseNode)node.getParentNode()).removeChildItem(event.getObject());
                     }
@@ -274,7 +274,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             case OBJECT_UPDATE:
             case OBJECT_SELECT:
             {
-                DBNNode dbmNode = DBNModel.getInstance().getNodeByObject(event.getObject());
+                DBNNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
                     Boolean enabled = null;
@@ -292,7 +292,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                             nodeChange = DBNEvent.NodeChange.REFRESH;
                         }
                     }
-                    DBNModel.getInstance().fireNodeUpdate(
+                    model.fireNodeUpdate(
                         this,
                         dbmNode,
                         nodeChange);

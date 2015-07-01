@@ -21,10 +21,10 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -111,7 +111,7 @@ public class EntityHyperlink implements IHyperlink
             monitor.beginTask("Resolve object " + reference.getName(), 1);
             try {
                 DBSObject object = reference.resolveObject(monitor);
-                node = DBNModel.getInstance().getNodeByObject(monitor, object, true);
+                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, true);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             } finally {

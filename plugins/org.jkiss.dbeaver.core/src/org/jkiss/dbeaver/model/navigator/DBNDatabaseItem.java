@@ -34,7 +34,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
         super(parent);
         this.meta = meta;
         this.object = object;
-        DBNModel.getInstance().addNode(this, reflect);
+        registerNode();
     }
 
     @Override
@@ -46,9 +46,7 @@ public class DBNDatabaseItem extends DBNDatabaseNode
     @Override
     protected void dispose(boolean reflect)
     {
-        // Notify model
-        // Reflect changes only if underlying object is not persisted
-        DBNModel.getInstance().removeNode(this, reflect);
+        unregisterNode(reflect);
         this.object = null;
         super.dispose(reflect);
     }
@@ -61,9 +59,9 @@ public class DBNDatabaseItem extends DBNDatabaseNode
 
     @Override
     protected void reloadObject(DBRProgressMonitor monitor, DBSObject object) {
-        DBNModel.getInstance().removeNode(this, false);
+        unregisterNode(false);
         this.object = object;
-        DBNModel.getInstance().addNode(this, false);
+        registerNode();
     }
 
     @Override

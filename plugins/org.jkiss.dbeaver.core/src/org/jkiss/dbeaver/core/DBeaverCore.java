@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.DBPProjectManager;
 import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
@@ -175,7 +176,7 @@ public class DBeaverCore implements DBPApplication {
         initializeProjects();
 
         // Navigator model
-        this.navigatorModel = new DBNModel();
+        this.navigatorModel = new DBNModel(this);
         this.navigatorModel.initialize();
 
         // Activate plugin services
@@ -295,6 +296,11 @@ public class DBeaverCore implements DBPApplication {
     public IWorkspace getWorkspace()
     {
         return workspace;
+    }
+
+    @Override
+    public DBPProjectManager getProjectManager() {
+        return getProjectRegistry();
     }
 
     /**
