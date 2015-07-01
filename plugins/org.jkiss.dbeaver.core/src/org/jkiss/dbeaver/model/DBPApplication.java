@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
@@ -46,6 +47,7 @@ public interface DBPApplication
     QMController getQueryManager();
 
     //DBEObjectManager<?> getObjectManager(Class<?> aClass);
+    DBDValueHandlerRegistry getValueHandlerRegistry();
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();

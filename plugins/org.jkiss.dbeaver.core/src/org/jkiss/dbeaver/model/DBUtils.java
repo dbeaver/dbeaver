@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -463,7 +462,7 @@ public final class DBUtils {
     {
         DBDValueHandler typeHandler = null;
 
-        DBDValueHandlerProvider typeProvider = DataTypeProviderRegistry.getInstance().getDataTypeProvider(
+        DBDValueHandlerProvider typeProvider = dataSource.getContainer().getApplication().getValueHandlerRegistry().getDataTypeProvider(
             dataSource, column);
         if (typeProvider != null) {
             typeHandler = typeProvider.getHandler(preferences, column);

@@ -23,8 +23,8 @@ import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -71,7 +71,7 @@ public abstract class AbstractDescriptor {
             this.implName = implName;
         }
 
-        ObjectType(IConfigurationElement cfg)
+        public ObjectType(IConfigurationElement cfg)
         {
             this.implName = cfg.getAttribute(ATTR_NAME);
             String condition = cfg.getAttribute(ATTR_IF);
@@ -179,9 +179,7 @@ public abstract class AbstractDescriptor {
                 }
             };
         }
-
     }
-
 
     private String pluginId;
 
@@ -220,34 +218,26 @@ public abstract class AbstractDescriptor {
         }
     }
 
-    public Class<?> getObjectClass(String className)
+    public Class<?> getObjectClass(@NotNull String className)
     {
         return getObjectClass(className, null);
     }
 
-    public <T> Class<T> getObjectClass(String className, Class<T> type)
+    public <T> Class<T> getObjectClass(@NotNull String className, Class<T> type)
     {
         return getObjectClass(getContributorBundle(), className, type);
     }
 
-    public static <T> Class<T> getObjectClass(Bundle fromBundle, String className, Class<T> type)
+    public static <T> Class<T> getObjectClass(@NotNull Bundle fromBundle, @NotNull String className, Class<T> type)
     {
         Class<?> objectClass = null;
         try {
-            objectClass = DBeaverActivator.getInstance().getBundle().loadClass(className);
+            objectClass = fromBundle.loadClass(className);
         } catch (Throwable ex) {
-            // do nothing
-            //log.warn("Can't load object class '" + className + "'", ex);
+            log.error("Can't determine object class '" + className + "'", ex);
+            return null;
         }
 
-        if (objectClass == null) {
-            try {
-                objectClass = fromBundle.loadClass(className);
-            } catch (Throwable ex) {
-                log.error("Can't determine object class '" + className + "'", ex);
-                return null;
-            }
-        }
         if (type != null && !type.isAssignableFrom(objectClass)) {
             log.error("Object class '" + className + "' doesn't match requested type '" + type.getName() + "'");
             return null;
