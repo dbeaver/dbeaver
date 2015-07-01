@@ -17,10 +17,9 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -82,7 +81,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         if (storage == null && clob != null) {
             long contentLength = getContentLength();
-            if (contentLength < DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+            if (contentLength < dataSource.getContainer().getApplication().getPreferenceStore().getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
                 }

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.net;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -28,7 +29,7 @@ import java.io.IOException;
  */
 public interface DBWTunnel extends DBWNetworkHandler {
 
-    DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPApplication application, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
     void closeTunnel(DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo)

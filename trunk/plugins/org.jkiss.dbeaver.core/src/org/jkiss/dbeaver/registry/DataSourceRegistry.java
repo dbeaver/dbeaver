@@ -66,13 +66,15 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public static final String CONFIG_FILE_NAME = ".dbeaver-data-sources.xml"; //$NON-NLS-1$
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
+    private final DBPApplication application;
     private final IProject project;
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
 
-    public DataSourceRegistry(IProject project)
+    public DataSourceRegistry(DBPApplication application, IProject project)
     {
+        this.application = application;
         this.project = project;
         IFile configFile = project.getFile(CONFIG_FILE_NAME);
         if (!configFile.exists()) {
@@ -131,6 +133,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!RuntimeUtils.runTask(disconnectTask, waitTime)) {
             log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
         }
+    }
+
+    public DBPApplication getApplication() {
+        return application;
     }
 
     ////////////////////////////////////////////////////
