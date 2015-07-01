@@ -55,7 +55,6 @@ import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.*;
@@ -764,7 +763,7 @@ public class UIUtils {
         }
 
         showErrorDialog(shell, title, error == null ? null : message, error == null ? new Status(IStatus.ERROR,
-            DBeaverConstants.PLUGIN_ID, message) : GeneralUtils.makeExceptionStatus(error));
+            DBeaverCore.PLUGIN_ID, message) : GeneralUtils.makeExceptionStatus(error));
     }
 
     public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message)
@@ -855,7 +854,7 @@ public class UIUtils {
 
     public static void setHelp(Control control, String helpContextID)
     {
-        setHelp(control, DBeaverConstants.PLUGIN_ID, helpContextID);
+        setHelp(control, DBeaverCore.PLUGIN_ID, helpContextID);
     }
 
     @NotNull

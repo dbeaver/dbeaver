@@ -34,7 +34,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -468,7 +468,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         @Override
         public void showMessage(String message, boolean error)
         {
-            updateStatus(new Status(error ? Status.ERROR : Status.INFO, DBeaverConstants.PLUGIN_ID, message));
+            updateStatus(new Status(error ? Status.ERROR : Status.INFO, DBeaverCore.PLUGIN_ID, message));
         }
     }
 

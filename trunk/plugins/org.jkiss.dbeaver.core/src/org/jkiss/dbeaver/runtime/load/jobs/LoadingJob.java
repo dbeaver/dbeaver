@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.runtime.load.jobs;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -80,7 +80,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             error = e.getTargetException();
         }
         catch (InterruptedException e) {
-            return new Status(Status.CANCEL, DBeaverConstants.PLUGIN_ID, "Loading interrupted");
+            return new Status(Status.CANCEL, DBeaverCore.PLUGIN_ID, "Loading interrupted");
         }
         finally {
             UIUtils.runInUI(null, new LoadFinisher(result, error));

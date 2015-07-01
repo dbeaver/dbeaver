@@ -138,7 +138,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_USER, "");
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_PROXY_PASSWORD, "");
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_HOME, "");
-      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_SOURCES, DBeaverConstants.DEFAULT_DRIVERS_SOURCE);
+      RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_SOURCES, "http://dbeaver.jkiss.org/files/jdbc/");
 
       // Network
       RuntimeUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NET_TUNNEL_PORT_MIN, 10000);

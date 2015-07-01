@@ -29,7 +29,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -131,7 +131,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     {
         IStorage storage = getStorageFromInput(element);
         if (storage == null) {
-            throw new CoreException(new Status(Status.ERROR, DBeaverConstants.PLUGIN_ID, "Can't obtain file from editor input"));
+            throw new CoreException(new Status(Status.ERROR, DBeaverCore.PLUGIN_ID, "Can't obtain file from editor input"));
         }
         String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
 

@@ -20,7 +20,6 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -73,7 +72,7 @@ public class SQLTemplateStore extends TemplateStore {
     {
         Collection<TemplatePersistenceData> templates = new ArrayList<TemplatePersistenceData>();
         readIncludedTemplates(
-            DBeaverConstants.PLUGIN_ID,
+            DBeaverCore.PLUGIN_ID,
             templates,
             "templates/default-templates.xml",
             "$nl$/templates/default-templates.properties");

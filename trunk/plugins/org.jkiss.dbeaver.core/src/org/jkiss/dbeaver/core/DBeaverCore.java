@@ -56,6 +56,9 @@ import java.util.List;
  */
 public class DBeaverCore implements DBPApplication {
 
+    // The plug-in ID
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
+
     static final Log log = Log.getLog(DBeaverCore.class);
 
     private static final String LOB_DIR = ".lob"; //$NON-NLS-1$

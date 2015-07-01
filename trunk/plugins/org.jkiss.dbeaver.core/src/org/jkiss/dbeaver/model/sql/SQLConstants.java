@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 /**
  * SQL editor constants
@@ -36,11 +36,11 @@ public class SQLConstants {
     /**
      * Marker type contant for SQL portability targets.
      */
-    public static final String PORTABILITY_MARKER_TYPE = DBeaverConstants.PLUGIN_ID + ".portabilitytask";           //$NON-NLS-1$
+    public static final String PORTABILITY_MARKER_TYPE = DBeaverCore.PLUGIN_ID + ".portabilitytask";           //$NON-NLS-1$
     /**
      * Marker type contant for SQL syntax errors.
      */
-    public static final String SYNTAX_MARKER_TYPE      = DBeaverConstants.PLUGIN_ID + ".syntaxproblem";             //$NON-NLS-1$
+    public static final String SYNTAX_MARKER_TYPE      = DBeaverCore.PLUGIN_ID + ".syntaxproblem";             //$NON-NLS-1$
 
     public static final String STR_QUOTE_SINGLE = "'";
     public static final String STR_QUOTE_DOUBLE = "\"";

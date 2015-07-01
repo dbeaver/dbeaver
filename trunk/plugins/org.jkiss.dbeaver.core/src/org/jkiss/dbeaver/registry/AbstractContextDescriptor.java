@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBeaverConstants;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -38,7 +38,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
 
     public AbstractContextDescriptor(IConfigurationElement config)
     {
-        super(config == null ? DBeaverConstants.PLUGIN_ID : config.getContributor().getName());
+        super(config == null ? DBeaverCore.PLUGIN_ID : config.getContributor().getName());
         if (config != null) {
             String objectType = config.getAttribute(OBJECT_TYPE);
             if (objectType != null) {
