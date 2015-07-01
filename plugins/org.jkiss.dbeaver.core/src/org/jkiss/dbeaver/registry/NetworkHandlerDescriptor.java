@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
+import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
@@ -29,7 +30,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * NetworkHandlerDescriptor
  */
-public class NetworkHandlerDescriptor extends AbstractContextDescriptor
+public class NetworkHandlerDescriptor extends AbstractContextDescriptor implements DBWHandlerDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.networkHandler"; //$NON-NLS-1$
 
