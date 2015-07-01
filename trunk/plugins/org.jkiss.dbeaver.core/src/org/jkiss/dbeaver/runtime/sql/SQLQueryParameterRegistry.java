@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.xml.SAXListener;

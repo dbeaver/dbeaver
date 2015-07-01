@@ -24,7 +24,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

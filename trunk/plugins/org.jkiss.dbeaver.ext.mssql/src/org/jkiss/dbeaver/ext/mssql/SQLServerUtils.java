@@ -18,17 +18,7 @@
 
 package org.jkiss.dbeaver.ext.mssql;
 
-import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.DBPClientHome;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-
-import java.io.File;
-import java.io.IOException;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.*;
+import org.jkiss.dbeaver.Log;
 
 /**
  * SQLServerUtils

@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.model.exec.compile;
 
-import org.jkiss.dbeaver.core.Log;
-
 import java.util.Collection;
 
 /**

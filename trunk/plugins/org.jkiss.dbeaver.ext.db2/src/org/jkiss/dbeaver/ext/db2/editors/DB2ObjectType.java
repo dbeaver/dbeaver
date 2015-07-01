@@ -18,8 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.jkiss.dbeaver.core.Log;
-import org.eclipse.swt.graphics.Image;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;

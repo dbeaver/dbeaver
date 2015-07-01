@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.util;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.link.*;
 import org.eclipse.jface.text.link.LinkedModeUI.ExitFlags;

@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
 import org.jkiss.dbeaver.model.meta.LazyProperty;

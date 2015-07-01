@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.oci;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 
 import java.io.File;
 import java.io.FilenameFilter;

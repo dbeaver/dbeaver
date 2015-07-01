@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -119,7 +119,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                         try {
                             attribute.updateMappingType(VoidProgressMonitor.INSTANCE);
                         } catch (DBException e1) {
-                            updateStatus(RuntimeUtils.makeExceptionStatus(e1));
+                            updateStatus(GeneralUtils.makeExceptionStatus(e1));
                         }
                     }
                     mappingViewer.refresh();
@@ -196,7 +196,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                         updateStatus(Status.OK_STATUS);
                         return editor;
                     } catch (DBException e) {
-                        updateStatus(RuntimeUtils.makeExceptionStatus(e));
+                        updateStatus(GeneralUtils.makeExceptionStatus(e));
                         return null;
                     }
                 }
@@ -239,7 +239,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                         }
                         updateStatus(Status.OK_STATUS);
                     } catch (DBException e) {
-                        updateStatus(RuntimeUtils.makeExceptionStatus(e));
+                        updateStatus(GeneralUtils.makeExceptionStatus(e));
                     } finally {
                         mappingViewer.refresh();
                     }

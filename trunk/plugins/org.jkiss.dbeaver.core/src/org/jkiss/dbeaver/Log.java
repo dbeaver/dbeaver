@@ -15,13 +15,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintStream;
 import java.util.Date;
@@ -31,7 +30,7 @@ import java.util.Date;
  */
 public class Log
 {
-    private static String corePluginID = DBeaverActivator.getInstance().getBundle().getSymbolicName();
+    private static String corePluginID = DBeaverConstants.PLUGIN_ID;
 
     private final String name;
     private final ILog eclipseLog;
@@ -195,7 +194,7 @@ public class Log
                         corePluginID,
                         message == null ? null : message.toString()));
                 } else {
-                    log.log(RuntimeUtils.makeExceptionStatus(severity, t));
+                    log.log(GeneralUtils.makeExceptionStatus(severity, t));
                 }
             }
         }

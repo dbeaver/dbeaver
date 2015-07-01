@@ -57,6 +57,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.*;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
@@ -763,7 +764,7 @@ public class UIUtils {
         }
 
         showErrorDialog(shell, title, error == null ? null : message, error == null ? new Status(IStatus.ERROR,
-            DBeaverConstants.PLUGIN_ID, message) : RuntimeUtils.makeExceptionStatus(error));
+            DBeaverConstants.PLUGIN_ID, message) : GeneralUtils.makeExceptionStatus(error));
     }
 
     public static void showErrorDialog(@Nullable Shell shell, @NotNull String title, @Nullable String message)

@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPClientHome;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;

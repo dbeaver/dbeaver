@@ -23,7 +23,7 @@ package org.jkiss.dbeaver.ext.erd.layout;
 
 /*
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.PolylineConnection;

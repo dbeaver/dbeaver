@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;

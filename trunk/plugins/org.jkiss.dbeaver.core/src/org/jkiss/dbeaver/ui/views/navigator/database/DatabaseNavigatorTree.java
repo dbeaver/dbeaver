@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.views.navigator.database;
 
 import org.eclipse.ui.dialogs.PatternFilter;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.*;

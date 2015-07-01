@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * Abstract Database Job
@@ -80,7 +81,7 @@ public abstract class AbstractJob extends Job
             try {
                 result = this.run(progressMonitor);
             } catch (Throwable e) {
-                result = RuntimeUtils.makeExceptionStatus(e);
+                result = GeneralUtils.makeExceptionStatus(e);
             }
             return result;
         } finally {
@@ -125,7 +126,7 @@ public abstract class AbstractJob extends Job
                             try {
                                 block.cancelBlock();
                             } catch (DBException e) {
-                                return RuntimeUtils.makeExceptionStatus("Can't interrupt operation " + block, e); //$NON-NLS-1$
+                                return GeneralUtils.makeExceptionStatus("Can't interrupt operation " + block, e); //$NON-NLS-1$
                             } catch (Throwable e) {
                                 log.debug("Cancel error", e);
                                 return Status.CANCEL_STATUS;

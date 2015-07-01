@@ -18,7 +18,12 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.jkiss.dbeaver.core.Log;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -251,5 +256,88 @@ public class GeneralUtils {
             args[i] = st.nextToken();
         }
         return args;
+    }
+
+    public static IStatus makeExceptionStatus(Throwable ex)
+    {
+        return makeExceptionStatus(IStatus.ERROR, ex);
+    }
+
+    public static IStatus makeExceptionStatus(int severity, Throwable ex)
+    {
+        Throwable cause = ex.getCause();
+        if (cause == null) {
+            return new Status(
+                severity,
+                DBeaverCore.getCorePluginID(),
+                getExceptionMessage(ex),
+                ex);
+        } else {
+            if (ex instanceof DBException && CommonUtils.equalObjects(ex.getMessage(), cause.getMessage())) {
+                // Skip empty duplicate DBException
+                return makeExceptionStatus(cause);
+            }
+            return new MultiStatus(
+                DBeaverCore.getCorePluginID(),
+                0,
+                new IStatus[]{makeExceptionStatus(severity, cause)},
+                getExceptionMessage(ex),
+                ex);
+        }
+    }
+
+    public static IStatus makeExceptionStatus(String message, Throwable ex)
+    {
+        return new MultiStatus(
+            DBeaverCore.getCorePluginID(),
+            0,
+            new IStatus[]{makeExceptionStatus(ex)},
+            message,
+            null);
+    }
+
+    public static IStatus getRootStatus(IStatus status) {
+        IStatus[] children = status.getChildren();
+        if (children == null || children.length == 0) {
+            return status;
+        } else {
+            return getRootStatus(children[0]);
+        }
+    }
+
+    public static String getStatusText(IStatus status) {
+        String text = status.getMessage();
+        IStatus[] children = status.getChildren();
+        if (children != null && children.length > 0) {
+            for (IStatus child : children) {
+                text += "\n" + getStatusText(child);
+            }
+        }
+        return text;
+    }
+
+    /**
+     * Returns first non-null and non-empty message from this exception or it's cause
+     */
+    public static String getFirstMessage(Throwable ex)
+    {
+        for (Throwable e = ex; e != null; e = e.getCause()) {
+            String message = e.getMessage();
+            if (!CommonUtils.isEmpty(message)) {
+                return message;
+            }
+        }
+        return null;
+    }
+
+    public static String getExceptionMessage(Throwable ex)
+    {
+        StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);
+        if (ex.getMessage() != null) {
+            msg.append(ex.getMessage());
+        } else {
+            msg.append(ex.getClass().getSimpleName());
+        }
+        return msg.toString().trim();
     }
 }

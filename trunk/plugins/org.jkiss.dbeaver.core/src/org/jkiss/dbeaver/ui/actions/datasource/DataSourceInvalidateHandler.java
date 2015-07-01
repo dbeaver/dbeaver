@@ -33,11 +33,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
 // TODO: invalidate ALL contexts
@@ -132,7 +132,7 @@ public class DataSourceInvalidateHandler extends DataSourceHandler
                 shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
                 title,
                 message,
-                RuntimeUtils.makeExceptionStatus(error),
+                GeneralUtils.makeExceptionStatus(error),
                 IStatus.ERROR);
             dataSource = error.getDataSource();
         }

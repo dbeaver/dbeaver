@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.ui.ActionUtils;

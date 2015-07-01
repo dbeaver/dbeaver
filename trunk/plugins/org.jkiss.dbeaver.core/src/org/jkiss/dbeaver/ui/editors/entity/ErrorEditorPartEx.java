@@ -17,13 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
@@ -34,14 +31,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.internal.WorkbenchMessages;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.part.EditorPart;
-import org.eclipse.ui.statushandlers.StatusManager;
-import org.eclipse.ui.views.IViewDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -203,7 +194,7 @@ public class ErrorEditorPartEx extends EditorPart {
         if (error.getException() != null) {
             return getStackTrace(error.getException());
         }
-        return RuntimeUtils.getStatusText(error);
+        return GeneralUtils.getStatusText(error);
     }
 
     private String getStackTrace(Throwable throwable) {

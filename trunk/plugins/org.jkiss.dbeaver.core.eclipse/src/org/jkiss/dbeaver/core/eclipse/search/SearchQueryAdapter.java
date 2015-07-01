@@ -9,9 +9,9 @@ import org.eclipse.search.ui.ISearchResult;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collection;
 
@@ -37,7 +37,7 @@ public abstract class SearchQueryAdapter implements ISearchQuery, IObjectSearchL
         try {
             source.runQuery(new DefaultProgressMonitor(monitor), this);
         } catch (DBException e) {
-            return RuntimeUtils.makeExceptionStatus(e);
+            return GeneralUtils.makeExceptionStatus(e);
         }
         return Status.OK_STATUS;
     }

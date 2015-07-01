@@ -23,7 +23,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * ExecutionQueueErrorJob
@@ -50,7 +50,7 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
             DBeaverUI.getActiveWorkbenchShell(),
             "Execution Error",
             "Error occurred during " + errorName,
-            RuntimeUtils.makeExceptionStatus(error),
+            GeneralUtils.makeExceptionStatus(error),
             IStatus.INFO | IStatus.WARNING | IStatus.ERROR,
             queue);
         int result = dialog.open();

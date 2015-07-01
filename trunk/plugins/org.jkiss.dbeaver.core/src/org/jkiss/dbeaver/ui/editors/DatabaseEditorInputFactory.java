@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;

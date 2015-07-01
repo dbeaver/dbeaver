@@ -34,6 +34,7 @@ import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -131,7 +133,7 @@ public class DBeaverUI implements DBUICallback {
                 try {
                     runnableWithProgress.run(monitor);
                 } catch (InvocationTargetException e) {
-                    return RuntimeUtils.makeExceptionStatus(e);
+                    return GeneralUtils.makeExceptionStatus(e);
                 } catch (InterruptedException e) {
                     return Status.CANCEL_STATUS;
                 }

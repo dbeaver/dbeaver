@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 
