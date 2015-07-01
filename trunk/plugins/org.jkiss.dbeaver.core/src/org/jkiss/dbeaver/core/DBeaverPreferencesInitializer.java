@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
