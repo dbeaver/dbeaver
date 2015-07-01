@@ -20,7 +20,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.draw2d.AbsoluteBendpoint;
 import org.eclipse.draw2d.Bendpoint;

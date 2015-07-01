@@ -22,7 +22,7 @@ import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.preferences.SimplePreferenceStore;

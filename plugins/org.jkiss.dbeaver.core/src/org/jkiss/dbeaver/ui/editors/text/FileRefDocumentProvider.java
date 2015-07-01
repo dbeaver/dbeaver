@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.text.Document;
@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBeaverConstants;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -140,7 +139,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         try {
             charset = Charset.forName(encoding);
         } catch (Exception ex) {
-            throw new CoreException(RuntimeUtils.makeExceptionStatus(ex));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(ex));
         }
 
         CharsetEncoder encoder = charset.newEncoder();
@@ -160,7 +159,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             }
             stream = new ByteArrayInputStream(bytes, 0, byteBuffer.limit());
         } catch (CharacterCodingException ex) {
-            throw new CoreException(RuntimeUtils.makeExceptionStatus(ex));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(ex));
         }
 
         if (storage instanceof IFile) {
@@ -207,7 +206,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                 ContentUtils.close(contentStream);
             }
         } catch (IOException e) {
-            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
         return true;
     }

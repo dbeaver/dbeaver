@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDriverLocalPath;
 
 /**

@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;

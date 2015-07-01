@@ -17,31 +17,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import net.sf.jsqlparser.JSQLParserException;
-import net.sf.jsqlparser.expression.Expression;
-import net.sf.jsqlparser.expression.Function;
-import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
-import net.sf.jsqlparser.schema.Column;
-import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
-import net.sf.jsqlparser.statement.select.Select;
-import net.sf.jsqlparser.statement.select.SelectExpressionItem;
-import net.sf.jsqlparser.statement.select.SelectItem;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.Log;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 public class ToggleResultsPanelHandler extends AbstractHandler {
 

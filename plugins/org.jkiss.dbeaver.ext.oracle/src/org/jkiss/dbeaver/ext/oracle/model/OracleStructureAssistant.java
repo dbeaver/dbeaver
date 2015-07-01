@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;

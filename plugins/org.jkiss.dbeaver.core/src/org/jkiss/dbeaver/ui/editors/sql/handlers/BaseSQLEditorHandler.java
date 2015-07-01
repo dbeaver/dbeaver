@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;

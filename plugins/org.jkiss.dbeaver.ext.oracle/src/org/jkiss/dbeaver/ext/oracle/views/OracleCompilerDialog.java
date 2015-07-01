@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.views;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;

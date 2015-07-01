@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model.meta;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.edit.GenericTableManager;
 import org.jkiss.dbeaver.ext.generic.model.*;

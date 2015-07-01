@@ -20,12 +20,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -34,18 +33,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Managable connection

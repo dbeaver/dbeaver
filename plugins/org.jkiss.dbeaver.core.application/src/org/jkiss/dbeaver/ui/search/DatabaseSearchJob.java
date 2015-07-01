@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collection;
 
@@ -47,7 +47,7 @@ public class DatabaseSearchJob extends AbstractJob implements IObjectSearchListe
         try {
             query.runQuery(monitor, this);
         } catch (DBException e) {
-            return RuntimeUtils.makeExceptionStatus(e);
+            return GeneralUtils.makeExceptionStatus(e);
         }
         return Status.OK_STATUS;
     }

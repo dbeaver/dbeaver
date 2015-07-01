@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
@@ -131,7 +132,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 }
             }
             catch (DBException e) {
-                return RuntimeUtils.makeExceptionStatus(e);
+                return GeneralUtils.makeExceptionStatus(e);
             }
             finally {
                 monitor.done();

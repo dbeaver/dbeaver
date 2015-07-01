@@ -31,7 +31,7 @@ import org.eclipse.ui.internal.services.INestable;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
 import org.jkiss.dbeaver.ui.IPropertyChangeReflector;
 import org.jkiss.dbeaver.ui.IRefreshablePart;

@@ -63,7 +63,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -1402,7 +1401,7 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
             if (result.hasError()) {
-                setStatus(RuntimeUtils.getFirstMessage(result.getError()), true);
+                setStatus(GeneralUtils.getFirstMessage(result.getError()), true);
             }
             if (!scriptMode) {
                 getSelectionProvider().setSelection(originalSelection);

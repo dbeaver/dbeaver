@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;

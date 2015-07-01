@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.data.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;

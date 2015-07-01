@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.ISourceViewer;

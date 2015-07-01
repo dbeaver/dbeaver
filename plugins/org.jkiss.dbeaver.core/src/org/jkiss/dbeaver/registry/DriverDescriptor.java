@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
@@ -1506,7 +1505,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             Throwable error)
         {
             super(parentShell, dialogTitle, message,
-                RuntimeUtils.makeExceptionStatus(error),
+                GeneralUtils.makeExceptionStatus(error),
                 IStatus.INFO | IStatus.WARNING | IStatus.ERROR);
         }
 

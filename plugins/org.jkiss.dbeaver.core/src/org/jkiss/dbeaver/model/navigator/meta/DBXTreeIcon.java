@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.navigator.meta;
 
 import org.apache.commons.jexl2.Expression;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 

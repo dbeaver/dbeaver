@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPConnectionType;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
 import org.jkiss.dbeaver.utils.GeneralUtils;

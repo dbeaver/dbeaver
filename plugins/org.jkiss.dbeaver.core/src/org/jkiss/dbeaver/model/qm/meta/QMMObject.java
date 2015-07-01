@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 
 /**
  * Abstract QM meta object

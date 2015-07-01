@@ -28,7 +28,7 @@ import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
 
@@ -246,7 +247,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
                 RuntimeUtils.makeMonitor(monitor));
         }
         catch (IOException e) {
-            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
 
@@ -283,7 +284,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
             }
         }
         catch (Throwable e) {
-            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
     }
 

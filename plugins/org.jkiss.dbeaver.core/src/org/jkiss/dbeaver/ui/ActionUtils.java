@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.commands.ParameterizedCommand;
 import org.eclipse.jface.bindings.Binding;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.jface.action.Action;

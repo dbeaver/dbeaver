@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.ui.progress.UIJob;
