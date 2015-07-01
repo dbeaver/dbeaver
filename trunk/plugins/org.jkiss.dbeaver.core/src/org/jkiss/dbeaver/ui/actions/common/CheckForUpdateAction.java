@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.actions.common;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.actions.ActionDelegate;
-import org.jkiss.dbeaver.core.DBeaverVersionChecker;
+import org.jkiss.dbeaver.ui.DBeaverVersionChecker;
 
 
 public class CheckForUpdateAction extends ActionDelegate {
