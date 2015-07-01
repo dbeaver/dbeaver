@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -61,7 +61,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
     public MySQLDatabaseExportWizard(MySQLCatalog catalog) {
         super(catalog, MySQLMessages.tools_db_export_wizard_task_name);
         this.method = DumpMethod.NORMAL;
-        this.outputFile = new File(ContentUtils.getCurDialogFolder(), catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.outputFile = new File(DialogUtils.getCurDialogFolder(), catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
     public File getOutputFile()
@@ -71,7 +71,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
 
     public void setOutputFile(File outputFile)
     {
-        ContentUtils.setCurDialogFolder(outputFile.getParentFile().getAbsolutePath());
+        DialogUtils.setCurDialogFolder(outputFile.getParentFile().getAbsolutePath());
         this.outputFile = outputFile;
     }
 

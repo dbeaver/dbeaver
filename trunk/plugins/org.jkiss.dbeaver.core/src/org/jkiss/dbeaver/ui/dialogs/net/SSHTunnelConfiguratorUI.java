@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.impl.net.SSHConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -93,7 +93,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 fd.setText(CoreMessages.model_ssh_configurator_dialog_choose_private_key);
                 String[] filterExt = {"*.*", "*.ssh"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
-                String selected = ContentUtils.openFileDialog(fd);
+                String selected = DialogUtils.openFileDialog(fd);
                 if (selected != null) {
                     privateKeyText.setText(selected);
                 }

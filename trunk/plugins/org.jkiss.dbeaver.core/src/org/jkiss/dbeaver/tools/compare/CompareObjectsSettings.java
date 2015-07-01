@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
 import java.util.List;
 
@@ -50,7 +50,7 @@ public class CompareObjectsSettings {
     private boolean compareOnlyStructure = false;
     private boolean showOnlyDifferences = false;
     private OutputType outputType = OutputType.BROWSER;
-    private String outputFolder = ContentUtils.getCurDialogFolder();
+    private String outputFolder = DialogUtils.getCurDialogFolder();
 
     public CompareObjectsSettings(List<DBNDatabaseNode> nodes)
     {

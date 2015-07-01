@@ -18,54 +18,23 @@
 
 package org.jkiss.dbeaver.utils;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.PlatformUI;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
+import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
-import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentBinaryEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentImageEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentTextEditorPart;
-import org.jkiss.dbeaver.ui.editors.content.parts.ContentXMLEditorPart;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Content manipulation utilities
@@ -86,18 +55,6 @@ public class ContentUtils {
         GeneralUtils.BOM_MAP.put("UTF-32LE", new byte[] { (byte) 0xFE, (byte) 0xFF, 0x0, 0x0} );
     }
 
-    private static String curDialogFolder = System.getProperty("user.dir");
-
-    public static String getCurDialogFolder()
-    {
-        return curDialogFolder;
-    }
-
-    public static void setCurDialogFolder(String curDialogFolder)
-    {
-        ContentUtils.curDialogFolder = curDialogFolder;
-    }
-
     public static IFile createTempContentFile(DBRProgressMonitor monitor, String fileName)
         throws IOException
     {
@@ -107,7 +64,8 @@ public class ContentUtils {
             fileName,
             "data");
         try {
-            file.setCharset(GeneralUtils.getDefaultBinaryFileEncoding(null), monitor.getNestedMonitor());
+            String charset = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.CONTENT_HEX_ENCODING);
+            file.setCharset(charset, monitor.getNestedMonitor());
         } catch (CoreException e) {
             log.error("Can't set file charset", e);
         }
@@ -135,74 +93,6 @@ public class ContentUtils {
         catch (CoreException e) {
             log.warn("Can't delete temporary file '" + file.getFullPath().toString() + "'", e);
         }
-    }
-
-    public static File selectFileForSave(Shell parentShell)
-    {
-        return selectFileForSave(parentShell, "Save Content As", null, null);
-    }
-
-    public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, @Nullable String fileName)
-    {
-        FileDialog fileDialog = new FileDialog(parentShell, SWT.SAVE);
-        fileDialog.setText(title);
-        fileDialog.setOverwrite(true);
-        if (filterExt != null) {
-            fileDialog.setFilterExtensions(filterExt);
-        }
-        if (fileName != null) {
-            fileDialog.setFileName(fileName);
-        }
-
-        fileName = openFileDialog(fileDialog);
-        if (CommonUtils.isEmpty(fileName)) {
-            return null;
-        }
-        final File saveFile = new File(fileName);
-        File saveDir = saveFile.getParentFile();
-        if (!saveDir.exists()) {
-            UIUtils.showErrorDialog(parentShell, "Bad file name", "Directory '" + saveDir.getAbsolutePath() + "' does not exists");
-            return null;
-        }
-        return saveFile;
-    }
-
-    public static File openFile(Shell parentShell)
-    {
-        return openFile(parentShell, null);
-    }
-
-    public static File openFile(Shell parentShell, String[] filterExt)
-    {
-        FileDialog fileDialog = new FileDialog(parentShell, SWT.OPEN);
-        if (filterExt != null) {
-            fileDialog.setFilterExtensions(filterExt);
-        }
-        String fileName = openFileDialog(fileDialog);
-        if (CommonUtils.isEmpty(fileName)) {
-            return null;
-        }
-        final File loadFile = new File(fileName);
-        if (!loadFile.exists()) {
-            MessageBox aMessageBox = new MessageBox(parentShell, SWT.ICON_WARNING | SWT.OK);
-            aMessageBox.setText("File doesn't exists");
-            aMessageBox.setMessage("The file "+ loadFile.getAbsolutePath() + " doesn't exists.");
-            aMessageBox.open();
-            return null;
-        }
-        return loadFile;
-    }
-
-    public static String openFileDialog(FileDialog fileDialog)
-    {
-        if (curDialogFolder == null) {
-            fileDialog.setFilterPath(curDialogFolder);
-        }
-        String fileName = fileDialog.open();
-        if (!CommonUtils.isEmpty(fileName)) {
-            curDialogFolder = fileDialog.getFilterPath();
-        }
-        return fileName;
     }
 
     public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
@@ -493,25 +383,6 @@ public class ContentUtils {
     }
 
     @Nullable
-    public static IFile getFileFromEditorInput(IEditorInput editorInput)
-    {
-        try {
-            Method getFileMethod = editorInput.getClass().getMethod("getFile");
-            if (IFile.class.isAssignableFrom(getFileMethod.getReturnType())) {
-                return IFile.class.cast(getFileMethod.invoke(editorInput));
-            }
-        } catch (Exception e) {
-            log.debug("Error getting file from editor input with reflection", e);
-            // Just ignore
-        }
-        if (editorInput instanceof IPathEditorInput && ((IPathEditorInput) editorInput).getPath() != null) {
-            return convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
-        } else {
-            return null;
-        }
-    }
-
-    @Nullable
     public static IFile convertPathToWorkspaceFile(IPath path)
     {
         IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
@@ -537,151 +408,15 @@ public class ContentUtils {
         return wFile == null ? null : wFile.getFullPath();
     }
 
-    public static IValueEditor openContentEditor(@NotNull IValueController controller)
-    {
-        Object value = controller.getValue();
-        IValueController.EditType binaryEditType = IValueController.EditType.valueOf(
-            controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
-        if (binaryEditType != IValueController.EditType.EDITOR && value instanceof DBDContentCached) {
-            // Use string editor for cached content
-            return new TextViewDialog(controller);
-        } else if (value instanceof DBDContent) {
-            DBDContent content = (DBDContent)value;
-            boolean isText = ContentUtils.isTextContent(content);
-            List<ContentEditorPart> parts = new ArrayList<ContentEditorPart>();
-            if (isText) {
-                parts.add(new ContentTextEditorPart());
-                if (isXML(content)) {
-                    parts.add(new ContentXMLEditorPart());
-                }
-            } else {
-                parts.add(new ContentBinaryEditorPart());
-                parts.add(new ContentTextEditorPart());
-                parts.add(new ContentImageEditorPart());
-            }
-            return ContentEditor.openEditor(
-                controller,
-                parts.toArray(new ContentEditorPart[parts.size()]));
-        } else {
-            controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, true);
-            return null;
-        }
-    }
-
     public static boolean isTextContent(DBDContent content)
     {
         String contentType = content == null ? null : content.getContentType();
         return contentType != null && contentType.toLowerCase().startsWith("text");
     }
 
-    private static boolean isXML(DBDContent content)
+    public static boolean isXML(DBDContent content)
     {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
-    }
-
-    public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
-        throws DBCException
-    {
-        if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(DBIcon.SAVE_AS)) {
-                @Override
-                public void run() {
-                    saveToFile(controller);
-                }
-            });
-        }
-        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(DBIcon.LOAD)) {
-            @Override
-            public void run() {
-                loadFromFile(controller);
-            }
-        });
-    }
-
-    private static void loadFromFile(final IValueController controller)
-    {
-        if (!(controller.getValue() instanceof DBDContent)) {
-            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
-            return;
-        }
-
-        Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File openFile = ContentUtils.openFile(shell);
-        if (openFile == null) {
-            return;
-        }
-        final DBDContent value = (DBDContent)controller.getValue();
-        DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException {
-                try {
-                    DBDContentStorage storage;
-                    if (ContentUtils.isTextContent(value)) {
-                        storage = new ExternalContentStorage(openFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
-                    } else {
-                        storage = new ExternalContentStorage(openFile);
-                    }
-                    value.updateContents(monitor, storage);
-                    controller.updateValue(value);
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        });
-    }
-
-    private static void saveToFile(IValueController controller)
-    {
-        if (!(controller.getValue() instanceof DBDContent)) {
-            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
-            return;
-        }
-
-        Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File saveFile = ContentUtils.selectFileForSave(shell);
-        if (saveFile == null) {
-            return;
-        }
-        final DBDContent value = (DBDContent)controller.getValue();
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        DBDContentStorage storage = value.getContents(monitor);
-                        if (ContentUtils.isTextContent(value)) {
-                            ContentUtils.saveContentToFile(
-                                storage.getContentReader(),
-                                saveFile,
-                                GeneralUtils.DEFAULT_FILE_CHARSET_NAME,
-                                monitor
-                            );
-                        } else {
-                            ContentUtils.saveContentToFile(
-                                storage.getContentStream(),
-                                saveFile,
-                                monitor
-                            );
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-        }
-        catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(
-                shell,
-                CoreMessages.model_jdbc_could_not_save_content,
-                CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
-                e.getTargetException());
-        }
-        catch (InterruptedException e) {
-            // do nothing
-        }
     }
 
 }

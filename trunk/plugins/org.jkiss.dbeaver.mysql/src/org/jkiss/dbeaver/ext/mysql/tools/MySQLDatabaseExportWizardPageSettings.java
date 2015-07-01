@@ -25,8 +25,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -108,7 +108,7 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         browseButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                File file = ContentUtils.selectFileForSave(getShell(), MySQLMessages.tools_db_export_wizard_page_settings_file_selector_title, new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText()); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                File file = DialogUtils.selectFileForSave(getShell(), MySQLMessages.tools_db_export_wizard_page_settings_file_selector_title, new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText()); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 if (file != null) {
                     outputFileText.setText(file.getAbsolutePath());
                     updateState();

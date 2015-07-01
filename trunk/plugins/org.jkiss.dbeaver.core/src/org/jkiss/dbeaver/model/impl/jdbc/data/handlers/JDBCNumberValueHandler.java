@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -228,7 +227,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Number) {
             return object;
         } else if (object instanceof String) {
-            return GeneralUtils.convertStringToNumber((String) object, getNumberType(type), formatter);
+            return DBUtils.convertStringToNumber((String) object, getNumberType(type), formatter);
         } else {
             log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to numeric");
             return null;
