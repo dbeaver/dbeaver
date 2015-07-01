@@ -25,12 +25,13 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DataTypeProviderRegistry
+public class DataTypeProviderRegistry implements DBDValueHandlerRegistry
 {
     static final Log log = Log.getLog(DataTypeProviderRegistry.class);
 
