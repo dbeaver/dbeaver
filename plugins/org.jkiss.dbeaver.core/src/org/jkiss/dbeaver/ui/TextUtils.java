@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.utils;
+package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -36,8 +36,6 @@ import java.util.regex.Pattern;
  */
 public class TextUtils {
     public static final char PARAGRAPH_CHAR = (char) 182;
-
-    public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
     public static boolean isEmptyLine(IDocument document, int line)
             throws BadLocationException {
@@ -131,31 +129,6 @@ public class TextUtils {
             }
         }
         return t;
-    }
-
-    public static String replaceVariables(String string, Map<String, Object> variables) {
-        Matcher matcher = VAR_PATTERN.matcher(string);
-        int pos = 0;
-        while (matcher.find(pos)) {
-            pos = matcher.end();
-            String varName = matcher.group(2);
-            Object varValue = variables.get(varName);
-            if (varValue != null) {
-                matcher = VAR_PATTERN.matcher(
-                        string = matcher.replaceFirst(CommonUtils.toString(varValue)));
-                pos = 0;
-            }
-        }
-        return string;
-    }
-
-    public static String[] parseCommandLine(String commandLine) {
-        StringTokenizer st = new StringTokenizer(commandLine);
-        String[] args = new String[st.countTokens()];
-        for (int i = 0; st.hasMoreTokens(); i++) {
-            args[i] = st.nextToken();
-        }
-        return args;
     }
 
     public static String formatSentence(String sent)

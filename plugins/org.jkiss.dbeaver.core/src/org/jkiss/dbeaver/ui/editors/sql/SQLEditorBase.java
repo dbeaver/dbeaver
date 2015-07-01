@@ -65,7 +65,7 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
-import org.jkiss.dbeaver.utils.TextUtils;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 

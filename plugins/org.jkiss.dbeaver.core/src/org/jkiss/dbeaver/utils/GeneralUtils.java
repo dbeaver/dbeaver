@@ -30,6 +30,9 @@ import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * General non-ui utility methods
@@ -58,6 +61,8 @@ public class GeneralUtils {
             byteToHex[i] = Character.toString(nibbleToHex[i >>> 4]) + nibbleToHex[i & 0x0f];
         }
     }
+
+    public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
 
     public static String getDefaultFileEncoding()
@@ -223,4 +228,28 @@ public class GeneralUtils {
         }
     }
 
+    public static String replaceVariables(String string, Map<String, Object> variables) {
+        Matcher matcher = VAR_PATTERN.matcher(string);
+        int pos = 0;
+        while (matcher.find(pos)) {
+            pos = matcher.end();
+            String varName = matcher.group(2);
+            Object varValue = variables.get(varName);
+            if (varValue != null) {
+                matcher = VAR_PATTERN.matcher(
+                        string = matcher.replaceFirst(CommonUtils.toString(varValue)));
+                pos = 0;
+            }
+        }
+        return string;
+    }
+
+    public static String[] parseCommandLine(String commandLine) {
+        StringTokenizer st = new StringTokenizer(commandLine);
+        String[] args = new String[st.countTokens()];
+        for (int i = 0; st.hasMoreTokens(); i++) {
+            args[i] = st.nextToken();
+        }
+        return args;
+    }
 }
