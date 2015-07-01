@@ -26,7 +26,6 @@ import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -64,6 +63,7 @@ import java.util.*;
  */
 public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
+    public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
     static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
@@ -129,7 +129,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     static {
         File driversHome = DriverDescriptor.getCustomDriversHome();
-        System.setProperty(DBeaverConstants.PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
+        System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
     }
 
     DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)

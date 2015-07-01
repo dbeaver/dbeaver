@@ -22,7 +22,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
 import org.osgi.framework.BundleContext;
@@ -122,7 +121,7 @@ public class DBeaverActivator extends AbstractUIPlugin
      */
     public static ImageDescriptor getImageDescriptor(String path)
     {
-        return imageDescriptorFromPlugin(DBeaverConstants.PLUGIN_ID, path);
+        return imageDescriptorFromPlugin(DBeaverCore.PLUGIN_ID, path);
     }
 
     /**

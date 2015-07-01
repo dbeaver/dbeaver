@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.Activator;
@@ -49,6 +48,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class AboutBoxDialog extends Dialog
 {
+    public static final String PRODUCT_PROP_SUB_TITLE = "subTitle"; //$NON-NLS-1$
+    public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
+    public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
+    public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
     private final Font TITLE_FONT;
 
     private Image ABOUT_IMAGE = Activator.getImageDescriptor("icons/about_circle.png").createImage();
@@ -99,7 +102,7 @@ public class AboutBoxDialog extends Dialog
         Label titleLabel = new Label(group, SWT.NONE);
         titleLabel.setBackground(background);
         titleLabel.setFont(TITLE_FONT);
-        titleLabel.setText(product.getProperty(DBeaverConstants.PRODUCT_PROP_SUB_TITLE));
+        titleLabel.setText(product.getProperty(PRODUCT_PROP_SUB_TITLE));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         titleLabel.setLayoutData(gd);
@@ -144,13 +147,13 @@ public class AboutBoxDialog extends Dialog
 
         Label authorLabel = new Label(group, SWT.NONE);
         authorLabel.setBackground(background);
-        authorLabel.setText(product.getProperty(DBeaverConstants.PRODUCT_PROP_COPYRIGHT));
+        authorLabel.setText(product.getProperty(PRODUCT_PROP_COPYRIGHT));
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
 
         Link siteLink = new Link(group, SWT.NONE);
-        siteLink.setText(UIUtils.makeAnchor(product.getProperty(DBeaverConstants.PRODUCT_PROP_WEBSITE)));
+        siteLink.setText(UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)));
         siteLink.setBackground(background);
         siteLink.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -163,7 +166,7 @@ public class AboutBoxDialog extends Dialog
         siteLink.setLayoutData(gd);
 
         Link emailLink = new Link(group, SWT.NONE);
-        emailLink.setText(UIUtils.makeAnchor(product.getProperty(DBeaverConstants.PRODUCT_PROP_EMAIL)));
+        emailLink.setText(UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_EMAIL)));
         emailLink.setBackground(background);
         emailLink.addSelectionListener(new SelectionAdapter() {
             @Override
