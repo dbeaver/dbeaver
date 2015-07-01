@@ -129,7 +129,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         if (selectedNode instanceof DBNDataSource) {
             EditConnectionDialog dialog = new EditConnectionDialog(
                 workbenchWindow,
-                new EditConnectionWizard((DataSourceDescriptor) selectedNode.getDataSource()));
+                new EditConnectionWizard((DataSourceDescriptor) selectedNode.getDataSource().getContainer()));
             dialog.open();
             return null;
         }
