@@ -45,7 +45,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     private DBDValueHandlerProvider instance;
 
-    public DataTypeProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
+    public DataTypeProviderDescriptor(DataTypeProviderRegistry registry, IConfigurationElement config)
     {
         super(config);
 
@@ -84,7 +84,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
                 log.warn("Datasource reference with null ID"); //$NON-NLS-1$
                 continue;
             }
-            DataSourceProviderDescriptor dsProvider = registry.getDataSourceProvider(dsId);
+            DataSourceProviderDescriptor dsProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(dsId);
             if (dsProvider == null) {
                 log.warn("Datasource provider '" + dsId + "' not found"); //$NON-NLS-1$
                 continue;

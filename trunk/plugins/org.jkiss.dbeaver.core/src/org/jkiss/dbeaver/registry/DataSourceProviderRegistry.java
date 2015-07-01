@@ -24,10 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPConnectionType;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
@@ -56,7 +53,6 @@ public class DataSourceProviderRegistry
     }
 
     private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
-    private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
     private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
     private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<String, DBPConnectionType>();
     private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<String, ExternalResourceDescriptor>();
@@ -87,15 +83,6 @@ public class DataSourceProviderRegistry
                     return o1.getName().compareToIgnoreCase(o2.getName());
                 }
             });
-        }
-
-        // Load data type providers from external plugins
-        {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataTypeProviderDescriptor.EXTENSION_ID);
-            for (IConfigurationElement ext : extElements) {
-                DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(this, ext);
-                dataTypeProviders.add(provider);
-            }
         }
 
         // Load drivers
@@ -153,7 +140,6 @@ public class DataSourceProviderRegistry
             providerDescriptor.dispose();
         }
         this.dataSourceProviders.clear();
-        this.dataTypeProviders.clear();
         this.resourceContributions.clear();
     }
 
@@ -171,35 +157,6 @@ public class DataSourceProviderRegistry
     public List<DataSourceProviderDescriptor> getDataSourceProviders()
     {
         return dataSourceProviders;
-    }
-
-    ////////////////////////////////////////////////////
-    // DataType providers
-
-    @Nullable
-    public DataTypeProviderDescriptor getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject)
-    {
-        DBPDriver driver = dataSource.getContainer().getDriver();
-        if (!(driver instanceof DriverDescriptor)) {
-            log.warn("Bad datasource specified (driver is not recognized by registry) - " + dataSource);
-            return null;
-        }
-        DataSourceProviderDescriptor dsProvider = ((DriverDescriptor) driver).getProviderDescriptor();
-
-        // First try to find type provider for specific datasource type
-        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typedObject)) {
-                return dtProvider;
-            }
-        }
-
-        // Find in default providers
-        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (dtProvider.isDefault() && dtProvider.supportsType(typedObject)) {
-                return dtProvider;
-            }
-        }
-        return null;
     }
 
     private void loadDrivers(File driversConfig)
