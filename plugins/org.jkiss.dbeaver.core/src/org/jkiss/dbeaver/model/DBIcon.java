@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
 import java.io.IOException;
@@ -319,5 +319,5 @@ public class DBIcon implements DBPImage
         return path;
     }
 
-    static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + DBeaverConstants.PLUGIN_ID + "/icons/";
+    static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + DBeaverCore.PLUGIN_ID + "/icons/";
 }

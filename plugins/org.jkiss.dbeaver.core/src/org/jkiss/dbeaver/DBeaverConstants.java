@@ -23,14 +23,5 @@ package org.jkiss.dbeaver;
  */
 public class DBeaverConstants
 {
-    // The plug-in ID
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
 
-    public static final String PRODUCT_PROP_SUB_TITLE = "subTitle"; //$NON-NLS-1$
-    public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
-    public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
-    public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
-    public static final String DEFAULT_DRIVERS_SOURCE = "http://dbeaver.jkiss.org/files/jdbc/";
-
-    public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
 }

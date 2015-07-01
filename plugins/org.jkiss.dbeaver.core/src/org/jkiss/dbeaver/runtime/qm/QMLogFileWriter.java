@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.eclipse.core.runtime.IStatus;
-import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
@@ -166,7 +165,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
     private void appendEntryInfo(StringBuilder buffer, int severity, long code, long time)
     {
-        buffer.append(DBeaverConstants.PLUGIN_ID).append(" ").append(severity).append(" ").append(code).append(" ");
+        buffer.append(DBeaverCore.PLUGIN_ID).append(" ").append(severity).append(" ").append(code).append(" ");
         appendDate(buffer, time);
         buffer.append(lineSeparator);
     }
