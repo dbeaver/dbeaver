@@ -38,12 +38,12 @@ import org.jkiss.dbeaver.DBeaverConstants;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataTypeProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -86,9 +86,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 if (dataType.getDataKind() == DBPDataKind.UNKNOWN) {
                     continue;
                 }
-                final DataTypeProviderDescriptor dataTypeProvider = DataSourceProviderRegistry.getInstance().getDataTypeProvider(dataSource, dataType);
+                final DBDValueHandlerProvider dataTypeProvider = DataTypeProviderRegistry.getInstance().getDataTypeProvider(dataSource, dataType);
                 if (dataTypeProvider != null) {
-                    final DBDValueHandler handler = dataTypeProvider.getInstance().getHandler(dataSource.getContainer(), dataType);
+                    final DBDValueHandler handler = dataTypeProvider.getHandler(dataSource.getContainer(), dataType);
                     if (handler != null && (handler.getFeatures() & DBDValueHandler.FEATURE_INLINE_EDITOR) != 0) {
                         validDataTypes.add(dataType);
                     }
