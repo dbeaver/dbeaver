@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
-import org.jkiss.dbeaver.utils.TextUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
@@ -88,7 +88,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         vars.put(VAR_FILE_NAME, scriptName);
         vars.put(VAR_FILE_EXT, getFile().getFullPath().getFileExtension());
         vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
-        return TextUtils.replaceVariables(pattern, vars);
+        return GeneralUtils.replaceVariables(pattern, vars);
     }
 
     @Override

@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.utils.TextUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.util.Map;
@@ -46,9 +46,9 @@ public class DBRProcessDescriptor
         this.command = command;
         String commandLine = variables == null ?
             command.getCommand() :
-            TextUtils.replaceVariables(command.getCommand(), variables);
+            GeneralUtils.replaceVariables(command.getCommand(), variables);
 
-        processBuilder = new ProcessBuilder(TextUtils.parseCommandLine(commandLine));
+        processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
         //processBuilder.redirectErrorStream(true);
     }
 
