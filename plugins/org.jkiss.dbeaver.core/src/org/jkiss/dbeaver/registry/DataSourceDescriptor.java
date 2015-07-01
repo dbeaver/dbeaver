@@ -202,6 +202,11 @@ public class DataSourceDescriptor
         return driver;
     }
 
+    @Override
+    public DBPApplication getApplication() {
+        return registry.getApplication();
+    }
+
     public void setDriver(@NotNull DriverDescriptor driver)
     {
         if (driver == this.driver) {
@@ -591,7 +596,7 @@ public class DataSourceDescriptor
                 monitor.subTask("Initialize tunnel");
                 tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
-                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, tunnelConfiguration, connectionInfo);
+                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getApplication(), tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
                 }

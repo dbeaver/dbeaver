@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPProjectManager;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
@@ -161,7 +162,9 @@ public class DBeaverCore implements DBPApplication {
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
 
+        QMUtils.initApplication(this);
         this.queryManager = new QMControllerImpl();
+
         this.qmLogWriter = new QMLogFileWriter();
         this.queryManager.registerMetaListener(qmLogWriter);
 
@@ -331,6 +334,11 @@ public class DBeaverCore implements DBPApplication {
     public QMController getQueryManager()
     {
         return queryManager;
+    }
+
+    @Override
+    public DBPPreferenceStore getPreferenceStore() {
+        return getGlobalPreferenceStore();
     }
 
     public ProjectRegistry getProjectRegistry()

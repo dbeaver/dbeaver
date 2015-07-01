@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
@@ -31,7 +32,7 @@ import java.io.IOException;
 public class HTTPTunnelImpl implements DBWTunnel {
 
     @Override
-    public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPApplication application, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
         return connectionInfo;

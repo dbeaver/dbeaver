@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPProjectManager;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
@@ -168,6 +169,11 @@ public class ProjectRegistry implements DBPProjectManager {
         synchronized (projectListeners) {
             projectListeners.remove(listener);
         }
+    }
+
+    @Override
+    public DBPApplication geApplication() {
+        return DBeaverCore.getInstance();
     }
 
     @Override
@@ -335,7 +341,7 @@ public class ProjectRegistry implements DBPProjectManager {
             log.warn("Project [" + project + "] already added");
             return;
         }
-        projectDatabases.put(project, new DataSourceRegistry(project));
+        projectDatabases.put(project, new DataSourceRegistry(DBeaverCore.getInstance(), project));
     }
 
     @Override

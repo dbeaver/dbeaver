@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.jkiss.dbeaver.core.Log;
 import org.eclipse.core.resources.IFile;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -80,12 +79,12 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     {
         if (storage == null && blob != null) {
             long contentLength = getContentLength();
-            if (contentLength < DBeaverCore.getGlobalPreferenceStore().getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+            if (contentLength < dataSource.getContainer().getApplication().getPreferenceStore().getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = BytesContentStorage.createFromStream(
                         blob.getBinaryStream(),
                         contentLength,
-                        DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.CONTENT_HEX_ENCODING));
+                        dataSource.getContainer().getApplication().getPreferenceStore().getString(DBeaverPreferences.CONTENT_HEX_ENCODING));
                 }
                 catch (SQLException e) {
                     throw new DBCException(e, dataSource);
