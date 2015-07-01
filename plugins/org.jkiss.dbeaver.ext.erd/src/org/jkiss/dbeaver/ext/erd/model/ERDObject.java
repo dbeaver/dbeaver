@@ -20,7 +20,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.DBeaverCore;

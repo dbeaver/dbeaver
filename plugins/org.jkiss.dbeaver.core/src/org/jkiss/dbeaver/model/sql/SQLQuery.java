@@ -35,7 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.utils.CommonUtils;

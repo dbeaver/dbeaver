@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.ui.actions;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;

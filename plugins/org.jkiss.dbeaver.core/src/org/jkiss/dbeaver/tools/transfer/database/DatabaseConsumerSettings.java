@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.code.Nullable;
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.utils.CommonUtils;

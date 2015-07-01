@@ -20,7 +20,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;

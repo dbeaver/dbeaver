@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;

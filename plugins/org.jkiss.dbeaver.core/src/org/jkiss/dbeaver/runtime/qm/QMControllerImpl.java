@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;

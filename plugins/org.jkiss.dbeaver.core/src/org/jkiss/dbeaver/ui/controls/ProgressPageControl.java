@@ -37,7 +37,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;

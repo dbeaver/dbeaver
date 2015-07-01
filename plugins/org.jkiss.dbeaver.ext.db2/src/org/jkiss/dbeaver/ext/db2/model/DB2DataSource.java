@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;

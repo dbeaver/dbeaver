@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.views.navigator.project;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.IHelpContextIds;

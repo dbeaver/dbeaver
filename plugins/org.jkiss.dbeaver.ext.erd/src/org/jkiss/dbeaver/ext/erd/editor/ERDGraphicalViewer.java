@@ -41,7 +41,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;

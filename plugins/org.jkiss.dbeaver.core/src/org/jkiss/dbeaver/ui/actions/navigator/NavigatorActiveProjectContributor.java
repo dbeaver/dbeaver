@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.action.ContributionItem;
 import org.eclipse.swt.SWT;

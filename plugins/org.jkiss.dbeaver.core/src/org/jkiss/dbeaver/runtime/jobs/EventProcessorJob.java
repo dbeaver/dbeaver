@@ -23,7 +23,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;

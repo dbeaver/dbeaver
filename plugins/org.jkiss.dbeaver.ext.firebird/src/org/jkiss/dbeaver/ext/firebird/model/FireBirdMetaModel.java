@@ -17,16 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 /**
  * FireBirdDataSource

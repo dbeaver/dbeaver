@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.indent;
 
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;

@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.ext.vertica;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 
 /**
  * VerticaUtils

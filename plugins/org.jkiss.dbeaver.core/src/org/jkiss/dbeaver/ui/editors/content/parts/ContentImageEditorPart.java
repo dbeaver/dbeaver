@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageEditor;

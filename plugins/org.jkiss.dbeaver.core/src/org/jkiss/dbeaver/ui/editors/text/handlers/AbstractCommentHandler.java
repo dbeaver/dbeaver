@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.BadLocationException;

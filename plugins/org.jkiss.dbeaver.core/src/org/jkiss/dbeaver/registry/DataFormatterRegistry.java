@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.code.Nullable;

@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;

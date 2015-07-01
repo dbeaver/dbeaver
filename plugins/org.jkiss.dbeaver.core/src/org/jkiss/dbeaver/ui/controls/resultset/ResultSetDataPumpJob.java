@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;

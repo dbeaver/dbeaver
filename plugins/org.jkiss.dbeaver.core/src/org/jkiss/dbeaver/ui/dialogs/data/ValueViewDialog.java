@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;

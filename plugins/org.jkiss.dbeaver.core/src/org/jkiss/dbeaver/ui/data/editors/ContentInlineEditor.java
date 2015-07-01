@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.resource.JFaceResources;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;

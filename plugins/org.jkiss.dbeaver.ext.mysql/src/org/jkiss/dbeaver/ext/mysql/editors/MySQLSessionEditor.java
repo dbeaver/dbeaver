@@ -18,7 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.editors;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;

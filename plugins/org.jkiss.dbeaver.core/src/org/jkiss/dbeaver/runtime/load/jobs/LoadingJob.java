@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.runtime.load.jobs;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBeaverConstants;

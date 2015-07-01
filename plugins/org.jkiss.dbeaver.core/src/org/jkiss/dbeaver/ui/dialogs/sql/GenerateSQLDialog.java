@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -129,7 +128,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
                         }
                     }
                 } catch (DBCException e) {
-                    return RuntimeUtils.makeExceptionStatus(e);
+                    return GeneralUtils.makeExceptionStatus(e);
                 } finally {
                     session.close();
                 }

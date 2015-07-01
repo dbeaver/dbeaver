@@ -38,9 +38,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -142,7 +142,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 contentProvider.add(ref, itemsFilter);
             }
         } catch (DBException e) {
-            throw new CoreException(RuntimeUtils.makeExceptionStatus(e));
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
         finally {
             monitor.done();

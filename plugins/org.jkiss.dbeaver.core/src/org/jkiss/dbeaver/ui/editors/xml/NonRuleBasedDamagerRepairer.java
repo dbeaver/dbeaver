@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.presentation.IPresentationDamager;
 import org.eclipse.jface.text.presentation.IPresentationRepairer;

@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -139,7 +140,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         getShell(),
                         CoreMessages.dialog_connection_wizard_start_dialog_error_title,
                         null,
-                        RuntimeUtils.makeExceptionStatus(ex.getTargetException()));
+                        GeneralUtils.makeExceptionStatus(ex.getTargetException()));
             }
         } finally {
             testDataSource.dispose();

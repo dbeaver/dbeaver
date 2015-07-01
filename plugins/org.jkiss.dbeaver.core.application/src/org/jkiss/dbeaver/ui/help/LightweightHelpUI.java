@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.help;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.help.IContext;

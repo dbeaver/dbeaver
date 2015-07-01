@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.objectweb.asm.ClassReader;
@@ -814,7 +815,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
                 title,
                 message,
-                RuntimeUtils.stripStack(RuntimeUtils.makeExceptionStatus(error)),
+                RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
                 IStatus.ERROR);
             dataSource = error.getDataSource();
         }

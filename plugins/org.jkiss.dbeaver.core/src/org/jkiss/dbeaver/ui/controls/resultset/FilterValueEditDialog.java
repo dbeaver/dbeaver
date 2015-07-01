@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.dbeaver.DBeaverConstants;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 
 import java.io.File;
 import java.io.IOException;

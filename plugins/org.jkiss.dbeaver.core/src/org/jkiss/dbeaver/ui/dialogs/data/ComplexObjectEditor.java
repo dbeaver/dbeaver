@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.jkiss.dbeaver.core.Log;
+import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
