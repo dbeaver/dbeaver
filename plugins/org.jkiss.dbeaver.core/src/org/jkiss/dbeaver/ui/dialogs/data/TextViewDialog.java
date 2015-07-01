@@ -211,7 +211,7 @@ public class TextViewDialog extends ValueViewDialog {
         try {
             stringValue = new String(
                 bytes, 0, length,
-                GeneralUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                DBUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             stringValue = new String(bytes);
@@ -224,7 +224,7 @@ public class TextViewDialog extends ValueViewDialog {
         byte[] bytes;
         try {
             bytes = stringValue.getBytes(
-                GeneralUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
+                DBUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
             bytes = stringValue.getBytes();

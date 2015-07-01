@@ -33,8 +33,8 @@ import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -265,7 +265,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             Shell shell = getEditor().getSite().getShell();
-            final File saveFile = ContentUtils.selectFileForSave(shell);
+            final File saveFile = DialogUtils.selectFileForSave(shell);
             if (saveFile == null) {
                 return;
             }
@@ -308,7 +308,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             Shell shell = getEditor().getSite().getShell();
-            final File loadFile = ContentUtils.openFile(shell);
+            final File loadFile = DialogUtils.openFile(shell);
             if (loadFile == null) {
                 return;
             }

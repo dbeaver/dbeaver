@@ -85,6 +85,7 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -652,7 +653,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             "JPEG format (*.jpg)",
             "Bitmap format (*.bmp)"});
 
-        String filePath = ContentUtils.openFileDialog(saveDialog);
+        String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
             return;
         }

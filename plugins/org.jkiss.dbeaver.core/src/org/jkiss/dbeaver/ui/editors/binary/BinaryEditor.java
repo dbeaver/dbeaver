@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.core.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -122,7 +123,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         IEditorInput editorInput = getEditorInput();
         IStorage storage = null;
         {
-            IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+            IFile file = EditorUtils.getFileFromEditorInput(editorInput);
             if (file != null) {
                 storage = file;
             }
@@ -264,7 +265,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         IEditorInput editorInput = getEditorInput();
         // Sync file changes
-        IFile file = ContentUtils.getFileFromEditorInput(editorInput);
+        IFile file = EditorUtils.getFileFromEditorInput(editorInput);
         if (file != null) {
             final IPath absolutePath = file.getLocation();
             File systemFile = absolutePath.toFile();

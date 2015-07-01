@@ -36,7 +36,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -48,6 +51,7 @@ public final class DBUtils {
 
     static final Log log = Log.getLog(DBUtils.class);
     private static final Pattern EXEC_PATTERN = Pattern.compile("[a-z]+\\s+([^(]+)\\s*\\(");
+    private static final String BAD_DOUBLE_VALUE = "2.2250738585072012e-308"; //$NON-NLS-1$
 
     public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
     {
@@ -1296,5 +1300,62 @@ public final class DBUtils {
             return ((DBSProcedureContainer) container).getProcedure(session.getProgressMonitor(), DBObjectNameCaseTransformer.transformName(session.getDataSource(), names[names.length - 1]));
         }
         return null;
+    }
+
+    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
+    {
+        DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
+        String fileEncoding = preferenceStore.getString(DBeaverPreferences.CONTENT_HEX_ENCODING);
+        if (CommonUtils.isEmpty(fileEncoding)) {
+            fileEncoding = GeneralUtils.getDefaultFileEncoding();
+        }
+        return fileEncoding;
+    }
+
+    @Nullable
+    public static Number convertStringToNumber(String text, Class<? extends Number> hintType, DBDDataFormatter formatter)
+    {
+        if (text == null || text.length() == 0) {
+            return null;
+        }
+        try {
+            if (hintType == Long.class) {
+                try {
+                    return Long.valueOf(text);
+                } catch (NumberFormatException e) {
+                    return new BigInteger(text);
+                }
+            } else if (hintType == Integer.class) {
+                return Integer.valueOf(text);
+            } else if (hintType == Short.class) {
+                return Short.valueOf(text);
+            } else if (hintType == Byte.class) {
+                return Byte.valueOf(text);
+            } else if (hintType == Float.class) {
+                return Float.valueOf(text);
+            } else if (hintType == Double.class) {
+                return toDouble(text);
+            } else if (hintType == BigInteger.class) {
+                return new BigInteger(text);
+            } else {
+                return new BigDecimal(text);
+            }
+        } catch (NumberFormatException e) {
+            log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
+            try {
+                return (Number)formatter.parseValue(text, hintType);
+            } catch (ParseException e1) {
+                log.debug("Can't parse numeric value [" + text + "] using formatter", e);
+                return null;
+            }
+        }
+    }
+
+    private static Number toDouble(String text)
+    {
+        if (text.equals(BAD_DOUBLE_VALUE)) {
+            return Double.MIN_VALUE;
+        }
+        return Double.valueOf(text);
     }
 }

@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -114,7 +114,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLDatabaseWizardPag
 
     private void chooseInputFile()
     {
-        File file = ContentUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        File file = DialogUtils.openFile(getShell(), new String[]{"*.sql", "*.txt", "*.*"}); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
         if (file != null) {
             inputFileText.setText(file.getAbsolutePath());
         }
