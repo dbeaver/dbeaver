@@ -21,7 +21,7 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
+import org.jkiss.dbeaver.runtime.AbstractCommandContext;
 
 /**
  * SimpleCommandContext.
