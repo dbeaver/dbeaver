@@ -166,7 +166,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
                     if (registry != null) {
                         for (DataSourceDescriptor dataSourceDescriptor : registry.getDataSources()) {
-                            if (!dataSourceDescriptor.closeActiveTransaction(monitor)) {
+                            if (!DataSourceDescriptor.checkAndCloseActiveTransaction(monitor, dataSourceDescriptor)) {
                                 result = false;
                                 return;
                             }

@@ -62,7 +62,9 @@ import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -842,6 +844,12 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
+        if (ownContext && executionContext != null) {
+            if (DataSourceDescriptor.isContextTransactionAffected(executionContext)) {
+                DataSourceDescriptor.closeActiveTransaction(new DefaultProgressMonitor(progressMonitor), executionContext, true);
+            }
+            releaseExecutionContext();
+        }
         super.doSave(progressMonitor);
     }
 
@@ -880,6 +888,11 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
+
+        if (ownContext && executionContext != null) {
+            return DataSourceDescriptor.checkActiveTransaction(executionContext);
+        }
+
         return ISaveablePart2.DEFAULT;
     }
 
