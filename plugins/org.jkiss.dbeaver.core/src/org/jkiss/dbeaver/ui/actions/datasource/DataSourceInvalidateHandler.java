@@ -35,13 +35,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
 // TODO: invalidate ALL contexts
-public class DataSourceInvalidateHandler extends DataSourceHandler
+public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
 {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException

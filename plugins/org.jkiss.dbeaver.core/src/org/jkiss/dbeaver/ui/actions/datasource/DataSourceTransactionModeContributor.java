@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -50,7 +50,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
             return;
         }
         IEditorPart activePart = window.getActivePage().getActiveEditor();
-        DBSDataSourceContainer container = DataSourceHandler.getDataSourceContainer(activePart);
+        DBSDataSourceContainer container = AbstractDataSourceHandler.getDataSourceContainer(activePart);
 
         DBPDataSource dataSource = null;
         if (container != null) {
