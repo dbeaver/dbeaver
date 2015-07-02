@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 
 /**
  * DBSEntityConstraintType

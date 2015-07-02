@@ -19,7 +19,7 @@ package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
-import org.jkiss.dbeaver.core.ModelActivator;
+import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintStream;

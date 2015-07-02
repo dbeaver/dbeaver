@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.core.ModelActivator;
+import org.jkiss.dbeaver.bundle.ModelActivator;
 
 /**
  * SQL editor constants

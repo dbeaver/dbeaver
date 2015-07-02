@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSaveableObject;

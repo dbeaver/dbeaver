@@ -21,7 +21,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.osgi.framework.BundleContext;
 
 /**
@@ -49,10 +49,10 @@ public class Activator extends AbstractUIPlugin {
     public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-        RuntimeUtils.setDefaultPreferenceValue(
-            DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
-        RuntimeUtils.setDefaultPreferenceValue(
-            DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
+        PrefUtils.setDefaultPreferenceValue(
+			DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_SUPPORT_ROWID, true);
+        PrefUtils.setDefaultPreferenceValue(
+			DBeaverCore.getGlobalPreferenceStore(), OracleConstants.PREF_DBMS_OUTPUT, true);
     }
 
 	/*

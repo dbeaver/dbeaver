@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 
 /**
 * Connection event type

@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.ModelActivator;
+import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;

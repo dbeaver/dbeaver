@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.ModelActivator;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
 

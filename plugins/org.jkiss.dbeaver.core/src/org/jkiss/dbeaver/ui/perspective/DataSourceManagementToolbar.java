@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
@@ -449,7 +450,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
             DBPPreferenceStore store = dsContainer.getPreferenceStore();
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, rsSize);
-            RuntimeUtils.savePreferenceStore(store);
+            PrefUtils.savePreferenceStore(store);
         }
     }
 
