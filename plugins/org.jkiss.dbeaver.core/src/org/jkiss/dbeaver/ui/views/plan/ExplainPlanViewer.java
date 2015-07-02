@@ -36,16 +36,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
@@ -225,7 +221,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private class RefreshPlanAction extends Action {
         private RefreshPlanAction()
         {
-            super("Reevaluate", DBeaverIcons.getImageDescriptor(DBIcon.REFRESH));
+            super("Reevaluate", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH));
         }
 
         @Override
@@ -244,7 +240,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
     private class ToggleViewAction extends Action {
         private ToggleViewAction()
         {
-            super("View Source", DBeaverIcons.getImageDescriptor(DBIcon.SQL_TEXT));
+            super("View Source", DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT));
         }
 
         @Override

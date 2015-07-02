@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -87,7 +88,7 @@ public class SQLQueryJob extends DataSourceJob
         SQLResultsConsumer resultsConsumer,
         SQLQueryListener listener)
     {
-        super(name, DBeaverIcons.getImageDescriptor(DBIcon.SQL_SCRIPT_EXECUTE), executionContext);
+        super(name, DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT_EXECUTE), executionContext);
         this.partSite = partSite;
         this.queries = queries;
         this.resultsConsumer = resultsConsumer;

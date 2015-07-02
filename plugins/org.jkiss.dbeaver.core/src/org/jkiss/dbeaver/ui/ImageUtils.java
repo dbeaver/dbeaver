@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
 
 /**
  * Image-related utils
@@ -77,10 +76,10 @@ public class ImageUtils {
         // Capture checkbox image - only for windows
         // There could be hard-to-understand problems in Linux
         if (!DBeaverCore.getInstance().getLocalSystem().isWindows()) {
-            imageCheckboxEnabledOff = DBeaverIcons.getImage(DBIcon.CHECK_OFF);
-            imageCheckboxEnabledOn = DBeaverIcons.getImage(DBIcon.CHECK_ON);
-            imageCheckboxDisabledOn = DBeaverIcons.getImage(DBIcon.CHECK_ON);
-            imageCheckboxDisabledOff = DBeaverIcons.getImage(DBIcon.CHECK_OFF);
+            imageCheckboxEnabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
+            imageCheckboxEnabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
+            imageCheckboxDisabledOn = DBeaverIcons.getImage(UIIcon.CHECK_ON);
+            imageCheckboxDisabledOff = DBeaverIcons.getImage(UIIcon.CHECK_OFF);
             return;
         }
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
@@ -92,13 +91,13 @@ public class ImageUtils {
         checkBox.setBounds(0, 0, checkboxSize.x, checkboxSize.y);
         try {
             checkBox.setSelection(false);
-            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_OFF));
+            imageCheckboxEnabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_OFF));
             checkBox.setSelection(true);
-            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_ON));
+            imageCheckboxEnabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_ON));
             checkBox.setEnabled(false);
-            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_ON));
+            imageCheckboxDisabledOn = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_ON));
             checkBox.setSelection(false);
-            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(DBIcon.CHECK_OFF));
+            imageCheckboxDisabledOff = captureWidget(checkBox, borderColor, DBeaverIcons.getImage(UIIcon.CHECK_OFF));
         } finally {
             UIUtils.dispose(checkBox);
         }

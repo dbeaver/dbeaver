@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * Grid column renderer
@@ -37,9 +37,9 @@ class GridColumnRenderer extends AbstractRenderer
     public static final int ARROW_MARGIN = 6;
     public static final int IMAGE_SPACING = 3;
 
-    public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(DBIcon.SORT_UNKNOWN);
-    public static final Image IMAGE_ARROW_UP = DBeaverIcons.getImage(DBIcon.SORT_DECREASE);
-    public static final Image IMAGE_ARROW_DOWN = DBeaverIcons.getImage(DBIcon.SORT_INCREASE);
+    public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
+    public static final Image IMAGE_ARROW_UP = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
+    public static final Image IMAGE_ARROW_DOWN = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
     public static final int SORT_WIDTH = 16;
 
     public  GridColumnRenderer(LightGrid grid) {

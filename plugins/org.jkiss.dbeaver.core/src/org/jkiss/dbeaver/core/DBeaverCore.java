@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
@@ -61,7 +63,6 @@ public class DBeaverCore implements DBPApplication {
 
     static final Log log = Log.getLog(DBeaverCore.class);
 
-    private static final String LOB_DIR = ".lob"; //$NON-NLS-1$
     public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 
     static DBeaverCore instance;
@@ -307,6 +308,7 @@ public class DBeaverCore implements DBPApplication {
         return workspace;
     }
 
+    @NotNull
     @Override
     public DBPProjectManager getProjectManager() {
         return getProjectRegistry();
@@ -337,6 +339,7 @@ public class DBeaverCore implements DBPApplication {
         return navigatorModel;
     }
 
+    @NotNull
     public QMController getQueryManager()
     {
         return queryManager;
@@ -347,6 +350,7 @@ public class DBeaverCore implements DBPApplication {
         return DataTypeProviderRegistry.getInstance();
     }
 
+    @NotNull
     @Override
     public DBPPreferenceStore getPreferenceStore() {
         return getGlobalPreferenceStore();
@@ -361,13 +365,8 @@ public class DBeaverCore implements DBPApplication {
         return tempProject;
     }
 
-    public IFolder getLobFolder(IProgressMonitor monitor)
-        throws IOException
-    {
-        return getTempFolder(monitor, LOB_DIR);
-    }
-
-    private IFolder getTempFolder(IProgressMonitor monitor, String name)
+    @NotNull
+    public IFolder getTempFolder(DBRProgressMonitor monitor, String name)
         throws IOException
     {
         if (tempProject == null) {
@@ -377,7 +376,7 @@ public class DBeaverCore implements DBPApplication {
         IFolder tempFolder = tempProject.getFolder(tempPath);
         if (!tempFolder.exists()) {
             try {
-                tempFolder.create(true, true, monitor);
+                tempFolder.create(true, true, monitor.getNestedMonitor());
                 tempFolder.setHidden(true);
             } catch (CoreException ex) {
                 throw new IOException(MessageFormat.format(CoreMessages.DBeaverCore_error_can_create_temp_dir, tempFolder.toString()), ex);
@@ -386,6 +385,13 @@ public class DBeaverCore implements DBPApplication {
         return tempFolder;
     }
 
+    @NotNull
+    @Override
+    public DBRRunnableContext getRunnableContext() {
+        return DBeaverUI.getDefaultRunnableContext();
+    }
+
+    @NotNull
     public List<IProject> getLiveProjects()
     {
         List<IProject> result = new ArrayList<IProject>();

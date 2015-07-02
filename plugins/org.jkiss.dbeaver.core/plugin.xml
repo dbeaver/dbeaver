@@ -277,7 +277,7 @@
 
         <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="icons/sql/sql_script_create.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/tree/edit_item.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/edit.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter" icon="icons/misc/filter.png"/>
@@ -1785,7 +1785,7 @@
         </editor>
         <editor
                 name="%editor.lob.name"
-                icon="icons/sql/types/lob.png"
+                icon="icons/misc/binary.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.content.ContentEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.content.ContentEditor"
                 id="org.jkiss.dbeaver.ui.editors.content.ContentEditor">

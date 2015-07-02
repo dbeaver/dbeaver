@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
 
 class ResultSetDataPumpJob extends DataSourceJob {
@@ -57,9 +58,9 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
     private static final DBIcon[] PROGRESS_IMAGES = {
-            DBIcon.PROGRESS0, DBIcon.PROGRESS1, DBIcon.PROGRESS2, DBIcon.PROGRESS3,
-            DBIcon.PROGRESS4, DBIcon.PROGRESS5, DBIcon.PROGRESS6, DBIcon.PROGRESS7,
-            DBIcon.PROGRESS8, DBIcon.PROGRESS9
+            UIIcon.PROGRESS0, UIIcon.PROGRESS1, UIIcon.PROGRESS2, UIIcon.PROGRESS3,
+            UIIcon.PROGRESS4, UIIcon.PROGRESS5, UIIcon.PROGRESS6, UIIcon.PROGRESS7,
+            UIIcon.PROGRESS8, UIIcon.PROGRESS9
     };
     static final Log log = Log.getLog(ResultSetDataPumpJob.class);
 
@@ -75,7 +76,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
     private String progressMessage;
 
     protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, IResultSetController controller, DBCExecutionContext executionContext, Composite progressControl) {
-        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBeaverIcons.getImageDescriptor(DBIcon.SQL_EXECUTE), executionContext);
+        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
         progressMessage = CoreMessages.controls_rs_pump_job_name;
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
@@ -190,7 +191,7 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 cancelButton = new Button(progressControl, SWT.PUSH);
                 cancelButton.setText("Cancel");
                 GridData gd = new GridData(GridData.FILL_BOTH);
-                gd.verticalIndent = DBeaverIcons.getImage(DBIcon.PROGRESS0).getBounds().height * 2;
+                gd.verticalIndent = DBeaverIcons.getImage(UIIcon.PROGRESS0).getBounds().height * 2;
                 cancelButton.setLayoutData(gd);
                 cancelButton.addSelectionListener(new SelectionAdapter() {
                     @Override

@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -886,7 +885,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 getEditorSite(),
                 getExecutionContext(),
                 allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title,
-                DBeaverIcons.getImage(DBIcon.SQL_PREVIEW),
+                DBeaverIcons.getImage(UIIcon.SQL_PREVIEW),
                 script.toString());
             dialog.setShowSaveButton(allowSave);
             result = dialog.open();

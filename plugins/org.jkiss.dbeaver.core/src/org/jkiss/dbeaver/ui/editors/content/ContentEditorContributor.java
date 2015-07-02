@@ -33,6 +33,7 @@ import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -258,7 +259,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public FileExportAction()
         {
-            super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", DBIcon.SAVE_AS);
+            super(IWorkbenchCommandConstants.FILE_EXPORT, "Export", "Save to File", UIIcon.SAVE_AS);
         }
 
         @Override
@@ -301,7 +302,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public FileImportAction()
         {
-            super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", DBIcon.LOAD);
+            super(IWorkbenchCommandConstants.FILE_IMPORT, "Import", "Load from File", UIIcon.LOAD);
         }
 
         @Override
@@ -358,7 +359,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public ApplyAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", DBIcon.ACCEPT);
+            super("org.jkiss.dbeaver.lob.actions.apply", "Apply Changes", "Apply Changes", UIIcon.ACCEPT);
         }
 
         @Override
@@ -392,7 +393,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
     {
         public CloseAction()
         {
-            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes", DBIcon.REJECT);
+            super("org.jkiss.dbeaver.lob.actions.close", "Close", "Reject changes", UIIcon.REJECT);
         }
 
         @Override

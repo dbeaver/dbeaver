@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.navigator.meta.*;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
@@ -80,7 +80,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
-            this.icon = DBIcon.GEN_DATABASE_TYPE;
+            this.icon = UIIcon.GEN_DATABASE_TYPE;
         }
 
         // Load tree structure

@@ -77,7 +77,6 @@ import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -551,7 +550,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         {
             // a group of default control tools
-            PaletteDrawer controls = new PaletteDrawer("Tools", DBeaverIcons.getImageDescriptor(DBIcon.CONFIGURATION));
+            PaletteDrawer controls = new PaletteDrawer("Tools", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
 
             paletteRoot.add(controls);
 
@@ -911,12 +910,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                         getSite(),
                         IWorkbenchCommandConstants.FILE_SAVE_AS,
                         "Save diagram as image",
-                        DBIcon.PICTURE_SAVE));
+                        UIIcon.PICTURE_SAVE));
                 toolBarManager.add(ActionUtils.makeCommandContribution(
                         getSite(),
                         IWorkbenchCommandConstants.FILE_PRINT,
                         "Print Diagram",
-                        DBIcon.PRINT));
+                        UIIcon.PRINT));
             }
             {
                 Action configAction = new Action("Configuration") {
@@ -929,7 +928,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                             ERDPreferencePage.PAGE_ID);
                     }
                 };
-                configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.CONFIGURATION));
+                configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
                 toolBarManager.add(configAction);
             }
         }

@@ -22,9 +22,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 
 /**
@@ -46,7 +46,7 @@ public class EditShellCommandsDialog extends HelpEnabledDialog {
     protected Control createDialogArea(Composite parent)
     {
         getShell().setText(CoreMessages.dialog_connection_events_title);
-        getShell().setImage(DBeaverIcons.getImage(DBIcon.EVENT));
+        getShell().setImage(DBeaverIcons.getImage(UIIcon.EVENT));
 
         page.createControl(parent);
         return page.getControl();

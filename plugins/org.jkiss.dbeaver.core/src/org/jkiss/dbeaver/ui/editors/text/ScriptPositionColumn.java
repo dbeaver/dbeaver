@@ -31,8 +31,8 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.eclipse.ui.texteditor.rulers.IContributedRulerColumn;
 import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -131,7 +131,7 @@ public class ScriptPositionColumn extends AbstractRulerColumn implements IContri
             gc.setBackground(computeBackground(modelLine));
             gc.fillRectangle(0, linePixel, getWidth(), lineHeight);
             if (ArrayUtils.contains(currentLines, modelLine)) {
-                gc.drawImage(DBeaverIcons.getImage(DBIcon.RULER_POSITION), 0, linePixel);
+                gc.drawImage(DBeaverIcons.getImage(UIIcon.RULER_POSITION), 0, linePixel);
             }
         }
     }

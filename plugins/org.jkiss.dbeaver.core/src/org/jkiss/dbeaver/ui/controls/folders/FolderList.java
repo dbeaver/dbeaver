@@ -609,7 +609,10 @@ public class FolderList extends Composite {
 		 * an icon the width of the tab doesn't change.
 		 */
         if (folderInfo.getImage() != null) {
-            width = width + DBeaverIcons.getImage(folderInfo.getImage()).getBounds().width + 4;
+            Image image = DBeaverIcons.getImage(folderInfo.getImage());
+            if (image != null) {
+                width = width + image.getBounds().width + 4;
+            }
         }
         if (folderInfo.isIndented()) {
             width = width + INDENT_LEFT;

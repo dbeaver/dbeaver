@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.Collection;
 
@@ -46,7 +46,7 @@ public class DBNBookmarkFolder extends DBNResource
     {
         IResource resource = getResource();
         if (resource != null && resource.getParent() instanceof IProject) {
-            return DBIcon.BOOKMARK_FOLDER;
+            return UIIcon.BOOKMARK_FOLDER;
         }
         return super.getNodeIcon();
     }

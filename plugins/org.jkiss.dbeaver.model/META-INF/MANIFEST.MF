@@ -5,11 +5,13 @@ Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
 Bundle-Version: 1.0.0
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-Activator: org.jkiss.dbeaver.core.ModelActivator
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.access,
  org.jkiss.dbeaver.model.admin.sessions,
  org.jkiss.dbeaver.model.data,
+ org.jkiss.dbeaver.model.data.document,
  org.jkiss.dbeaver.model.edit,
  org.jkiss.dbeaver.model.edit.prop,
  org.jkiss.dbeaver.model.exec,
@@ -26,24 +28,28 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model.impl.jdbc.data.handlers,
  org.jkiss.dbeaver.model.impl.jdbc.exec,
  org.jkiss.dbeaver.model.impl.jdbc.struct,
+ org.jkiss.dbeaver.model.impl.local,
+ org.jkiss.dbeaver.model.impl.net,
+ org.jkiss.dbeaver.model.impl.preferences,
  org.jkiss.dbeaver.model.impl.sql,
  org.jkiss.dbeaver.model.impl.sql.edit,
  org.jkiss.dbeaver.model.impl.sql.edit.struct,
  org.jkiss.dbeaver.model.impl.struct,
  org.jkiss.dbeaver.model.meta,
  org.jkiss.dbeaver.model.navigator,
+ org.jkiss.dbeaver.model.navigator.meta,
  org.jkiss.dbeaver.model.net,
  org.jkiss.dbeaver.model.project,
  org.jkiss.dbeaver.model.qm,
  org.jkiss.dbeaver.model.qm.meta,
  org.jkiss.dbeaver.model.runtime,
  org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.model.sql.format,
+ org.jkiss.dbeaver.model.sql.format.tokenized,
  org.jkiss.dbeaver.model.sql.parser,
  org.jkiss.dbeaver.model.struct,
  org.jkiss.dbeaver.model.struct.rdb,
  org.jkiss.dbeaver.model.virtual,
- org.jkiss.dbeaver.model.navigator.meta,
- org.jkiss.dbeaver.model.sql.format,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
@@ -51,8 +57,9 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch,
- net.sf.jsqlparser,
+ net.sf.jsqlparser;visibility:=reexport,
  org.apache.commons.logging,
- org.apache.commons.jexl
+ org.apache.commons.jexl,
+ org.eclipse.core.commands
 Bundle-Vendor: JKISS
 Bundle-Localization: plugin

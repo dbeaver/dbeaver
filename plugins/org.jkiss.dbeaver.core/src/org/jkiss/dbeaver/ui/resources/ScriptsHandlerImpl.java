@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -164,10 +164,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
         if (resource instanceof IFolder) {
             if (resource.getParent() instanceof IProject) {
-                node.setResourceImage(DBIcon.SCRIPTS);
+                node.setResourceImage(UIIcon.SCRIPTS);
             }
         } else {
-            node.setResourceImage(DBIcon.SQL_SCRIPT);
+            node.setResourceImage(UIIcon.SQL_SCRIPT);
         }
         return node;
     }

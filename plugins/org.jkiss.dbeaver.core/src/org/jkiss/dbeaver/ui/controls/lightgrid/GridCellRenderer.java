@@ -21,9 +21,9 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -38,7 +38,7 @@ class GridCellRenderer extends AbstractRenderer
     private static final int TEXT_TOP_MARGIN = 1;
     private static final int INSIDE_MARGIN = 3;
 
-    static final Image LINK_IMAGE = DBeaverIcons.getImage(DBIcon.LINK);
+    static final Image LINK_IMAGE = DBeaverIcons.getImage(UIIcon.LINK);
     static final Rectangle LINK_IMAGE_BOUNDS = LINK_IMAGE.getBounds();
 
     protected Color colorSelected;
