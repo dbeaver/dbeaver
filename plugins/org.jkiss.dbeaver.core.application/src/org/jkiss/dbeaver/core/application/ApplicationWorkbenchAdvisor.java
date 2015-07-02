@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
@@ -166,7 +167,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
                     DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
                     if (registry != null) {
                         for (DataSourceDescriptor dataSourceDescriptor : registry.getDataSources()) {
-                            if (!DataSourceDescriptor.checkAndCloseActiveTransaction(monitor, dataSourceDescriptor)) {
+                            if (!DataSourceHandler.checkAndCloseActiveTransaction(monitor, dataSourceDescriptor)) {
                                 result = false;
                                 return;
                             }

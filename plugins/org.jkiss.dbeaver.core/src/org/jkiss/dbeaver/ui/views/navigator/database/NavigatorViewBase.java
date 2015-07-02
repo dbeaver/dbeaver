@@ -33,8 +33,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.INavigatorModelView;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler;
@@ -148,9 +147,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 break;
                             case CONNECT:
                                 if (dataSource.isConnected()) {
-                                    DataSourceDisconnectHandler.execute(dataSource, null);
+                                    DataSourceHandler.disconnectDataSource(dataSource, null);
                                 } else {
-                                    DataSourceConnectHandler.execute(null, dataSource, null);
+                                    DataSourceHandler.connectToDataSource(null, dataSource, null);
                                 }
                                 break;
                             case SQL_EDITOR:
