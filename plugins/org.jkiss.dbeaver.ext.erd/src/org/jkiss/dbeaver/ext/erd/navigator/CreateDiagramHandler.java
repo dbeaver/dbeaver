@@ -20,10 +20,10 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
-public class CreateDiagramHandler extends DataSourceHandler {
+public class CreateDiagramHandler extends AbstractDataSourceHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException

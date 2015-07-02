@@ -33,11 +33,11 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 import java.util.Map;
 
-public class DataSourceAutoCommitHandler extends DataSourceHandler implements IElementUpdater
+public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler implements IElementUpdater
 {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
