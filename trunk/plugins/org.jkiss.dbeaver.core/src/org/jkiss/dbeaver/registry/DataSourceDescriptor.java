@@ -19,40 +19,32 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.ISaveablePart;
-import org.eclipse.ui.ISaveablePart2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
-import org.jkiss.dbeaver.model.qm.QMMCollector;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
-import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -71,8 +63,6 @@ public class DataSourceDescriptor
         DBPRefreshableObject
 {
     static final Log log = Log.getLog(DataSourceDescriptor.class);
-
-    public static final int END_TRANSACTION_WAIT_TIME = 3000;
 
     public static class FilterMapping {
         public final Class<?> type;
@@ -555,7 +545,7 @@ public class DataSourceDescriptor
 
     @Override
     public void initConnection(DBRProgressMonitor monitor, DBRProgressListener onFinish) {
-        DataSourceConnectHandler.execute(monitor, this, onFinish);
+        DataSourceHandler.connectToDataSource(monitor, this, onFinish);
     }
 
     @Override
@@ -709,11 +699,6 @@ public class DataSourceDescriptor
                     if (user instanceof Job) {
                         jobCount++;
                     }
-                    if (user instanceof ISaveablePart) {
-                        if (!UIUtils.validateAndSave(monitor, (ISaveablePart) user)) {
-                            return false;
-                        }
-                    }
                     if (user instanceof DBPDataSourceHandler) {
                         ((DBPDataSourceHandler) user).beforeDisconnect();
                     }
@@ -797,123 +782,6 @@ public class DataSourceDescriptor
         finally {
             connecting = false;
         }
-    }
-
-    public static boolean checkAndCloseActiveTransaction(final DBRProgressMonitor monitor, DBSDataSourceContainer container) {
-        DBPDataSource dataSource = container.getDataSource();
-        if (dataSource == null) {
-            return true;
-        }
-
-        return checkAndCloseActiveTransaction(monitor, container, dataSource.getAllContexts());
-    }
-
-    public static boolean checkAndCloseActiveTransaction(final DBRProgressMonitor monitor, DBSDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
-    {
-        if (container.getDataSource() == null) {
-            return true;
-        }
-
-        Boolean commitTxn = null;
-        for (DBCExecutionContext context : contexts) {
-            // First rollback active transaction
-            try {
-                if (isContextTransactionAffected(context)) {
-                    if (commitTxn == null) {
-                        // Ask for confirmation
-                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(container.getName());
-                        UIUtils.runInUI(null, closeConfirmer);
-                        switch (closeConfirmer.result) {
-                            case IDialogConstants.YES_ID:
-                                commitTxn = true;
-                                break;
-                            case IDialogConstants.NO_ID:
-                                commitTxn = false;
-                                break;
-                            default:
-                                return false;
-                        }
-                    }
-                    closeActiveTransaction(monitor, context, commitTxn);
-                }
-            } catch (Throwable e) {
-                log.warn("Can't rollback active transaction before disconnect", e);
-            } finally {
-                monitor.worked(1);
-            }
-        }
-        return true;
-    }
-
-    public static int checkActiveTransaction(DBCExecutionContext context)
-    {
-        // First rollback active transaction
-        if (isContextTransactionAffected(context)) {
-            // Ask for confirmation
-            TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
-            UIUtils.runInUI(null, closeConfirmer);
-            switch (closeConfirmer.result) {
-                case IDialogConstants.YES_ID:
-                    return ISaveablePart2.YES;
-                case IDialogConstants.NO_ID:
-                    return ISaveablePart2.NO;
-                default:
-                    return ISaveablePart2.CANCEL;
-            }
-        }
-        return ISaveablePart2.YES;
-    }
-
-    public static void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn) {
-        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
-        try {
-            monitor.subTask("End active transaction");
-            EndTransactionTask task = new EndTransactionTask(session, commitTxn);
-            RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
-        } finally {
-            session.close();
-        }
-    }
-
-    public static boolean isContextTransactionAffected(DBCExecutionContext context) {
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-        if (txnManager == null) {
-            return false;
-        }
-        try {
-            if (txnManager.isAutoCommit()) {
-                return false;
-            }
-        } catch (DBCException e) {
-            log.warn(e);
-            return false;
-        }
-
-        // If there are some executions in last savepoint then ask user about commit/rollback
-        QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-        if (qmm != null) {
-            QMMSessionInfo qmmSession = qmm.getSessionInfo(context);
-            QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
-            QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-            if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
-                return true;
-/*
-                boolean hasUserExec = false;
-                if (true) {
-                    // Do not check whether we have user queries, just ask for confirmation
-                    hasUserExec = true;
-                } else {
-                    for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
-                        if (psp.hasUserExecutions()) {
-                            hasUserExec = true;
-                            break;
-                        }
-                    }
-                }
-*/
-            }
-        }
-        return false;
     }
 
     @Override
@@ -1160,51 +1028,6 @@ public class DataSourceDescriptor
     @Override
     public String toString() {
         return name + " [" + driver + "]";
-    }
-
-    private static class EndTransactionTask implements DBRRunnableWithProgress {
-        private final DBCSession session;
-        private final boolean commit;
-
-        private EndTransactionTask(DBCSession session, boolean commit) {
-            this.session = session;
-            this.commit = commit;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-            if (txnManager != null) {
-                try {
-                    if (commit) {
-                        txnManager.commit(session);
-                    } else {
-                        txnManager.rollback(session, null);
-                    }
-                } catch (DBCException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        }
-    }
-
-    private static class TransactionCloseConfirmer implements Runnable {
-        final String name;
-        int result = IDialogConstants.NO_ID;
-
-        private TransactionCloseConfirmer(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public void run()
-        {
-            result = ConfirmationDialog.showConfirmDialog(
-                null,
-                DBeaverPreferences.CONFIRM_TXN_DISCONNECT,
-                ConfirmationDialog.QUESTION_WITH_CANCEL,
-                name);
-        }
     }
 
     public static class ContextInfo implements DBPObject {

@@ -62,7 +62,6 @@ import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
@@ -75,7 +74,7 @@ import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
 import org.jkiss.dbeaver.ui.DynamicFindReplaceTarget;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceConnectHandler;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
@@ -317,7 +316,7 @@ public class SQLEditor extends SQLEditorBase implements
         DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             if (!dataSourceContainer.isConnected()) {
-                DataSourceConnectHandler.execute(null, dataSourceContainer, null);
+                DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
             }
         }
         setPartName(getEditorInput().getName());
@@ -845,8 +844,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
         if (ownContext && executionContext != null) {
-            if (DataSourceDescriptor.isContextTransactionAffected(executionContext)) {
-                DataSourceDescriptor.closeActiveTransaction(new DefaultProgressMonitor(progressMonitor), executionContext, true);
+            if (DataSourceHandler.isContextTransactionAffected(executionContext)) {
+                DataSourceHandler.closeActiveTransaction(new DefaultProgressMonitor(progressMonitor), executionContext, true);
             }
             releaseExecutionContext();
         }
@@ -887,10 +886,6 @@ public class SQLEditor extends SQLEditorBase implements
                     return rsv.promptToSaveOnClose();
                 }
             }
-        }
-
-        if (ownContext && executionContext != null) {
-            return DataSourceDescriptor.checkActiveTransaction(executionContext);
         }
 
         return ISaveablePart2.DEFAULT;
