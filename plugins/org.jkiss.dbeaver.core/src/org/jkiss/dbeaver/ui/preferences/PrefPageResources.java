@@ -33,8 +33,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -127,7 +127,7 @@ public class PrefPageResources extends PreferencePage implements IWorkbenchPrefe
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
         //store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
 
         return super.performOk();
     }

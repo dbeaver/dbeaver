@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -171,7 +171,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         }
         store.setValue(QMConstants.PROP_STORE_LOG_FILE, checkStoreLog.getSelection());
         store.setValue(QMConstants.PROP_LOG_DIRECTORY, textOutputFolder.getText());
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
 
         return super.performOk();
     }

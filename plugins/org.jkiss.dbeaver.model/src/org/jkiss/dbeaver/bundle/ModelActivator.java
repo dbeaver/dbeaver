@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.bundle;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
@@ -26,8 +26,6 @@ import org.osgi.framework.BundleContext;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -38,7 +36,6 @@ public class ModelActivator extends Plugin
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     // The shared instance
     private static ModelActivator instance;
-    private ResourceBundle resourceBundle;
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
 
@@ -62,12 +59,6 @@ public class ModelActivator extends Plugin
 
         instance = this;
         preferences = new BundlePreferenceStore(getBundle());
-
-        try {
-            resourceBundle = ResourceBundle.getBundle(ModelMessages.BUNDLE_NAME);
-        } catch (MissingResourceException x) {
-            resourceBundle = null;
-        }
     }
 
     @Override

@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;

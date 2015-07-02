@@ -43,10 +43,10 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
  * TargetPrefPage
@@ -316,7 +316,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         } else {
             savePreferences(store);
         }
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
         return super.performOk();
     }
 

@@ -32,9 +32,9 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -134,7 +134,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
             }
         }
 
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
 
         return super.performOk();
     }

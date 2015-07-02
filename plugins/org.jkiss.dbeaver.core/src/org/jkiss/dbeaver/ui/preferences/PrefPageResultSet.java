@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -249,7 +249,7 @@ public class PrefPageResultSet extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Override

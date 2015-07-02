@@ -25,10 +25,10 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
  * PrefPageOracle
@@ -104,7 +104,7 @@ public class PrefPageOracle extends TargetPrefPage
         store.setValue(OracleConstants.PREF_EXPLAIN_TABLE_NAME, explainTableText.getText());
         store.setValue(OracleConstants.PREF_SUPPORT_ROWID, rowidSupportCheck.getSelection());
         store.setValue(OracleConstants.PREF_DBMS_OUTPUT, enableDbmsOuputCheck.getSelection());
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Override

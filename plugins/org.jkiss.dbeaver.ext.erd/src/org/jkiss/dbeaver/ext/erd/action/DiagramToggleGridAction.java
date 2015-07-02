@@ -24,7 +24,7 @@ import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 /**
  * Action to toggle the layout between manual and automatic
@@ -44,7 +44,7 @@ public class DiagramToggleGridAction extends Action
         final DBPPreferenceStore store = ERDActivator.getDefault().getPreferences();
         final boolean gridEnabled = store.getBoolean(ERDConstants.PREF_GRID_ENABLED);
         store.setValue(ERDConstants.PREF_GRID_ENABLED, !gridEnabled);
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
     }
 
 }

@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver;
 
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;

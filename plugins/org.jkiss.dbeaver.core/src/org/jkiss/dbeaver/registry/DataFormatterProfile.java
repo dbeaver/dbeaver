@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -75,7 +75,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
             Map<Object, Object> formatterProps = new HashMap<Object, Object>();
             for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object defaultValue = defaultProperties.get(prop.getId());
-                Object propValue = RuntimeUtils.getPreferenceValue(
+                Object propValue = PrefUtils.getPreferenceValue(
                     store,
                     DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), prop.getDataType());
                 if (propValue != null && !CommonUtils.equalObjects(defaultValue, propValue)) {
@@ -98,13 +98,13 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
             for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
                 if (propValue != null) {
-                    RuntimeUtils.setPreferenceValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), propValue);
+                    PrefUtils.setPreferenceValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), propValue);
                 } else {
                     store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
                 }
             }
         }
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Override
@@ -221,7 +221,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
             for (DBPPropertyDescriptor prop : formatter.getProperties()) {
                 Object defaultValue = defaultProperties.get(prop.getId());
                 if (defaultValue != null) {
-                    RuntimeUtils.setPreferenceDefaultValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), defaultValue);
+                    PrefUtils.setPreferenceDefaultValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), defaultValue);
                 }
             }
         }
