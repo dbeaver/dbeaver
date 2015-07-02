@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 
-public abstract class DataSourceHandler extends AbstractHandler {
+public abstract class AbstractDataSourceHandler extends AbstractHandler {
 
-    static protected final Log log = Log.getLog(DataSourceHandler.class);
+    static protected final Log log = Log.getLog(AbstractDataSourceHandler.class);
 
     protected DBCExecutionContext getExecutionContext(ExecutionEvent event, boolean useEditor)
     {

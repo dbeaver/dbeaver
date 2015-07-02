@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class DataSourceRollbackHandler extends DataSourceHandler
+public class DataSourceRollbackHandler extends AbstractDataSourceHandler
 {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException

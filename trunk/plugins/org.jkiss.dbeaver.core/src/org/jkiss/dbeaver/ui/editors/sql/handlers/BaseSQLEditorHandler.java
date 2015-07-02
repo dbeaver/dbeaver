@@ -31,10 +31,10 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 
-public abstract class BaseSQLEditorHandler extends DataSourceHandler {
+public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
 
     static final Log log = Log.getLog(BaseSQLEditorHandler.class);
 

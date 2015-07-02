@@ -21,9 +21,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.actions.DataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
-public class DataSourceConnectHandler extends DataSourceHandler
+public class DataSourceConnectHandler extends AbstractDataSourceHandler
 {
 
     @Nullable
@@ -32,7 +32,7 @@ public class DataSourceConnectHandler extends DataSourceHandler
     {
         final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) getDataSourceContainer(event, false);
         if (dataSourceContainer != null) {
-            org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
+            DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
         }
         return null;
     }
