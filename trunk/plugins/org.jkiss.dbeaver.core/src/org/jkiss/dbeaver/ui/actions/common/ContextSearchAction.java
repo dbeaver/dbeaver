@@ -22,7 +22,7 @@ import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
  * Context search action
@@ -34,7 +34,7 @@ public class ContextSearchAction extends Action {
 
     public ContextSearchAction(ISearchContextProvider contextProvider, ISearchContextProvider.SearchType searchType)
     {
-        super(CoreMessages.ui_actions_context_search_name, DBeaverIcons.getImageDescriptor(DBIcon.FIND));
+        super(CoreMessages.ui_actions_context_search_name, DBeaverIcons.getImageDescriptor(UIIcon.FIND));
         this.contextProvider = contextProvider;
         this.searchType = searchType;
     }

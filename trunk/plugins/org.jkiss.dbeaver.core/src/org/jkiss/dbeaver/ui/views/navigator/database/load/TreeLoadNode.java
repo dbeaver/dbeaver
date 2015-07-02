@@ -22,7 +22,7 @@ import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -60,10 +60,10 @@ public class TreeLoadNode implements ILabelProvider {
         text1 = text + "."; //$NON-NLS-1$
         text2 = text + ".."; //$NON-NLS-1$
         text3 = text + "..."; //$NON-NLS-1$
-        imgLoading1 = DBeaverIcons.getImage(DBIcon.LOADING1);
-        imgLoading2 = DBeaverIcons.getImage(DBIcon.LOADING2);
-        imgLoading3 = DBeaverIcons.getImage(DBIcon.LOADING3);
-        imgLoading4 = DBeaverIcons.getImage(DBIcon.LOADING4);
+        imgLoading1 = DBeaverIcons.getImage(UIIcon.LOADING1);
+        imgLoading2 = DBeaverIcons.getImage(UIIcon.LOADING2);
+        imgLoading3 = DBeaverIcons.getImage(UIIcon.LOADING3);
+        imgLoading4 = DBeaverIcons.getImage(UIIcon.LOADING4);
     }
 
     public DBNNode getParent()

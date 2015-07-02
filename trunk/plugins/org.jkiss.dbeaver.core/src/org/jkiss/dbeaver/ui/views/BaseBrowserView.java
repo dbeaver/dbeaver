@@ -30,8 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.ViewPart;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 
 /**
@@ -46,28 +46,28 @@ public class BaseBrowserView extends ViewPart {
     private Browser browser;
     private String initialUrl;
 
-    private Action backAction = new Action("Back", DBeaverIcons.getImageDescriptor(DBIcon.ARROW_LEFT)) {
+    private Action backAction = new Action("Back", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_LEFT)) {
         @Override
         public void run() {
             browser.back();
         }
     };
 
-    private Action forwardAction = new Action("Forward", DBeaverIcons.getImageDescriptor(DBIcon.ARROW_RIGHT)) {
+    private Action forwardAction = new Action("Forward", DBeaverIcons.getImageDescriptor(UIIcon.ARROW_RIGHT)) {
         @Override
         public void run() {
             browser.forward();
         }
     };
 
-    private Action stopAction = new Action("Stop", DBeaverIcons.getImageDescriptor(DBIcon.REJECT)) {
+    private Action stopAction = new Action("Stop", DBeaverIcons.getImageDescriptor(UIIcon.REJECT)) {
         @Override
         public void run() {
             browser.stop();
         }
     };
 
-    private Action refreshAction = new Action("Refresh", DBeaverIcons.getImageDescriptor(DBIcon.REFRESH)) {
+    private Action refreshAction = new Action("Refresh", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
         @Override
         public void run() {
             browser.refresh();

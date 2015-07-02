@@ -22,4 +22,8 @@
 
 <plugin>
 
+  <extension point="org.eclipse.core.runtime.preferences">
+    <initializer class="org.jkiss.dbeaver.core.ModelPreferencesInitializer"/>
+  </extension>
+
 </plugin>

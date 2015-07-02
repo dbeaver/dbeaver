@@ -29,6 +29,7 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -168,7 +169,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
                         valueId = valueController.getValueName();
                     }
 
-                    contentFile = ContentUtils.createTempContentFile(monitor, valueId);
+                    contentFile = ContentUtils.createTempContentFile(monitor, DBeaverCore.getInstance(), valueId);
                 }
 
                 // Write value to file
@@ -327,7 +328,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
             contentDetached = true;
         } else {
             // Create new storage and pass it to content
-            storage = new TemporaryContentStorage(contentFile);
+            storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile);
             contentDetached = content.updateContents(localMonitor, storage);
         }
     }

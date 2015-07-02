@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -137,9 +138,9 @@ public class DialogUtils {
                 try {
                     DBDContentStorage storage;
                     if (ContentUtils.isTextContent(value)) {
-                        storage = new ExternalContentStorage(openFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+                        storage = new ExternalContentStorage(DBeaverCore.getInstance(), openFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
                     } else {
-                        storage = new ExternalContentStorage(openFile);
+                        storage = new ExternalContentStorage(DBeaverCore.getInstance(), openFile);
                     }
                     value.updateContents(monitor, storage);
                     controller.updateValue(value);

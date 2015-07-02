@@ -42,13 +42,13 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -245,7 +245,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         MessageDialog dialog = new MessageDialog(
             workbenchWindow.getShell(),
             UIUtils.formatMessage(bundle.getString(titleKey), nodeTypeName, node.getNodeName()),
-            DBeaverIcons.getImage(DBIcon.REJECT),
+            DBeaverIcons.getImage(UIIcon.REJECT),
                 UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName.toLowerCase(), node.getNodeName()),
                 MessageDialog.CONFIRM, null, 0)
         {

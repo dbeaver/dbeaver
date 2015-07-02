@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -55,7 +55,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(CoreMessages.dialog_scripts_export_wizard_window_title); //NON-NLS-1
-        setDefaultPageImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.SQL_SCRIPT));
+        setDefaultPageImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT));
         setNeedsProgressMonitor(true);
         mainPage = new ScriptsExportWizardPage(CoreMessages.dialog_scripts_export_wizard_page_name); //NON-NLS-1
     }

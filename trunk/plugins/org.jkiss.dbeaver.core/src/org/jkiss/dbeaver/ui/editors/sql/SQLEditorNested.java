@@ -39,7 +39,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
@@ -318,7 +317,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     {
         public ViewLogAction()
         {
-            super("View compile log", DBeaverIcons.getImageDescriptor(DBIcon.COMPILE_LOG)); //$NON-NLS-2$
+            super("View compile log", DBeaverIcons.getImageDescriptor(UIIcon.COMPILE_LOG)); //$NON-NLS-2$
         }
 
         @Override

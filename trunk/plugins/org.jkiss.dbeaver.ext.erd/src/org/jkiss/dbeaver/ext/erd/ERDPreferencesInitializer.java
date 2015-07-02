@@ -3,7 +3,7 @@ package org.jkiss.dbeaver.ext.erd;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.runtime.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 
 public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
 
