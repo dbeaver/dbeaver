@@ -16,12 +16,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.model.messages;
 
 import org.eclipse.osgi.util.NLS;
 
 public class ModelMessages extends NLS {
-	static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.ModelResources"; //$NON-NLS-1$
+	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
 	public static String DBeaverCore_error_can_create_temp_dir;
 	public static String DBeaverCore_error_can_create_temp_file;

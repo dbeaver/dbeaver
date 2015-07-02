@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.IProject;
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

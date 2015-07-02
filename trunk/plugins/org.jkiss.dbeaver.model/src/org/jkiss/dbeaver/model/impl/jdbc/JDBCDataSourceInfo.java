@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;

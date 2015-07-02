@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary.pref;
 
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.widgets.Composite;
@@ -27,7 +26,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
 
@@ -108,7 +107,7 @@ public class HexPreferencesPage extends PreferencePage implements IWorkbenchPref
         store.setValue(DBeaverPreferences.HEX_FONT_SIZE, fontData.getHeight());
         store.firePropertyChangeEvent(PROP_FONT_DATA, null, fontData);
 
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
 
         return true;
     }

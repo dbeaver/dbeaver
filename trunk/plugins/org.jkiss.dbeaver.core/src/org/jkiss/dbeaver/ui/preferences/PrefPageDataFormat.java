@@ -33,12 +33,12 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.dialogs.DataFormatProfilesEditDialog;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.*;
 import java.util.List;
@@ -361,7 +361,7 @@ public class PrefPageDataFormat extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Override

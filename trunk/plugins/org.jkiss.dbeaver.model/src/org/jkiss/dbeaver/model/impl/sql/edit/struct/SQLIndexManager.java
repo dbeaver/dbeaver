@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;

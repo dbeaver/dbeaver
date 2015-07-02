@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.ModelMessages;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;

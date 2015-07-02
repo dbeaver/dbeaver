@@ -38,12 +38,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -175,7 +175,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
             page.saveState(store);
         }
         store.setValue(PROVIDER_PREF_NAME, providers.get(providersFolder.getSelectionIndex()).getId());
-        RuntimeUtils.savePreferenceStore(store);
+        PrefUtils.savePreferenceStore(store);
     }
 
     @Override
