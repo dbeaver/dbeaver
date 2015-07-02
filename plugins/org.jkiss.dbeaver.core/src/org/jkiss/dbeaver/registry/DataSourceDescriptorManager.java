@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceDisconnectHandler;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 
@@ -111,7 +111,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             }
         };
         if (object.isConnected()) {
-            DataSourceDisconnectHandler.execute(object, remover);
+            DataSourceHandler.disconnectDataSource(object, remover);
         } else {
             remover.run();
         }
