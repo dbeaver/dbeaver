@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.ISaveablePart;
+import org.eclipse.ui.ISaveablePart2;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -798,66 +799,42 @@ public class DataSourceDescriptor
         }
     }
 
-    public boolean closeActiveTransaction(final DBRProgressMonitor monitor)
-    {
+    public static boolean checkAndCloseActiveTransaction(final DBRProgressMonitor monitor, DBSDataSourceContainer container) {
+        DBPDataSource dataSource = container.getDataSource();
         if (dataSource == null) {
             return true;
         }
 
-        Boolean commitTxn = null;
-        for (DBCExecutionContext context : dataSource.getAllContexts()) {
-            // First rollback active transaction
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-            try {
-                if (txnManager == null || txnManager.isAutoCommit()) {
-                    continue;
-                }
+        return checkAndCloseActiveTransaction(monitor, container, dataSource.getAllContexts());
+    }
 
-                // If there are some executions in last savepoint then ask user about commit/rollback
-                QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
-                if (qmm != null) {
-                    QMMSessionInfo qmmSession = qmm.getSessionInfo(context);
-                    QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
-                    QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
-                    if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
-                        boolean hasUserExec = false;
-                        if (true) {
-                            // Do not check whether we have user queries, just ask for confirmation
-                            hasUserExec = true;
-                        } else {
-                            for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
-                                if (psp.hasUserExecutions()) {
-                                    hasUserExec = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if (hasUserExec) {
-                            DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
-                            try {
-                                if (commitTxn == null) {
-                                    // Ask for confirmation
-                                    TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(getName());
-                                    UIUtils.runInUI(null, closeConfirmer);
-                                    switch (closeConfirmer.result) {
-                                        case IDialogConstants.YES_ID:
-                                            commitTxn = true;
-                                            break;
-                                        case IDialogConstants.NO_ID:
-                                            commitTxn = false;
-                                            break;
-                                        default:
-                                            return false;
-                                    }
-                                }
-                                monitor.subTask("End active transaction");
-                                EndTransactionTask task = new EndTransactionTask(session, commitTxn);
-                                RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
-                            } finally {
-                                session.close();
-                            }
+    public static boolean checkAndCloseActiveTransaction(final DBRProgressMonitor monitor, DBSDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
+    {
+        if (container.getDataSource() == null) {
+            return true;
+        }
+
+        Boolean commitTxn = null;
+        for (DBCExecutionContext context : contexts) {
+            // First rollback active transaction
+            try {
+                if (isContextTransactionAffected(context)) {
+                    if (commitTxn == null) {
+                        // Ask for confirmation
+                        TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(container.getName());
+                        UIUtils.runInUI(null, closeConfirmer);
+                        switch (closeConfirmer.result) {
+                            case IDialogConstants.YES_ID:
+                                commitTxn = true;
+                                break;
+                            case IDialogConstants.NO_ID:
+                                commitTxn = false;
+                                break;
+                            default:
+                                return false;
                         }
                     }
+                    closeActiveTransaction(monitor, context, commitTxn);
                 }
             } catch (Throwable e) {
                 log.warn("Can't rollback active transaction before disconnect", e);
@@ -866,6 +843,77 @@ public class DataSourceDescriptor
             }
         }
         return true;
+    }
+
+    public static int checkActiveTransaction(DBCExecutionContext context)
+    {
+        // First rollback active transaction
+        if (isContextTransactionAffected(context)) {
+            // Ask for confirmation
+            TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
+            UIUtils.runInUI(null, closeConfirmer);
+            switch (closeConfirmer.result) {
+                case IDialogConstants.YES_ID:
+                    return ISaveablePart2.YES;
+                case IDialogConstants.NO_ID:
+                    return ISaveablePart2.NO;
+                default:
+                    return ISaveablePart2.CANCEL;
+            }
+        }
+        return ISaveablePart2.YES;
+    }
+
+    public static void closeActiveTransaction(DBRProgressMonitor monitor, DBCExecutionContext context, boolean commitTxn) {
+        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction");
+        try {
+            monitor.subTask("End active transaction");
+            EndTransactionTask task = new EndTransactionTask(session, commitTxn);
+            RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
+        } finally {
+            session.close();
+        }
+    }
+
+    public static boolean isContextTransactionAffected(DBCExecutionContext context) {
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+        if (txnManager == null) {
+            return false;
+        }
+        try {
+            if (txnManager.isAutoCommit()) {
+                return false;
+            }
+        } catch (DBCException e) {
+            log.warn(e);
+            return false;
+        }
+
+        // If there are some executions in last savepoint then ask user about commit/rollback
+        QMMCollector qmm = DBeaverCore.getInstance().getQueryManager().getMetaCollector();
+        if (qmm != null) {
+            QMMSessionInfo qmmSession = qmm.getSessionInfo(context);
+            QMMTransactionInfo txn = qmmSession == null ? null : qmmSession.getTransaction();
+            QMMTransactionSavepointInfo sp = txn == null ? null : txn.getCurrentSavepoint();
+            if (sp != null && (sp.getPrevious() != null || sp.getLastExecute() != null)) {
+                return true;
+/*
+                boolean hasUserExec = false;
+                if (true) {
+                    // Do not check whether we have user queries, just ask for confirmation
+                    hasUserExec = true;
+                } else {
+                    for (QMMTransactionSavepointInfo psp = sp; psp != null; psp = psp.getPrevious()) {
+                        if (psp.hasUserExecutions()) {
+                            hasUserExec = true;
+                            break;
+                        }
+                    }
+                }
+*/
+            }
+        }
+        return false;
     }
 
     @Override

@@ -49,7 +49,7 @@ public class DisconnectJob extends EventProcessorJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         try {
-            if (container.closeActiveTransaction(monitor)) {
+            if (DataSourceDescriptor.checkAndCloseActiveTransaction(monitor, container)) {
                 processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
                 container.disconnect(monitor);
                 processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
