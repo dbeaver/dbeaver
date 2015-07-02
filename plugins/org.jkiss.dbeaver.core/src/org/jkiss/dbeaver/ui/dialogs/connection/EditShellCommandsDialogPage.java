@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.EventProcessorJob;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.ArrayUtils;
@@ -58,7 +58,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
         super(CoreMessages.dialog_connection_events_title);
         setTitle("Shell Commands");
         setDescription(CoreMessages.dialog_connection_events_title);
-        setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.EVENT));
+        setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.EVENT));
         for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
             DBRShellCommand command = dataSource.getConnectionConfiguration().getEvent(eventType);
             eventsCache.put(eventType, command == null ? null : new DBRShellCommand(command));
@@ -85,7 +85,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
                 TableItem item = new TableItem(eventTypeTable, SWT.NONE);
                 item.setData(eventType);
                 item.setText(eventType.getTitle());
-                item.setImage(DBeaverIcons.getImage(DBIcon.EVENT));
+                item.setImage(DBeaverIcons.getImage(UIIcon.EVENT));
                 item.setChecked(command != null && command.isEnabled());
             }
 

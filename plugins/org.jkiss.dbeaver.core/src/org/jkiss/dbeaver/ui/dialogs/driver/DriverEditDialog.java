@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
@@ -321,7 +322,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                             PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
                             lib.getFile().isDirectory() ?
                                 DBeaverIcons.getImage(DBIcon.TREE_FOLDER) :
-                                DBeaverIcons.getImage((lib.getType() == DBPDriverFileType.jar ? DBIcon.JAR : DBIcon.TYPE_UNKNOWN)));
+                                DBeaverIcons.getImage((lib.getType() == DBPDriverFileType.jar ? UIIcon.JAR : DBIcon.TYPE_UNKNOWN)));
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));

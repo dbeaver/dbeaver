@@ -55,8 +55,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
@@ -554,7 +554,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
         {
             super(
                 CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values",
-                DBeaverIcons.getImageDescriptor(DBIcon.SQL_EXECUTE),
+                DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE),
                 valueController.getExecutionContext());
             setUser(false);
         }

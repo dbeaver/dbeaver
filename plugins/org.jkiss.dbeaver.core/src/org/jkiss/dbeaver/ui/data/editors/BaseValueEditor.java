@@ -28,9 +28,9 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -55,7 +55,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         if (editToolBar != null) {
             editToolBar.add(new Separator());
             if (!valueController.isReadOnly()) {
-                editToolBar.add(new Action("Apply changes", DBeaverIcons.getImageDescriptor(DBIcon.CONFIRM)) {
+                editToolBar.add(new Action("Apply changes", DBeaverIcons.getImageDescriptor(UIIcon.CONFIRM)) {
                     @Override
                     public void run() {
                         saveValue();

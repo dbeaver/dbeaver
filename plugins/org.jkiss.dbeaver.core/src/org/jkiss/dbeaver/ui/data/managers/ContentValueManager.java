@@ -24,11 +24,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPPropertyManager;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -62,14 +62,14 @@ public class ContentValueManager extends BaseValueManager {
         throws DBCException
     {
         if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(DBIcon.SAVE_AS)) {
+            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS)) {
                 @Override
                 public void run() {
                     DialogUtils.saveToFile(controller);
                 }
             });
         }
-        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(DBIcon.LOAD)) {
+        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
             @Override
             public void run() {
                 DialogUtils.loadFromFile(controller);

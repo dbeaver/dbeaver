@@ -25,7 +25,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -34,10 +33,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ISearchExecutor;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -80,7 +76,7 @@ public class ItemListControl extends NodeListControl
         if (getRootNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder)getRootNode()).getItemsMeta() != null) {
             toolbarManager.add(new Action(
                 "Filter",
-                DBeaverIcons.getImageDescriptor(DBIcon.FILTER))
+                DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
             {
                 @Override
                 public void run()

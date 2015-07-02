@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -193,7 +194,7 @@ abstract class ViewValuePanel extends Composite {
 
     private void fillStandardToolBar()
     {
-        toolBarManager.add(new Action("Hide panel", DBeaverIcons.getImageDescriptor(DBIcon.CLOSE)) {
+        toolBarManager.add(new Action("Hide panel", DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
             @Override
             public void run() {
                 hidePanel();

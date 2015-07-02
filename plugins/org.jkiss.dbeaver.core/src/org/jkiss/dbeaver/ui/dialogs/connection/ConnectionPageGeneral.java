@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -376,7 +377,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     "Name of schema or catalog which will be set as default.");
 
                 UIUtils.createControlLabel(txnGroup, "Bootstrap queries");
-                Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(DBIcon.SQL_SCRIPT));
+                Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                     queriesConfigButton.setFont(boldFont);
                 }

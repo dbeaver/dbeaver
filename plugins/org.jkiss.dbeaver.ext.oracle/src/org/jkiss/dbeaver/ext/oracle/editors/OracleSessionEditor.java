@@ -26,13 +26,13 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
@@ -93,7 +93,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
         {
             super(
                 kill ? OracleMessages.editors_oracle_session_editor_title_kill_session : OracleMessages.editors_oracle_session_editor_title_disconnect_session,
-                DBeaverIcons.getImageDescriptor(kill ? DBIcon.REJECT : DBIcon.SQL_DISCONNECT));
+                DBeaverIcons.getImageDescriptor(kill ? UIIcon.REJECT : UIIcon.SQL_DISCONNECT));
             this.kill = kill;
         }
 
