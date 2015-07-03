@@ -30,16 +30,13 @@ public class ModelMessages extends NLS {
 
 	public static String model_navigator__connections;
 	public static String model_navigator_Connection;
-	public static String model_navigator_Connections;
 
 	public static String model_connection_events_event_after_connect;
 	public static String model_connection_events_event_after_disconnect;
 	public static String model_connection_events_event_before_connect;
 	public static String model_connection_events_event_before_disconnect;
 
-	public static String model_edit_execute_;
-
-	public static String model_html_read_database_meta_data;
+	public static String model_jdbc_read_database_meta_data;
 
 	public static String model_jdbc__rows_fetched;
 	public static String model_jdbc_array_result_set;
@@ -130,37 +127,7 @@ public class ModelMessages extends NLS {
 	public static String model_navigator_Name;
 	public static String model_navigator_Project;
 
-	public static String model_navigator_resource_exception_already_exists;
 	public static String model_navigator_Root;
-
-	public static String model_project_bookmarks_folder;
-	public static String model_project_cant_open_bookmark;
-	public static String model_project_open_bookmark;
-	public static String model_project_Script;
-	public static String model_project_Scripts;
-
-	public static String model_ssh_configurator_checkbox_save_pass;
-
-	public static String model_ssh_configurator_combo_auth_method;
-
-	public static String model_ssh_configurator_combo_password;
-
-	public static String model_ssh_configurator_combo_pub_key;
-
-	public static String model_ssh_configurator_dialog_choose_private_key;
-
-	public static String model_ssh_configurator_label_host_ip;
-
-	public static String model_ssh_configurator_label_password;
-	public static String model_ssh_configurator_label_passphrase;
-
-	public static String model_ssh_configurator_label_port;
-
-	public static String model_ssh_configurator_label_private_key;
-
-	public static String model_ssh_configurator_label_user_name;
-
-    public static String model_ssh_configurator_label_keep_alive;
 
 	public static String model_struct_Cascade;
 	public static String model_struct_Check;

@@ -263,7 +263,7 @@ public abstract class JDBCDataSource
                 this.metaContext.connect(monitor, true, null, false);
             }
         }
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_html_read_database_meta_data);
+        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_read_database_meta_data);
         try {
             JDBCDatabaseMetaData metaData = session.getMetaData();
             sqlDialect = createSQLDialect(metaData);
