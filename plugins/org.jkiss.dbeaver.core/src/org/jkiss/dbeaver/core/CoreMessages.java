@@ -1141,24 +1141,6 @@ public class CoreMessages extends NLS {
 
     public static String model_ssh_configurator_label_keep_alive;
 
-	public static String model_struct_Cascade;
-	public static String model_struct_Check;
-	public static String model_struct_Clustered;
-	public static String model_struct_Foreign_Key;
-	public static String model_struct_Hashed;
-	public static String model_struct_No_Action;
-	public static String model_struct_Not_NULL;
-	public static String model_struct_Other;
-	public static String model_struct_Primary_Key;
-	public static String model_struct_Restrict;
-	public static String model_struct_Set_Default;
-	public static String model_struct_Set_NULL;
-	public static String model_struct_Statistic;
-	public static String model_struct_Unique_Key;
-    public static String model_struct_Virtual_Key;
-    public static String model_struct_Pseudo_Key;
-	public static String model_struct_Unknown;
-
 	public static String pref_page_confirmations_combo_always;
 	public static String pref_page_confirmations_combo_never;
 	public static String pref_page_confirmations_combo_prompt;
