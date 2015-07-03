@@ -1103,10 +1103,10 @@ public class CoreMessages extends NLS {
 	public static String model_jdbc_unsupported_value_type_;
 
 	public static String model_navigator_Description;
+	public static String model_navigator_Name;
 	public static String model_navigator_load_;
 	public static String model_navigator_load_items_;
 	public static String model_navigator_Model_root;
-	public static String model_navigator_Name;
 	public static String model_navigator_Project;
 
 	public static String model_navigator_resource_exception_already_exists;
