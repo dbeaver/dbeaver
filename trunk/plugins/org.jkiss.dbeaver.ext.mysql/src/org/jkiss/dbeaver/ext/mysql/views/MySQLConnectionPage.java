@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -228,7 +229,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource)
+    public void saveSettings(DBSDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {

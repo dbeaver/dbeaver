@@ -23,9 +23,12 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -72,15 +75,15 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
 
     protected void refreshDriverProperties()
     {
-        DataSourceDescriptor activeDataSource = site.getActiveDataSource();
+        DBSDataSourceContainer activeDataSource = site.getActiveDataSource();
         if (prevConnectionInfo == activeDataSource.getConnectionConfiguration()) {
             return;
         }
         DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
         DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
-            site.getDataSourceRegistry(),
+            (DataSourceRegistry) site.getDataSourceRegistry(),
             activeDataSource.getId(),
-            activeDataSource.getDriver(),
+            (DriverDescriptor) activeDataSource.getDriver(),
             tmpConnectionInfo);
         try {
             hostPage.saveSettings(tempDataSource);
@@ -97,7 +100,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource)
+    public void saveSettings(DBSDataSourceContainer dataSource)
     {
         if (propertySource != null) {
             dataSource.getConnectionConfiguration().getProperties().putAll(propertySource.getProperties());
