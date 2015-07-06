@@ -29,9 +29,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 
 import java.util.ArrayList;
 import java.util.Iterator;

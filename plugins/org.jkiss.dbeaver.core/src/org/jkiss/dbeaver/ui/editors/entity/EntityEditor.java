@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

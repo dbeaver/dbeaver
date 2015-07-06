@@ -22,7 +22,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 public class NavigatorHandlerCollapseAll extends AbstractHandler {
 

@@ -24,7 +24,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerProjectSelect extends NavigatorHandlerObjectBase {
 

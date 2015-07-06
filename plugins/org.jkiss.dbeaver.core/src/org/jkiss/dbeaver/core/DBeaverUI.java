@@ -39,12 +39,12 @@ import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.ui.DBUICallback;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBUICallback;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
@@ -145,6 +145,7 @@ public class DBeaverUI implements DBUICallback {
         return job;
     }
 
+    @NotNull
     public static IWorkbenchWindow getActiveWorkbenchWindow()
     {
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -156,16 +157,12 @@ public class DBeaverUI implements DBUICallback {
         if (windows.length > 0) {
             return windows[0];
         }
-        return null;
+        throw new IllegalStateException("No workbench window");
     }
 
     public static Shell getActiveWorkbenchShell()
     {
-        IWorkbenchWindow window = getActiveWorkbenchWindow();
-        if (window != null) {
-            return window.getShell();
-        }
-        return null;
+        return getActiveWorkbenchWindow().getShell();
     }
 
     public static Display getDisplay()

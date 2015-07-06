@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.views.navigator.database;
+package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
@@ -27,9 +27,9 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadNode;
-import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadService;
-import org.jkiss.dbeaver.ui.views.navigator.database.load.TreeLoadVisualizer;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

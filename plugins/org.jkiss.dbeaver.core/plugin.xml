@@ -107,8 +107,8 @@
                 properties="active,hasData,hasMoreData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation"
                 type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-                class="org.jkiss.dbeaver.ui.views.navigator.NavigatorPropertyTester"
-                id="org.jkiss.dbeaver.ui.views.navigator.NavigatorPropertyTester"
+                class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
+                id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
                 namespace="org.jkiss.dbeaver.core.navigator"
                 properties="active"
                 type="org.eclipse.ui.IWorkbenchPart"/>
@@ -131,21 +131,21 @@
         <view
                 id="org.jkiss.dbeaver.core.databaseNavigator"
                 category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView"
+                class="org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView"
                 allowMultiple="false"
                 icon="icons/databases.png"
                 name="%view.database.navigator.title"/>
         <view
                 id="org.jkiss.dbeaver.core.projectNavigator"
                 category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView"
+                class="org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView"
                 allowMultiple="false"
                 icon="icons/projects.png"
                 name="%view.project.navigator.title"/>
         <view
                 id="org.jkiss.dbeaver.core.projectExplorer"
                 category="org.jkiss.dbeaver.core.category"
-                class="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"
+                class="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"
                 allowMultiple="false"
                 icon="icons/project.png"
                 name="%view.project.explorer.title"/>
@@ -358,7 +358,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part">
             <with variable="activePart">
-                <!--<instanceof value="org.jkiss.dbeaver.ui.INavigatorModelView"/>-->
+                <!--<instanceof value="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>-->
                 <test property="org.jkiss.dbeaver.core.navigator.active" forcePluginActivation="true"/>
             </with>
         </definition>
@@ -403,7 +403,7 @@
             <enabledWhen>
                 <with variable="activePart">
                     <or>
-                        <adapt type="org.jkiss.dbeaver.ui.INavigatorModelView"/>
+                        <adapt type="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>
                         <adapt type="org.jkiss.dbeaver.ui.IRefreshablePart"/>
                     </or>
                 </with>
@@ -521,14 +521,14 @@
         <handler commandId="org.eclipse.ui.navigate.collapseAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerCollapseAll">
             <enabledWhen>
                 <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.eclipse.ui.navigate.expandAll" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerExpandAll">
             <enabledWhen>
                 <with variable="activePart">
-                    <instanceof value="org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1901,7 +1901,7 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.views.navigator.NavigatorAdapterFactory">
+        <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>

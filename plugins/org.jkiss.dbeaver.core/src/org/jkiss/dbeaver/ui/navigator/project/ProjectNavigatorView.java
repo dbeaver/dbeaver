@@ -15,14 +15,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.views.navigator.project;
+package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 /**
  * ProjectNavigatorView
