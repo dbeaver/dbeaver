@@ -23,15 +23,14 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -50,7 +49,7 @@ import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -70,7 +69,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         private CommandTarget()
         {
         }
-        private CommandTarget(AbstractCommandContext context)
+        private CommandTarget(DBECommandContext context)
         {
             this.context = context;
         }

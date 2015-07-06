@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.ui.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSFolder;

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

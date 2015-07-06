@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
-import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 

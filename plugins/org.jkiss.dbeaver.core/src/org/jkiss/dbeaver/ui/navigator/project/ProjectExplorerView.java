@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.views.navigator.project;
+package org.jkiss.dbeaver.ui.navigator.project;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ViewerColumnController;
-import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.SimpleDateFormat;

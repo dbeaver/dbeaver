@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
 import org.jkiss.dbeaver.ui.editors.entity.GlobalContributorManager;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

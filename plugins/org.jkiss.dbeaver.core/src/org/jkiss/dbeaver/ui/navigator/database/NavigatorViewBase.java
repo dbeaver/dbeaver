@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.views.navigator.database;
+package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.*;
@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.ui.INavigatorModelView;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;

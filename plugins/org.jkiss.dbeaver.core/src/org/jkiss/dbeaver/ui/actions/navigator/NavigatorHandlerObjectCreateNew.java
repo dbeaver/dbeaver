@@ -26,7 +26,7 @@ import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.Map;
 

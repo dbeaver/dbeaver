@@ -31,14 +31,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.navigator.DBNProjectDatabases;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 import java.util.List;
 

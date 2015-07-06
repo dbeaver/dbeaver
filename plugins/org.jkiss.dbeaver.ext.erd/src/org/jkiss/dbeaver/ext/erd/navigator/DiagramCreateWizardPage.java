@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

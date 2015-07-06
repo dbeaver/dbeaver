@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.registry.ToolDescriptor;
 import org.jkiss.dbeaver.registry.ToolGroupDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
 import org.jkiss.utils.CommonUtils;

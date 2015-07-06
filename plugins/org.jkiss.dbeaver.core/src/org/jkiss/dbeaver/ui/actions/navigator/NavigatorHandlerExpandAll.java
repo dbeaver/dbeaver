@@ -25,7 +25,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.views.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 import java.util.Iterator;
 

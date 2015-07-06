@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
 
