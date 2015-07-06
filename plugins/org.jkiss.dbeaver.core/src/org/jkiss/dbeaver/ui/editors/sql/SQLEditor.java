@@ -46,6 +46,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -687,7 +688,7 @@ public class SQLEditor extends SQLEditorBase implements
             queryOffset = query.getOffset() + query.getLength() + 1;
         }
 
-        if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
+        if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
             // Parse parameters
             for (SQLQuery query : queryList) {
                 query.setParameters(parseParameters(getDocument(), query));

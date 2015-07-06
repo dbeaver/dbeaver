@@ -193,49 +193,8 @@ public class SQLRuleManager extends RuleBasedScanner {
         wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
         rules.add(wordRule);
 
-        {
-            // Parameter rule
-            IRule parameterRule = new IRule() {
-                private StringBuilder buffer = new StringBuilder();
-
-                @Override
-                public IToken evaluate(ICharacterScanner scanner)
-                {
-                    int column = scanner.getColumn();
-                    if (column  <= 0) {
-                        return Token.UNDEFINED;
-                    }
-                    scanner.unread();
-                    int prevChar = scanner.read();
-                    if (Character.isJavaIdentifierPart(prevChar) ||
-                        prevChar == ':' || prevChar == '?' || prevChar == '\\' || prevChar == '/')
-                    {
-                        return Token.UNDEFINED;
-                    }
-                    int c = scanner.read();
-                    if (c != ICharacterScanner.EOF && (c == '?' || c == ':')) {
-                        buffer.setLength(0);
-                        do {
-                            buffer.append((char) c);
-                            c = scanner.read();
-                        } while (c != ICharacterScanner.EOF && Character.isJavaIdentifierPart(c));
-                        scanner.unread();
-
-                        if ((buffer.charAt(0) == '?' && buffer.length() == 1) || (buffer.charAt(0) == ':' && buffer.length() > 1)) {
-                            return parameterToken;
-                        }
-
-                        for (int i = buffer.length() - 1; i >= 0; i--) {
-                            scanner.unread();
-                        }
-                    } else {
-                        scanner.unread();
-                    }
-                    return Token.UNDEFINED;
-                }
-            };
-            rules.add(parameterRule);
-        }
+        // Parameter rule
+        rules.add(new ParametersRule(parameterToken));
 
         IRule[] result = new IRule[rules.size()];
         rules.toArray(result);
@@ -257,4 +216,68 @@ public class SQLRuleManager extends RuleBasedScanner {
         return color;
     }
 
+    private class ParametersRule implements IRule {
+        private final SQLParameterToken parameterToken;
+        private final StringBuilder buffer;
+        private final char anonymousParameterMark;
+
+        public ParametersRule(SQLParameterToken parameterToken) {
+            this.parameterToken = parameterToken;
+            buffer = new StringBuilder();
+            anonymousParameterMark = syntaxManager.getAnonymousParameterMark();
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner)
+        {
+            int column = scanner.getColumn();
+            if (column  <= 0) {
+                return Token.UNDEFINED;
+            }
+            scanner.unread();
+            int prevChar = scanner.read();
+            if (Character.isJavaIdentifierPart(prevChar) ||
+                prevChar == SQLConstants.PARAMETER_PREFIX || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
+            {
+                return Token.UNDEFINED;
+            }
+            int c = scanner.read();
+            if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == SQLConstants.PARAMETER_PREFIX)) {
+                buffer.setLength(0);
+                do {
+                    buffer.append((char) c);
+                    c = scanner.read();
+                } while (c != ICharacterScanner.EOF && Character.isJavaIdentifierPart(c));
+                scanner.unread();
+
+                // Check for parameters
+                if (syntaxManager.isAnonymousParametersEnabled()) {
+                    if (buffer.length() == 1 && buffer.charAt(0) == anonymousParameterMark) {
+                        return parameterToken;
+                    }
+                }
+                if (syntaxManager.isParametersEnabled()) {
+                    if (buffer.charAt(0) == SQLConstants.PARAMETER_PREFIX && buffer.length() > 1) {
+                        boolean validChars = true;
+                        for (int i = 1; i < buffer.length(); i++) {
+                            if (!Character.isLetterOrDigit(buffer.charAt(i))) {
+                                validChars = false;
+                                break;
+                            }
+                        }
+                        if (validChars) {
+                            return parameterToken;
+                        }
+                    }
+                }
+
+                for (int i = buffer.length() - 1; i >= 0; i--) {
+                    scanner.unread();
+                }
+            } else {
+                scanner.unread();
+            }
+            return Token.UNDEFINED;
+        }
+    }
 }

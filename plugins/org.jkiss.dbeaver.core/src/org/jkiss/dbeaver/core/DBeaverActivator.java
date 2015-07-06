@@ -22,8 +22,10 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.bundle.ModelCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;
@@ -63,7 +65,9 @@ public class DBeaverActivator extends AbstractUIPlugin
         super.start(context);
 
         instance = this;
-        preferences = new BundlePreferenceStore(getBundle());
+        Bundle bundle = getBundle();
+        ModelCore.initializeModel(bundle);
+        preferences = new BundlePreferenceStore(bundle);
         DBeaverUI.getInstance();
 
         try {

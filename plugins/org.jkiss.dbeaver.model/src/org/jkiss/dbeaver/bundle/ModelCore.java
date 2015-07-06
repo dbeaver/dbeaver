@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.bundle;
 
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
@@ -29,19 +28,35 @@ import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.osgi.framework.Bundle;
 
 import java.util.Arrays;
 
-public class ModelPreferencesInitializer extends AbstractPreferenceInitializer {
+/**
+ * The activator class controls the plug-in life cycle
+ */
+public class ModelCore
+{
 
-    public ModelPreferencesInitializer() {
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+    private static Bundle mainBundle;
+    private static DBPPreferenceStore preferences;
+
+    public static Bundle getMainBundle() {
+        return mainBundle;
     }
 
-    @Override
-    public void initializeDefaultPreferences() {
-        // Init default preferences
-        DBPPreferenceStore store = new BundlePreferenceStore(ModelActivator.getInstance().getBundle());
+    public static DBPPreferenceStore getPreferences() {
+        return preferences;
+    }
 
+    public static void initializeModel(Bundle mainBundle) {
+        ModelCore.mainBundle = mainBundle;
+        ModelCore.preferences = new BundlePreferenceStore(mainBundle);
+        initializeDefaultPreferences(preferences);
+    }
+
+    private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Common
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.QUERY_ROLLBACK_ON_ERROR, false);
 
@@ -71,6 +86,12 @@ public class ModelPreferencesInitializer extends AbstractPreferenceInitializer {
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES, DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_SCRIPT);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
         PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, Platform.getLogFileLocation().toFile().getParent());
+
+        // SQL
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.SQL_PARAMETERS_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED, false);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, String.valueOf(SQLConstants.DEFAULT_PARAMETER_MARK));
+
     }
 
 }

@@ -33,11 +33,9 @@ import java.io.PrintStream;
 public class ModelActivator extends Plugin
 {
 
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
     // The shared instance
     private static ModelActivator instance;
     private PrintStream debugWriter;
-    private DBPPreferenceStore preferences;
 
     /**
      * The constructor
@@ -58,7 +56,6 @@ public class ModelActivator extends Plugin
         super.start(context);
 
         instance = this;
-        preferences = new BundlePreferenceStore(getBundle());
     }
 
     @Override
@@ -91,10 +88,6 @@ public class ModelActivator extends Plugin
             }
         }
         return debugWriter;
-    }
-
-    public DBPPreferenceStore getPreferences() {
-        return preferences;
     }
 
 }
