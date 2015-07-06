@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -81,7 +82,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     {
         if (storage == null && clob != null) {
             long contentLength = getContentLength();
-            if (contentLength < dataSource.getContainer().getApplication().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+            DBPApplication application = dataSource.getContainer().getApplication();
+            if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = StringContentStorage.createFromReader(clob.getCharacterStream(), contentLength);
                 }
@@ -94,7 +96,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 // Create new local storage
                 IFile tempFile;
                 try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, dataSource.getContainer().getApplication(), "clob" + clob.hashCode());
+                    tempFile = ContentUtils.createTempContentFile(monitor, application, "clob" + clob.hashCode());
                 }
                 catch (IOException e) {
                     throw new DBCException("Can't create temp file", e);
@@ -108,7 +110,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                     ContentUtils.deleteTempFile(monitor, tempFile);
                     throw new DBCException(e, dataSource);
                 }
-                this.storage = new TemporaryContentStorage(dataSource.getContainer().getApplication(), tempFile);
+                this.storage = new TemporaryContentStorage(application, tempFile);
             }
             // Free blob - we don't need it anymore
             try {

@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.bundle.ModelCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.CommonUtils;
@@ -114,7 +113,7 @@ public class SQLSyntaxManager {
         this.statementDelimiters.clear();
         DBPPreferenceStore preferenceStore;
         if (dataSource == null) {
-            preferenceStore = ModelCore.getPreferences();
+            preferenceStore = ModelPreferences.getPreferences();
             sqlDialect = new BasicSQLDialect();
             quoteSymbol = null;
             structSeparator = SQLConstants.STRUCT_SEPARATOR;

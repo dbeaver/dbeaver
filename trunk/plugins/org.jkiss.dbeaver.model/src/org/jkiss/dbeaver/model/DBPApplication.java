@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -51,8 +52,11 @@ public interface DBPApplication
     @NotNull
     QMController getQueryManager();
 
-    //DBEObjectManager<?> getObjectManager(Class<?> aClass);
+    @NotNull
     DBDValueHandlerRegistry getValueHandlerRegistry();
+
+    @NotNull
+    DBERegistry getEditorsRegistry();
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();

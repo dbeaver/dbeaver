@@ -1016,8 +1016,6 @@ public class CoreMessages extends NLS {
 	public static String editors_sql_status_statement_executed_no_rows_updated;
 	public static String editors_sql_staus_connected_to;
 
-	public static String model_edit_execute_;
-
 	public static String model_html_read_database_meta_data;
 
 	public static String model_jdbc__rows_fetched;
