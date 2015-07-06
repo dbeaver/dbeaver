@@ -45,7 +45,7 @@ import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -474,7 +474,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (sqlQuery == null || CommonUtils.isEmpty(sqlQuery.getQuery())) {
             return null;
         }
-        if (getActivePreferenceStore().getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED)) {
+        if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {
             sqlQuery.setParameters(parseParameters(getDocument(), sqlQuery));
         }
         return sqlQuery;

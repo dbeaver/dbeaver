@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
-import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.bundle.ModelCore;
 
 /**
  * SQL editor constants
@@ -36,11 +36,11 @@ public class SQLConstants {
     /**
      * Marker type contant for SQL portability targets.
      */
-    public static final String PORTABILITY_MARKER_TYPE = ModelActivator.PLUGIN_ID + ".portabilitytask";           //$NON-NLS-1$
+    public static final String PORTABILITY_MARKER_TYPE = ModelCore.PLUGIN_ID + ".portabilitytask";           //$NON-NLS-1$
     /**
      * Marker type contant for SQL syntax errors.
      */
-    public static final String SYNTAX_MARKER_TYPE      = ModelActivator.PLUGIN_ID + ".syntaxproblem";             //$NON-NLS-1$
+    public static final String SYNTAX_MARKER_TYPE      = ModelCore.PLUGIN_ID + ".syntaxproblem";             //$NON-NLS-1$
 
     public static final String STR_QUOTE_SINGLE = "'";
     public static final String STR_QUOTE_DOUBLE = "\"";
@@ -342,4 +342,6 @@ public class SQLConstants {
     public static final String CONFIG_COLOR_DISABLED = "org.jkiss.dbeaver.sql.editor.color.disabled.background";
     public static final String CONFIG_FONT_OUTPUT = "org.jkiss.dbeaver.sql.editor.font.output";
 
+    public static final char DEFAULT_PARAMETER_MARK = '?';
+    public static final char PARAMETER_PREFIX = ':';
 }

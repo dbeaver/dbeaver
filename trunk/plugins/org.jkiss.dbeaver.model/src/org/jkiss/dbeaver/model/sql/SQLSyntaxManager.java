@@ -20,7 +20,10 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.bundle.ModelCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -39,6 +42,9 @@ public class SQLSyntaxManager {
     @Nullable
     private String quoteSymbol;
     private char structSeparator;
+    private boolean parametersEnabled;
+    private boolean anonymousParametersEnabled;
+    private char anonymousParameterMark;
     @NotNull
     private String catalogSeparator;
     @NotNull
@@ -90,11 +96,25 @@ public class SQLSyntaxManager {
         return escapeChar;
     }
 
+    public boolean isParametersEnabled() {
+        return parametersEnabled;
+    }
+
+    public boolean isAnonymousParametersEnabled() {
+        return anonymousParametersEnabled;
+    }
+
+    public char getAnonymousParameterMark() {
+        return anonymousParameterMark;
+    }
+
     public void setDataSource(@Nullable SQLDataSource dataSource)
     {
         this.unassigned = dataSource == null;
         this.statementDelimiters.clear();
+        DBPPreferenceStore preferenceStore;
         if (dataSource == null) {
+            preferenceStore = ModelCore.getPreferences();
             sqlDialect = new BasicSQLDialect();
             quoteSymbol = null;
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
@@ -102,21 +122,32 @@ public class SQLSyntaxManager {
             escapeChar = '\\';
             statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         } else {
+            preferenceStore = dataSource.getContainer().getPreferenceStore();
+
             sqlDialect = dataSource.getSQLDialect();
             quoteSymbol = sqlDialect.getIdentifierQuoteString();
             structSeparator = sqlDialect.getStructSeparator();
             catalogSeparator = sqlDialect.getCatalogSeparator();
             sqlDialect.getSearchStringEscape();
             escapeChar = '\\';
-            if (!dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
+            if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
                 statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
             }
 
-            String extraDelimiters = dataSource.getContainer().getPreferenceStore().getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
+            String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
             StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
             while (st.hasMoreTokens()) {
                 statementDelimiters.add(st.nextToken());
             }
+        }
+
+        parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
+        anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
+        String markString = preferenceStore.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
+        if (CommonUtils.isEmpty(markString)) {
+            anonymousParameterMark = SQLConstants.DEFAULT_PARAMETER_MARK;
+        } else {
+            anonymousParameterMark = markString.charAt(0);
         }
     }
 

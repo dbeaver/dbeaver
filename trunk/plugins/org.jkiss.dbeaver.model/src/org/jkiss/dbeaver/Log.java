@@ -20,6 +20,7 @@ package org.jkiss.dbeaver;
 import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.bundle.ModelCore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintStream;
@@ -30,7 +31,7 @@ import java.util.Date;
  */
 public class Log
 {
-    private static String corePluginID = ModelActivator.PLUGIN_ID;
+    private static String corePluginID = ModelCore.PLUGIN_ID;
 
     private final String name;
     private final ILog eclipseLog;
