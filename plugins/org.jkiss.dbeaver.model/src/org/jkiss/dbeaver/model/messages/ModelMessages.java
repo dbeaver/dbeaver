@@ -36,6 +36,7 @@ public class ModelMessages extends NLS {
 	public static String model_connection_events_event_before_connect;
 	public static String model_connection_events_event_before_disconnect;
 
+	public static String model_edit_execute_;
 	public static String model_jdbc_read_database_meta_data;
 
 	public static String model_jdbc__rows_fetched;
@@ -147,7 +148,7 @@ public class ModelMessages extends NLS {
     public static String model_struct_Pseudo_Key;
 	public static String model_struct_Unknown;
 
-    static {
+	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);
 	}

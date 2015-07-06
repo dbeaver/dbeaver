@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.eclipse.core.resources.IFile;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -79,12 +80,13 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     {
         if (storage == null && blob != null) {
             long contentLength = getContentLength();
-            if (contentLength < dataSource.getContainer().getApplication().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+            DBPApplication application = dataSource.getContainer().getApplication();
+            if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
                     storage = BytesContentStorage.createFromStream(
                         blob.getBinaryStream(),
                         contentLength,
-                        dataSource.getContainer().getApplication().getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+                        application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
                 }
                 catch (SQLException e) {
                     throw new DBCException(e, dataSource);
@@ -95,7 +97,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 // Create new local storage
                 IFile tempFile;
                 try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, dataSource.getContainer().getApplication(), "blob" + blob.hashCode());
+                    tempFile = ContentUtils.createTempContentFile(monitor, application, "blob" + blob.hashCode());
                 }
                 catch (IOException e) {
                     throw new DBCException("Can't create temporary file", e);
@@ -109,7 +111,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     ContentUtils.deleteTempFile(monitor, tempFile);
                     throw new DBCException(e, dataSource);
                 }
-                this.storage = new TemporaryContentStorage(dataSource.getContainer().getApplication(), tempFile);
+                this.storage = new TemporaryContentStorage(application, tempFile);
             }
             // Free blob - we don't need it anymore
             try {

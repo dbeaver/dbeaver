@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.runtime.AbstractCommandContext;
+import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPProjectManager;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
@@ -345,9 +347,16 @@ public class DBeaverCore implements DBPApplication {
         return queryManager;
     }
 
+    @NotNull
     @Override
     public DBDValueHandlerRegistry getValueHandlerRegistry() {
         return DataTypeProviderRegistry.getInstance();
+    }
+
+    @NotNull
+    @Override
+    public DBERegistry getEditorsRegistry() {
+        return EntityEditorsRegistry.getInstance();
     }
 
     @NotNull

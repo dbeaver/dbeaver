@@ -19,6 +19,21 @@
 
 package org.jkiss.dbeaver;
 
+import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.qm.QMConstants;
+import org.jkiss.dbeaver.model.qm.QMObjectType;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.osgi.framework.Bundle;
+
+import java.util.Arrays;
+
 /**
  * Preferences constants
  */
@@ -46,4 +61,58 @@ public final class ModelPreferences
     public static final String SQL_PARAMETERS_ENABLED = "sql.parameter.enabled"; //$NON-NLS-1$
     public static final String SQL_ANONYMOUS_PARAMETERS_ENABLED = "sql.parameter.anonymous.enabled"; //$NON-NLS-1$
     public static final String SQL_ANONYMOUS_PARAMETERS_MARK = "sql.parameter.mark"; //$NON-NLS-1$
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+    public static Bundle mainBundle;
+    public static DBPPreferenceStore preferences;
+
+    public static synchronized DBPPreferenceStore getPreferences() {
+        if (preferences == null) {
+            setMainBundle(ModelActivator.getInstance().getBundle());
+        }
+        return preferences;
+    }
+
+    public static void setMainBundle(Bundle mainBundle) {
+        ModelPreferences.mainBundle = mainBundle;
+        ModelPreferences.preferences = new BundlePreferenceStore(mainBundle);
+        initializeDefaultPreferences(ModelPreferences.preferences);
+    }
+
+    private static void initializeDefaultPreferences(DBPPreferenceStore store) {
+        // Common
+        PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
+
+        // SQL execution
+        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER, SQLConstants.DEFAULT_STATEMENT_DELIMITER);
+        PrefUtils.setDefaultPreferenceValue(store, SCRIPT_IGNORE_NATIVE_DELIMITER, false);
+
+        PrefUtils.setDefaultPreferenceValue(store, MEMORY_CONTENT_MAX_SIZE, 10000);
+        PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, true);
+        PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
+        PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());
+
+        // Network
+        PrefUtils.setDefaultPreferenceValue(store, NET_TUNNEL_PORT_MIN, 10000);
+        PrefUtils.setDefaultPreferenceValue(store, NET_TUNNEL_PORT_MAX, 60000);
+
+        // ResultSet
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS_USE_SQL, true);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
+
+        // QM
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_HISTORY_DAYS, 90);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_ENTRIES_PER_PAGE, 200);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
+            QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES, DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_SCRIPT);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
+        PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, Platform.getLogFileLocation().toFile().getParent());
+
+        // SQL
+        PrefUtils.setDefaultPreferenceValue(store, SQL_PARAMETERS_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_ANONYMOUS_PARAMETERS_ENABLED, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_ANONYMOUS_PARAMETERS_MARK, String.valueOf(SQLConstants.DEFAULT_PARAMETER_MARK));
+
+    }
 }

@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ import java.util.Map;
 /**
  * EntityEditorsRegistry
  */
-public class EntityEditorsRegistry {
+public class EntityEditorsRegistry implements DBERegistry {
 
     private static final String TAG_EDITOR = "editor"; //NON-NLS-1
     private static final String TAG_MANAGER = "manager"; //NON-NLS-1
