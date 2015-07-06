@@ -974,7 +974,10 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void preferenceChange(PreferenceChangeEvent event) {
         if (event.getProperty().equals(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER) ||
-            event.getProperty().equals(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER))
+            event.getProperty().equals(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
+            event.getProperty().equals(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
+            event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
+            event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED))
         {
             reloadSyntaxRules();
         }
