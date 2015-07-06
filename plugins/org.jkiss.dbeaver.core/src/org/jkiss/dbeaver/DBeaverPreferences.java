@@ -46,9 +46,6 @@ public final class DBeaverPreferences
     public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders"; //$NON-NLS-1$
     public static final String SCRIPT_TITLE_PATTERN = "script.title.pattern"; //$NON-NLS-1$
 
-    public static final String SQL_PARAMETERS_ENABLED = "sql.parameter.enabled"; //$NON-NLS-1$
-    public static final String SQL_PARAMETERS_MARK = "sql.parameter.mark"; //$NON-NLS-1$
-
     public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE = "statement.invalidate.before.execute"; //$NON-NLS-1$
     public static final String STATEMENT_TIMEOUT = "statement.timeout"; //$NON-NLS-1$
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize"; //$NON-NLS-1$

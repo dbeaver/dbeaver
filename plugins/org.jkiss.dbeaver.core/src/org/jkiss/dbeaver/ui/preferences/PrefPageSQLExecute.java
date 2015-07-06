@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -48,6 +49,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
     private Button enableSQLParameters;
+    private Button enableSQLAnonymousParameters;
+    private Text anonymousParameterMarkText;
 
     public PrefPageSQLExecute()
     {
@@ -67,7 +70,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
             store.contains(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER) ||
             store.contains(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
-            store.contains(DBeaverPreferences.SQL_PARAMETERS_ENABLED)
+            store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
+            store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
+            store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
         ;
     }
 
@@ -132,9 +137,13 @@ public class PrefPageSQLExecute extends TargetPrefPage
             }
 
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
-            statementDelimiterText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "");
+            statementDelimiterText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
             enableSQLParameters = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, true);
+            enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
+            anonymousParameterMarkText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            anonymousParameterMarkText.setTextLimit(1);
         }
 
         return composite;
@@ -153,7 +162,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
             statementDelimiterText.setText(store.getString(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
-            enableSQLParameters.setSelection(store.getBoolean(DBeaverPreferences.SQL_PARAMETERS_ENABLED));
+            enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
+            enableSQLAnonymousParameters.setSelection(store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
+            anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -172,7 +183,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
-            store.setValue(DBeaverPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
+            store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
+            store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED, enableSQLAnonymousParameters.getSelection());
+            store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, anonymousParameterMarkText.getText());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -192,7 +205,9 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER);
         store.setToDefault(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
 
-        store.setToDefault(DBeaverPreferences.SQL_PARAMETERS_ENABLED);
+        store.setToDefault(ModelPreferences.SQL_PARAMETERS_ENABLED);
+        store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
+        store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
     }
 
     @Override
