@@ -103,6 +103,14 @@ public class PrefPageSQLExecute extends TargetPrefPage
             }
         }
 
+        {
+            Composite paramsGroup = UIUtils.createControlGroup(composite, "Parameters", 2, GridData.FILL_HORIZONTAL, 0);
+            enableSQLParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, true);
+            enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
+            anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            anonymousParameterMarkText.setTextLimit(1);
+        }
+
         // Scripts
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
@@ -140,10 +148,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
             statementDelimiterText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
-            enableSQLParameters = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, true);
-            enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
-            anonymousParameterMarkText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            anonymousParameterMarkText.setTextLimit(1);
         }
 
         return composite;
