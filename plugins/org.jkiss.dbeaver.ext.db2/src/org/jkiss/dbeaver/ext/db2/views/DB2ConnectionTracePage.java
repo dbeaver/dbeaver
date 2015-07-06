@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -176,7 +176,7 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DataSourceDescriptor dataSource)
+    public void saveSettings(DBSDataSourceContainer dataSource)
     {
         super.saveSettings(dataSource);
         Map<Object, Object> connectionProperties = dataSource.getConnectionConfiguration().getProperties();

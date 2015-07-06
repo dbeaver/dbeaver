@@ -19,10 +19,10 @@
 package org.jkiss.dbeaver.ui;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * IDataSourceConnectionEditorSite
@@ -31,14 +31,14 @@ public interface IDataSourceConnectionEditorSite
 {
     DBRRunnableContext getRunnableContext();
 
-    DataSourceRegistry getDataSourceRegistry();
+    DBPDataSourceRegistry getDataSourceRegistry();
 
     boolean isNew();
 
     DBPDriver getDriver();
 
     @NotNull
-    DataSourceDescriptor getActiveDataSource();
+    DBSDataSourceContainer getActiveDataSource();
 
     void updateButtons();
 
