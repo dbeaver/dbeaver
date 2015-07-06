@@ -15,18 +15,17 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime;
+package org.jkiss.dbeaver.model.impl.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -52,7 +51,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     /**
      * Creates new context
      * @param executionContext Execution context
-     * @param atomic atomic context reflect commands in UI only after all comands were executed. Non-atomic
+     * @param atomic atomic context reflect commands in UI only after all commands were executed. Non-atomic
      *               reflects each command at the moment it executed
      */
     public AbstractCommandContext(DBCExecutionContext executionContext, boolean atomic)
@@ -78,7 +77,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     @Override
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         if (!executionContext.isConnected()) {
-            throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
+            throw new DBException("Not connected to database");
         }
         List<CommandQueue> commandQueues = getCommandQueues();
 
@@ -538,7 +537,11 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                 }
             }
             if (queue == null) {
-                queue = new CommandQueue(null, object);
+                DBEObjectManager<?> objectManager = executionContext.getDataSource().getContainer().getApplication().getEditorsRegistry().getObjectManager(object.getClass());
+                if (objectManager == null) {
+                    throw new IllegalStateException("Can't find object manager for '" + object.getClass().getName() + "'");
+                }
+                queue = new CommandQueue(objectManager, null, object);
                 commandQueues.add(queue);
             }
             queue.addCommand(commandInfo);
@@ -642,7 +645,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         return executionContext.openSession(
             monitor,
             DBCExecutionPurpose.META_DDL,
-            CoreMessages.model_edit_execute_ + command.getTitle());
+            ModelMessages.model_edit_execute_ + command.getTitle());
     }
 
     protected void closePersistContext(DBCSession session)
@@ -687,14 +690,11 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         private final DBEObjectManager objectManager;
         private List<CommandInfo> commands = new ArrayList<CommandInfo>();
 
-        private CommandQueue(CommandQueue parent, DBPObject object)
+        private CommandQueue(DBEObjectManager objectManager, CommandQueue parent, DBPObject object)
         {
             this.parent = parent;
             this.object = object;
-            this.objectManager = EntityEditorsRegistry.getInstance().getObjectManager(object.getClass());
-            if (this.objectManager == null) {
-                throw new IllegalStateException("Can't find object manager for '" + object.getClass().getName() + "'");
-            }
+            this.objectManager = objectManager;
             if (parent != null) {
                 parent.addSubQueue(this);
             }

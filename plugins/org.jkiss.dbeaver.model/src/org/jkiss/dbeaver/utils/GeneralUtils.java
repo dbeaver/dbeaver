@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.bundle.ModelCore;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -269,7 +269,7 @@ public class GeneralUtils {
         if (cause == null) {
             return new Status(
                 severity,
-                ModelCore.PLUGIN_ID,
+                ModelPreferences.PLUGIN_ID,
                 getExceptionMessage(ex),
                 ex);
         } else {
@@ -278,7 +278,7 @@ public class GeneralUtils {
                 return makeExceptionStatus(cause);
             }
             return new MultiStatus(
-                ModelCore.PLUGIN_ID,
+                ModelPreferences.PLUGIN_ID,
                 0,
                 new IStatus[]{makeExceptionStatus(severity, cause)},
                 getExceptionMessage(ex),
@@ -289,7 +289,7 @@ public class GeneralUtils {
     public static IStatus makeExceptionStatus(String message, Throwable ex)
     {
         return new MultiStatus(
-            ModelCore.PLUGIN_ID,
+            ModelPreferences.PLUGIN_ID,
             0,
             new IStatus[]{makeExceptionStatus(ex)},
             message,
