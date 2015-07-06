@@ -36,9 +36,9 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.actions.common.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
-import org.jkiss.dbeaver.ui.views.navigator.database.DatabaseNavigatorView;
-import org.jkiss.dbeaver.ui.views.navigator.project.ProjectExplorerView;
-import org.jkiss.dbeaver.ui.views.navigator.project.ProjectNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 
 /**
