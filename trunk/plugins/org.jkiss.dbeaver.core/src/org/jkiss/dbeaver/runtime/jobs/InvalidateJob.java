@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

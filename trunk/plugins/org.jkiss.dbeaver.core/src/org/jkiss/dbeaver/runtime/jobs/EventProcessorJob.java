@@ -18,22 +18,14 @@
 
 package org.jkiss.dbeaver.runtime.jobs;
 
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
-import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
-import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -79,56 +71,14 @@ public abstract class EventProcessorJob extends AbstractJob {
             variables.put(VARIABLE_PASSWORD, info.getUserPassword());
             variables.put(VARIABLE_URL, info.getUrl());
 
-            DBRProcessDescriptor process = processCommand(command, variables);
-            if (process != null) {
-                container.addChildProcess(process);
-            }
-        }
-    }
-
-    private DBRProcessDescriptor processCommand(DBRShellCommand command, Map<String, Object> variables) {
-        final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
-        processDescriptor.setProcessListener(new DBRProcessListener() {
-            @Override
-            public void onProcessStarted() {
-                ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
+            final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, variables);
+            DBUserInterface.getInstance().executeProcess(processDescriptor);
+            if (command.isWaitProcessFinish()) {
+                processDescriptor.waitFor();
             }
 
-            @Override
-            public void onProcessTerminated(int resultCode) {
-                ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
-            }
-        });
-        // Direct execute
-        try {
-            processDescriptor.execute();
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(shell, "Execute process", processDescriptor.getName(), e);
+            container.addChildProcess(processDescriptor);
         }
-        if (command.isShowProcessPanel()) {
-            shell.getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run()
-                {
-                    try {
-                        final ShellProcessView processView =
-                            (ShellProcessView) DBeaverUI.getActiveWorkbenchWindow().getActivePage().showView(
-                                ShellProcessView.VIEW_ID,
-                                ShellProcessView.getNextId(),
-                                IWorkbenchPage.VIEW_VISIBLE
-                            );
-                        processView.initProcess(processDescriptor);
-                    } catch (PartInitException e) {
-                        log.error(e);
-                    }
-                }
-            });
-        }
-        if (command.isWaitProcessFinish()) {
-            processDescriptor.waitFor();
-        }
-        return processDescriptor;
     }
 
 

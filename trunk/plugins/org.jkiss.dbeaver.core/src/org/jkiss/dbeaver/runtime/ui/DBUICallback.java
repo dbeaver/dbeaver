@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 
 /**
  * User interface interactions
@@ -29,7 +30,10 @@ import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 public interface DBUICallback {
 
     void showError(@NotNull final String title, @Nullable final String message, @NotNull final IStatus status);
+    void showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
 
     DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword);
+
+    void executeProcess(DBRProcessDescriptor processDescriptor);
 
 }

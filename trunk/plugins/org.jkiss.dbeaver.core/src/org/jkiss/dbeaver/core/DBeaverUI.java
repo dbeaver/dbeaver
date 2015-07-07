@@ -27,19 +27,15 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -50,6 +46,8 @@ import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
+import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
+import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -283,6 +281,11 @@ public class DBeaverUI implements DBUICallback {
     }
 
     @Override
+    public void showError(@NotNull String title, @Nullable String message, @NotNull Throwable e) {
+        UIUtils.showErrorDialog(null, title, message, e);
+    }
+
+    @Override
     public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword) {
         // Ask user
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
@@ -301,6 +304,46 @@ public class DBeaverUI implements DBUICallback {
             return authDialog.getAuthInfo();
         } else {
             return null;
+        }
+    }
+
+    @Override
+    public void executeProcess(final DBRProcessDescriptor processDescriptor) {
+        processDescriptor.setProcessListener(new DBRProcessListener() {
+            @Override
+            public void onProcessStarted() {
+                ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
+            }
+
+            @Override
+            public void onProcessTerminated(int resultCode) {
+                ProcessPropertyTester.firePropertyChange(ProcessPropertyTester.PROP_RUNNING);
+            }
+        });
+        // Direct execute
+        try {
+            processDescriptor.execute();
+        } catch (DBException e) {
+            showError("Execute process", processDescriptor.getName(), e);
+        }
+        if (processDescriptor.getCommand().isShowProcessPanel()) {
+            getActiveWorkbenchShell().getDisplay().asyncExec(new Runnable() {
+                @Override
+                public void run()
+                {
+                    try {
+                        final ShellProcessView processView =
+                            (ShellProcessView) DBeaverUI.getActiveWorkbenchWindow().getActivePage().showView(
+                                ShellProcessView.VIEW_ID,
+                                ShellProcessView.getNextId(),
+                                IWorkbenchPage.VIEW_VISIBLE
+                            );
+                        processView.initProcess(processDescriptor);
+                    } catch (PartInitException e) {
+                        log.error(e);
+                    }
+                }
+            });
         }
     }
 }

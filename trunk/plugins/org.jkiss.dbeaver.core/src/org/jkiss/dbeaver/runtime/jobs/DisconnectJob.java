@@ -20,14 +20,10 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.ISaveablePart;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionEventType;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
@@ -52,21 +48,11 @@ public class DisconnectJob extends EventProcessorJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
-        // Save users
-        for (DBPDataSourceUser user : container.getUsers()) {
-            if (user instanceof ISaveablePart) {
-                if (!UIUtils.validateAndSave(monitor, (ISaveablePart) user)) {
-                    return (connectStatus = Status.OK_STATUS);
-                }
-            }
-        }
-
         try {
-            if (DataSourceHandler.checkAndCloseActiveTransaction(monitor, container)) {
-                processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
-                container.disconnect(monitor);
-                processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
-            }
+            processEvents(DBPConnectionEventType.BEFORE_DISCONNECT);
+            container.disconnect(monitor);
+            processEvents(DBPConnectionEventType.AFTER_DISCONNECT);
+
             connectStatus = Status.OK_STATUS;
         }
         catch (Throwable ex) {
