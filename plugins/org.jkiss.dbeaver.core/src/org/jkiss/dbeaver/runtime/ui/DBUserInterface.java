@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.runtime.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 
 /**
  * User interface interactions
@@ -33,6 +35,12 @@ public class DBUserInterface {
         public void showError(@NotNull String title, @Nullable String message, @NotNull IStatus status) {
             System.out.println(title + (message == null ? "" : ": " + message));
             printStatus(status, 0);
+        }
+
+        @Override
+        public void showError(@NotNull String title, @Nullable String message, @NotNull Throwable e) {
+            System.out.println(title + (message == null ? "" : ": " + message));
+            e.printStackTrace(System.out);
         }
 
         private void printStatus(@NotNull IStatus status, int level) {
@@ -49,6 +57,15 @@ public class DBUserInterface {
         @Override
         public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword) {
             return null;
+        }
+
+        @Override
+        public void executeProcess(DBRProcessDescriptor processDescriptor) {
+            try {
+                processDescriptor.execute();
+            } catch (DBException e) {
+                DBUserInterface.getInstance().showError("Execute process", processDescriptor.getName(), e);
+            }
         }
     };
 

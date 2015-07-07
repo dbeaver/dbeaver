@@ -23,19 +23,13 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.eclipse.ui.keys.IBindingService;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ui.actions.DBeaverVersionChecker;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.actions.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Calendar;
 import java.util.Random;
 
@@ -45,8 +39,6 @@ import java.util.Random;
  */
 public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 {
-    static final Log log = Log.getLog(ApplicationWorkbenchAdvisor.class);
-
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
@@ -70,18 +62,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         configurer.setSaveAndRestore(true);
 
         TrayDialog.setDialogHelpAvailable(true);
-
-        // Disable all schemas except our own
-        final IBindingService bindingService = (IBindingService)configurer.getWorkbench().getService(IBindingService.class);
-//        for (Binding binding : bindingService.getBindings()) {
-//            System.out.println("binding:" + binding);
-//        }
-//        for (Scheme scheme : bindingService.getDefinedSchemes()) {
-//            if (!scheme.getId().equals(DBEAVER_SCHEME_NAME)) {
-//                scheme.undefine();
-//            }
-//        }
-
     }
 
     @Override
@@ -137,44 +117,25 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private boolean saveAndCleanup()
     {
-        if (!closeActiveTransactions()) {
-            return false;
-        }
-        return true;
+        return closeActiveTransactions();
     }
 
     private boolean closeActiveTransactions()
     {
-        TransactionCloser closer = new TransactionCloser();
-        try {
-            DBeaverUI.runInProgressService(closer);
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        return closer.getResult();
-    }
-
-    private static class TransactionCloser extends DBRRunnableWithResult<Boolean> {
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-        {
-            result = true;
-            DBeaverCore core = DBeaverCore.getInstance();
-            for (IProject project : core.getLiveProjects()) {
-                if (project.isOpen()) {
-                    DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
-                    if (registry != null) {
-                        for (DataSourceDescriptor dataSourceDescriptor : registry.getDataSources()) {
-                            if (!DataSourceHandler.checkAndCloseActiveTransaction(monitor, dataSourceDescriptor)) {
-                                result = false;
-                                return;
-                            }
+        DBeaverCore core = DBeaverCore.getInstance();
+        for (IProject project : core.getLiveProjects()) {
+            if (project.isOpen()) {
+                DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
+                if (registry != null) {
+                    for (DataSourceDescriptor dataSourceDescriptor : registry.getDataSources()) {
+                        if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor)) {
+                            return false;
                         }
                     }
                 }
             }
         }
+        return true;
     }
+
 }
