@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -203,6 +205,19 @@ public class DataSourceHandler
     }
 
     public static void disconnectDataSource(DBSDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
+
+        // Save users
+        for (DBPDataSourceUser user : dataSourceContainer.getUsers()) {
+            if (user instanceof ISaveablePart) {
+                if (!UIUtils.validateAndSave(VoidProgressMonitor.INSTANCE, (ISaveablePart) user)) {
+                    return;
+                }
+            }
+        }
+        if (!checkAndCloseActiveTransaction(dataSourceContainer)) {
+            return;
+        }
+
         if (dataSourceContainer instanceof DataSourceDescriptor && dataSourceContainer.isConnected()) {
             final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor)dataSourceContainer;
             if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSourceDescriptor))) {
@@ -230,23 +245,23 @@ public class DataSourceHandler
         }
     }
 
-    public static boolean checkAndCloseActiveTransaction(final DBRProgressMonitor monitor, DBSDataSourceContainer container) {
+    public static boolean checkAndCloseActiveTransaction(DBSDataSourceContainer container) {
         DBPDataSource dataSource = container.getDataSource();
         if (dataSource == null) {
             return true;
         }
 
-        return checkAndCloseActiveTransaction(monitor, container, dataSource.getAllContexts());
+        return checkAndCloseActiveTransaction(container, dataSource.getAllContexts());
     }
 
-    public static boolean checkAndCloseActiveTransaction(final DBRProgressMonitor monitor, DBSDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
+    public static boolean checkAndCloseActiveTransaction(DBSDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
     {
         if (container.getDataSource() == null) {
             return true;
         }
 
         Boolean commitTxn = null;
-        for (DBCExecutionContext context : contexts) {
+        for (final DBCExecutionContext context : contexts) {
             // First rollback active transaction
             try {
                 if (isContextTransactionAffected(context)) {
@@ -265,12 +280,16 @@ public class DataSourceHandler
                                 return false;
                         }
                     }
-                    closeActiveTransaction(monitor, context, commitTxn);
+                    final boolean commit = commitTxn;
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                            closeActiveTransaction(monitor, context, commit);
+                        }
+                    });
                 }
             } catch (Throwable e) {
                 log.warn("Can't rollback active transaction before disconnect", e);
-            } finally {
-                monitor.worked(1);
             }
         }
         return true;
