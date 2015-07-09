@@ -1112,6 +1112,8 @@ public final class DBUtils {
             case LOB:
                 if (typeName.contains("XML") || typeName.contains("xml")) {
                     return DBIcon.TYPE_XML;
+                } else if (typeName.contains("CHAR")) {
+                    return DBIcon.TYPE_TEXT;
                 }
                 return DBIcon.TYPE_LOB;
             case ARRAY:
