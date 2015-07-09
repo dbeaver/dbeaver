@@ -137,7 +137,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                     }
                 }
                 return true;
-            } else {
+            } else if (attr != null) {
                 return attr.getName().equals(this.getName());
             }
         }
