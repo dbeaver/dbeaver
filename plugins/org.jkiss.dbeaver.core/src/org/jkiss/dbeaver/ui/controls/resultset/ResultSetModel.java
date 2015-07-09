@@ -341,7 +341,11 @@ public class ResultSetModel {
                     // Value rewrite - release previous stored old value
                     DBUtils.releaseValue(oldValue);
                 } else if (updateChanges) {
-                    row.addChange(attr, oldValue);
+                    if (!CommonUtils.equalObjects(value, oldValue)) {
+                        row.addChange(attr, oldValue);
+                    } else {
+                        updateChanges = false;
+                    }
                 }
                 if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL && !cellWasEdited) {
                     changesCount++;
