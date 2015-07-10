@@ -60,7 +60,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             }
 
             DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
-            if (sourceObject != null && sourceObject.getClass() != childType) {
+            if (sourceObject != null && !childType.isAssignableFrom(sourceObject.getClass())) {
                 throw new DBException("Can't create '" + childType.getName() + "' from '" + sourceObject.getClass().getName() + "'");
             }
 

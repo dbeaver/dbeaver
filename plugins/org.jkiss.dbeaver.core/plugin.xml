@@ -2168,7 +2168,7 @@
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
                 class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
-                objectType="org.jkiss.dbeaver.registry.DataSourceDescriptor">
+                objectType="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
         </manager>
         <editor
                 id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"
