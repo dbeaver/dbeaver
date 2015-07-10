@@ -485,7 +485,7 @@
                     class="org.sqlite.JDBC"
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
-                    webURL="https://bitbucket.org/xerial/sqlite-jdbc"
+                    webURL="https://github.com/xerial/sqlite-jdbc"
                     embedded="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
                     <replace provider="generic" driver="sqlite_zentus"/>
