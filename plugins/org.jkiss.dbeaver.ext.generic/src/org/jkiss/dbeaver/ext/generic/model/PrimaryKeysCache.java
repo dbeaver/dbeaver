@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
@@ -98,7 +99,8 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             log.debug("Null primary key column for '" + object.getName() + "'");
             return null;
         }
-        if (columnName.startsWith("[") && columnName.endsWith("]")) {
+        if ((columnName.startsWith("[") && columnName.endsWith("]")) ||
+            (columnName.startsWith(SQLConstants.DEFAULT_IDENTIFIER_QUOTE) && columnName.endsWith(SQLConstants.DEFAULT_IDENTIFIER_QUOTE))) {
             // [JDBC: SQLite] Escaped column name. Let's un-escape it
             columnName = columnName.substring(1, columnName.length() - 1);
         }

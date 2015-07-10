@@ -68,7 +68,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             this.identifierQuoteString = metaData.getIdentifierQuoteString();
         } catch (Throwable e) {
             log.debug(e.getMessage());
-            this.identifierQuoteString = "\"";
+            this.identifierQuoteString = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
         }
         if (identifierQuoteString != null) {
             identifierQuoteString = identifierQuoteString.trim();

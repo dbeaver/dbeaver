@@ -82,8 +82,11 @@ public final class DBUtils {
     public static String getUnQuotedIdentifier(DBPDataSource dataSource, String str)
     {
         if (dataSource instanceof SQLDataSource) {
-            final String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
-            if (quote != null && str.startsWith(quote) && str.endsWith(quote)) {
+            String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
+            if (quote == null) {
+                quote = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
+            }
+            if (str.startsWith(quote) && str.endsWith(quote)) {
                 return str.substring(quote.length(), str.length() - quote.length());
             }
         }

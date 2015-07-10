@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
@@ -57,7 +56,7 @@ public class ObjectPropertyTester extends PropertyTester
             return false;
         }
         Display display = Display.getCurrent();
-        if (display == null || DBeaverUI.getActiveWorkbenchShell() != display.getActiveShell()) {
+        if (display == null) {
             return false;
         }
         DBNNode node = (DBNNode)receiver;
