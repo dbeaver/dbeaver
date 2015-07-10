@@ -479,54 +479,6 @@
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
-                    id="sqlite_zentus"
-                    label="SQLite Zentus driver"
-                    category="SQLite"
-                    class="org.sqlite.JDBC"
-                    sampleURL="jdbc:sqlite:{file}"
-                    defaultPort=""
-                    webURL="http://www.zentus.com/sqlitejdbc/"
-                    embedded="true"
-                    description="SQLite3 JDBC driver by David Crawshaw (Windows, Linux and Mac OS)">
-                    <file type="jar" path="drivers/sqlite/zentus/sqlitejdbc-v056.jar" url="*"/>
-                    <file type="license" path="drivers/sqlite/zentus/LICENSE.txt" url="*"/>
-                    <parameter name="supports-references" value="false"/>
-                    <parameter name="supports-indexes" value="false"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                </driver>
-                <driver
-                    id="sqlite_xerial"
-                    label="SQLite Xerial driver"
-                    category="SQLite"
-                    class="org.sqlite.JDBC"
-                    sampleURL="jdbc:sqlite:{file}"
-                    defaultPort=""
-                    webURL="http://www.xerial.org/trac/Xerial/wiki/SQLiteJDBC/"
-                    embedded="true"
-                    description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.7.2.jar" url="*"/>
-                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
-                    <parameter name="supports-references" value="true"/>
-                    <parameter name="supports-struct-cache" value="false"/>
-                    <parameter name="supports-indexes" value="true"/>
-                    <parameter name="supports-stored-code" value="false"/>
-
-                </driver>
-                <driver
-                    id="sqlite_ch_werner"
-                    label="SQLite Wrapper by Christian Werner"
-                    category="SQLite"
-                    class="SQLite.JDBCDriver"
-                    sampleURL="jdbc:sqlite:/{file}"
-                    defaultPort=""
-                    webURL="http://www.ch-werner.de/javasqlite/"
-                    embedded="true"
-                    description="SQLite3 JDBC driver by Christian Werner (Windows only)">
-                    <file type="jar" path="drivers/sqlite/werner/sqlite.jar" url="*"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/sqlite/werner/sqlite_jni.dll" url="*"/>
-                    <parameter name="supports-stored-code" value="false"/>
-                </driver>
-                <driver
                     id="sqlite_jdbc"
                     label="SQLite"
                     icon="icons/sqlite_icon.png"
@@ -540,7 +492,7 @@
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>
 
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.7.jar" url="*"/>
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.10.1.jar" url="*"/>
                     <file type="executable" path="drivers/sqlite/shell/linux/sqlite3" os="linux" url="*"/>
                     <file type="executable" path="drivers/sqlite/shell/macos/sqlite3" os="macos" url="*"/>
                     <file type="executable" path="drivers/sqlite/shell/win32/sqlite3.exe" os="win32" url="*"/>
