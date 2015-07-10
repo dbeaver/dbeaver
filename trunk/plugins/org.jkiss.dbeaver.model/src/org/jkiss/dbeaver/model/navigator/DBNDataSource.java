@@ -198,6 +198,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
         }
         dataSource.setName(newName);
         dataSource.persistConfiguration();
+        dataSource.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource, null));
     }
 
     @Override
