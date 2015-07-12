@@ -1,13 +1,11 @@
-Procedures execute support (describe params + resultset)
+Split core and ui on different plugins
 DBeaver features usage model
-Extract non-visual part to a separate plugin (preferences + editors)
 RSV find/replace action
 Vertica keywords
 
 Analyse exception for error line/offset and position cursor in SQL editor
 ERD export in XMI/GraphML formats
 
-IPropertyDescriptor, IPropertySource -> move to DBPPropertyDescriptor (get rid of org.eclipse.ui package dependency)
 Data transfer DB->DB. Set default export mapping initially
 DBCStatement-> executeQuery + executeUpdate
 Intro plugin
