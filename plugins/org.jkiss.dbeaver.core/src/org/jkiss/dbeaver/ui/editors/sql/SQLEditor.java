@@ -272,12 +272,12 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void releaseContainer() {
+        releaseExecutionContext();
         if (dataSourceContainer != null) {
             dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
             dataSourceContainer.release(this);
             dataSourceContainer = null;
         }
-        releaseExecutionContext();
     }
 
     @Override
@@ -848,7 +848,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (DataSourceHandler.isContextTransactionAffected(executionContext)) {
                 DataSourceHandler.closeActiveTransaction(new DefaultProgressMonitor(progressMonitor), executionContext, true);
             }
-            releaseExecutionContext();
+//            releaseExecutionContext();
         }
         super.doSave(progressMonitor);
     }
