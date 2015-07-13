@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -37,7 +38,7 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         if (OracleConstants.TYPE_NAME_XML.equals(typedObject.getTypeName()) || OracleConstants.TYPE_FQ_XML.equals(typedObject.getTypeName())) {
             return OracleXMLValueHandler.INSTANCE;

@@ -51,8 +51,12 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
     {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
-        } else {
+        } else if (value instanceof Boolean) {
             statement.setBoolean(paramIndex, (Boolean)value);
+        } else if (value instanceof Number) {
+            statement.setBoolean(paramIndex, ((Number)value).byteValue() != 0);
+        } else {
+            statement.setBoolean(paramIndex, Boolean.valueOf(value.toString()));
         }
     }
 

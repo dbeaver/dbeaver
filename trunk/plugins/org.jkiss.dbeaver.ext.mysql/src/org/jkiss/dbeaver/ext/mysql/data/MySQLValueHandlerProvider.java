@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -41,7 +42,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
 
     @Nullable
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typedObject.getTypeName())) {
             return MySQLEnumValueHandler.INSTANCE;
