@@ -88,7 +88,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 }
                 final DBDValueHandlerProvider dataTypeProvider = DataTypeProviderRegistry.getInstance().getDataTypeProvider(dataSource, dataType);
                 if (dataTypeProvider != null) {
-                    final DBDValueHandler handler = dataTypeProvider.getHandler(dataSource.getContainer(), dataType);
+                    final DBDValueHandler handler = dataTypeProvider.getHandler(dataSource, dataSource.getContainer(), dataType);
                     if (handler != null && (handler.getFeatures() & DBDValueHandler.FEATURE_INLINE_EDITOR) != 0) {
                         validDataTypes.add(dataType);
                     }

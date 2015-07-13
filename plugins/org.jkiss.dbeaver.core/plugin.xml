@@ -2264,11 +2264,14 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
+<!--
         <manager class="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager" id="org.jkiss.dbeaver.ui.data.managers.BooleanValueManager">
             <supports kind="BOOLEAN"/>
         </manager>
+-->
         <manager class="org.jkiss.dbeaver.ui.data.managers.NumericValueManager" id="org.jkiss.dbeaver.ui.data.managers.NumericValueManager">
             <supports kind="NUMERIC"/>
+            <supports kind="BOOLEAN"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ui.data.managers.StringValueManager">
             <supports kind="STRING"/>

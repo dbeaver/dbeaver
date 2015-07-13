@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -38,10 +39,10 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
     }
 
     @Override
-    public DBDValueHandler getHandler(DBDPreferences preferences, DBSTypedObject typedObject)
+    public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         int valueType = typedObject.getTypeID();
-        DBPDataKind dataKind = JDBCUtils.resolveDataKind(null, typedObject.getTypeName(), valueType);
+        DBPDataKind dataKind = JDBCUtils.resolveDataKind(dataSource, typedObject.getTypeName(), valueType);
         switch (dataKind) {
             case BOOLEAN:
                 return new JDBCBooleanValueHandler();
