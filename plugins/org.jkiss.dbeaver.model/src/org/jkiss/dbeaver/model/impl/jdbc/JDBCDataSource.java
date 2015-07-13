@@ -375,9 +375,8 @@ public abstract class JDBCDataSource
             case Types.NUMERIC:
             case Types.REAL:
             case Types.SMALLINT:
-                return DBPDataKind.NUMERIC;
             case Types.BIT:
-                return DBPDataKind.BOOLEAN;
+                return DBPDataKind.NUMERIC;
             case Types.TINYINT:
                 if (typeName.toLowerCase().contains("bool")) {
                     // Declared as numeric but actually it's a boolean
