@@ -258,7 +258,7 @@
         <image commandId="org.jkiss.dbeaver.core.compare.objects" icon="icons/file/compare.png"/>
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
-        <image commandId="org.jkiss.dbeaver.core.new.folder" icon="icons/tree/folder_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.new.folder" icon="icons/file/folder_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="icons/bookmark.png"/>
 
@@ -273,7 +273,7 @@
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="icons/project.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.create.link" icon="icons/tree/link.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.create.link" icon="icons/file/link.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="icons/sql/sql_script.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="icons/sql/sql_script_create.png"/>
@@ -2307,7 +2307,7 @@
         <node type="producer"
               id="database_producer"
               class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer"
-              icon="icons/tree/table.png"
+              icon="icons/table.png"
               label="%dataTransfer.producer.database.name"
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
@@ -2318,7 +2318,7 @@
         <node type="consumer"
               id="stream_consumer"
               class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer"
-              icon="icons/tree/file.png"
+              icon="icons/file/file.png"
               label="%dataTransfer.consumer.stream.name"
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
@@ -2378,7 +2378,7 @@
         <node type="consumer"
               id="database_consumer"
               class="org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer"
-              icon="icons/tree/table.png"
+              icon="icons/table.png"
               label="%dataTransfer.consumer.database.name"
               description="%dataTransfer.consumer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
@@ -2434,7 +2434,7 @@
                 id="database_metadata"
                 label="Metadata"
                 description="Search database metadata objects (tables, columns, etc)"
-                icon="icons/tree/table.png"
+                icon="icons/table.png"
                 pageClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
                 resultsClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"/>
         <searchProvider
