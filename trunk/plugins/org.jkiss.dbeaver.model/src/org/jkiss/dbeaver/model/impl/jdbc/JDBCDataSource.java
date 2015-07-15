@@ -375,15 +375,14 @@ public abstract class JDBCDataSource
             case Types.NUMERIC:
             case Types.REAL:
             case Types.SMALLINT:
-            case Types.BIT:
                 return DBPDataKind.NUMERIC;
+            case Types.BIT:
             case Types.TINYINT:
                 if (typeName.toLowerCase().contains("bool")) {
                     // Declared as numeric but actually it's a boolean
                     return DBPDataKind.BOOLEAN;
-                } else {
-                    return DBPDataKind.NUMERIC;
                 }
+                return DBPDataKind.NUMERIC;
             case Types.DATE:
             case Types.TIME:
             case Types.TIMESTAMP:
