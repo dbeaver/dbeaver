@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -36,6 +38,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -47,7 +50,9 @@ import org.jkiss.utils.CommonUtils;
 abstract class ViewValuePanel extends Composite {
 
     static final Log log = Log.getLog(ViewValuePanel.class);
+    public static final String CMD_SAVE_VALUE = "org.jkiss.dbeaver.core.resultset.cell.save";
 
+    private final IResultSetController controller;
     private final Label columnImageLabel;
     private final Text columnNameLabel;
     private final Composite viewPlaceholder;
@@ -56,9 +61,10 @@ abstract class ViewValuePanel extends Composite {
     private IValueEditor valueViewer;
     private ToolBarManager toolBarManager;
 
-    ViewValuePanel(Composite parent)
+    ViewValuePanel(IResultSetController controller, Composite parent)
     {
         super(parent, SWT.NONE);
+        this.controller = controller;
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 0;
         gl.horizontalSpacing = 0;
@@ -146,7 +152,7 @@ abstract class ViewValuePanel extends Composite {
                     control.addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyReleased(KeyEvent e) {
-                            if (e.keyCode == 'p' && e.stateMask == SWT.CONTROL) {
+                            if (e.keyCode == 'x' && e.stateMask == SWT.CONTROL) {
                                 saveValue();
                             }
                         }
@@ -220,9 +226,26 @@ abstract class ViewValuePanel extends Composite {
 
     private void fillStandardToolBar()
     {
+        toolBarManager.add(new Separator());
+        if (previewController != null && !previewController.isReadOnly()) {
+//                ActionUtils.makeCommandContribution(
+//                    controller.getSite(),
+//                    CMD_SAVE_VALUE,
+//                    CommandContributionItem.STYLE_PUSH));
+
+                Action applyAction = new Action("Save cell value", DBeaverIcons.getImageDescriptor(UIIcon.CONFIRM)) {
+                    @Override
+                    public void run() {
+                        saveValue();
+                    }
+                };
+                applyAction.setActionDefinitionId(CMD_SAVE_VALUE);
+                applyAction.setId(CMD_SAVE_VALUE);
+            toolBarManager.add(applyAction);
+        }
         toolBarManager.add(
             ActionUtils.makeCommandContribution(
-                previewController.getValueSite(),
+                controller.getSite(),
                 SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
                 CommandContributionItem.STYLE_PUSH,
                 UIIcon.CLOSE));

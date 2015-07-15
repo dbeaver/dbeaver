@@ -182,7 +182,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 new GridLabelProvider());
             this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.previewPane = new ViewValuePanel(resultsSash) {
+            this.previewPane = new ViewValuePanel(controller, resultsSash) {
                 @Override
                 protected void hidePanel()
                 {
