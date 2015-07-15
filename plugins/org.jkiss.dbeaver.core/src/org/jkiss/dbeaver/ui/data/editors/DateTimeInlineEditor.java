@@ -45,17 +45,9 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     protected Control createControl(Composite editPlaceholder)
     {
         boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        final Composite dateTimeGroup = inline ?
-            valueController.getEditPlaceholder() :
-            new Composite(valueController.getEditPlaceholder(), SWT.NONE);
-        if (!inline) {
-            dateTimeGroup.setLayout(new GridLayout(2, false));
-        }
 
-        if (!inline) {
-//            UIUtils.createControlLabel(dateTimeGroup, "Value");
-        }
-        timeEditor = new CustomTimeEditor(dateTimeGroup,
+        timeEditor = new CustomTimeEditor(
+            valueController.getEditPlaceholder(),
             (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG,
             helper.getFormatter(valueController, valueController.getValueType()));
         timeEditor.setEnabled(!valueController.isReadOnly());
