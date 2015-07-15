@@ -36,8 +36,8 @@ public class BitInlineEditor extends BaseValueEditor<Combo> {
     protected Combo createControl(Composite editPlaceholder)
     {
         final Combo editor = new Combo(valueController.getEditPlaceholder(), SWT.READ_ONLY);
-        editor.add("0"); //$NON-NLS-1$
-        editor.add("1"); //$NON-NLS-1$
+        editor.add(Boolean.FALSE.toString()); //$NON-NLS-1$
+        editor.add(Boolean.TRUE.toString()); //$NON-NLS-1$
         editor.setEnabled(!valueController.isReadOnly());
         return editor;
     }
@@ -45,7 +45,7 @@ public class BitInlineEditor extends BaseValueEditor<Combo> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setText(value == null ? "0" : value.toString()); //$NON-NLS-1$
+        control.setText(value == null ? Boolean.FALSE.toString() : value.toString()); //$NON-NLS-1$
     }
 
     @Override
@@ -53,9 +53,9 @@ public class BitInlineEditor extends BaseValueEditor<Combo> {
     {
         switch (control.getSelectionIndex()) {
             case 0:
-                return (byte) 0;
+                return Boolean.FALSE;
             case 1:
-                return (byte) 1;
+                return Boolean.TRUE;
             default:
                 return null;
         }
