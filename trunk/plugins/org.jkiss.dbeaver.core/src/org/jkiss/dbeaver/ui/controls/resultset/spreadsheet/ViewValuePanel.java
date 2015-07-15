@@ -150,8 +150,9 @@ abstract class ViewValuePanel extends Composite {
                 Control control = valueViewer.getControl();
                 if (control != null) {
                     control.addKeyListener(new KeyAdapter() {
+
                         @Override
-                        public void keyReleased(KeyEvent e) {
+                        public void keyPressed(KeyEvent e) {
                             if (e.keyCode == 'x' && e.stateMask == SWT.CONTROL) {
                                 saveValue();
                             }
