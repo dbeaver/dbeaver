@@ -17,14 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Date;
 
@@ -60,6 +58,9 @@ public class CustomTimeEditor {
         throws DBException
     {
         final String timeText = timeEditor.getText();
+        if (timeText.isEmpty()) {
+            return null;
+        }
         try {
             return (Date)formatter.parseValue(timeText, Date.class);
         } catch (final Exception e) {
