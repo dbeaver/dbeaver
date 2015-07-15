@@ -183,7 +183,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public DBDValueHandler getDefaultValueHandler()
     {
-        return JDBCObjectValueHandler.INSTANCE;
+        return context.getDataSource().getDefaultValueHandler();
     }
 
     private JDBCStatement makeStatement(Statement statement)

@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -58,7 +60,7 @@ public class DefaultValueHandler extends BaseValueHandler {
         int index,
         Object value) throws DBCException
     {
-        
+        throw new DBCException("Object parameter [" + DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI) + "] binding not supported");
     }
 
     @Override
