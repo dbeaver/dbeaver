@@ -1,4 +1,5 @@
-Images & messages
+DBDValueHandler features - move to IValueManager
+
 Split core and ui on different plugins
 DBeaver features usage model
 RSV find/replace action
