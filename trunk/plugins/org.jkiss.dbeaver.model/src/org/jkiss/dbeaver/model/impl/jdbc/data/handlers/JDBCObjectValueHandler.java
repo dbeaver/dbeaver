@@ -80,7 +80,11 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
         } else if (value instanceof JDBCRowId) {
             statement.setRowId(paramIndex, ((JDBCRowId) value).getValue());
         } else {
-            statement.setObject(paramIndex, value);
+            try {
+                statement.setObject(paramIndex, value, paramType.getTypeID());
+            } catch (SQLException e) {
+                statement.setObject(paramIndex, value);
+            }
         }
     }
 

@@ -22,6 +22,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDPreferences;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -55,6 +59,7 @@ public abstract class JDBCDataSource
         DBPDataTypeProvider,
         DBPErrorAssistant,
         DBPRefreshableObject,
+        DBDPreferences,
         DBSObject,
         DBSObjectContainer,
         DBCQueryTransformProvider,
@@ -518,4 +523,22 @@ public abstract class JDBCDataSource
         return null;
     }
 
+    /////////////////////////////////////////////////
+    // DBDPreferences
+
+    @Override
+    public DBDDataFormatterProfile getDataFormatterProfile() {
+        return container.getDataFormatterProfile();
+    }
+
+    @Override
+    public void setDataFormatterProfile(DBDDataFormatterProfile formatterProfile) {
+        container.setDataFormatterProfile(formatterProfile);
+    }
+
+    @NotNull
+    @Override
+    public DBDValueHandler getDefaultValueHandler() {
+        return JDBCObjectValueHandler.INSTANCE;
+    }
 }
