@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
@@ -51,9 +49,6 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
             (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG,
             helper.getFormatter(valueController, valueController.getValueType()));
         timeEditor.setEnabled(!valueController.isReadOnly());
-        if (!inline) {
-            timeEditor.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        }
 
         return timeEditor.getControl();
     }

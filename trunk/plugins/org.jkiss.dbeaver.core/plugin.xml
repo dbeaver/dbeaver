@@ -239,6 +239,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="%command.org.jkiss.dbeaver.core.resultset.row.delete.name" description="%command.org.jkiss.dbeaver.core.resultset.row.delete.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.applyChanges" name="%command.org.jkiss.dbeaver.core.resultset.applyChanges.name" description="%command.org.jkiss.dbeaver.core.resultset.applyChanges.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.rejectChanges" name="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.name" description="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.cell.save" name="%command.org.jkiss.dbeaver.core.resultset.cell.save.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.save.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePreview" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
 
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="%command.org.jkiss.dbeaver.core.edit.copy.special.name" description="%command.org.jkiss.dbeaver.core.edit.copy.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -306,6 +307,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="icons/sql/accept.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="icons/sql/cancel.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/misc/confirm.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="icons/sql/details.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
@@ -1667,6 +1669,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+X"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>

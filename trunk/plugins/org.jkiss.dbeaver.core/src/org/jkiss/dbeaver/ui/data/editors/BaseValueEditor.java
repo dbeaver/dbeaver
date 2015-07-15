@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -28,16 +25,15 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
 * BaseValueEditor
 */
 public abstract class BaseValueEditor<T extends Control> implements IValueEditor {
+
     protected final IValueController valueController;
     protected T control;
     private boolean activated;
@@ -50,21 +46,6 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         this.control = createControl(valueController.getEditPlaceholder());
         if (this.control != null) {
             initInlineControl(this.control);
-        }
-        IContributionManager editToolBar = valueController.getEditBar();
-        if (editToolBar != null) {
-            editToolBar.add(new Separator());
-            if (!valueController.isReadOnly()) {
-                Action applyAction = new Action("Apply changes", DBeaverIcons.getImageDescriptor(UIIcon.CONFIRM)) {
-                    @Override
-                    public void run() {
-                        saveValue();
-                    }
-                };
-                applyAction.setAccelerator('P' | SWT.CTRL);
-                editToolBar.add(applyAction);
-                editToolBar.update(true);
-            }
         }
     }
 
