@@ -24,9 +24,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
 
 import java.util.Date;
 
@@ -48,13 +47,13 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
         boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
         final Composite dateTimeGroup = inline ?
             valueController.getEditPlaceholder() :
-            new Composite(valueController.getEditPlaceholder(), SWT.BORDER);
+            new Composite(valueController.getEditPlaceholder(), SWT.NONE);
         if (!inline) {
             dateTimeGroup.setLayout(new GridLayout(2, false));
         }
 
         if (!inline) {
-            UIUtils.createControlLabel(dateTimeGroup, "Value");
+//            UIUtils.createControlLabel(dateTimeGroup, "Value");
         }
         timeEditor = new CustomTimeEditor(dateTimeGroup,
             (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG,

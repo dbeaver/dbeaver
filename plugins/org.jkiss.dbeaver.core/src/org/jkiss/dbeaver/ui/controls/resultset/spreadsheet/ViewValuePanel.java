@@ -17,30 +17,29 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * RSV value view panel
@@ -142,6 +141,17 @@ abstract class ViewValuePanel extends Composite {
                 } catch (Exception e) {
                     log.error(e);
                 }
+                Control control = valueViewer.getControl();
+                if (control != null) {
+                    control.addKeyListener(new KeyAdapter() {
+                        @Override
+                        public void keyReleased(KeyEvent e) {
+                            if (e.keyCode == 'p' && e.stateMask == SWT.CONTROL) {
+                                saveValue();
+                            }
+                        }
+                    });
+                }
             } else {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -165,10 +175,26 @@ abstract class ViewValuePanel extends Composite {
         }
         if (valueViewer != null) {
             try {
-                valueViewer.primeEditorValue(previewController.getValue());
+                Object oldValue = valueViewer.extractEditorValue();
+                Object newValue = previewController.getValue();
+                if (!CommonUtils.equalObjects(oldValue, newValue)) {
+                    valueViewer.primeEditorValue(newValue);
+                }
             } catch (DBException e) {
                 log.error(e);
             }
+        }
+    }
+
+    private void saveValue()
+    {
+        try {
+            Object newValue = valueViewer.extractEditorValue();
+            //previewController.closeInlineEditor();
+            previewController.updateValue(newValue);
+        } catch (DBException e) {
+            previewController.closeInlineEditor();
+            UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
         }
     }
 
@@ -194,12 +220,12 @@ abstract class ViewValuePanel extends Composite {
 
     private void fillStandardToolBar()
     {
-        toolBarManager.add(new Action("Hide panel", DBeaverIcons.getImageDescriptor(UIIcon.CLOSE)) {
-            @Override
-            public void run() {
-                hidePanel();
-            }
-        });
+        toolBarManager.add(
+            ActionUtils.makeCommandContribution(
+                previewController.getValueSite(),
+                SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
+                CommandContributionItem.STYLE_PUSH,
+                UIIcon.CLOSE));
     }
 
     public ToolBarManager getToolBar()

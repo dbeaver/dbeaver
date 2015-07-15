@@ -55,12 +55,15 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         if (editToolBar != null) {
             editToolBar.add(new Separator());
             if (!valueController.isReadOnly()) {
-                editToolBar.add(new Action("Apply changes", DBeaverIcons.getImageDescriptor(UIIcon.CONFIRM)) {
+                Action applyAction = new Action("Apply changes", DBeaverIcons.getImageDescriptor(UIIcon.CONFIRM)) {
                     @Override
                     public void run() {
                         saveValue();
                     }
-                });
+                };
+                applyAction.setAccelerator('P' | SWT.CTRL);
+                editToolBar.add(applyAction);
+                editToolBar.update(true);
             }
         }
     }
