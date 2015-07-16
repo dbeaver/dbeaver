@@ -9,6 +9,7 @@ Bundle-ClassPath: .
 Bundle-Vendor: JKISS
 Bundle-Localization: plugin
 Require-Bundle: org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
  org.eclipse.osgi,
  org.eclipse.equinox.app,
  org.eclipse.swt,
