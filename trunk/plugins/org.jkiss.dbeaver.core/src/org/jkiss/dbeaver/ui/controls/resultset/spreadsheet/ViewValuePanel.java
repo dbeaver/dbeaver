@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -182,10 +183,15 @@ abstract class ViewValuePanel extends Composite {
         }
         if (valueViewer != null) {
             try {
-                Object oldValue = valueViewer.extractEditorValue();
                 Object newValue = previewController.getValue();
-                if (!CommonUtils.equalObjects(oldValue, newValue)) {
+                if (newValue instanceof DBDValue) {
+                    // Do not check for difference
                     valueViewer.primeEditorValue(newValue);
+                } else {
+                    Object oldValue = valueViewer.extractEditorValue();
+                    if (!CommonUtils.equalObjects(oldValue, newValue)) {
+                        valueViewer.primeEditorValue(newValue);
+                    }
                 }
             } catch (DBException e) {
                 log.error(e);
