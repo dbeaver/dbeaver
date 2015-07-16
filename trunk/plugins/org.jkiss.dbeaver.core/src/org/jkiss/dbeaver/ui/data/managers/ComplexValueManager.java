@@ -29,6 +29,12 @@ import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
  */
 public abstract class ComplexValueManager extends BaseValueManager {
 
+    @NotNull
+    @Override
+    public IValueController.EditType[] getSupportedEditTypes() {
+        return new IValueController.EditType[] {IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    }
+
     @Override
     public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException

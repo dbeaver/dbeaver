@@ -35,6 +35,12 @@ import org.jkiss.utils.CommonUtils;
  */
 public class ObjectValueManager extends BaseValueManager {
 
+    @NotNull
+    @Override
+    public IValueController.EditType[] getSupportedEditTypes() {
+        return new IValueController.EditType[] {IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    }
+
     @Override
     public IValueEditor createEditor(@NotNull final IValueController controller)
         throws DBException

@@ -31,6 +31,12 @@ public class DefaultValueManager extends BaseValueManager {
 
     public static final DefaultValueManager INSTANCE = new DefaultValueManager();
 
+    @NotNull
+    @Override
+    public IValueController.EditType[] getSupportedEditTypes() {
+        return new IValueController.EditType[] {IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    }
+
     @Override
     public IValueEditor createEditor(@NotNull final IValueController controller) throws DBException {
         switch (controller.getEditType()) {

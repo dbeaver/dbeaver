@@ -32,6 +32,12 @@ import java.util.UUID;
  */
 public class UUIDValueManager extends BaseValueManager {
 
+    @NotNull
+    @Override
+    public IValueController.EditType[] getSupportedEditTypes() {
+        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    }
+
     @Override
     public IValueEditor createEditor(@NotNull IValueController controller) throws DBException {
         switch (controller.getEditType()) {

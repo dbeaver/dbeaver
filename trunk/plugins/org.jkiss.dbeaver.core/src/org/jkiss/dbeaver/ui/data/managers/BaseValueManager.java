@@ -73,11 +73,13 @@ public abstract class BaseValueManager implements IValueManager {
         // nothing
     }
 
+/*
     @Override
     public IValueController.EditType[] getSupportedEditTypes() {
         // Base value manager do not support any edit type.
         return new IValueController.EditType[] {};
     }
+*/
 
 
 }
