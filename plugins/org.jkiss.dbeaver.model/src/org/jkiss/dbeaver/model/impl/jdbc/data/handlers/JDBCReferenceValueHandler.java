@@ -50,7 +50,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
     @Override
     public int getFeatures()
     {
-        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_SHOW_ICON;
+        return FEATURE_VIEWER | FEATURE_EDITOR;
     }
 
     /**
