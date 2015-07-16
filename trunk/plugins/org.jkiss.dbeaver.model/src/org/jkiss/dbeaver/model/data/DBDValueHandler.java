@@ -29,22 +29,6 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public interface DBDValueHandler 
 {
-    // Default value, means no features are supported
-    int FEATURE_NONE = 0;
-    // VIEWER is ability to render value editor in separate panel
-    int FEATURE_VIEWER = 1;
-    // EDITOR is ability to show value editor in separate dialog or standalone editor
-    int FEATURE_EDITOR = 2;
-    // INLINE_EDITOR is ability to show editor in grid cell
-    int FEATURE_INLINE_EDITOR = 4;
-
-    /**
-     * Handler features. Bit set.
-     * See constants FEATURE_*
-     * @return features bits
-     */
-    int getFeatures();
-
     /**
      * Gets value object's type.
      * May return base interface of object's type -

@@ -31,12 +31,6 @@ public class DefaultValueHandler extends BaseValueHandler {
     public static final DefaultValueHandler INSTANCE = new DefaultValueHandler();
 
     @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER;
-    }
-
-    @Override
     public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Object.class;

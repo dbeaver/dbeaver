@@ -89,12 +89,6 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR;
-    }
-
-    @Override
     public Class getValueObjectType(DBSTypedObject valueType)
     {
         return Object.class;

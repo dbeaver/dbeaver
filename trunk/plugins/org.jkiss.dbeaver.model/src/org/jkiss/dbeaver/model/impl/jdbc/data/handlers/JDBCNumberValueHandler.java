@@ -207,12 +207,6 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR | FEATURE_INLINE_EDITOR;
-    }
-
-    @Override
     public Class getValueObjectType(DBSTypedObject valueType)
     {
         return getNumberType(valueType);
