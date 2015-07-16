@@ -1322,7 +1322,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (row.changes != null && row.changes.containsKey(attribute)) {
                 return backgroundModified;
             }
-            if ((attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
+            if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
                 return backgroundReadOnly;
             }
             if (!recordMode && odd && showOddRows) {
