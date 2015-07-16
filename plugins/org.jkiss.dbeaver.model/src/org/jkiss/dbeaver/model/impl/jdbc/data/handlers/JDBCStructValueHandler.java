@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -41,7 +42,7 @@ import java.sql.Struct;
  *
  * @author Serge Rider
  */
-public class JDBCStructValueHandler extends JDBCComplexValueHandler {
+public class JDBCStructValueHandler extends JDBCComplexValueHandler implements DBDValueHandlerComposite {
 
     static final Log log = Log.getLog(JDBCStructValueHandler.class);
 
@@ -49,7 +50,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler {
 
     @Override
     public int getFeatures() {
-        return FEATURE_COMPOSITE;
+        return FEATURE_NONE;
     }
 
     /**
