@@ -71,6 +71,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
 
+    @NotNull
     @Override
     public DBCExecutionContext getExecutionContext() {
         return controller.getExecutionContext();

@@ -68,6 +68,12 @@ public class DateTimeValueManager extends BaseValueManager implements DateTimeEd
             getFormatter(controller, controller.getValueType()).getPattern());
     }
 
+    @NotNull
+    @Override
+    public IValueController.EditType[] getSupportedEditTypes() {
+        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    }
+
     @Override
     public IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException

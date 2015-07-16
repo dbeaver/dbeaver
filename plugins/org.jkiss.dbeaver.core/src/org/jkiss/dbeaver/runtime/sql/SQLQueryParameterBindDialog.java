@@ -33,6 +33,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -333,6 +334,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             this.item = item;
         }
 
+        @NotNull
         @Override
         public DBCExecutionContext getExecutionContext() {
             return executionContext;
