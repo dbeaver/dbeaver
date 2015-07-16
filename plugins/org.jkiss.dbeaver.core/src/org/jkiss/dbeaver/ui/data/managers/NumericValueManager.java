@@ -32,6 +32,12 @@ import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
  */
 public class NumericValueManager extends BaseValueManager {
 
+    @NotNull
+    @Override
+    public IValueController.EditType[] getSupportedEditTypes() {
+        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+    }
+
     @Nullable
     @Override
     public IValueEditor createEditor(@NotNull IValueController controller)
