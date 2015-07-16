@@ -645,6 +645,7 @@
                 useexternalfile="yes">
             <sourcepath>
                 <pathelement path="../modules/org.jkiss.utils/src"/>
+                <pathelement path="../plugins/org.jkiss.dbeaver.model/src"/>
                 <pathelement path="../plugins/org.jkiss.dbeaver.core/src"/>
 <!--
                 <pathelement path="../plugins/org.jkiss.dbeaver.erd/src"/>
