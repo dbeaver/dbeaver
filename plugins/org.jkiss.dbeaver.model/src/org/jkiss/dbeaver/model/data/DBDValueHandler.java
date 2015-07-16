@@ -37,8 +37,6 @@ public interface DBDValueHandler
     int FEATURE_EDITOR = 2;
     // INLINE_EDITOR is ability to show editor in grid cell
     int FEATURE_INLINE_EDITOR = 4;
-    // SHOW_ICON means grid should render type icon before cell value
-    int FEATURE_SHOW_ICON = 8;
 
     /**
      * Handler features. Bit set.

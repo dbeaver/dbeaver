@@ -1274,8 +1274,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             if (!showCelIcons) {
                 return null;
             }
-            DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
-            if ((attr.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_SHOW_ICON) != 0) {
+            Object cellValue = getCellValue(colElement, rowElement, false);
+            if (cellValue instanceof DBDContent || cellValue instanceof DBDReference) {
+                DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
                 return DBUtils.getTypeImage(attr.getMetaAttribute());
             } else {
                 return null;
