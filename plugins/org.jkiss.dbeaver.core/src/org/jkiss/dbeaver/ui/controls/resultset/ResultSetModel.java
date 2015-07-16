@@ -538,7 +538,7 @@ public class ResultSetModel {
         if (rowIdentifier == null ||
             //rowIdentifier.getAttributes().isEmpty() ||
             !(rowIdentifier.getEntity() instanceof DBSDataManipulator) ||
-            (attribute.getValueHandler().getFeatures() & DBDValueHandler.FEATURE_COMPOSITE) != 0) {
+            attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
             return true;
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();

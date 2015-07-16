@@ -39,8 +39,6 @@ public interface DBDValueHandler
     int FEATURE_INLINE_EDITOR = 4;
     // SHOW_ICON means grid should render type icon before cell value
     int FEATURE_SHOW_ICON = 8;
-    // FEATURE_COMPOSITE composite values (which doesn't have their own "value" but have nested valuable elements)
-    int FEATURE_COMPOSITE = 16;
 
     /**
      * Handler features. Bit set.
