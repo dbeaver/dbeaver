@@ -49,6 +49,12 @@ public interface IValueManager
     void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller);
 
     /**
+     * Returns array of edit types supported by this value manager.
+     */
+    @NotNull
+    IValueController.EditType[] getSupportedEditTypes();
+
+    /**
      * Creates value editor.
      * Value editor could be:
      * <li>inline editor (control created withing inline placeholder)</li>
