@@ -62,12 +62,6 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
     }
 
     @Override
-    public int getFeatures()
-    {
-        return FEATURE_NONE;
-    }
-
-    @Override
     public Class getValueObjectType(DBSTypedObject valueType)
     {
         return java.lang.Object.class;

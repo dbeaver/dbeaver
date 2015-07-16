@@ -40,12 +40,6 @@ public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
     public static final String PROP_CATEGORY_COMPLEX = "Complex";
 
     @Override
-    public int getFeatures()
-    {
-        return FEATURE_VIEWER | FEATURE_EDITOR;
-    }
-
-    @Override
     protected Object fetchColumnValue(
         DBCSession session,
         JDBCResultSet resultSet,

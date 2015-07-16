@@ -389,14 +389,15 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;
         panel.setLayout(layout);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        panel.setLayoutData(gd);
+        if (parent.getLayout() instanceof GridLayout) {
+            panel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
 
         {
             IValueController valueController = getValueController();
             assert valueController != null;
             infoPanel = new ColumnInfoPanel(panel, SWT.NONE, valueController);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.exclude = true;
             infoPanel.setLayoutData(gd);
             infoPanel.setVisible(false);
@@ -409,8 +410,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;
         editotPanel.setLayout(layout);
-        gd = new GridData(GridData.FILL_BOTH);
-        editotPanel.setLayoutData(gd);
+        editotPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         return editotPanel;
     }

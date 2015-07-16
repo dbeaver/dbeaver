@@ -24,6 +24,8 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -46,9 +48,15 @@ public class ImageViewer extends Composite {
     {
         super(parent, style);
 
-        setLayout(new FillLayout());
+        GridLayout gl = new GridLayout(1, false);
+        gl.horizontalSpacing = 0;
+        gl.verticalSpacing = 0;
+        gl.marginHeight = 0;
+        gl.marginWidth = 0;
+        setLayout(gl);
 
         canvas = new ImageViewCanvas(this, SWT.NONE);
+        canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Add DND support
         Transfer[] types = new Transfer[] {ImageTransfer.getInstance()};
