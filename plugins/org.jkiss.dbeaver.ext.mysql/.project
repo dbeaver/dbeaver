@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>org.jkiss.dbeaver.mysql</name>
+	<name>org.jkiss.dbeaver.ext.mysql</name>
 	<comment></comment>
 	<projects>
 	</projects>
