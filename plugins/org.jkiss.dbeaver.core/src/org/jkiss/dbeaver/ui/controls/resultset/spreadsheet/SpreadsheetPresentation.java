@@ -97,6 +97,7 @@ import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -690,21 +691,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
 
-        final int handlerFeatures = attr.getValueHandler().getFeatures();
-        if (handlerFeatures == DBDValueHandler.FEATURE_NONE) {
-            return null;
-        }
-        if (inline &&
-            ((handlerFeatures & DBDValueHandler.FEATURE_INLINE_EDITOR) == 0 || controller.isAttributeReadOnly(attr)) &&
-            (handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0)
-        {
-            // Inline editor isn't supported but panel viewer is
-            // Enable panel
-            if (!isPreviewVisible()) {
-                togglePreview();
-            }
-            return null;
-        }
         if (controller.isAttributeReadOnly(attr) && inline) {
             // No inline editors for readonly columns
             return null;
@@ -735,6 +721,28 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             row,
             inline ? IValueController.EditType.INLINE : IValueController.EditType.EDITOR,
             placeholder);
+
+        IValueController.EditType[] supportedEditTypes = valueController.getValueManager().getSupportedEditTypes();
+        if (supportedEditTypes.length == 0) {
+            if (placeholder != null) {
+                placeholder.dispose();
+            }
+            return null;
+        }
+        if (inline &&
+            (!ArrayUtils.contains(supportedEditTypes, IValueController.EditType.INLINE) || controller.isAttributeReadOnly(attr)) &&
+            ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL))
+        {
+            // Inline editor isn't supported but panel viewer is
+            // Enable panel
+            if (!isPreviewVisible()) {
+                togglePreview();
+            }
+            placeholder.dispose();
+
+            return null;
+        }
+
         final IValueEditor editor;
         try {
             editor = valueController.getValueManager().createEditor(valueController);
@@ -776,7 +784,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
                 // Probably we can just show preview panel
-                if ((handlerFeatures & DBDValueHandler.FEATURE_VIEWER) != 0) {
+                if (ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL)) {
                     // Inline editor isn't supported but panel viewer is
                     // Enable panel
                     if (!isPreviewVisible()) {

@@ -39,12 +39,10 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -52,6 +50,7 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -81,18 +80,20 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         this.parameters = parameters;
 
         DBPDataSource dataSource = executionContext.getDataSource();
-        DBPDataTypeProvider dataTypeProvider1 = DBUtils.getAdapter(DBPDataTypeProvider.class, dataSource);
-        if (dataTypeProvider1 != null) {
-            for (DBSDataType dataType : dataTypeProvider1.getDataTypes()) {
+        DBPDataTypeProvider dataTypeProvider = DBUtils.getAdapter(DBPDataTypeProvider.class, dataSource);
+        if (dataTypeProvider != null) {
+            for (DBSDataType dataType : dataTypeProvider.getDataTypes()) {
                 if (dataType.getDataKind() == DBPDataKind.UNKNOWN) {
                     continue;
                 }
-                final DBDValueHandlerProvider dataTypeProvider = DataTypeProviderRegistry.getInstance().getDataTypeProvider(dataSource, dataType);
-                if (dataTypeProvider != null) {
-                    final DBDValueHandler handler = dataTypeProvider.getHandler(dataSource, dataSource.getContainer(), dataType);
-                    if (handler != null && (handler.getFeatures() & DBDValueHandler.FEATURE_INLINE_EDITOR) != 0) {
-                        validDataTypes.add(dataType);
-                    }
+
+                IValueManager manager = DataManagerRegistry.getInstance().getManager(
+                    dataSource,
+                    dataType.getDataKind(),
+                    Object.class);
+
+                if (ArrayUtils.contains(manager.getSupportedEditTypes(), IValueController.EditType.INLINE)) {
+                    validDataTypes.add(dataType);
                 }
             }
         }
