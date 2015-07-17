@@ -222,6 +222,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         }
         // Always search for synonyms
         objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
+
         // Seek for objects (join with public synonyms)
         JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT /*+RULE*/ DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
