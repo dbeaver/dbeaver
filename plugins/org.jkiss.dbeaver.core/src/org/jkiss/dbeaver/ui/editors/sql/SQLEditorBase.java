@@ -248,7 +248,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             true,
             styles);
 
-        if (hasAnnotations()) {
+        {
             char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
             ICharacterPairMatcher matcher;
             try {
