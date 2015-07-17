@@ -136,7 +136,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
 
         // Load tables
         JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
+                "SELECT /*+RULE*/ OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
                 "FROM SYS.ALL_CONSTRAINTS\n" +
                 "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
                 (schema != null ? " AND OWNER=?" : ""));
@@ -224,11 +224,11 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
         // Seek for objects (join with public synonyms)
         JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
+            "SELECT /*+RULE*/ DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
             "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
             (schema == null ? "" : " AND OWNER=?") +
             "UNION ALL\n" +
-            "SELECT O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
+            "SELECT /*+RULE*/ O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
             "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n" +
             "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
             "\nORDER BY OBJECT_NAME");

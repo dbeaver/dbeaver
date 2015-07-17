@@ -357,11 +357,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "\tSELECT t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
+                    "\tSELECT /*+RULE*/ t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
                     "\tFROM SYS.ALL_ALL_TABLES t\n" +
                     "\tWHERE t.OWNER=?\n" +
                 "UNION ALL\n" +
-                    "\tSELECT o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
+                    "\tSELECT /*+RULE*/ o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
                     "\tFROM SYS.ALL_OBJECTS o \n" +
                     "\tWHERE o.OWNER=? AND o.OBJECT_TYPE='VIEW'\n"
                 );
@@ -388,7 +388,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT /*+ USE_NL(cc)*/ c.*,cc.COMMENTS\n" +
+                .append("SELECT /*+USE_NL(cc)*/ c.*,cc.COMMENTS\n" +
                     "FROM SYS.ALL_TAB_COLS c\n" +
                     "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
@@ -432,7 +432,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT /*+USE_NL(col) USE_NL(ref)*/\n" +
+                .append("SELECT /*+RULE*/\n" +
                     "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
@@ -501,7 +501,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                "SELECT /*+USE_NL(col) USE_NL(ref)*/ \r\n" +
+                "SELECT /*+RULE*/ \r\n" +
                 "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,ref.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
                 "FROM SYS.ALL_CONSTRAINTS c\n" +
@@ -565,7 +565,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
+                "SELECT /*+RULE*/ " +
+                    "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
                     "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
                     "FROM SYS.ALL_INDEXES i \n" +
                     "JOIN SYS.ALL_IND_COLUMNS ic ON ic.INDEX_OWNER=i.OWNER AND ic.INDEX_NAME=i.INDEX_NAME\n" +
@@ -632,7 +633,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
+                "SELECT /*+RULE*/ * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -652,7 +653,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
+                "SELECT /*+RULE*/ * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -674,7 +675,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_OBJECTS " +
+                "SELECT /*+RULE*/ * FROM SYS.ALL_OBJECTS " +
                 "WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') " +
                 "AND OWNER=? " +
                 "ORDER BY OBJECT_NAME");
@@ -697,7 +698,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " + 
+                "SELECT /*+RULE*/ * FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
                 " ORDER BY OBJECT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
@@ -720,7 +721,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+ USE_NL(O)*/ s.*,O.OBJECT_TYPE \n" +
+                "SELECT /*+RULE*/ s.*,O.OBJECT_TYPE \n" +
                 "FROM ALL_SYNONYMS S\n" +
                 "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
                 "WHERE S.OWNER=? AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n" +
