@@ -21,10 +21,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -48,18 +45,11 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     private boolean loaded = false;
     //private boolean running = false;
     private Composite parent;
-    private FindReplaceAction findReplaceAction;
 
     @Override
     public void createPartControl(Composite parent)
     {
         this.parent = parent;
-
-        // Register find/replace action
-        // We do it in setFocus because each entity editor registers it's own action - and they
-        // share a single action bars instance. To avoid mess just update handler every time editor activated
-        findReplaceAction = new FindReplaceAction(DBeaverActivator.getResourceBundle(), "Editor.FindReplace.", this);
-        findReplaceAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
     }
 
     @Override
@@ -143,9 +133,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     }
 
     private void refreshActions() {
-        findReplaceAction.update();
         IActionBars actionBars = getEditorSite().getActionBars();
-        actionBars.setGlobalActionHandler("dde_findReplace", findReplaceAction);
         actionBars.updateActionBars();
     }
 

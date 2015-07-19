@@ -20,11 +20,14 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
@@ -112,6 +115,13 @@ public class ResultSetCommandHandler extends AbstractHandler {
             if (presentation instanceof IResultSetEditor) {
                 ((IResultSetEditor) presentation).openValueEditor(false);
             }
+        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE)) {
+            FindReplaceAction action = new FindReplaceAction(
+                DBeaverActivator.getResourceBundle(),
+                "Editor.FindReplace.",
+                HandlerUtil.getActiveShell(event),
+                (IFindReplaceTarget)resultSet.getAdapter(IFindReplaceTarget.class));
+            action.run();
         }
 
 
