@@ -22,8 +22,8 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -1084,13 +1084,26 @@ public final class DBUtils {
     @NotNull
     public static String getFullParametrizedName(@NotNull DBRProgressMonitor monitor, @NotNull DBSParametrizedObject typedObject)
     {
-        String typeName = typedObject.getName();
+        String simpleName = typedObject.getName();
         try {
-            typedObject.getParameters(monitor);
+            Collection<? extends DBSParameter> parameters = typedObject.getParameters(monitor);
+            if (CommonUtils.isEmpty(parameters)) {
+                return simpleName;
+            }
+            StringBuilder buf = new StringBuilder(simpleName);
+            buf.append(" (");
+            boolean first = true;
+            for (DBSParameter parameter : parameters) {
+                if (!first) buf.append(",");
+                first = false;
+                buf./*append(parameter.getName()).append(" ").*/append(parameter.getTypeName());
+            }
+            buf.append(")");
+            return buf.toString();
         } catch (DBException e) {
-            e.printStackTrace();
+            log.warn(e);
         }
-        return typeName;
+        return simpleName;
     }
 
     @NotNull

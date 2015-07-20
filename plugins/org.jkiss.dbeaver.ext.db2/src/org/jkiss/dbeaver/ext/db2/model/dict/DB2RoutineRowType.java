@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 /**
  * DB2 Routine Row Type
@@ -28,24 +28,24 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
  * @author Denis Forveille
  */
 public enum DB2RoutineRowType implements DBPNamedObject {
-    B("Both input and output parameter", DBSProcedureParameterType.INOUT),
+    B("Both input and output parameter", DBSProcedureParameterKind.INOUT),
 
-    C("Result after casting", DBSProcedureParameterType.RETURN),
+    C("Result after casting", DBSProcedureParameterKind.RETURN),
 
-    O("Output parameter", DBSProcedureParameterType.OUT),
+    O("Output parameter", DBSProcedureParameterKind.OUT),
 
-    P("Input parameter", DBSProcedureParameterType.IN),
+    P("Input parameter", DBSProcedureParameterKind.IN),
 
-    R("Result before casting", DBSProcedureParameterType.RETURN);
+    R("Result before casting", DBSProcedureParameterKind.RETURN);
 
     private String name;
-    private DBSProcedureParameterType parameterType;
+    private DBSProcedureParameterKind parameterType;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2RoutineRowType(String name, DBSProcedureParameterType parameterType)
+    private DB2RoutineRowType(String name, DBSProcedureParameterKind parameterType)
     {
         this.name = name;
         this.parameterType = parameterType;
@@ -70,7 +70,7 @@ public enum DB2RoutineRowType implements DBPNamedObject {
         return name;
     }
 
-    public DBSProcedureParameterType getParameterType()
+    public DBSProcedureParameterKind getParameterType()
     {
         return parameterType;
     }

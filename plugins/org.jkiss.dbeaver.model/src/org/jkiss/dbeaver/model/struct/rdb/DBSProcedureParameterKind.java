@@ -19,9 +19,9 @@
 package org.jkiss.dbeaver.model.struct.rdb;
 
 /**
- * DBSProcedureParameterType
+ * DBSProcedureParameterKind
  */
-public enum DBSProcedureParameterType
+public enum DBSProcedureParameterKind
 {
     UNKNOWN,
     IN,
