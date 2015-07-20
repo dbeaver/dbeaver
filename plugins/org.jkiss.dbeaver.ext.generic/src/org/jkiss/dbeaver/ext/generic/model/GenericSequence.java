@@ -94,6 +94,10 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return lastValue;
     }
 
+    public void setLastValue(Number lastValue) {
+        this.lastValue = lastValue;
+    }
+
     @Override
     @Property(viewable = true, order = 3)
     public Number getMinValue() {
@@ -111,4 +115,5 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
     public Number getIncrementBy() {
         return incrementBy;
     }
+
 }

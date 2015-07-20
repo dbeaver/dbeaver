@@ -57,8 +57,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public boolean supportsSequences(GenericDataSource dataSource) {
-        Version databaseVersion = dataSource.getInfo().getDatabaseVersion();
-        return databaseVersion.getMajor() >= 9 || databaseVersion.getMajor() == 8 && databaseVersion.getMinor() >= 4;
+        return true;
     }
 
     @Override
@@ -67,37 +66,50 @@ public class FireBirdMetaModel extends GenericMetaModel
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS");
             try {
+                List<GenericSequence> result = new ArrayList<GenericSequence>();
+
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<GenericSequence> result = new ArrayList<GenericSequence>();
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
-                        String description = JDBCUtils.safeGetString(dbResult, 2);
-                        JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + name + ", 0) from RDB$DATABASE");
-                        try {
-                            JDBCResultSet seqResults = dbSeqStat.executeQuery();
-                            try {
-                                seqResults.next();
-                                GenericSequence sequence = new GenericSequence(
-                                    container,
-                                    name,
-                                    description, JDBCUtils.safeGetLong(seqResults, 1),
-                                    0,
-                                    -1,
-                                    1
-                                );
-                                result.add(sequence);
-                            } finally {
-                                seqResults.close();
-                            }
-                        } finally {
-                            dbSeqStat.close();
+                        if (name == null) {
+                            continue;
                         }
+                        name = name.trim();
+                        String description = JDBCUtils.safeGetString(dbResult, 2);
+                        GenericSequence sequence = new GenericSequence(
+                            container,
+                            name,
+                            description,
+                            -1,
+                            0,
+                            -1,
+                            1
+                        );
+                        result.add(sequence);
                     }
-                    return result;
                 } finally {
                     dbResult.close();
                 }
+
+                // Obtain sequence values
+                for (GenericSequence sequence : result) {
+                    JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + sequence.getName() + ", 0) from RDB$DATABASE");
+                    try {
+                        JDBCResultSet seqResults = dbSeqStat.executeQuery();
+                        try {
+                            seqResults.next();
+                            sequence.setLastValue(JDBCUtils.safeGetLong(seqResults, 1));
+                        } finally {
+                            seqResults.close();
+                        }
+                    } finally {
+                        dbSeqStat.close();
+                    }
+                }
+
+                return result;
+
             } finally {
                 dbStat.close();
             }
