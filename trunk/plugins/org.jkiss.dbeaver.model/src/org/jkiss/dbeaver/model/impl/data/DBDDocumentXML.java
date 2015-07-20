@@ -19,8 +19,21 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.w3c.dom.Document;
+
+import javax.xml.transform.Result;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMResult;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * XML document
@@ -40,8 +53,43 @@ public class DBDDocumentXML implements DBDDocument {
 
     @NotNull
     @Override
+    public String getDocumentContentType() {
+        return MimeTypes.TEXT_XML;
+    }
+
+    @NotNull
+    @Override
     public Object getRootNode() {
-        return null;//new DocumentNode(document.getDocumentElement());
+        return document;
+    }
+
+    @Override
+    public void serializeDocument(@NotNull OutputStream stream) throws DBException {
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            Result output = new StreamResult(stream);
+
+            transformer.transform(
+                new DOMSource(document),
+                output);
+        } catch (TransformerException e) {
+            throw new DBException("Error serializing XML document", e);
+        }
+    }
+
+    @Override
+    public void updateDocument(@NotNull InputStream stream) throws DBException {
+        try {
+            Transformer transformer = TransformerFactory.newInstance().newTransformer();
+            DOMResult output = new DOMResult();
+
+            transformer.transform(
+                new StreamSource(stream),
+                output);
+            document = (Document) output.getNode();
+        } catch (TransformerException e) {
+            throw new DBException("Error transforming XML document", e);
+        }
     }
 
     @Override
@@ -58,4 +106,5 @@ public class DBDDocumentXML implements DBDDocument {
     public void release() {
         document = null;
     }
+
 }
