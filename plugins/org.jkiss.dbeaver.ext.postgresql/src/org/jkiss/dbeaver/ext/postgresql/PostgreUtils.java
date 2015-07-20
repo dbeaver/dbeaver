@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.DatabaseMetaData;
@@ -36,33 +38,21 @@ public class PostgreUtils {
 
     static final Log log = Log.getLog(PostgreUtils.class);
 
-    public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
+    public static String getObjectComment(DBRProgressMonitor monitor, GenericDataSource dataSource, String schema, String object)
         throws DBException
     {
-        JDBCSession session = procedure.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedure source code");
+        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load PostgreSQL description");
         try {
-            DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
-            return (String)fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
-        } catch (SQLException e) {
-            throw new DBException("Can't read source code of procedure '" + procedure.getName() + "'", e);
+            return JDBCUtils.queryString(
+                session,
+                "select description from pg_description\n" +
+                "join pg_class on pg_description.objoid = pg_class.oid\n" +
+                "join pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
+                "where pg_class.relname = ? and pg_namespace.nspname=?", object, schema);
         } catch (Exception e) {
             log.debug(e);
             return null;
         }
     }
 
-    public static String getViewSource(DBRProgressMonitor monitor, GenericTable view)
-        throws DBException
-    {
-        JDBCSession session = view.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load view source code");
-        try {
-            DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
-            return (String)fbMetaData.getClass().getMethod("getViewSourceCode", String.class).invoke(fbMetaData, view.getName());
-        } catch (SQLException e) {
-            throw new DBException("Can't read source code of view '" + view.getName() + "'", e);
-        } catch (Exception e) {
-            log.debug(e);
-            return null;
-        }
-    }
 }
