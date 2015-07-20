@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
@@ -155,51 +155,51 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
                     //int radix = GenericUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
                     String remarks = GenericUtils.safeGetString(pcObject, dbResult, JDBCConstants.REMARKS);
                     int position = GenericUtils.safeGetInt(pcObject, dbResult, JDBCConstants.ORDINAL_POSITION);
-                    DBSProcedureParameterType parameterType;
+                    DBSProcedureParameterKind parameterType;
                     if (functionResultType == null) {
                         switch (columnTypeNum) {
                             case DatabaseMetaData.procedureColumnIn:
-                                parameterType = DBSProcedureParameterType.IN;
+                                parameterType = DBSProcedureParameterKind.IN;
                                 break;
                             case DatabaseMetaData.procedureColumnInOut:
-                                parameterType = DBSProcedureParameterType.INOUT;
+                                parameterType = DBSProcedureParameterKind.INOUT;
                                 break;
                             case DatabaseMetaData.procedureColumnOut:
-                                parameterType = DBSProcedureParameterType.OUT;
+                                parameterType = DBSProcedureParameterKind.OUT;
                                 break;
                             case DatabaseMetaData.procedureColumnReturn:
-                                parameterType = DBSProcedureParameterType.RETURN;
+                                parameterType = DBSProcedureParameterKind.RETURN;
                                 break;
                             case DatabaseMetaData.procedureColumnResult:
-                                parameterType = DBSProcedureParameterType.RESULTSET;
+                                parameterType = DBSProcedureParameterKind.RESULTSET;
                                 break;
                             default:
-                                parameterType = DBSProcedureParameterType.UNKNOWN;
+                                parameterType = DBSProcedureParameterKind.UNKNOWN;
                                 break;
                         }
                     } else {
                         switch (columnTypeNum) {
                             case DatabaseMetaData.functionColumnIn:
-                                parameterType = DBSProcedureParameterType.IN;
+                                parameterType = DBSProcedureParameterKind.IN;
                                 break;
                             case DatabaseMetaData.functionColumnInOut:
-                                parameterType = DBSProcedureParameterType.INOUT;
+                                parameterType = DBSProcedureParameterKind.INOUT;
                                 break;
                             case DatabaseMetaData.functionColumnOut:
-                                parameterType = DBSProcedureParameterType.OUT;
+                                parameterType = DBSProcedureParameterKind.OUT;
                                 break;
                             case DatabaseMetaData.functionReturn:
-                                parameterType = DBSProcedureParameterType.RETURN;
+                                parameterType = DBSProcedureParameterKind.RETURN;
                                 break;
                             case DatabaseMetaData.functionColumnResult:
-                                parameterType = DBSProcedureParameterType.RESULTSET;
+                                parameterType = DBSProcedureParameterKind.RESULTSET;
                                 break;
                             default:
-                                parameterType = DBSProcedureParameterType.UNKNOWN;
+                                parameterType = DBSProcedureParameterKind.UNKNOWN;
                                 break;
                         }
                     }
-                    if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterType.RETURN) {
+                    if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterKind.RETURN) {
                         columnName = "RETURN";
                     }
                     if (position == 0) {
