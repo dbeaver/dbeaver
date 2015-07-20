@@ -58,6 +58,7 @@ public abstract class AbstractTable<
         return isView() ? DBSEntityType.VIEW : DBSEntityType.TABLE;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName()

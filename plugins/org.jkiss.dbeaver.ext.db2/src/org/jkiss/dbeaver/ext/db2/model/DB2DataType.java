@@ -277,6 +277,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -47,6 +48,7 @@ public class OraclePrivObject extends OracleObject<OracleGrantee> implements DBA
         this.hierarchy = JDBCUtils.safeGetBoolean(resultSet, "HIERARCHY", "Y");
     }
 
+    @NotNull
     @Override
     public String getName() {
         return super.getName();

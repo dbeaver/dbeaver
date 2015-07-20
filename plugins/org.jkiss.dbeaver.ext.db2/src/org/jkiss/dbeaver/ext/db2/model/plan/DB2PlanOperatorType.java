@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -106,6 +107,7 @@ public enum DB2PlanOperatorType implements DBPNamedObject {
     // ----------------
     // Standard Getters
     // ----------------
+    @NotNull
     @Override
     public String getName()
     {

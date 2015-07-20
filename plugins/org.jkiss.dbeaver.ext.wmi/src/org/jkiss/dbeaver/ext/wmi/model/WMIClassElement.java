@@ -59,6 +59,7 @@ public abstract class WMIClassElement<T extends WMIObjectElement> extends WMIPro
         return wmiClass.getDataSource();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

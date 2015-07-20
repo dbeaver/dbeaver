@@ -81,6 +81,7 @@ public class JDBCDataType implements DBSDataType
         return valueType;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

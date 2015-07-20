@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TriggerDepType;
@@ -68,6 +69,7 @@ public class DB2TriggerDep extends DB2Object<DB2Trigger> {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, id = "Name", order = 1)
     public String getName()

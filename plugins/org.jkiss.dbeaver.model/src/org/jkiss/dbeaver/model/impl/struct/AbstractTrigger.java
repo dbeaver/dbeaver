@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
@@ -43,6 +44,7 @@ public abstract class AbstractTrigger implements DBSTrigger
         this.description = description;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -37,6 +38,7 @@ public class SearchDataObject implements DBPNamedObject {
         this.filter = filter;
     }
 
+    @NotNull
     @Property
     @Override
     public String getName() {

@@ -214,6 +214,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
             this.index = index;
         }
 
+        @NotNull
         @Override
         public String getName()
         {

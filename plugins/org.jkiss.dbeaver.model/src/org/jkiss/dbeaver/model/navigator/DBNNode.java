@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -82,6 +83,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
         return false;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

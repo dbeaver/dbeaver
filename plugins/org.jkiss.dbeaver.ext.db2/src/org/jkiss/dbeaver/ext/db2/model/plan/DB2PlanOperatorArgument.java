@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -71,6 +72,7 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         return argumentType;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

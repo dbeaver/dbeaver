@@ -46,6 +46,7 @@ public class GenericTableConstraintColumn extends AbstractTableConstraintColumn
         this.ordinalPosition = column.ordinalPosition;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
@@ -227,6 +228,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     // Properties
     // -----------------------
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -56,6 +57,7 @@ public class DB2WrapperOption extends DB2Object<DB2Wrapper> {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

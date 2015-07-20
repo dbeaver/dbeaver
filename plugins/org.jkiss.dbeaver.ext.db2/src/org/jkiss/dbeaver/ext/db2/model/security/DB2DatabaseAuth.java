@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -108,6 +109,7 @@ public class DB2DatabaseAuth extends DB2GlobalObject implements DBAPrivilege {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(hidden = true)
     public String getName()

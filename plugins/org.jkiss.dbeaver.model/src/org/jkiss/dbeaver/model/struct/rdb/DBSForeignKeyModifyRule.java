@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
@@ -48,6 +49,7 @@ public class DBSForeignKeyModifyRule implements DBPNamedObject
         return id;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

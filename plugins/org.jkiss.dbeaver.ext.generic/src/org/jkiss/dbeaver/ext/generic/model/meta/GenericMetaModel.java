@@ -244,7 +244,7 @@ public class GenericMetaModel {
         return "-- Source code not available";
     }
 
-    public boolean supportsSequences() {
+    public boolean supportsSequences(GenericDataSource dataSource) {
         return false;
     }
 

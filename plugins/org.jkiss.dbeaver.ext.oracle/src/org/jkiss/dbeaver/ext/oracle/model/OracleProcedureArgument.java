@@ -112,6 +112,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
         return true;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 10)
     public String getName()

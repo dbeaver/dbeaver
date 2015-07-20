@@ -65,6 +65,7 @@ public class OracleTriggerColumn extends AbstractTriggerColumn
         return trigger;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

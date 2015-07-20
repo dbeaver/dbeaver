@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -68,6 +69,7 @@ public class DB2PlanOperatorPredicate implements DBPNamedObject {
         return predicateText;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

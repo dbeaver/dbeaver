@@ -39,6 +39,7 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return getTypeName();

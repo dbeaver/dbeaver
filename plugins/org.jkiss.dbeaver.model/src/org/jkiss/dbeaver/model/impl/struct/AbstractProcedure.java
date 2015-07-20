@@ -58,6 +58,7 @@ public abstract class AbstractProcedure<
         return container;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

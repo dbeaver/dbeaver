@@ -20,6 +20,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
@@ -340,6 +341,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
         }
     }
 
+    @NotNull
     @Override
     public String getName()
     {

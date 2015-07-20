@@ -90,6 +90,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
         }
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {

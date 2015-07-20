@@ -72,6 +72,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
         return DBSEntityConstraintType.PRIMARY_KEY;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

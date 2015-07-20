@@ -165,6 +165,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
         return ordinalPosition;
     }
 
+    @NotNull
     @Property(category = PROP_CATEGORY_COLUMN, order = 2)
     @Override
     public String getName() {

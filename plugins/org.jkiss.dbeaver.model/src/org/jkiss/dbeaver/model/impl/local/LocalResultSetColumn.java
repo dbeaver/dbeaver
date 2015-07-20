@@ -120,6 +120,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData, DBPImageProvi
         return false;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

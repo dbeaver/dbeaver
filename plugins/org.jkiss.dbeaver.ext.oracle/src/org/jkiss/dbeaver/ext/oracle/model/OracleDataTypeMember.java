@@ -85,6 +85,7 @@ public abstract class OracleDataTypeMember implements DBSEntityElement
         return persisted;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()

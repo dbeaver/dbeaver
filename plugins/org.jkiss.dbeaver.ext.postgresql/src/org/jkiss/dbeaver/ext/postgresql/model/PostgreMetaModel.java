@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -74,8 +75,9 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public boolean supportsSequences() {
-        return true;
+    public boolean supportsSequences(GenericDataSource dataSource) {
+        Version databaseVersion = dataSource.getInfo().getDatabaseVersion();
+        return databaseVersion.getMajor() >= 9 || databaseVersion.getMajor() == 8 && databaseVersion.getMinor() >= 4;
     }
 
     @Override
