@@ -156,7 +156,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                         final IEditorPart editor = ref.getEditor(true);
                         if (editor instanceof IFolderContainer) {
                             // Activate default folder
-                            //((IFolderedPart)editor).switchFolder(defaultFolderId);
+                            ((IFolderContainer)editor).switchFolder(defaultFolderId);
                         }
                         workbenchWindow.getActivePage().activate(editor);
                         return editor;
