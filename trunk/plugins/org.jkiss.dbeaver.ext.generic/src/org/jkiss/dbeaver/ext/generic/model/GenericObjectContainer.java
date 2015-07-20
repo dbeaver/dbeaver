@@ -37,15 +37,17 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 {
     static final Log log = Log.getLog(GenericObjectContainer.class);
 
-    private GenericDataSource dataSource;
+    @NotNull
+    private final GenericDataSource dataSource;
     private final TableCache tableCache;
     private final IndexCache indexCache;
     private final ForeignKeysCache foreignKeysCache;
     private final PrimaryKeysCache primaryKeysCache;
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
+    protected List<GenericSequence> sequences;
 
-    protected GenericObjectContainer(GenericDataSource dataSource)
+    protected GenericObjectContainer(@NotNull GenericDataSource dataSource)
     {
         this.dataSource = dataSource;
         this.tableCache = new TableCache(dataSource);
@@ -202,7 +204,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         }
 
         // Cache attributes
-        if ((scope & STRUCT_ATTRIBUTES) != 0 && getDataSource().supportsStructCache()) {
+        if ((scope & STRUCT_ATTRIBUTES) != 0 && dataSource.supportsStructCache()) {
             // Try to cache columns
             // Cannot be sure that all jdbc drivers support reading of all catalog columns
             // So error here is not fatal
@@ -214,7 +216,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             }
         }
         // Cache associations
-        if ((scope & STRUCT_ASSOCIATIONS) != 0 && getDataSource().supportsStructCache()) {
+        if ((scope & STRUCT_ASSOCIATIONS) != 0 && dataSource.supportsStructCache()) {
             // Try to read all PKs
             // Try to read all FKs
             try {
@@ -229,13 +231,13 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                 log.debug(e);
             }
 
-            if (getDataSource().getInfo().supportsIndexes()) {
+            if (dataSource.getInfo().supportsIndexes()) {
                 // Try to read all indexes
                 monitor.subTask("Cache indexes");
                 cacheIndexes(monitor, false);
             }
 
-            if (getDataSource().getInfo().supportsReferentialIntegrity()) {
+            if (dataSource.getInfo().supportsReferentialIntegrity()) {
                 // Try to read all FKs
                 try {
                     monitor.subTask("Cache foreign keys");
@@ -297,6 +299,14 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
+    public Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+        if (sequences == null) {
+            loadSequences(monitor);
+        }
+        return sequences;
+    }
+
+    @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -331,7 +341,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private synchronized void loadProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        getDataSource().getMetaModel().loadProcedures(monitor, this);
+        dataSource.getMetaModel().loadProcedures(monitor, this);
 
         // Order procedures
         if (procedures != null) {
@@ -357,4 +367,16 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         }
         packages.add(procedurePackage);
     }
+
+    private synchronized void loadSequences(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        dataSource.getMetaModel().loadSequences(monitor, this);
+
+        // Order procedures
+        if (sequences != null) {
+            DBUtils.orderObjects(sequences);
+        }
+    }
+
 }
