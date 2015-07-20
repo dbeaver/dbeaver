@@ -504,7 +504,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
         if (isQMLoggingEnabled()) {
             // Handle close
-            QMUtils.getDefaultHandler().handleStatementClose(this);
+            QMUtils.getDefaultHandler().handleStatementClose(this, updateCount);
         }
 
         // Close statement

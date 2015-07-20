@@ -217,11 +217,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementClose(DBCStatement statement)
+    public synchronized void handleStatementClose(DBCStatement statement, long rows)
     {
         QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
-            QMMStatementInfo stat = session.closeStatement(statement);
+            QMMStatementInfo stat = session.closeStatement(statement, rows);
             if (stat == null) {
                 log.warn("Can't properly handle statement close");
             } else {
