@@ -21,14 +21,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSParametrizedObject;
 
 import java.util.Collection;
 
 /**
  * DBSTableIndex
  */
-public interface DBSProcedure extends DBSObject, DBPQualifiedObject
+public interface DBSProcedure extends DBSParametrizedObject, DBPQualifiedObject
 {
     DBSObject getContainer();
 
