@@ -40,8 +40,9 @@ public interface DBDContent extends DBDValue {
     /**
      * Update contents
      * @param monitor monitor
-     * @param storage
-     * @return
+     * @param storage storage
+     * @return true if implementation acquires passed storage object.
+     *   false if implementation copies storage.
      * @throws DBException
      */
     boolean updateContents(

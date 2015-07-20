@@ -20,6 +20,10 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Document.
@@ -30,9 +34,9 @@ import org.jkiss.code.Nullable;
  */
 public interface DBDDocument extends DBDValue {
 
-    public static final String PROP_ID = "id";
-    public static final String PROP_TITLE = "title";
-    public static final String PROP_CREATE_TIME = "createTime";
+    String PROP_ID = "id";
+    String PROP_TITLE = "title";
+    String PROP_CREATE_TIME = "createTime";
 
     /**
      * Document property
@@ -43,9 +47,33 @@ public interface DBDDocument extends DBDValue {
     Object getDocumentProperty(String name);
 
     /**
+     * Document content type (mime type).
+     * @return content type
+     */
+    @NotNull
+    String getDocumentContentType();
+
+    /**
      * Root node of document
      * @return root node
      */
     @NotNull
     Object getRootNode();
+
+    /**
+     * Serializes document into stream
+     * @param stream    stream
+     * @throws DBException
+     */
+    void serializeDocument(@NotNull OutputStream stream)
+        throws DBException;
+
+    /**
+     * Updates document from stream
+     * @param stream    stream
+     * @throws DBException
+     */
+    void updateDocument(@NotNull InputStream stream)
+        throws DBException;
+
 }
