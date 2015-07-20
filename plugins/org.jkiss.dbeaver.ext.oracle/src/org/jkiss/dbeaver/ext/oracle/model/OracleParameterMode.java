@@ -28,11 +28,11 @@ public enum OracleParameterMode {
     IN(DBSProcedureParameterKind.IN),
     OUT(DBSProcedureParameterKind.OUT),
     INOUT(DBSProcedureParameterKind.INOUT);
-    private final DBSProcedureParameterKind parameterType;
+    private final DBSProcedureParameterKind parameterKind;
 
-    OracleParameterMode(DBSProcedureParameterKind parameterType)
+    OracleParameterMode(DBSProcedureParameterKind parameterKind)
     {
-        this.parameterType = parameterType;
+        this.parameterKind = parameterKind;
     }
 
     public static OracleParameterMode getMode(String modeName)
@@ -48,8 +48,8 @@ public enum OracleParameterMode {
         }
     }
 
-    public DBSProcedureParameterKind getParameterType()
+    public DBSProcedureParameterKind getParameterKind()
     {
-        return parameterType;
+        return parameterKind;
     }
 }

@@ -1096,7 +1096,7 @@ public final class DBUtils {
             for (DBSParameter parameter : parameters) {
                 if (!first) buf.append(",");
                 first = false;
-                buf./*append(parameter.getName()).append(" ").*/append(parameter.getTypeName());
+                buf./*append(parameter.getName()).append(" ").*/append(parameter.getParameterType().getTypeName());
             }
             buf.append(")");
             return buf.toString();

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
@@ -36,7 +37,7 @@ import java.util.List;
 /**
  * OracleProcedureArgument
  */
-public class OracleProcedureArgument implements DBSProcedureParameter
+public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedObject
 {
     private final OracleProcedureBase procedure;
     private String name;
@@ -140,7 +141,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     @Property(viewable = true, order = 20)
     public DBSProcedureParameterKind getParameterKind()
     {
-        return mode == null ? null : mode.getParameterType();
+        return mode == null ? DBSProcedureParameterKind.UNKNOWN : mode.getParameterKind();
     }
 
     @Property(viewable = true, order = 21)
@@ -149,11 +150,6 @@ public class OracleProcedureArgument implements DBSProcedureParameter
         return packageTypeName != null ?
             packageTypeName :
             dataType == null ? type : dataType;
-    }
-
-    public boolean isNotNull()
-    {
-        return false;
     }
 
     @Override
@@ -222,5 +218,11 @@ public class OracleProcedureArgument implements DBSProcedureParameter
     public boolean hasAttributes()
     {
         return !CommonUtils.isEmpty(attributes);
+    }
+
+    @NotNull
+    @Override
+    public DBSTypedObject getParameterType() {
+        return this;
     }
 }
