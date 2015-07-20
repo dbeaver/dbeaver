@@ -119,8 +119,14 @@ public class QMMSessionInfo extends QMMObject {
         return this.statementStack = new QMMStatementInfo(this, statement, this.statementStack);
     }
 
-    public QMMStatementInfo closeStatement(DBCStatement statement)
+    public QMMStatementInfo closeStatement(DBCStatement statement, long rows)
     {
+        QMMStatementExecuteInfo execution = getExecution(statement);
+        if (execution != null) {
+            if (execution.getRowCount() == -1) {
+                execution.close(rows, null);
+            }
+        }
         for (QMMStatementInfo stat = this.statementStack; stat != null; stat = stat.getPrevious()) {
             if (stat.getReference() == statement) {
                 stat.close();

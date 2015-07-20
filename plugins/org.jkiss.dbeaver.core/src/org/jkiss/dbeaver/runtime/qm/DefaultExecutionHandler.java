@@ -106,7 +106,7 @@ public abstract class DefaultExecutionHandler implements QMExecutionHandler {
     }
 
     @Override
-    public void handleStatementClose(DBCStatement statement)
+    public void handleStatementClose(DBCStatement statement, long rows)
     {
 
     }
