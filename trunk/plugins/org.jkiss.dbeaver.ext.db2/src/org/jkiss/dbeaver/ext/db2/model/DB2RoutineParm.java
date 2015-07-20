@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
@@ -39,7 +40,7 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2RoutineParm implements DBSProcedureParameter {
+public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject {
 
     private final DB2Routine procedure;
     private String name;
@@ -179,7 +180,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
     @Property(viewable = true, order = 4)
     public DBSProcedureParameterKind getParameterKind()
     {
-        return rowType.getParameterType();
+        return rowType.getParameterKind();
     }
 
     @Override
@@ -201,4 +202,9 @@ public class DB2RoutineParm implements DBSProcedureParameter {
         return rowType;
     }
 
+    @NotNull
+    @Override
+    public DBSTypedObject getParameterType() {
+        return this;
+    }
 }

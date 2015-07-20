@@ -39,16 +39,16 @@ public enum DB2RoutineRowType implements DBPNamedObject {
     R("Result before casting", DBSProcedureParameterKind.RETURN);
 
     private String name;
-    private DBSProcedureParameterKind parameterType;
+    private DBSProcedureParameterKind parameterKind;
 
     // -----------
     // Constructor
     // -----------
 
-    private DB2RoutineRowType(String name, DBSProcedureParameterKind parameterType)
+    DB2RoutineRowType(String name, DBSProcedureParameterKind parameterKind)
     {
         this.name = name;
-        this.parameterType = parameterType;
+        this.parameterKind = parameterKind;
     }
 
     // -----------------------
@@ -70,9 +70,9 @@ public enum DB2RoutineRowType implements DBPNamedObject {
         return name;
     }
 
-    public DBSProcedureParameterKind getParameterType()
+    public DBSProcedureParameterKind getParameterKind()
     {
-        return parameterType;
+        return parameterKind;
     }
 
 }

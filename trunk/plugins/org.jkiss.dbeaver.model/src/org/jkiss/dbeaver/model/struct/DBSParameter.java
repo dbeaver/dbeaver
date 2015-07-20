@@ -17,12 +17,15 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Base parameter interface.
  * Parameters have name and type
  */
-public interface DBSParameter extends DBSTypedObject, DBSObject
+public interface DBSParameter extends DBSObject
 {
-
+    @NotNull
+    DBSTypedObject getParameterType();
 
 }

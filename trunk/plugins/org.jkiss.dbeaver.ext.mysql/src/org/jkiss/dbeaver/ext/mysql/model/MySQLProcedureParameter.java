@@ -20,16 +20,17 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 /**
  * MySQLProcedureParameter
  */
-public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureParameter
+public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureParameter, DBSTypedObject
 {
     private MySQLProcedure procedure;
-    private DBSProcedureParameterKind parameterType;
+    private DBSProcedureParameterKind parameterKind;
 
     public MySQLProcedureParameter(
             MySQLProcedure procedure,
@@ -41,7 +42,7 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
             int scale,
             int precision,
             boolean notNull,
-            DBSProcedureParameterKind parameterType)
+            DBSProcedureParameterKind parameterKind)
     {
         super(columnName,
             typeName,
@@ -53,7 +54,7 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
             notNull,
             false);
         this.procedure = procedure;
-        this.parameterType = parameterType;
+        this.parameterKind = parameterKind;
     }
 
     @NotNull
@@ -74,7 +75,12 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
     @Property(viewable = true, order = 10)
     public DBSProcedureParameterKind getParameterKind()
     {
-        return parameterType;
+        return parameterKind;
     }
 
+    @NotNull
+    @Override
+    public DBSTypedObject getParameterType() {
+        return this;
+    }
 }
