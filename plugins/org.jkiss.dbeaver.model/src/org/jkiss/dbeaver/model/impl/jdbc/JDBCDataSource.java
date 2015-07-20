@@ -65,16 +65,20 @@ public abstract class JDBCDataSource
         DBCQueryTransformProvider,
         IAdaptable
 {
-    static final Log log = Log.getLog(JDBCDataSource.class);
-    private final DBSDataSourceContainer container;
+    private static final Log log = Log.getLog(JDBCDataSource.class);
 
+    @NotNull
+    private final DBSDataSourceContainer container;
+    @NotNull
     protected final JDBCExecutionContext executionContext;
+    @Nullable
     protected volatile JDBCExecutionContext metaContext;
+    @NotNull
     protected final List<JDBCExecutionContext> allContexts = new ArrayList<JDBCExecutionContext>();
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;
 
-    public JDBCDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public JDBCDataSource(DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
         throws DBException
     {
         this.container = container;
@@ -127,19 +131,21 @@ public abstract class JDBCDataSource
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
         }
         for (Iterator<Object> iter = connectProps.keySet().iterator(); iter.hasNext(); ) {
-            if (iter.next().toString().startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
+            if (CommonUtils.toString(iter.next()).startsWith(DBConstants.INTERNAL_PROP_PREFIX)) {
                 iter.remove();
             }
         }
         // Obtain connection
         try {
-            try {
-                if (driverInstance != null && !driverInstance.acceptsURL(connectionInfo.getUrl())) {
-                    // Just write a warning in log. Some drivers are poorly coded and always returns false here.
-                    log.error("Bad URL: " + connectionInfo.getUrl());
+            if (driverInstance != null) {
+                try {
+                    if (!driverInstance.acceptsURL(connectionInfo.getUrl())) {
+                        // Just write a warning in log. Some drivers are poorly coded and always returns false here.
+                        log.error("Bad URL: " + connectionInfo.getUrl());
+                    }
+                } catch (Throwable e) {
+                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL()", e);
                 }
-            } catch (Throwable e) {
-                log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL()", e);
             }
             Connection connection;
             if (driverInstance == null) {
@@ -215,6 +221,7 @@ public abstract class JDBCDataSource
 
     }
 
+    @NotNull
     protected JDBCConnectionImpl createConnection(
         DBRProgressMonitor monitor,
         JDBCExecutionContext context,
@@ -322,7 +329,7 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.dataSourceInfo = null;
         return true;
     }
@@ -359,12 +366,12 @@ public abstract class JDBCDataSource
         return valueType;
     }
 
-    public DBPDataKind resolveDataKind(@Nullable String typeName, int valueType)
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
         return getDataKind(typeName, valueType);
     }
 
-    public static DBPDataKind getDataKind(String typeName, int valueType)
+    public static DBPDataKind getDataKind(@NotNull String typeName, int valueType)
     {
         switch (getValueTypeByTypeName(typeName, valueType)) {
             case Types.BOOLEAN:
@@ -420,13 +427,13 @@ public abstract class JDBCDataSource
 
     @Nullable
     @Override
-    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException
     {
         return getDataType(typeFullName);
     }
 
     @Override
-    public String getDefaultDataTypeName(DBPDataKind dataKind)
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
     {
         switch (dataKind) {
             case BOOLEAN: return "BOOLEAN";
@@ -452,16 +459,17 @@ public abstract class JDBCDataSource
         return false;
     }
 
-    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
+    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserName();
     }
 
-    protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo)
+    protected String getConnectionUserPassword(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserPassword();
     }
 
+    @Nullable
     protected Driver getDriverInstance(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -496,7 +504,7 @@ public abstract class JDBCDataSource
     // Error assistance
 
     @Override
-    public ErrorType discoverErrorType(DBException error)
+    public ErrorType discoverErrorType(@NotNull DBException error)
     {
         String sqlState = error.getDatabaseState();
         if (SQLState.SQL_08000.getCode().equals(sqlState) ||

@@ -161,7 +161,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         additionalInfo.loaded = false;
         super.refreshObject(monitor);

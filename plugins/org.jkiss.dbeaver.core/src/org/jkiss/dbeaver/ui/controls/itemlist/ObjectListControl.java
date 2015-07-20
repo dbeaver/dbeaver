@@ -29,6 +29,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
@@ -66,6 +67,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private ColumnViewer itemsViewer;
     //private ColumnViewerEditor itemsEditor;
+    @NotNull
     private final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
@@ -469,7 +471,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
         columns.clear();
         if (!itemsViewer.getControl().isDisposed()) {
-            itemsViewer.setInput(Collections.<Object>emptyList());
+            itemsViewer.setInput(Collections.emptyList());
         }
         if (listPropertySource != null) {
             listPropertySource.clearProperties();
@@ -672,6 +674,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         return false;
     }
 
+    @NotNull
     protected Set<DBPPropertyDescriptor> getAllProperties()
     {
         Set<DBPPropertyDescriptor> props = new LinkedHashSet<DBPPropertyDescriptor>();
@@ -700,7 +703,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 viewerColumn.getColumn().setText(prop.getDisplayName());
                 viewerColumn.getColumn().setToolTipText(prop.getDescription());
                 viewerColumn.getColumn().addListener(SWT.Selection, renderer.getSortListener());
-                viewerColumn.getColumn().setData(DATA_OBJECT_COLUMN, objectColumn);
                 newColumn = viewerColumn;
                 columnItem = viewerColumn.getColumn();
             } else {
@@ -709,7 +711,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 viewerColumn.getColumn().setToolTipText(prop.getDescription());
                 //column.setData(prop);
                 viewerColumn.getColumn().addListener(SWT.Selection, renderer.getSortListener());
-                viewerColumn.getColumn().setData(DATA_OBJECT_COLUMN, objectColumn);
                 newColumn = viewerColumn;
                 columnItem = viewerColumn.getColumn();
             }
@@ -721,6 +722,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             objectColumn = new ObjectColumn(newColumn, columnItem, CommonUtils.toString(prop.getId()));
             objectColumn.addProperty(propClass, prop);
             this.columns.add(objectColumn);
+            columnItem.setData(DATA_OBJECT_COLUMN, objectColumn);
         } else {
             objectColumn.addProperty(propClass, prop);
             String oldTitle = objectColumn.item.getText();

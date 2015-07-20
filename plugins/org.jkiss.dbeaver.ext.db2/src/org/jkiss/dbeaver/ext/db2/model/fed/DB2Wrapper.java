@@ -69,7 +69,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         optionsCache.clearCache();
         return true;

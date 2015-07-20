@@ -96,8 +96,9 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         return true;
     }
 
+    @NotNull
     @Override
-    public DBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
+    public DBCSession openSession(@NotNull DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
     {
         return new WMISession(monitor, purpose, task, this);
     }
@@ -110,7 +111,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     }
 
     @Override
-    public InvalidateResult invalidateContext(DBRProgressMonitor monitor) throws DBException
+    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         throw new DBException("Connection invalidate not supported");
     }

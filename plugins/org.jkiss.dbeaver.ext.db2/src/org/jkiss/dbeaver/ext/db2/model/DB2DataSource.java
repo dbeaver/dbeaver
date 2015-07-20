@@ -218,7 +218,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // -----------------------
 
     @Override
-    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
+    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         return connectionInfo.getUserName();
     }
@@ -286,7 +286,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
 

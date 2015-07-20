@@ -34,9 +34,9 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
     /**
      * Current execution context. Used by global authenticators and network handlers
      */
-    public static final ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<DBCExecutionContext>();
+    ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<DBCExecutionContext>();
 
-    public enum InvalidateResult {
+    enum InvalidateResult {
         DISCONNECTED,
         CONNECTED,
         RECONNECTED,
@@ -67,7 +67,8 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      * @param task task description
      * @return execution context
      */
-    DBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
+    @NotNull
+    DBCSession openSession(@NotNull DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
 
     /**
      * Checks context is alive and reconnects if needed.
@@ -76,6 +77,6 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      * @param monitor progress monitor
      * @return true if reconnect was applied false if connection is alive and nothing was done.
      */
-    InvalidateResult invalidateContext(DBRProgressMonitor monitor) throws DBException;
+    InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

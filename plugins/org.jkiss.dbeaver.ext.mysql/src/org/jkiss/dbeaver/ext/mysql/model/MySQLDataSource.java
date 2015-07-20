@@ -220,7 +220,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         super.refreshObject(monitor);
@@ -633,7 +633,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public ErrorType discoverErrorType(DBException error)
+    public ErrorType discoverErrorType(@NotNull DBException error)
     {
         return super.discoverErrorType(error);
     }

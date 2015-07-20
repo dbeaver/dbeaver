@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -37,7 +38,7 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation)
+    public void setTransactionIsolation(@NotNull DBRProgressMonitor monitor, @NotNull DBPTransactionIsolation transactionIsolation)
         throws DBCException
     {
         throw new DBCException("Transaction isolation change not supported");
@@ -51,7 +52,7 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit)
+    public void setAutoCommit(@NotNull DBRProgressMonitor monitor, boolean autoCommit)
         throws DBCException
     {
         if (!autoCommit) {
@@ -66,28 +67,28 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     }
 
     @Override
-    public DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name)
+    public DBCSavepoint setSavepoint(@NotNull DBRProgressMonitor monitor, String name)
         throws DBCException
     {
         throw new DBCException("Savepoint not supported");
     }
 
     @Override
-    public void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint)
+    public void releaseSavepoint(@NotNull DBRProgressMonitor monitor, @NotNull DBCSavepoint savepoint)
         throws DBCException
     {
         throw new DBCException("Savepoint not supported");
     }
 
     @Override
-    public void commit(DBCSession session)
+    public void commit(@NotNull DBCSession session)
         throws DBCException
     {
         // do nothing
     }
 
     @Override
-    public void rollback(DBCSession session, DBCSavepoint savepoint)
+    public void rollback(@NotNull DBCSession session, DBCSavepoint savepoint)
         throws DBCException
     {
         throw new DBCException("Transactions not supported");

@@ -100,7 +100,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     // Business contract
     // -----------------
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         xmlschemaDepCache.clearCache();
         return true;

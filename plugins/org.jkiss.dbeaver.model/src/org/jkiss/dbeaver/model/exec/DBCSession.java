@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -67,6 +68,7 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
     /**
      * Prepares statements
      */
+    @NotNull
     DBCStatement prepareStatement(
         DBCStatementType type,
         String query,
