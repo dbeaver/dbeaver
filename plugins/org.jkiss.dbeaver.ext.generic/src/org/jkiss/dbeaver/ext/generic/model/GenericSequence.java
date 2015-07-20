@@ -17,35 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
-import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
-import org.jkiss.utils.CommonUtils;
-
-import java.sql.DatabaseMetaData;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * GenericSequence
@@ -69,6 +48,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
     }
 
     @Override
+    @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
@@ -90,7 +70,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return container;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return container.getDataSource();
@@ -105,21 +85,25 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
     }
 
     @Override
+    @Property(viewable = true, order = 2)
     public Number getLastValue() {
         return lastValue;
     }
 
     @Override
+    @Property(viewable = true, order = 3)
     public Number getMinValue() {
         return minValue;
     }
 
     @Override
+    @Property(viewable = true, order = 4)
     public Number getMaxValue() {
         return maxValue;
     }
 
     @Override
+    @Property(viewable = true, order = 5)
     public Number getIncrementBy() {
         return incrementBy;
     }

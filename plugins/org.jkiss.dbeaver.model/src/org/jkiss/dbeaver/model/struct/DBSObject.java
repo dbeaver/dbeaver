@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -50,7 +51,7 @@ public interface DBSObject extends DBPNamedObject, DBPPersistedObject
      * It can be null if object was detached from data source.
      * @return datasource reference or null
      */
-    @Nullable
+    @NotNull
     DBPDataSource getDataSource();
 
 }

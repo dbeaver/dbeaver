@@ -248,7 +248,7 @@ public class GenericMetaModel {
         return false;
     }
 
-    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) {
+    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
         return new ArrayList<GenericSequence>();
     }
 
