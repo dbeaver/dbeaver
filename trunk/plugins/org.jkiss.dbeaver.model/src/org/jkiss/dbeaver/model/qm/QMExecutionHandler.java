@@ -58,7 +58,7 @@ public interface QMExecutionHandler {
 
     void handleStatementBind(DBCStatement statement, Object column, @Nullable Object value);
 
-    void handleStatementClose(DBCStatement statement);
+    void handleStatementClose(DBCStatement statement, long rows);
 
     void handleResultSetOpen(DBCResultSet resultSet);
 
