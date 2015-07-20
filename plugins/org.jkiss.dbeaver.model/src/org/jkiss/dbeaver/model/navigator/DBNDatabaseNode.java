@@ -83,13 +83,28 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     @Override
     public String getNodeName()
     {
-        if (getObject() == null) {
+        DBSObject object = getObject();
+        if (object == null) {
             return DBConstants.NULL_VALUE_LABEL;
         }
-        String objectName = getObject().getName();
+        String objectName = object.getName();
         if (CommonUtils.isEmpty(objectName)) {
-            objectName = "?"; //$NON-NLS-1$
+            objectName = object.toString();
+            if (CommonUtils.isEmpty(objectName)) {
+                objectName = object.getClass().getName() + "@" + object.hashCode(); //$NON-NLS-1$
+            }
         }
+/*
+        if (object instanceof DBSObjectUnique) {
+            String uniqueName = ((DBSObjectUnique) object).getUniqueName();
+            if (!uniqueName.equals(objectName)) {
+                if (uniqueName.startsWith(objectName)) {
+                    uniqueName = uniqueName.substring(objectName.length());
+                }
+                objectName += " (" + uniqueName + ")";
+            }
+        }
+*/
         return objectName;
     }
 
