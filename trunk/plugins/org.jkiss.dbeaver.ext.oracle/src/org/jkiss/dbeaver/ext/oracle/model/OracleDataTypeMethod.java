@@ -28,16 +28,18 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityMethod;
+import org.jkiss.dbeaver.model.struct.DBSParametrizedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Collection;
 
 /**
  * Oracle data type attribute
  */
-public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEntityMethod {
+public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEntityMethod, DBSParametrizedObject {
 
     private String methodType;
     private boolean flagFinal;
@@ -132,8 +134,13 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
                 "SELECT PARAM_NAME,PARAM_NO,PARAM_MODE,PARAM_TYPE_OWNER,PARAM_TYPE_NAME,PARAM_TYPE_MOD " +
                 "FROM ALL_METHOD_PARAMS " +
                 "WHERE OWNER=? AND TYPE_NAME=? AND METHOD_NAME=? AND METHOD_NO=?");
-            dbStat.setString(1, getDataType().getSchema().getName());
-            dbStat.setString(2, getDataType().getName());
+            OracleDataType dataType = getDataType();
+            if (dataType.getSchema() == null) {
+                dbStat.setNull(1, Types.VARCHAR);
+            } else {
+                dbStat.setString(1, dataType.getSchema().getName());
+            }
+            dbStat.setString(2, dataType.getName());
             dbStat.setString(3, getName());
             dbStat.setInt(4, getNumber());
             return dbStat;

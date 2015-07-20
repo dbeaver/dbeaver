@@ -24,13 +24,15 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSParameter;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.ResultSet;
 
 /**
  * Oracle data type attribute
  */
-public class OracleDataTypeMethodParameter implements DBSObject {
+public class OracleDataTypeMethodParameter implements DBSParameter {
 
     private final OracleDataTypeMethod method;
     private String name;
@@ -110,5 +112,11 @@ public class OracleDataTypeMethodParameter implements DBSObject {
     public OracleDataTypeModifier getTypeMod()
     {
         return typeMod;
+    }
+
+    @NotNull
+    @Override
+    public DBSTypedObject getParameterType() {
+        return type;
     }
 }
