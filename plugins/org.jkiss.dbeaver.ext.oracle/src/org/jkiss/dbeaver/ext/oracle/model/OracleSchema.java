@@ -361,7 +361,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "\tSELECT /*+RULE*/ t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
                     "\tFROM SYS.ALL_ALL_TABLES t\n" +
-                    "\tWHERE t.OWNER=?\n" +
+                    "\tWHERE t.OWNER=? AND NESTED='NO'\n" +
                 "UNION ALL\n" +
                     "\tSELECT /*+RULE*/ o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
                     "\tFROM SYS.ALL_OBJECTS o \n" +
