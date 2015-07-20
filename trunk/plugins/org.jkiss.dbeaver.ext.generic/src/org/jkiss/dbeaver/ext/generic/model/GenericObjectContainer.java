@@ -330,6 +330,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         this.foreignKeysCache.clearCache();
         this.packages = null;
         this.procedures = null;
+        this.sequences = null;
         return true;
     }
 
@@ -371,10 +372,12 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private synchronized void loadSequences(DBRProgressMonitor monitor)
         throws DBException
     {
-        dataSource.getMetaModel().loadSequences(monitor, this);
+        sequences = dataSource.getMetaModel().loadSequences(monitor, this);
 
         // Order procedures
-        if (sequences != null) {
+        if (sequences == null) {
+            sequences = new ArrayList<GenericSequence>();
+        } else {
             DBUtils.orderObjects(sequences);
         }
     }

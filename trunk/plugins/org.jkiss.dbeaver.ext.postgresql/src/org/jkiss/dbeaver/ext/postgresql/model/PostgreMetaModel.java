@@ -20,15 +20,15 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PostgreMetaModel
@@ -66,6 +68,56 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                 "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
+        } finally {
+            session.close();
+        }
+    }
+
+    @Override
+    public boolean supportsSequences() {
+        return true;
+    }
+
+    @Override
+    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+        JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
+        try {
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences");
+            try {
+                JDBCResultSet dbResult = dbStat.executeQuery();
+                try {
+                    List<GenericSequence> result = new ArrayList<GenericSequence>();
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, 1);
+                        JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name);
+                        try {
+                            JDBCResultSet seqResults = dbSeqStat.executeQuery();
+                            try {
+                                seqResults.next();
+                                GenericSequence sequence = new GenericSequence(
+                                    container,
+                                    name,
+                                    JDBCUtils.safeGetLong(seqResults, 1),
+                                    JDBCUtils.safeGetLong(seqResults, 2),
+                                    JDBCUtils.safeGetLong(seqResults, 3),
+                                    JDBCUtils.safeGetLong(seqResults, 4));
+                                result.add(sequence);
+                            } finally {
+                                seqResults.close();
+                            }
+                        } finally {
+                            dbSeqStat.close();
+                        }
+                    }
+                    return result;
+                } finally {
+                    dbResult.close();
+                }
+            } finally {
+                dbStat.close();
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
         } finally {
             session.close();
         }
