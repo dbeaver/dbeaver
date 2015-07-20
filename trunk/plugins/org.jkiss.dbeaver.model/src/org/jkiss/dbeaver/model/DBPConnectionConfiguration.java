@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -36,8 +37,11 @@ public class DBPConnectionConfiguration implements DBPObject
     private String userPassword;
     private String url;
     private String clientHomeId;
+    @NotNull
     private final Map<Object, Object> properties;
+    @NotNull
     private final Map<DBPConnectionEventType, DBRShellCommand> events;
+    @NotNull
     private final List<DBWHandlerConfiguration> handlers;
     private final DBPConnectionBootstrap bootstrap;
     private DBPConnectionType connectionType;
@@ -52,7 +56,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.bootstrap = new DBPConnectionBootstrap();
     }
 
-    public DBPConnectionConfiguration(DBPConnectionConfiguration info)
+    public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info)
     {
         this.hostName = info.hostName;
         this.hostPort = info.hostPort;
@@ -165,12 +169,13 @@ public class DBPConnectionConfiguration implements DBPObject
         properties.put(name, value);
     }
 
+    @NotNull
     public Map<Object, Object> getProperties()
     {
         return properties;
     }
 
-    public void setProperties(Map<Object, Object> properties)
+    public void setProperties(@NotNull Map<Object, Object> properties)
     {
         this.properties.clear();
         this.properties.putAll(properties);
@@ -201,7 +206,7 @@ public class DBPConnectionConfiguration implements DBPObject
         return handlers;
     }
 
-    public void setHandlers(List<DBWHandlerConfiguration> handlers)
+    public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers)
     {
         this.handlers.clear();
         this.handlers.addAll(handlers);
@@ -247,6 +252,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.connectionColor = color;
     }
 
+    @NotNull
     public DBPConnectionBootstrap getBootstrap() {
         return bootstrap;
     }

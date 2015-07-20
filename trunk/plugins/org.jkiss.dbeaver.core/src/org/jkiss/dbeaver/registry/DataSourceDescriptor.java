@@ -214,6 +214,7 @@ public class DataSourceDescriptor
         this.connectionInfo = connectionInfo;
     }
 
+    @NotNull
     @Override
     public DBPConnectionConfiguration getActualConnectionConfiguration()
     {
@@ -449,7 +450,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         this.reconnect(monitor, false);
@@ -863,6 +864,7 @@ public class DataSourceDescriptor
         return DefaultValueHandler.INSTANCE;
     }
 
+    @NotNull
     @Override
     public DataSourcePreferenceStore getPreferenceStore()
     {

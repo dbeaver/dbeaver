@@ -1082,6 +1082,18 @@ public final class DBUtils {
     }
 
     @NotNull
+    public static String getFullParametrizedName(@NotNull DBRProgressMonitor monitor, @NotNull DBSParametrizedObject typedObject)
+    {
+        String typeName = typedObject.getName();
+        try {
+            typedObject.getParameters(monitor);
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
+        return typeName;
+    }
+
+    @NotNull
     public static String generateScript(DBEPersistAction[] persistActions)
     {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();

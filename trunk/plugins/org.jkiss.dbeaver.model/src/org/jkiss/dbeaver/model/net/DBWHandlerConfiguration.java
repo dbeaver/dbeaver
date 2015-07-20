@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -29,6 +30,7 @@ import java.util.Map;
  */
 public class DBWHandlerConfiguration {
 
+    @NotNull
     private final DBWHandlerDescriptor descriptor;
     private final DBPDriver driver;
     private boolean enabled;
@@ -37,14 +39,14 @@ public class DBWHandlerConfiguration {
     private boolean savePassword;
     private final Map<String, String> properties;
 
-    public DBWHandlerConfiguration(DBWHandlerDescriptor descriptor, DBPDriver driver)
+    public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDriver driver)
     {
         this.descriptor = descriptor;
         this.driver = driver;
         this.properties = new HashMap<String, String>();
     }
 
-    public DBWHandlerConfiguration(DBWHandlerConfiguration configuration)
+    public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration)
     {
         this.descriptor = configuration.descriptor;
         this.driver = configuration.driver;
@@ -79,6 +81,7 @@ public class DBWHandlerConfiguration {
         return descriptor.isSecured();
     }
 
+    @NotNull
     public String getId()
     {
         return descriptor.getId();

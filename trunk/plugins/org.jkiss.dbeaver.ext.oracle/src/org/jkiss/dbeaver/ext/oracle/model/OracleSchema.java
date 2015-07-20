@@ -306,7 +306,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public synchronized boolean refreshObject(DBRProgressMonitor monitor)
+    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         tableCache.clearCache();

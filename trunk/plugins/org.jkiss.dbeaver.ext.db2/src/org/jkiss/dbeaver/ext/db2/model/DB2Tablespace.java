@@ -127,7 +127,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         containerCache.clearCache();
         return true;

@@ -300,7 +300,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         grants = null;
         return true;

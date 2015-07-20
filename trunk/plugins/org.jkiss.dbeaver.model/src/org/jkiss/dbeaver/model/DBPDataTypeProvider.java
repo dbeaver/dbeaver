@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -35,7 +36,7 @@ public interface DBPDataTypeProvider
      * @param typeID type ID
      * @return data kind or null if type can't be resolved
      */
-    DBPDataKind resolveDataKind(String typeName, int typeID);
+    DBPDataKind resolveDataKind(@NotNull String typeName, int typeID);
 
     /**
      * Resolve data type by it's full name.
@@ -44,7 +45,7 @@ public interface DBPDataTypeProvider
      * @return data type or null if type not found
      * @throws DBException on any DB access error
      */
-    DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName)
+    DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName)
         throws DBException;
 
     /**
@@ -66,5 +67,5 @@ public interface DBPDataTypeProvider
      * @param dataKind data kind
      * @return data type name or null if data kind not supported
      */
-    String getDefaultDataTypeName(DBPDataKind dataKind);
+    String getDefaultDataTypeName(@NotNull DBPDataKind dataKind);
 }

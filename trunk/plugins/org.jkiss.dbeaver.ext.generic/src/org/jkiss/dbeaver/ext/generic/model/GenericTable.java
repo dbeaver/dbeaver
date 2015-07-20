@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -200,7 +201,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         this.getContainer().getTableCache().clearChildrenCache(this);
         this.getContainer().getIndexCache().clearObjectCache(this);

@@ -116,7 +116,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo)
+    protected String getConnectionUserName(@NotNull DBPConnectionConfiguration connectionInfo)
     {
         final Object role = connectionInfo.getProperty(OracleConstants.PROP_INTERNAL_LOGON);
         return role == null ? connectionInfo.getUserName() : connectionInfo.getUserName() + " AS " + role;
@@ -283,7 +283,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         super.refreshObject(monitor);
@@ -405,7 +405,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBPDataKind resolveDataKind(String typeName, int valueType)
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
         if (typeName != null &&
             (typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)))
@@ -435,7 +435,7 @@ public class OracleDataSource extends JDBCDataSource
 
     @Nullable
     @Override
-    public DBSDataType resolveDataType(DBRProgressMonitor monitor, String typeFullName) throws DBException
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException
     {
         int divPos = typeFullName.indexOf(SQLConstants.STRUCT_SEPARATOR);
         if (divPos == -1) {

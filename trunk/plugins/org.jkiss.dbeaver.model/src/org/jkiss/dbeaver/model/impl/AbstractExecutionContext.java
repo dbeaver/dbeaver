@@ -42,7 +42,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
     protected final DATASOURCE dataSource;
     protected final String purpose;
 
-    public AbstractExecutionContext(DATASOURCE dataSource, String purpose) {
+    public AbstractExecutionContext(@NotNull DATASOURCE dataSource, String purpose) {
         this.dataSource = dataSource;
         this.purpose = purpose;
     }
@@ -64,7 +64,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
      * Executes bootstrap queries and other init functions.
      * This function must be called by all implementations.
      */
-    protected void initContextBootstrap(DBRProgressMonitor monitor, boolean autoCommit) throws DBCException
+    protected void initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBCException
     {
         // Notify QM
         QMUtils.getDefaultHandler().handleContextOpen(this, !autoCommit);

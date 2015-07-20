@@ -51,6 +51,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         super(dataSource, purpose);
     }
 
+    @NotNull
     private Connection getConnection() {
         return connection;
     }
@@ -144,8 +145,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return connection;
     }
 
+    @NotNull
     @Override
-    public JDBCSession openSession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
+    public JDBCSession openSession(@NotNull DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
     {
         return dataSource.createConnection(monitor, this, purpose, taskTitle);
     }
@@ -157,7 +159,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public InvalidateResult invalidateContext(DBRProgressMonitor monitor)
+    public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (this.connection == null) {
@@ -213,7 +215,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation)
+    public void setTransactionIsolation(@NotNull DBRProgressMonitor monitor, @NotNull DBPTransactionIsolation transactionIsolation)
         throws DBCException
     {
         if (!(transactionIsolation instanceof JDBCTransactionIsolation)) {
@@ -248,7 +250,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit)
+    public void setAutoCommit(@NotNull DBRProgressMonitor monitor, boolean autoCommit)
         throws DBCException
     {
         monitor.subTask("Set JDBC connection auto-commit " + autoCommit);
@@ -264,7 +266,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name)
+    public DBCSavepoint setSavepoint(@NotNull DBRProgressMonitor monitor, String name)
         throws DBCException
     {
         Savepoint savepoint;
@@ -294,7 +296,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint)
+    public void releaseSavepoint(@NotNull DBRProgressMonitor monitor, @NotNull DBCSavepoint savepoint)
         throws DBCException
     {
         try {
@@ -310,7 +312,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void commit(DBCSession session)
+    public void commit(@NotNull DBCSession session)
         throws DBCException
     {
         try {
@@ -327,7 +329,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     @Override
-    public void rollback(DBCSession session, DBCSavepoint savepoint)
+    public void rollback(@NotNull DBCSession session, DBCSavepoint savepoint)
         throws DBCException
     {
         try {

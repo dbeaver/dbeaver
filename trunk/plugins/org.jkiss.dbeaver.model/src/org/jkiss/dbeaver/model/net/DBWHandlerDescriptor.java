@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 /**
@@ -24,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
  */
 public interface DBWHandlerDescriptor {
 
+    @NotNull
     String getId();
 
     String getLabel();

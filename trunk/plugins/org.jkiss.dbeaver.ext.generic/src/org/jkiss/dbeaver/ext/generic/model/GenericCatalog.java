@@ -155,7 +155,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException {
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.refreshObject(monitor);
         this.schemas = null;
         this.isInitialized = false;
