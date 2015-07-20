@@ -15,20 +15,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.struct.rdb;
-
-import org.jkiss.dbeaver.model.struct.DBSParameter;
+package org.jkiss.dbeaver.model.struct;
 
 /**
- * DBSTableIndex
+ * Base parameter interface.
+ * Parameters have name and type
  */
-public interface DBSProcedureParameter extends DBSParameter
+public interface DBSParameter extends DBSTypedObject, DBSObject
 {
 
-    /**
-     * Parameter type (IN/OUT/etc).
-     * @return parameter type. Never returns null.
-     */
-    DBSProcedureParameterType getParameterType();
 
 }

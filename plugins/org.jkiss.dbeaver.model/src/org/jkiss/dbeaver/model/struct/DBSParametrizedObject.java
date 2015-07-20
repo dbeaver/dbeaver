@@ -15,20 +15,20 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.model.struct.rdb;
+package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.dbeaver.model.struct.DBSParameter;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
 
 /**
- * DBSTableIndex
+ * Parametrized object.
+ * It is some object which can be fully qualified only with it's parameters.
  */
-public interface DBSProcedureParameter extends DBSParameter
+public interface DBSParametrizedObject extends DBSObject
 {
-
-    /**
-     * Parameter type (IN/OUT/etc).
-     * @return parameter type. Never returns null.
-     */
-    DBSProcedureParameterType getParameterType();
+    Collection<? extends DBSParameter> getParameters(DBRProgressMonitor monitor) throws DBException;
 
 }
