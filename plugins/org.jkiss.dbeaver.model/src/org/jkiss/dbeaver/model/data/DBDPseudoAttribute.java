@@ -47,6 +47,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
         this.description = description;
     }
 
+    @NotNull
     @Override
     public String getName()
     {
@@ -158,6 +159,7 @@ public class DBDPseudoAttribute implements DBPNamedObject {
             return owner.getDataSource();
         }
 
+        @NotNull
         @Override
         public String getName()
         {

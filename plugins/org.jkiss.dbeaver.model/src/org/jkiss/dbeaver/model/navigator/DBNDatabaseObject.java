@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -93,6 +94,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
     }
 
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()
@@ -113,7 +115,7 @@ public class DBNDatabaseObject extends DBNDatabaseNode implements DBSObject
         return getParentNode() instanceof DBNDatabaseNode ? ((DBSWrapper)getParentNode()).getObject() : null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

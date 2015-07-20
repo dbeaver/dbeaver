@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
@@ -200,6 +201,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     // -----------------
     // Properties
     // -----------------
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

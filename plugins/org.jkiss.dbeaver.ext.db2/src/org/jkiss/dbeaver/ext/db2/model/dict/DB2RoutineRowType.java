@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 
@@ -62,6 +63,7 @@ public enum DB2RoutineRowType implements DBPNamedObject {
     // ----------------
     // Standard Getters
     // ----------------
+    @NotNull
     @Override
     public String getName()
     {

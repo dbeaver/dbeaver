@@ -73,6 +73,7 @@ public class DB2TableCheckConstraintColumn extends AbstractTableConstraintColumn
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     public String getName()
     {

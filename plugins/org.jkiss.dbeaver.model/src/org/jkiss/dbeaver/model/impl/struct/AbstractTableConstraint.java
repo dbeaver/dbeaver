@@ -48,6 +48,7 @@ public abstract class AbstractTableConstraint<TABLE extends DBSTable> implements
         return table;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

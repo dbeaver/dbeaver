@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -43,6 +44,7 @@ public class OracleUserProfile extends OracleGlobalObject
         this.name = JDBCUtils.safeGetString(resultSet, "PROFILE");
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
@@ -84,6 +86,7 @@ public class OracleUserProfile extends OracleGlobalObject
             this.limit = JDBCUtils.safeGetString(resultSet, "LIMIT");
         }
 
+        @NotNull
         @Override
         @Property(viewable = true, order = 1)
         public String getName() {

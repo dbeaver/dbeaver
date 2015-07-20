@@ -63,6 +63,7 @@ public class DB2TableKeyColumn extends AbstractTableConstraintColumn {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     public String getName()
     {

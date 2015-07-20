@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
@@ -35,7 +36,8 @@ import java.beans.PropertyChangeListener;
  */
 public abstract class PropertyAwareConnectionPart extends AbstractConnectionEditPart implements PropertyChangeListener, DBPNamedObject
 {
-    @Override
+    @NotNull
+	@Override
     public String getName()
     {
         return ((ERDObject)getModel()).getName();

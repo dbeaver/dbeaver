@@ -154,6 +154,7 @@ public class DB2RoutineParm implements DBSProcedureParameter {
     // Properties
     // -----------------------
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

@@ -169,6 +169,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()

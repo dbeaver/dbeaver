@@ -75,6 +75,7 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
         return DBSEntityConstraintType.PSEUDO_KEY;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

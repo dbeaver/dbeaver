@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -38,6 +39,7 @@ public class OraclePrivRole extends OraclePriv implements DBSObjectLazy<OracleDa
         this.role = this.name;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return super.getName();

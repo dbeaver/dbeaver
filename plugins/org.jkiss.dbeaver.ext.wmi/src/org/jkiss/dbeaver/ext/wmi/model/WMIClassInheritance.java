@@ -45,6 +45,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
         return true;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

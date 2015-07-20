@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
@@ -87,6 +88,7 @@ public abstract class DB2AuthBase extends DB2Object<DB2Grantee> implements DBAPr
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(hidden = true)
     public String getName()

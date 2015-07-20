@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -65,6 +66,7 @@ public class DB2RemoteServerOption extends DB2Object<DB2RemoteServer> {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -41,6 +42,7 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         this.type = type;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

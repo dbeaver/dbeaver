@@ -220,6 +220,7 @@ public class DataSourceDescriptor
         return tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()
@@ -495,7 +496,7 @@ public class DataSourceDescriptor
         this.loginDate = loginDate;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBPDataSource getDataSource()
     {

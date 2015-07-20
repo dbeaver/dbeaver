@@ -108,6 +108,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return super.getContainer();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()

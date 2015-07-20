@@ -89,6 +89,7 @@ public class DB2Parameter implements DBSObject {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

@@ -71,6 +71,7 @@ public abstract class DB2Object<PARENT extends DBSObject> implements DBSObject, 
         return (DB2DataSource) parent.getDataSource();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

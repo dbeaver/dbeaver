@@ -117,6 +117,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

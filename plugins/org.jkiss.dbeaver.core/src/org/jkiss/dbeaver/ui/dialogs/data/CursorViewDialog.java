@@ -226,6 +226,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
             return valueController == null ? null : valueController.getExecutionContext().getDataSource();
         }
 
+        @NotNull
         @Override
         public String getName()
         {

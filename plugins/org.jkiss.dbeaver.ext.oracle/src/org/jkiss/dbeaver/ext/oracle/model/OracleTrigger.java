@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -61,6 +62,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
             this.title = title;
         }
 
+        @NotNull
         @Override
         public String getName()
         {
@@ -105,6 +107,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.table = table;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName()

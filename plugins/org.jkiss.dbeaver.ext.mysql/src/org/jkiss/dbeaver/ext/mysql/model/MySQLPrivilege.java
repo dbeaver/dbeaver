@@ -73,6 +73,7 @@ public class MySQLPrivilege implements DBAPrivilege
         return kind;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {

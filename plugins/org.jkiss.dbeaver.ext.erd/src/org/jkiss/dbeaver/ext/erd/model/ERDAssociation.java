@@ -21,6 +21,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 import java.util.List;
@@ -122,6 +123,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         return getObject() + " [" + primaryKeyEntity + "->" + foreignKeyEntity + "]";
     }
 
+    @NotNull
     @Override
     public String getName()
     {

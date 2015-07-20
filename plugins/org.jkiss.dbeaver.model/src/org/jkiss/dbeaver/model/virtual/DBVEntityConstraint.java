@@ -81,6 +81,7 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         return type;
     }
 
+    @NotNull
     @Override
     public String getName()
     {
