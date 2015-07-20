@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -57,6 +58,7 @@ public class MySQLCharset extends MySQLInformation {
         collations.add(collation);
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.DB2Object;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
@@ -55,6 +56,7 @@ public class DB2RoleAuth extends DB2Object<DB2Role> implements DBAPrivilege {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(hidden = true)
     public String getName()

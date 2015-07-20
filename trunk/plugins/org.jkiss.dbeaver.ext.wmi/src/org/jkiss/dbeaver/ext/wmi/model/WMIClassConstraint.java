@@ -69,6 +69,7 @@ public class WMIClassConstraint implements DBSEntityConstraint, DBSEntityReferre
         return DBSEntityConstraintType.UNIQUE_KEY;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

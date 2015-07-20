@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
@@ -143,6 +144,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     public String getName()

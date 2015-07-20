@@ -88,6 +88,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
         return ERDConstants.CONSTRAINT_LOGICAL_FK;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAUser;
@@ -80,6 +81,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
         return id;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 2)
     public String getName() {

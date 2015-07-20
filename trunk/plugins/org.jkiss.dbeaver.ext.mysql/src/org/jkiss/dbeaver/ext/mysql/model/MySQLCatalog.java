@@ -103,6 +103,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return dataSource;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName()

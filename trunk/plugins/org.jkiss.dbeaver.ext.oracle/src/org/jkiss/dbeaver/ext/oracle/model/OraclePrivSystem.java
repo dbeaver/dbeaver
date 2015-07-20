@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
@@ -32,6 +33,7 @@ public class OraclePrivSystem extends OraclePriv {
         super(user, JDBCUtils.safeGetString(resultSet, "PRIVILEGE"), resultSet);
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 2)
     public String getName() {

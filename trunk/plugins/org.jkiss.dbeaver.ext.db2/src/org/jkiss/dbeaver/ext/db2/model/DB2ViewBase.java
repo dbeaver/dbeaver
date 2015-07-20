@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
@@ -123,6 +124,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
         return super.getDescription();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

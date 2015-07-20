@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -57,6 +58,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         this.persisted = persisted;
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     @Override
     public String getName()

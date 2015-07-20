@@ -294,6 +294,7 @@ public abstract class JDBCDataSource
         }
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

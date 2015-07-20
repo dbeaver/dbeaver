@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -92,6 +93,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         super(schema, dbResult);
     }
 
+    @NotNull
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
     @Override
     public String getName()

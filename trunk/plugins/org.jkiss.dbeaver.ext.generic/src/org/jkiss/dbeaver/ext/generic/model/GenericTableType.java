@@ -56,6 +56,7 @@ public class GenericTableType implements DBSObject {
         return dataSource;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Simple text note
  */
@@ -27,6 +29,7 @@ public class ERDNote extends ERDObject<String> {
         super(text);
     }
 
+    @NotNull
     @Override
     public String getName()
     {

@@ -73,6 +73,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         return parent.getDataSource();
     }
 
+    @NotNull
     @Override
     public String getName()
     {

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
@@ -50,6 +51,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         this.procedures = new ArrayList<GenericProcedure>();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

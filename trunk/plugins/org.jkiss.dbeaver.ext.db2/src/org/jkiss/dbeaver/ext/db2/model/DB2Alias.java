@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2AliasType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -69,6 +70,7 @@ public class DB2Alias extends DB2SchemaObject {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

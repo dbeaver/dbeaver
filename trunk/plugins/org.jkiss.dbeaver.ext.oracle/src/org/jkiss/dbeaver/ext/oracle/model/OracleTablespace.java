@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -128,6 +129,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         this.bigFile = JDBCUtils.safeGetBoolean(dbResult, "BIGFILE", "Y");
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName()

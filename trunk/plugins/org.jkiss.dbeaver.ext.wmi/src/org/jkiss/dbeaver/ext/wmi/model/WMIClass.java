@@ -136,6 +136,7 @@ public class WMIClass extends WMIContainer
         subClasses.add(wmiClass);
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

@@ -1309,7 +1309,7 @@ public class SQLEditor extends SQLEditorBase implements
             return getDataSourceContainer();
         }
 
-        @Nullable
+        @NotNull
         @Override
         public DBPDataSource getDataSource()
         {
@@ -1322,6 +1322,7 @@ public class SQLEditor extends SQLEditorBase implements
             return true;
         }
 
+        @NotNull
         @Override
         public String getName()
         {

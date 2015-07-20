@@ -89,6 +89,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
         }
     }
 
+    @NotNull
     @Override
     @Property(viewable = true)
     public String getName()

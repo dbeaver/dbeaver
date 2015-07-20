@@ -63,6 +63,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
     }
 
     //@Property(name = "Name", viewable = true, order = 1)
+    @NotNull
     @Override
     public String getName()
     {

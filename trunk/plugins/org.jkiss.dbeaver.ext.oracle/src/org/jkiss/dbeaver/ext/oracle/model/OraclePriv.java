@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -34,6 +35,7 @@ public abstract class OraclePriv extends OracleObject<OracleGrantee> implements 
         this.adminOption = JDBCUtils.safeGetBoolean(resultSet, "ADMIN_OPTION", "Y");
     }
 
+    @NotNull
     @Override
     public String getName() {
         return super.getName();

@@ -42,6 +42,7 @@ public class MySQLParameter implements DBSObject
         this.value = value;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

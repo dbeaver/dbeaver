@@ -80,6 +80,7 @@ public class OracleDataTypeMethodParameter implements DBSObject {
         return null;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

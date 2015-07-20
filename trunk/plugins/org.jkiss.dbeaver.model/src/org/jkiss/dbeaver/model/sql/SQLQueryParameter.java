@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -101,6 +102,7 @@ public class SQLQueryParameter implements DBSAttributeBase {
         return ordinalPosition;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

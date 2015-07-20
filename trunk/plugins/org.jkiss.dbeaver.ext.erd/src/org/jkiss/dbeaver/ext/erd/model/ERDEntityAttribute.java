@@ -20,6 +20,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -65,6 +66,7 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
         this.inForeignKey = inForeignKey;
     }
 
+    @NotNull
     @Override
     public String getName()
     {

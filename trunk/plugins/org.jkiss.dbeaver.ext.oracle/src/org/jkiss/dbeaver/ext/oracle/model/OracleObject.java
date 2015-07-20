@@ -79,6 +79,7 @@ public abstract class OracleObject<PARENT extends DBSObject> implements DBSObjec
         return (OracleDataSource) parent.getDataSource();
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = true, order = 1)
     public String getName()

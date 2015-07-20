@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -157,7 +158,8 @@ public class EntityDiagram extends ERDObject<DBSObject>
     /**
 	 * @return the name of the schema
 	 */
-	@Override
+	@NotNull
+    @Override
     public String getName()
 	{
 		return name;

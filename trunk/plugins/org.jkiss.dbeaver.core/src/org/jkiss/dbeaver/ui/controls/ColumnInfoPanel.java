@@ -81,6 +81,7 @@ public class ColumnInfoPanel extends Composite {
             this.attribute = attribute;
             this.value = value;
         }
+        @NotNull
         @Override
         public String getName()
         {

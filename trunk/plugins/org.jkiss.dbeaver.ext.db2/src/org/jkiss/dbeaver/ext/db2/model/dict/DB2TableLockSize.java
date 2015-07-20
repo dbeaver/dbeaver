@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.dict;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -55,6 +56,7 @@ public enum DB2TableLockSize implements DBPNamedObject {
     // ----------------
     // Standard Getters
     // ----------------
+    @NotNull
     @Override
     public String getName()
     {

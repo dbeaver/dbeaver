@@ -83,6 +83,7 @@ public class DB2XMLString implements DBSObject {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

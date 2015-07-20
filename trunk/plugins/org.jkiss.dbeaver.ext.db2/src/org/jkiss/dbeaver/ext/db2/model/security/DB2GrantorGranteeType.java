@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -56,6 +57,7 @@ public enum DB2GrantorGranteeType implements DBPNamedObject {
     // ----------------
     // Standard Getters
     // ----------------
+    @NotNull
     @Override
     public String getName()
     {

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -454,6 +455,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, editable = false, order = 1)
     public String getName()

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -90,6 +91,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         return DBUtils.findObject(getSchemas(monitor), name);
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

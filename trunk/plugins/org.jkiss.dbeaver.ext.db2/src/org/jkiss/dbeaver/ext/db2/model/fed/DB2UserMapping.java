@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
@@ -56,6 +57,7 @@ public class DB2UserMapping extends DB2GlobalObject {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

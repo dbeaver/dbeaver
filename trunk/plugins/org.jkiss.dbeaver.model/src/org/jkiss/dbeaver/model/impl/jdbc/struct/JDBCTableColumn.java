@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -77,6 +78,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     }
 
 
+    @NotNull
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 10)
     @Override
     public String getName()

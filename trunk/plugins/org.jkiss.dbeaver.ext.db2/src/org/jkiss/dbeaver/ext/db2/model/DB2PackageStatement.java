@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -59,6 +60,7 @@ public class DB2PackageStatement extends DB2Object<DB2Package> {
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

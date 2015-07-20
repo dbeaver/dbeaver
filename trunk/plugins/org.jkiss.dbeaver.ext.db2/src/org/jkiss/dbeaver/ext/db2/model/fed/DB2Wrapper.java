@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.fed;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2GlobalObject;
@@ -88,6 +89,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
     // Properties
     // -----------------
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()

@@ -197,6 +197,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         return colOrder.isAscending();
     }
 
+    @NotNull
     @Override
     public String getName()
     {

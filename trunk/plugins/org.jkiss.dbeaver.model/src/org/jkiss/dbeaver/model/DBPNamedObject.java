@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.meta.Property;
 
 /**
@@ -31,6 +32,7 @@ public interface DBPNamedObject extends DBPObject
      *
      * @return object name
      */
+    @NotNull
     @Property(viewable = true, order = 1)
     String getName();
 
