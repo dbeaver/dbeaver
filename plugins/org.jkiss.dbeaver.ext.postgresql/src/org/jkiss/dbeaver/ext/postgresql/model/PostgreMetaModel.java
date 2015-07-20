@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -99,6 +100,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                                 GenericSequence sequence = new GenericSequence(
                                     container,
                                     name,
+                                    PostgreUtils.getObjectComment(monitor, container.getDataSource(), container.getName(), name),
                                     JDBCUtils.safeGetLong(seqResults, 1),
                                     JDBCUtils.safeGetLong(seqResults, 2),
                                     JDBCUtils.safeGetLong(seqResults, 3),
