@@ -33,14 +33,16 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
 {
     private GenericObjectContainer container;
     private String name;
+    private String description;
     private Number lastValue;
     private Number minValue;
     private Number maxValue;
     private Number incrementBy;
 
-    public GenericSequence(GenericObjectContainer container, String name, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
+    public GenericSequence(GenericObjectContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
         this.container = container;
         this.name = name;
+        this.description = description;
         this.lastValue = lastValue;
         this.minValue = minValue;
         this.maxValue = maxValue;
@@ -61,8 +63,9 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
 
     @Nullable
     @Override
+    @Property(viewable = true, order = 10)
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @Nullable
