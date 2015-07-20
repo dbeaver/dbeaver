@@ -172,7 +172,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         triggerDepCache.clearCache();
         return true;

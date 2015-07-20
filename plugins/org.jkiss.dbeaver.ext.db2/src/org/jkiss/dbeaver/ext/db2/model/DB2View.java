@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewCheck;
@@ -64,7 +65,7 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().getViewCache().clearChildrenCache(this);
         super.refreshObject(monitor);

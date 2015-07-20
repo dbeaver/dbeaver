@@ -63,6 +63,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
      * Differs from getConnectionConfiguration() in case if tunnel or proxy was used.
      * @return actual connection configuration.
      */
+    @NotNull
     DBPConnectionConfiguration getActualConnectionConfiguration();
 
     boolean isShowSystemObjects();
@@ -149,6 +150,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
      * Preference store associated with this datasource
      * @return preference store
      */
+    @NotNull
     DBPPreferenceStore getPreferenceStore();
 
     @NotNull

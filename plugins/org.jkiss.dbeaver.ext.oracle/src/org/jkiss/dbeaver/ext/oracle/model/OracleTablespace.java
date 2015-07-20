@@ -268,7 +268,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         fileCache.clearCache();
         segmentCache.clearCache();

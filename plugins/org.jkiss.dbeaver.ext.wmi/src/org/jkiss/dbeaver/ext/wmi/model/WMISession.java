@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
@@ -46,6 +47,7 @@ public class WMISession extends AbstractSession {
         return dataSource;
     }
 
+    @NotNull
     @Override
     public DBCStatement prepareStatement(DBCStatementType type, String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException
     {

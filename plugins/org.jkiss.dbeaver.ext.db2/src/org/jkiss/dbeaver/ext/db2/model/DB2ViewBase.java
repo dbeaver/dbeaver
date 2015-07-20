@@ -86,7 +86,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         viewBaseDepCache.clearCache();
         return true;

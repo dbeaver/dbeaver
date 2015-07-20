@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -54,6 +55,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.uiConfigType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_UI_CLASS));
     }
 
+    @NotNull
     public String getId()
     {
         return id;

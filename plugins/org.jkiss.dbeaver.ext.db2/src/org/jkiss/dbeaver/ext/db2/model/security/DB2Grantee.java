@@ -67,7 +67,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     public abstract DB2AuthIDType getType();
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         authCache.clearCache();
         roleCache.clearCache();

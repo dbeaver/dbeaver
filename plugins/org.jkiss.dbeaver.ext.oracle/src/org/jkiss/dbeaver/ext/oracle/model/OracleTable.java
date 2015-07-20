@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -154,7 +155,7 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
         getContainer().foreignKeyCache.clearObjectCache(this);

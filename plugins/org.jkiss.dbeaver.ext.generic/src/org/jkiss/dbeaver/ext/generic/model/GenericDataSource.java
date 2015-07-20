@@ -510,7 +510,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor)
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         super.refreshObject(monitor);

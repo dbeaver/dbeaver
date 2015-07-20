@@ -213,7 +213,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public synchronized boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         tableCache.clearCache();
         viewCache.clearCache();

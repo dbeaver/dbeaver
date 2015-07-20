@@ -99,7 +99,7 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         conditionCache.clearCache();
         functionCache.clearCache();

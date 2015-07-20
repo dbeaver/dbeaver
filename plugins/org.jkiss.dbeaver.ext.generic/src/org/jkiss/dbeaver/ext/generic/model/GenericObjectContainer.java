@@ -321,7 +321,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public synchronized boolean refreshObject(DBRProgressMonitor monitor)
+    public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         this.tableCache.clearCache();

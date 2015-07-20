@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -251,7 +252,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     @Override
-    public boolean refreshObject(DBRProgressMonitor monitor) throws DBException
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         super.refreshObject(monitor);
         getContainer().indexCache.clearObjectCache(this);

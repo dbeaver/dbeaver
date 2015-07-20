@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,21 +31,21 @@ public interface DBCTransactionManager
 {
     DBPTransactionIsolation getTransactionIsolation() throws DBCException;
 
-    void setTransactionIsolation(DBRProgressMonitor monitor, DBPTransactionIsolation transactionIsolation) throws DBCException;
+    void setTransactionIsolation(@NotNull DBRProgressMonitor monitor, @NotNull DBPTransactionIsolation transactionIsolation) throws DBCException;
 
     boolean isAutoCommit() throws DBCException;
 
-    void setAutoCommit(DBRProgressMonitor monitor, boolean autoCommit) throws DBCException;
+    void setAutoCommit(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBCException;
 
     boolean supportsSavepoints();
 
-    DBCSavepoint setSavepoint(DBRProgressMonitor monitor, String name)
+    DBCSavepoint setSavepoint(@NotNull DBRProgressMonitor monitor, String name)
         throws DBCException;
 
-    void releaseSavepoint(DBRProgressMonitor monitor, DBCSavepoint savepoint) throws DBCException;
+    void releaseSavepoint(@NotNull DBRProgressMonitor monitor, @NotNull DBCSavepoint savepoint) throws DBCException;
 
-    void commit(DBCSession session) throws DBCException;
+    void commit(@NotNull DBCSession session) throws DBCException;
 
-    void rollback(DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException;
+    void rollback(@NotNull DBCSession session, @Nullable DBCSavepoint savepoint) throws DBCException;
 
 }
