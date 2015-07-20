@@ -153,8 +153,8 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
             }
         }
 
-        if (sequence.getIncrement() != null) {
-            sb.append("INCREMENT BY ").append(sequence.getIncrement()).append(SPACE);
+        if (sequence.getIncrementBy() != null) {
+            sb.append("INCREMENT BY ").append(sequence.getIncrementBy()).append(SPACE);
         }
         if (sequence.getMinValue() != null) {
             sb.append("MINVALUE ").append(sequence.getMinValue()).append(SPACE);

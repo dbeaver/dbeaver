@@ -20,19 +20,20 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
 import java.sql.ResultSet;
 
 /**
  * Oracle sequence
  */
-public class OracleSequence extends OracleSchemaObject {
+public class OracleSequence extends OracleSchemaObject implements DBSSequence {
 
     private Number minValue;
     private Number maxValue;
     private long incrementBy;
     private long cacheSize;
-    private Number lastNumber;
+    private Number lastValue;
     private boolean flagCycle;
     private boolean flagOrder;
 
@@ -43,7 +44,7 @@ public class OracleSequence extends OracleSchemaObject {
         this.maxValue = (Number) JDBCUtils.safeGetObject(dbResult, "MAX_VALUE");
         this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT_BY");
         this.cacheSize = JDBCUtils.safeGetLong(dbResult, "CACHE_SIZE");
-        this.lastNumber = (Number) JDBCUtils.safeGetObject(dbResult, "LAST_NUMBER");
+        this.lastValue = (Number) JDBCUtils.safeGetObject(dbResult, "LAST_NUMBER");
         this.flagCycle = JDBCUtils.safeGetBoolean(dbResult, "CYCLE_FLAG", "Y");
         this.flagOrder = JDBCUtils.safeGetBoolean(dbResult, "ORDER_FLAG", "Y");
     }
@@ -56,9 +57,9 @@ public class OracleSequence extends OracleSchemaObject {
     }
 
     @Property(viewable = true, editable = true, order = 2)
-    public Number getLastNumber()
+    public Number getLastValue()
     {
-        return lastNumber;
+        return lastValue;
     }
 
     @Property(viewable = true, editable = true, order = 3)
@@ -74,7 +75,7 @@ public class OracleSequence extends OracleSchemaObject {
     }
 
     @Property(viewable = true, editable = true, order = 5)
-    public long getIncrementBy()
+    public Number getIncrementBy()
     {
         return incrementBy;
     }
