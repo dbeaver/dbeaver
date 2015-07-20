@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.struct.DBSParameter;
 
 /**
@@ -26,9 +27,10 @@ public interface DBSProcedureParameter extends DBSParameter
 {
 
     /**
-     * Parameter type (IN/OUT/etc).
-     * @return parameter type. Never returns null.
+     * Parameter kind (IN/OUT/etc).
+     * @return parameter kind. Never returns null.
      */
-    DBSProcedureParameterType getParameterType();
+    @NotNull
+    DBSProcedureParameterKind getParameterKind();
 
 }

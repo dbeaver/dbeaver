@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 /**
  * GenericTable
@@ -31,7 +31,7 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
 {
     private String remarks;
     private GenericProcedure procedure;
-    private DBSProcedureParameterType parameterType;
+    private DBSProcedureParameterKind parameterKind;
 
     public GenericProcedureParameter(
             GenericProcedure procedure,
@@ -44,7 +44,7 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
             int precision,
             boolean notNull,
             String remarks,
-            DBSProcedureParameterType parameterType)
+            DBSProcedureParameterKind parameterKind)
     {
         super(columnName,
             typeName,
@@ -57,7 +57,7 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
             false);
         this.remarks = remarks;
         this.procedure = procedure;
-        this.parameterType = parameterType;
+        this.parameterKind = parameterKind;
     }
 
     @NotNull
@@ -73,11 +73,12 @@ public class GenericProcedureParameter extends JDBCColumn implements DBSProcedur
         return procedure;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 10)
-    public DBSProcedureParameterType getParameterType()
+    public DBSProcedureParameterKind getParameterKind()
     {
-        return parameterType;
+        return parameterKind;
     }
 
     @Nullable

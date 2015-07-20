@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -84,7 +84,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             if (!CommonUtils.isEmpty(params)) {
                 int index = 0;
                 for (DBSProcedureParameter param : params) {
-                    if (param.getParameterType() == DBSProcedureParameterType.OUT || param.getParameterType() == DBSProcedureParameterType.INOUT) {
+                    if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
                         index++;
                         registerOutParameter(index, param.getTypeID());
                     }
@@ -116,7 +116,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
                 if (!CommonUtils.isEmpty(params)) {
                     for (DBSProcedureParameter param : params) {
-                        if (param.getParameterType() == DBSProcedureParameterType.OUT || param.getParameterType() == DBSProcedureParameterType.INOUT) {
+                        if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
                             procResults.addColumn(param.getName(), param);
                         }
                     }

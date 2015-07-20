@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 
 /**
  * MySQLProcedureParameter
@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
 public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureParameter
 {
     private MySQLProcedure procedure;
-    private DBSProcedureParameterType parameterType;
+    private DBSProcedureParameterKind parameterType;
 
     public MySQLProcedureParameter(
             MySQLProcedure procedure,
@@ -41,7 +41,7 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
             int scale,
             int precision,
             boolean notNull,
-            DBSProcedureParameterType parameterType)
+            DBSProcedureParameterKind parameterType)
     {
         super(columnName,
             typeName,
@@ -69,9 +69,10 @@ public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureP
         return procedure;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 10)
-    public DBSProcedureParameterType getParameterType()
+    public DBSProcedureParameterKind getParameterKind()
     {
         return parameterType;
     }

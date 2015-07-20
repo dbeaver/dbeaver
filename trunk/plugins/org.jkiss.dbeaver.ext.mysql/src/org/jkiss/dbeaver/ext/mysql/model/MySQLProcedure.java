@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -123,14 +123,14 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 
             int colIndex = 0;
             for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
+                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
                     continue;
                 }
                 if (colIndex > 0) {
                     cb.append(", ");
                 }
                 if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getParameterType()).append(' ');
+                    cb.append(column.getParameterKind()).append(' ');
                 }
                 cb.append(column.getName()).append(' ');
                 appendParameterType(cb, column);
@@ -138,7 +138,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
             }
             cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
             for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterType() == DBSProcedureParameterType.RETURN) {
+                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
                     cb.append("RETURNS ");
                     appendParameterType(cb, column);
                     cb.append(GeneralUtils.getDefaultLineSeparator());

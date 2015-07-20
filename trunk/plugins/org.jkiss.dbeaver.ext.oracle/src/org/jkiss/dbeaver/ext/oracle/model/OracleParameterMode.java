@@ -18,19 +18,19 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
 /**
 * Parameter/argument mode
 */
 public enum OracleParameterMode {
-    IN(DBSProcedureParameterType.IN),
-    OUT(DBSProcedureParameterType.OUT),
-    INOUT(DBSProcedureParameterType.INOUT);
-    private final DBSProcedureParameterType parameterType;
+    IN(DBSProcedureParameterKind.IN),
+    OUT(DBSProcedureParameterKind.OUT),
+    INOUT(DBSProcedureParameterKind.INOUT);
+    private final DBSProcedureParameterKind parameterType;
 
-    OracleParameterMode(DBSProcedureParameterType parameterType)
+    OracleParameterMode(DBSProcedureParameterKind parameterType)
     {
         this.parameterType = parameterType;
     }
@@ -48,7 +48,7 @@ public enum OracleParameterMode {
         }
     }
 
-    public DBSProcedureParameterType getParameterType()
+    public DBSProcedureParameterKind getParameterType()
     {
         return parameterType;
     }

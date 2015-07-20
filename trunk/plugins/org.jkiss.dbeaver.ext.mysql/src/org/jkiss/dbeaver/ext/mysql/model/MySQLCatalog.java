@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
@@ -582,16 +582,16 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
             //int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
             //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
-            DBSProcedureParameterType parameterType;
+            DBSProcedureParameterKind parameterType;
             switch (columnTypeNum) {
-                case DatabaseMetaData.procedureColumnIn: parameterType = DBSProcedureParameterType.IN; break;
-                case DatabaseMetaData.procedureColumnInOut: parameterType = DBSProcedureParameterType.INOUT; break;
-                case DatabaseMetaData.procedureColumnOut: parameterType = DBSProcedureParameterType.OUT; break;
-                case DatabaseMetaData.procedureColumnReturn: parameterType = DBSProcedureParameterType.RETURN; break;
-                case DatabaseMetaData.procedureColumnResult: parameterType = DBSProcedureParameterType.RESULTSET; break;
-                default: parameterType = DBSProcedureParameterType.UNKNOWN; break;
+                case DatabaseMetaData.procedureColumnIn: parameterType = DBSProcedureParameterKind.IN; break;
+                case DatabaseMetaData.procedureColumnInOut: parameterType = DBSProcedureParameterKind.INOUT; break;
+                case DatabaseMetaData.procedureColumnOut: parameterType = DBSProcedureParameterKind.OUT; break;
+                case DatabaseMetaData.procedureColumnReturn: parameterType = DBSProcedureParameterKind.RETURN; break;
+                case DatabaseMetaData.procedureColumnResult: parameterType = DBSProcedureParameterKind.RESULTSET; break;
+                default: parameterType = DBSProcedureParameterKind.UNKNOWN; break;
             }
-            if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterType.RETURN) {
+            if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterKind.RETURN) {
                 columnName = "RETURN";
             }
             return new MySQLProcedureParameter(

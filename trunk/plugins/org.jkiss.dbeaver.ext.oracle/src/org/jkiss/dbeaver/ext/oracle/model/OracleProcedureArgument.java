@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -135,9 +135,10 @@ public class OracleProcedureArgument implements DBSProcedureParameter
         return position;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 20)
-    public DBSProcedureParameterType getParameterType()
+    public DBSProcedureParameterKind getParameterKind()
     {
         return mode == null ? null : mode.getParameterType();
     }
