@@ -86,7 +86,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 for (DBSProcedureParameter param : params) {
                     if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
                         index++;
-                        registerOutParameter(index, param.getTypeID());
+                        registerOutParameter(index, param.getParameterType().getTypeID());
                     }
                 }
             }
@@ -117,7 +117,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 if (!CommonUtils.isEmpty(params)) {
                     for (DBSProcedureParameter param : params) {
                         if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
-                            procResults.addColumn(param.getName(), param);
+                            procResults.addColumn(param.getName(), param.getParameterType());
                         }
                     }
                 }
