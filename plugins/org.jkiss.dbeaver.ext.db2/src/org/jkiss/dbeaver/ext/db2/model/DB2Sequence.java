@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -39,7 +40,7 @@ import java.sql.Timestamp;
  * 
  * @author Denis Forveille
  */
-public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject {
+public class DB2Sequence extends DB2SchemaObject implements DBSSequence, DBPRefreshableObject {
 
     private String owner;
     private DB2OwnerType ownerType;
@@ -47,7 +48,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     private DB2SequenceType seqType;
     private String baseSchema;
     private String baseSequence;
-    private Long increment;
+    private Long incrementBy;
     private Long start;
     private Long maxValue;
     private Long minValue;
@@ -70,12 +71,12 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     {
         super(schema, JDBCUtils.safeGetString(dbResult, "SEQNAME"), true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+        DB2DataSource db2DataSource = schema.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.seqId = JDBCUtils.safeGetInteger(dbResult, "SEQID");
         this.seqType = CommonUtils.valueOf(DB2SequenceType.class, JDBCUtils.safeGetString(dbResult, "SEQTYPE"));
-        this.increment = JDBCUtils.safeGetLong(dbResult, "INCREMENT");
+        this.incrementBy = JDBCUtils.safeGetLong(dbResult, "INCREMENT");
         this.start = JDBCUtils.safeGetLong(dbResult, "START");
         this.maxValue = JDBCUtils.safeGetLong(dbResult, "MAXVALUE");
         this.minValue = JDBCUtils.safeGetLong(dbResult, "MINVALUE");
@@ -111,7 +112,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
         order = false;
         cycle = false;
         cache = 20;
-        increment = 1L;
+        incrementBy = 1L;
     }
 
     // -----------------
@@ -135,6 +136,11 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     public DB2SequenceType getSeqType()
     {
         return seqType;
+    }
+
+    @Override
+    public Number getLastValue() {
+        return getNextCacheFirstValue();
     }
 
     @Property(viewable = true, editable = false, order = 5)
@@ -182,14 +188,14 @@ public class DB2Sequence extends DB2SchemaObject implements DBPRefreshableObject
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 8)
-    public Long getIncrement()
+    public Long getIncrementBy()
     {
-        return increment;
+        return incrementBy;
     }
 
-    public void setIncrement(Long increment)
+    public void setIncrementBy(Long incrementBy)
     {
-        this.increment = increment;
+        this.incrementBy = incrementBy;
     }
 
     @Property(viewable = true, editable = true, updatable = true, order = 9)
