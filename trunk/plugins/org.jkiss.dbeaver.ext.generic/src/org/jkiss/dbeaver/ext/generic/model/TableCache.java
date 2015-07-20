@@ -51,6 +51,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         // [JDBC: PostgreSQL]
         INVALID_TABLE_TYPES.add("INDEX");
         INVALID_TABLE_TYPES.add("SEQUENCE");
+        INVALID_TABLE_TYPES.add("TYPE");
         INVALID_TABLE_TYPES.add("SYSTEM INDEX");
         INVALID_TABLE_TYPES.add("SYSTEM SEQUENCE");
         // [JDBC: SQLite]
