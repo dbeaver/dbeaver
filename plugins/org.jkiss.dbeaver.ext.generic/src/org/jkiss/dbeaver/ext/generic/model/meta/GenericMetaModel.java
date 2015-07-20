@@ -41,9 +41,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 /**
  * Generic meta model
@@ -93,10 +91,11 @@ public class GenericMetaModel {
         return objects.get(id);
     }
 
-    public void loadProcedures(DBRProgressMonitor monitor, GenericObjectContainer container)
+    public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
         throws DBException
     {
         Map<String, GenericPackage> packageMap = null;
+
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
@@ -243,6 +242,14 @@ public class GenericMetaModel {
 
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         return "-- Source code not available";
+    }
+
+    public boolean supportsSequences() {
+        return false;
+    }
+
+    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) {
+        return new ArrayList<GenericSequence>();
     }
 
     public JDBCBasicDataTypeCache createDataTypeCache(DBSDataSourceContainer container) {

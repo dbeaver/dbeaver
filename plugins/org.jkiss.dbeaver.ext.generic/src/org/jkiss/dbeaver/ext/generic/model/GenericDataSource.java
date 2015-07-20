@@ -98,10 +98,6 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    JDBCExecutionContext getExecutionContext() {
-        return executionContext;
-    }
-
     protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
             setActiveEntityName(monitor, context, getSelectedObject());
@@ -307,6 +303,11 @@ public class GenericDataSource extends JDBCDataSource
         throws DBException
     {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor, name);
+    }
+
+    @Override
+    public Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getSequences(monitor);
     }
 
     @Override

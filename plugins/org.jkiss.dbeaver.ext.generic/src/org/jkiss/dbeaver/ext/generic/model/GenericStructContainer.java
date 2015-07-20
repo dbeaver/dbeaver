@@ -66,4 +66,7 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
     GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException;
 
     Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name) throws DBException;
+
+    Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException;
+
 }
