@@ -128,6 +128,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(DBPDataKind.STRING, java.sql.Types.NVARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCHAR", new TypeDesc(DBPDataKind.STRING, java.sql.Types.NCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.NCLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.BLOB, 0, 0, 0));
 
         PREDEFINED_TYPES.put("REF CURSOR", new TypeDesc(DBPDataKind.REFERENCE, -10, 0, 0, 0));
 

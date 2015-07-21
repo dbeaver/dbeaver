@@ -66,10 +66,10 @@ public interface DBDDocument extends DBDValue {
      *
      * @param monitor   progress monitor
      * @param stream    stream
-     * @param encoding
+     * @param encoding  stream encoding
      * @throws DBException
      */
-    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, String encoding)
+    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, @Nullable String encoding)
         throws DBException;
 
     /**
@@ -77,10 +77,10 @@ public interface DBDDocument extends DBDValue {
      *
      * @param monitor   progress monitor
      * @param stream    stream
-     * @param encoding
+     * @param encoding  stream encoding
      * @throws DBException
      */
-    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, String encoding)
+    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, @Nullable String encoding)
         throws DBException;
 
 }
