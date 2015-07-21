@@ -46,7 +46,6 @@ public class JDBCContentXML extends JDBCContentLOB {
     static final Log log = Log.getLog(JDBCContentXML.class);
 
     private SQLXML xml;
-    protected Reader tmpReader;
 
     public JDBCContentXML(DBPDataSource dataSource, SQLXML xml) {
         super(dataSource);
@@ -79,13 +78,7 @@ public class JDBCContentXML extends JDBCContentLOB {
                 throw new DBCException(e, dataSource);
             }
             // Free blob - we don't need it anymore
-            try {
-                xml.free();
-            } catch (Exception e) {
-                log.warn(e);
-            } finally {
-                xml = null;
-            }
+            releaseXML();
         }
         return storage;
     }
@@ -93,19 +86,19 @@ public class JDBCContentXML extends JDBCContentLOB {
     @Override
     public void release()
     {
-        if (tmpReader != null) {
-            ContentUtils.close(tmpReader);
-            tmpReader = null;
-        }
-//        if (xml != null) {
-//            try {
-//                xml.free();
-//            } catch (Exception e) {
-//                log.warn(e);
-//            }
-//            xml = null;
-//        }
+        releaseXML();
         super.release();
+    }
+
+    private void releaseXML() {
+        if (xml != null) {
+            try {
+                xml.free();
+            } catch (Exception e) {
+                log.warn(e);
+            }
+            xml = null;
+        }
     }
 
     @Override

@@ -114,14 +114,8 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 }
                 this.storage = new TemporaryContentStorage(application, tempFile);
             }
-            // Free blob - we don't need it anymore
-            try {
-                clob.free();
-            } catch (Throwable e) {
-                log.debug(e);
-            } finally {
-                clob = null;
-            }
+            // Free lob - we don't need it anymore
+            releaseClob();
         }
         return storage;
     }
@@ -130,6 +124,11 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     public void release()
     {
         releaseTempStream();
+        releaseClob();
+        super.release();
+    }
+
+    private void releaseClob() {
         if (clob != null) {
             try {
                 clob.free();
@@ -138,7 +137,6 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
             }
             clob = null;
         }
-        super.release();
     }
 
     private void releaseTempStream() {

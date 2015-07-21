@@ -116,13 +116,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 this.storage = new TemporaryContentStorage(application, tempFile);
             }
             // Free blob - we don't need it anymore
-            try {
-                blob.free();
-            } catch (Throwable e) {
-                log.debug(e);
-            } finally {
-                blob = null;
-            }
+            releaseBlob();
         }
         return storage;
     }
@@ -131,6 +125,11 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     public void release()
     {
         releaseTempStream();
+        releaseBlob();
+        super.release();
+    }
+
+    private void releaseBlob() {
         if (blob != null) {
             try {
                 blob.free();
@@ -139,7 +138,6 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             }
             blob = null;
         }
-        super.release();
     }
 
     private void releaseTempStream() {
