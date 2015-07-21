@@ -424,10 +424,24 @@ public class ResultSetModel {
             this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
 
 
-        if (metadataChanged && attributes.length == 1) {
-            DBDAttributeBinding topAttr = attributes[0];
-            if (topAttr.getDataKind() == DBPDataKind.DOCUMENT) {
-                documentAttribute = topAttr;
+        if (metadataChanged) {
+            // Detect document attribute
+            // It has to be only one attribute in list (excluding pseudo attributes).
+            DBDAttributeBinding realAttr = null;
+            for (DBDAttributeBinding attr : attributes) {
+                if (!attr.isPseudoAttribute()) {
+                    if (realAttr != null) {
+                        // more than one
+                        realAttr = null;
+                        break;
+                    }
+                    realAttr = attr;
+                }
+            }
+            if (realAttr != null) {
+                if (realAttr.getDataKind() == DBPDataKind.DOCUMENT || realAttr.getDataKind() == DBPDataKind.CONTENT) {
+                    documentAttribute = realAttr;
+                }
             }
         }
     }
