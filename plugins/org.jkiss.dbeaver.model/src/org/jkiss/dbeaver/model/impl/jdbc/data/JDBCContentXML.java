@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -57,6 +58,7 @@ public class JDBCContentXML extends JDBCContentLOB {
         return -1;
     }
 
+    @NotNull
     @Override
     public String getContentType()
     {

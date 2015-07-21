@@ -30,8 +30,9 @@ public class DefaultValueHandler extends BaseValueHandler {
 
     public static final DefaultValueHandler INSTANCE = new DefaultValueHandler();
 
+    @NotNull
     @Override
-    public Class getValueObjectType(DBSTypedObject valueType)
+    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return Object.class;
     }

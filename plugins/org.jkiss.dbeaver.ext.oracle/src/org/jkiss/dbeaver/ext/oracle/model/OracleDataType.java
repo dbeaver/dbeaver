@@ -77,15 +77,15 @@ public class OracleDataType extends OracleObject<DBSObject>
     static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>();
     static final Map<Integer, TypeDesc> PREDEFINED_TYPE_IDS = new HashMap<Integer, TypeDesc>();
     static  {
-        PREDEFINED_TYPES.put("BFILE", new TypeDesc(DBPDataKind.LOB, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("BFILE", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(DBPDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));
         PREDEFINED_TYPES.put("BINARY_DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.DOUBLE, 63, 127, -84));
         PREDEFINED_TYPES.put("BINARY_FLOAT", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.FLOAT, 63, 127, -84));
-        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("BLOB", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.BLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("CANONICAL", new TypeDesc(DBPDataKind.UNKNOWN, java.sql.Types.OTHER, 0, 0, 0));
-        PREDEFINED_TYPES.put("CFILE", new TypeDesc(DBPDataKind.LOB, java.sql.Types.OTHER, 0, 0, 0));
+        PREDEFINED_TYPES.put("CFILE", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("CHAR", new TypeDesc(DBPDataKind.STRING, java.sql.Types.CHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.LOB, java.sql.Types.CLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.CLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("CONTIGUOUS ARRAY", new TypeDesc(DBPDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
         PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.TIMESTAMP, 0, 0, 0));
         PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.DECIMAL, 63, 127, -84));
@@ -94,7 +94,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("INTEGER", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.INTEGER, 63, 127, -84));
         PREDEFINED_TYPES.put("INTERVAL DAY TO SECOND", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("INTERVAL YEAR TO MONTH", new TypeDesc(DBPDataKind.STRING, java.sql.Types.VARCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("LOB POINTER", new TypeDesc(DBPDataKind.LOB, java.sql.Types.BLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("CONTENT POINTER", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.BLOB, 0, 0, 0));
         PREDEFINED_TYPES.put("NAMED COLLECTION", new TypeDesc(DBPDataKind.ARRAY, java.sql.Types.ARRAY, 0, 0, 0));
         PREDEFINED_TYPES.put("NAMED OBJECT", new TypeDesc(DBPDataKind.OBJECT, java.sql.Types.STRUCT, 0, 0, 0));
         PREDEFINED_TYPES.put("NUMBER", new TypeDesc(DBPDataKind.NUMERIC, java.sql.Types.NUMERIC, 63, 127, -84));
@@ -127,7 +127,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         PREDEFINED_TYPES.put("LONG RAW", new TypeDesc(DBPDataKind.BINARY, java.sql.Types.LONGVARBINARY, 0, 0, 0));
         PREDEFINED_TYPES.put("NVARCHAR2", new TypeDesc(DBPDataKind.STRING, java.sql.Types.NVARCHAR, 0, 0, 0));
         PREDEFINED_TYPES.put("NCHAR", new TypeDesc(DBPDataKind.STRING, java.sql.Types.NCHAR, 0, 0, 0));
-        PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBPDataKind.LOB, java.sql.Types.NCLOB, 0, 0, 0));
+        PREDEFINED_TYPES.put("NCLOB", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.NCLOB, 0, 0, 0));
 
         PREDEFINED_TYPES.put("REF CURSOR", new TypeDesc(DBPDataKind.REFERENCE, -10, 0, 0, 0));
 

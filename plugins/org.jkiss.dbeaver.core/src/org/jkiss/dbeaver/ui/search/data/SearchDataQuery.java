@@ -167,7 +167,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
                             }
                         }
                         break;
-                    case LOB:
+                    case CONTENT:
                         if (!params.searchLOBs) {
                             continue;
                         }

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -105,6 +106,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         return cloneValue(monitor);
     }
 
+    @NotNull
     @Override
     public String getContentType()
     {

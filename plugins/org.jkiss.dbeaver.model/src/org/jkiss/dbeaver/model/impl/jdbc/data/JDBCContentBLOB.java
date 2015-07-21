@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
 import org.eclipse.core.resources.IFile;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
@@ -68,6 +69,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
         return 0;
     }
 
+    @NotNull
     @Override
     public String getContentType()
     {

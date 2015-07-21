@@ -46,8 +46,9 @@ public abstract class DateTimeValueHandler extends BaseValueHandler {
         this.formatterProfile = formatterProfile;
     }
 
+    @NotNull
     @Override
-    public Class getValueObjectType(DBSTypedObject valueType)
+    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return Date.class;
     }

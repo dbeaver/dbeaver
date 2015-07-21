@@ -173,7 +173,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             lobDirectory = new File(settings.getOutputFolder(), LOB_DIRECTORY_NAME);
             if (!lobDirectory.exists()) {
                 if (!lobDirectory.mkdir()) {
-                    throw new IOException("Can't create directory for LOB files: " + lobDirectory.getAbsolutePath());
+                    throw new IOException("Can't create directory for CONTENT files: " + lobDirectory.getAbsolutePath());
                 }
             }
         }

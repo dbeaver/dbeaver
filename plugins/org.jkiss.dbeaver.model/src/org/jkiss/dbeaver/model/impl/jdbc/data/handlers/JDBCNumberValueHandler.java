@@ -206,10 +206,11 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    public Class getValueObjectType(DBSTypedObject valueType)
+    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
     {
-        return getNumberType(valueType);
+        return getNumberType(attribute);
     }
 
     @Nullable

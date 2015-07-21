@@ -28,7 +28,7 @@ public enum DBPDataKind
     STRING(false),
     DATETIME(false),
     BINARY(false),
-    LOB(false),
+    CONTENT(false),
     STRUCT(true),
     DOCUMENT(true),
     ARRAY(true),

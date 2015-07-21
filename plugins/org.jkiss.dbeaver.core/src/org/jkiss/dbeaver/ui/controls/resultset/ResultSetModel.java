@@ -327,7 +327,7 @@ public class ResultSetModel {
             }
         }
         if ((value instanceof DBDValue && value == oldValue) || !CommonUtils.equalObjects(oldValue, value)) {
-            // If DBDValue was updated (kind of LOB?) or actual value was changed
+            // If DBDValue was updated (kind of CONTENT?) or actual value was changed
             if (ownerValue == null && DBUtils.isNullValue(oldValue) && DBUtils.isNullValue(value)) {
                 // Both nulls - nothing to update
                 return false;

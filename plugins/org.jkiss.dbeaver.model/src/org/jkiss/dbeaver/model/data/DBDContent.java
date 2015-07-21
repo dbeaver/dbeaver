@@ -18,19 +18,30 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DBC LOB
+ * DBC CONTENT
  *
  * @author Serge Rider
  */
 public interface DBDContent extends DBDValue {
 
+    /**
+     * Content length in bytes.
+     * @return length
+     * @throws DBCException
+     */
     long getContentLength() throws DBCException;
 
+    /**
+     * Content type (MIME).
+     * @return content type
+     */
+    @NotNull
     String getContentType();
 
     String getDisplayString(DBDDisplayFormat format);
