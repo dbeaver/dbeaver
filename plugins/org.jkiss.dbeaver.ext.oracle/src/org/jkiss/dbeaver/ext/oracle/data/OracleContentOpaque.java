@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -57,6 +58,7 @@ public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JD
         return 0;//opaque.getLength();
     }
 
+    @NotNull
     @Override
     public String getContentType()
     {

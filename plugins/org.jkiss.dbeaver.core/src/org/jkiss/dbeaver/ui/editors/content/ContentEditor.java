@@ -83,7 +83,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                 ContentEditor.class.getName());
         }
         catch (PartInitException e) {
-            log.error("Can't open LOB editorPart", e);
+            log.error("Can't open CONTENT editorPart", e);
             return null;
         }
     }
@@ -265,11 +265,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             valueEditorRegistered = false;
         }
         if (getEditorInput() != null) {
-            // Release LOB input resources
+            // Release CONTENT input resources
             try {
                 getEditorInput().release(VoidProgressMonitor.INSTANCE);
             } catch (Throwable e) {
-                log.warn("Error releasing LOB input", e);
+                log.warn("Error releasing CONTENT input", e);
             }
         }
         super.dispose();

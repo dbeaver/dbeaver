@@ -1075,7 +1075,7 @@ public final class DBUtils {
         String typeName = typedObject.getTypeName();
         switch (typedObject.getDataKind()) {
             case STRING:
-            case LOB:
+            case CONTENT:
                 return typeName + "(" + typedObject.getMaxLength() + ")";
             default: return typeName;
         }
@@ -1142,7 +1142,7 @@ public final class DBUtils {
                 return DBIcon.TYPE_DATETIME;
             case BINARY:
                 return DBIcon.TYPE_BINARY;
-            case LOB:
+            case CONTENT:
                 if (typeName.contains("XML") || typeName.contains("xml")) {
                     return DBIcon.TYPE_XML;
                 } else if (typeName.contains("CHAR")) {

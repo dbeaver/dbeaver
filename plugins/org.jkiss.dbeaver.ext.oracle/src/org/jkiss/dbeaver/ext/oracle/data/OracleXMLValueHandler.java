@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.MimeTypes;
 
 import java.sql.SQLException;
 import java.sql.SQLXML;
@@ -35,6 +36,12 @@ import java.sql.SQLXML;
 public class OracleXMLValueHandler extends JDBCContentValueHandler {
 
     public static final OracleXMLValueHandler INSTANCE = new OracleXMLValueHandler();
+
+    @NotNull
+    @Override
+    public String getValueContentType(@NotNull DBSTypedObject attribute) {
+        return MimeTypes.TEXT_XML;
+    }
 
     @Override
     protected DBDContent fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException

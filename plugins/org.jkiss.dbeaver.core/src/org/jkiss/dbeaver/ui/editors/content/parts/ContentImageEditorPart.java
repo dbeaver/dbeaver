@@ -42,7 +42,7 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 
 /**
- * LOB text editor
+ * CONTENT text editor
  */
 public class ContentImageEditorPart extends EditorPart implements ContentEditorPart, IResourceChangeListener {
 

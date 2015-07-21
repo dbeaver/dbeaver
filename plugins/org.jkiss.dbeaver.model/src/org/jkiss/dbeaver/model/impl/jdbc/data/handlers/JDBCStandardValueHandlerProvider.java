@@ -58,7 +58,7 @@ public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider
             case DATETIME:
                 return new JDBCDateTimeValueHandler(preferences.getDataFormatterProfile());
             case BINARY:
-            case LOB:
+            case CONTENT:
                 return JDBCContentValueHandler.INSTANCE;
             case ARRAY:
                 return JDBCArrayValueHandler.INSTANCE;

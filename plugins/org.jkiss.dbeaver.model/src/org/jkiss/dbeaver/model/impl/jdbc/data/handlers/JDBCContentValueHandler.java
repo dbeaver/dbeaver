@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.MimeTypes;
 
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.SQLException;
-import java.sql.SQLXML;
+import java.sql.*;
 
 /**
  * JDBC Content value handler.
@@ -46,7 +44,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 
-    public static final String PROP_CATEGORY_CONTENT = "LOB";
+    public static final String PROP_CATEGORY_CONTENT = "CONTENT";
+
+    @NotNull
+    @Override
+    public String getValueContentType(@NotNull DBSTypedObject attribute) {
+        if (attribute.getTypeID() == Types.SQLXML) {
+            return MimeTypes.TEXT_XML;
+        }
+        return MimeTypes.OCTET_STREAM;
+    }
 
     @Override
     protected DBDContent fetchColumnValue(
@@ -102,8 +109,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    public Class getValueObjectType(DBSTypedObject valueType)
+    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return DBDContent.class;
     }
