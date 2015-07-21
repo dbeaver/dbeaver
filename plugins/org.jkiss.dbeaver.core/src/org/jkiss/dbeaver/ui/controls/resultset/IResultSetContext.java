@@ -26,4 +26,6 @@ public interface IResultSetContext
     boolean supportsAttributes();
 
     boolean supportsDocument();
+
+    String getDocumentContentType();
 }
