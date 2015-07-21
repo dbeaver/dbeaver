@@ -20,18 +20,28 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
+import javax.activation.MimeType;
+import javax.activation.MimeTypeParseException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * ResultSetPresentationDescriptor
  */
 public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
 
+    static final Log log = Log.getLog(ResultSetPresentationDescriptor.class);
+
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.presentation"; //NON-NLS-1 //$NON-NLS-1$
+
+    private static final String CONTENT_TYPE = "contentType";
 
     private final String id;
     private final String label;
@@ -39,6 +49,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final ObjectType presentationType;
     private final DBPImage icon;
     private final int order;
+    private final List<MimeType> contentTypes = new ArrayList<MimeType>();
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);
@@ -49,6 +60,16 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         this.presentationType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER));
+
+        for (IConfigurationElement typeCfg : config.getChildren(CONTENT_TYPE)) {
+            String type = typeCfg.getAttribute(RegistryConstants.ATTR_TYPE);
+            try {
+                MimeType contentType = new MimeType(type);
+                contentTypes.add(contentType);
+            } catch (MimeTypeParseException e) {
+                log.warn("Invalid content type: " + type, e);
+            }
+        }
     }
 
     public String getId() {
@@ -72,7 +93,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     }
 
     public boolean supportedBy(DBCResultSet resultSet, IResultSetContext context) {
-        return appliesTo(resultSet, context);
+        return appliesTo(resultSet, context) || matchesContentType(context);
     }
 
     public IResultSetPresentation createInstance() throws DBException {
@@ -82,4 +103,22 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     public boolean matches(Class<? extends IResultSetPresentation> type) {
         return presentationType.matchesType(type);
     }
+
+    private boolean matchesContentType(IResultSetContext context) {
+        String documentType = context.getDocumentContentType();
+        if (contentTypes.isEmpty() || CommonUtils.isEmpty(documentType)) {
+            return false;
+        }
+        for (MimeType mimeType : contentTypes) {
+            try {
+                if (mimeType.match(documentType)) {
+                    return true;
+                }
+            } catch (MimeTypeParseException e) {
+                log.warn("Bad document content type: " + documentType, e);
+            }
+        }
+        return false;
+    }
+
 }
