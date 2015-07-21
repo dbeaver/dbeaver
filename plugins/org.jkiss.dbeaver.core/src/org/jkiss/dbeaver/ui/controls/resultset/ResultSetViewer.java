@@ -1474,7 +1474,7 @@ public class ResultSetViewer extends Viewer
                 viewerPanel.getShell(),
                 "Error executing query",
                 dataContainer == null ?
-                    "Viewer detached rom data source" : "Query execution is in progress");
+                    "Viewer detached from data source" : "Can't refresh after reconnect. Re-execute query.");
         }
     }
 
