@@ -64,7 +64,7 @@ public class DBDDocumentXML implements DBDDocument {
     @NotNull
     @Override
     public Object getRootNode() {
-        return document;
+        return document.getDocumentElement();
     }
 
     @Override
