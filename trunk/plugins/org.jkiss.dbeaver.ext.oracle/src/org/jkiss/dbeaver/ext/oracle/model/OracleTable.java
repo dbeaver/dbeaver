@@ -133,11 +133,13 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
 
     @Override
     public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+/*
         // Fake XML attribute handle
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML) && OracleConstants.XML_COLUMN_NAME.equals(attributeName)) {
             OracleTableColumn col = getXMLColumn(monitor);
             if (col != null) return col;
         }
+*/
 
         return super.getAttribute(monitor, attributeName);
     }
