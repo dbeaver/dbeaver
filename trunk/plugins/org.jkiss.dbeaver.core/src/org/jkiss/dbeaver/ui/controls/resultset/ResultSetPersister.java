@@ -205,8 +205,11 @@ class ResultSetPersister {
             if (row.changes != null) {
                 for (Map.Entry<DBDAttributeBinding, Object> changedValue : row.changes.entrySet()) {
                     Object curValue = model.getCellValue(changedValue.getKey(), row);
-                    DBUtils.releaseValue(curValue);
-                    model.updateCellValue(changedValue.getKey(), row, changedValue.getValue(), false);
+                    // If new value and old value are the same - do not release it
+                    if (curValue != changedValue.getValue()) {
+                        DBUtils.releaseValue(curValue);
+                        model.updateCellValue(changedValue.getKey(), row, changedValue.getValue(), false);
+                    }
                 }
                 row.changes = null;
             }
