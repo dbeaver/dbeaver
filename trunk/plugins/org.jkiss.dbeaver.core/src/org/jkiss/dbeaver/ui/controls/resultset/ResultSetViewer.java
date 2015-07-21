@@ -522,6 +522,12 @@ public class ResultSetViewer extends Viewer
                     public boolean supportsDocument() {
                         return model.getDocumentAttribute() != null;
                     }
+
+                    @Override
+                    public String getDocumentContentType() {
+                        DBDAttributeBinding docAttr = model.getDocumentAttribute();
+                        return docAttr == null ? null : docAttr.getValueHandler().getValueContentType(docAttr);
+                    }
                 };
                 availablePresentations = ResultSetPresentationRegistry.getInstance().getAvailablePresentations(resultSet, context);
                 if (!availablePresentations.isEmpty()) {
