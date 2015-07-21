@@ -428,14 +428,18 @@ public class ResultSetModel {
             // Detect document attribute
             // It has to be only one attribute in list (excluding pseudo attributes).
             DBDAttributeBinding realAttr = null;
-            for (DBDAttributeBinding attr : attributes) {
-                if (!attr.isPseudoAttribute()) {
-                    if (realAttr != null) {
-                        // more than one
-                        realAttr = null;
-                        break;
+            if (attributes.length == 1) {
+                realAttr = attributes[0];
+            } else {
+                for (DBDAttributeBinding attr : attributes) {
+                    if (!attr.isPseudoAttribute()) {
+                        if (realAttr != null) {
+                            // more than one
+                            realAttr = null;
+                            break;
+                        }
+                        realAttr = attr;
                     }
-                    realAttr = attr;
                 }
             }
             if (realAttr != null) {

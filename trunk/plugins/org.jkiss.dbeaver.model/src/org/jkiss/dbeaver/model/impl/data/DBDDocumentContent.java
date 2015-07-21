@@ -20,37 +20,34 @@ package org.jkiss.dbeaver.model.impl.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDocument;
+import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.MimeTypes;
-import org.w3c.dom.Document;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
-import javax.xml.transform.Result;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMResult;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
- * XML document
+ * Content proxy document
  */
-public class DBDDocumentXML implements DBDDocument {
+public class DBDDocumentContent implements DBDDocument {
 
-    private Document document;
+    private DBDContent content;
 
-    public DBDDocumentXML(Document document) {
-        this.document = document;
+    public DBDDocumentContent(DBDContent content) {
+        this.content = content;
     }
 
     @Nullable
     @Override
     public Object getDocumentProperty(String name) {
         if (PROP_ID.equals(name)) {
-            return document.getDocumentURI();
+            return null;
         }
         return null;
     }
@@ -58,57 +55,56 @@ public class DBDDocumentXML implements DBDDocument {
     @NotNull
     @Override
     public String getDocumentContentType() {
-        return MimeTypes.TEXT_XML;
+        return content.getContentType();
     }
 
     @NotNull
     @Override
     public Object getRootNode() {
-        return document;
+        return content;
     }
 
     @Override
     public void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, String encoding) throws DBException {
-        try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            Result output = new StreamResult(new OutputStreamWriter(stream, encoding));
-
-            transformer.transform(
-                new DOMSource(document),
-                output);
-        } catch (Exception e) {
-            throw new DBException("Error serializing XML document", e);
+        DBDContentStorage contents = content.getContents(monitor);
+        if (contents != null) {
+            try {
+                InputStream contentStream = contents.getContentStream();
+                try {
+                    ContentUtils.copyStreams(contentStream, content.getContentLength(), stream, monitor);
+                } finally {
+                    ContentUtils.close(contentStream);
+                }
+            } catch (IOException e) {
+                throw new DBException("Error copying content stream", e);
+            }
         }
     }
 
     @Override
     public void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, String encoding) throws DBException {
         try {
-            Transformer transformer = TransformerFactory.newInstance().newTransformer();
-            DOMResult output = new DOMResult();
-
-            transformer.transform(
-                new StreamSource(new InputStreamReader(stream, encoding)),
-                output);
-            document = (Document) output.getNode();
-        } catch (Exception e) {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            ContentUtils.copyStreams(stream, -1, baos, monitor);
+            content.updateContents(monitor, new BytesContentStorage(baos.toByteArray(), encoding));
+        } catch (IOException e) {
             throw new DBException("Error transforming XML document", e);
         }
     }
 
     @Override
     public Object getRawValue() {
-        return document;
+        return content;
     }
 
     @Override
     public boolean isNull() {
-        return document == null;
+        return content.isNull();
     }
 
     @Override
     public void release() {
-        document = null;
+        content.release();
     }
 
 }
