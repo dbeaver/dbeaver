@@ -2298,7 +2298,7 @@
             <supports type="java.util.Set"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.ContentValueManager" id="org.jkiss.dbeaver.ui.data.managers.ContentValueManager">
-            <supports kind="LOB"/>
+            <supports kind="CONTENT"/>
             <supports kind="BINARY"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.ObjectValueManager" id="org.jkiss.dbeaver.ui.data.managers.ObjectValueManager">
