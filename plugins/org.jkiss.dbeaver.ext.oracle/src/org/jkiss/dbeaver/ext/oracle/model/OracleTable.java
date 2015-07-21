@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -43,7 +44,7 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
-    private OracleTableColumn objectValueAttribute;
+    //private OracleTableColumn objectValueAttribute;
 
     public static class AdditionalInfo extends TableAdditionalInfo {
     }
@@ -134,25 +135,21 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
         // Fake XML attribute handle
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML) && OracleConstants.XML_COLUMN_NAME.equals(attributeName)) {
-/*
-            for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
-                if (col.getType() == tableType) {
-                    return col;
-                }
-            }
-*/
-
-            if (objectValueAttribute == null) {
-                objectValueAttribute = new OracleTableColumn(this);
-                objectValueAttribute.setName(OracleConstants.OBJECT_VALUE_COLUMN_NAME);
-                objectValueAttribute.setTypeName(tableType.getTypeName());
-                objectValueAttribute.setType(tableType);
-                objectValueAttribute.setOrdinalPosition(1);
-            }
-            return objectValueAttribute;
+            OracleTableColumn col = getXMLColumn(monitor);
+            if (col != null) return col;
         }
 
         return super.getAttribute(monitor, attributeName);
+    }
+
+    @Nullable
+    private OracleTableColumn getXMLColumn(DBRProgressMonitor monitor) throws DBException {
+        for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
+            if (col.getType() == tableType) {
+                return col;
+            }
+        }
+        return null;
     }
 
 
@@ -204,14 +201,21 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     }
 
     @Override
-    protected void appendSelectSource(StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
+    protected void appendSelectSource(DBRProgressMonitor monitor, StringBuilder query, String tableAlias, DBDPseudoAttribute rowIdAttribute) {
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML)) {
-            query.append("XMLType(value(").append(tableAlias).append(").getClobval()) as XML");
-            if (rowIdAttribute != null) {
-                query.append(",").append(rowIdAttribute.translateExpression(tableAlias));
+            try {
+                OracleTableColumn xmlColumn = getXMLColumn(monitor);
+                if (xmlColumn != null) {
+                    query.append("XMLType(").append(tableAlias).append(".").append(xmlColumn.getName()).append(".getClobval()) as ").append(xmlColumn.getName());
+                    if (rowIdAttribute != null) {
+                        query.append(",").append(rowIdAttribute.translateExpression(tableAlias));
+                    }
+                    return;
+                }
+            } catch (DBException e) {
+                log.warn(e);
             }
-        } else {
-            super.appendSelectSource(query, tableAlias, rowIdAttribute);
         }
+        super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
     }
 }

@@ -62,6 +62,9 @@ public class JDBCRowId implements DBDValue {
     @Override
     public String toString()
     {
+        if (value == null) {
+            return "null";
+        }
         return new String(value.getBytes());
     }
 }
