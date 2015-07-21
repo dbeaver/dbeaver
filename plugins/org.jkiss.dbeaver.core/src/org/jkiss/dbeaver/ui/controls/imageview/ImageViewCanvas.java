@@ -251,13 +251,14 @@ class ImageViewCanvas extends Canvas {
             imageData = null;
 		}
         this.error = null;
-        try {
-            imageData = new ImageData(inputStream);
-            sourceImage = new Image(getDisplay(), imageData);
-        }
-        catch (SWTException e) {
-            this.error = e;
-        }
+		if (inputStream != null) {
+			try {
+				imageData = new ImageData(inputStream);
+				sourceImage = new Image(getDisplay(), imageData);
+			} catch (SWTException e) {
+				this.error = e;
+			}
+		}
         showOriginal();
 		return sourceImage;
 	}

@@ -94,6 +94,12 @@ public class ImageViewer extends Composite {
         return canvas.getError() == null;
     }
 
+    public boolean clearImage()
+    {
+        canvas.loadImage(null);
+        return true;
+    }
+
     public SWTException getLastError()
     {
         return canvas.getError();
