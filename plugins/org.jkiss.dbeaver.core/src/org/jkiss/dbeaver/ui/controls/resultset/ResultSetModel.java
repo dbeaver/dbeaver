@@ -341,7 +341,7 @@ public class ResultSetModel {
                     // Value rewrite - release previous stored old value
                     DBUtils.releaseValue(oldValue);
                 } else if (updateChanges) {
-                    if (!CommonUtils.equalObjects(value, oldValue)) {
+                    if (value instanceof DBDValue || !CommonUtils.equalObjects(value, oldValue)) {
                         row.addChange(attr, oldValue);
                     } else {
                         updateChanges = false;
