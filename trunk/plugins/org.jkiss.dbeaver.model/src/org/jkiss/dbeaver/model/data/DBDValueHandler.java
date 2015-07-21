@@ -34,10 +34,21 @@ public interface DBDValueHandler
      * May return base interface of object's type -
      * it is not required to return exact implementation class
      * (moreover it may be unknown before certain value is extracted)
-     * @param valueType value type
+     * @param attribute value attribute
      * @return value object type
      */
-    Class getValueObjectType(DBSTypedObject valueType);
+    @NotNull
+    Class getValueObjectType(@NotNull DBSTypedObject attribute);
+
+    /**
+     * Determine value content type (MIME).
+     * Most attributes do not have associated MIME type so handlers returns null.
+     * However most CONTENT and DOCUMENT attributes have some content type.
+     * @param attribute    value attribute
+     * @return content type
+     */
+    @Nullable
+    String getValueContentType(@NotNull DBSTypedObject attribute);
 
     /**
      * Extracts object from result set

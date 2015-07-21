@@ -409,9 +409,9 @@ public abstract class JDBCDataSource
             case Types.NCLOB:
             case Types.LONGVARCHAR:
             case Types.LONGNVARCHAR:
-                return DBPDataKind.LOB;
+                return DBPDataKind.CONTENT;
             case Types.SQLXML:
-                return DBPDataKind.LOB;
+                return DBPDataKind.CONTENT;
             case Types.STRUCT:
                 return DBPDataKind.STRUCT;
             case Types.ARRAY:
@@ -441,7 +441,7 @@ public abstract class JDBCDataSource
             case STRING: return "VARCHAR";
             case DATETIME: return "TIMESTAMP";
             case BINARY: return "BLOB";
-            case LOB: return "BLOB";
+            case CONTENT: return "BLOB";
             case STRUCT: return "VARCHAR";
             case ARRAY: return "VARCHAR";
             case OBJECT: return "VARCHAR";

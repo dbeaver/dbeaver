@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -27,6 +30,12 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * Base value handler
  */
 public abstract class BaseValueHandler implements DBDValueHandler {
+
+    @NotNull
+    @Override
+    public String getValueContentType(@NotNull DBSTypedObject attribute) {
+        return null;
+    }
 
     @Override
     public void releaseValueObject(Object value)

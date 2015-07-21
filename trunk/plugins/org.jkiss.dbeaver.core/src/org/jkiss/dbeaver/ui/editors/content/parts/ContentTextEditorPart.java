@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.utils.MimeTypes;
 import javax.activation.MimeType;
 
 /**
- * LOB text editor
+ * CONTENT text editor
  */
 public class ContentTextEditorPart extends BaseTextEditor implements ContentEditorPart {
 

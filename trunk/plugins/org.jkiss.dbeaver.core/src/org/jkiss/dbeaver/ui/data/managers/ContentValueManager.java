@@ -56,7 +56,7 @@ public class ContentValueManager extends BaseValueManager {
 
     static final Log log = Log.getLog(ContentValueManager.class);
 
-    public static final String PROP_CATEGORY_CONTENT = "LOB";
+    public static final String PROP_CATEGORY_CONTENT = "CONTENT";
 
     public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
         throws DBCException
@@ -138,7 +138,7 @@ public class ContentValueManager extends BaseValueManager {
             }
         }
         catch (Exception e) {
-            log.warn("Can't extract LOB value information", e); //$NON-NLS-1$
+            log.warn("Can't extract CONTENT value information", e); //$NON-NLS-1$
         }
     }
 

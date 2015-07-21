@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -82,6 +83,7 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         return data.length();
     }
 
+    @NotNull
     @Override
     public String getContentType()
     {

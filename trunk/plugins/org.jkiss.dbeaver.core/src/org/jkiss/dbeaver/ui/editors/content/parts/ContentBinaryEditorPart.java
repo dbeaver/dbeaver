@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import javax.activation.MimeType;
 
 /**
- * LOB Binary Editor
+ * CONTENT Binary Editor
  */
 public class ContentBinaryEditorPart extends BinaryEditor implements ContentEditorPart {
 

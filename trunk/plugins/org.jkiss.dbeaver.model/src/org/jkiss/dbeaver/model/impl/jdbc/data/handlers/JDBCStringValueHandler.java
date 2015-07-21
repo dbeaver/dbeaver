@@ -57,8 +57,9 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
         }
     }
 
+    @NotNull
     @Override
-    public Class getValueObjectType(DBSTypedObject valueType)
+    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return String.class;
     }
