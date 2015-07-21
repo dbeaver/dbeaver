@@ -186,7 +186,8 @@ public abstract class JDBCDataSource
                     connection.rollback();
                 }
             } catch (Throwable e) {
-                log.error("Error closing transaction", e);
+                // Do not write warning because connection maybe broken before the moment of close
+                log.debug("Error closing transaction", e);
             }
             try {
                 connection.close();

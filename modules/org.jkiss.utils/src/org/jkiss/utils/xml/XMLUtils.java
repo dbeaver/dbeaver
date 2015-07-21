@@ -62,6 +62,18 @@ public class XMLUtils
 		}
 	}
 
+	public static org.w3c.dom.Document createDocument()
+		throws XMLException
+	{
+		try {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder xmlBuilder = dbf.newDocumentBuilder();
+			return xmlBuilder.newDocument();
+		} catch (Exception er) {
+			throw new XMLException("Error creating XML document", er);
+		}
+	}
+
 	public static Element getChildElement(Element element,
 		String childName)
 	{
