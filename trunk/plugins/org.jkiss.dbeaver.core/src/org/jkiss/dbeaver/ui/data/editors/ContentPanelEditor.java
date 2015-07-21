@@ -114,15 +114,19 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                     } else if (control instanceof ImageViewer) {
                         monitor.subTask("Read image value");
                         ImageViewer imageViewControl = (ImageViewer) control;
-                        InputStream contentStream = data.getContentStream();
-                        try {
-                            if (!imageViewControl.loadImage(contentStream)) {
-                                valueController.showMessage("Can't load image: " + imageViewControl.getLastError().getMessage(), true);
-                            } else {
-                                valueController.showMessage("Image: " + imageViewControl.getImageDescription(), false);
+                        if (data != null) {
+                            InputStream contentStream = data.getContentStream();
+                            try {
+                                if (!imageViewControl.loadImage(contentStream)) {
+                                    valueController.showMessage("Can't load image: " + imageViewControl.getLastError().getMessage(), true);
+                                } else {
+                                    valueController.showMessage("Image: " + imageViewControl.getImageDescription(), false);
+                                }
+                            } finally {
+                                ContentUtils.close(contentStream);
                             }
-                        } finally {
-                            ContentUtils.close(contentStream);
+                        } else {
+                            imageViewControl.clearImage();
                         }
                     }
                 } catch (Exception e) {

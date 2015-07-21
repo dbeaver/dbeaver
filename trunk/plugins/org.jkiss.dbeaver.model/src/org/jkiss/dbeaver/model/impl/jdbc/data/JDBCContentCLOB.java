@@ -129,19 +129,23 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     @Override
     public void release()
     {
+        releaseTempStream();
+        if (clob != null) {
+            try {
+                clob.free();
+            } catch (Exception e) {
+                log.warn(e);
+            }
+            clob = null;
+        }
+        super.release();
+    }
+
+    private void releaseTempStream() {
         if (tmpReader != null) {
             ContentUtils.close(tmpReader);
             tmpReader = null;
         }
-//        if (clob != null) {
-//            try {
-//                clob.free();
-//            } catch (Exception e) {
-//                log.warn(e);
-//            }
-//            clob = null;
-//        }
-        super.release();
     }
 
     @Override
@@ -152,6 +156,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
         try {
             if (storage != null) {
                 // Try 3 jdbc methods to set character stream
+                releaseTempStream();
                 tmpReader = storage.getContentReader();
                 try {
                     preparedStatement.setCharacterStream(
