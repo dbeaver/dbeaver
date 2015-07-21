@@ -89,6 +89,9 @@ public class OracleConstants {
     public static final String COL_CONSTRAINT_NAME = "CONSTRAINT_NAME";
     public static final String COL_CONSTRAINT_TYPE = "CONSTRAINT_TYPE";
 
+    public static final String XML_COLUMN_NAME = "XML";
+    public static final String OBJECT_VALUE_COLUMN_NAME = "OBJECT_VALUE";
+
     public static final DBDPseudoAttribute PSEUDO_ATTR_ROWID = new DBDPseudoAttribute(
         DBDPseudoAttributeType.ROWID,
         "ROWID",

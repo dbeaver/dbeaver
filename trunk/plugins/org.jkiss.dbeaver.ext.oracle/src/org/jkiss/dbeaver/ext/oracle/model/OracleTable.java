@@ -43,6 +43,7 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
+    private OracleTableColumn objectValueAttribute;
 
     public static class AdditionalInfo extends TableAdditionalInfo {
     }
@@ -128,6 +129,32 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     {
         return nested;
     }
+
+    @Override
+    public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+        // Fake XML attribute handle
+        if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML) && OracleConstants.XML_COLUMN_NAME.equals(attributeName)) {
+/*
+            for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
+                if (col.getType() == tableType) {
+                    return col;
+                }
+            }
+*/
+
+            if (objectValueAttribute == null) {
+                objectValueAttribute = new OracleTableColumn(this);
+                objectValueAttribute.setName(OracleConstants.OBJECT_VALUE_COLUMN_NAME);
+                objectValueAttribute.setTypeName(tableType.getTypeName());
+                objectValueAttribute.setType(tableType);
+                objectValueAttribute.setOrdinalPosition(1);
+            }
+            return objectValueAttribute;
+        }
+
+        return super.getAttribute(monitor, attributeName);
+    }
+
 
     @Override
     public Collection<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
