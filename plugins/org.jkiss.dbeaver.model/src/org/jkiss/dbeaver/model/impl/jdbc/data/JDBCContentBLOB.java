@@ -130,19 +130,23 @@ public class JDBCContentBLOB extends JDBCContentLOB {
     @Override
     public void release()
     {
+        releaseTempStream();
+        if (blob != null) {
+            try {
+                blob.free();
+            } catch (Exception e) {
+                log.warn(e);
+            }
+            blob = null;
+        }
+        super.release();
+    }
+
+    private void releaseTempStream() {
         if (tmpStream != null) {
             ContentUtils.close(tmpStream);
             tmpStream = null;
         }
-//        if (blob != null) {
-//            try {
-//                blob.free();
-//            } catch (Exception e) {
-//                log.warn(e);
-//            }
-//            blob = null;
-//        }
-        super.release();
     }
 
     @Override
@@ -152,6 +156,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
         try {
             if (storage != null) {
                 // Write new blob value
+                releaseTempStream();
                 tmpStream = storage.getContentStream();
                 try {
                     preparedStatement.setBinaryStream(paramIndex, tmpStream);
@@ -178,6 +183,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 }
                 catch (Throwable e0) {
                     // Write new blob value
+                    releaseTempStream();
                     tmpStream = blob.getBinaryStream();
                     try {
                         preparedStatement.setBinaryStream(paramIndex, tmpStream);
