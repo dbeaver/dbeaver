@@ -35,33 +35,36 @@ import java.io.OutputStream;
 /**
  * Content proxy document
  */
-public class DBDDocumentContent implements DBDDocument {
+public abstract class DBDDocumentContentProxy implements DBDDocument {
 
-    private DBDContent content;
+    @NotNull
+    protected final DBDContent content;
+    protected final DBDDocument document;
 
-    public DBDDocumentContent(DBDContent content) {
+    protected DBDDocumentContentProxy(@NotNull DBDContent content) throws DBException {
         this.content = content;
+        this.document = createDocumentFromContent(content);
     }
+
+    @NotNull
+    protected abstract DBDDocument createDocumentFromContent(@NotNull DBDContent content) throws DBException;
 
     @Nullable
     @Override
     public Object getDocumentProperty(String name) {
-        if (PROP_ID.equals(name)) {
-            return null;
-        }
-        return null;
+        return document.getDocumentProperty(name);
     }
 
     @NotNull
     @Override
     public String getDocumentContentType() {
-        return content.getContentType();
+        return document.getDocumentContentType();
     }
 
     @NotNull
     @Override
     public Object getRootNode() {
-        return content;
+        return document.getRootNode();
     }
 
     @Override
@@ -94,17 +97,17 @@ public class DBDDocumentContent implements DBDDocument {
 
     @Override
     public Object getRawValue() {
-        return content;
+        return document.getRawValue();
     }
 
     @Override
     public boolean isNull() {
-        return content.isNull();
+        return document.isNull();
     }
 
     @Override
     public void release() {
-        content.release();
+        document.release();
     }
 
 }
