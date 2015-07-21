@@ -195,7 +195,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
                 if (exec.isClosed() && !exec.isFetching()) {
-                    return String.valueOf(exec.getRowCount());
+                    long rowCount = exec.getRowCount();
+                    if (rowCount < 0) {
+                        return ""; //$NON-NLS-1$
+                    } else {
+                        return String.valueOf(rowCount);
+                    }
                 }
             }
             return ""; //$NON-NLS-1$
