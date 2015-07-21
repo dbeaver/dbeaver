@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -46,6 +47,7 @@ public interface DBDContent extends DBDValue {
 
     String getDisplayString(DBDDisplayFormat format);
 
+    @Nullable
     DBDContentStorage getContents(DBRProgressMonitor monitor) throws DBCException;
 
     /**

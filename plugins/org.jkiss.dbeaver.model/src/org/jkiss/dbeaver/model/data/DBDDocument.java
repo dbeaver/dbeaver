@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -62,18 +63,24 @@ public interface DBDDocument extends DBDValue {
 
     /**
      * Serializes document into stream
+     *
+     * @param monitor   progress monitor
      * @param stream    stream
+     * @param encoding
      * @throws DBException
      */
-    void serializeDocument(@NotNull OutputStream stream)
+    void serializeDocument(@NotNull DBRProgressMonitor monitor, @NotNull OutputStream stream, String encoding)
         throws DBException;
 
     /**
      * Updates document from stream
+     *
+     * @param monitor   progress monitor
      * @param stream    stream
+     * @param encoding
      * @throws DBException
      */
-    void updateDocument(@NotNull InputStream stream)
+    void updateDocument(@NotNull DBRProgressMonitor monitor, @NotNull InputStream stream, String encoding)
         throws DBException;
 
 }

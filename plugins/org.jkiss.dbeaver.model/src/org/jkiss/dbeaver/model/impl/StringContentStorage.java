@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -95,6 +96,7 @@ public class StringContentStorage implements DBDContentStorage {
         return new StringContentStorage(String.valueOf(data));
     }
 
+    @NotNull
     public static StringContentStorage createFromReader(Reader stream)
         throws IOException
     {
