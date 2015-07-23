@@ -44,7 +44,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 
-    public static final String PROP_CATEGORY_CONTENT = "CONTENT";
+    public static final int MAX_CACHED_CLOB_LENGTH = 10000;
 
     @NotNull
     @Override
@@ -160,7 +160,16 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Blob) {
             return new JDBCContentBLOB(session.getDataSource(), (Blob) object);
         } else if (object instanceof Clob) {
-            return new JDBCContentCLOB(session.getDataSource(), (Clob) object);
+            JDBCContentCLOB clob = new JDBCContentCLOB(session.getDataSource(), (Clob) object);
+            try {
+                //boolean embeddedDB = session.getDataSource().getContainer().getDriver().isEmbedded();
+                if (type.getTypeName().contains("text") && ((Clob) object).length() < MAX_CACHED_CLOB_LENGTH) {
+                    clob.getContents(session.getProgressMonitor());
+                }
+            } catch (SQLException e) {
+                log.debug("Error caching clob value", e);
+            }
+            return clob;
         } else if (object instanceof SQLXML) {
             return new JDBCContentXML(session.getDataSource(), (SQLXML) object);
         } else if (object instanceof DBDContent && object instanceof DBDValueCloneable) {
