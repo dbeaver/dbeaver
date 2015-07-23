@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -29,7 +30,7 @@ import java.util.Arrays;
 /**
  * String content storage
  */
-public class StringContentStorage implements DBDContentStorage {
+public class StringContentStorage implements DBDContentStorage, DBDContentCached {
 
     static final Log log = Log.getLog(StringContentStorage.class);
 
@@ -110,5 +111,10 @@ public class StringContentStorage implements DBDContentStorage {
             buffer.append(charBuffer, 0, count);
         }
         return new StringContentStorage(buffer.toString());
+    }
+
+    @Override
+    public String getCachedValue() {
+        return data;
     }
 }

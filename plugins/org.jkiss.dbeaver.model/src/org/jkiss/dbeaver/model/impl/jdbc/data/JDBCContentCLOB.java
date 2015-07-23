@@ -23,9 +23,8 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -218,6 +218,12 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
     @Override
     public String getDisplayString(DBDDisplayFormat format)
     {
-        return clob == null && storage == null ? null : "[CLOB]";
+        if (clob == null && storage == null) {
+            return null;
+        }
+        if (storage != null && storage instanceof DBDContentCached) {
+            return CommonUtils.toString(((DBDContentCached) storage).getCachedValue());
+        }
+        return "[CLOB]";
     }
 }
