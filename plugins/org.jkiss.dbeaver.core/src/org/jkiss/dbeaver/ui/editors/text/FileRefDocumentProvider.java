@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
@@ -30,10 +31,13 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.IPersistentStorage;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -129,26 +133,19 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     @Override
     protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException
     {
-        IStorage storage = getStorageFromInput(element);
-        if (storage == null) {
-            throw new CoreException(new Status(Status.ERROR, DBeaverCore.PLUGIN_ID, "Can't obtain file from editor input"));
-        }
-        String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
-
-        Charset charset;
         try {
-            charset = Charset.forName(encoding);
-        } catch (Exception ex) {
-            throw new CoreException(GeneralUtils.makeExceptionStatus(ex));
-        }
+            IStorage storage = getStorageFromInput(element);
+            if (storage == null) {
+                throw new DBException("Can't obtain file from editor input");
+            }
+            String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
 
-        CharsetEncoder encoder = charset.newEncoder();
-        encoder.onMalformedInput(CodingErrorAction.REPLACE);
-        encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+            Charset charset = Charset.forName(encoding);
 
-        InputStream stream;
+            CharsetEncoder encoder = charset.newEncoder();
+            encoder.onMalformedInput(CodingErrorAction.REPLACE);
+            encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
 
-        try {
             byte[] bytes;
             ByteBuffer byteBuffer = encoder.encode(CharBuffer.wrap(document.get()));
             if (byteBuffer.hasArray()) {
@@ -157,40 +154,49 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                 bytes = new byte[byteBuffer.limit()];
                 byteBuffer.get(bytes);
             }
-            stream = new ByteArrayInputStream(bytes, 0, byteBuffer.limit());
-        } catch (CharacterCodingException ex) {
-            throw new CoreException(GeneralUtils.makeExceptionStatus(ex));
-        }
+            InputStream stream = new ByteArrayInputStream(bytes, 0, byteBuffer.limit());
 
-        if (storage instanceof IFile) {
-            IFile file = (IFile)storage;
+            if (storage instanceof IFile) {
+                IFile file = (IFile)storage;
 
-            if (file.exists()) {
+                if (file.exists()) {
 
-                // inform about the upcoming content change
-                fireElementStateChanging(element);
-                try {
-                    file.setContents(stream, true, true, monitor);
-                } catch (CoreException x) {
-                    // inform about failure
-                    fireElementStateChangeFailed(element);
-                    throw x;
-                } catch (RuntimeException x) {
-                    // inform about failure
-                    fireElementStateChangeFailed(element);
-                    throw x;
+                    // inform about the upcoming content change
+                    fireElementStateChanging(element);
+                    try {
+                        file.setContents(stream, true, true, monitor);
+                    } catch (CoreException x) {
+                        // inform about failure
+                        fireElementStateChangeFailed(element);
+                        throw x;
+                    } catch (RuntimeException x) {
+                        // inform about failure
+                        fireElementStateChangeFailed(element);
+                        throw x;
+                    }
+
+                } else {
+                    try {
+                        monitor.beginTask("Save file '" + file.getName() + "'", 2000);
+                        //ContainerCreator creator = new ContainerCreator(file.getWorkspace(), file.getParent().getFullPath());
+                        //creator.createContainer(new SubProgressMonitor(monitor, 1000));
+                        file.create(stream, false, monitor);
+                    }
+                    finally {
+                        monitor.done();
+                    }
                 }
-
+            } else if (storage instanceof IPersistentStorage) {
+                monitor.beginTask("Save document", 1);
+                ((IPersistentStorage) storage).setContents(monitor, stream);
             } else {
-                try {
-                    monitor.beginTask("Save file '" + file.getName() + "'", 2000);
-                    //ContainerCreator creator = new ContainerCreator(file.getWorkspace(), file.getParent().getFullPath());
-                    //creator.createContainer(new SubProgressMonitor(monitor, 1000));
-                    file.create(stream, false, monitor);
-                }
-                finally {
-                    monitor.done();
-                }
+                throw new DBException("Storage [" + storage + "] doesn't support save");
+            }
+        } catch (Exception e) {
+            if (e instanceof CoreException) {
+                throw (CoreException) e;
+            } else {
+                throw new CoreException(GeneralUtils.makeExceptionStatus(e));
             }
         }
     }

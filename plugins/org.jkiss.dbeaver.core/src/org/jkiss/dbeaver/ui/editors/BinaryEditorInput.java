@@ -17,16 +17,23 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.resources.IEncodedStorage;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 
@@ -39,11 +46,13 @@ public class BinaryEditorInput implements IEditorInput {
     private byte[] value;
     private boolean readOnly;
     private IStorage storage;
+    private String encoding;
 
-	public BinaryEditorInput(String name, byte[] value, boolean readOnly) {
+    public BinaryEditorInput(String name, byte[] value, boolean readOnly, String encoding) {
         this.name = name;
         this.value = value;
         this.readOnly = readOnly;
+        this.encoding = encoding;
 	}
 
 	public int hashCode() {
@@ -71,9 +80,6 @@ public class BinaryEditorInput implements IEditorInput {
 		return DBeaverIcons.getImageDescriptor(DBIcon.TREE_INFO);
 	}
 
-	/* (non-Javadoc)
-	 * Method declared on IEditorInput.
-	 */
 	@Override
     public String getName() {
 		return name;
@@ -86,37 +92,7 @@ public class BinaryEditorInput implements IEditorInput {
 
 	public IStorage getStorage() {
         if (storage == null) {
-            storage = new IStorage() {
-                @Override
-                public InputStream getContents() throws CoreException
-                {
-                    return new ByteArrayInputStream(value);
-                }
-
-                @Override
-                public IPath getFullPath()
-                {
-                    return null;
-                }
-
-                @Override
-                public String getName()
-                {
-                    return name;
-                }
-
-                @Override
-                public boolean isReadOnly()
-                {
-                    return readOnly;
-                }
-
-                @Override
-                public Object getAdapter(Class adapter)
-                {
-                    return null;
-                }
-            };
+            storage = new ByteStorage();
         }
 		return storage;
 	}
@@ -130,7 +106,11 @@ public class BinaryEditorInput implements IEditorInput {
 		return new String(value);
 	}
 
-	@Override
+    public byte[] getValue() {
+        return value;
+    }
+
+    @Override
     public Object getAdapter(Class adapter) {
         if (adapter == IStorage.class) {
             return getStorage();
@@ -138,4 +118,51 @@ public class BinaryEditorInput implements IEditorInput {
 		return null;
 	}
 
+    private class ByteStorage implements IPersistentStorage,IEncodedStorage {
+        @Override
+        public InputStream getContents() throws CoreException
+        {
+            return new ByteArrayInputStream(value);
+        }
+
+        @Override
+        public IPath getFullPath()
+        {
+            return null;
+        }
+
+        @Override
+        public String getName()
+        {
+            return name;
+        }
+
+        @Override
+        public boolean isReadOnly()
+        {
+            return readOnly;
+        }
+
+        @Override
+        public Object getAdapter(Class adapter)
+        {
+            return null;
+        }
+
+        @Override
+        public void setContents(IProgressMonitor monitor, InputStream stream) throws CoreException {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                IOUtils.copyStream(stream, baos, 10000);
+            } catch (IOException e) {
+                throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+            }
+            value = baos.toByteArray();
+        }
+
+        @Override
+        public String getCharset() throws CoreException {
+            return encoding;
+        }
+    }
 }

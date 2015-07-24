@@ -127,7 +127,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     protected void updateSQL()
     {
         try {
-            StringEditorInput sqlInput = new StringEditorInput(getShell().getText(), getSQLText(), true);
+            StringEditorInput sqlInput = new StringEditorInput(getShell().getText(), getSQLText(), true, "utf-8");
             sqlViewer.init(subSite, sqlInput);
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(getShell(), getShell().getText(), null, e);
