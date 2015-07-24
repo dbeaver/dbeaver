@@ -93,6 +93,7 @@ public abstract class DBDDocumentContentProxy implements DBDDocument {
         } catch (IOException e) {
             throw new DBException("Error transforming XML document", e);
         }
+        document.updateDocument(monitor, stream, encoding);
     }
 
     @Override
