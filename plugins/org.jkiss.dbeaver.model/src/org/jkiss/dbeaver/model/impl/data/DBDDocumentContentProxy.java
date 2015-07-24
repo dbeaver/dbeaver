@@ -27,10 +27,7 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 /**
  * Content proxy document
@@ -90,10 +87,11 @@ public abstract class DBDDocumentContentProxy implements DBDDocument {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ContentUtils.copyStreams(stream, -1, baos, monitor);
             content.updateContents(monitor, new BytesContentStorage(baos.toByteArray(), encoding));
+
+            document.updateDocument(monitor, new ByteArrayInputStream(baos.toByteArray()), encoding);
         } catch (IOException e) {
             throw new DBException("Error transforming XML document", e);
         }
-        document.updateDocument(monitor, stream, encoding);
     }
 
     @Override
