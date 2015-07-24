@@ -17,16 +17,22 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.resources.IEncodedStorage;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 /**
@@ -38,11 +44,13 @@ public class StringEditorInput implements IEditorInput {
     private StringBuilder buffer;
     private boolean readOnly;
     private IStorage storage;
+    private String encoding;
 
-	public StringEditorInput(String name, CharSequence value, boolean readOnly) {
+    public StringEditorInput(String name, CharSequence value, boolean readOnly, String encoding) {
         this.name = name;
         this.buffer = new StringBuilder(value);
         this.readOnly = readOnly;
+        this.encoding = encoding;
 	}
 
 	public int hashCode() {
@@ -85,37 +93,7 @@ public class StringEditorInput implements IEditorInput {
 
 	public IStorage getStorage() {
         if (storage == null) {
-            storage = new IStorage() {
-                @Override
-                public InputStream getContents() throws CoreException
-                {
-                    return new ByteArrayInputStream(buffer.toString().getBytes());
-                }
-
-                @Override
-                public IPath getFullPath()
-                {
-                    return null;
-                }
-
-                @Override
-                public String getName()
-                {
-                    return name;
-                }
-
-                @Override
-                public boolean isReadOnly()
-                {
-                    return readOnly;
-                }
-
-                @Override
-                public Object getAdapter(Class adapter)
-                {
-                    return null;
-                }
-            };
+            storage = new StringStorage();
         }
 		return storage;
 	}
@@ -142,4 +120,52 @@ public class StringEditorInput implements IEditorInput {
 		return null;
 	}
 
+    private class StringStorage implements IPersistentStorage, IEncodedStorage {
+        @Override
+        public InputStream getContents() throws CoreException
+        {
+            return new ByteArrayInputStream(buffer.toString().getBytes());
+        }
+
+        @Override
+        public IPath getFullPath()
+        {
+            return null;
+        }
+
+        @Override
+        public String getName()
+        {
+            return name;
+        }
+
+        @Override
+        public boolean isReadOnly()
+        {
+            return readOnly;
+        }
+
+        @Override
+        public Object getAdapter(Class adapter)
+        {
+            return null;
+        }
+
+        @Override
+        public void setContents(IProgressMonitor monitor, InputStream stream) throws CoreException {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try {
+                IOUtils.copyStream(stream, baos, 10000);
+                buffer.setLength(0);
+                buffer.append(new String(baos.toByteArray(), encoding));
+            } catch (IOException e) {
+                throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+            }
+        }
+
+        @Override
+        public String getCharset() throws CoreException {
+            return encoding;
+        }
+    }
 }
