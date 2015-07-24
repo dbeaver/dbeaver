@@ -1,3 +1,4 @@
+Mongo update/insert/delete
 Export to CSV - configure quote character
 Split core and ui on different plugins
 DBeaver features usage model
