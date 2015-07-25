@@ -122,7 +122,9 @@ public class ResultSetModel {
 
     public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row)
     {
-        if (row.changes != null && row.changes.containsKey(attr)) {
+        if (row.getState() == ResultSetRow.STATE_REMOVED) {
+            row.setState(ResultSetRow.STATE_NORMAL);
+        } else if (row.changes != null && row.changes.containsKey(attr)) {
             DBUtils.resetValue(getCellValue(attr, row));
             updateCellValue(attr, row, row.changes.get(attr), false);
             row.resetChange(attr);
