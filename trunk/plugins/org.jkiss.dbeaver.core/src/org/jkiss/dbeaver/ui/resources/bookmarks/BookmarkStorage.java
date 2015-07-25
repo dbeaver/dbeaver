@@ -20,11 +20,17 @@ package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBIconBinary;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -77,8 +83,12 @@ public class BookmarkStorage {
                 if (loadImage) {
                     Element imgElement = XMLUtils.getChildElement(root, TAG_IMAGE);
                     if (imgElement != null) {
-                        String imgLocation = XMLUtils.getElementBody(imgElement);
-                        this.image = new DBIcon(imgLocation);
+                        String imgString = XMLUtils.getElementBody(imgElement);
+                        final byte[] imgBytes = Base64.decode(imgString);
+                        ImageLoader loader = new ImageLoader();
+                        this.image = new DBIconBinary(
+                            dataSourcePath.toString(),
+                            loader.load(new ByteArrayInputStream(imgBytes))[0]);
                     }
                 }
             } finally {
@@ -155,7 +165,13 @@ public class BookmarkStorage {
 
         {
             xml.startElement(TAG_IMAGE);
-            xml.addText(image.getLocation());
+
+            Image realImage = DBeaverIcons.getImage(this.image);
+            ImageLoader loader = new ImageLoader();
+            loader.data = new ImageData[] {realImage.getImageData()};
+            ByteArrayOutputStream imageBuffer = new ByteArrayOutputStream(5000);
+            loader.save(imageBuffer, SWT.IMAGE_PNG);
+            xml.addText(Base64.encode(imageBuffer.toByteArray()));
 
             xml.endElement();
         }
