@@ -1,4 +1,5 @@
 Mongo update/insert/delete
+Delete button in doc editors
 Export to CSV - configure quote character
 Split core and ui on different plugins
 DBeaver features usage model
