@@ -509,8 +509,18 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void enableActions(boolean enable) {
-        actionsDisabled = !enable;
+    public void lockActions(Control lockedBy) {
+        if (actionsDisabled) {
+            log.error("Double-lock actions by [" + lockedBy + "]");
+            return;
+        }
+        actionsDisabled = true;
+        lockedBy.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                actionsDisabled = false;
+            }
+        });
     }
 
     void updatePresentation(final DBCResultSet resultSet) {

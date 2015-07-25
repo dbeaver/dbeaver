@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -121,6 +122,8 @@ public interface IResultSetController extends DBPContextProvider {
 
     /**
      * Enable/disable viewer actions. May be used by editors to "lock" RSV actions like navigation, edit, etc.
+     * Actions will be locked until lockedBy will be disposed
+     * @param lockedBy    locker control
      */
-    void enableActions(boolean enable);
+    void lockActions(Control lockedBy);
 }
