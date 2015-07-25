@@ -140,11 +140,10 @@ class ResultSetPersister {
         // Make insert statements
         DBSEntity table = getDefaultRowIdentifier().getEntity();
         for (ResultSetRow row : addedRows) {
-            Object[] cellValues = row.values;
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, row, table);
             for (int i = 0; i < columns.length; i++) {
                 DBDAttributeBinding column = columns[i];
-                statement.keyAttributes.add(new DBDAttributeValue(column, cellValues[i]));
+                statement.keyAttributes.add(new DBDAttributeValue(column, model.getCellValue(column, row)));
             }
             insertStatements.add(statement);
         }
