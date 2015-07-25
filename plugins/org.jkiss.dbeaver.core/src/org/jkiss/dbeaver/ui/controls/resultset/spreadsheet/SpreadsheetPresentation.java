@@ -126,7 +126,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<SpreadsheetValueController, IValueEditorStandalone>();
 
     private SpreadsheetFindReplaceTarget findReplaceTarget;
-    private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<ISelectionChangedListener>();
 
     // UI modifiers
     private IThemeManager themeManager;
@@ -1021,23 +1020,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             spreadsheet.showSelection();
         }
         fireSelectionChanged(selection);
-    }
-
-    private void fireSelectionChanged(ISelection selection) {
-        SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
-        for (ISelectionChangedListener listener : selectionChangedListenerList) {
-            listener.selectionChanged(event);
-        }
-    }
-
-    @Override
-    public void addSelectionChangedListener(ISelectionChangedListener listener) {
-        selectionChangedListenerList.add(listener);
-    }
-
-    @Override
-    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
-        selectionChangedListenerList.remove(listener);
     }
 
     private class SpreadsheetSelectionImpl implements IResultSetSelection {

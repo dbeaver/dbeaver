@@ -28,6 +28,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -48,23 +49,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
@@ -1404,7 +1405,10 @@ public class ResultSetViewer extends Viewer
     public IResultSetSelection getSelection()
     {
         if (activePresentation instanceof ISelectionProvider) {
-            return (IResultSetSelection) ((ISelectionProvider) activePresentation).getSelection();
+            ISelection selection = ((ISelectionProvider) activePresentation).getSelection();
+            if (selection instanceof IResultSetSelection) {
+                return (IResultSetSelection) selection;
+            }
         }
         return new EmptySelection();
     }
@@ -1978,7 +1982,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class EmptySelection implements IResultSetSelection {
+    private class EmptySelection extends StructuredSelection implements IResultSetSelection {
         @Override
         public IResultSetController getController() {
             return ResultSetViewer.this;
@@ -1987,36 +1991,6 @@ public class ResultSetViewer extends Viewer
         @Override
         public Collection<ResultSetRow> getSelectedRows() {
             return Collections.emptyList();
-        }
-
-        @Override
-        public Object getFirstElement() {
-            return null;
-        }
-
-        @Override
-        public Iterator iterator() {
-            return Collections.emptyList().iterator();
-        }
-
-        @Override
-        public int size() {
-            return 0;
-        }
-
-        @Override
-        public Object[] toArray() {
-            return new Object[0];
-        }
-
-        @Override
-        public List toList() {
-            return Collections.emptyList();
-        }
-
-        @Override
-        public boolean isEmpty() {
-            return false;
         }
     }
 
