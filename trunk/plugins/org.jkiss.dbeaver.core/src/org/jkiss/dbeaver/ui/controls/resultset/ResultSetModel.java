@@ -553,10 +553,7 @@ public class ResultSetModel {
             return true;
         }
         DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
-        if (rowIdentifier == null ||
-            //rowIdentifier.getAttributes().isEmpty() ||
-            !(rowIdentifier.getEntity() instanceof DBSDataManipulator) ||
-            attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
+        if (rowIdentifier == null || !(rowIdentifier.getEntity() instanceof DBSDataManipulator)) {
             return true;
         }
         DBSDataManipulator dataContainer = (DBSDataManipulator) rowIdentifier.getEntity();
