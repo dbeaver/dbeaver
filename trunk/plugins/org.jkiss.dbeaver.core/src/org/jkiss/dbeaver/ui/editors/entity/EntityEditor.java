@@ -75,7 +75,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer, INavigatorModelView
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
 {
     static final Log log = Log.getLog(EntityEditor.class);
 
@@ -849,6 +849,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+/*
     @Override
     public DBNNode getRootNode() {
         return getEditorInput().getNavigatorNode();
@@ -866,6 +867,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         return null;
     }
+*/
 
     private class ChangesPreviewer implements Runnable {
 
