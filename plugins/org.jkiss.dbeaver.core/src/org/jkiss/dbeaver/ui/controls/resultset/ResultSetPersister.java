@@ -141,9 +141,14 @@ class ResultSetPersister {
         DBSEntity table = getDefaultRowIdentifier().getEntity();
         for (ResultSetRow row : addedRows) {
             DataStatementInfo statement = new DataStatementInfo(DBSManipulationType.INSERT, row, table);
-            for (int i = 0; i < columns.length; i++) {
-                DBDAttributeBinding column = columns[i];
-                statement.keyAttributes.add(new DBDAttributeValue(column, model.getCellValue(column, row)));
+            DBDAttributeBinding docAttr = model.getDocumentAttribute();
+            if (docAttr != null) {
+                statement.keyAttributes.add(new DBDAttributeValue(docAttr, model.getCellValue(docAttr, row)));
+            } else {
+                for (int i = 0; i < columns.length; i++) {
+                    DBDAttributeBinding column = columns[i];
+                    statement.keyAttributes.add(new DBDAttributeValue(column, model.getCellValue(column, row)));
+                }
             }
             insertStatements.add(statement);
         }
