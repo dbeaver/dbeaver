@@ -128,7 +128,7 @@ class ResultSetPersister {
                 statement.keyAttributes.add(
                     new DBDAttributeValue(
                         binding,
-                        row.values[binding.getOrdinalPosition()]));
+                        model.getCellValue(binding, row)));
             }
             deleteStatements.add(statement);
         }
