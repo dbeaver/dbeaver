@@ -22,6 +22,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
@@ -31,14 +32,18 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract presentation.
  */
-public abstract class AbstractPresentation implements IResultSetPresentation {
+public abstract class AbstractPresentation implements IResultSetPresentation, ISelectionProvider {
 
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
 
     protected IResultSetController controller;
+    private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<ISelectionChangedListener>();
 
     public IResultSetController getController() {
         return controller;
@@ -128,5 +133,35 @@ public abstract class AbstractPresentation implements IResultSetPresentation {
                 UIUtils.removeFocusTracker(site, control);
             }
         });
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+    // ISelectionProvider
+
+    protected void fireSelectionChanged(ISelection selection) {
+        SelectionChangedEvent event = new SelectionChangedEvent(this, selection);
+        for (ISelectionChangedListener listener : selectionChangedListenerList) {
+            listener.selectionChanged(event);
+        }
+    }
+
+    @Override
+    public void addSelectionChangedListener(ISelectionChangedListener listener) {
+        selectionChangedListenerList.add(listener);
+    }
+
+    @Override
+    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
+        selectionChangedListenerList.remove(listener);
+    }
+
+    @Override
+    public ISelection getSelection() {
+        return new StructuredSelection();
+    }
+
+    @Override
+    public void setSelection(ISelection selection) {
+
     }
 }
