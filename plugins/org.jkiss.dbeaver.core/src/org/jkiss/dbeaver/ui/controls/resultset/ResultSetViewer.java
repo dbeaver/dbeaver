@@ -174,6 +174,8 @@ public class ResultSetViewer extends Viewer
 
     private final Color colorRed;
 
+    private boolean actionsDisabled;
+
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
         super();
@@ -500,6 +502,15 @@ public class ResultSetViewer extends Viewer
     @Override
     public IResultSetPresentation getActivePresentation() {
         return activePresentation;
+    }
+
+    public boolean isActionsDisabled() {
+        return actionsDisabled;
+    }
+
+    @Override
+    public void enableActions(boolean enable) {
+        actionsDisabled = !enable;
     }
 
     void updatePresentation(final DBCResultSet resultSet) {

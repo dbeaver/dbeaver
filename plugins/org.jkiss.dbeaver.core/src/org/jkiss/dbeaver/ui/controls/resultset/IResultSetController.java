@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  */
 public interface IResultSetController extends DBPContextProvider {
 
-    public static final String MENU_GROUP_EDIT = "edit";
+    String MENU_GROUP_EDIT = "edit";
 
     @NotNull
     IWorkbenchPartSite getSite();
@@ -118,4 +118,9 @@ public interface IResultSetController extends DBPContextProvider {
     Color getDefaultForeground();
 
     IResultSetPresentation getActivePresentation();
+
+    /**
+     * Enable/disable viewer actions. May be used by editors to "lock" RSV actions like navigation, edit, etc.
+     */
+    void enableActions(boolean enable);
 }
