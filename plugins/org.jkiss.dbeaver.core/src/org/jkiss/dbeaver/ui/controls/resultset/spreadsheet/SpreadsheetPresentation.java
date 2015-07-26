@@ -624,6 +624,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     public void togglePreview()
     {
+        spreadsheet.cancelInlineEditor();
         if (resultsSash.getMaximizedControl() == null) {
             resultsSash.setMaximizedControl(spreadsheet);
         } else {
