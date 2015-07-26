@@ -23,9 +23,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -37,11 +40,12 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
+import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -162,20 +166,13 @@ public class SQLQueryJob extends DataSourceJob
                             log.error(lastError);
                         }
                         boolean isQueue = queryNum < queries.size() - 1;
-                        ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(
+                        ExecutionQueueErrorResponse response = ExecutionQueueErrorJob.showError(
                             isQueue ? "SQL script execution" : "SQL query execution",
                             lastError,
                             isQueue);
-                        errorJob.schedule();
-                        try {
-                            errorJob.join();
-                        }
-                        catch (InterruptedException e) {
-                            log.error(e);
-                        }
 
                         boolean stopScript = false;
-                        switch (errorJob.getResponse()) {
+                        switch (response) {
                             case STOP:
                                 // just stop execution
                                 stopScript = true;

@@ -68,4 +68,16 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
     {
         return response;
     }
+
+    public static ExecutionQueueErrorResponse showError(String task, Throwable error, boolean queue) {
+        ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(task, error, queue);
+        errorJob.schedule();
+        try {
+            errorJob.join();
+        } catch (InterruptedException e1) {
+            log.error(e1);
+        }
+        return errorJob.getResponse();
+    }
+
 }
