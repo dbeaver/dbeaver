@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ui.editors.text.handlers;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 public class ToggleWordWrapHandler extends AbstractTextHandler {
@@ -10,7 +11,7 @@ public class ToggleWordWrapHandler extends AbstractTextHandler {
     @Override
     public Object execute(ExecutionEvent event) {
         // get active editor where word wrap will be toggled
-        BaseTextEditor textEditor = getEditor(event);
+        BaseTextEditor textEditor = BaseTextEditor.getTextEditor(HandlerUtil.getActiveEditor(event));
 
         if (textEditor != null) {
             // editor (ITextEditor) adapter returns StyledText

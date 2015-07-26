@@ -18,29 +18,10 @@
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 /**
  * Abstract text editor handler
  */
 public abstract class AbstractTextHandler extends AbstractHandler {
 
-    public static BaseTextEditor getEditor(ExecutionEvent event) {
-        IEditorPart editor = HandlerUtil.getActiveEditor(event);
-        return getTextEditor(editor);
-    }
-
-    public static BaseTextEditor getTextEditor(IEditorPart editor)
-    {
-        if (editor == null) {
-            return null;
-        }
-        if (editor instanceof BaseTextEditor) {
-            return (BaseTextEditor) editor;
-        }
-        return (BaseTextEditor) editor.getAdapter(BaseTextEditor.class);
-    }
 }
