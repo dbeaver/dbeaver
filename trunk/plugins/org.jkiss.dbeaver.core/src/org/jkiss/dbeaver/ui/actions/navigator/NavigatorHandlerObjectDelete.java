@@ -41,6 +41,8 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.TaskstJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -54,19 +56,18 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private IStructuredSelection structSelection;
     private Boolean deleteAll;
+    private List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<DBRRunnableWithProgress>();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         this.structSelection = null;
         this.deleteAll = null;
+        this.tasksToExecute.clear();
 
         final IWorkbenchWindow activeWorkbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
@@ -89,6 +90,12 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 }
             }
         }
+
+        if (!tasksToExecute.isEmpty()) {
+            new TaskstJob("Delete object", tasksToExecute).schedule();
+            tasksToExecute.clear();
+        }
+
         return null;
     }
 
@@ -185,13 +192,11 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
                 ObjectSaver deleter = new ObjectSaver(commandTarget.getContext());
-                DBeaverUI.runInProgressDialog(deleter);
+//                DBeaverUI.runInProgressDialog(deleter);
+                tasksToExecute.add(deleter);
             }
 
         } catch (Throwable e) {
-            if (e instanceof InvocationTargetException) {
-                e = ((InvocationTargetException)e).getTargetException();
-            }
             UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_delete_object_title, "Can't delete object '" + node.getNodeName() + "'", e);
             return false;
         }
