@@ -693,7 +693,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     if (!CommonUtils.isEmpty(colorValue)) {
                         config.setConnectionColor(colorValue);
                     }
-                    curDataSource.refreshConnectionInfo();
                 }
             } else if (localName.equals(RegistryConstants.TAG_BOOTSTRAP)) {
                 if (curDataSource != null) {

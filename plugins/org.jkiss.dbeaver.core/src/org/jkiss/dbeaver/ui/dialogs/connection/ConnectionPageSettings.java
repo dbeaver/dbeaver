@@ -94,7 +94,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     public void activatePage()
     {
         if (connectionEditor == null) {
-            createProviderPage();
+            createProviderPage(getControl().getParent());
         }
         setMessage(NLS.bind(CoreMessages.dialog_connection_message, getDriver().getFullName()));
         DataSourceDescriptor connectionInfo = getActiveDataSource();
@@ -143,15 +143,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public void createControl(Composite parent)
     {
-        setControl(new Composite(parent, SWT.BORDER));
+        if (wizard.isNew()) {
+            setControl(new Composite(parent, SWT.BORDER));
+        } else {
+            createProviderPage(parent);
+        }
     }
 
-    private void createProviderPage() {
+    private void createProviderPage(Composite parent) {
         if (this.connectionEditor != null) {
             return;
         }
-        Composite parent = getControl().getParent();
-        getControl().dispose();
+        if (getControl() != null) {
+            getControl().dispose();
+        }
 
         try {
             this.connectionEditor = viewDescriptor.createView(IDataSourceConnectionEditor.class);
