@@ -233,7 +233,7 @@ public abstract class AbstractDescriptor {
 
     public static <T> Class<T> getObjectClass(@NotNull Bundle fromBundle, @NotNull String className, Class<T> type)
     {
-        Class<?> objectClass = null;
+        Class<?> objectClass;
         try {
             objectClass = fromBundle.loadClass(className);
         } catch (Throwable ex) {
