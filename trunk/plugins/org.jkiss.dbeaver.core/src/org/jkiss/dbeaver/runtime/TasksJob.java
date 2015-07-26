@@ -33,17 +33,17 @@ import java.util.List;
 /**
  * Job running specified tasks in queue
  */
-public class TaskstJob extends AbstractJob
+public class TasksJob extends AbstractJob
 {
     private final List<DBRRunnableWithProgress> tasks;
 
-    public TaskstJob(String name, Collection<DBRRunnableWithProgress> tasks) {
+    public TasksJob(String name, Collection<DBRRunnableWithProgress> tasks) {
         super(name);
         setUser(true);
         this.tasks = new ArrayList<DBRRunnableWithProgress>(tasks);
     }
 
-    public TaskstJob(String name, DBRRunnableWithProgress task) {
+    public TasksJob(String name, DBRRunnableWithProgress task) {
         this(name, Collections.singletonList(task));
     }
 
