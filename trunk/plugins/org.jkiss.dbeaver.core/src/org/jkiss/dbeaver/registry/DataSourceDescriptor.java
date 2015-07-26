@@ -151,14 +151,6 @@ public class DataSourceDescriptor
         this.virtualModel = new DBVModel(this);
 
         this.driver.addUser(this);
-        refreshConnectionInfo();
-    }
-
-    void refreshConnectionInfo()
-    {
-        if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
-            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
-        }
     }
 
     public boolean isDisposed()
@@ -435,6 +427,9 @@ public class DataSourceDescriptor
     @Override
     public DBPClientHome getClientHome()
     {
+        if (clientHome == null && !CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
+            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
+        }
         return clientHome;
     }
 
