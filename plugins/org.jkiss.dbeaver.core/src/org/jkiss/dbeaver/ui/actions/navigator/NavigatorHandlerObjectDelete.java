@@ -185,11 +185,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
                 ObjectSaver deleter = new ObjectSaver(commandTarget.getContext());
-                DBeaverUI.runInProgressService(deleter);
+                DBeaverUI.runInProgressDialog(deleter);
             }
 
-        } catch (InterruptedException e) {
-            // do nothing
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
                 e = ((InvocationTargetException)e).getTargetException();
