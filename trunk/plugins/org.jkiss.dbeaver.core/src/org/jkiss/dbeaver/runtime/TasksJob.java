@@ -37,13 +37,13 @@ public class TasksJob extends AbstractJob
 {
     private final List<DBRRunnableWithProgress> tasks;
 
-    public TasksJob(String name, Collection<DBRRunnableWithProgress> tasks) {
+    private TasksJob(String name, Collection<DBRRunnableWithProgress> tasks) {
         super(name);
         setUser(true);
         this.tasks = new ArrayList<DBRRunnableWithProgress>(tasks);
     }
 
-    public TasksJob(String name, DBRRunnableWithProgress task) {
+    private TasksJob(String name, DBRRunnableWithProgress task) {
         this(name, Collections.singletonList(task));
     }
 
@@ -91,4 +91,13 @@ public class TasksJob extends AbstractJob
         monitor.done();
         return Status.OK_STATUS;
     }
+
+    public static void runTasks(String name, Collection<DBRRunnableWithProgress> tasks) {
+        new TasksJob(name, tasks).schedule();
+    }
+
+    public static void runTask(String name, DBRRunnableWithProgress task) {
+        new TasksJob(name, task).schedule();
+    }
+
 }

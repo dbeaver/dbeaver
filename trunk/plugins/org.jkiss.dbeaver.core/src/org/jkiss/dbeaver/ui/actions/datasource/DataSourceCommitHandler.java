@@ -19,15 +19,12 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 import java.lang.reflect.InvocationTargetException;
@@ -39,35 +36,29 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
     {
         DBCExecutionContext context = getExecutionContext(event, true);
         if (context != null && context.isConnected()) {
-            execute(HandlerUtil.getActiveShell(event), context);
+            execute(context);
         }
         return null;
     }
 
-    public static void execute(Shell shell, @NotNull final DBCExecutionContext context) {
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                    if (txnManager != null) {
-                        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction");
-                        try {
-                            txnManager.commit(session);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
-                        } finally {
-                            session.close();
-                        }
+    public static void execute(@NotNull final DBCExecutionContext context) {
+        TasksJob.runTask("Commit transaction", new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                if (txnManager != null) {
+                    DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction");
+                    try {
+                        txnManager.commit(session);
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        session.close();
                     }
                 }
-            });
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(shell, "Commit", "Error while committing session", e);
-        } catch (InterruptedException e) {
-            // do nothing
-        }
+            }
+        });
     }
 
 }
