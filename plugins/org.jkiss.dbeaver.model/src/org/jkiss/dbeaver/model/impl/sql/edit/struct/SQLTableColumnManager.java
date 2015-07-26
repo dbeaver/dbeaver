@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.*;
@@ -164,11 +165,11 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
                     }
                 }
                 if (!exists) {
-                    return name;
+                    return DBObjectNameCaseTransformer.transformName(table.getDataSource(), name);
                 }
             } catch (DBException e) {
                 log.warn(e);
-                return name;
+                return DBObjectNameCaseTransformer.transformName(table.getDataSource(), name);
             }
         }
 
