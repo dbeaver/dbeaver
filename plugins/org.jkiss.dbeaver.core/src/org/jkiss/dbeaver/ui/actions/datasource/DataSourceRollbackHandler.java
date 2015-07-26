@@ -21,12 +21,11 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 
 import java.lang.reflect.InvocationTargetException;
@@ -44,29 +43,23 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler
     }
 
     public static void execute(Shell shell, final DBCExecutionContext context) {
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                    if (txnManager != null) {
-                        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
-                        try {
-                            txnManager.rollback(session, null);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
-                        } finally {
-                            session.close();
-                        }
+        TasksJob.runTask("Rollback transaction", new DBRRunnableWithProgress() {
+            @Override
+            public void run(DBRProgressMonitor monitor)
+                throws InvocationTargetException, InterruptedException {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                if (txnManager != null) {
+                    DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
+                    try {
+                        txnManager.rollback(session, null);
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        session.close();
                     }
                 }
-            });
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(shell, "Rollback", "Error during session rollback", e);
-        } catch (InterruptedException e) {
-            // do nothing
-        }
+            }
+        });
     }
 
 }
