@@ -22,15 +22,14 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IActionDelegate;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -47,12 +46,11 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                 final DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                 final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
                     DBSObjectSelector.class, databaseNode.getObject());
-                try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                if (activeContainer != null) {
+                    TasksJob.runTask("Select active object", new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
+                            throws InvocationTargetException, InterruptedException {
                             try {
                                 activeContainer.selectObject(monitor, databaseNode.getObject());
                             } catch (DBException e) {
@@ -60,10 +58,6 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                             }
                         }
                     });
-                } catch (InvocationTargetException e) {
-                    UIUtils.showErrorDialog(null, "Select entity", "Can't change selected entity", e.getTargetException());
-                } catch (InterruptedException e) {
-                    // do nothing
                 }
             }
         }
