@@ -23,14 +23,9 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -102,33 +97,17 @@ public class NewConnectionWizard extends ConnectionWizard
         pageDrivers = new ConnectionPageDriver(this);
         addPage(pageDrivers);
 
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
-                    monitor.beginTask(CoreMessages.dialog_new_connection_wizard_monitor_load_data_sources, providers.size());
-                    for (DataSourceProviderDescriptor provider : providers) {
-                        monitor.subTask(provider.getName());
-                        DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
-                        availableProvides.add(provider);
-                        if (view != null) {
-                            ConnectionPageSettings pageSettings = new ConnectionPageSettings(
-                                NewConnectionWizard.this,
-                                view);
-                            settingsPages.put(provider, pageSettings);
-                            addPage(pageSettings);
-                        }
-                        monitor.worked(1);
-                    }
-                    monitor.done();
-                }
-            });
-        }
-        catch (Exception ex) {
-            UIUtils.showErrorDialog(getShell(), "Error", "Error loading views", ex);
+        List<DataSourceProviderDescriptor> providers = DataSourceProviderRegistry.getInstance().getDataSourceProviders();
+        for (DataSourceProviderDescriptor provider : providers) {
+            DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
+            availableProvides.add(provider);
+            if (view != null) {
+                ConnectionPageSettings pageSettings = new ConnectionPageSettings(
+                    NewConnectionWizard.this,
+                    view);
+                settingsPages.put(provider, pageSettings);
+                addPage(pageSettings);
+            }
         }
 
         pageGeneral = new ConnectionPageGeneral(this);
