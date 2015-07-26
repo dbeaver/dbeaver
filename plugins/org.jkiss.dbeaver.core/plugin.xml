@@ -2310,6 +2310,11 @@
         <manager class="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager" id="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager">
             <supports type="java.util.UUID"/>
         </manager>
+<!--
+        <manager class="org.jkiss.dbeaver.ui.data.managers.RowIdValueManager" id="org.jkiss.dbeaver.ui.data.managers.RowIdValueManager">
+            <supports kind="ROWID"/>
+        </manager>
+-->
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">

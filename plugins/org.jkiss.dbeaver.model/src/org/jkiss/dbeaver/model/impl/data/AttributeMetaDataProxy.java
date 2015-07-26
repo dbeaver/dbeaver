@@ -160,4 +160,20 @@ public class AttributeMetaDataProxy implements DBCAttributeMetaData, DBPImagePro
     public long getMaxLength() {
         return attribute.getMaxLength();
     }
+
+    @Override
+    public String toString() {
+        return attribute.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        return attribute.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof AttributeMetaDataProxy &&
+            attribute.equals(((AttributeMetaDataProxy) obj).attribute);
+    }
 }
