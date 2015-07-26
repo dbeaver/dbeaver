@@ -92,7 +92,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         }
 
         if (!tasksToExecute.isEmpty()) {
-            new TaskstJob("Delete object", tasksToExecute).schedule();
+            new TaskstJob(tasksToExecute.size() > 1 ? "Delete " + tasksToExecute.size() + " objects" : "Delete object", tasksToExecute).schedule();
             tasksToExecute.clear();
         }
 

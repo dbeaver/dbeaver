@@ -26,7 +26,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public interface DBRRunnableWithProgress {
 
-    public void run(DBRProgressMonitor monitor)
+    void run(DBRProgressMonitor monitor)
         throws InvocationTargetException, InterruptedException;
 
 }
