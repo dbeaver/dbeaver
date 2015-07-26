@@ -21,7 +21,6 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.editors.text.handlers.AbstractTextHandler;
 import org.jkiss.utils.ArrayUtils;
 
 /**
@@ -41,7 +40,7 @@ public class TextEditorPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        BaseTextEditor editor = AbstractTextHandler.getTextEditor((IEditorPart)receiver);
+        BaseTextEditor editor = BaseTextEditor.getTextEditor((IEditorPart) receiver);
         if (editor == null) {
             return false;
         }

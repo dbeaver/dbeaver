@@ -150,6 +150,9 @@ public abstract class AbstractDescriptor {
 
         public boolean matchesType(Class<?> clazz)
         {
+            if (getContributorBundle().getState() != Bundle.ACTIVE) {
+                return false;
+            }
             getObjectClass();
             return implClass != null && implClass.isAssignableFrom(clazz);
         }

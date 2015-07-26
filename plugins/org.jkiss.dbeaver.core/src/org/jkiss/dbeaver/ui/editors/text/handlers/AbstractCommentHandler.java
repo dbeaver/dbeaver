@@ -17,16 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.ui.texteditor.ITextEditor;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 
 /**
@@ -37,17 +37,24 @@ public abstract class AbstractCommentHandler extends AbstractTextHandler {
     static protected final Log log = Log.getLog(AbstractCommentHandler.class);
 
     public final Object execute(ExecutionEvent event) throws ExecutionException {
-        BaseTextEditor textEditor = getEditor(event);
+        BaseTextEditor textEditor = BaseTextEditor.getTextEditor(HandlerUtil.getActiveEditor(event));
         if (textEditor != null) {
+            ICommentsSupport commentsSupport = textEditor.getCommentsSupport();
             IDocument document = textEditor.getDocumentProvider().getDocument(textEditor.getEditorInput());
-            if (document != null) {
+            if (document != null && commentsSupport != null) {
                 // get current text selection
-                ITextSelection textSelection = getSelection(textEditor);
-                if (!textSelection.isEmpty()) {
-                    try {
-                        processAction(textEditor, document, textSelection);
-                    } catch (BadLocationException e) {
-                        log.warn(e);
+                ISelectionProvider provider = textEditor.getSelectionProvider();
+                if (provider != null) {
+                    ISelection selection = provider.getSelection();
+                    if (selection instanceof ITextSelection) {
+                        ITextSelection textSelection = (ITextSelection) selection;
+                        if (!textSelection.isEmpty()) {
+                            try {
+                                processAction(textEditor.getSelectionProvider(), commentsSupport, document, textSelection);
+                            } catch (BadLocationException e) {
+                                log.warn(e);
+                            }
+                        }
                     }
                 }
             }
@@ -55,16 +62,6 @@ public abstract class AbstractCommentHandler extends AbstractTextHandler {
         return null;
     }
 
-    protected abstract void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException;
+    protected abstract void processAction(ISelectionProvider selectionProvider, ICommentsSupport commentsSupport, IDocument document, ITextSelection textSelection) throws BadLocationException;
 
-    private static ITextSelection getSelection(ITextEditor textEditor) {
-        ISelectionProvider provider = textEditor.getSelectionProvider();
-        if (provider != null) {
-            ISelection selection = provider.getSelection();
-            if (selection instanceof ITextSelection) {
-                return (ITextSelection) selection;
-            }
-        }
-        return TextSelection.emptySelection();
-    }
 }

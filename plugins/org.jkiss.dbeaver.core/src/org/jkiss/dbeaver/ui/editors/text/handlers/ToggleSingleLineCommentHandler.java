@@ -18,19 +18,15 @@
 package org.jkiss.dbeaver.ui.editors.text.handlers;
 
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
-import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.ArrayUtils;
 
 public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler {
 
     @Override
-    protected void processAction(BaseTextEditor textEditor, IDocument document, ITextSelection textSelection) throws BadLocationException
-    {
-        ICommentsSupport commentsSupport = textEditor.getCommentsSupport();
-        if (commentsSupport == null) {
-            return;
-        }
+    protected void processAction(ISelectionProvider selectionProvider, ICommentsSupport commentsSupport, IDocument document, ITextSelection textSelection) throws BadLocationException
+   {
         String[] singleLineComments = commentsSupport.getSingleLineComments();
         if (ArrayUtils.isEmpty(singleLineComments)) {
             // Single line comments are not supported
@@ -69,7 +65,7 @@ public final class ToggleSingleLineCommentHandler extends AbstractCommentHandler
             ((IDocumentExtension4) document).stopRewriteSession(rewriteSession);
         }
         if (originalLength > 0) {
-            textEditor.getSelectionProvider().setSelection(new TextSelection(selOffset, selLength));
+            selectionProvider.setSelection(new TextSelection(selOffset, selLength));
         }
     }
 }

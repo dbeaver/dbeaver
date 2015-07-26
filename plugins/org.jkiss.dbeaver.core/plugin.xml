@@ -772,7 +772,7 @@
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
@@ -781,7 +781,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementNewHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
@@ -790,7 +790,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
                     </adapt>
@@ -799,7 +799,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteScriptNewHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="script"/>
                     </adapt>
@@ -808,7 +808,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.count" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExecuteStatementCountHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExecute" value="statement"/>
                     </adapt>
@@ -817,14 +817,14 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ToggleResultsPanelHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                 </with>
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExplainPlanHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canExplain"/>
                     </adapt>
@@ -833,7 +833,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.analyse" class="org.jkiss.dbeaver.ui.editors.sql.handlers.AnalyseStatementHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canAnalyse"/>
                     </adapt>
@@ -842,7 +842,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ValidateStatementHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canValidate"/>
                     </adapt>
@@ -851,7 +851,7 @@
         </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" class="org.jkiss.dbeaver.ui.editors.sql.handlers.NavigateObjectHandler">
             <enabledWhen>
-                <with variable="activePart">
+                <with variable="activeEditor">
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canNavigate"/>
                     </adapt>
