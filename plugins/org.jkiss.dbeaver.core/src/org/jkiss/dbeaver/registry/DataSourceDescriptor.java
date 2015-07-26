@@ -64,18 +64,18 @@ public class DataSourceDescriptor
     static final Log log = Log.getLog(DataSourceDescriptor.class);
 
     public static class FilterMapping {
-        public final Class<?> type;
+        public final String typeName;
         public DBSObjectFilter defaultFilter;
         public Map<String, DBSObjectFilter> customFilters = new HashMap<String, DBSObjectFilter>();
 
-        FilterMapping(Class<?> type)
+        FilterMapping(String typeName)
         {
-            this.type = type;
+            this.typeName = typeName;
         }
 
         FilterMapping(FilterMapping mapping)
         {
-            this.type = mapping.type;
+            this.typeName = mapping.typeName;
             this.defaultFilter = mapping.defaultFilter == null ? null : new DBSObjectFilter(mapping.defaultFilter);
             for (Map.Entry<String, DBSObjectFilter> entry : mapping.customFilters.entrySet()) {
                 this.customFilters.put(entry.getKey(), new DBSObjectFilter(entry.getValue()));
@@ -114,7 +114,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
-    private final Map<Class<?>, FilterMapping> filterMap = new IdentityHashMap<Class<?>, FilterMapping>();
+    private final Map<String, FilterMapping> filterMap = new HashMap<String, FilterMapping>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -377,12 +377,12 @@ public class DataSourceDescriptor
         }
         // Test all super classes
         for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
-            FilterMapping filterMapping = filterMap.get(testType);
+            FilterMapping filterMapping = filterMap.get(testType.getName());
             DBSObjectFilter filter;
             if (filterMapping == null) {
                 // Try to find using interfaces and superclasses
                 for (Class<?> it : testType.getInterfaces()) {
-                    filterMapping = filterMap.get(it);
+                    filterMapping = filterMap.get(it.getName());
                     if (filterMapping != null) {
                         filter = filterMapping.getFilter(parentObject, firstMatch);
                         if (filter != null && (firstMatch || filter.isEnabled())) return filter;
@@ -401,15 +401,15 @@ public class DataSourceDescriptor
     @Override
     public void setObjectFilter(Class<?> type, DBSObject parentObject, DBSObjectFilter filter)
     {
-        updateObjectFilter(type, parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
+        updateObjectFilter(type.getName(), parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
     }
 
-    void updateObjectFilter(Class<?> type, @Nullable String objectID, DBSObjectFilter filter)
+    void updateObjectFilter(String typeName, @Nullable String objectID, DBSObjectFilter filter)
     {
-        FilterMapping filterMapping = filterMap.get(type);
+        FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
-            filterMapping = new FilterMapping(type);
-            filterMap.put(type, filterMapping);
+            filterMapping = new FilterMapping(typeName);
+            filterMap.put(typeName, filterMapping);
         }
         if (objectID == null) {
             filterMapping.defaultFilter = filter;
@@ -487,7 +487,7 @@ public class DataSourceDescriptor
         this.loginDate = loginDate;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBPDataSource getDataSource()
     {
@@ -1004,7 +1004,7 @@ public class DataSourceDescriptor
     public void copyFrom(DataSourceDescriptor descriptor) {
         filterMap.clear();
         for (FilterMapping mapping : descriptor.getObjectFilters()) {
-            filterMap.put(mapping.type, new FilterMapping(mapping));
+            filterMap.put(mapping.typeName, new FilterMapping(mapping));
         }
         virtualModel.copyFrom(descriptor.getVirtualModel());
 

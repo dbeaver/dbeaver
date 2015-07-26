@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -516,10 +516,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 xml.startElement(RegistryConstants.TAG_FILTERS);
                 for (DataSourceDescriptor.FilterMapping filter : filterMappings) {
                     if (filter.defaultFilter != null) {
-                        saveObjectFiler(xml, filter.type, null, filter.defaultFilter);
+                        saveObjectFiler(xml, filter.typeName, null, filter.defaultFilter);
                     }
                     for (Map.Entry<String,DBSObjectFilter> cf : filter.customFilters.entrySet()) {
-                        saveObjectFiler(xml, filter.type, cf.getKey(), cf.getValue());
+                        saveObjectFiler(xml, filter.typeName, cf.getKey(), cf.getValue());
                     }
                 }
                 xml.endElement();
@@ -554,10 +554,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         xml.endElement();
     }
 
-    private void saveObjectFiler(XMLBuilder xml, Class<?> type, String objectID, DBSObjectFilter filter) throws IOException
+    private void saveObjectFiler(XMLBuilder xml, String typeName, String objectID, DBSObjectFilter filter) throws IOException
     {
         xml.startElement(RegistryConstants.TAG_FILTER);
-        xml.addAttribute(RegistryConstants.ATTR_TYPE, type.getName());
+        xml.addAttribute(RegistryConstants.ATTR_TYPE, typeName);
         if (objectID != null) {
             xml.addAttribute(RegistryConstants.ATTR_ID, objectID);
         }
@@ -658,11 +658,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     // Legacy filter settings
                     String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
                     if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
-                        curDataSource.updateObjectFilter(DBSCatalog.class, null, new DBSObjectFilter(legacyCatalogFilter, null));
+                        curDataSource.updateObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
                     }
                     String legacySchemaFilter = atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
                     if (!CommonUtils.isEmpty(legacySchemaFilter)) {
-                        curDataSource.updateObjectFilter(DBSSchema.class, null, new DBSObjectFilter(legacySchemaFilter, null));
+                        curDataSource.updateObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
                     }
                 }
 
@@ -769,13 +769,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 if (curDataSource != null) {
                     String typeName = atts.getValue(RegistryConstants.ATTR_TYPE);
                     String objectID = atts.getValue(RegistryConstants.ATTR_ID);
-                    Class<? extends DBSObject> objectClass = curDataSource.getDriver().getObjectClass(typeName, DBSObject.class);
-                    if (objectClass != null) {
+                    if (typeName != null) {
                         curFilter = new DBSObjectFilter();
                         curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
                         curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
                         curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
-                        curDataSource.updateObjectFilter(objectClass, objectID, curFilter);
+                        curDataSource.updateObjectFilter(typeName, objectID, curFilter);
 
                     }
                 }
