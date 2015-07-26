@@ -68,8 +68,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(DBeaverPreferences.SCRIPT_ERROR_HANDLING) ||
             store.contains(DBeaverPreferences.SCRIPT_COMMIT_LINES) ||
             store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
-            store.contains(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER) ||
-            store.contains(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
+            store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
+            store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
             store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
@@ -164,8 +164,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
             commitLinesText.setSelection(store.getInt(DBeaverPreferences.SCRIPT_COMMIT_LINES));
             fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
-            statementDelimiterText.setText(store.getString(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER));
-            ignoreNativeDelimiter.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
+            statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
+            ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
             enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
             enableSQLAnonymousParameters.setSelection(store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
             anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
@@ -185,8 +185,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
-            store.setValue(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
-            store.setValue(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
+            store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
+            store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
             store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED, enableSQLAnonymousParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, anonymousParameterMarkText.getText());
@@ -206,8 +206,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
         store.setToDefault(DBeaverPreferences.SCRIPT_ERROR_HANDLING);
         store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
-        store.setToDefault(DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER);
-        store.setToDefault(DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
+        store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
+        store.setToDefault(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
 
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
