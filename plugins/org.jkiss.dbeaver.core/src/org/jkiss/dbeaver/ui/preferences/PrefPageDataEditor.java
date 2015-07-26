@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
@@ -40,7 +41,6 @@ public class PrefPageDataEditor extends TargetPrefPage
     private Button editLongAsLobCheck;
     private Button commitOnEditApplyCheck;
     private Button commitOnContentApplyCheck;
-    private Combo encodingCombo;
 
     public PrefPageDataEditor()
     {
@@ -100,15 +100,6 @@ public class PrefPageDataEditor extends TargetPrefPage
             commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
 
-        // Hex
-        {
-            Group contentGroup = new Group(composite, SWT.NONE);
-            contentGroup.setText(CoreMessages.pref_page_content_editor_group_hex);
-            contentGroup.setLayout(new GridLayout(2, false));
-
-            UIUtils.createControlLabel(contentGroup, CoreMessages.pref_page_content_editor_hex_encoding);
-            encodingCombo = UIUtils.createEncodingCombo(contentGroup, null);
-        }
         return composite;
     }
 
@@ -121,7 +112,6 @@ public class PrefPageDataEditor extends TargetPrefPage
             editLongAsLobCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_LONG_AS_LOB));
             commitOnEditApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY));
             commitOnContentApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY));
-            UIUtils.setComboSelection(encodingCombo, store.getString(DBeaverPreferences.CONTENT_HEX_ENCODING));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -136,7 +126,6 @@ public class PrefPageDataEditor extends TargetPrefPage
             store.setValue(DBeaverPreferences.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
             store.setValue(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
             store.setValue(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
-            store.setValue(DBeaverPreferences.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -151,7 +140,6 @@ public class PrefPageDataEditor extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RS_EDIT_LONG_AS_LOB);
         store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY);
         store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY);
-        store.setToDefault(DBeaverPreferences.CONTENT_HEX_ENCODING);
     }
 
     @Override
