@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.*;
@@ -161,13 +162,9 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return new JDBCContentBLOB(session.getDataSource(), (Blob) object);
         } else if (object instanceof Clob) {
             JDBCContentCLOB clob = new JDBCContentCLOB(session.getDataSource(), (Clob) object);
-            try {
-                //boolean embeddedDB = session.getDataSource().getContainer().getDriver().isEmbedded();
-                if (type.getTypeName().contains("text") && ((Clob) object).length() < MAX_CACHED_CLOB_LENGTH) {
-                    clob.getContents(session.getProgressMonitor());
-                }
-            } catch (SQLException e) {
-                log.debug("Error caching clob value", e);
+            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.CONTENT_CACHE_CLOB)) {
+                // Precache content
+                clob.getContents(session.getProgressMonitor());
             }
             return clob;
         } else if (object instanceof SQLXML) {

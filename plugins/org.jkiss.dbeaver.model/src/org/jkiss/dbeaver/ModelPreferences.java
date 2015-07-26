@@ -46,6 +46,7 @@ public final class ModelPreferences
 
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize"; //$NON-NLS-1$
     public static final String CONTENT_HEX_ENCODING = "content.hex.encoding"; //$NON-NLS-1$
+    public static final String CONTENT_CACHE_CLOB = "content.cache.clob"; //$NON-NLS-1$
     public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
     public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
 
@@ -90,6 +91,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, META_SEPARATE_CONNECTION, true);
         PrefUtils.setDefaultPreferenceValue(store, META_CASE_SENSITIVE, false);
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());
+        PrefUtils.setDefaultPreferenceValue(store, CONTENT_CACHE_CLOB, false);
 
         // Network
         PrefUtils.setDefaultPreferenceValue(store, NET_TUNNEL_PORT_MIN, 10000);

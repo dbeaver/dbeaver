@@ -22,13 +22,11 @@ import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.registry.DataFormatterProfile;
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
@@ -69,24 +67,18 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
       // Common
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR, false);
 
       // SQL execution
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_LINES, 1000);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_STATEMENT_DELIMITER, SQLConstants.DEFAULT_STATEMENT_DELIMITER);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, false);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditorInput.DEFAULT_PATTERN);
 
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 10 * 1000);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, 10000);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, false);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.META_SEPARATE_CONNECTION, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.META_CASE_SENSITIVE, false);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, false);
 
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, false);
@@ -136,18 +128,11 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_HOME, "");
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_DRIVERS_SOURCES, "http://dbeaver.jkiss.org/files/jdbc/");
 
-      // Network
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NET_TUNNEL_PORT_MIN, 10000);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NET_TUNNEL_PORT_MAX, 60000);
-
       // ResultSet
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS, 200);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL, true);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS, true);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE, IValueController.EditType.EDITOR);
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, 32);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, true);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, true);
