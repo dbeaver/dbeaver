@@ -23,6 +23,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -73,14 +74,14 @@ public class PrefPageResultSet extends TargetPrefPage
         return
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
-            store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
-            store.contains(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR) ||
+            store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
+            store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS) ||
-            store.contains(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION) ||
+            store.contains(ModelPreferences.RESULT_SET_BINARY_PRESENTATION) ||
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
-            store.contains(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
+            store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
             store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
@@ -183,15 +184,15 @@ public class PrefPageResultSet extends TargetPrefPage
         try {
             autoFetchNextSegmentCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT));
             resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
-            resultSetUseSQLCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
+            resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
-            rollbackOnErrorCheck.setSelection(store.getBoolean(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR));
+            rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
             memoryContentSize.setSelection(store.getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE));
-            binaryStringMaxLength.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
+            binaryStringMaxLength.setSelection(store.getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
 
-            DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(store.getString(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION));
+            DBDBinaryFormatter formatter = DBUtils.getBinaryPresentation(store.getString(ModelPreferences.RESULT_SET_BINARY_PRESENTATION));
             for (int i = 0; i < binaryPresentationCombo.getItemCount(); i++) {
                 if (binaryPresentationCombo.getItem(i).equals(formatter.getTitle())) {
                     binaryPresentationCombo.select(i);
@@ -222,19 +223,19 @@ public class PrefPageResultSet extends TargetPrefPage
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
-            store.setValue(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
+            store.setValue(ModelPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
 
             String presentationTitle = binaryPresentationCombo.getItem(binaryPresentationCombo.getSelectionIndex());
             for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
                 if (formatter.getTitle().equals(presentationTitle)) {
-                    store.setValue(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION, formatter.getId());
+                    store.setValue(ModelPreferences.RESULT_SET_BINARY_PRESENTATION, formatter.getId());
                     break;
                 }
             }
-            store.setValue(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN, binaryStringMaxLength.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE,
                 binaryEditorType.getSelectionIndex() == 0 ?
                     IValueController.EditType.EDITOR.name() :
@@ -257,13 +258,13 @@ public class PrefPageResultSet extends TargetPrefPage
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
+        store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
-        store.setToDefault(DBeaverPreferences.QUERY_ROLLBACK_ON_ERROR);
-        store.setToDefault(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE);
+        store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
+        store.setToDefault(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_SHOW_STRINGS);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_PRESENTATION);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
+        store.setToDefault(ModelPreferences.RESULT_SET_BINARY_PRESENTATION);
+        store.setToDefault(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);

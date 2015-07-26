@@ -35,14 +35,11 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
-    public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
 
     public static final String SCRIPT_COMMIT_TYPE = "script.commit.type"; //$NON-NLS-1$
     public static final String SCRIPT_COMMIT_LINES = "script.commit.lines"; //$NON-NLS-1$
     public static final String SCRIPT_ERROR_HANDLING = "script.error.handling"; //$NON-NLS-1$
     public static final String SCRIPT_FETCH_RESULT_SETS = "script.fetch.resultset"; //$NON-NLS-1$
-    public static final String SCRIPT_STATEMENT_DELIMITER = "script.sql.delimiter"; //$NON-NLS-1$
-    public static final String SCRIPT_IGNORE_NATIVE_DELIMITER = "script.sql.ignoreNativeDelimiter"; //$NON-NLS-1$
     public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders"; //$NON-NLS-1$
     public static final String SCRIPT_TITLE_PATTERN = "script.title.pattern"; //$NON-NLS-1$
 
@@ -51,8 +48,6 @@ public final class DBeaverPreferences
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize"; //$NON-NLS-1$
     public static final String CONTENT_HEX_ENCODING = "content.hex.encoding"; //$NON-NLS-1$
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
-    public static final String META_SEPARATE_CONNECTION = "database.meta.separate.connection"; //$NON-NLS-1$
-    public static final String META_CASE_SENSITIVE = "database.meta.casesensitive"; //$NON-NLS-1$
     public static final String EDITOR_SEPARATE_CONNECTION = "database.editor.separate.connection"; //$NON-NLS-1$
 
     public static final String TEXT_EDIT_UNDO_LEVEL = "text.edit.undo.level"; //$NON-NLS-1$
@@ -94,10 +89,6 @@ public final class DBeaverPreferences
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$
 
-    // Network
-    public static final String NET_TUNNEL_PORT_MIN = "net.tunnel.port.min"; //$NON-NLS-1$
-    public static final String NET_TUNNEL_PORT_MAX = "net.tunnel.port.max"; //$NON-NLS-1$
-
     // ResultSet
     public static final String RS_EDIT_MAX_TEXT_SIZE = "resultset.edit.maxtextsize"; //$NON-NLS-1$
     public static final String RS_EDIT_LONG_AS_LOB = "resultset.edit.longaslob"; //$NON-NLS-1$
@@ -107,11 +98,8 @@ public final class DBeaverPreferences
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
     public static final String RESULT_SET_MAX_ROWS = "resultset.maxrows"; //$NON-NLS-1$
-    public static final String RESULT_SET_MAX_ROWS_USE_SQL = "resultset.maxrows.sql"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_EDITOR_TYPE = "resultset.binary.editor"; //$NON-NLS-1$
     public static final String RESULT_SET_BINARY_SHOW_STRINGS = "resultset.binary.showStrings"; //$NON-NLS-1$
-    public static final String RESULT_SET_BINARY_PRESENTATION = "resultset.binary.representation"; //$NON-NLS-1$
-    public static final String RESULT_SET_BINARY_STRING_MAX_LEN = "resultset.binary.stringMaxLength"; //$NON-NLS-1$
     public static final String RESULT_SET_ORDER_SERVER_SIDE = "resultset.order.serverSide"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_ODD_ROWS = "resultset.show.oddRows"; //$NON-NLS-1$
     public static final String RESULT_SET_SHOW_CELL_ICONS = "resultset.show.cellIcons"; //$NON-NLS-1$
