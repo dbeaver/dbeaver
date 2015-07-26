@@ -21,11 +21,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -41,6 +43,10 @@ public class TaskstJob extends AbstractJob
         this.tasks = new ArrayList<DBRRunnableWithProgress>(tasks);
     }
 
+    public TaskstJob(String name, DBRRunnableWithProgress task) {
+        this(name, Collections.singletonList(task));
+    }
+
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
         monitor.beginTask(getName(), tasks.size());
@@ -53,17 +59,11 @@ public class TaskstJob extends AbstractJob
             try {
                 task.run(monitor);
             } catch (InvocationTargetException e) {
-
-                if (!ignoreErrors) {
-                    ExecutionQueueErrorJob errorJob = new ExecutionQueueErrorJob(getName(), e.getTargetException(), tasks.size() > 1);
-                    errorJob.schedule();
-                    try {
-                        errorJob.join();
-                    } catch (InterruptedException e1) {
-                        log.error(e1);
-                    }
+                if (tasks.size() == 1) {
+                    UIUtils.showErrorDialog(null, getName(), null, e.getTargetException());
+                } else if (!ignoreErrors) {
                     boolean keepRunning = true;
-                    switch (errorJob.getResponse()) {
+                    switch (ExecutionQueueErrorJob.showError(getName(), e.getTargetException(), true)) {
                         case STOP:
                             keepRunning = false;
                             break;
@@ -85,6 +85,7 @@ public class TaskstJob extends AbstractJob
             } catch (InterruptedException e) {
                 // Ignore
             }
+            monitor.worked(1);
             i++;
         }
         monitor.done();
