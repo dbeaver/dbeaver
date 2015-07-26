@@ -37,6 +37,7 @@ public class TaskstJob extends AbstractJob
 
     public TaskstJob(String name, Collection<DBRRunnableWithProgress> tasks) {
         super(name);
+        setUser(true);
         this.tasks = new ArrayList<DBRRunnableWithProgress>(tasks);
     }
 
