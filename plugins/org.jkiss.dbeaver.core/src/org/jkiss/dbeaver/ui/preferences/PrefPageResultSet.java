@@ -45,21 +45,24 @@ public class PrefPageResultSet extends TargetPrefPage
     private Button autoFetchNextSegmentCheck;
     private Spinner resultSetSize;
     private Button resultSetUseSQLCheck;
-    //private Button binaryShowStrings;
-    private Combo binaryPresentationCombo;
-    private Combo binaryEditorType;
-
-    private Button keepStatementOpenCheck;
-    private Button rollbackOnErrorCheck;
-    private Spinner binaryStringMaxLength;
-    private Spinner memoryContentSize;
-
     private Button serverSideOrderingCheck;
 
     private Button showOddRows;
     private Button showCellIcons;
     private Combo doubleClickBehavior;
     private Button autoSwitchMode;
+
+    //private Button binaryShowStrings;
+    private Combo binaryPresentationCombo;
+    private Combo binaryEditorType;
+    private Spinner binaryStringMaxLength;
+    private Spinner memoryContentSize;
+    private Combo encodingCombo;
+    private Button contentCacheClob;
+
+    private Button keepStatementOpenCheck;
+    private Button rollbackOnErrorCheck;
+
 
     public PrefPageResultSet()
     {
@@ -82,6 +85,8 @@ public class PrefPageResultSet extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_BINARY_PRESENTATION) ||
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
             store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
+            store.contains(ModelPreferences.CONTENT_HEX_ENCODING) ||
+            store.contains(ModelPreferences.CONTENT_CACHE_CLOB) ||
             store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
@@ -118,14 +123,16 @@ public class PrefPageResultSet extends TargetPrefPage
             serverSideOrderingCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
         }
 
-        // General settings
         {
-            Group txnGroup = new Group(composite, SWT.NONE);
-            txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
-            txnGroup.setLayout(new GridLayout(2, false));
+            Group uiGroup = UIUtils.createControlGroup(composite, "UI", 2, SWT.NONE, 0);
 
-            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
+            showOddRows = UIUtils.createLabelCheckbox(uiGroup, "Mark odd/even rows", false);
+            showCellIcons = UIUtils.createLabelCheckbox(uiGroup, "Show cell icons", false);
+            doubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
+            doubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
+            doubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
+            doubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
+            autoSwitchMode = UIUtils.createLabelCheckbox(uiGroup, "Switch to record/grid mode\non single/multiple row(s)", false);
         }
 
         {
@@ -161,18 +168,25 @@ public class PrefPageResultSet extends TargetPrefPage
             memoryContentSize.setIncrement(1);
             memoryContentSize.setMinimum(0);
             memoryContentSize.setMaximum(1024 * 1024 * 1024);
+
+            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_content_editor_hex_encoding);
+            encodingCombo = UIUtils.createEncodingCombo(binaryGroup, null);
+
+            contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_clob, true);
         }
 
+        // General settings
         {
-            Group uiGroup = UIUtils.createControlGroup(composite, "UI", 2, SWT.NONE, 0);
+            Group txnGroup = new Group(composite, SWT.NONE);
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            txnGroup.setLayoutData(gd);
 
-            showOddRows = UIUtils.createLabelCheckbox(uiGroup, "Mark odd/even rows", false);
-            showCellIcons = UIUtils.createLabelCheckbox(uiGroup, "Show cell icons", false);
-            doubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
-            doubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
-            doubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
-            doubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
-            autoSwitchMode = UIUtils.createLabelCheckbox(uiGroup, "Switch to record/grid mode\non single/multiple row(s)", false);
+            txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
+            txnGroup.setLayout(new GridLayout(2, false));
+
+            keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
+            rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
         }
 
         return composite;
@@ -206,6 +220,8 @@ public class PrefPageResultSet extends TargetPrefPage
             } else {
                 binaryEditorType.select(1);
             }
+            UIUtils.setComboSelection(encodingCombo, store.getString(ModelPreferences.CONTENT_HEX_ENCODING));
+            contentCacheClob.setSelection(store.getBoolean(ModelPreferences.CONTENT_CACHE_CLOB));
 
             showOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
             showCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
@@ -240,6 +256,8 @@ public class PrefPageResultSet extends TargetPrefPage
                 binaryEditorType.getSelectionIndex() == 0 ?
                     IValueController.EditType.EDITOR.name() :
                     IValueController.EditType.PANEL.name());
+            store.setValue(ModelPreferences.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
+            store.setValue(ModelPreferences.CONTENT_CACHE_CLOB, contentCacheClob.getSelection());
 
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
 
@@ -266,6 +284,8 @@ public class PrefPageResultSet extends TargetPrefPage
         store.setToDefault(ModelPreferences.RESULT_SET_BINARY_PRESENTATION);
         store.setToDefault(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
+        store.setToDefault(ModelPreferences.CONTENT_HEX_ENCODING);
+        store.setToDefault(ModelPreferences.CONTENT_CACHE_CLOB);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
