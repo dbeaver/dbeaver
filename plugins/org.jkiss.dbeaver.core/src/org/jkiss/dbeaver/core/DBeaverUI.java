@@ -211,6 +211,10 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
+    /**
+     * Runs task in Eclipse progress service.
+     * NOTE: this call can't be canceled if it will block in IO
+     */
     public static void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
@@ -224,6 +228,10 @@ public class DBeaverUI implements DBUICallback {
             });
     }
 
+    /**
+     * Runs task in Eclipse progress dialog.
+     * NOTE: this call can't be canceled if it will block in IO
+     */
     public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InvocationTargetException
     {
         try {

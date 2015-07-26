@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
-import org.jkiss.dbeaver.runtime.TaskstJob;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.utils.CommonUtils;
@@ -188,6 +188,7 @@ public class DataSourceDescriptor
         return driver;
     }
 
+    @NotNull
     @Override
     public DBPApplication getApplication() {
         return registry.getApplication();
@@ -289,7 +290,7 @@ public class DataSourceDescriptor
         if (updateContext != null) {
             final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
-                new TaskstJob("Set auto-commit mode", new DBRRunnableWithProgress() {
+                new TasksJob("Set auto-commit mode", new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException {
