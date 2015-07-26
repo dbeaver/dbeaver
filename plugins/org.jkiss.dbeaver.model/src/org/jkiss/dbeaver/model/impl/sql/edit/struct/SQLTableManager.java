@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -124,7 +125,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             String tableName = i == 0 ? BASE_TABLE_NAME : (BASE_TABLE_NAME + "_" + i);
             DBSObject child = container.getChild(VoidProgressMonitor.INSTANCE, tableName);
             if (child == null) {
-                return tableName;
+                return DBObjectNameCaseTransformer.transformName(container.getDataSource(), tableName);
             }
         }
     }
