@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.runtime.TaskstJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.utils.CommonUtils;
@@ -288,25 +289,20 @@ public class DataSourceDescriptor
         if (updateContext != null) {
             final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
-                try {
-                    DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException {
-                            monitor.beginTask("Set auto-commit mode", 1);
-                            try {
-                                // Change auto-commit mode
-                                txnManager.setAutoCommit(monitor, autoCommit);
-                            } catch (DBCException e) {
-                                throw new InvocationTargetException(e);
-                            } finally {
-                                monitor.done();
-                            }
+                new TaskstJob("Set auto-commit mode", new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException {
+                        try {
+                            // Change auto-commit mode
+                            txnManager.setAutoCommit(monitor, autoCommit);
+                        } catch (DBCException e) {
+                            throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
                         }
-                    });
-                } catch (InvocationTargetException e) {
-                    throw new DBException("Can't set auto-commit", e.getTargetException());
-                }
+                    }
+                }).schedule();
             }
         }
         // Save in preferences
