@@ -40,6 +40,40 @@
     <versions>
 
         <version>
+            <number>3.4.3</number>
+            <type>major</type>
+            <date>27.07.2015</date>
+
+            <release-notes>
+                - Oracle: metadata loading performance improved (12g)
+                - SQLite: driver updated
+                - SQLite: foreign keys loading fixed
+                - PostgreSQL: sequences support added
+                - Firebird: sequences support added
+                - MySQL: columns extra info added (ON UPDATE, etc)
+
+                - BIT/TINYINT and LONGVARCHAR types support fixed
+                - Date/time value editor improved
+                - BLOB/CLOB editors fixed
+                - CLOB values cache support added (+configuration)
+
+                - GoTo database objects dialog was fixed
+                - Find/Replace dialog in results was fixed
+                - SQL editor: parenthesis matching fixed
+                - Results cell value editor fixed and improved
+                - DDL generation improved
+                - SQL parameters handle fixed (+configuration)
+                - Transactions management fixed
+                - Query manager fixed (updated row count si now correct)
+                - UI freeze problems fixed
+
+                - Document editor support added for MongoDB JSON documents and Oracle XML tables
+
+                - A LOT of minor UI bugs was fixed
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.4.2</number>
             <type>major</type>
             <date>30.06.2015</date>
