@@ -18,12 +18,12 @@
     </Company_Info>
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
-        <Program_Version>3.4.2</Program_Version>
-        <Program_Release_Month>06</Program_Release_Month>
-        <Program_Release_Day>30</Program_Release_Day>
+        <Program_Version>3.4.3</Program_Version>
+        <Program_Release_Month>07</Program_Release_Month>
+        <Program_Release_Day>27</Program_Release_Day>
         <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
-        <Program_Type>Freeware</Program_Type>
+        <Program_Type>Free software</Program_Type>
         <Program_Release_Status>New Release</Program_Release_Status>
         <Program_Install_Support>Install and Uninstall</Program_Install_Support>
         <Program_OS_Support>WinXP,WinVista,WinVista x64,Win7 x32,Win7 x64,Win2000,WinOther,Other,Mac OS
@@ -31,19 +31,31 @@
         </Program_OS_Support>
         <Program_Language>English</Program_Language>
         <Program_Change_Info>
-            - Stored procedures support was added in SQL Editor
-            - Connections wizard and driver editor were improved
-            - Bootstrap SQL queries config was added
-            - Embedded databases support was improved
-            - Possibility to disable editors reopen was added
-            - Keyboard shortcuts were fixed
-            - DB2 table names escaping was added
-            - DB2 read-only connection was fixed
-            - LOB export was fixed
-            - Multi-connection initialization was fixed (auto-commit, transactions isolation level, current schema)
-            - Cassandra multi-connection issue fixed
-            - Persistent Query Manager history was added (no UI yet)
-            - Many other minor UI fixes
+            - Oracle: metadata loading performance improved (12g)
+            - SQLite: driver updated
+            - SQLite: foreign keys loading fixed
+            - PostgreSQL: sequences support added
+            - Firebird: sequences support added
+            - MySQL: columns extra info added (ON UPDATE, etc)
+
+            - BIT/TINYINT and LONGVARCHAR types support fixed
+            - Date/time value editor improved
+            - BLOB/CLOB editors fixed
+            - CLOB values cache support added (+configuration)
+
+            - GoTo database objects dialog was fixed
+            - Find/Replace dialog in results was fixed
+            - SQL editor: parenthesis matching fixed
+            - Results cell value editor fixed and improved
+            - DDL generation improved
+            - SQL parameters handle fixed (+configuration)
+            - Transactions management fixed
+            - Query manager fixed (updated row count si now correct)
+            - UI freeze problems fixed
+
+            - Document editor support added for MongoDB JSON documents and Oracle XML tables
+
+            - A LOT of minor UI bugs was fixed
         </Program_Change_Info>
         <Program_System_Requirements></Program_System_Requirements>
         <Program_Category_Class>Development::Other</Program_Category_Class>
@@ -66,8 +78,8 @@
             <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
         </Application_URLs>
         <Download_URLs>
-            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.2-x86-setup.exe</Primary_Download_URL>
-            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.2-x86_64-setup.exe
+            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.3-x86-setup.exe</Primary_Download_URL>
+            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.3-x86_64-setup.exe
             </Secondary_Download_URL>
             <Additional_Download_URL_1></Additional_Download_URL_1>
             <Additional_Download_URL_2></Additional_Download_URL_2>
