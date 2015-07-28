@@ -18,9 +18,9 @@
     </Company_Info>
     <Program_Info>
         <Program_Name>DBeaver</Program_Name>
-        <Program_Version>3.4.3</Program_Version>
+        <Program_Version>3.4.4</Program_Version>
         <Program_Release_Month>07</Program_Release_Month>
-        <Program_Release_Day>27</Program_Release_Day>
+        <Program_Release_Day>29</Program_Release_Day>
         <Program_Release_Year>2015</Program_Release_Year>
         <Program_Cost_Dollars>0</Program_Cost_Dollars>
         <Program_Type>Free software</Program_Type>
@@ -78,8 +78,8 @@
             <Application_XML_File_URL>http://dbeaver.jkiss.org/product/dbeaver_pad.xml</Application_XML_File_URL>
         </Application_URLs>
         <Download_URLs>
-            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.3-x86-setup.exe</Primary_Download_URL>
-            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.3-x86_64-setup.exe
+            <Primary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.4-x86-setup.exe</Primary_Download_URL>
+            <Secondary_Download_URL>http://dbeaver.jkiss.org/files/dbeaver-3.4.4-x86_64-setup.exe
             </Secondary_Download_URL>
             <Additional_Download_URL_1></Additional_Download_URL_1>
             <Additional_Download_URL_2></Additional_Download_URL_2>

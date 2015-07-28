@@ -40,6 +40,18 @@
     <versions>
 
         <version>
+            <number>3.4.4</number>
+            <type>hotfix</type>
+            <date>29.07.2015</date>
+
+            <release-notes>
+                - ERD extension loading fix
+                - DB2 stored procedures INOUT parameters support fix
+                - Data formatting configuration fix
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.4.3</number>
             <type>major</type>
             <date>27.07.2015</date>
