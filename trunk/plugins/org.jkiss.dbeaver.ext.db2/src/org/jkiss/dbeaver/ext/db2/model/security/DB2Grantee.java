@@ -91,7 +91,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     @Association
     public Collection<DB2DatabaseAuth> getDatabaseAuths(DBRProgressMonitor monitor) throws DBException
     {
-        return databaseAuthCache.getObjects(monitor, this);
+        return databaseAuthCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -127,7 +127,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     @Association
     public Collection<DB2RoleAuth> getRoles(DBRProgressMonitor monitor) throws DBException
     {
-        return roleCache.getObjects(monitor, this);
+        return roleCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -189,7 +189,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
         Collection<T> listAuths = (Collection<T>) cachePerObject.get(authClass.getClass());
         if (listAuths == null) {
             listAuths = new ArrayList<T>();
-            for (DB2AuthBase db2Auth : authCache.getObjects(monitor, this)) {
+            for (DB2AuthBase db2Auth : authCache.getAllObjects(monitor, this)) {
                 if (authClass.isInstance(db2Auth)) {
                     listAuths.add((T) db2Auth);
                 }

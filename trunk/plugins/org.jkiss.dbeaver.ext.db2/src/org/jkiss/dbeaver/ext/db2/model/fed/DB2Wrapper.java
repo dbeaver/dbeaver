@@ -82,7 +82,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
     @Association
     public Collection<DB2WrapperOption> getOptions(DBRProgressMonitor monitor) throws DBException
     {
-        return optionsCache.getObjects(monitor, this);
+        return optionsCache.getAllObjects(monitor, this);
     }
 
     // -----------------

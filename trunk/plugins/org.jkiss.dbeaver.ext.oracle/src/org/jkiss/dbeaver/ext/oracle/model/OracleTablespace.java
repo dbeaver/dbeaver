@@ -248,12 +248,12 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     @Association
     public Collection<OracleDataFile> getFiles(DBRProgressMonitor monitor) throws DBException
     {
-        return fileCache.getObjects(monitor, this);
+        return fileCache.getAllObjects(monitor, this);
     }
 
     public OracleDataFile getFile(DBRProgressMonitor monitor, long relativeFileNo) throws DBException
     {
-        for (OracleDataFile file : fileCache.getObjects(monitor, this)) {
+        for (OracleDataFile file : fileCache.getAllObjects(monitor, this)) {
             if (file.getRelativeNo() == relativeFileNo) {
                 return file;
             }
@@ -264,7 +264,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     @Association
     public Collection<OracleSegment<OracleTablespace>> getSegments(DBRProgressMonitor monitor) throws DBException
     {
-        return segmentCache.getObjects(monitor, this);
+        return segmentCache.getAllObjects(monitor, this);
     }
 
     @Override

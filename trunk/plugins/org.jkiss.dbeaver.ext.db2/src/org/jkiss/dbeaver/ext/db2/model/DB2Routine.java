@@ -207,7 +207,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     @Override
     public Collection<DB2RoutineParm> getParameters(DBRProgressMonitor monitor) throws DBException
     {
-        return parmsCache.getObjects(monitor, this);
+        return parmsCache.getAllObjects(monitor, this);
     }
 
     // -----------------

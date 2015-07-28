@@ -188,7 +188,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             session.close();
         }
 
-        this.dataTypeCache.getObjects(monitor, this);
+        this.dataTypeCache.getAllObjects(monitor, this);
     }
 
     protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
@@ -508,7 +508,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Schema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
-        return schemaCache.getObjects(monitor, this);
+        return schemaCache.getAllObjects(monitor, this);
     }
 
     public DB2Schema getSchema(DBRProgressMonitor monitor, String name) throws DBException
@@ -519,7 +519,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2DataType> getDataTypes(DBRProgressMonitor monitor) throws DBException
     {
-        return dataTypeCache.getObjects(monitor, this);
+        return dataTypeCache.getAllObjects(monitor, this);
     }
 
     public DB2DataType getDataType(DBRProgressMonitor monitor, String name) throws DBException
@@ -530,7 +530,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Tablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException
     {
-        return tablespaceCache.getObjects(monitor, this);
+        return tablespaceCache.getAllObjects(monitor, this);
     }
 
     public DB2Tablespace getTablespace(DBRProgressMonitor monitor, String name) throws DBException
@@ -541,7 +541,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2StorageGroup> getStorageGroups(DBRProgressMonitor monitor) throws DBException
     {
-        return storagegroupCache.getObjects(monitor, this);
+        return storagegroupCache.getAllObjects(monitor, this);
     }
 
     public DB2StorageGroup getStorageGroup(DBRProgressMonitor monitor, String name) throws DBException
@@ -552,7 +552,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Bufferpool> getBufferpools(DBRProgressMonitor monitor) throws DBException
     {
-        return bufferpoolCache.getObjects(monitor, this);
+        return bufferpoolCache.getAllObjects(monitor, this);
     }
 
     public DB2Bufferpool getBufferpool(DBRProgressMonitor monitor, String name) throws DBException
@@ -563,7 +563,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Wrapper> getWrappers(DBRProgressMonitor monitor) throws DBException
     {
-        return wrapperCache.getObjects(monitor, this);
+        return wrapperCache.getAllObjects(monitor, this);
     }
 
     public DB2Wrapper getWrapper(DBRProgressMonitor monitor, String name) throws DBException
@@ -574,7 +574,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2UserMapping> getUserMappings(DBRProgressMonitor monitor) throws DBException
     {
-        return userMappingCache.getObjects(monitor, this);
+        return userMappingCache.getAllObjects(monitor, this);
     }
 
     public DB2UserMapping getUserMapping(DBRProgressMonitor monitor, String name) throws DBException
@@ -585,7 +585,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2RemoteServer> getRemoteServers(DBRProgressMonitor monitor) throws DBException
     {
-        return remoteServerCache.getObjects(monitor, this);
+        return remoteServerCache.getAllObjects(monitor, this);
     }
 
     public DB2RemoteServer getRemoteServer(DBRProgressMonitor monitor, String name) throws DBException
@@ -596,7 +596,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Grantee> getUsers(DBRProgressMonitor monitor) throws DBException
     {
-        return userCache.getObjects(monitor, this);
+        return userCache.getAllObjects(monitor, this);
     }
 
     public DB2Grantee getUser(DBRProgressMonitor monitor, String name) throws DBException
@@ -607,7 +607,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Grantee> getGroups(DBRProgressMonitor monitor) throws DBException
     {
-        return groupCache.getObjects(monitor, this);
+        return groupCache.getAllObjects(monitor, this);
     }
 
     public DB2Grantee getGroup(DBRProgressMonitor monitor, String name) throws DBException
@@ -618,7 +618,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Role> getRoles(DBRProgressMonitor monitor) throws DBException
     {
-        return roleCache.getObjects(monitor, this);
+        return roleCache.getAllObjects(monitor, this);
     }
 
     public DB2Role getRole(DBRProgressMonitor monitor, String name) throws DBException
@@ -629,7 +629,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Association
     public Collection<DB2Variable> getVariables(DBRProgressMonitor monitor) throws DBException
     {
-        return variableCache.getObjects(monitor, this);
+        return variableCache.getAllObjects(monitor, this);
     }
 
     public DB2Variable getVariable(DBRProgressMonitor monitor, String name) throws DBException

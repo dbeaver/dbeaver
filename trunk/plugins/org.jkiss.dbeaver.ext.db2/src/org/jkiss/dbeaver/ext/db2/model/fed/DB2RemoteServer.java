@@ -81,7 +81,7 @@ public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableOb
     @Association
     public Collection<DB2RemoteServerOption> getOptions(DBRProgressMonitor monitor) throws DBException
     {
-        return optionsCache.getObjects(monitor, this);
+        return optionsCache.getAllObjects(monitor, this);
     }
 
     // -----------------

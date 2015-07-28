@@ -182,7 +182,7 @@ public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<
     @Association
     public Collection<OraclePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException
     {
-        return rolePrivCache.getObjects(monitor, this);
+        return rolePrivCache.getAllObjects(monitor, this);
     }
 
     public static class ProfileReferenceValidator implements IPropertyCacheValidator<OracleUser> {

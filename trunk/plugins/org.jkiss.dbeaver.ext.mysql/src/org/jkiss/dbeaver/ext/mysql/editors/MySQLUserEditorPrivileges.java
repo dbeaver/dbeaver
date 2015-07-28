@@ -254,7 +254,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                         return Collections.emptyList();
                     }
                     try {
-                        return selectedCatalog.getTableCache().getObjects(getProgressMonitor(), selectedCatalog);
+                        return selectedCatalog.getTableCache().getAllObjects(getProgressMonitor(), selectedCatalog);
                     } catch (DBException e) {
                         log.error(e);
                     }

@@ -68,7 +68,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         throws DBException
     {
         List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();
-        for (OBJECT object : getObjects(monitor, owner)) {
+        for (OBJECT object : getAllObjects(monitor, owner)) {
             if (type.isInstance(object)) {
                 result.add(type.cast(object));
             }

@@ -31,7 +31,7 @@ import java.util.List;
 public class SimpleObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT> {
 
     @Override
-    public List<OBJECT> getObjects(DBRProgressMonitor monitor, @Nullable OWNER owner)
+    public List<OBJECT> getAllObjects(DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
         return getCachedObjects();

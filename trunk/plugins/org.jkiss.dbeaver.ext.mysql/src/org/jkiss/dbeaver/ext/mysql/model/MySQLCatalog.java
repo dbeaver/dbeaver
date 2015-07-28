@@ -224,7 +224,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     public Collection<MySQLProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        return proceduresCache.getObjects(monitor, this);
+        return proceduresCache.getAllObjects(monitor, this);
     }
 
     public MySQLProcedure getProcedure(DBRProgressMonitor monitor, String procName)
@@ -237,7 +237,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return triggerCache.getObjects(monitor, this);
+        return triggerCache.getAllObjects(monitor, this);
     }
 
     public MySQLTrigger getTrigger(DBRProgressMonitor monitor, String name)
@@ -250,7 +250,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     public Collection<MySQLTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this);
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -279,7 +279,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache table constraints");
-            constraintCache.getObjects(monitor, this);
+            constraintCache.getAllObjects(monitor, this);
         }
     }
 

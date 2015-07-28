@@ -94,7 +94,7 @@ public abstract class JDBCCompositeCache<
     abstract protected void cacheChildren(OBJECT object, List<ROW_REF> children);
 
     @Override
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
+    public Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         return getObjects(monitor, owner, null);

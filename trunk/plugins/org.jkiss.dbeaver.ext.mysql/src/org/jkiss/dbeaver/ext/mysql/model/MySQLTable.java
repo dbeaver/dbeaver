@@ -184,7 +184,7 @@ public class MySQLTable extends MySQLTableBase
         throws DBException
     {
         List<MySQLTrigger> triggers = new ArrayList<MySQLTrigger>();
-        for (MySQLTrigger trigger : getContainer().triggerCache.getObjects(monitor, getContainer())) {
+        for (MySQLTrigger trigger : getContainer().triggerCache.getAllObjects(monitor, getContainer())) {
             if (trigger.getTable() == this) {
                 triggers.add(trigger);
             }
@@ -196,7 +196,7 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLPartition> getPartitions(DBRProgressMonitor monitor)
         throws DBException
     {
-        return partitionCache.getObjects(monitor, this);
+        return partitionCache.getAllObjects(monitor, this);
     }
 
 

@@ -156,7 +156,7 @@ public class OracleDataSource extends JDBCDataSource
     @Association
     public Collection<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
-        return schemaCache.getObjects(monitor, this);
+        return schemaCache.getAllObjects(monitor, this);
     }
 
     public OracleSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException
@@ -170,25 +170,25 @@ public class OracleDataSource extends JDBCDataSource
     @Association
     public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException
     {
-        return tablespaceCache.getObjects(monitor, this);
+        return tablespaceCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleUser> getUsers(DBRProgressMonitor monitor) throws DBException
     {
-        return userCache.getObjects(monitor, this);
+        return userCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException
     {
-        return profileCache.getObjects(monitor, this);
+        return profileCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleRole> getRoles(DBRProgressMonitor monitor) throws DBException
     {
-        return roleCache.getObjects(monitor, this);
+        return roleCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -279,7 +279,7 @@ public class OracleDataSource extends JDBCDataSource
             }
         }
         // Cache data types
-        this.dataTypeCache.getObjects(monitor, this);
+        this.dataTypeCache.getAllObjects(monitor, this);
     }
 
     @Override

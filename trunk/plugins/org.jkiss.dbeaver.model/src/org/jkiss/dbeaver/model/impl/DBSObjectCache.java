@@ -31,7 +31,7 @@ import java.util.List;
  */
 public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> {
 
-    Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
+    Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException;
 
     Collection<OBJECT> getCachedObjects();
