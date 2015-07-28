@@ -123,7 +123,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
     public Collection<OracleDataTypeMethodParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return parameterCache == null ? null : parameterCache.getObjects(monitor, this);
+        return parameterCache == null ? null : parameterCache.getAllObjects(monitor, this);
     }
 
     private class ParameterCache extends JDBCObjectCache<OracleDataTypeMethod, OracleDataTypeMethodParameter> {

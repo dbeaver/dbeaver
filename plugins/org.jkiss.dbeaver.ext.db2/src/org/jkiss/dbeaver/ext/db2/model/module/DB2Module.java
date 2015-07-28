@@ -116,19 +116,19 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
     @Association
     public Collection<DB2ModuleCondition> getConditions(DBRProgressMonitor monitor) throws DBException
     {
-        return conditionCache.getObjects(monitor, this);
+        return conditionCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<DB2Routine> getFunctions(DBRProgressMonitor monitor) throws DBException
     {
-        return functionCache.getObjects(monitor, this);
+        return functionCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<DB2Routine> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
-        return procedureCache.getObjects(monitor, this);
+        return procedureCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -139,7 +139,7 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
     @Association
     public Collection<DB2DataType> getTypes(DBRProgressMonitor monitor) throws DBException
     {
-        return typeCache.getObjects(monitor, this);
+        return typeCache.getAllObjects(monitor, this);
     }
 
     public DB2DataType getType(DBRProgressMonitor monitor, String name) throws DBException
@@ -150,7 +150,7 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
     @Association
     public Collection<DB2Variable> getVariables(DBRProgressMonitor monitor) throws DBException
     {
-        return variableCache.getObjects(monitor, this);
+        return variableCache.getAllObjects(monitor, this);
     }
 
     // -----------------------

@@ -52,19 +52,19 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
     @Association
     public Collection<OraclePrivRole> getRolePrivs(DBRProgressMonitor monitor) throws DBException
     {
-        return rolePrivCache.getObjects(monitor, this);
+        return rolePrivCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OraclePrivSystem> getSystemPrivs(DBRProgressMonitor monitor) throws DBException
     {
-        return systemPrivCache.getObjects(monitor, this);
+        return systemPrivCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OraclePrivObject> getObjectPrivs(DBRProgressMonitor monitor) throws DBException
     {
-        return objectPrivCache.getObjects(monitor, this);
+        return objectPrivCache.getAllObjects(monitor, this);
     }
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {

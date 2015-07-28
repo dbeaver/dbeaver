@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
-import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -172,7 +170,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         } else {
             this.partitionCache.loadObjects(monitor, this);
             this.partitionCache.loadChildren(monitor, this, null);
-            return this.partitionCache.getObjects(monitor, this);
+            return this.partitionCache.getAllObjects(monitor, this);
         }
     }
 

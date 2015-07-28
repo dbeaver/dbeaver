@@ -51,7 +51,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         throws SQLException, DBException;
 
     @Override
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner)
+    public Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         if (!isCached()) {

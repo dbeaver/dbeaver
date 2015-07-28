@@ -116,7 +116,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     {
         super.initialize(monitor);
 
-        dataTypeCache.getObjects(monitor, this);
+        dataTypeCache.getAllObjects(monitor, this);
         JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
         try {
             // Read engines
@@ -189,7 +189,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             }
 
             // Read catalogs
-            catalogCache.getObjects(monitor, this);
+            catalogCache.getAllObjects(monitor, this);
 
             {
                 // Get active schema

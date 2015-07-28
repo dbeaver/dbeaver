@@ -91,7 +91,7 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
     @Association
     public Collection<DB2RoleDep> getRoleDeps(DBRProgressMonitor monitor) throws DBException
     {
-        return roleDepCache.getObjects(monitor, this);
+        return roleDepCache.getAllObjects(monitor, this);
     }
 
     @Override

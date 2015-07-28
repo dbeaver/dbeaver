@@ -74,7 +74,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
     @Override
     public Collection<OracleProcedureArgument> getParameters(DBRProgressMonitor monitor) throws DBException
     {
-        return argumentsCache.getObjects(monitor, this);
+        return argumentsCache.getAllObjects(monitor, this);
     }
 
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {

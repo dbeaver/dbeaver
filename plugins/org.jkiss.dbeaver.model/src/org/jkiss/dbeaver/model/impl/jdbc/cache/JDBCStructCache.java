@@ -146,7 +146,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             // but possibly this feature is not supported [JDBC: SQLite]
                         } else {
                             // Now set empty column list for other tables
-                            for (OBJECT tmpObject : getObjects(monitor, owner)) {
+                            for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
                                 if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
                                     cacheChildren(tmpObject, new ArrayList<CHILD>());
                                 }
@@ -212,7 +212,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         loadChildren(monitor, owner, forObject);
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(forObject);
-            return nestedCache == null ? null : nestedCache.getObjects(monitor, null);
+            return nestedCache == null ? null : nestedCache.getAllObjects(monitor, null);
         }
     }
 

@@ -225,13 +225,13 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     @Association
     public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
-        return tableIndexCache.getObjects(monitor, this);
+        return tableIndexCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException
     {
-        return tableTriggerCache.getObjects(monitor, this);
+        return tableTriggerCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -241,7 +241,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         if (partitionCache == null) {
             return null;
         } else {
-            return partitionCache.getObjects(monitor, this);
+            return partitionCache.getAllObjects(monitor, this);
         }
     }
 

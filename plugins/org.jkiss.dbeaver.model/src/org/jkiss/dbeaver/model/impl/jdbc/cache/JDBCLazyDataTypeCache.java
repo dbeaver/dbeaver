@@ -46,7 +46,7 @@ public abstract class JDBCLazyDataTypeCache extends AbstractObjectCache<JDBCData
         int maxScale);
 
     @Override
-    public Collection<DBSDataType> getObjects(DBRProgressMonitor monitor, JDBCDataSource jdbcDataSource) throws DBException
+    public Collection<DBSDataType> getAllObjects(DBRProgressMonitor monitor, JDBCDataSource jdbcDataSource) throws DBException
     {
         return getCachedObjects();
     }

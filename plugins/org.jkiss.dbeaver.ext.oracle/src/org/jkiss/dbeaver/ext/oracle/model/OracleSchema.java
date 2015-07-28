@@ -176,14 +176,14 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public Collection<OracleMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return mviewCache.getObjects(monitor, this);
+        return mviewCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleDataType> getDataTypes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return dataTypeCache.getObjects(monitor, this);
+        return dataTypeCache.getAllObjects(monitor, this);
     }
 
     public OracleDataType getDataType(DBRProgressMonitor monitor, String name)
@@ -208,21 +208,21 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public Collection<OracleSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return sequenceCache.getObjects(monitor, this);
+        return sequenceCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OraclePackage> getPackages(DBRProgressMonitor monitor)
         throws DBException
     {
-        return packageCache.getObjects(monitor, this);
+        return packageCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleProcedureStandalone> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
-        return proceduresCache.getObjects(monitor, this);
+        return proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -234,42 +234,42 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public Collection<OracleSynonym> getSynonyms(DBRProgressMonitor monitor)
         throws DBException
     {
-        return synonymCache.getObjects(monitor, this);
+        return synonymCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        return triggerCache.getObjects(monitor, this);
+        return triggerCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleDBLink> getDatabaseLinks(DBRProgressMonitor monitor)
         throws DBException
     {
-        return dbLinkCache.getObjects(monitor, this);
+        return dbLinkCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleJavaClass> getJavaClasses(DBRProgressMonitor monitor)
         throws DBException
     {
-        return javaCache.getObjects(monitor, this);
+        return javaCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<OracleRecycledObject> getRecycledObjects(DBRProgressMonitor monitor)
         throws DBException
     {
-        return recycleBin.getObjects(monitor, this);
+        return recycleBin.getAllObjects(monitor, this);
     }
 
     @Override
     public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this);
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -791,7 +791,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         public Collection<OracleTrigger> getObjects(DBRProgressMonitor monitor, OracleSchema oracleSchema, OracleTableBase table) throws DBException
         {
-            final Collection<OracleTrigger> allTriggers = super.getObjects(monitor, oracleSchema);
+            final Collection<OracleTrigger> allTriggers = super.getAllObjects(monitor, oracleSchema);
             if (CommonUtils.isEmpty(allTriggers)) {
                 return Collections.emptyList();
             }

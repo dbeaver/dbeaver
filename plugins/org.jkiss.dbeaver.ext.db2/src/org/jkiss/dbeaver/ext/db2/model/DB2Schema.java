@@ -177,23 +177,23 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             monitor.subTask("Cache tables");
             tableCache.loadObjects(monitor, this);
             monitor.subTask("Cache Views");
-            viewCache.getObjects(monitor, this);
+            viewCache.getAllObjects(monitor, this);
             monitor.subTask("Cache MQTs");
-            mqtCache.getObjects(monitor, this);
+            mqtCache.getAllObjects(monitor, this);
             monitor.subTask("Cache Nicknames");
-            nicknameCache.getObjects(monitor, this);
+            nicknameCache.getAllObjects(monitor, this);
 
             monitor.subTask("Cache Check Constraints");
-            checkCache.getObjects(monitor, this);
+            checkCache.getAllObjects(monitor, this);
             monitor.subTask("Cache Sequences");
-            sequenceCache.getObjects(monitor, this);
+            sequenceCache.getAllObjects(monitor, this);
             if (xmlSchemaCache != null) {
                 monitor.subTask("Cache XML Schemas");
-                xmlSchemaCache.getObjects(monitor, this);
+                xmlSchemaCache.getAllObjects(monitor, this);
             }
             if (moduleCache != null) {
                 monitor.subTask("Cache Modules");
-                moduleCache.getObjects(monitor, this);
+                moduleCache.getAllObjects(monitor, this);
             }
         }
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
@@ -208,7 +208,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
             monitor.subTask("Cache table references");
             referenceCache.getObjects(monitor, this, null);
             monitor.subTask("Cache indexes");
-            indexCache.getObjects(monitor, this);
+            indexCache.getAllObjects(monitor, this);
         }
     }
 
@@ -259,10 +259,10 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     public Collection<DB2TableBase> getChildren(DBRProgressMonitor monitor) throws DBException
     {
         List<DB2TableBase> allChildren = new ArrayList<DB2TableBase>();
-        allChildren.addAll(tableCache.getObjects(monitor, this));
-        allChildren.addAll(viewCache.getObjects(monitor, this));
-        allChildren.addAll(mqtCache.getObjects(monitor, this));
-        allChildren.addAll(nicknameCache.getObjects(monitor, this));
+        allChildren.addAll(tableCache.getAllObjects(monitor, this));
+        allChildren.addAll(viewCache.getAllObjects(monitor, this));
+        allChildren.addAll(mqtCache.getAllObjects(monitor, this));
+        allChildren.addAll(nicknameCache.getAllObjects(monitor, this));
         return allChildren;
     }
 
@@ -333,7 +333,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
-        return indexCache.getObjects(monitor, this);
+        return indexCache.getAllObjects(monitor, this);
     }
 
     public DB2Index getIndex(DBRProgressMonitor monitor, String name) throws DBException
@@ -344,7 +344,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException
     {
-        return triggerCache.getObjects(monitor, this);
+        return triggerCache.getAllObjects(monitor, this);
     }
 
     public DB2Trigger getTrigger(DBRProgressMonitor monitor, String name) throws DBException
@@ -355,7 +355,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2DataType> getUDTs(DBRProgressMonitor monitor) throws DBException
     {
-        return udtCache.getObjects(monitor, this);
+        return udtCache.getAllObjects(monitor, this);
     }
 
     public DB2DataType getUDT(DBRProgressMonitor monitor, String name) throws DBException
@@ -366,7 +366,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Sequence> getSequences(DBRProgressMonitor monitor) throws DBException
     {
-        return sequenceCache.getObjects(monitor, this);
+        return sequenceCache.getAllObjects(monitor, this);
     }
 
     public DB2Sequence getSequence(DBRProgressMonitor monitor, String name) throws DBException
@@ -377,7 +377,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2XMLSchema> getXMLSchemas(DBRProgressMonitor monitor) throws DBException
     {
-        return xmlSchemaCache.getObjects(monitor, this);
+        return xmlSchemaCache.getAllObjects(monitor, this);
     }
 
     public DB2XMLSchema getXMLSchema(DBRProgressMonitor monitor, String name) throws DBException
@@ -388,7 +388,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Alias> getAliases(DBRProgressMonitor monitor) throws DBException
     {
-        return aliasCache.getObjects(monitor, this);
+        return aliasCache.getAllObjects(monitor, this);
     }
 
     public DB2Alias getAlias(DBRProgressMonitor monitor, String name) throws DBException
@@ -399,7 +399,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Package> getPackages(DBRProgressMonitor monitor) throws DBException
     {
-        return packageCache.getObjects(monitor, this);
+        return packageCache.getAllObjects(monitor, this);
     }
 
     public DB2Package getPackage(DBRProgressMonitor monitor, String name) throws DBException
@@ -410,7 +410,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Routine> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
-        return procedureCache.getObjects(monitor, this);
+        return procedureCache.getAllObjects(monitor, this);
     }
 
     public DB2Routine getProcedure(DBRProgressMonitor monitor, String name) throws DBException
@@ -421,7 +421,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Routine> getMethods(DBRProgressMonitor monitor) throws DBException
     {
-        return methodCache.getObjects(monitor, this);
+        return methodCache.getAllObjects(monitor, this);
     }
 
     public DB2Routine getMethod(DBRProgressMonitor monitor, String name) throws DBException
@@ -432,7 +432,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Routine> getUDFs(DBRProgressMonitor monitor) throws DBException
     {
-        return udfCache.getObjects(monitor, this);
+        return udfCache.getAllObjects(monitor, this);
     }
 
     public DB2Routine getUDF(DBRProgressMonitor monitor, String name) throws DBException
@@ -443,7 +443,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Association
     public Collection<DB2Module> getModules(DBRProgressMonitor monitor) throws DBException
     {
-        return moduleCache.getObjects(monitor, this);
+        return moduleCache.getAllObjects(monitor, this);
     }
 
     public DB2Module getModule(DBRProgressMonitor monitor, String name) throws DBException
