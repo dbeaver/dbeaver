@@ -23,6 +23,7 @@ import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.emf.common.util.CommonUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -61,10 +62,12 @@ public abstract class AbstractDescriptor {
     public class ObjectType {
         private static final String ATTR_NAME = "name";
         private static final String ATTR_IF = "if";
+        private static final String ATTR_FORCE_CHECK = "forceCheck";
 
         private final String implName;
         private Class<?> implClass;
         private Expression expression;
+        private boolean forceCheck;
 
         public ObjectType(String implName)
         {
@@ -81,6 +84,10 @@ public abstract class AbstractDescriptor {
                 } catch (DBException ex) {
                     log.warn("Can't parse object type expression: " + condition, ex); //$NON-NLS-1$
                 }
+            }
+            String fcAttr = cfg.getAttribute(ATTR_FORCE_CHECK);
+            if (!CommonUtils.isEmpty(fcAttr)) {
+                forceCheck = CommonUtils.toBoolean(fcAttr);
             }
         }
 
@@ -150,7 +157,7 @@ public abstract class AbstractDescriptor {
 
         public boolean matchesType(Class<?> clazz)
         {
-            if (getContributorBundle().getState() != Bundle.ACTIVE) {
+            if (!forceCheck && getContributorBundle().getState() != Bundle.ACTIVE) {
                 return false;
             }
             getObjectClass();
