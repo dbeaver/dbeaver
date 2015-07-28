@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -45,7 +46,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner)
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException
     {
         JDBCPreparedStatement dbStat = session.prepareStatement(query);
@@ -58,7 +59,7 @@ public final class JDBCObjectSimpleCache<OWNER extends DBSObject, OBJECT extends
     }
 
     @Override
-    protected OBJECT fetchObject(JDBCSession session, OWNER owner, ResultSet resultSet)
+    protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull ResultSet resultSet)
         throws SQLException, DBException
     {
         try {

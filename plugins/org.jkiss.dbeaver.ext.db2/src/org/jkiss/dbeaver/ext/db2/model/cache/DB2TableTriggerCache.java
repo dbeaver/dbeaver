@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -41,7 +42,7 @@ public class DB2TableTriggerCache extends JDBCObjectCache<DB2Table, DB2Trigger> 
     private static final String SQL_TRIG_TAB = "SELECT * FROM SYSCAT.TRIGGERS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY TRIGNAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Table db2Table) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Table db2Table) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TRIG_TAB);
         dbStat.setString(1, db2Table.getSchema().getName());
@@ -50,7 +51,7 @@ public class DB2TableTriggerCache extends JDBCObjectCache<DB2Table, DB2Trigger> 
     }
 
     @Override
-    protected DB2Trigger fetchObject(JDBCSession session, DB2Table db2Table, ResultSet dbResult) throws SQLException,
+    protected DB2Trigger fetchObject(@NotNull JDBCSession session, @NotNull DB2Table db2Table, @NotNull ResultSet dbResult) throws SQLException,
         DBException
     {
 

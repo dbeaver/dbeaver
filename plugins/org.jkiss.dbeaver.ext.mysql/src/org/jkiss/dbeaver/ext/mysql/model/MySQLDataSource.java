@@ -610,7 +610,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>
     {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLDataSource owner) throws SQLException
         {
             StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + MySQLConstants.META_TABLE_SCHEMATA);
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(MySQLCatalog.class, null, false);
@@ -625,7 +625,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
 
         @Override
-        protected MySQLCatalog fetchObject(JDBCSession session, MySQLDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new MySQLCatalog(owner, resultSet);
         }

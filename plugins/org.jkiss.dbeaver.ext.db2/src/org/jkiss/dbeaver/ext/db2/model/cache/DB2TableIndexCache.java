@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
@@ -41,7 +42,7 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
     private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Table db2Table) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Table db2Table) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_INDS_TAB);
         dbStat.setString(1, db2Table.getSchema().getName());
@@ -50,7 +51,7 @@ public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
     }
 
     @Override
-    protected DB2Index fetchObject(JDBCSession session, DB2Table db2Table, ResultSet dbResult) throws SQLException,
+    protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2Table db2Table, @NotNull ResultSet dbResult) throws SQLException,
         DBException
     {
 

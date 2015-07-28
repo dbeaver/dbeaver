@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -48,10 +49,10 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     private volatile boolean childrenCached = false;
     private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, SimpleObjectCache<OBJECT, CHILD>>();
 
-    abstract protected JDBCStatement prepareChildrenStatement(JDBCSession session, OWNER owner, OBJECT forObject)
+    abstract protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT forObject)
         throws SQLException;
 
-    abstract protected CHILD fetchChild(JDBCSession session, OWNER owner, OBJECT parent, ResultSet dbResult)
+    abstract protected CHILD fetchChild(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull OBJECT parent, @NotNull ResultSet dbResult)
         throws SQLException, DBException;
 
     protected JDBCStructCache(Object objectNameColumn)
@@ -94,70 +95,75 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
-                try {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        String objectName;
-                        if (objectNameColumn instanceof Number) {
-                            objectName = JDBCUtils.safeGetString(dbResult, ((Number) objectNameColumn).intValue());
-                        } else {
-                            objectName = JDBCUtils.safeGetStringTrimmed(dbResult, objectNameColumn.toString());
-                        }
-
-                        OBJECT object = forObject;
-                        if (object == null) {
-                            object = super.getCachedObject(objectName);
-                            if (object == null) {
-                                log.debug("Object '" + objectName + "' not found");
+                if (dbResult != null) {
+                    try {
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
+                            String objectName;
+                            if (objectNameColumn instanceof Number) {
+                                objectName = JDBCUtils.safeGetString(dbResult, ((Number) objectNameColumn).intValue());
+                            } else {
+                                objectName = JDBCUtils.safeGetStringTrimmed(dbResult, objectNameColumn.toString());
+                            }
+                            if (objectName == null) {
+                                log.debug("NULL object name in " + this);
                                 continue;
                             }
-                        }
-                        if (isChildrenCached(object)) {
-                            // Already read
-                            continue;
-                        }
-                        CHILD child = fetchChild(session, owner, object, dbResult);
-                        if (child == null) {
-                            continue;
-                        }
-
-                        // Add to map
-                        List<CHILD> children = objectMap.get(object);
-                        if (children == null) {
-                            children = new ArrayList<CHILD>();
-                            objectMap.put(object, children);
-                        }
-                        children.add(child);
-                    }
-
-                    if (monitor.isCanceled()) {
-                        return;
-                    }
-
-                    // All children are read. Now assign them to parents
-                    for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
-                        cacheChildren(colEntry.getKey(), colEntry.getValue());
-                    }
-                    if (forObject == null) {
-                        if (objectMap.isEmpty()) {
-                            // Nothing was read. May be it means empty list of children
-                            // but possibly this feature is not supported [JDBC: SQLite]
-                        } else {
-                            // Now set empty column list for other tables
-                            for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
-                                if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
-                                    cacheChildren(tmpObject, new ArrayList<CHILD>());
+                            OBJECT object = forObject;
+                            if (object == null) {
+                                object = super.getCachedObject(objectName);
+                                if (object == null) {
+                                    log.debug("Object '" + objectName + "' not found");
+                                    continue;
                                 }
                             }
-                            this.childrenCached = true;
+                            if (isChildrenCached(object)) {
+                                // Already read
+                                continue;
+                            }
+                            CHILD child = fetchChild(session, owner, object, dbResult);
+                            if (child == null) {
+                                continue;
+                            }
+
+                            // Add to map
+                            List<CHILD> children = objectMap.get(object);
+                            if (children == null) {
+                                children = new ArrayList<CHILD>();
+                                objectMap.put(object, children);
+                            }
+                            children.add(child);
                         }
-                    } else if (!objectMap.containsKey(forObject)) {
-                        cacheChildren(forObject, new ArrayList<CHILD>());
+
+                        if (monitor.isCanceled()) {
+                            return;
+                        }
+
+                        // All children are read. Now assign them to parents
+                        for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
+                            cacheChildren(colEntry.getKey(), colEntry.getValue());
+                        }
+                        if (forObject == null) {
+                            if (objectMap.isEmpty()) {
+                                // Nothing was read. May be it means empty list of children
+                                // but possibly this feature is not supported [JDBC: SQLite]
+                            } else {
+                                // Now set empty column list for other tables
+                                for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
+                                    if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
+                                        cacheChildren(tmpObject, new ArrayList<CHILD>());
+                                    }
+                                }
+                                this.childrenCached = true;
+                            }
+                        } else if (!objectMap.containsKey(forObject)) {
+                            cacheChildren(forObject, new ArrayList<CHILD>());
+                        }
+                    } finally {
+                        dbResult.close();
                     }
-                } finally {
-                    dbResult.close();
                 }
             } finally {
                 dbStat.close();
@@ -170,7 +176,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Override
-    public void removeObject(OBJECT object)
+    public void removeObject(@NotNull OBJECT object)
     {
         super.removeObject(object);
         clearChildrenCache(object);

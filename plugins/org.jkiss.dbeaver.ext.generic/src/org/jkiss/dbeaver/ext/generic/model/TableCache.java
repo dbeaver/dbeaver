@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -77,7 +78,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner)
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner)
         throws SQLException
     {
         return session.getMetaData().getTables(
@@ -89,7 +90,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
 
     @Nullable
     @Override
-    protected GenericTable fetchObject(JDBCSession session, GenericStructContainer owner, ResultSet dbResult)
+    protected GenericTable fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull ResultSet dbResult)
         throws SQLException, DBException
     {
         String tableName = GenericUtils.safeGetStringTrimmed(tableObject, dbResult, JDBCConstants.TABLE_NAME);
@@ -140,7 +141,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCSession session, GenericStructContainer owner, GenericTable forTable)
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable forTable)
         throws SQLException
     {
         return session.getMetaData().getColumns(
@@ -151,7 +152,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected GenericTableColumn fetchChild(JDBCSession session, GenericStructContainer owner, GenericTable table, ResultSet dbResult)
+    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull ResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);

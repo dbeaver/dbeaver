@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,7 +30,7 @@ public abstract class BasicObjectCache<OWNER extends DBSObject, OBJECT extends D
 
     @Nullable
     @Override
-    public OBJECT getObject(DBRProgressMonitor monitor, @Nullable OWNER owner, String name) throws DBException {
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String name) throws DBException {
         if (!isCached()) {
             getAllObjects(monitor, owner);
         }

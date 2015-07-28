@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -43,15 +44,16 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     protected JDBCObjectCache() {
     }
 
-    abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner)
+    abstract protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
         throws SQLException;
 
     @Nullable
-    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull ResultSet resultSet)
         throws SQLException, DBException;
 
+    @NotNull
     @Override
-    public Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner)
+    public Collection<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
         if (!isCached()) {
@@ -61,7 +63,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Override
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String name)
         throws DBException
     {
         if (!isCached()) {
@@ -91,23 +93,24 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
-                try {
-                    while (dbResult.next()) {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
+                if (dbResult != null) {
+                    try {
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
 
-                        OBJECT object = fetchObject(session, owner, dbResult);
-                        if (object == null) {
-                            continue;
-                        }
-                        tmpObjectList.add(object);
+                            OBJECT object = fetchObject(session, owner, dbResult);
+                            if (object == null) {
+                                continue;
+                            }
+                            tmpObjectList.add(object);
 
-                        monitor.subTask(object.getName());
+                            monitor.subTask(object.getName());
+                        }
+                    } finally {
+                        dbResult.close();
                     }
-                }
-                finally {
-                    dbResult.close();
                 }
             }
             finally {

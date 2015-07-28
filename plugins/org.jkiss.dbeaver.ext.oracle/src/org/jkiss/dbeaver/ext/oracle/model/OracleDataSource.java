@@ -577,7 +577,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException
         {
             StringBuilder schemasQuery = new StringBuilder();
             boolean manyObjects = "false".equals(owner.getContainer().getConnectionConfiguration().getProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
@@ -615,7 +615,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleSchema fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleSchema fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSchema(owner, resultSet);
         }
@@ -634,13 +634,13 @@ public class OracleDataSource extends JDBCDataSource
 
     static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException
         {
             return session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
         @Override
-        protected OracleDataType fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataType(owner, resultSet);
         }
@@ -660,14 +660,14 @@ public class OracleDataSource extends JDBCDataSource
 
     static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException
         {
             return session.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner) + "TABLESPACES ORDER BY TABLESPACE_NAME");
         }
 
         @Override
-        protected OracleTablespace fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablespace fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablespace(owner, resultSet);
         }
@@ -675,14 +675,14 @@ public class OracleDataSource extends JDBCDataSource
 
     static class UserCache extends JDBCObjectCache<OracleDataSource, OracleUser> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException
         {
             return session.prepareStatement(
                 "SELECT * FROM " + OracleUtils.getAdminAllViewPrefix(owner) + "USERS ORDER BY USERNAME");
         }
 
         @Override
-        protected OracleUser fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleUser fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUser(owner, resultSet);
         }
@@ -690,14 +690,14 @@ public class OracleDataSource extends JDBCDataSource
 
     static class RoleCache extends JDBCObjectCache<OracleDataSource, OracleRole> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException
         {
             return session.prepareStatement(
                 "SELECT * FROM DBA_ROLES ORDER BY ROLE");
         }
 
         @Override
-        protected OracleRole fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleRole fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleRole(owner, resultSet);
         }
@@ -710,20 +710,20 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException
         {
             return session.prepareStatement(
                 "SELECT DISTINCT PROFILE FROM DBA_PROFILES ORDER BY PROFILE");
         }
 
         @Override
-        protected OracleUserProfile fetchObject(JDBCSession session, OracleDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleUserProfile fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleUserProfile(owner, resultSet);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCSession session, OracleDataSource dataSource, OracleUserProfile forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleDataSource dataSource, @Nullable OracleUserProfile forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT RESOURCE_NAME,RESOURCE_TYPE,LIMIT FROM DBA_PROFILES " +
@@ -736,7 +736,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleUserProfile.ProfileResource fetchChild(JDBCSession session, OracleDataSource dataSource, OracleUserProfile parent, ResultSet dbResult) throws SQLException, DBException
+        protected OracleUserProfile.ProfileResource fetchChild(@NotNull JDBCSession session, @NotNull OracleDataSource dataSource, @NotNull OracleUserProfile parent, @NotNull ResultSet dbResult) throws SQLException, DBException
         {
             return new OracleUserProfile.ProfileResource(parent, dbResult);
         }
