@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.util.Locale;
 import java.util.Map;
 
@@ -50,9 +48,9 @@ public class DefaultDataFormatter implements DBDDataFormatter {
     }
 
     @Override
-    public Object parseValue(String value, Class<?> typeHint) throws ParseException
+    public Object parseValue(String value, Class<?> typeHint)
     {
-        return DateFormat.getInstance().parse(value);
+        return value;
     }
 
 }
