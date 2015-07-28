@@ -157,13 +157,13 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
     @Association
     public Collection<DB2PackageDep> getPackageDeps(DBRProgressMonitor monitor) throws DBException
     {
-        return packageDepCache.getObjects(monitor, this);
+        return packageDepCache.getAllObjects(monitor, this);
     }
 
     @Association
     public Collection<DB2PackageStatement> getStatements(DBRProgressMonitor monitor) throws DBException
     {
-        return packageStatementsCache.getObjects(monitor, this);
+        return packageStatementsCache.getAllObjects(monitor, this);
     }
 
     @Override

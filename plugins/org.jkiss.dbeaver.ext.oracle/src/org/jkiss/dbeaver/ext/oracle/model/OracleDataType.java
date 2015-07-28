@@ -431,7 +431,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return attributeCache != null ? attributeCache.getObjects(monitor, this) : null;
+        return attributeCache != null ? attributeCache.getAllObjects(monitor, this) : null;
     }
 
     @Nullable
@@ -452,7 +452,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     public Collection<OracleDataTypeMethod> getMethods(DBRProgressMonitor monitor)
         throws DBException
     {
-        return methodCache != null ? methodCache.getObjects(monitor, this) : null;
+        return methodCache != null ? methodCache.getAllObjects(monitor, this) : null;
     }
 
     @Override

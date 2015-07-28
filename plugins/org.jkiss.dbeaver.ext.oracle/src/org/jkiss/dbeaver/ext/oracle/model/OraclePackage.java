@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.utils.CommonUtils;
 
@@ -113,7 +112,7 @@ public class OraclePackage extends OracleSchemaObject
     @Association
     public Collection<OracleProcedurePackaged> getProcedures(DBRProgressMonitor monitor) throws DBException
     {
-        return proceduresCache.getObjects(monitor, this);
+        return proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -124,7 +123,7 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        return proceduresCache.getObjects(monitor, this);
+        return proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -142,7 +141,7 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
     {
-        proceduresCache.getObjects(monitor, this);
+        proceduresCache.getAllObjects(monitor, this);
     }
 
     @Override

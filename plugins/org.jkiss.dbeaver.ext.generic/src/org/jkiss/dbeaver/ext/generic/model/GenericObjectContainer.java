@@ -128,7 +128,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getObjects(monitor, this);
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -200,7 +200,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         // Cache tables
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
-            tableCache.getObjects(monitor, this);
+            tableCache.getAllObjects(monitor, this);
         }
 
         // Cache attributes

@@ -113,7 +113,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
     @Association
     public Collection<DB2XMLSchemaDep> getXmlschemaDeps(DBRProgressMonitor monitor) throws DBException
     {
-        return xmlschemaDepCache.getObjects(monitor, this);
+        return xmlschemaDepCache.getAllObjects(monitor, this);
     }
 
     // -----------------

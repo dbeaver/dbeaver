@@ -22,8 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.List;
-
 /**
  * Basic objects cache.
  */
@@ -33,7 +31,7 @@ public abstract class BasicObjectCache<OWNER extends DBSObject, OBJECT extends D
     @Override
     public OBJECT getObject(DBRProgressMonitor monitor, @Nullable OWNER owner, String name) throws DBException {
         if (!isCached()) {
-            getObjects(monitor, owner);
+            getAllObjects(monitor, owner);
         }
         return getCachedObject(name);
     }

@@ -168,7 +168,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     @Association
     public Collection<DB2TriggerDep> getTriggerDeps(DBRProgressMonitor monitor) throws DBException
     {
-        return triggerDepCache.getObjects(monitor, this);
+        return triggerDepCache.getAllObjects(monitor, this);
     }
 
     @Override

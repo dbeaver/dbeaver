@@ -109,7 +109,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     @Association
     public Collection<DB2ViewBaseDep> getViewDeps(DBRProgressMonitor monitor) throws DBException
     {
-        return viewBaseDepCache.getObjects(monitor, this);
+        return viewBaseDepCache.getAllObjects(monitor, this);
     }
 
     // -----------------

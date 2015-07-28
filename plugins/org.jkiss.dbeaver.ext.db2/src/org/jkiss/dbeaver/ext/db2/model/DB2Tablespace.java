@@ -274,12 +274,12 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
     @Association
     public Collection<DB2TablespaceContainer> getContainers(DBRProgressMonitor monitor) throws DBException
     {
-        return containerCache.getObjects(monitor, this);
+        return containerCache.getAllObjects(monitor, this);
     }
 
     public DB2TablespaceContainer getContainer(DBRProgressMonitor monitor, long containerId) throws DBException
     {
-        for (DB2TablespaceContainer container : containerCache.getObjects(monitor, this)) {
+        for (DB2TablespaceContainer container : containerCache.getAllObjects(monitor, this)) {
             if (container.getContainerId() == containerId) {
                 return container;
             }

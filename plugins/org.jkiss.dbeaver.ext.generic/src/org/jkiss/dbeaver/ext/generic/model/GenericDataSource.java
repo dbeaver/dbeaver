@@ -182,7 +182,7 @@ public class GenericDataSource extends JDBCDataSource
     public Collection<GenericTableType> getTableTypes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableTypeCache.getObjects(monitor, this);
+        return tableTypeCache.getAllObjects(monitor, this);
     }
 
     public Collection<GenericCatalog> getCatalogs()
@@ -320,7 +320,7 @@ public class GenericDataSource extends JDBCDataSource
         if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
             // Cache data types
             try {
-                dataTypeCache.getObjects(monitor, this);
+                dataTypeCache.getAllObjects(monitor, this);
             } catch (DBException e) {
                 log.warn("Can't fetch database data types", e);
             }
