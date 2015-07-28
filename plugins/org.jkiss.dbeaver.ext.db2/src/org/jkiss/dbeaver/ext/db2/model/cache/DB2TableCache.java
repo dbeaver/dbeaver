@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -66,7 +68,7 @@ public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_TABS);
         dbStat.setString(1, db2Schema.getName());
@@ -74,14 +76,14 @@ public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB
     }
 
     @Override
-    protected DB2Table fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+    protected DB2Table fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult) throws SQLException,
         DBException
     {
         return new DB2Table(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCSession session, DB2Schema db2Schema, DB2Table forTable)
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Table forTable)
         throws SQLException
     {
 
@@ -100,7 +102,7 @@ public final class DB2TableCache extends JDBCStructCache<DB2Schema, DB2Table, DB
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, ResultSet dbResult)
+    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Table db2Table, @NotNull ResultSet dbResult)
         throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2Table, dbResult);

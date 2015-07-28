@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -80,7 +81,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
     static class ArgumentsCache extends JDBCObjectCache<OracleProcedureBase, OracleProcedureArgument> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleProcedureBase procedure) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleProcedureBase procedure) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_ARGUMENTS " +
@@ -103,7 +104,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         }
 
         @Override
-        protected OracleProcedureArgument fetchObject(JDBCSession session, OracleProcedureBase procedure, ResultSet resultSet) throws SQLException, DBException
+        protected OracleProcedureArgument fetchObject(@NotNull JDBCSession session, @NotNull OracleProcedureBase procedure, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleProcedureArgument(session.getProgressMonitor(), procedure, resultSet);
         }

@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -69,7 +70,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class RolePrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivRole> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTEE=? ORDER BY GRANTED_ROLE");
@@ -78,7 +79,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivRole fetchObject(JDBCSession session, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivRole fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivRole(owner, resultSet);
         }
@@ -86,7 +87,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class SystemPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivSystem> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM DBA_SYS_PRIVS WHERE GRANTEE=? ORDER BY PRIVILEGE");
@@ -95,7 +96,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivSystem fetchObject(JDBCSession session, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivSystem fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivSystem(owner, resultSet);
         }
@@ -103,7 +104,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
 
     static class ObjectPrivCache extends JDBCObjectCache<OracleGrantee, OraclePrivObject> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleGrantee owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleGrantee owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.*,o.OBJECT_TYPE\n" +
@@ -115,7 +116,7 @@ public abstract class OracleGrantee extends OracleGlobalObject implements DBAUse
         }
 
         @Override
-        protected OraclePrivObject fetchObject(JDBCSession session, OracleGrantee owner, ResultSet resultSet) throws SQLException, DBException
+        protected OraclePrivObject fetchObject(@NotNull JDBCSession session, @NotNull OracleGrantee owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OraclePrivObject(owner, resultSet);
         }

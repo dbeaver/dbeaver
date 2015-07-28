@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -56,6 +57,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         this.listOrderComparator = listOrderComparator;
     }
 
+    @NotNull
     @Override
     public List<OBJECT> getCachedObjects()
     {
@@ -78,15 +80,15 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     @Nullable
     @Override
-    public OBJECT getCachedObject(String name)
+    public OBJECT getCachedObject(@NotNull String name)
     {
         synchronized (this) {
-            return objectList == null || name == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
+            return objectList == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
         }
     }
 
     @Override
-    public void cacheObject(OBJECT object)
+    public void cacheObject(@NotNull OBJECT object)
     {
         synchronized (this) {
             if (this.objectList != null) {
@@ -104,7 +106,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     }
 
     @Override
-    public void removeObject(OBJECT object)
+    public void removeObject(@NotNull OBJECT object)
     {
         synchronized (this) {
             if (this.objectList != null) {

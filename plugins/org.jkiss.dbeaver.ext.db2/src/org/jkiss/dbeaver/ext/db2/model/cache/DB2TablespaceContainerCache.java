@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
 import org.jkiss.dbeaver.ext.db2.model.DB2TablespaceContainer;
@@ -39,7 +40,7 @@ public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, 
     private static final String SQL = "SELECT T.* FROM TABLE(SNAP_GET_CONTAINER('',-1)) AS T WHERE T.TBSP_ID= ? order by T.CONTAINER_ID WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Tablespace ts) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Tablespace ts) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setInt(1, ts.getTbspaceId());
@@ -47,7 +48,7 @@ public class DB2TablespaceContainerCache extends JDBCObjectCache<DB2Tablespace, 
     }
 
     @Override
-    protected DB2TablespaceContainer fetchObject(JDBCSession session, DB2Tablespace ts, ResultSet resultSet)
+    protected DB2TablespaceContainer fetchObject(@NotNull JDBCSession session, @NotNull DB2Tablespace ts, @NotNull ResultSet resultSet)
         throws SQLException, DBException
     {
         return new DB2TablespaceContainer(ts, resultSet);

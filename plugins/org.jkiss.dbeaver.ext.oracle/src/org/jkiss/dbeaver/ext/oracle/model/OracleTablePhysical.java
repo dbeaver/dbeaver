@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -202,7 +203,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleTablePhysical table) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablePhysical table) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_PARTITIONS " +
@@ -214,13 +215,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected OracleTablePartition fetchObject(JDBCSession session, OracleTablePhysical table, ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablePartition fetchObject(@NotNull JDBCSession session, @NotNull OracleTablePhysical table, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablePartition(table, false, resultSet);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCSession session, OracleTablePhysical table, OracleTablePartition forObject) throws SQLException
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleTablePhysical table, @Nullable OracleTablePartition forObject) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TAB_SUBPARTITIONS " +
@@ -236,7 +237,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected OracleTablePartition fetchChild(JDBCSession session, OracleTablePhysical table, OracleTablePartition parent, ResultSet dbResult) throws SQLException, DBException
+        protected OracleTablePartition fetchChild(@NotNull JDBCSession session, @NotNull OracleTablePhysical table, @NotNull OracleTablePartition parent, @NotNull ResultSet dbResult) throws SQLException, DBException
         {
             return new OracleTablePartition(table, true, dbResult);
         }

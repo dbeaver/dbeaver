@@ -589,7 +589,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     private class AttributeCache extends JDBCObjectCache<OracleDataType, OracleDataTypeAttribute> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataType owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM SYS.ALL_TYPE_ATTRS " +
@@ -599,7 +599,7 @@ public class OracleDataType extends OracleObject<DBSObject>
             return dbStat;
         }
         @Override
-        protected OracleDataTypeAttribute fetchObject(JDBCSession session, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeAttribute(session.getProgressMonitor(), OracleDataType.this, resultSet);
         }
@@ -607,7 +607,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     private class MethodCache extends JDBCObjectCache<OracleDataType, OracleDataTypeMethod> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleDataType owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataType owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT m.*,r.RESULT_TYPE_OWNER,RESULT_TYPE_NAME,RESULT_TYPE_MOD\n" +
@@ -621,7 +621,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
 
         @Override
-        protected OracleDataTypeMethod fetchObject(JDBCSession session, OracleDataType owner, ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethod fetchObject(@NotNull JDBCSession session, @NotNull OracleDataType owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeMethod(session.getProgressMonitor(), OracleDataType.this, resultSet);
         }

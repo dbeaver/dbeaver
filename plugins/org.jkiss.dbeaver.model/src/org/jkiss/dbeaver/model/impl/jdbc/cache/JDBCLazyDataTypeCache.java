@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -45,14 +47,15 @@ public abstract class JDBCLazyDataTypeCache extends AbstractObjectCache<JDBCData
         int minScale,
         int maxScale);
 
+    @NotNull
     @Override
-    public Collection<DBSDataType> getAllObjects(DBRProgressMonitor monitor, JDBCDataSource jdbcDataSource) throws DBException
+    public Collection<DBSDataType> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable JDBCDataSource jdbcDataSource) throws DBException
     {
         return getCachedObjects();
     }
 
     @Override
-    public DBSDataType getObject(DBRProgressMonitor monitor, JDBCDataSource jdbcDataSource, String name) throws DBException
+    public DBSDataType getObject(@NotNull DBRProgressMonitor monitor, @Nullable JDBCDataSource jdbcDataSource, @NotNull String name) throws DBException
     {
         return getCachedObject(name);
     }

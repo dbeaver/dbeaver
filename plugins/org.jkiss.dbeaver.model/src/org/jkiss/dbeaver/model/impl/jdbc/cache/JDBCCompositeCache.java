@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -93,8 +94,9 @@ public abstract class JDBCCompositeCache<
 
     abstract protected void cacheChildren(OBJECT object, List<ROW_REF> children);
 
+    @NotNull
     @Override
-    public Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner)
+    public Collection<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
         return getObjects(monitor, owner, null);
@@ -119,7 +121,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String objectName)
+    public OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String objectName)
         throws DBException
     {
         loadObjects(monitor, owner, null);
@@ -141,7 +143,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void cacheObject(OBJECT object)
+    public void cacheObject(@NotNull OBJECT object)
     {
         super.cacheObject(object);
         synchronized (objectCache) {
@@ -153,7 +155,7 @@ public abstract class JDBCCompositeCache<
     }
 
     @Override
-    public void removeObject(OBJECT object)
+    public void removeObject(@NotNull OBJECT object)
     {
         super.removeObject(object);
         objectCache.remove(getParent(object));
