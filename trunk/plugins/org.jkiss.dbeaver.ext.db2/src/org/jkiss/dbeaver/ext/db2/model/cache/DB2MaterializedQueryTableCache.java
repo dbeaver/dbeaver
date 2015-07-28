@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
@@ -63,7 +65,7 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEWS);
         dbStat.setString(1, db2Schema.getName());
@@ -71,15 +73,15 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
     }
 
     @Override
-    protected DB2MaterializedQueryTable fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult)
+    protected DB2MaterializedQueryTable fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult)
         throws SQLException, DBException
     {
         return new DB2MaterializedQueryTable(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCSession session, DB2Schema db2Schema,
-        DB2MaterializedQueryTable forMqt) throws SQLException
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2MaterializedQueryTable forMqt) throws SQLException
     {
 
         String sql;
@@ -97,8 +99,8 @@ public final class DB2MaterializedQueryTableCache extends JDBCStructCache<DB2Sch
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCSession session, DB2Schema db2Schema, DB2MaterializedQueryTable db2MQT,
-        ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2MaterializedQueryTable db2MQT,
+        @NotNull ResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2MQT, dbResult);
     }

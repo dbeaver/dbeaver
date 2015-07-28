@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2ObjectType;
@@ -198,7 +199,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee) throws SQLException
     {
         String userType = db2Grantee.getType().name();
         String userName = db2Grantee.getName();
@@ -222,7 +223,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected DB2AuthBase fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet resultSet) throws SQLException,
+    protected DB2AuthBase fetchObject(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee, @NotNull ResultSet resultSet) throws SQLException,
         DBException
     {
         DB2DataSource db2DataSource = db2Grantee.getDataSource();

@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -38,7 +39,7 @@ public class DB2GranteeRoleCache extends JDBCObjectCache<DB2Grantee, DB2RoleAuth
     private static final String SQL = "SELECT * FROM SYSCAT.ROLEAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? ORDER BY ROLENAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Grantee.getType().name());
@@ -47,7 +48,7 @@ public class DB2GranteeRoleCache extends JDBCObjectCache<DB2Grantee, DB2RoleAuth
     }
 
     @Override
-    protected DB2RoleAuth fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet dbResult) throws SQLException,
+    protected DB2RoleAuth fetchObject(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee, @NotNull ResultSet dbResult) throws SQLException,
         DBException
     {
         // Lookup for the role in DS Cache

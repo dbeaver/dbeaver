@@ -315,14 +315,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
             return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(MySQLCatalog.this));
         }
 
         @Override
-        protected MySQLTableBase fetchObject(JDBCSession session, MySQLCatalog owner, ResultSet dbResult)
+        protected MySQLTableBase fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_TYPE);
@@ -334,7 +334,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCSession session, MySQLCatalog owner, MySQLTableBase forTable)
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -355,7 +355,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTableColumn fetchChild(JDBCSession session, MySQLCatalog owner, MySQLTableBase table, ResultSet dbResult)
+        protected MySQLTableColumn fetchChild(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLTableBase table, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLTableColumn(table, dbResult);
@@ -533,7 +533,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -546,14 +546,14 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedure fetchObject(JDBCSession session, MySQLCatalog owner, ResultSet dbResult)
+        protected MySQLProcedure fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
             return new MySQLProcedure(MySQLCatalog.this, dbResult);
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(JDBCSession session, MySQLCatalog owner, MySQLProcedure procedure)
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @Nullable MySQLProcedure procedure)
             throws SQLException
         {
             // Load procedure columns through MySQL metadata
@@ -568,7 +568,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLProcedureParameter fetchChild(JDBCSession session, MySQLCatalog owner, MySQLProcedure parent, ResultSet dbResult)
+        protected MySQLProcedureParameter fetchChild(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull MySQLProcedure parent, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
@@ -608,7 +608,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
             throws SQLException
         {
             return session.prepareStatement(
@@ -616,7 +616,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected MySQLTrigger fetchObject(JDBCSession session, MySQLCatalog owner, ResultSet dbResult)
+        protected MySQLTrigger fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");

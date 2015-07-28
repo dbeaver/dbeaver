@@ -851,12 +851,12 @@ public class GenericDataSource extends JDBCDataSource
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericDataSource owner) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericDataSource owner) throws SQLException
         {
             return session.getMetaData().getTableTypes().getSourceStatement();
         }
         @Override
-        protected GenericTableType fetchObject(JDBCSession session, GenericDataSource owner, ResultSet resultSet) throws SQLException, DBException
+        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
             return new GenericTableType(
                 GenericDataSource.this,

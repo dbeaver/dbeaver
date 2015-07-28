@@ -453,7 +453,7 @@ public class MySQLTable extends MySQLTableBase
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
         Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLTable mySQLTable) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLTable mySQLTable) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_PARTITIONS +
@@ -465,7 +465,7 @@ public class MySQLTable extends MySQLTableBase
         }
 
         @Override
-        protected MySQLPartition fetchObject(JDBCSession session, MySQLTable table, ResultSet dbResult) throws SQLException, DBException
+        protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull ResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
             String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);

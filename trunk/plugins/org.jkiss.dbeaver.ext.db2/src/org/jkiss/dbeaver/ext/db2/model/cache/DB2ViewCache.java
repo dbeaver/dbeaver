@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
@@ -66,7 +68,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_VIEWS);
         dbStat.setString(1, db2Schema.getName());
@@ -74,14 +76,14 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected DB2View fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet dbResult) throws SQLException,
+    protected DB2View fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult) throws SQLException,
         DBException
     {
         return new DB2View(session.getProgressMonitor(), db2Schema, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(JDBCSession session, DB2Schema db2Schema, DB2View forView)
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2View forView)
         throws SQLException
     {
 
@@ -100,7 +102,7 @@ public final class DB2ViewCache extends JDBCStructCache<DB2Schema, DB2View, DB2T
     }
 
     @Override
-    protected DB2TableColumn fetchChild(JDBCSession session, DB2Schema db2Schema, DB2View db2View, ResultSet dbResult)
+    protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2View db2View, @NotNull ResultSet dbResult)
         throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2View, dbResult);

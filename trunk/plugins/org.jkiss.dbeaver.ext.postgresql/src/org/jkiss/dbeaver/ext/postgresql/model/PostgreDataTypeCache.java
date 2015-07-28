@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -41,13 +42,13 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, JDBCDataSource owner) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull JDBCDataSource owner) throws SQLException
     {
         return session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type ORDER by t.oid");
     }
 
     @Override
-    protected JDBCDataType fetchObject(JDBCSession session, JDBCDataSource owner, ResultSet dbResult) throws SQLException, DBException
+    protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull ResultSet dbResult) throws SQLException, DBException
     {
         int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
         String name = JDBCUtils.safeGetString(dbResult, "typname");

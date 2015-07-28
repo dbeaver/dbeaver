@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -37,7 +38,7 @@ public class DB2GranteeDatabaseAuthCache extends JDBCObjectCache<DB2Grantee, DB2
     private static final String SQL = "SELECT * FROM SYSCAT.DBAUTH WHERE GRANTEETYPE = ? AND GRANTEE = ? WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2Grantee.getType().name());
@@ -48,7 +49,7 @@ public class DB2GranteeDatabaseAuthCache extends JDBCObjectCache<DB2Grantee, DB2
     }
 
     @Override
-    protected DB2DatabaseAuth fetchObject(JDBCSession session, DB2Grantee db2Grantee, ResultSet dbResult)
+    protected DB2DatabaseAuth fetchObject(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee, @NotNull ResultSet dbResult)
         throws SQLException, DBException
     {
         return new DB2DatabaseAuth(session.getProgressMonitor(), db2Grantee.getDataSource(), dbResult);

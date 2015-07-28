@@ -191,7 +191,7 @@ public class OraclePackage extends OracleSchemaObject
     static class ProceduresCache extends JDBCObjectCache<OraclePackage, OracleProcedurePackaged> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, OraclePackage owner)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OraclePackage owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -205,7 +205,7 @@ public class OraclePackage extends OracleSchemaObject
         }
 
         @Override
-        protected OracleProcedurePackaged fetchObject(JDBCSession session, OraclePackage owner, ResultSet dbResult)
+        protected OracleProcedurePackaged fetchObject(@NotNull JDBCSession session, @NotNull OraclePackage owner, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleProcedurePackaged(owner, dbResult);

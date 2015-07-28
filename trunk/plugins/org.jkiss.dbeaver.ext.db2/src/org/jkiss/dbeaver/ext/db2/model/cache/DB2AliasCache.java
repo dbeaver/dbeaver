@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Alias;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -79,7 +80,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
     {
         DB2DataSource db2DataSource = db2Schema.getDataSource();
         String sql;
@@ -97,7 +98,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         return dbStat;
     }
 
-    protected DB2Alias fetchObject(JDBCSession session, DB2Schema db2Schema, ResultSet resultSet) throws SQLException, DBException
+    protected DB2Alias fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet resultSet) throws SQLException, DBException
     {
         return new DB2Alias(session.getProgressMonitor(), db2Schema, resultSet);
     }

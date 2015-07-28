@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2ViewBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2ViewBaseDep;
@@ -39,7 +40,7 @@ public class DB2ViewBaseDepCache extends JDBCObjectCache<DB2ViewBase, DB2ViewBas
     private static final String SQL = "SELECT * FROM SYSCAT.TABDEP WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY BSCHEMA,BNAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2ViewBase db2ViewBase) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2ViewBase db2ViewBase) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, db2ViewBase.getParentObject().getName());
@@ -48,7 +49,7 @@ public class DB2ViewBaseDepCache extends JDBCObjectCache<DB2ViewBase, DB2ViewBas
     }
 
     @Override
-    protected DB2ViewBaseDep fetchObject(JDBCSession session, DB2ViewBase db2ViewBase, ResultSet resultSet)
+    protected DB2ViewBaseDep fetchObject(@NotNull JDBCSession session, @NotNull DB2ViewBase db2ViewBase, @NotNull ResultSet resultSet)
         throws SQLException, DBException
     {
         return new DB2ViewBaseDep(session.getProgressMonitor(), db2ViewBase, resultSet);

@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,17 +32,19 @@ import java.util.List;
  */
 public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> {
 
-    Collection<OBJECT> getAllObjects(DBRProgressMonitor monitor, OWNER owner)
+    @NotNull
+    Collection<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException;
 
+    @NotNull
     Collection<OBJECT> getCachedObjects();
 
     @Nullable
-    OBJECT getObject(DBRProgressMonitor monitor, OWNER owner, String name)
+    OBJECT getObject(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner, @NotNull String name)
         throws DBException;
 
     @Nullable
-    OBJECT getCachedObject(String name);
+    OBJECT getCachedObject(@NotNull String name);
 
     boolean isCached();
 
@@ -49,7 +52,7 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      * Adds specified object to cache
      * @param object object to cache
      */
-    void cacheObject(OBJECT object);
+    void cacheObject(@NotNull OBJECT object);
 
     /**
      * Sets new cache contents. setCache(getCachedObjects()) will reset named cache
@@ -61,7 +64,7 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      * Removes specified object from cache
      * @param object object to remove
      */
-    void removeObject(OBJECT object);
+    void removeObject(@NotNull OBJECT object);
 
     void clearCache();
 
