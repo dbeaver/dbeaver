@@ -291,7 +291,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         throws DBException
     {
         monitor.subTask("Cache tables");
-        tableCache.loadObjects(monitor, this);
+        tableCache.getAllObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
             tableCache.loadChildren(monitor, this, null);

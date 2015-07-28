@@ -72,7 +72,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         return getCachedObject(name);
     }
 
-    public void loadObjects(DBRProgressMonitor monitor, OWNER owner)
+    protected void loadObjects(DBRProgressMonitor monitor, OWNER owner)
         throws DBException
     {
         if (isCached() || monitor.isCanceled()) {

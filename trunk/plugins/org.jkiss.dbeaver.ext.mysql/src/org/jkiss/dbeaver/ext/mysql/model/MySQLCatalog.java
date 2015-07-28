@@ -272,7 +272,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         throws DBException
     {
         monitor.subTask("Cache tables");
-        tableCache.loadObjects(monitor, this);
+        tableCache.getAllObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
             tableCache.loadChildren(monitor, this, null);

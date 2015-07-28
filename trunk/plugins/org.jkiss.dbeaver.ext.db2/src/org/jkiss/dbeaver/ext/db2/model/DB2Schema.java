@@ -21,20 +21,8 @@ package org.jkiss.dbeaver.ext.db2.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2AliasCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2IndexCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2MaterializedQueryTableCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2NicknameCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2RoutineCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableCheckConstraintCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableForeignKeyCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableReferenceCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableUniqueKeyCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TriggerCache;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewCache;
+import org.jkiss.dbeaver.ext.db2.model.cache.*;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2RoutineType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
@@ -65,7 +53,6 @@ import java.util.List;
  * @author Denis Forveille
  */
 public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer {
-    private static final Log LOG = Log.getLog(DB2Schema.class);
 
     private static final List<String> SYSTEM_SCHEMA = Arrays.asList("SYS", "DB2QP", "SQLJ", "NULLID");
 
@@ -175,7 +162,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     {
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
-            tableCache.loadObjects(monitor, this);
+            tableCache.getAllObjects(monitor, this);
             monitor.subTask("Cache Views");
             viewCache.getAllObjects(monitor, this);
             monitor.subTask("Cache MQTs");
