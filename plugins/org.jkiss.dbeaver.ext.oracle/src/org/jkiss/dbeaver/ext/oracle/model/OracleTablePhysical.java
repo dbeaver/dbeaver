@@ -169,7 +169,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         if (partitionCache == null) {
             return null;
         } else {
-            this.partitionCache.loadObjects(monitor, this);
+            this.partitionCache.getAllObjects(monitor, this);
             this.partitionCache.loadChildren(monitor, this, null);
             return this.partitionCache.getAllObjects(monitor, this);
         }
