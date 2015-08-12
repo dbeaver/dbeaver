@@ -1,3 +1,7 @@
+DB toolbar/menu visibility config in Eclipse mode
+MacOS test
+Eclipse Mars update
+
 Objects cache. Allow to load single object without entire cache loading (for table metadata reading).
 Remove QMDB warnings from main Error Log
 Delete button in doc editors. Disable all RSV actions when in editor (inline/over)
@@ -45,7 +49,5 @@ Office formats support (xls, doc) for export/import. Possibly office extension.
 
 Search in multiple data sources
 Search results reflect on disconnect
-
-DB toolbar visibility config in Eclipse mode
 
 Rename mysql (generic?) table,column
