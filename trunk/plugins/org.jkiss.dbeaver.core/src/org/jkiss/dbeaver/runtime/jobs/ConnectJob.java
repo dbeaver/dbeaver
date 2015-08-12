@@ -35,7 +35,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 public class ConnectJob extends EventProcessorJob
 {
     private volatile Thread connectThread;
-    private boolean reflect = true;
+    protected boolean initialize = true;
+    protected boolean reflect = true;
     protected Throwable connectError;
     protected IStatus connectStatus;
 
@@ -67,7 +68,7 @@ public class ConnectJob extends EventProcessorJob
             processEvents(DBPConnectionEventType.BEFORE_CONNECT);
 
             try {
-                container.connect(monitor, true, reflect);
+                container.connect(monitor, initialize, reflect);
             } finally {
                 if (connectThread != null) {
                     connectThread.setName(oldName);

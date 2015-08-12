@@ -183,8 +183,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         String productVersion;
         String driverName;
         String driverVersion;
-        private boolean initOnTest;
-        long startTime = -1;
         long connectTime = -1;
         DBRProgressMonitor ownerMonitor;
 
@@ -192,7 +190,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         {
             super(testDataSource);
             setSystem(true);
-            this.initOnTest = CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
+            super.initialize = CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
             productName = null;
             productVersion = null;
         }
@@ -209,7 +207,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             try {
                 container.setName(container.getConnectionConfiguration().getUrl());
                 monitor.worked(1);
-                startTime = System.currentTimeMillis();
+                long startTime = System.currentTimeMillis();
                 super.run(monitor);
                 connectTime = (System.currentTimeMillis() - startTime);
                 if (connectError != null || monitor.isCanceled()) {
