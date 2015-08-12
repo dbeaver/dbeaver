@@ -249,7 +249,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                     levelStr = "DEBUG";
                     break;
             }
-            log.debug(levelStr + ": " + message);
+            log.debug("SSH " + levelStr + ": " + message);
 
         }
     }

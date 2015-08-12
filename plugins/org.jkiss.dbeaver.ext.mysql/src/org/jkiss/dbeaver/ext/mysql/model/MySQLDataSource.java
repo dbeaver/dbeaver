@@ -81,7 +81,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            useDatabase(monitor, context, getSelectedObject());
+            MySQLCatalog object = getSelectedObject();
+            if (object != null) {
+                useDatabase(monitor, context, object);
+            }
         }
     }
 
