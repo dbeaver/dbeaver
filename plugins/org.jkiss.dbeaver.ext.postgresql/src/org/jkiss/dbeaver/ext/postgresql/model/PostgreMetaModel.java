@@ -85,8 +85,9 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
         JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences");
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?");
             try {
+                dbStat.setString(1, container.getName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     List<GenericSequence> result = new ArrayList<GenericSequence>();
