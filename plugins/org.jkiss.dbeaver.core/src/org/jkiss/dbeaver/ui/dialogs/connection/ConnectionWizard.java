@@ -40,8 +40,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -177,12 +177,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         return false;
     }
 
-    private class ConnectionTester extends AbstractJob {
+    private class ConnectionTester extends ConnectJob {
         String productName;
         String productVersion;
         String driverName;
         String driverVersion;
-        private final DataSourceDescriptor testDataSource;
         private boolean initOnTest;
         long startTime = -1;
         long connectTime = -1;
@@ -191,9 +190,8 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
         public ConnectionTester(DataSourceDescriptor testDataSource)
         {
-            super("Test connection to " + testDataSource.getName());
+            super(testDataSource);
             setSystem(true);
-            this.testDataSource = testDataSource;
             this.initOnTest = CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
             productName = null;
             productVersion = null;
@@ -209,14 +207,17 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
             try {
-                testDataSource.setName(testDataSource.getConnectionConfiguration().getUrl());
+                container.setName(container.getConnectionConfiguration().getUrl());
                 monitor.worked(1);
                 startTime = System.currentTimeMillis();
-                testDataSource.connect(monitor, initOnTest, false);
+                super.run(monitor);
                 connectTime = (System.currentTimeMillis() - startTime);
+                if (monitor.isCanceled()) {
+                    return Status.OK_STATUS;
+                }
 
                 monitor.worked(1);
-                DBPDataSource dataSource = testDataSource.getDataSource();
+                DBPDataSource dataSource = container.getDataSource();
                 if (dataSource == null) {
                     throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
                 }
@@ -247,18 +248,18 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                                 log.error("Can't obtain connection metadata", e);
                             }
                         }
-                        try {
-                            monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                            testDataSource.disconnect(monitor, false);
-                        } catch (DBException e) {
-                            // ignore it
-                            log.error(e);
-                        } finally {
-                            monitor.done();
-                        }
                     } finally {
                         session.close();
                     }
+                }
+                try {
+                    monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
+                    container.disconnect(monitor, false);
+                } catch (DBException e) {
+                    // ignore it
+                    log.error(e);
+                } finally {
+                    monitor.done();
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
