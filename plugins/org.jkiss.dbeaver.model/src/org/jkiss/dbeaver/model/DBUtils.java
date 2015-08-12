@@ -1107,12 +1107,14 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String generateScript(DBEPersistAction[] persistActions)
+    public static String generateScript(DBEPersistAction[] persistActions, boolean existingObject)
     {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(64);
-        script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
-            .append(DBEAVER_DDL_WARNING).append(lineSeparator);
+        if (existingObject) {
+            script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
+                .append(DBEAVER_DDL_WARNING).append(lineSeparator);
+        }
         for (DBEPersistAction action : ArrayUtils.safeArray(persistActions)) {
             String scriptLine = action.getScript();
             if (CommonUtils.isEmpty(scriptLine)) {

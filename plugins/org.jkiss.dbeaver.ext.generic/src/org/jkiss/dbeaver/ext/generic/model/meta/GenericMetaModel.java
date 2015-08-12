@@ -237,7 +237,7 @@ public class GenericMetaModel {
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         GenericTableManager tableManager = new GenericTableManager();
         DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, sourceObject);
-        return DBUtils.generateScript(ddlActions);
+        return DBUtils.generateScript(ddlActions, true);
     }
 
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
