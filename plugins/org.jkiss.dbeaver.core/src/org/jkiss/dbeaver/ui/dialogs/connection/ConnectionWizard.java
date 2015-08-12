@@ -137,8 +137,8 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                                 break;
                             }
                         }
-                        if (op.error != null) {
-                            throw new InvocationTargetException(op.error);
+                        if (op.getConnectError() != null) {
+                            throw new InvocationTargetException(op.getConnectError());
                         }
                     }
                 });
@@ -186,7 +186,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         long startTime = -1;
         long connectTime = -1;
         DBRProgressMonitor ownerMonitor;
-        DBException error;
 
         public ConnectionTester(DataSourceDescriptor testDataSource)
         {
@@ -212,7 +211,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 startTime = System.currentTimeMillis();
                 super.run(monitor);
                 connectTime = (System.currentTimeMillis() - startTime);
-                if (monitor.isCanceled()) {
+                if (connectError != null || monitor.isCanceled()) {
                     return Status.OK_STATUS;
                 }
 
@@ -263,7 +262,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
-                error = ex;
+                connectError = ex;
             }
             return Status.OK_STATUS;
         }
