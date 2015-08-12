@@ -17,13 +17,18 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
@@ -32,11 +37,11 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -112,12 +117,32 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         try {
             saveSettings(testDataSource);
 
-            ConnectionTester op = new ConnectionTester(testDataSource);
+            final ConnectionTester op = new ConnectionTester(testDataSource);
 
             try {
-                long startTime = System.currentTimeMillis();
-                RuntimeUtils.run(getContainer(), true, true, op);
-                long connectTime = (System.currentTimeMillis() - startTime);
+                getContainer().run(true, true, new IRunnableWithProgress() {
+                    @Override
+                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        // Wait for job to finish
+                        op.ownerMonitor = new DefaultProgressMonitor(monitor);
+                        op.schedule();
+                        while (op.getState() == Job.WAITING || op.getState() == Job.RUNNING) {
+                            if (monitor.isCanceled()) {
+                                op.cancel();
+                                throw new InterruptedException();
+                            }
+                            try {
+                                Thread.sleep(50);
+                            } catch (InterruptedException e) {
+                                break;
+                            }
+                        }
+                        if (op.error != null) {
+                            throw new InvocationTargetException(op.error);
+                        }
+                    }
+                });
+
                 String message = "";
                 if (!CommonUtils.isEmpty(op.productName)) {
                     message += "Server: " + op.productName + " " + op.productVersion + "\n";
@@ -128,7 +153,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 if (!CommonUtils.isEmpty(message)) {
                     message += "\n";
                 }
-                message += NLS.bind(CoreMessages.dialog_connection_wizard_start_connection_monitor_connected, connectTime);
+                message += NLS.bind(CoreMessages.dialog_connection_wizard_start_connection_monitor_connected, op.connectTime);
 
                 MessageDialog.openInformation(getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
                     message);
@@ -152,16 +177,22 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         return false;
     }
 
-    private class ConnectionTester implements DBRRunnableWithProgress {
+    private class ConnectionTester extends AbstractJob {
         String productName;
         String productVersion;
         String driverName;
         String driverVersion;
         private final DataSourceDescriptor testDataSource;
         private boolean initOnTest;
+        long startTime = -1;
+        long connectTime = -1;
+        DBRProgressMonitor ownerMonitor;
+        DBException error;
 
         public ConnectionTester(DataSourceDescriptor testDataSource)
         {
+            super("Test connection to " + testDataSource.getName());
+            setSystem(true);
             this.testDataSource = testDataSource;
             this.initOnTest = CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
             productName = null;
@@ -169,15 +200,21 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        public IStatus run(DBRProgressMonitor monitor)
         {
+            if (ownerMonitor != null) {
+                monitor = ownerMonitor;
+            }
             monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
             try {
                 testDataSource.setName(testDataSource.getConnectionConfiguration().getUrl());
                 monitor.worked(1);
+                startTime = System.currentTimeMillis();
                 testDataSource.connect(monitor, initOnTest, false);
+                connectTime = (System.currentTimeMillis() - startTime);
+
                 monitor.worked(1);
                 DBPDataSource dataSource = testDataSource.getDataSource();
                 if (dataSource == null) {
@@ -225,8 +262,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 }
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
-                throw new InvocationTargetException(ex);
+                error = ex;
             }
+            return Status.OK_STATUS;
         }
     }
 }
