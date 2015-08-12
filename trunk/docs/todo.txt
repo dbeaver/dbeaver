@@ -1,8 +1,10 @@
+MongoDB driver (3.x)
+Folders colors customization.
 DB toolbar/menu visibility config in Eclipse mode
 MacOS test
 Eclipse Mars update
 OpenSUSE test (UI is broken)
-
+Default socket timeouts for drivers
 DB2 procedures. Parse actual parameters (? marks)
 
 Objects cache. Allow to load single object without entire cache loading (for table metadata reading).
