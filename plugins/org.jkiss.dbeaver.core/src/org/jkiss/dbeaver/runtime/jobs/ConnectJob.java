@@ -36,7 +36,8 @@ public class ConnectJob extends EventProcessorJob
 {
     private volatile Thread connectThread;
     private boolean reflect = true;
-    private IStatus connectStatus;
+    protected Throwable connectError;
+    protected IStatus connectStatus;
 
     public ConnectJob(
         DataSourceDescriptor container)
@@ -47,6 +48,10 @@ public class ConnectJob extends EventProcessorJob
 
     public IStatus getConnectStatus() {
         return connectStatus;
+    }
+
+    public Throwable getConnectError() {
+        return connectError;
     }
 
     @Override
@@ -75,6 +80,7 @@ public class ConnectJob extends EventProcessorJob
             connectStatus = Status.OK_STATUS;
         }
         catch (Throwable ex) {
+            connectError = ex;
             connectStatus = GeneralUtils.makeExceptionStatus(ex);
         }
 
