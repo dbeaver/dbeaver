@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
+import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -251,19 +252,12 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         session.close();
                     }
                 }
-                try {
-                    monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_close);
-                    container.disconnect(monitor, false);
-                } catch (DBException e) {
-                    // ignore it
-                    log.error(e);
-                } finally {
-                    monitor.done();
-                }
+                new DisconnectJob(container).schedule();
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
                 connectError = ex;
             }
+            monitor.done();
             return Status.OK_STATUS;
         }
     }
