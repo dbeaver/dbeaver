@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -65,7 +64,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -347,7 +345,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 return IDialogConstants.CANCEL_ID;
             }
             script.append(DBUtils.generateScript(
-                command.getPersistActions()));
+                command.getPersistActions(), false));
         }
 
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
