@@ -84,7 +84,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             if (!CommonUtils.isEmpty(params)) {
                 int index = 0;
                 for (DBSProcedureParameter param : params) {
-                    if (param.getParameterKind() == DBSProcedureParameterKind.OUT) {
+                    if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.INOUT) {
                         index++;
                         registerOutParameter(index, param.getParameterType().getTypeID());
                     }
