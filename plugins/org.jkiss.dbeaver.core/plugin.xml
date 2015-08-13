@@ -1284,38 +1284,28 @@
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="Database Toolbar">
-                <command commandId="org.jkiss.dbeaver.core.connect">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.core.invalidate">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.core.disconnect">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-                </command>
+                <command commandId="org.jkiss.dbeaver.core.connect"/>
+                <command commandId="org.jkiss.dbeaver.core.invalidate"/>
+                <command commandId="org.jkiss.dbeaver.core.disconnect"/>
                 <separator name="tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-                </command>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
-                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="Transactions">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.commit" label="Commit" style="push" mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.rollback" label="Rollback" style="push" mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
                 </command>
                 <separator name="datasource" visible="true"/>
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
-                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
                 </control>
                 <separator name="additions" visible="false"/>
             </toolbar>
