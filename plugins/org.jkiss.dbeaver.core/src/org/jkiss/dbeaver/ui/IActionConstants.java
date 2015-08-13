@@ -32,8 +32,8 @@ public interface IActionConstants {
     String M_TOOLS_GROUP = "toolsGroup"; //$NON-NLS-1$
     String M_SESSION_GROUP = "sessionGroup"; //$NON-NLS-1$
 
-    String TOOLBAR_DATABASE = "database"; //$NON-NLS-1$
-    String TOOLBAR_TXN = "txn"; //$NON-NLS-1$
+    String TOOLBAR_DATABASE = "dbeaver-general"; //$NON-NLS-1$
+    String TOOLBAR_TXN = "dbeaver-transactions"; //$NON-NLS-1$
     String TOOLBAR_DATASOURCE = "datasource-settings"; //$NON-NLS-1$
     //String MENU_ID = "org.jkiss.dbeaver.core.navigationMenu";
 

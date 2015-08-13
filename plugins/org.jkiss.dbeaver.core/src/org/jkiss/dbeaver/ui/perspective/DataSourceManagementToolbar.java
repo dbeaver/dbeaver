@@ -765,6 +765,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         GridData gd = new GridData();
         gd.widthHint = 160;
         gd.minimumWidth = 160;
+        gd.grabExcessVerticalSpace = true;
         connectionCombo.setLayoutData(gd);
         connectionCombo.setVisibleItemCount(15);
         connectionCombo.setWidthHint(160);
@@ -790,6 +791,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         gd = new GridData();
         gd.widthHint = 140;
         gd.minimumWidth = 140;
+        gd.grabExcessVerticalSpace = true;
         databaseCombo.setLayoutData(gd);
         databaseCombo.setVisibleItemCount(15);
         databaseCombo.setWidthHint(140);
@@ -814,6 +816,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         resultSetSize.setTextLimit(10);
         gd = new GridData();
         gd.widthHint = 30;
+        gd.grabExcessVerticalSpace = true;
+        resultSetSize.setLayoutData(gd);
 
         resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
         final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
@@ -821,7 +825,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
         }
         //resultSetSize.setDigits(7);
-        resultSetSize.setLayoutData(gd);
         resultSetSize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         resultSetSize.addFocusListener(new FocusListener() {
             @Override
