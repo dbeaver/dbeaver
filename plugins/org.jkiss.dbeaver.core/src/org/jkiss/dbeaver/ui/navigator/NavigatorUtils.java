@@ -33,6 +33,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
@@ -60,6 +61,7 @@ import java.util.*;
 public class NavigatorUtils {
 
     public static final String MB_NAVIGATOR_ADDITIONS = "navigator_additions";
+    public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
 
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {
@@ -422,6 +424,13 @@ public class NavigatorUtils {
             }
         }
         return false;
+    }
+
+    public static void setNavigatorContext(IWorkbenchPartSite site) {
+        IContextService contextService = site.getService(IContextService.class);
+        if (contextService != null) {
+            contextService.activateContext(NAVIGATOR_CONTEXT_ID);
+        }
     }
 
 }

@@ -82,6 +82,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     @Override
     public void createPartControl(Composite parent)
     {
+        NavigatorUtils.setNavigatorContext(getSite());
         this.tree = createNavigatorTree(parent, getRootNode());
 
         getViewSite().setSelectionProvider(tree.getViewer());

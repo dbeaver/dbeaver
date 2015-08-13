@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
  * FolderEditor
@@ -40,6 +41,8 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     @Override
     public void createPartControl(Composite parent)
     {
+        NavigatorUtils.setNavigatorContext(getSite());
+
         itemControl = new ItemListControl(parent, SWT.NONE, this.getSite(), getEditorInput().getNavigatorNode(), null);
         itemControl.createProgressPanel();
         itemControl.loadData();
