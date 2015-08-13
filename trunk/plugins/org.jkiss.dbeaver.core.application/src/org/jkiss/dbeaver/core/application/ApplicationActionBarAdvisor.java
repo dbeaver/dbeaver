@@ -194,9 +194,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), ICommandIds.CMD_ROLLBACK), true));
         coolBar.add(new ToolBarContributionItem(txnToolbar, IActionConstants.TOOLBAR_TXN));
 */
-
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));
-        coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
+        //coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_DATASOURCE));
 
     }
 

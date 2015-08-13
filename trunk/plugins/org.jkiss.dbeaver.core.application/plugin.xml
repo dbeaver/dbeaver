@@ -176,7 +176,7 @@
             <command commandId="org.eclipse.ui.window.preferences"/>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="toolbar:txn?after=additions">
+        <menuContribution allPopups="false" locationURI="toolbar:dbeaver-transactions?after=additions">
             <command commandId="org.jkiss.dbeaver.core.object.find">
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
             </command>
