@@ -757,7 +757,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         Composite comboGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(3, false);
-        gl.marginWidth = 0;
+        gl.marginWidth = 5;
         gl.marginHeight = 0;
         comboGroup.setLayout(gl);
 
