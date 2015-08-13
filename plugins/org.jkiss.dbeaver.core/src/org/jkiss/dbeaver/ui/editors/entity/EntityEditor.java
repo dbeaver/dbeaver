@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -365,6 +366,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected void createPages()
     {
+        NavigatorUtils.setNavigatorContext(getSite());
+
         if (getEditorInput() instanceof ErrorEditorInput) {
             ErrorEditorInput errorInput = (ErrorEditorInput) getEditorInput();
             try {
