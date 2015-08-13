@@ -365,7 +365,7 @@
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
-            <with variable="activePart">
+            <with variable="activeEditor">
                 <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
             </with>
         </definition>
@@ -1257,7 +1257,7 @@
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?before=window">
             <menu id="dataSourceMenu" label="%menu.database">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                <!--<visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>-->
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
@@ -1523,7 +1523,6 @@
         <!-- SQL editor menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
-                <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="execute" visible="true"/>
