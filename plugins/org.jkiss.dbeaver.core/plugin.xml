@@ -1281,8 +1281,8 @@
         </menuContribution>
 
         <!-- Database toolbar -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-            <toolbar id="database" label="Database Toolbar">
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
+            <toolbar id="dbeaver-general" label="Database Toolbar">
                 <command commandId="org.jkiss.dbeaver.core.connect">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 </command>
@@ -1301,7 +1301,7 @@
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
-            <toolbar id="txn" label="Transactions">
+            <toolbar id="dbeaver-transactions" label="Transactions">
                 <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.commit" label="Commit" style="push" mode="FORCE_TEXT">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
@@ -1312,11 +1312,11 @@
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 </command>
-            </toolbar>
-            <toolbar id="datasource-settings" label="DataSource">
+                <separator name="datasource" visible="true"/>
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
                     <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
                 </control>
+                <separator name="additions" visible="false"/>
             </toolbar>
 
         </menuContribution>
