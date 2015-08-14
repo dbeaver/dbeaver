@@ -1,6 +1,4 @@
-MongoDB driver (3.x)
 Folders colors customization.
-DB toolbar/menu visibility config in Eclipse mode
 MacOS test
 Eclipse Mars update
 OpenSUSE test (UI is broken)
@@ -11,7 +9,6 @@ Objects cache. Allow to load single object without entire cache loading (for tab
 Remove QMDB warnings from main Error Log
 Delete button in doc editors. Disable all RSV actions when in editor (inline/over)
 
-Export to CSV - configure quote character
 Split core and ui on different plugins
 DBeaver features usage model
 Vertica keywords
