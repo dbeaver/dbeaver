@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
@@ -41,6 +42,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_HEADER = "header";
+    private static final String PROP_QUOTE_CHAR = "quoteChar";
     public static final char DEF_DELIMITER = ',';
 
     enum HeaderPosition {
@@ -74,6 +76,10 @@ public class DataExporterCSV extends StreamExporterAbstract {
             }
         } else {
             delimiter = DEF_DELIMITER;
+        }
+        String quoteStr = String.valueOf(site.getProperties().get(PROP_QUOTE_CHAR));
+        if (!CommonUtils.isEmpty(quoteStr)) {
+            quoteChar = quoteStr.charAt(0);
         }
         out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
@@ -129,7 +135,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
                 DBDContent content = (DBDContent)row[i];
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
-                    if (ContentUtils.isTextContent(content)) {
+                    if (cs == null) {
+                        writeCellValue(DBConstants.NULL_VALUE_LABEL, false);
+                    } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cs.getContentReader());
                     } else {
                         getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
