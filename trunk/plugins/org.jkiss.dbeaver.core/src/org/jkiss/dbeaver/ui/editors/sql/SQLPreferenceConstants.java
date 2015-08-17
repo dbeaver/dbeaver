@@ -51,6 +51,8 @@ public class SQLPreferenceConstants
     public final static String PRINT_MARGIN_COLOR                       = "SQLEditor.printMarginColor";
     public final static String PRINT_MARGIN_COLUMN                      = "SQLEditor.printMarginColumn";
 
+    public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
+
     public static final int PROPOSAL_CASE_DEFAULT                      = 0;
     public static final int PROPOSAL_CASE_UPPER                        = 1;
     public static final int PROPOSAL_CASE_LOWER                        = 2;
