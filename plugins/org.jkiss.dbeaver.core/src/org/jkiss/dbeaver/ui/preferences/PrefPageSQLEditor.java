@@ -57,6 +57,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button acBracketsCheck;
     private Button autoFoldersCheck;
     private Text scriptTitlePattern;
+    private Button resetCursorCheck;
 
     public PrefPageSQLEditor()
     {
@@ -73,7 +74,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(DBeaverPreferences.SCRIPT_TITLE_PATTERN) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS)
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
+            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
         ;
     }
 
@@ -173,6 +175,15 @@ public class PrefPageSQLEditor extends TargetPrefPage
             legendLabel.setText(legend.toString());
 */
         }
+
+        // Misc
+        {
+            Composite miscGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_misc, 2, GridData.FILL_BOTH, 0);
+            ((GridData) miscGroup.getLayoutData()).horizontalSpan = 2;
+
+            resetCursorCheck = UIUtils.createLabelCheckbox(miscGroup, CoreMessages.pref_page_sql_editor_checkbox_reset_cursor, false);
+        }
+
         return composite;
     }
 
@@ -200,6 +211,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
+
+            resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -230,6 +243,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
+
+            store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -253,6 +268,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
+
+        store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
     }
 
     @Override
