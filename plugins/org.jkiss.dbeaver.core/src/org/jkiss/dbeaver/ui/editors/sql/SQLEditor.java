@@ -130,8 +130,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private DBSDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
-    private DBCExecutionContext executionContext;
-    private boolean ownContext = false;
+    private volatile DBCExecutionContext executionContext;
+    private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
 
