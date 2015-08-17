@@ -589,9 +589,13 @@ public class DataSourceDescriptor
 
             if (initialize) {
                 monitor.subTask("Initialize data source");
-                dataSource.initialize(monitor);
-                // Change connection properties
+                try {
+                    dataSource.initialize(monitor);
+                } catch (Throwable e) {
+                    log.error("Error initializing datasource", e);
+                }
 
+                // Change connection properties
                 initConnectionState(monitor);
             }
 

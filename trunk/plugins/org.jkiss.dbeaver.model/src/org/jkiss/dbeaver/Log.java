@@ -194,7 +194,11 @@ public class Log
                         corePluginID,
                         message == null ? null : message.toString()));
                 } else {
-                    log.log(GeneralUtils.makeExceptionStatus(severity, t));
+                    if (message == null) {
+                        log.log(GeneralUtils.makeExceptionStatus(severity, t));
+                    } else {
+                        log.log(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
+                    }
                 }
             }
         }
