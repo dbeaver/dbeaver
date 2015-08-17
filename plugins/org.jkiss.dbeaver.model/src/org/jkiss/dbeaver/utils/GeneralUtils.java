@@ -288,10 +288,15 @@ public class GeneralUtils {
 
     public static IStatus makeExceptionStatus(String message, Throwable ex)
     {
+        return makeExceptionStatus(IStatus.ERROR, message, ex);
+    }
+
+    public static IStatus makeExceptionStatus(int severity, String message, Throwable ex)
+    {
         return new MultiStatus(
             ModelPreferences.PLUGIN_ID,
             0,
-            new IStatus[]{makeExceptionStatus(ex)},
+            new IStatus[]{makeExceptionStatus(severity, ex)},
             message,
             null);
     }
