@@ -292,6 +292,7 @@ public class SQLEditor extends SQLEditorBase implements
         protected OpenContextJob(DBPDataSource dataSource) {
             super("Open connection to " + dataSource.getContainer().getName());
             this.dataSource = dataSource;
+            setUser(true);
         }
 
         @Override
