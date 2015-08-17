@@ -698,6 +698,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         DBPDataSource dataSource = context == null ? null : context.getDataSource();
         if (dataSource instanceof SQLDataSource) {
             final SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
+            if (dialect == null) {
+                return null;
+            }
             return new ICommentsSupport() {
                 @Nullable
                 @Override

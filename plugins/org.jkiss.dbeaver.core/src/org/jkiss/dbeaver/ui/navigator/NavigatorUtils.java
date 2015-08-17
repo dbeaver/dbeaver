@@ -427,7 +427,7 @@ public class NavigatorUtils {
     }
 
     public static void setNavigatorContext(IWorkbenchPartSite site) {
-        IContextService contextService = site.getService(IContextService.class);
+        IContextService contextService = (IContextService) site.getService(IContextService.class);
         if (contextService != null) {
             contextService.activateContext(NAVIGATOR_CONTEXT_ID);
         }

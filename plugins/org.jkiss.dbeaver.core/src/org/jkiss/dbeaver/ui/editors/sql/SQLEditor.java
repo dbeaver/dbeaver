@@ -22,7 +22,10 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
@@ -64,6 +67,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
@@ -234,6 +238,25 @@ public class SQLEditor extends SQLEditorBase implements
                 releaseExecutionContext();
                 curDataSource = dataSource;
                 if (getActivePreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                    final OpenContextJob job = new OpenContextJob(dataSource);
+                    job.addJobChangeListener(new JobChangeAdapter() {
+                        @Override
+                        public void done(IJobChangeEvent event) {
+                            if (job.error != null) {
+                                releaseExecutionContext();
+                                UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", job.error);
+                            } else {
+                                UIUtils.runInUI(null, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        onDataSourceChange();
+                                    }
+                                });
+                            }
+                        }
+                    });
+                    job.schedule();
+/*
                     try {
                         DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
                             @Override
@@ -255,10 +278,37 @@ public class SQLEditor extends SQLEditorBase implements
                         releaseExecutionContext();
                         UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", e);
                     }
+*/
                 } else {
                     executionContext = dataSource.getDefaultContext(false);
                 }
             }
+        }
+    }
+
+    private class OpenContextJob extends AbstractJob {
+        private final DBPDataSource dataSource;
+        private Throwable error;
+        protected OpenContextJob(DBPDataSource dataSource) {
+            super("Open connection to " + dataSource.getContainer().getName());
+            this.dataSource = dataSource;
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            monitor.beginTask("Open SQLEditor isolated connection", 1);
+            try {
+                String title = "SQLEditor <" + getEditorInput().getPath().removeFileExtension().lastSegment() + ">";
+                monitor.subTask("Open context " + title);
+                executionContext = dataSource.openIsolatedContext(monitor, title);
+            } catch (DBException e) {
+                error = e;
+                return Status.OK_STATUS;
+            } finally {
+                monitor.done();
+            }
+            ownContext = true;
+            return Status.OK_STATUS;
         }
     }
 
