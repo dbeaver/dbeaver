@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -279,13 +280,28 @@ public abstract class JDBCDataSource
         JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_read_database_meta_data);
         try {
             JDBCDatabaseMetaData metaData = session.getMetaData();
-            sqlDialect = createSQLDialect(metaData);
-            dataSourceInfo = createDataSourceInfo(metaData);
+            try {
+                sqlDialect = createSQLDialect(metaData);
+            } catch (Exception e) {
+                log.error("Error creating SQL dialect", e);
+            }
+            try {
+                dataSourceInfo = createDataSourceInfo(metaData);
+            } catch (Exception e) {
+                log.error("Error obtaining database info");
+            }
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex, this);
         }
         finally {
             session.close();
+
+            if (sqlDialect == null) {
+                sqlDialect = new BasicSQLDialect();
+            }
+            if (dataSourceInfo == null) {
+                dataSourceInfo = new JDBCDataSourceInfo(null);
+            }
         }
     }
 
