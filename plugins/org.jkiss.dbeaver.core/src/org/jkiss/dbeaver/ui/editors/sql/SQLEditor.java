@@ -1467,7 +1467,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (result.hasError()) {
                 setStatus(GeneralUtils.getFirstMessage(result.getError()), true);
             }
-            if (!scriptMode) {
+            if (!scriptMode && dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
