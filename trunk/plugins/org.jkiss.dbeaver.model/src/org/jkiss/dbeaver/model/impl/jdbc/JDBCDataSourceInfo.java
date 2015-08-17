@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -58,6 +58,25 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsStoredCode = true;
     private boolean supportsBatchUpdates = false;
     private boolean supportsScroll;
+
+    public JDBCDataSourceInfo()
+    {
+        this.readOnly = false;
+        this.databaseProductName = "?"; //$NON-NLS-1$
+        this.databaseProductVersion = "?"; //$NON-NLS-1$
+        this.driverName = "?"; //$NON-NLS-1$
+        this.driverVersion = "?"; //$NON-NLS-1$
+        databaseVersion = new Version(0, 0, 0);
+        this.schemaTerm = TERM_SCHEMA;
+        this.procedureTerm = TERM_PROCEDURE;
+        this.catalogTerm = TERM_CATALOG;
+        supportsBatchUpdates = false;
+
+        supportsTransactions = false;
+        supportedIsolations = new ArrayList<DBPTransactionIsolation>();
+        supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
+        supportsScroll = true;
+    }
 
     public JDBCDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
