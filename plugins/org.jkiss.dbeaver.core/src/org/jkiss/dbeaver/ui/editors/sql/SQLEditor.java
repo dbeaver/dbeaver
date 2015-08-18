@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -1460,7 +1461,10 @@ public class SQLEditor extends SQLEditorBase implements
             DBCExecutionContext executionContext = getExecutionContext();
             if (executionContext != null) {
                 DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, executionContext.getDataSource());
-                if (outputReader != null && outputReader.isServerOutputEnabled()) {
+                if (outputReader == null) {
+                    outputReader = new DefaultServerOutputReader(result);
+                }
+                if (outputReader.isServerOutputEnabled()) {
                     dumpServerOutput(executionContext, outputReader);
                 }
             }
