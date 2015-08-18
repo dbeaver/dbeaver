@@ -1,11 +1,11 @@
-Folders colors customization.
 Connections keep-alive
+Default socket timeouts for drivers
 
 MacOS test
-Eclipse Mars update
 OpenSUSE test (UI is broken)
-Default socket timeouts for drivers
 DB2 procedures. Parse actual parameters (? marks)
+
+Eclipse Mars update
 
 Objects cache. Allow to load single object without entire cache loading (for table metadata reading).
 Remove QMDB warnings from main Error Log
