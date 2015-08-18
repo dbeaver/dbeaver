@@ -200,7 +200,7 @@ public abstract class ObjectViewerRenderer {
 
     private class SortListener implements Listener
     {
-        int sortDirection = SWT.DOWN;
+        int sortDirection = SWT.UP;
         Item prevColumn = null;
 
         @Override
@@ -239,7 +239,7 @@ public abstract class ObjectViewerRenderer {
                     } else {
                         result = value1.toString().compareToIgnoreCase(value2.toString());
                     }
-                    return sortDirection == SWT.DOWN ? result : -result;
+                    return sortDirection == SWT.UP ? result : -result;
                 }
             });
         }
