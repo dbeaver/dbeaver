@@ -541,6 +541,12 @@ public abstract class JDBCDataSource
         return ErrorType.NORMAL;
     }
 
+    @Nullable
+    @Override
+    public ErrorPosition[] getErrorPosition(@NotNull Throwable error) {
+        return null;
+    }
+
     @Override
     public Object getAdapter(Class adapter) {
         if (adapter == DBCTransactionManager.class) {

@@ -837,6 +837,13 @@ public class GenericDataSource extends JDBCDataSource
         return term;
     }
 
+    @Nullable
+    @Override
+    public ErrorPosition[] getErrorPosition(@NotNull Throwable error) {
+        ErrorPosition position = metaModel.getErrorPosition(error);
+        return position == null ? null : new ErrorPosition[] { position };
+    }
+
     @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
