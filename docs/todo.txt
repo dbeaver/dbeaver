@@ -1,4 +1,6 @@
 Folders colors customization.
+Connections keep-alive
+
 MacOS test
 Eclipse Mars update
 OpenSUSE test (UI is broken)
