@@ -31,7 +31,6 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.*;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -1520,39 +1519,46 @@ public class SQLEditor extends SQLEditorBase implements
         if (context == null) {
             return;
         }
-        boolean scrolled = false;
-        DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
-        if (errorAssistant != null) {
-            DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(error);
-            if (positions != null && positions.length > 0) {
-                int queryStartOffset = result.getStatement().getOffset();
+        try {
+            boolean scrolled = false;
+            DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
+            if (errorAssistant != null) {
+                DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(error);
+                if (positions != null && positions.length > 0) {
+                    int queryStartOffset = result.getStatement().getOffset();
 
-                DBPErrorAssistant.ErrorPosition pos = positions[0];
-                if (pos.line < 0) {
-                    if (pos.position >= 0) {
-                        // Only position
-                        getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
-                        scrolled = true;
-                    }
-                } else {
-                    // Line + position
-                    Document document = getDocument();
-                    if (document != null) {
-                        try {
-                            int startLine = document.getLineOfOffset(queryStartOffset);
-                            int lineOffset = document.getLineOffset(startLine + pos.line);
-                            getSelectionProvider().setSelection(new TextSelection(lineOffset + pos.position, 1));
+                    DBPErrorAssistant.ErrorPosition pos = positions[0];
+                    if (pos.line < 0) {
+                        if (pos.position >= 0) {
+                            // Only position
+                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
                             scrolled = true;
-                        } catch (BadLocationException e) {
-                            log.warn(e);
+                        }
+                    } else {
+                        // Line + position
+                        Document document = getDocument();
+                        if (document != null) {
+                            int startLine = document.getLineOfOffset(queryStartOffset);
+                            int errorOffset = document.getLineOffset(startLine + pos.line);
+                            int errorLength;
+                            if (pos.position > 0) {
+                                errorOffset += pos.position;
+                                errorLength = 1;
+                            } else {
+                                errorLength = document.getLineLength(startLine + pos.line);
+                            }
+                            getSelectionProvider().setSelection(new TextSelection(errorOffset, errorLength));
+                            scrolled = true;
                         }
                     }
                 }
             }
-        }
-        if (!scrolled) {
-            // Can't position on error - let's just select entire problem query
-            showStatementInEditor(result.getStatement(), true);
+            if (!scrolled) {
+                // Can't position on error - let's just select entire problem query
+                showStatementInEditor(result.getStatement(), true);
+            }
+        } catch (Exception e) {
+            log.warn("Error positioning on query error", e);
         }
     }
 

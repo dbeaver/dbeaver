@@ -50,7 +50,7 @@ import java.util.regex.Pattern;
  */
 public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
-    private Pattern POSITION_PATTERN = Pattern.compile("\\n\\s*Position: ([0-9]+)");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*Position: ([0-9]+)");
 
     public PostgreMetaModel(IConfigurationElement cfg) {
         super(cfg);
@@ -142,7 +142,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
-            Matcher matcher = POSITION_PATTERN.matcher(message);
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
             if (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
                 pos.position = Integer.parseInt(matcher.group(1)) - 1;
