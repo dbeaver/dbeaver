@@ -142,6 +142,12 @@ public class WMIStatement implements DBCStatement {
 
     @Nullable
     @Override
+    public Throwable[] getStatementWarnings() throws DBCException {
+        return null;
+    }
+
+    @Nullable
+    @Override
     public Object getStatementSource()
     {
         return null;

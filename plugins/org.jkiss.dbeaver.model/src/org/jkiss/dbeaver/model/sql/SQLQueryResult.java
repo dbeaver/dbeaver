@@ -35,6 +35,7 @@ public class SQLQueryResult
     private Throwable error;
     private long queryTime;
     private String resultSetName;
+    private Throwable[] warnings;
 
     public SQLQueryResult(SQLQuery statement)
     {
@@ -121,5 +122,13 @@ public class SQLQueryResult
     public void setResultSetName(String resultSetName)
     {
         this.resultSetName = resultSetName;
+    }
+
+    public Throwable[] getWarnings() {
+        return warnings;
+    }
+
+    public void setWarnings(Throwable[] warnings) {
+        this.warnings = warnings;
     }
 }
