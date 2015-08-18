@@ -81,7 +81,7 @@ public final class ModelPreferences
 
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Common
-        PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
+        PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, true);
 
         // SQL execution
         PrefUtils.setDefaultPreferenceValue(store, SCRIPT_STATEMENT_DELIMITER, SQLConstants.DEFAULT_STATEMENT_DELIMITER);
