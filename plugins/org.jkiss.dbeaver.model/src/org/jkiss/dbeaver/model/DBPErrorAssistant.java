@@ -41,6 +41,11 @@ public interface DBPErrorAssistant
         public int position = -1;
         // Position information
         public String info = null;
+
+        @Override
+        public String toString() {
+            return line + ":" + position + (info == null ? "" : " (" + info + ")");
+        }
     }
 
     ErrorType discoverErrorType(@NotNull DBException error);

@@ -570,7 +570,7 @@ public class OracleDataSource extends JDBCDataSource
         }
     }
 
-    private Pattern POSITION_PATTERN = Pattern.compile("(.+): line ([0-9]+), column ([0-9]+):");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("(.+): line ([0-9]+), column ([0-9]+):");
 
     @Nullable
     @Override
@@ -583,7 +583,7 @@ public class OracleDataSource extends JDBCDataSource
         }
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
-            Matcher matcher = POSITION_PATTERN.matcher(message);
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
             List<ErrorPosition> positions = new ArrayList<ErrorPosition>();
             while (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();

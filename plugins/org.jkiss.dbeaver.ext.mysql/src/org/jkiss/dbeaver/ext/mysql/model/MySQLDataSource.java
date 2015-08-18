@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
@@ -49,6 +51,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * GenericDataSource
@@ -633,6 +637,23 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             return new MySQLCatalog(owner, resultSet);
         }
 
+    }
+
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at line ([0-9]+)");
+
+    @Nullable
+    @Override
+    public ErrorPosition[] getErrorPosition(@NotNull Throwable error) {
+        String message = error.getMessage();
+        if (!CommonUtils.isEmpty(message)) {
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
+            if (matcher.find()) {
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                return new ErrorPosition[] { pos };
+            }
+        }
+        return null;
     }
 
 }
