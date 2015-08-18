@@ -86,8 +86,7 @@ public class FolderList extends Composite {
     private Color listBackground;
     private Color hoverGradientStart;
     private Color hoverGradientEnd;
-    private Color defaultGradientStart;
-    private Color defaultGradientEnd;
+    private Color elementBackground;
     private Color indentedDefaultBackground;
     private Color indentedHoverBackground;
     private Color navigationElementShadowStroke;
@@ -203,9 +202,10 @@ public class FolderList extends Composite {
                 e.gc.setBackground(indentedDefaultBackground);
                 e.gc.fillRectangle(0, 2, bounds.width - 1, bounds.height - 1);
             } else {
-                e.gc.setForeground(defaultGradientStart);
-                e.gc.setBackground(defaultGradientEnd);
-                e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
+                e.gc.setBackground(elementBackground);
+                e.gc.fillRectangle(0, 2, bounds.width - 1, bounds.height - 1);
+                //e.gc.setBackground(defaultGradientEnd);
+                //e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
             }
 
             if (!selected) {
@@ -750,11 +750,20 @@ public class FolderList extends Composite {
 		 * white 20% + INFO_BACKGROUND 60% end colour WIDGET_NORMAL_SHADOW 100% +
 		 * INFO_BACKGROUND 40%
 		 */
+        /*
         defaultGradientStart = sharedColors.getColor(
             UIUtils.blend(infoBackground,
                 UIUtils.blend(white, widgetNormalShadow.getRGB(), 20), 60)
         );
         defaultGradientEnd = sharedColors.getColor(UIUtils.blend(infoBackground, widgetNormalShadow.getRGB(), 40));
+        */
+        if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
+            // Foreground darker than background - make element background darker
+            elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 15));
+        } else {
+            // Make element background lighter
+            elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 15));
+        }
 
         navigationElementShadowStroke = sharedColors.getColor(UIUtils.blend(white, widgetNormalShadow.getRGB(), 55));
         bottomNavigationElementShadowStroke1 = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 10));
