@@ -1446,9 +1446,6 @@ public class SQLEditor extends SQLEditorBase implements
             if (isDisposed()) {
                 return;
             }
-            if (result.hasError()) {
-                showStatementInEditor(result.getStatement(), true);
-            }
             DBeaverUI.runUIJob("Process SQL query result", new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -1468,10 +1465,11 @@ public class SQLEditor extends SQLEditorBase implements
                     dumpServerOutput(executionContext, outputReader);
                 }
             }
-            if (result.hasError()) {
-                setStatus(GeneralUtils.getFirstMessage(result.getError()), true);
-            }
-            if (!scriptMode && dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
+            Throwable error = result.getError();
+            if (error != null) {
+                setStatus(GeneralUtils.getFirstMessage(error), true);
+                scrollCursorToError(result, error);
+            } else if (!scriptMode && dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
@@ -1513,6 +1511,36 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
             });
+        }
+    }
+
+    private void scrollCursorToError(@NotNull SQLQueryResult result, @NotNull Throwable error) {
+        DBCExecutionContext context = getExecutionContext();
+        if (context == null) {
+            return;
+        }
+        boolean scrolled = false;
+        DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, context.getDataSource());
+        if (errorAssistant != null) {
+            DBPErrorAssistant.ErrorPosition[] positions = errorAssistant.getErrorPosition(error);
+            if (positions != null && positions.length > 0) {
+                int queryStartOffset = result.getStatement().getOffset();
+
+                DBPErrorAssistant.ErrorPosition pos = positions[0];
+                if (pos.line < 0) {
+                    if (pos.position >= 0) {
+                        // Only position
+                        getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
+                        scrolled = true;
+                    }
+                } else {
+                    // Line + position
+                }
+            }
+        }
+        if (!scrolled) {
+            // Can't position on error - let's just select entire problem query
+            showStatementInEditor(result.getStatement(), true);
         }
     }
 

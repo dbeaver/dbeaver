@@ -635,9 +635,4 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     }
 
-    @Override
-    public ErrorType discoverErrorType(@NotNull DBException error)
-    {
-        return super.discoverErrorType(error);
-    }
 }

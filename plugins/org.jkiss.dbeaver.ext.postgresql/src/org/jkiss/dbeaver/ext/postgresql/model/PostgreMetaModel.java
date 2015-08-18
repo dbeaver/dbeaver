@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -35,11 +36,14 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * PostgreMetaModel
@@ -131,6 +135,21 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public DBCQueryPlanner getQueryPlanner(GenericDataSource dataSource) {
         return new PostgreQueryPlaner(dataSource);
+    }
+
+    @Override
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+        String message = error.getMessage();
+        if (!CommonUtils.isEmpty(message)) {
+            Pattern POSITION_PATTERN = Pattern.compile("\\n\\s*Position: ([0-9]+)");
+            Matcher matcher = POSITION_PATTERN.matcher(message);
+            if (matcher.find()) {
+                DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                pos.position = Integer.parseInt(matcher.group(1)) - 1;
+                return pos;
+            }
+        }
+        return null;
     }
 
     @Nullable
