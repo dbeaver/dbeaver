@@ -119,4 +119,7 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      */
     void setLimit(long offset, long limit) throws DBCException;
 
+    @Nullable
+    Throwable[] getStatementWarnings() throws DBCException;
+
 }

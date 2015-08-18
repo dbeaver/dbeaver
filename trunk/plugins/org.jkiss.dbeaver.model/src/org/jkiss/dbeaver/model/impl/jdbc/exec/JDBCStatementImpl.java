@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Managable statement.
@@ -602,6 +604,27 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         throws SQLException
     {
         return makeResultSet(getOriginal().getResultSet());
+    }
+
+    @Nullable
+    @Override
+    public Throwable[] getStatementWarnings() throws DBCException {
+        try {
+            List<Throwable> warnings = null;
+            for (SQLWarning warning = getWarnings(); warning != null; warning = warning.getNextWarning()) {
+                if (warning.getMessage() == null && warning.getErrorCode() == 0) {
+                    // Skip trash [Excel driver]
+                    continue;
+                }
+                if (warnings == null) {
+                    warnings = new ArrayList<Throwable>();
+                }
+                warnings.add(warning);
+            }
+            return warnings == null ? null : warnings.toArray(new Throwable[warnings.size()]);
+        } catch (SQLException e) {
+            throw new DBCException(e, getSession().getDataSource());
+        }
     }
 
     @Override
