@@ -1569,7 +1569,7 @@ public class SQLEditor extends SQLEditorBase implements
                     if (outputViewer.isHasNewOutput()) {
                         outputViewer.scrollToEnd();
                         CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
-                        if (outputItem != resultTabs.getSelection()) {
+                        if (outputItem != null && outputItem != resultTabs.getSelection()) {
                             outputItem.setImage(IMG_OUTPUT_ALERT);
                         }
                     }
