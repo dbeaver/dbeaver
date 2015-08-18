@@ -31,6 +31,7 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.text.*;
+import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
@@ -1530,11 +1531,22 @@ public class SQLEditor extends SQLEditorBase implements
                 if (pos.line < 0) {
                     if (pos.position >= 0) {
                         // Only position
-                        getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
+                        getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
                         scrolled = true;
                     }
                 } else {
                     // Line + position
+                    Document document = getDocument();
+                    if (document != null) {
+                        try {
+                            int startLine = document.getLineOfOffset(queryStartOffset);
+                            int lineOffset = document.getLineOffset(startLine + pos.line);
+                            getSelectionProvider().setSelection(new TextSelection(lineOffset + pos.position, 1));
+                            scrolled = true;
+                        } catch (BadLocationException e) {
+                            log.warn(e);
+                        }
+                    }
                 }
             }
         }
