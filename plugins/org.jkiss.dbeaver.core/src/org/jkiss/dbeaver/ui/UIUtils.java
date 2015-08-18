@@ -57,7 +57,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.*;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -1280,7 +1283,8 @@ public class UIUtils {
     public static boolean showDatabaseError(Shell shell, String title, String message, DBException error)
     {
         DBPDataSource dataSource = error.getDataSource();
-        if (dataSource instanceof DBPErrorAssistant) {
+        DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, dataSource);
+        if (errorAssistant != null) {
             DBPErrorAssistant.ErrorType errorType = ((DBPErrorAssistant) dataSource).discoverErrorType(error);
             switch (errorType) {
                 case CONNECTION_LOST:

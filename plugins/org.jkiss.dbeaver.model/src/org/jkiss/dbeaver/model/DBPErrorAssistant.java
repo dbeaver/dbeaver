@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /**
@@ -31,5 +33,19 @@ public interface DBPErrorAssistant
         DRIVER_CLASS_MISSING
     }
 
-    ErrorType discoverErrorType(DBException error);
+    class ErrorPosition
+    {
+        // Line number (starts from zero)
+        public int line = -1;
+        // Position in line. If line < 0 then position from start of query (starts from zero)
+        public int position = -1;
+        // Position information
+        public String info = null;
+    }
+
+    ErrorType discoverErrorType(@NotNull DBException error);
+
+    @Nullable
+    ErrorPosition[] getErrorPosition(@NotNull Throwable error);
+
 }

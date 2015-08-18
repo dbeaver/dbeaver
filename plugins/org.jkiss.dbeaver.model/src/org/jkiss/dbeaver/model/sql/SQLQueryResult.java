@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
@@ -37,12 +38,12 @@ public class SQLQueryResult
     private String resultSetName;
     private Throwable[] warnings;
 
-    public SQLQueryResult(SQLQuery statement)
+    public SQLQueryResult(@NotNull SQLQuery statement)
     {
         this.statement = statement;
     }
 
-    @Nullable
+    @NotNull
     public SQLQuery getStatement() {
         return statement;
     }

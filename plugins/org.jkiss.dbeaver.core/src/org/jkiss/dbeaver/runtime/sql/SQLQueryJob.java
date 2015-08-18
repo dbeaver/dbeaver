@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -85,12 +87,12 @@ public class SQLQueryJob extends DataSourceJob
     private int resultSetNumber;
 
     public SQLQueryJob(
-        IWorkbenchPartSite partSite,
-        String name,
-        DBCExecutionContext executionContext,
-        List<SQLQuery> queries,
-        SQLResultsConsumer resultsConsumer,
-        SQLQueryListener listener)
+        @NotNull IWorkbenchPartSite partSite,
+        @NotNull String name,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<SQLQuery> queries,
+        @NotNull SQLResultsConsumer resultsConsumer,
+        @Nullable SQLQueryListener listener)
     {
         super(name, DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT_EXECUTE), executionContext);
         this.partSite = partSite;
@@ -249,7 +251,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(DBCSession session, SQLQuery sqlStatement, boolean fireEvents)
+    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLQuery sqlStatement, boolean fireEvents)
     {
         lastError = null;
 
@@ -408,7 +410,7 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private void fetchExecutionResult(DBCSession session, DBDDataReceiver dataReceiver, SQLQuery query) throws DBCException
+    private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
     {
         // Fetch fake result set
         //DBCStatement statsStatement;
