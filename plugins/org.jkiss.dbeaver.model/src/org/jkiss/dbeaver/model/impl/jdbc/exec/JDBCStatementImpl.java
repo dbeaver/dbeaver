@@ -619,6 +619,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
                 if (warnings == null) {
                     warnings = new ArrayList<Throwable>();
                 }
+                if (warnings.contains(warning)) {
+                    // Cycle
+                    break;
+                }
                 warnings.add(warning);
             }
             return warnings == null ? null : warnings.toArray(new Throwable[warnings.size()]);
