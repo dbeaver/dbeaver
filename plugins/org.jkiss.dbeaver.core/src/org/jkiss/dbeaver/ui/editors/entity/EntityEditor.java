@@ -366,8 +366,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected void createPages()
     {
-        NavigatorUtils.setNavigatorContext(getSite());
-
         if (getEditorInput() instanceof ErrorEditorInput) {
             ErrorEditorInput errorInput = (ErrorEditorInput) getEditorInput();
             try {

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
@@ -115,6 +116,9 @@ public class DBeaverUI implements DBUICallback {
         this.sharedTextColors = new SharedTextColors();
         this.trayItem = new TrayIconHandler();
         DBUserInterface.setInstance(this);
+
+        // Register context listener
+        WorkbenchContextListener.registerInWorkbench();
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)
