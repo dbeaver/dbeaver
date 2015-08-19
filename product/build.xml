@@ -90,8 +90,11 @@
 
         <echo message="Copy product"/>
         <copy todir="${buildDirectory}" filtering="true">
-            <fileset dir=".">
-                <include name="**/*.product" />
+            <fileset dir="ce">
+                <include name="*.product" />
+            </fileset>
+            <fileset dir="eclipse">
+                <include name="*.product" />
             </fileset>
         </copy>
 
