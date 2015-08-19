@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  */
 public class DerbyMetaModel extends GenericMetaModel
 {
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*Position: ([0-9]+)");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at line ([0-9]+), column ([0-9]+)\\.");
 
     public DerbyMetaModel(IConfigurationElement cfg) {
         super(cfg);
@@ -124,7 +124,8 @@ public class DerbyMetaModel extends GenericMetaModel
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
             if (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
-                pos.position = Integer.parseInt(matcher.group(1)) - 1;
+                pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                pos.position = Integer.parseInt(matcher.group(2)) - 1;
                 return pos;
             }
         }
