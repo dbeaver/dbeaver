@@ -1,5 +1,3 @@
-Analyse exception for error line/offset and position cursor in SQL editor
-
 Connections keep-alive
 Default socket timeouts for drivers
 
