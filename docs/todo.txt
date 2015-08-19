@@ -1,3 +1,5 @@
+Analyse exception for error line/offset and position cursor in SQL editor
+
 Connections keep-alive
 Default socket timeouts for drivers
 
@@ -15,7 +17,6 @@ Split core and ui on different plugins
 DBeaver features usage model
 Vertica keywords
 
-Analyse exception for error line/offset and position cursor in SQL editor
 ERD export in XMI/GraphML formats
 
 Data transfer DB->DB. Set default export mapping initially
