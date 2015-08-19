@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.recommenders.rcp.utils.PartListener2Adapter;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
@@ -29,10 +30,8 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.*;
+import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -424,13 +423,6 @@ public class NavigatorUtils {
             }
         }
         return false;
-    }
-
-    public static void setNavigatorContext(IWorkbenchPartSite site) {
-        IContextService contextService = (IContextService) site.getService(IContextService.class);
-        if (contextService != null) {
-            contextService.activateContext(NAVIGATOR_CONTEXT_ID);
-        }
     }
 
 }

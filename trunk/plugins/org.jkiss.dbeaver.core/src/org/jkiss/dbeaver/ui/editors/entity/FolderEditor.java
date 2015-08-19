@@ -41,8 +41,6 @@ public class FolderEditor extends SinglePageDatabaseEditor<FolderEditorInput> im
     @Override
     public void createPartControl(Composite parent)
     {
-        NavigatorUtils.setNavigatorContext(getSite());
-
         itemControl = new ItemListControl(parent, SWT.NONE, this.getSite(), getEditorInput().getNavigatorNode(), null);
         itemControl.createProgressPanel();
         itemControl.loadData();
