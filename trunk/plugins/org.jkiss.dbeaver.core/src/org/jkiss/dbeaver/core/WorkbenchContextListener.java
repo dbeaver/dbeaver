@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 /**
  * WorkbenchContextListener.
  * Listens workbench parts activations/deactivation and activates contexts for navigator and SQL editors.
+ *
+ * TODO: add multipage editor listener and folder listener. Maybe use focus listener on control
  */
 class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
 
