@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -52,7 +50,8 @@ public class DerbyMetaModel extends GenericMetaModel
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
         try {
-            return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
+            return JDBCUtils.queryString(session, "SELECT v.VIEWDEFINITION from SYS.SYSVIEWS v,SYS.SYSTABLES t,SYS.SYSSCHEMAS s\n" +
+                "WHERE v.TABLEID=t.TABLEID AND t.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=? AND t.TABLENAME=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
         } finally {
@@ -60,6 +59,7 @@ public class DerbyMetaModel extends GenericMetaModel
         }
     }
 
+/*
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
@@ -72,45 +72,36 @@ public class DerbyMetaModel extends GenericMetaModel
             session.close();
         }
     }
+*/
 
     @Override
     public boolean supportsSequences(GenericDataSource dataSource) {
-        Version databaseVersion = dataSource.getInfo().getDatabaseVersion();
-        return databaseVersion.getMajor() >= 9 || databaseVersion.getMajor() == 8 && databaseVersion.getMinor() >= 4;
+        return true;
     }
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
         JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?");
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT seq.SEQUENCENAME,seq.CURRENTVALUE,seq.MINIMUMVALUE,seq.MAXIMUMVALUE,seq.INCREMENT\n" +
+                "FROM sys.SYSSEQUENCES seq,sys.SYSSCHEMAS s\n" +
+                "WHERE seq.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=?");
             try {
                 dbStat.setString(1, container.getName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
                     List<GenericSequence> result = new ArrayList<GenericSequence>();
                     while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, 1);
-                        JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name);
-                        try {
-                            JDBCResultSet seqResults = dbSeqStat.executeQuery();
-                            try {
-                                seqResults.next();
-                                GenericSequence sequence = new GenericSequence(
-                                    container,
-                                    name,
-                                    PostgreUtils.getObjectComment(monitor, container.getDataSource(), container.getName(), name),
-                                    JDBCUtils.safeGetLong(seqResults, 1),
-                                    JDBCUtils.safeGetLong(seqResults, 2),
-                                    JDBCUtils.safeGetLong(seqResults, 3),
-                                    JDBCUtils.safeGetLong(seqResults, 4));
-                                result.add(sequence);
-                            } finally {
-                                seqResults.close();
-                            }
-                        } finally {
-                            dbSeqStat.close();
-                        }
+                        GenericSequence sequence = new GenericSequence(
+                            container,
+                            JDBCUtils.safeGetString(dbResult, 1),
+                            "",
+                            JDBCUtils.safeGetLong(dbResult, 2),
+                            JDBCUtils.safeGetLong(dbResult, 3),
+                            JDBCUtils.safeGetLong(dbResult, 4),
+                            JDBCUtils.safeGetLong(dbResult, 5));
+                        result.add(sequence);
                     }
                     return result;
                 } finally {
