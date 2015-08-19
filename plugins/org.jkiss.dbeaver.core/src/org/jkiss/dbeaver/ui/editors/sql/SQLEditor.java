@@ -1541,7 +1541,7 @@ public class SQLEditor extends SQLEditorBase implements
                             int startLine = document.getLineOfOffset(queryStartOffset);
                             int errorOffset = document.getLineOffset(startLine + pos.line);
                             int errorLength;
-                            if (pos.position > 0) {
+                            if (pos.position >= 0) {
                                 errorOffset += pos.position;
                                 errorLength = 1;
                             } else {
