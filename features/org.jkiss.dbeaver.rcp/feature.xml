@@ -259,13 +259,6 @@
             unpack="false"/>
 
     <plugin
-            id="org.eclipse.e4.core.di.annotations"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
             id="org.eclipse.e4.core.di.extensions"
             download-size="0"
             install-size="0"
@@ -388,13 +381,6 @@
 
     <plugin
             id="org.eclipse.emf.ecore.xmi"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.eclipse.e4.emf.xpath"
             download-size="0"
             install-size="0"
             version="0.0.0"
@@ -765,13 +751,6 @@
             unpack="false"/>
 
     <plugin
-            id="org.apache.commons.jxpath"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
             id="org.objectweb.asm"
             download-size="0"
             install-size="0"
@@ -791,5 +770,31 @@
             install-size="0"
             version="0.0.0"
             unpack="false"/>
+
+    <!-- Eclipse Mars additions -->
+
+<!--
+    <plugin
+            id="org.eclipse.e4.core.di.annotations"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.eclipse.e4.emf.xpath"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+
+    <plugin
+            id="org.apache.commons.jxpath"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+-->
+
 
 </feature>
