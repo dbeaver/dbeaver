@@ -105,6 +105,10 @@ public class EntityFigure extends Figure {
         return nameLabel;
     }
 
+    public AttributeListFigure getKeyFigure() {
+        return keyFigure;
+    }
+
     /**
      * @return the figure containing the column lables
      */

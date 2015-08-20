@@ -27,6 +27,9 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Figure used to hold the column labels
  * @author Serge Rieder
@@ -52,6 +55,16 @@ public class AttributeListFigure extends Figure
 		setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
 
 		setOpaque(true);
+	}
+
+	public List<AttributeItemFigure> getAttributes() {
+		List<AttributeItemFigure> result = new ArrayList<AttributeItemFigure>();
+		for (Object child : getChildren()) {
+			if (child instanceof AttributeItemFigure) {
+				result.add((AttributeItemFigure) child);
+			}
+		}
+		return result;
 	}
 
 	class ColumnFigureBorder extends AbstractBorder
