@@ -22,6 +22,9 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 import java.util.List;
@@ -37,6 +40,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	private ERDEntity primaryKeyEntity;
 	private ERDEntity foreignKeyEntity;
     private List<Point> initBends;
+    private Boolean identifying;
 
     /**
      * Constructor for logical association
@@ -115,6 +119,18 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     public void setInitBends(List<Point> bends)
     {
         this.initBends = bends;
+    }
+
+    public boolean isIdentifying() {
+        if (identifying == null) {
+            identifying = false;
+            try {
+                identifying = DBUtils.isIdentifyingAssociation(VoidProgressMonitor.INSTANCE, getObject());
+            } catch (DBException e) {
+                log.debug(e);
+            }
+        }
+        return identifying;
     }
 
     @Override
