@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -89,6 +90,7 @@ public class ERDExportGraphML
                         {
                             // Generic node
                             EntityPart part = diagramPart.getEntityPart(entity);
+                            EntityFigure figure = (EntityFigure) part.getFigure();
                             Rectangle partBounds = part.getBounds();
                             xml.startElement("y:GenericNode");
                             xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");
@@ -103,20 +105,44 @@ public class ERDExportGraphML
 
                             // Fill
                             xml.startElement("y:Fill");
-                            xml.addAttribute("color", getHtmlColor(part.getContentPane().getBackgroundColor()));
+                            xml.addAttribute("color", getHtmlColor(figure.getBackgroundColor()));
                             //xml.addAttribute("color2", partBounds.width);
                             xml.addAttribute("transparent", "false");
                             xml.endElement();
 
                             // Border
                             xml.startElement("y:BorderStyle");
-                            xml.addAttribute("color", getHtmlColor(part.getContentPane().getForegroundColor()));
+                            xml.addAttribute("color", getHtmlColor(figure.getForegroundColor()));
                             xml.addAttribute("type", "line");
                             xml.addAttribute("width", "1.0");
                             xml.endElement();
 
-                            // Entity Name
-                            //<y:NodeLabel alignment="center" autoSizePolicy="content" backgroundColor="#B7C9E3" configuration="com.yworks.entityRelationship.label.name" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasLineColor="false" height="18.701171875" modelName="internal" modelPosition="t" textColor="#000000" visible="true" width="40.685546875" x="19.6572265625" y="4.0">Entity1</y:NodeLabel>
+                            {
+                                Rectangle nameBounds = figure.getNameLabel().getBounds();
+                                // Entity Name
+                                xml.startElement("y:NodeLabel");
+                                xml.addAttribute("alignment", "center");
+                                xml.addAttribute("autoSizePolicy", "content");
+                                xml.addAttribute("configuration", "com.yworks.entityRelationship.label.name");
+                                xml.addAttribute("fontFamily", "Dialog");
+                                xml.addAttribute("fontSize", "12");
+                                xml.addAttribute("fontStyle", "plain");
+                                xml.addAttribute("hasLineColor", "false");
+                                xml.addAttribute("modelName", "internal");
+                                xml.addAttribute("modelPosition", "t");
+                                xml.addAttribute("backgroundColor", getHtmlColor(figure.getNameLabel().getBackgroundColor()));
+                                xml.addAttribute("textColor", getHtmlColor(figure.getNameLabel().getForegroundColor()));
+                                xml.addAttribute("visible", "true");
+
+                                xml.addAttribute("height", nameBounds.height());
+                                xml.addAttribute("width", nameBounds.width);
+                                xml.addAttribute("x", nameBounds.x());
+                                xml.addAttribute("y", nameBounds.y());
+
+                                xml.addText(entity.getName());
+
+                                xml.endElement();
+                            }
 
                             xml.endElement();
                         }
