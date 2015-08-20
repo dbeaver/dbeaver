@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.FontData;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeListFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
@@ -101,9 +100,9 @@ public class ERDExportGraphML
 
                         {
                             // Generic node
-                            EntityPart part = diagramPart.getEntityPart(entity);
-                            EntityFigure figure = (EntityFigure) part.getFigure();
-                            Rectangle partBounds = part.getBounds();
+                            EntityPart entityPart = diagramPart.getEntityPart(entity);
+                            EntityFigure entityFigure = (EntityFigure) entityPart.getFigure();
+                            Rectangle partBounds = entityPart.getBounds();
                             xml.startElement("y:GenericNode");
                             xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");
 
@@ -117,21 +116,21 @@ public class ERDExportGraphML
 
                             // Fill
                             xml.startElement("y:Fill");
-                            xml.addAttribute("color", getHtmlColor(figure.getBackgroundColor()));
+                            xml.addAttribute("color", getHtmlColor(entityFigure.getBackgroundColor()));
                             //xml.addAttribute("color2", partBounds.width);
                             xml.addAttribute("transparent", "false");
                             xml.endElement();
 
                             // Border
                             xml.startElement("y:BorderStyle");
-                            xml.addAttribute("color", getHtmlColor(figure.getForegroundColor()));
+                            xml.addAttribute("color", getHtmlColor(entityFigure.getForegroundColor()));
                             xml.addAttribute("type", "line");
                             xml.addAttribute("width", "1.0");
                             xml.endElement();
 
                             {
                                 // Entity Name
-                                Rectangle nameBounds = figure.getNameLabel().getBounds();
+                                Rectangle nameBounds = entityFigure.getNameLabel().getBounds();
 
                                 xml.startElement("y:NodeLabel");
                                 xml.addAttribute("alignment", "center");
@@ -143,8 +142,8 @@ public class ERDExportGraphML
                                 xml.addAttribute("hasLineColor", "false");
                                 xml.addAttribute("modelName", "internal");
                                 xml.addAttribute("modelPosition", "t");
-                                xml.addAttribute("backgroundColor", getHtmlColor(figure.getNameLabel().getBackgroundColor()));
-                                xml.addAttribute("textColor", getHtmlColor(figure.getNameLabel().getForegroundColor()));
+                                xml.addAttribute("backgroundColor", getHtmlColor(entityFigure.getNameLabel().getBackgroundColor()));
+                                xml.addAttribute("textColor", getHtmlColor(entityFigure.getNameLabel().getForegroundColor()));
                                 xml.addAttribute("visible", "true");
 
                                 xml.addAttribute("height", nameBounds.height());
@@ -159,9 +158,8 @@ public class ERDExportGraphML
 
                             {
                                 // Attributes
-                                AttributeListFigure columnsFigure = figure.getColumnsFigure();
+                                AttributeListFigure columnsFigure = entityFigure.getColumnsFigure();
                                 Rectangle attrsBounds = columnsFigure.getBounds();
-                                FontData attrsFont = columnsFigure.getFont().getFontData()[0];
 
                                 xml.startElement("y:NodeLabel");
                                 xml.addAttribute("alignment", "left");
@@ -173,8 +171,8 @@ public class ERDExportGraphML
                                 xml.addAttribute("hasLineColor", "false");
                                 xml.addAttribute("modelName", "custom");
                                 xml.addAttribute("modelPosition", "t");
-                                xml.addAttribute("backgroundColor", getHtmlColor(figure.getNameLabel().getBackgroundColor()));
-                                xml.addAttribute("textColor", getHtmlColor(figure.getNameLabel().getForegroundColor()));
+                                xml.addAttribute("backgroundColor", getHtmlColor(columnsFigure.getBackgroundColor()));
+                                xml.addAttribute("textColor", getHtmlColor(columnsFigure.getForegroundColor()));
                                 xml.addAttribute("visible", "true");
 
                                 xml.addAttribute("height", attrsBounds.height());
