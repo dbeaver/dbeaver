@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.FontData;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.erd.figures.AttributeListFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
@@ -118,13 +121,14 @@ public class ERDExportGraphML
                             xml.endElement();
 
                             {
-                                Rectangle nameBounds = figure.getNameLabel().getBounds();
                                 // Entity Name
+                                Rectangle nameBounds = figure.getNameLabel().getBounds();
+
                                 xml.startElement("y:NodeLabel");
                                 xml.addAttribute("alignment", "center");
                                 xml.addAttribute("autoSizePolicy", "content");
                                 xml.addAttribute("configuration", "com.yworks.entityRelationship.label.name");
-                                xml.addAttribute("fontFamily", "Dialog");
+                                xml.addAttribute("fontFamily", "Courier");
                                 xml.addAttribute("fontSize", "12");
                                 xml.addAttribute("fontStyle", "plain");
                                 xml.addAttribute("hasLineColor", "false");
@@ -144,8 +148,68 @@ public class ERDExportGraphML
                                 xml.endElement();
                             }
 
+                            {
+                                // Attributes
+                                AttributeListFigure columnsFigure = figure.getColumnsFigure();
+                                Rectangle attrsBounds = columnsFigure.getBounds();
+                                FontData attrsFont = columnsFigure.getFont().getFontData()[0];
+
+                                xml.startElement("y:NodeLabel");
+                                xml.addAttribute("alignment", "left");
+                                xml.addAttribute("autoSizePolicy", "content");
+                                xml.addAttribute("configuration", "com.yworks.entityRelationship.label.attributes");
+                                xml.addAttribute("fontFamily", "Courier");
+                                xml.addAttribute("fontSize", "12");
+                                xml.addAttribute("fontStyle", "plain");
+                                xml.addAttribute("hasLineColor", "false");
+                                xml.addAttribute("modelName", "custom");
+                                xml.addAttribute("modelPosition", "t");
+                                xml.addAttribute("backgroundColor", getHtmlColor(figure.getNameLabel().getBackgroundColor()));
+                                xml.addAttribute("textColor", getHtmlColor(figure.getNameLabel().getForegroundColor()));
+                                xml.addAttribute("visible", "true");
+
+                                xml.addAttribute("height", attrsBounds.height());
+                                xml.addAttribute("width", attrsBounds.width);
+                                xml.addAttribute("x", attrsBounds.x());
+                                xml.addAttribute("y", attrsBounds.y());
+
+                                StringBuilder attrsString = new StringBuilder();
+                                for (ERDEntityAttribute attr : entity.getColumns()) {
+                                    if (attrsString.length() > 0) {
+                                        attrsString.append("\n");
+                                    }
+                                    attrsString.append(attr.getName());
+                                }
+
+                                xml.addText(attrsString.toString());
+
+                                xml.startElement("y:LabelModel");
+                                xml.startElement("y:ErdAttributesNodeLabelModel");
+                                xml.endElement();
+                                xml.endElement();
+
+                                xml.startElement("y:ModelParameter");
+                                xml.startElement("y:ErdAttributesNodeLabelModelParameter");
+                                xml.endElement();
+                                xml.endElement();
+
+                                xml.endElement();
+
+//                                <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="48.103515625" modelName="custom" textColor="#000000" visible="true" width="57.3671875" x="2.0" y="30.701171875">attribute 1
+//                                attribute 2
+//                                attribute 3<y:LabelModel>
+//                                <y:ErdAttributesNodeLabelModel/>
+//                                </y:LabelModel>
+//                                <y:ModelParameter>
+//                                <y:ErdAttributesNodeLabelModelParameter/>
+//                                </y:ModelParameter>
+//                                </y:NodeLabel>
+
+                            }
+
                             xml.endElement();
                         }
+
                         xml.endElement();
                     }
 
