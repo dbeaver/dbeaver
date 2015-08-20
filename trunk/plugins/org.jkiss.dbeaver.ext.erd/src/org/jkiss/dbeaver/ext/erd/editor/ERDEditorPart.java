@@ -668,7 +668,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         } else if (filePath.toLowerCase().endsWith(".gif")) {
             imageType = SWT.IMAGE_GIF;
         } else if (filePath.toLowerCase().endsWith(".graphml")) {
-            new ERDExportGraphML(getDiagram()).exportDiagramToGraphML(filePath);
+            new ERDExportGraphML(getDiagram(), getDiagramPart()).exportDiagramToGraphML(filePath);
             return;
         }
 
