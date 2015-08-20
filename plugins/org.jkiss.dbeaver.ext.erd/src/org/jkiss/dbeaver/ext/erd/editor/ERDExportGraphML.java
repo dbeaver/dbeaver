@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.editor;
 
+import org.eclipse.draw2d.Bendpoint;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.FontData;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -72,6 +74,12 @@ public class ERDExportGraphML
                 xml.addAttribute("yfiles.type", "nodegraphics");
                 xml.endElement();
 
+                xml.startElement("key");
+                xml.addAttribute("for", "edge");
+                xml.addAttribute("id", "edgegraph");
+                xml.addAttribute("yfiles.type", "edgegraphics");
+                xml.endElement();
+
                 xml.startElement("graph");
                 xml.addAttribute("edgedefault", "directed");
                 xml.addAttribute("id", "G");
@@ -90,6 +98,7 @@ public class ERDExportGraphML
                         // Graph data
                         xml.startElement("data");
                         xml.addAttribute("key", "nodegraph");
+
                         {
                             // Generic node
                             EntityPart part = diagramPart.getEntityPart(entity);
@@ -194,17 +203,6 @@ public class ERDExportGraphML
                                 xml.endElement();
 
                                 xml.endElement();
-
-//                                <y:NodeLabel alignment="left" autoSizePolicy="content" configuration="com.yworks.entityRelationship.label.attributes" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="48.103515625" modelName="custom" textColor="#000000" visible="true" width="57.3671875" x="2.0" y="30.701171875">attribute 1
-//                                attribute 2
-//                                attribute 3<y:LabelModel>
-//                                <y:ErdAttributesNodeLabelModel/>
-//                                </y:LabelModel>
-//                                <y:ModelParameter>
-//                                <y:ErdAttributesNodeLabelModelParameter/>
-//                                </y:ModelParameter>
-//                                </y:NodeLabel>
-
                             }
 
                             xml.endElement();
@@ -218,7 +216,14 @@ public class ERDExportGraphML
 
                 int edgeNum = 0;
                 for (ERDEntity entity : diagram.getEntities()) {
+                    EntityPart entityPart = diagramPart.getEntityPart(entity);
                     for (ERDAssociation association : entity.getForeignKeyRelationships()) {
+                        AssociationPart associationPart = entityPart.getConnectionPart(association, true);
+                        if (associationPart == null) {
+                            log.debug("Association part not found");
+                            continue;
+                        }
+
                         edgeNum++;
                         String edgeId = "e" + edgeNum;
 
@@ -226,6 +231,35 @@ public class ERDExportGraphML
                         xml.addAttribute("id", edgeId);
                         xml.addAttribute("source", entityMap.get(entity));
                         xml.addAttribute("target", entityMap.get(association.getPrimaryKeyEntity()));
+
+                        xml.startElement("data");
+                        xml.addAttribute("key", "edgegraph");
+                        xml.startElement("y:PolyLineEdge");
+                        xml.startElement("y:Path");// sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
+                        for (Bendpoint bp : associationPart.getBendpoints()) {
+                            xml.startElement("y:Point");
+                            xml.addAttribute("x", bp.getLocation().x);
+                            xml.addAttribute("y", bp.getLocation().x);
+                            xml.endElement();
+                        }
+                        xml.endElement();
+                        xml.startElement("y:LineStyle");
+                        xml.addAttribute("color", "#000000");
+                        xml.addAttribute("type", !association.isIdentifying() || association.isLogical() ? "dashed" : "line");
+                        xml.addAttribute("width", "1.0");
+                        xml.endElement();
+                        xml.startElement("y:Arrows");
+                        String sourceStyle = !association.isIdentifying() ? "white_diamond" : "none";
+                        xml.addAttribute("source", sourceStyle);
+                        xml.addAttribute("target", "circle");
+                        xml.endElement();
+                        xml.startElement("y:BendStyle");
+                        xml.addAttribute("smoothed", "false");
+                        xml.endElement();
+
+                        xml.endElement();
+                        xml.endElement();
+
                         xml.endElement();
                     }
                 }

@@ -20,7 +20,6 @@
  */
 package org.jkiss.dbeaver.ext.erd.part;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -31,17 +30,16 @@ import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
 
@@ -53,7 +51,6 @@ import java.util.*;
  * @author Serge Rieder
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
-    static final Log log = Log.getLog(AssociationPart.class);
 
     public AssociationPart()
     {
@@ -88,13 +85,6 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     protected IFigure createFigure() {
         ERDAssociation association = (ERDAssociation) getModel();
 
-        boolean identifying = false;
-        try {
-            identifying = DBUtils.isIdentifyingAssociation(VoidProgressMonitor.INSTANCE, association.getObject());
-        } catch (DBException e) {
-            log.debug(e);
-        }
-
         PolylineConnection conn = (PolylineConnection) super.createFigure();
         //conn.setLineJoin(SWT.JOIN_ROUND);
         //conn.setConnectionRouter(new BendpointConnectionRouter());
@@ -115,7 +105,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             targetDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
             //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             conn.setTargetDecoration(targetDecor);
-            if (!identifying) {
+            if (!association.isIdentifying()) {
                 final RhombusDecoration sourceDecor = new RhombusDecoration();
                 sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
                 //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
@@ -123,7 +113,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
         }
 
-        if (!identifying || association.isLogical()) {
+        if (!association.isIdentifying() || association.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
             conn.setLineDash(new float[] {5} );
         }
