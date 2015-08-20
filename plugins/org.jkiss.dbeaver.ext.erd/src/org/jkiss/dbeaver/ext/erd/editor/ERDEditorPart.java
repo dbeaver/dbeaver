@@ -87,6 +87,7 @@ import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.FileOutputStream;
 import java.util.*;
@@ -645,12 +646,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         final Shell shell = getSite().getShell();
         FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
-        saveDialog.setFilterExtensions(new String[]{"*.png", "*.gif", "*.jpg", "*.bmp"});
+        saveDialog.setFilterExtensions(new String[]{"*.png", "*.gif", "*.bmp", "*.graphml"});
         saveDialog.setFilterNames(new String[]{
             "PNG format (*.png)",
             "GIF format (*.gif)",
-            "JPEG format (*.jpg)",
-            "Bitmap format (*.bmp)"});
+//            "JPEG format (*.jpg)",
+            "Bitmap format (*.bmp)",
+            "GraphML (*.graphml)"
+        });
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().length() == 0) {
@@ -664,6 +667,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             imageType = SWT.IMAGE_PNG;
         } else if (filePath.toLowerCase().endsWith(".gif")) {
             imageType = SWT.IMAGE_GIF;
+        } else if (filePath.toLowerCase().endsWith(".graphml")) {
+            new ERDExportGraphML(getDiagram()).exportDiagramToGraphML(filePath);
+            return;
         }
 
         IFigure figure = rootPart.getLayer(ScalableFreeformRootEditPart.PRINTABLE_LAYERS);
