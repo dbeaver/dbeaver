@@ -28,9 +28,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageResultSetMain
@@ -43,11 +41,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Spinner resultSetSize;
     private Button resultSetUseSQLCheck;
     private Button serverSideOrderingCheck;
-
-    private Button showOddRows;
-    private Button showCellIcons;
-    private Combo doubleClickBehavior;
-    private Button autoSwitchMode;
 
     private Button keepStatementOpenCheck;
     private Button rollbackOnErrorCheck;
@@ -70,11 +63,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
-            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
-            store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
-            store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
-            store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
-            store.contains(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)
+            store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE)
             ;
     }
 
@@ -119,18 +108,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             alwaysUseAllColumns = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
         }
 
-        {
-            Group uiGroup = UIUtils.createControlGroup(composite, "UI", 2, SWT.NONE, 0);
-
-            showOddRows = UIUtils.createLabelCheckbox(uiGroup, "Mark odd/even rows", false);
-            showCellIcons = UIUtils.createLabelCheckbox(uiGroup, "Show cell icons", false);
-            doubleClickBehavior = UIUtils.createLabelCombo(uiGroup, "Double-click behavior", SWT.READ_ONLY);
-            doubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
-            doubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
-            doubleClickBehavior.add("Inline Editor", Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.ordinal());
-            autoSwitchMode = UIUtils.createLabelCheckbox(uiGroup, "Switch to record/grid mode\non single/multiple row(s)", false);
-        }
-
         return composite;
     }
 
@@ -146,12 +123,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
             alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
-
-            showOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
-            showCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
-            doubleClickBehavior.select(
-                Spreadsheet.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
-            autoSwitchMode.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -169,11 +140,6 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ModelPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
-
-            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, showOddRows.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, showCellIcons.getSelection());
-            store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, doubleClickBehavior.getSelectionIndex()).name());
-            store.setValue(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -186,16 +152,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
 
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
-
-        store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
-        store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE);
     }
 
     @Override
