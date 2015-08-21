@@ -55,7 +55,6 @@ import java.util.List;
  */
 public class PlainTextPresentation extends AbstractPresentation implements IAdaptable {
 
-    public static final int MAX_COLUMN_WIDTH = 255;
     public static final int FIRST_ROW_LINE = 2;
 
     private StyledText text;
@@ -191,6 +190,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     private void printGrid(boolean append) {
+        int maxColumnSize = getController().getPreferenceStore().getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         StringBuilder grid = new StringBuilder(512);
         ResultSetModel model = controller.getModel();
         List<DBDAttributeBinding> attrs = model.getVisibleAttributes();
@@ -210,8 +210,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             }
             for (int i = 0; i < colWidths.length; i++) {
                 colWidths[i]++;
-                if (colWidths[i] > MAX_COLUMN_WIDTH) {
-                    colWidths[i] = MAX_COLUMN_WIDTH;
+                if (colWidths[i] > maxColumnSize) {
+                    colWidths[i] = maxColumnSize;
                 }
             }
         }

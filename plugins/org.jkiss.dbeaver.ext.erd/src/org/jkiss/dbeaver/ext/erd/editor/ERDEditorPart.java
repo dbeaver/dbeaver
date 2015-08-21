@@ -87,7 +87,6 @@ import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.FileOutputStream;
 import java.util.*;
@@ -256,7 +255,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void doSaveAs()
     {
-        saveDiagramAsImage();
+        saveDiagramAs();
     }
 
     /**
@@ -642,7 +641,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         refreshDiagram();
     }
 
-    public void saveDiagramAsImage()
+    public void saveDiagramAs()
     {
         final Shell shell = getSite().getShell();
         FileDialog saveDialog = new FileDialog(shell, SWT.SAVE);
@@ -915,7 +914,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 toolBarManager.add(ActionUtils.makeCommandContribution(
                         getSite(),
                         IWorkbenchCommandConstants.FILE_SAVE_AS,
-                        "Save diagram as image",
+                        "Save diagram in external format",
                         UIIcon.PICTURE_SAVE));
                 toolBarManager.add(ActionUtils.makeCommandContribution(
                         getSite(),
