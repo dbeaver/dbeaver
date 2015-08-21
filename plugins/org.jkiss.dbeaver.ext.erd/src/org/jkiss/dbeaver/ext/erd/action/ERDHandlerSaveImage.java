@@ -37,7 +37,7 @@ public class ERDHandlerSaveImage extends AbstractHandler {
         if (control != null) {
             ERDEditorPart editor = ERDEditorAdapter.getEditor(control);
             if (editor != null) {
-                editor.saveDiagramAsImage();
+                editor.saveDiagramAs();
             }
         }
         return null;
