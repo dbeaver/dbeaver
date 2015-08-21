@@ -17,19 +17,25 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Preference page adapter for wizard page
  */
-public class WizardPrefPage extends WizardPage {
+public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
 
     private final IPreferencePage preferencePage;
+    private final List<WizardPrefPage> subPages = new ArrayList<WizardPrefPage>();
 
     public WizardPrefPage(IPreferencePage preferencePage, String title, String description)
     {
@@ -120,6 +126,18 @@ public class WizardPrefPage extends WizardPage {
     public void performCancel()
     {
         preferencePage.performCancel();
+    }
+
+    @Override
+    public WizardPrefPage[] getSubPages() {
+        if (subPages.isEmpty()) {
+            return null;
+        }
+        return subPages.toArray(new WizardPrefPage[subPages.size()]);
+    }
+
+    public void addSubPage(IPreferencePage page, String title, String description) {
+        subPages.add(new WizardPrefPage(page, title, description));
     }
 
 }
