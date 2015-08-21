@@ -103,14 +103,15 @@ public class EditConnectionWizard extends ConnectionWizard
         addPage(pageEvents);
 
         addPreferencePage(new PrefPageMetaData(), "Metadata", "Metadata reading preferences");
-        addPreferencePage(new PrefPageDataFormat(), "Data Formatting", "Data formatting preferences");
-        addPreferencePage(new PrefPageResultSetMain(), "Result Sets", "Result Set preferences");
-        addPreferencePage(new PrefPageDataEditor(), "Data Edit", "Data (resultset) edit settings");
-        addPreferencePage(new PrefPageSQLExecute(), "SQL Processing", "SQL processing settings");
-        addPreferencePage(new PrefPageSQLEditor(), "SQL Editor", "SQL editor settings");
+        WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), "Result Sets", "Result Set preferences");
+        rsPage.addSubPage(new PrefPageResultSetBinaries(), "Binaries", "Binary data representation");
+        rsPage.addSubPage(new PrefPageDataFormat(), "Data Formatting", "Data formatting preferences");
+        WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), "SQL Editor", "SQL editor settings");
+        sqlPage.addSubPage(new PrefPageSQLExecute(), "SQL Processing", "SQL processing settings");
+        addPreferencePage(new PrefPageDataEditor(), "Data Editor", "Data (resultset) edit settings");
     }
 
-    private void addPreferencePage(PreferencePage prefPage, String title, String description)
+    private WizardPrefPage addPreferencePage(PreferencePage prefPage, String title, String description)
     {
         WizardPrefPage wizardPage = new WizardPrefPage(prefPage, title, description);
         prefPages.add(wizardPage);
@@ -118,6 +119,7 @@ public class EditConnectionWizard extends ConnectionWizard
             ((IWorkbenchPropertyPage) prefPage).setElement(dataSource);
         }
         addPage(wizardPage);
+        return wizardPage;
     }
 
     /**
