@@ -1847,30 +1847,22 @@
                 </or>
             </enabledWhen>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                </or>
+            </enabledWhen>
+        </page>
         <page id="org.jkiss.dbeaver.preferences.main.meta" class="org.jkiss.dbeaver.ui.preferences.PrefPageMetaData" name="Metadata">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                     <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
-                </or>
-            </enabledWhen>
-        </page>
-        <page id="org.jkiss.dbeaver.preferences.main.dataformat" class="org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat" name="Data Formats">
-           <enabledWhen>
-              <or>
-                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                  <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
-                  <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
-                  <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
-              </or>
-           </enabledWhen>
-        </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" id="org.jkiss.dbeaver.preferences.main.sqlexecute" name="SQL Processing">
-            <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1881,6 +1873,14 @@
                     <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                 </or>
            </enabledWhen>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="SQL Processing">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+                </or>
+            </enabledWhen>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" id="org.jkiss.dbeaver.preferences.main.sql.templates" name="Templates">
             <enabledWhen>
