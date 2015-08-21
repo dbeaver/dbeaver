@@ -106,6 +106,7 @@ public class EditConnectionWizard extends ConnectionWizard
         WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), "Result Sets", "Result Set preferences");
         rsPage.addSubPage(new PrefPageResultSetBinaries(), "Binaries", "Binary data representation");
         rsPage.addSubPage(new PrefPageDataFormat(), "Data Formatting", "Data formatting preferences");
+        rsPage.addSubPage(new PrefPageResultSetPresentation(), "Presentation", "ResultSets UI & presentation");
         WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), "SQL Editor", "SQL editor settings");
         sqlPage.addSubPage(new PrefPageSQLExecute(), "SQL Processing", "SQL processing settings");
     }
