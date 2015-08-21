@@ -98,9 +98,9 @@ public class EditConnectionWizard extends ConnectionWizard
 
         addPage(pageGeneral);
         if (!embedded) {
-            addPage(pageNetwork);
+            pageSettings.addSubPage(pageNetwork);
         }
-        addPage(pageEvents);
+        pageSettings.addSubPage(pageEvents);
 
         addPreferencePage(new PrefPageMetaData(), "Metadata", "Metadata reading preferences");
         WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), "Result Sets", "Result Set preferences");

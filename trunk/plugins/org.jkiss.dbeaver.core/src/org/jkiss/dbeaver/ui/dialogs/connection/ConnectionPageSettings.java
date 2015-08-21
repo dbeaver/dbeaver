@@ -61,7 +61,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Nullable
     private DataSourceDescriptor dataSource;
     private final Set<DataSourceDescriptor> activated = new HashSet<DataSourceDescriptor>();
-    private IDialogPage[] subPages;
+    private IDialogPage[] subPages, extraPages;
 
     /**
      * Constructor for ConnectionPageSettings
@@ -282,10 +282,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     }
                 }
             }
+            if (extraPages != null) {
+                subPages = ArrayUtils.concatArrays(subPages, extraPages);
+            }
             return subPages;
         } else {
             return null;
         }
     }
 
+    public void addSubPage(IDialogPage page) {
+        if (extraPages == null) {
+            extraPages = new IDialogPage[] { page };
+        } else {
+            extraPages = ArrayUtils.concatArrays(extraPages, new IDialogPage[] { page });
+        }
+    }
 }
