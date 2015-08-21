@@ -1890,11 +1890,6 @@
                 </or>
             </enabledWhen>
         </page>
-        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDataEditor" id="org.jkiss.dbeaver.preferences.main.dataeditor" name="Data Editor">
-           <enabledWhen>
-              <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-           </enabledWhen>
-        </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageQueryManager" id="org.jkiss.dbeaver.preferences.main.qm" name="Query Manager">
            <enabledWhen>
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>

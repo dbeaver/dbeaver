@@ -30,10 +30,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * PrefPageResultSetBinaries
@@ -49,6 +47,11 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
     private Spinner memoryContentSize;
     private Combo encodingCombo;
     private Button contentCacheClob;
+
+    private Spinner maxTextContentSize;
+    private Button editLongAsLobCheck;
+    private Button commitOnEditApplyCheck;
+    private Button commitOnContentApplyCheck;
 
 
     public PrefPageResultSetBinaries()
@@ -67,7 +70,12 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
             store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
             store.contains(ModelPreferences.CONTENT_HEX_ENCODING) ||
-            store.contains(ModelPreferences.CONTENT_CACHE_CLOB)
+            store.contains(ModelPreferences.CONTENT_CACHE_CLOB) ||
+            store.contains(DBeaverPreferences.RS_EDIT_LONG_AS_LOB) ||
+
+            store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
+            store.contains(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
+            store.contains(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY)
             ;
     }
 
@@ -120,6 +128,26 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             encodingCombo = UIUtils.createEncodingCombo(binaryGroup, null);
 
             contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_clob, true);
+            editLongAsLobCheck = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
+        }
+
+        // Content
+        {
+            Group contentGroup = new Group(composite, SWT.NONE);
+            contentGroup.setText(CoreMessages.pref_page_content_editor_group_content);
+            contentGroup.setLayout(new GridLayout(2, false));
+
+            UIUtils.createControlLabel(contentGroup, CoreMessages.pref_page_content_editor_label_max_text_length);
+
+            maxTextContentSize = new Spinner(contentGroup, SWT.BORDER);
+            maxTextContentSize.setSelection(0);
+            maxTextContentSize.setDigits(0);
+            maxTextContentSize.setIncrement(1000000);
+            maxTextContentSize.setMinimum(0);
+            maxTextContentSize.setMaximum(Integer.MAX_VALUE);
+
+            commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
+            commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
 
         return composite;
@@ -148,6 +176,12 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             }
             UIUtils.setComboSelection(encodingCombo, store.getString(ModelPreferences.CONTENT_HEX_ENCODING));
             contentCacheClob.setSelection(store.getBoolean(ModelPreferences.CONTENT_CACHE_CLOB));
+            editLongAsLobCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_LONG_AS_LOB));
+
+            maxTextContentSize.setSelection(store.getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE));
+            commitOnEditApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY));
+            commitOnContentApplyCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY));
+
         } catch (Exception e) {
             log.warn(e);
         }
@@ -173,6 +207,11 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
                     IValueController.EditType.PANEL.name());
             store.setValue(ModelPreferences.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
             store.setValue(ModelPreferences.CONTENT_CACHE_CLOB, contentCacheClob.getSelection());
+            store.setValue(DBeaverPreferences.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
+
+            store.setValue(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
+            store.setValue(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY, commitOnEditApplyCheck.getSelection());
+            store.setValue(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY, commitOnContentApplyCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -188,6 +227,11 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
         store.setToDefault(ModelPreferences.CONTENT_HEX_ENCODING);
         store.setToDefault(ModelPreferences.CONTENT_CACHE_CLOB);
+        store.setToDefault(DBeaverPreferences.RS_EDIT_LONG_AS_LOB);
+
+        store.setToDefault(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
+        store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY);
+        store.setToDefault(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY);
     }
 
     @Override

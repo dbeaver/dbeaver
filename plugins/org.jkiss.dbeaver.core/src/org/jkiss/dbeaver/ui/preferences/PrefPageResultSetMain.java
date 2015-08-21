@@ -51,6 +51,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
     private Button keepStatementOpenCheck;
     private Button rollbackOnErrorCheck;
+    private Button alwaysUseAllColumns;
 
 
     public PrefPageResultSetMain()
@@ -67,6 +68,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
+            store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS) ||
@@ -109,11 +111,12 @@ public class PrefPageResultSetMain extends TargetPrefPage
             Group txnGroup = new Group(composite, SWT.NONE);
             txnGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            txnGroup.setText(CoreMessages.pref_page_database_general_group_transactions);
+            txnGroup.setText(CoreMessages.pref_page_sql_editor_group_misc);
             txnGroup.setLayout(new GridLayout(2, false));
 
             keepStatementOpenCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
             rollbackOnErrorCheck = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
+            alwaysUseAllColumns = UIUtils.createLabelCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
         }
 
         {
@@ -142,6 +145,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
             rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
+            alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
 
             showOddRows.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS));
             showCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
@@ -160,10 +164,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, autoFetchNextSegmentCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ModelPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
-
-            store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+            store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
 
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, showOddRows.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, showCellIcons.getSelection());
@@ -181,8 +186,11 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT);
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
+
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
+        store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
+
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
