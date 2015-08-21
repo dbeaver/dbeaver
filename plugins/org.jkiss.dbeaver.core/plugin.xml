@@ -1829,7 +1829,16 @@
                </or>
            </enabledWhen>
         </page>
-        <page id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSet" name="Result Sets">
+        <page id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="Result Sets">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                </or>
+            </enabledWhen>
+        </page>
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.binaries" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetBinaries" name="Binaries">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
