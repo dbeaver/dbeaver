@@ -2,7 +2,6 @@ Connections keep-alive
 Default socket timeouts for drivers
 
 MacOS test
-OpenSUSE test (UI is broken)
 DB2 procedures. Parse actual parameters (? marks)
 
 Eclipse Mars update
@@ -15,7 +14,7 @@ Split core and ui on different plugins
 DBeaver features usage model
 Vertica keywords
 
-ERD export in XMI/GraphML formats
+ERD export in XMI
 
 Data transfer DB->DB. Set default export mapping initially
 DBCStatement-> executeQuery + executeUpdate
