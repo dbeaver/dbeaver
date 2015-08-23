@@ -40,6 +40,27 @@
     <versions>
 
         <version>
+            <number>3.4.5</number>
+            <type>major</type>
+            <date>24.08.2015</date>
+
+            <release-notes>
+                - Apache Derby extension was added (view source, sequences, etc)
+                - SQL editor now scrolls to error position (Oracle, MySQL, PostgreSQL, Firebird, Derby)
+                - Output messages were fixed (MSSQL)
+                - Sequences were fixed (PostgreSQL)
+                - MongoDB 3.x support added
+                - Preference pages were redesigned
+                - Plaintext results presentation configuration was added
+                - Eclipse 4.5 (Mars) support added for plugin version
+                - CSV export config improved
+                - ERD export in GraphML format was added
+                - A few hanging/UI freeze problems were fixed
+                - Misc UI bugs were fixed
+            </release-notes>
+        </version>
+
+        <version>
             <number>3.4.4</number>
             <type>hotfix</type>
             <date>29.07.2015</date>
