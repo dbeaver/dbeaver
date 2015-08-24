@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.ext.oracle"
+      id="org.jkiss.dbeaver.ext.db2.feature"
       label="%featureName"
-      version="2.0.16"
+      version="2.0.17"
       provider-name="%providerName"
-      plugin="org.jkiss.dbeaver.ext.oracle">
+      plugin="org.jkiss.dbeaver.ext.db2">
 
    <description>
       %description
@@ -23,14 +23,14 @@
    </requires>
 
    <plugin
-         id="org.jkiss.dbeaver.ext.oracle"
+         id="org.jkiss.dbeaver.ext.db2"
          download-size="0"
          install-size="0"
          version="0.0.0"
          unpack="false"/>
 
    <plugin
-         id="com.oracle.jdbc"
+         id="com.ibm.db2.jdbc"
          download-size="0"
          install-size="0"
          version="0.0.0"/>
