@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="org.jkiss.dbeaver.ext.wmi"
+      id="org.jkiss.dbeaver.ext.wmi.feature"
       label="%featureName"
       version="2.0.16"
       provider-name="%providerName"
