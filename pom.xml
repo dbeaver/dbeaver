@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jkiss.dbeaver</groupId>
+	<artifactId>ce</artifactId>
+	<version>3.5.0</version>
+	<packaging>pom</packaging>
+	
+	<properties>
+		<tycho-version>0.23.1</tycho-version>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<!--eclipse-repository-url>http://download.eclipse.org/eclipse/updates/3.6</eclipse-repository-url-->
+		<eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
+	</properties>
+
+	<modules>
+		<module>modules/org.jkiss.utils</module>
+		<module>modules/org.jkiss.wmi</module>
+
+		<module>plugins/org.jkiss.dbeaver.core</module>
+		<module>plugins/org.jkiss.dbeaver.core.application</module>
+		<module>plugins/org.jkiss.dbeaver.core.eclipse</module>
+		<module>plugins/org.jkiss.dbeaver.ext.db2</module>
+		<module>plugins/org.jkiss.dbeaver.ext.derby</module>
+		<module>plugins/org.jkiss.dbeaver.ext.erd</module>
+		<module>plugins/org.jkiss.dbeaver.ext.firebird</module>
+		<module>plugins/org.jkiss.dbeaver.ext.generic</module>
+		<module>plugins/org.jkiss.dbeaver.ext.import-config</module>
+		<module>plugins/org.jkiss.dbeaver.ext.informix</module>
+		<module>plugins/org.jkiss.dbeaver.ext.mssql</module>
+		<module>plugins/org.jkiss.dbeaver.ext.mysql</module>
+		<module>plugins/org.jkiss.dbeaver.ext.oracle</module>
+		<module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
+		<module>plugins/org.jkiss.dbeaver.ext.vertica</module>
+		<module>plugins/org.jkiss.dbeaver.ext.wmi</module>
+		<module>plugins/org.jkiss.dbeaver.model</module>
+		<module>plugins/org.jkiss.dbeaver.test</module>
+
+		<module>contrib/drivers/plugins/com.ibm.db2.jdbc</module>
+		<module>contrib/drivers/plugins/com.oracle.jdbc</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.cache</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.csvjdbc</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.db2</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.derby</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.firebird</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.h2</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.hsqldb</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.informix</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.ingres</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.jt400</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.jtds</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.maxdb</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.mssql</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.postgresql</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.sqlite.xerial</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.ucanaccess</module>
+		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.vertica</module>
+
+		<module>features/org.jkiss.dbeaver.core.feature</module>
+		<module>features/org.jkiss.dbeaver.ext.db2.feature</module>
+		<module>features/org.jkiss.dbeaver.ext.generic.feature</module>
+		<module>features/org.jkiss.dbeaver.ext.mysql.feature</module>
+		<module>features/org.jkiss.dbeaver.ext.oracle.feature</module>
+		<module>features/org.jkiss.dbeaver.ext.wmi.feature</module>
+		<module>features/org.jkiss.dbeaver.rcp.feature</module>
+		<module>features/org.jkiss.dbeaver.runtime.feature</module>
+		<module>features/org.jkiss.dbeaver.standalone.feature</module>
+
+		<module>product/updateSite</module>
+		
+		<!--module>product/mars</module-->
+	</modules>
+
+
+	<repositories>
+		<repository>
+			<id>eclipse-p2-repo</id>
+			<url>${eclipse-p2-repo.url}</url>
+			<layout>p2</layout>
+		</repository>
+		<!--repository>
+			<id>local-contrib</id>
+			<url>contrib/plugins</url>
+			<layout>p2</layout>
+		</repository-->
+	</repositories>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<!--target>
+						<artifact>
+							<groupId>org.jkiss.dbeaver</groupId>
+							<artifactId>mars</artifactId>
+							<version>3.5.0</version>
+						</artifact>
+					</target-->
+					<environments>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-maven-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<extensions>true</extensions>
+			</plugin>
+		</plugins>
+	</build>
+</project>
