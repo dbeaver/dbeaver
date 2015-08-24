@@ -196,7 +196,7 @@
         <key commandId="org.eclipse.ui.edit.text.contentAssist.contextInformation" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+ALT+SPACE"/>
         <key commandId="org.jkiss.dbeaver.core.object.find" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+F"/>
 
-        <key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+BS"/>
+        <!--<key commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+BS"/>-->
 
         <key commandId="org.eclipse.ui.edit.text.goto.line" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+G"/>
         <key commandId="org.eclipse.ui.edit.text.moveLineDown" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+ARROW_DOWN"/>
