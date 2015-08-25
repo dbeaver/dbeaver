@@ -70,6 +70,8 @@
 		<module>features/org.jkiss.dbeaver.standalone.feature</module>
 
 		<module>product/updateSite</module>
+
+		<module>product/ce</module>
 		
 		<!--module>product/mars</module-->
 	</modules>
