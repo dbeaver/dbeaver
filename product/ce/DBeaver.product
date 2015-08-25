@@ -21,7 +21,7 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i48="/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
+   <windowImages i48="../../plugins/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
 
    <splash
       location="org.jkiss.dbeaver.core.application"
@@ -29,11 +29,11 @@
       startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
    <launcher name="dbeaver">
-      <linux icon="/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.xpm"/>
-      <macosx icon="/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.icns"/>
+      <!--linux icon="../../plugins/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.xpm"/-->
+      <macosx icon="../../plugins/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.icns"/>
       <solaris/>
       <win useIco="true">
-         <ico path="/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.ico"/>
+         <ico path="../../plugins/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.ico"/>
          <bmp/>
       </win>
    </launcher>
