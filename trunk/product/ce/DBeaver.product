@@ -69,5 +69,12 @@
       <feature id="org.jkiss.dbeaver.standalone.feature"/>
    </features>
 
+  <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
+      <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
+      <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
+<!--      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" /> -->
+      <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+   </configurations>
 
 </product>
