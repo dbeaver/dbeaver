@@ -23,31 +23,31 @@
     </url>
 
     <includes
-            id="org.jkiss.dbeaver.rcp"
+            id="org.jkiss.dbeaver.rcp.feature"
             version="0.0.0"/>
 
     <includes
-            id="org.jkiss.dbeaver.core"
+            id="org.jkiss.dbeaver.core.feature"
             version="0.0.0"/>
 
     <includes
-            id="org.jkiss.dbeaver.ext.generic"
+            id="org.jkiss.dbeaver.ext.generic.feature"
             version="0.0.0"/>
 
     <includes
-            id="org.jkiss.dbeaver.ext.mysql"
+            id="org.jkiss.dbeaver.ext.mysql.feature"
             version="0.0.0"/>
 
     <includes
-            id="org.jkiss.dbeaver.ext.oracle"
+            id="org.jkiss.dbeaver.ext.oracle.feature"
             version="0.0.0"/>
 
     <includes
-            id="org.jkiss.dbeaver.ext.wmi"
+            id="org.jkiss.dbeaver.ext.wmi.feature"
             version="0.0.0"/>
 
     <includes
-            id="org.jkiss.dbeaver.ext.db2"
+            id="org.jkiss.dbeaver.ext.db2.feature"
             version="0.0.0"/>
 
     <requires>

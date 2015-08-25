@@ -417,7 +417,7 @@
             version="${productVersion}"
             todir="${distCE}"
             section="devel"
-            depends="java7-runtime"
+            depends="openjdk-7-jre-headless | java-runtime-headless"
             homepage="http://dbeaver.jkiss.org"
             suggests="dbeaver"
             architecture="${arch.deb}">
