@@ -57,7 +57,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.jkiss.utils;visibility:=reexport,
  com.jcraft.jsch,
- net.sf.jsqlparser;visibility:=reexport,
+ com.github.jsqlparser;visibility:=reexport,
  org.apache.commons.logging,
  org.apache.commons.jexl,
  org.eclipse.core.commands

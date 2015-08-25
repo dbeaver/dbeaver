@@ -19,7 +19,7 @@
     </license>
 
     <includes
-            id="org.jkiss.dbeaver.core"
+            id="org.jkiss.dbeaver.core.feature"
             version="0.0.0"/>
 
     <requires>
