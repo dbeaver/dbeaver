@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.ext.generic,
- net.sf.jsqlparser
+ com.github.jsqlparser
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-Vendor: JKISS
