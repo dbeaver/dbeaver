@@ -17,9 +17,6 @@
 	</properties>
 
 	<modules>
-		<!--<module>contrib/plugins/net.sf.jsqlparser</module>-->
-		<!--<module>contrib/plugins/org.apache.commons.jexl</module>-->
-
 		<module>modules/org.jkiss.utils</module>
 		<module>modules/org.jkiss.wmi</module>
 
@@ -44,7 +41,6 @@
 
 		<module>contrib/drivers/plugins/com.ibm.db2.jdbc</module>
 		<module>contrib/drivers/plugins/com.oracle.jdbc</module>
-		<module>contrib/drivers/plugins/com.mysql.jdbc</module>
 		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.cache</module>
 		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.csvjdbc</module>
 		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.db2</module>
