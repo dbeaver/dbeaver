@@ -35,6 +35,7 @@
 								<!-- groupId:artifactId:version -->
 								<artifact><id>com.github.jsqlparser:jsqlparser:0.9.3</id></artifact>
 								<artifact><id>org.apache.commons:commons-jexl:2.1.1</id></artifact>
+								<artifact><id>mysql:mysql-connector-java:5.1.36</id></artifact>
 							</artifacts>
 						</configuration>
 					</execution>
