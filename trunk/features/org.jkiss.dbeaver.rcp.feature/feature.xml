@@ -484,7 +484,7 @@
             version="0.0.0"
             unpack="false"/>
 
-    <plugin
+    <!--plugin
             id="org.eclipse.swt.cocoa.macosx"
             os="macosx"
             ws="cocoa"
@@ -492,7 +492,7 @@
             install-size="0"
             version="0.0.0"
             fragment="true"
-            unpack="false"/>
+            unpack="false"/-->
 
     <plugin
             id="org.eclipse.swt.cocoa.macosx.x86_64"
@@ -773,7 +773,6 @@
 
     <!-- Eclipse Mars additions -->
 
-<!--
     <plugin
             id="org.eclipse.e4.core.di.annotations"
             download-size="0"
@@ -794,7 +793,6 @@
             install-size="0"
             version="0.0.0"
             unpack="false"/>
--->
 
 
 </feature>

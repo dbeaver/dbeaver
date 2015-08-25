@@ -19,7 +19,7 @@
     </license>
 
     <requires>
-        <import feature="org.jkiss.dbeaver.core" version="1.0.0"/>
+        <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
     </requires>
 
     <plugin

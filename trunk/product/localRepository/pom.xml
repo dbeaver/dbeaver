@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>org.jkiss.dbeaver</groupId>
+	<artifactId>contrib</artifactId>
+	<version>1.0.0</version>
+	<packaging>pom</packaging>
+
+	<properties>
+		<tycho-version>0.23.1</tycho-version>
+	</properties>
+
+	<pluginRepositories>
+		<pluginRepository>
+			<id>reficio</id>
+			<url>http://repo.reficio.org/maven/</url>
+		</pluginRepository>
+	</pluginRepositories>
+
+	<build>
+		<plugins>
+
+			<!-- Maven -> OSGI repository -->
+			<plugin>
+				<groupId>org.reficio</groupId>
+				<artifactId>p2-maven-plugin</artifactId>
+				<version>1.2.0-SNAPSHOT</version>
+				<executions>
+					<execution>
+						<id>default-cli</id>
+						<configuration>
+							<artifacts>
+								<!-- specify your depencies here -->
+								<!-- groupId:artifactId:version -->
+								<artifact><id>com.github.jsqlparser:jsqlparser:0.9.3</id></artifact>
+								<artifact><id>org.apache.commons:commons-jexl:2.1.1</id></artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+                <plugin>
+                    <groupId>org.mortbay.jetty</groupId>
+                    <artifactId>jetty-maven-plugin</artifactId>
+                    <version>8.1.5.v20120716</version>
+                    <configuration>
+                        <scanIntervalSeconds>10</scanIntervalSeconds>
+                        <webAppSourceDirectory>${basedir}/target/repository/</webAppSourceDirectory>
+                        <webApp>
+                            <contextPath>/site</contextPath>
+                        </webApp>
+                   </configuration>
+                </plugin>
+
+
+		</plugins>
+	</build>
+</project>

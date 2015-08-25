@@ -8,13 +8,18 @@
 	<packaging>pom</packaging>
 	
 	<properties>
+		<dbeaver-version>3.5.0</dbeaver-version>
 		<tycho-version>0.23.1</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!--eclipse-repository-url>http://download.eclipse.org/eclipse/updates/3.6</eclipse-repository-url-->
 		<eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
+		<local-p2-repo.url>http://localhost:8080/site</local-p2-repo.url>
 	</properties>
 
 	<modules>
+		<!--<module>contrib/plugins/net.sf.jsqlparser</module>-->
+		<!--<module>contrib/plugins/org.apache.commons.jexl</module>-->
+
 		<module>modules/org.jkiss.utils</module>
 		<module>modules/org.jkiss.wmi</module>
 
@@ -39,6 +44,7 @@
 
 		<module>contrib/drivers/plugins/com.ibm.db2.jdbc</module>
 		<module>contrib/drivers/plugins/com.oracle.jdbc</module>
+		<module>contrib/drivers/plugins/com.mysql.jdbc</module>
 		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.cache</module>
 		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.csvjdbc</module>
 		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.db2</module>
@@ -79,15 +85,17 @@
 			<url>${eclipse-p2-repo.url}</url>
 			<layout>p2</layout>
 		</repository>
-		<!--repository>
+		<repository>
 			<id>local-contrib</id>
-			<url>contrib/plugins</url>
+			<url>${local-p2-repo.url}</url>
 			<layout>p2</layout>
-		</repository-->
+		</repository>
 	</repositories>
 
 	<build>
 		<plugins>
+
+			<!-- Tycho build -->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
