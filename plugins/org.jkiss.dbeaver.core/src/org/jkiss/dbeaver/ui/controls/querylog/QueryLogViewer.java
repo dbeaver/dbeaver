@@ -81,6 +81,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     static final Log log = Log.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
+    private static final int MIN_ENTRIES_PER_PAGE = 1;
 
     private static abstract class LogColumn {
         private final String title;
@@ -300,7 +301,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private QMEventFilter defaultFilter;
 
-    private int entriesPerPage = 0;
+    private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
     public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection)
     {
@@ -524,7 +525,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.defaultFilter = new DefaultEventFilter();
-        this.entriesPerPage = store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE);
+        this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
 
         clearLog();
         updateMetaInfo(QMUtils.getPastMetaEvents());
