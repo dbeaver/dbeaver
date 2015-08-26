@@ -1,8 +1,8 @@
 Connections keep-alive
 Default socket timeouts for drivers
-
+High DPI resolution support (images)
 MacOS test
-DB2 procedures. Parse actual parameters (? marks)
+DB2 procedures. Parse actual parameters (? marks) - use CallableStatement.getParameterMetaData
 
 Eclipse Mars update
 
