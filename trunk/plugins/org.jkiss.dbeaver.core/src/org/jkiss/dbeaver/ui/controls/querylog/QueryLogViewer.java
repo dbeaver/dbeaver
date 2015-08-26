@@ -45,6 +45,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -76,6 +77,8 @@ import java.util.Locale;
  * QueryLogViewer
  */
 public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPreferenceListener {
+
+    static final Log log = Log.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
 
@@ -585,11 +588,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     indexes[i] = entriesPerPage + i;
                     TableItem tableItem = logTable.getItem(entriesPerPage + i);
                     if (tableItem != null && tableItem.getData() instanceof QMMObject) {
-                        objectToItemMap.remove(((QMMObject)tableItem.getData()).getObjectId());
+                        objectToItemMap.remove(((QMMObject) tableItem.getData()).getObjectId());
                     }
                 }
                 logTable.remove(indexes);
             }
+        } catch (Exception e) {
+            log.error("Error updating Query Log", e);
         }
         finally {
             logTable.setRedraw(true);
