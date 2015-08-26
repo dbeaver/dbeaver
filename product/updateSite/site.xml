@@ -8,19 +8,19 @@
         <description>3rd party JDBC drivers for DBeaver</description>
     </category-def>
 
-    <feature id="org.jkiss.dbeaver.runtime.feature" version="3.4.5" url="features/org.jkiss.dbeaver.runtime.feature_3.4.5.jar">
+    <feature id="org.jkiss.dbeaver.runtime.feature" version="3.4.5">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.generic.feature" version="2.0.17" url="features/org.jkiss.dbeaver.ext.generic.feature_2.0.17.jar">
+    <feature id="org.jkiss.dbeaver.ext.generic.feature" version="2.0.17">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.mysql.feature" version="2.0.16" url="features/org.jkiss.dbeaver.ext.mysql.feature_2.0.16.jar">
+    <feature id="org.jkiss.dbeaver.ext.mysql.feature" version="2.0.16">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.oracle.feature" version="2.0.16" url="features/org.jkiss.dbeaver.ext.oracle.feature_2.0.16.jar">
+    <feature id="org.jkiss.dbeaver.ext.oracle.feature" version="2.0.16">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.db2.feature" version="2.0.17" url="features/org.jkiss.dbeaver.ext.db2.feature_2.0.17.jar">
+    <feature id="org.jkiss.dbeaver.ext.db2.feature" version="2.0.17">
         <category name="org.jkiss.dbeaver"/>
     </feature>
 
