@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
-        <artifactId>ce</artifactId>
+        <artifactId>dbeaver</artifactId>
         <version>3.5.0</version>
         <relativePath>../../</relativePath>
     </parent>
