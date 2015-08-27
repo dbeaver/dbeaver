@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: CSV/DBF driver
-Bundle-SymbolicName: org.jkiss.dbeaver.resources.csvjdbc;singleton:=true
-Bundle-Version: 1.0.23
-Bundle-Vendor: 
-Bundle-ActivationPolicy: lazy
