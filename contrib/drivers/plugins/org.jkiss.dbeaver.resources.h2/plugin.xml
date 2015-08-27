@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plugin>
-	<extension point="org.jkiss.dbeaver.resources">
-		<resource name="drivers/h2/LICENSE.txt"/>
-		<resource name="drivers/h2/h2-1.4.185.jar"/>
-	</extension>
-</plugin>

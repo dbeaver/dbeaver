@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<plugin>
-	<extension point="org.jkiss.dbeaver.resources">
-		<resource name="drivers/csvjdbc/LICENSE.txt"/>
-		<resource name="drivers/csvjdbc/csvjdbc-1.0-23.jar"/>
-	</extension>
-</plugin>

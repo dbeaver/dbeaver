@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: Vertica driver
-Bundle-SymbolicName: org.jkiss.dbeaver.resources.vertica;singleton:=true
-Bundle-Version: 6.1.2
-Bundle-Vendor: Vertica
-Bundle-ActivationPolicy: lazy

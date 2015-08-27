@@ -1,5 +1,0 @@
-Jaybird JCA/JDBC driver is distributed under the GNU Lesser General Public License (LGPL). Text of the license can be obtained from http://www.gnu.org/copyleft/lesser.html.
-
-Using Jaybird (by importing Jaybird's public interfaces in your Java code), and extending Jaybird by subclassing or implementation of an extension interface (but not abstract or concrete class) is considered by the authors of Jaybird to be dynamic linking. Hence our interpretation of the LGPL is that the use of the unmodified Jaybird source does not affect the license of your application code.
-
-Even more, all extension interfaces to which application might want to link are released under dual LGPL/modified BSD license. Latter is basically “AS IS” license that allows any kind of use of that source code. Jaybird should be viewed as an implementation of that interfaces and LGPL section for dynamic linking is applicable in this case.

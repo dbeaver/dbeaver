@@ -1,7 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: MS SQL Server driver
-Bundle-SymbolicName: org.jkiss.dbeaver.resources.mssql;singleton:=true
-Bundle-Version: 4.0.2206
-Bundle-Vendor: Microsoft
-Bundle-ActivationPolicy: lazy
