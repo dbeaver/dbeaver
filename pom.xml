@@ -3,7 +3,7 @@
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jkiss.dbeaver</groupId>
-	<artifactId>ce</artifactId>
+	<artifactId>dbeaver</artifactId>
 	<version>3.5.0</version>
 	<packaging>pom</packaging>
 	
@@ -41,23 +41,6 @@
 
 		<module>contrib/drivers/plugins/com.ibm.db2.jdbc</module>
 		<module>contrib/drivers/plugins/com.oracle.jdbc</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.cache</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.csvjdbc</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.db2</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.derby</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.firebird</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.h2</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.hsqldb</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.informix</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.ingres</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.jt400</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.jtds</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.maxdb</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.mssql</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.postgresql</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.sqlite.xerial</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.ucanaccess</module>
-		<module>contrib/drivers/plugins/org.jkiss.dbeaver.resources.vertica</module>
 
 		<module>features/org.jkiss.dbeaver.core.feature</module>
 		<module>features/org.jkiss.dbeaver.ext.db2.feature</module>
@@ -70,12 +53,8 @@
 		<module>features/org.jkiss.dbeaver.standalone.feature</module>
 
 		<module>product/updateSite</module>
-
-		<module>product/ce</module>
-		
-		<!--module>product/mars</module-->
+		<module>product/standalone</module>
 	</modules>
-
 
 	<repositories>
 		<repository>
