@@ -1,1 +1,0 @@
-java -cp plugins/org.eclipse.equinox.launcher_1.1.0.v20100507.jar org.eclipse.equinox.launcher.Main -showsplash 600
