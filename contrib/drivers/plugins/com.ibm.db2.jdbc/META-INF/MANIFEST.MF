@@ -35,3 +35,4 @@ Export-Package:
  sqlj.runtime.profile.util,
  sqlj.runtime.ref,
  sqlj.runtime.util
+Eclipse-BundleShape: dir
