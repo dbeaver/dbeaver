@@ -31,11 +31,14 @@
 						<id>default-cli</id>
 						<configuration>
 							<artifacts>
-								<!-- specify your depencies here -->
 								<!-- groupId:artifactId:version -->
 								<artifact><id>com.github.jsqlparser:jsqlparser:0.9.3</id></artifact>
 								<artifact><id>org.apache.commons:commons-jexl:2.1.1</id></artifact>
 								<artifact><id>mysql:mysql-connector-java:5.1.36</id></artifact>
+								<!-- EE drivers -->
+								<artifact><id>org.mongodb:mongo-java-driver:3.0.3</id></artifact>
+								<artifact><id>com.datastax.cassandra:cassandra-driver-core:2.1.7.1</id></artifact>
+								<artifact><id>com.datastax.cassandra:cassandra-driver-dse:2.1.7.1</id></artifact>
 							</artifacts>
 						</configuration>
 					</execution>
