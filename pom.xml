@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.jkiss.dbeaver</groupId>
 	<artifactId>dbeaver</artifactId>
-	<version>3.5.0</version>
+	<version>1.0.0</version>
 	<packaging>pom</packaging>
 	
 	<properties>
@@ -82,7 +82,7 @@
 						<artifact>
 							<groupId>org.jkiss.dbeaver</groupId>
 							<artifactId>mars</artifactId>
-							<version>3.5.0</version>
+							<version>1.0.0</version>
 						</artifact>
 					</target-->
 					<environments>

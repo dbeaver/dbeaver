@@ -5,10 +5,9 @@
   <parent>
     <groupId>org.jkiss.dbeaver</groupId>
     <artifactId>dbeaver</artifactId>
-    <version>3.5.0</version>
+    <version>1.0.0</version>
     <relativePath>../../</relativePath>
   </parent>
-  <groupId>org.jkiss.dbeaver</groupId>
   <artifactId>org.jkiss.dbeaver.ext.vertica</artifactId>
   <version>1.0.7</version>
   <packaging>eclipse-plugin</packaging>
