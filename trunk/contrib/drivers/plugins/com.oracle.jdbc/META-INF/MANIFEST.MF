@@ -62,3 +62,4 @@ Export-Package: oracle.core.lmx,
  oracle.xml.xqxp.functions.builtIns,
  oracle.xml.xslt,
  org.w3c.dom.validation
+Eclipse-BundleShape: dir
