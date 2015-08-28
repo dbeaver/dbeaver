@@ -6,11 +6,10 @@
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
         <artifactId>dbeaver</artifactId>
-        <version>3.5.0</version>
+        <version>1.0.0</version>
         <relativePath>../../</relativePath>
     </parent>
-    <groupId>org.jkiss.dbeaver</groupId>
-    <version>3.5.0</version>
+    <version>1.0.0</version>
     <artifactId>ce-product</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver Community Edition</name>
