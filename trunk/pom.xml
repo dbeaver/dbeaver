@@ -13,7 +13,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!--eclipse-repository-url>http://download.eclipse.org/eclipse/updates/3.6</eclipse-repository-url-->
 		<eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
-		<local-p2-repo.url>http://localhost/eclipse-repo</local-p2-repo.url>
+		<local-p2-repo.url>http://do.jkiss.org/eclipse-repo</local-p2-repo.url>
 	</properties>
 
 	<modules>
