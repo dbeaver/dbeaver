@@ -29,6 +29,7 @@
                     <products>
                         <product>
                             <id>org.jkiss.dbeaver.core.product</id>
+                            <archiveFileName>dbeaver-ce</archiveFileName>
                             <rootFolders>
                                 <!-- for MacOSX, make sure you use a folder ending with .app , see bug 463670 -->
                                 <macosx>Eclipse.app</macosx>
