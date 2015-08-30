@@ -1395,4 +1395,9 @@ public final class DBUtils {
         }
         return Double.valueOf(text);
     }
+
+    public static <T> Class<T> getDriverClass(DBPDataSource dataSource, String className) throws ClassNotFoundException {
+        return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getClassLoader());
+    }
+
 }
