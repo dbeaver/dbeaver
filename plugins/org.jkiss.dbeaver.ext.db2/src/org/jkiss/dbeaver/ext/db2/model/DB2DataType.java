@@ -18,10 +18,10 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DataTypeMetaType;
@@ -34,12 +34,10 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-
-import com.ibm.db2.jcc.DB2Types;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -427,10 +425,10 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, null, null, null));
         PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 254, null, null));
         PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 2147483647, null, null));
-        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Types.CURSOR, null, null, null));
+        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Constants.EXT_TYPE_CURSOR, null, null, null));
         PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE, 10, null, null));
         PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 1073741823, null, null));
-        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, DB2Types.DECFLOAT, 34, 0, 0));
+        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, DB2Constants.EXT_TYPE_DECFLOAT, 34, 0, 0));
         PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 31, 0, 31));
         PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 53, 0, 0));
         PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 127, null, null));

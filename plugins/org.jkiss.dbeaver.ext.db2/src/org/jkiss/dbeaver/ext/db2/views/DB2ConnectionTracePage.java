@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.views;
 
-import com.ibm.db2.jcc.DB2BaseDataSource;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -69,17 +68,17 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
         setTitle("Trace settings");
         setDescription("Trace settings");
         levels = new LevelConfig[] {
-            new LevelConfig(DB2BaseDataSource.TRACE_CONNECTION_CALLS, "Connection calls"),
-            new LevelConfig(DB2BaseDataSource.TRACE_STATEMENT_CALLS, "Statement calls"),
-            new LevelConfig(DB2BaseDataSource.TRACE_RESULT_SET_CALLS, "Result set calls"),
-            new LevelConfig(DB2BaseDataSource.TRACE_DRIVER_CONFIGURATION, "Driver configuration"),
-            new LevelConfig(DB2BaseDataSource.TRACE_CONNECTS, "Connects"),
-            new LevelConfig(DB2BaseDataSource.TRACE_DRDA_FLOWS, "DRDA flows"),
-            new LevelConfig(DB2BaseDataSource.TRACE_RESULT_SET_META_DATA, "Result set metadata"),
-            new LevelConfig(DB2BaseDataSource.TRACE_PARAMETER_META_DATA, "Parameter metadata"),
-            new LevelConfig(DB2BaseDataSource.TRACE_DIAGNOSTICS, "Diagnostics"),
-            new LevelConfig(DB2BaseDataSource.TRACE_SQLJ, "SQL J"),
-            new LevelConfig(DB2BaseDataSource.TRACE_XA_CALLS, "XA calls"),
+            new LevelConfig(DB2Constants.TRACE_CONNECTION_CALLS, "Connection calls"),
+            new LevelConfig(DB2Constants.TRACE_STATEMENT_CALLS, "Statement calls"),
+            new LevelConfig(DB2Constants.TRACE_RESULT_SET_CALLS, "Result set calls"),
+            new LevelConfig(DB2Constants.TRACE_DRIVER_CONFIGURATION, "Driver configuration"),
+            new LevelConfig(DB2Constants.TRACE_CONNECTS, "Connects"),
+            new LevelConfig(DB2Constants.TRACE_DRDA_FLOWS, "DRDA flows"),
+            new LevelConfig(DB2Constants.TRACE_RESULT_SET_META_DATA, "Result set metadata"),
+            new LevelConfig(DB2Constants.TRACE_PARAMETER_META_DATA, "Parameter metadata"),
+            new LevelConfig(DB2Constants.TRACE_DIAGNOSTICS, "Diagnostics"),
+            new LevelConfig(DB2Constants.TRACE_SQLJ, "SQL J"),
+            new LevelConfig(DB2Constants.TRACE_XA_CALLS, "XA calls"),
         };
     }
 

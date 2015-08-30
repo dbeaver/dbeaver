@@ -357,6 +357,10 @@
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>
                     
                     <property name="@dbeaver-default-dataformat.type.timestamp.pattern" value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
+
+                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
+                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
                 </driver>
             </drivers>
 
