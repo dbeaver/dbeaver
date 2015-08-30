@@ -49,6 +49,32 @@ public class DB2Constants {
     public static final Double DB2v10_1 = 10.1;
     public static final Double DB2v10_5 = 10.5;
 
+    public static final int EXT_TYPE_DECFLOAT = -100001; // DB2Types.DECFLOAT
+    public static final int EXT_TYPE_CURSOR = -100008; // DB2Types.CURSOR
+
+    // DB2BaseDataSource constants
+    public static final int TRACE_NONE = 0;
+    public static final int TRACE_CONNECTION_CALLS = 1;
+    public static final int TRACE_STATEMENT_CALLS = 2;
+    public static final int TRACE_RESULT_SET_CALLS = 4;
+    public static final int TRACE_DRIVER_CONFIGURATION = 16;
+    public static final int TRACE_CONNECTS = 32;
+    public static final int TRACE_DRDA_FLOWS = 64;
+    public static final int TRACE_RESULT_SET_META_DATA = 128;
+    public static final int TRACE_PARAMETER_META_DATA = 256;
+    public static final int TRACE_DIAGNOSTICS = 512;
+    public static final int TRACE_SQLJ = 1024;
+    public static final int TRACE_XA_CALLS = 2048;
+    public static final int TRACE_META_CALLS = 8192;
+    public static final int TRACE_DATASOURCE_CALLS = 16384;
+    public static final int TRACE_LARGE_OBJECT_CALLS = 32768;
+    public static final int TRACE_T2ZOS = 65536;
+    public static final int TRACE_SYSTEM_MONITOR = 131072;
+    public static final int TRACE_TRACEPOINTS = 262144;
+    public static final int TRACE_ALL_EXTERNAL_CALLS = 59399;
+    public static final int TRACE_ALL = -1;
+    public static final int TRACE_NOTSET = 2147483647;
+
     // Display Categories
     public static final String CAT_AUDIT = "Audit";
     public static final String CAT_AUTH = "Authorities";

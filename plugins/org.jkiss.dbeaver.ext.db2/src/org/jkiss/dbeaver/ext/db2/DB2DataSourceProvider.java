@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
-import com.ibm.db2.jcc.DB2BaseDataSource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -89,7 +88,7 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
                 CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_APPEND), false));
             url.append(";traceLevel=").append(
                 CommonUtils.toInt(
-                    properties.get(DB2Constants.PROP_TRACE_LEVEL), DB2BaseDataSource.TRACE_ALL));
+                    properties.get(DB2Constants.PROP_TRACE_LEVEL), DB2Constants.TRACE_ALL));
             url.append(";");
         }
         return url.toString();
