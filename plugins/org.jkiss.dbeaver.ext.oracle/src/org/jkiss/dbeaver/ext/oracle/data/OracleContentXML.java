@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -83,7 +84,7 @@ public class OracleContentXML extends JDBCContentXML {
     {
         try {
             return BeanUtils.invokeStaticMethod(
-                OracleConstants.XMLTYPE_CLASS_NAME,
+                DBUtils.getDriverClass(dataSource, OracleConstants.XMLTYPE_CLASS_NAME),
                 "createXML",
                 new Class[] {java.sql.Connection.class, java.io.InputStream.class},
                 new Object[] {session.getOriginal(), stream});
