@@ -135,6 +135,8 @@ public class OracleConstants {
         SERVICE
     }
 
+    public static final String XMLTYPE_CLASS_NAME = "oracle.xdb.XMLType";
+
     public static final String PLAN_TABLE_DEFINITION =
         "create global temporary table PLAN_TABLE (\n" +
             "statement_id varchar2(30),\n" +

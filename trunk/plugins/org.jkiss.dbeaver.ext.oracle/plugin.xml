@@ -268,7 +268,7 @@
 
             </tree>
 
-            <drivers managable="false">
+            <drivers managable="true">
                 <driver
                     id="oracle"
                     label="Oracle"
@@ -299,6 +299,11 @@
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                     <replace provider="oracle" driver="oracle_oci"/>
+                    <file type="license" path="drivers/oracle/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="*"/>
+                    <file type="jar" path="drivers/oracle/orai18n.jar" url="*"/>
+                    <file type="jar" path="drivers/oracle/xdb6.jar" url="*"/>
+                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" url="*"/>
                 </driver>
             </drivers>
             <views>

@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import oracle.xdb.XMLType;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -77,8 +77,8 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
 
         if (object == null) {
             return new OracleContentXML(session.getDataSource(), null);
-        } else if (object instanceof XMLType) {
-            return new OracleContentXML(session.getDataSource(), new OracleXMLWrapper((XMLType) object));
+        } else if (object.getClass().getName().equals(OracleConstants.XMLTYPE_CLASS_NAME)) {
+            return new OracleContentXML(session.getDataSource(), new OracleXMLWrapper(object));
         } else if (object instanceof SQLXML) {
             return new OracleContentXML(session.getDataSource(), (SQLXML) object);
         } else {
