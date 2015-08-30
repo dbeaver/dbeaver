@@ -201,4 +201,10 @@ public class DriverFileDescriptor implements DBPDriverFile
     {
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
     }
+
+    @Override
+    public String toString() {
+        return path;
+    }
+
 }

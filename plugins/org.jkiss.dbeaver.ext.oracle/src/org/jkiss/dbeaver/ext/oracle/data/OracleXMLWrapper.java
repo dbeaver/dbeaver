@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.data;
 
-import oracle.xdb.XMLType;
+import org.jkiss.utils.BeanUtils;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -25,17 +25,19 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 
 /**
- * SQL XML implementation
+ * Oracle XML wrapper.
+ * Actual type of xmlType object is oracle.xdb.XMLType
  */
 public class OracleXMLWrapper implements SQLXML {
 
-    private final XMLType xmlType;
+    private final Object xmlType;
 
-    public OracleXMLWrapper(XMLType xmlType)
+    public OracleXMLWrapper(Object xmlType)
     {
         this.xmlType = xmlType;
     }
@@ -44,16 +46,25 @@ public class OracleXMLWrapper implements SQLXML {
     public void free() throws SQLException
     {
         try {
-            xmlType.close();
+            BeanUtils.invokeObjectMethod(xmlType, "close", null, null);
         } catch (Throwable e) {
-            throw new SQLException("Can't free XMLType", e);
+            throw new SQLException("Can't close XMLType", e);
         }
     }
 
     @Override
     public InputStream getBinaryStream() throws SQLException
     {
-        return xmlType.getInputStream();
+        try {
+            return (InputStream) BeanUtils.invokeObjectMethod(xmlType, "getInputStream", null, null);
+        } catch (InvocationTargetException e) {
+            if (e.getTargetException() instanceof SQLException) {
+                throw (SQLException)e.getTargetException();
+            }
+            throw new SQLException(e);
+        } catch (Throwable e) {
+            throw new SQLException(e);
+        }
     }
 
     @Override
@@ -65,7 +76,17 @@ public class OracleXMLWrapper implements SQLXML {
     @Override
     public Reader getCharacterStream() throws SQLException
     {
-        return xmlType.getClobVal().getCharacterStream();
+        try {
+            Object clobVal = BeanUtils.invokeObjectMethod(xmlType, "getClobVal", null, null);
+            return (Reader) BeanUtils.invokeObjectMethod(clobVal, "getCharacterStream", null, null);
+        } catch (InvocationTargetException e) {
+            if (e.getTargetException() instanceof SQLException) {
+                throw (SQLException)e.getTargetException();
+            }
+            throw new SQLException(e);
+        } catch (Throwable e) {
+            throw new SQLException(e);
+        }
     }
 
     @Override
@@ -77,7 +98,16 @@ public class OracleXMLWrapper implements SQLXML {
     @Override
     public String getString() throws SQLException
     {
-        return xmlType.getStringVal();
+        try {
+            return (String) BeanUtils.invokeObjectMethod(xmlType, "getStringVal", null, null);
+        } catch (InvocationTargetException e) {
+            if (e.getTargetException() instanceof SQLException) {
+                throw (SQLException)e.getTargetException();
+            }
+            throw new SQLException(e);
+        } catch (Throwable e) {
+            throw new SQLException(e);
+        }
     }
 
     @Override
