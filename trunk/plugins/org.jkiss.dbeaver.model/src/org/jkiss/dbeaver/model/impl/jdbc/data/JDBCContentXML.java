@@ -45,7 +45,7 @@ public class JDBCContentXML extends JDBCContentLOB {
 
     static final Log log = Log.getLog(JDBCContentXML.class);
 
-    private SQLXML xml;
+    protected SQLXML xml;
 
     public JDBCContentXML(DBPDataSource dataSource, SQLXML xml) {
         super(dataSource);
