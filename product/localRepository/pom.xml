@@ -35,10 +35,38 @@
 								<artifact><id>com.github.jsqlparser:jsqlparser:0.9.3</id></artifact>
 								<artifact><id>org.apache.commons:commons-jexl:2.1.1</id></artifact>
 								<artifact><id>mysql:mysql-connector-java:5.1.36</id></artifact>
-								<!-- EE drivers -->
+								<!-- Mongo -->
 								<artifact><id>org.mongodb:mongo-java-driver:3.0.3</id></artifact>
+								<!-- Cassandra -->
 								<artifact><id>com.datastax.cassandra:cassandra-driver-core:2.1.7.1</id></artifact>
 								<artifact><id>com.datastax.cassandra:cassandra-driver-dse:2.1.7.1</id></artifact>
+								<artifact><id>org.slf4j:slf4j-jcl:1.7.5</id></artifact>
+<!--
+								<artifact>
+									<id>com.google.guava:guava:14.0.1</id>
+									<transitive>false</transitive>
+								</artifact>
+								<artifact>
+									<id>com.datastax.cassandra:cassandra-driver-core:2.1.7.1</id>
+									<transitive>false</transitive>
+									<override>true</override>
+									<instructions>
+										<Import-Package></Import-Package>
+										<Export-Package>*</Export-Package>
+										<Require-Bundle>org.slf4j.api,com.google.guava</Require-Bundle>
+									</instructions>
+								</artifact>
+								<artifact>
+									<id>com.datastax.cassandra:cassandra-driver-dse:2.1.7.1</id>
+									<transitive>false</transitive>
+									<override>true</override>
+									<instructions>
+										<Import-Package></Import-Package>
+										<Export-Package>*</Export-Package>
+										<Require-Bundle>com.datastax.driver.core</Require-Bundle>
+									</instructions>
+								</artifact>
+-->
 							</artifacts>
 						</configuration>
 					</execution>

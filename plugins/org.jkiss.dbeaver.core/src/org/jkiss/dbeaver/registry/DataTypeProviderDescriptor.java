@@ -86,7 +86,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             }
             DataSourceProviderDescriptor dsProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(dsId);
             if (dsProvider == null) {
-                log.warn("Datasource provider '" + dsId + "' not found"); //$NON-NLS-1$
+                log.warn("Datasource provider '" + dsId + "' not found. Bad data type mapping."); //$NON-NLS-1$
                 continue;
             }
             supportedDataSources.add(dsProvider);
