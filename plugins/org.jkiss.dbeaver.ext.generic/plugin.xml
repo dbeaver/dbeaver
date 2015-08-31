@@ -135,8 +135,10 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
-                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar" url="*"/>
-                    <file type="license" path="drivers/postgresql/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar"/>
+                    <file type="license" path="drivers/postgresql/LICENSE.txt"/>
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:release"/>
                     <property name="loginTimeout" value="10"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
@@ -153,8 +155,8 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="*"/>
-                    <file type="license" path="drivers/oracle/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/oracle/ojdbc6.jar"/>
+                    <file type="license" path="drivers/oracle/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
                 </driver>
@@ -167,9 +169,9 @@
                     defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
-					<file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
-					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+					<file type="jar" path="drivers/db2/db2jcc.jar"/>
+					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -189,9 +191,9 @@
                         webURL="http://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
-                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/db2/db2jcc.jar"/>
+                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -209,9 +211,9 @@
                     defaultPort="50000"
                     description="DB2 z/OS driver"
                     note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
-                    <file type="jar" path="drivers/db2/db2jcc.jar" url="*"/>
-                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar" url="*"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/db2/db2jcc.jar"/>
+                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar"/>
+                    <file type="license" path="drivers/db2/LICENSE.txt"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -229,8 +231,8 @@
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
                     defaultPort=""
                     description="DB2 iSeries/AS 400 driver">
-                    <file type="jar" path="drivers/db2-jt400/jt400.jar" url="*"/>
-                    <file type="license" path="drivers/db2-jt400/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/db2-jt400/jt400.jar"/>
+                    <file type="license" path="drivers/db2-jt400/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
@@ -251,10 +253,10 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar" url="*"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" url="*"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" url="*"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt"/>
                 </driver>
 
                 <driver
@@ -271,12 +273,12 @@
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="drivers/mssql/sqljdbc4.jar" url="*"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" url="*"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" url="*"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll" url="*"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" url="*"/>
-                    <file type="license" path="drivers/mssql/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/mssql/sqljdbc4.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll"/>
+                    <file type="license" path="drivers/mssql/LICENSE.txt"/>
                 </driver>
 
                 <driver
@@ -293,8 +295,8 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar" url="*"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="sap_maxdb"
@@ -305,8 +307,8 @@
                     defaultPort="7200"
                     webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System">
-                    <file type="jar" path="drivers/maxdb/sapdbc.jar" url="*"/>
-                    <file type="license" path="drivers/maxdb/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/maxdb/sapdbc.jar"/>
+                    <file type="license" path="drivers/maxdb/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
@@ -318,9 +320,9 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-                    <file type="jar" path="drivers/informix/ifxjdbc.jar" url="*"/>
-                    <file type="jar" path="drivers/informix/ifxlang.jar" url="*"/>
-                    <file type="license" path="drivers/informix/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/informix/ifxjdbc.jar"/>
+                    <file type="jar" path="drivers/informix/ifxlang.jar"/>
+                    <file type="license" path="drivers/informix/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
                     <parameter name="legacy-sql-dialect" value="true"/>
@@ -334,8 +336,8 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="jar" path="drivers/h2/h2-1.4.185.jar" url="*"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/h2/h2-1.4.185.jar"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -346,8 +348,8 @@
                     webURL="http://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded">
-                    <file type="jar" path="drivers/h2/h2-1.4.185.jar" url="*"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/h2/h2-1.4.185.jar"/>
+                    <file type="license" path="drivers/h2/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -371,8 +373,8 @@
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
-                    <file type="jar" path="drivers/derby/derby-10.11.1.1.jar" url="*"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/derby/derby-10.11.1.1.jar"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -383,8 +385,8 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="jar" path="drivers/derby/derbyclient-10.11.1.1.jar" url="*"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/derby/derbyclient-10.11.1.1.jar"/>
+                    <file type="license" path="drivers/derby/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -397,7 +399,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
-                    <file type="jar" path="drivers/mimer/mimjdbc3.jar" url="*"/>
+                    <file type="jar" path="drivers/mimer/mimjdbc3.jar"/>
                 </driver>
                 <driver
                     id="hsqldb_server"
@@ -408,8 +410,8 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar" url="*"/>
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar"/>
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -423,8 +425,8 @@
                     webURL="http://hsqldb.org/"
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar" url="*"/>
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar"/>
+                    <file type="license" path="drivers/hsqldb/LICENSE.txt"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -438,8 +440,8 @@
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
                     description="Intersystems Cache">
-                    <file type="jar" path="drivers/cache/CacheDB.jar" url="*"/>
-                    <file type="license" path="drivers/cache/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/cache/CacheDB.jar"/>
+                    <file type="license" path="drivers/cache/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -449,8 +451,8 @@
                     defaultPort="II7"
                     webURL="http://www.ingres.com/products/ingres-database/"
                     description="Ingres Database">
-                    <file type="jar" path="drivers/ingres/iijdbc.jar" url="*"/>
-                    <file type="license" path="drivers/ingres/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/ingres/iijdbc.jar"/>
+                    <file type="license" path="drivers/ingres/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="linter"
@@ -460,9 +462,9 @@
                     defaultPort="1070"
                     webURL="http://linter.ru/"
                     description="Linter (????????????) Database">
-                    <file type="jar" path="drivers/linter/LinJdbc.jar" url="*"/>
-                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar" url="*"/>
-                    <file type="license" path="drivers/linter/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/linter/LinJdbc.jar"/>
+                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar"/>
+                    <file type="license" path="drivers/linter/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="firebird_jaybird"
@@ -473,12 +475,12 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="drivers/firebird/jaybird-full-2.2.5.jar" url="*"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird22.dll" url="*"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird22_x64.dll" url="*"/>
-                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird22.so" url="*"/>
-                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird22_x64.so" url="*"/>
-                    <file type="license" path="drivers/firebird/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/firebird/jaybird-full-2.2.5.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird22.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird22_x64.dll"/>
+                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird22.so"/>
+                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird22_x64.so"/>
+                    <file type="license" path="drivers/firebird/LICENSE.txt"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
@@ -495,11 +497,11 @@
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>
 
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.10.1.jar" url="*"/>
-                    <file type="executable" path="drivers/sqlite/shell/linux/sqlite3" os="linux" url="*"/>
-                    <file type="executable" path="drivers/sqlite/shell/macos/sqlite3" os="macos" url="*"/>
-                    <file type="executable" path="drivers/sqlite/shell/win32/sqlite3.exe" os="win32" url="*"/>
-                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.10.1.jar"/>
+                    <file type="executable" path="drivers/sqlite/shell/linux/sqlite3" os="linux"/>
+                    <file type="executable" path="drivers/sqlite/shell/macos/sqlite3" os="macos"/>
+                    <file type="executable" path="drivers/sqlite/shell/win32/sqlite3.exe" os="win32"/>
+                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt"/>
 
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
@@ -514,9 +516,9 @@
                     sampleURL="jdbc:teradata://{host}/{database}"
                     defaultPort=""
                     description="Teradata JDBC driver">
-                    <file type="jar" path="drivers/teradata/terajdbc4.jar" url="*"/>
-                    <file type="jar" path="drivers/teradata/tdgssconfig.jar" url="*"/>
-                    <file type="license" path="drivers/teradata/LICENSE.txt" url="*"/>
+                    <file type="jar" path="drivers/teradata/terajdbc4.jar"/>
+                    <file type="jar" path="drivers/teradata/tdgssconfig.jar"/>
+                    <file type="license" path="drivers/teradata/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="mysql3"
@@ -526,8 +528,8 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
-                    <file type="license" path="drivers/mysql/LICENSE.txt" url="*"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar" url="*"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar"/>
                 </driver>
                 <driver
                     id="vertica"
@@ -538,7 +540,7 @@
                     defaultPort="5433"
                     webURL="http://www.vertica.com/"
                     description="Driver for Vertica Database">
-                    <file type="jar" path="drivers/vertica/vertica-jdk5-6.1.2-0.jar" url="*"/>
+                    <file type="jar" path="drivers/vertica/vertica-jdk5-6.1.2-0.jar"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
                 </driver>
@@ -557,8 +559,8 @@
                     <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
-                    <file type="license" path="drivers/csvjdbc/LICENSE.txt" url="*"/>
-                    <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0-23.jar" url="*"/>
+                    <file type="license" path="drivers/csvjdbc/LICENSE.txt"/>
+                    <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0-23.jar"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -569,11 +571,11 @@
                     webURL="http://ucanaccess.sourceforge.net/site.html"
                     embedded="true"
                     description="Microsoft Access driver">
-                    <file type="license" path="drivers/ucanaccess/LICENSE.txt" url="*"/>
-                    <file type="jar" path="drivers/ucanaccess/ucanaccess-2.0.1.jar" url="*"/>
-                    <file type="jar" path="drivers/ucanaccess/commons-lang-2.6.jar" url="*"/>
-                    <file type="jar" path="drivers/ucanaccess/hsqldb.jar" url="*"/>
-                    <file type="jar" path="drivers/ucanaccess/jackcess-2.0.1.jar" url="*"/>
+                    <file type="license" path="drivers/ucanaccess/LICENSE.txt"/>
+                    <file type="jar" path="drivers/ucanaccess/ucanaccess-2.0.1.jar"/>
+                    <file type="jar" path="drivers/ucanaccess/commons-lang-2.6.jar"/>
+                    <file type="jar" path="drivers/ucanaccess/hsqldb.jar"/>
+                    <file type="jar" path="drivers/ucanaccess/jackcess-2.0.1.jar"/>
                 </driver>
                 <driver
                     id="netezza"

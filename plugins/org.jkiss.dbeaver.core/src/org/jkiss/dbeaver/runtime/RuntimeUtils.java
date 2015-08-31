@@ -229,6 +229,14 @@ public class RuntimeUtils {
         return new LoadingJob<RESULT>(loadingService, visualizer);
     }
 
+    public static boolean isPlatformMacOS() {
+        return Platform.getOS().toLowerCase().contains("macos");
+    }
+
+    public static boolean isPlatformWindows() {
+        return Platform.getOS().toLowerCase().contains("win32");
+    }
+
     private static class MonitoringTask implements DBRRunnableWithProgress {
         private final DBRRunnableWithProgress task;
         volatile boolean finished;
