@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.registry.DataFormatterProfile;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
@@ -48,7 +49,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
   @Override
   public void initializeDefaultPreferences() {
-      boolean isMac = Platform.getOS().toLowerCase().contains("macos");
+      boolean isMac = RuntimeUtils.isPlatformMacOS();
 
       // Init default preferences
       DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());

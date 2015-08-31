@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,12 +39,15 @@ public class DriverFileDescriptor implements DBPDriverFile
 {
     static final Log log = Log.getLog(DriverFileDescriptor.class);
 
+    public static final String FILE_SOURCE_MAVEN = "maven:/";
+    public static final String FILE_SOURCE_PLATFORM = "platform:/";
+
     private final DriverDescriptor driver;
     private final DBPDriverFileType type;
     private final OSDescriptor system;
     private String path;
+    private String fileExtension;
     private String description;
-    private String externalURL;
     private boolean custom;
     private boolean disabled;
 
@@ -66,8 +70,8 @@ public class DriverFileDescriptor implements DBPDriverFile
             osName,
             config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.externalURL = config.getAttribute(RegistryConstants.ATTR_URL);
         this.custom = false;
     }
 
@@ -95,6 +99,11 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
     @Override
+    public String getFileType() {
+        return null;
+    }
+
+    @Override
     public String getDescription()
     {
         return description;
@@ -112,12 +121,6 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
     @Override
-    public String getExternalURL()
-    {
-        return externalURL;
-    }
-
-    @Override
     public boolean isDisabled()
     {
         return disabled;
@@ -131,29 +134,43 @@ public class DriverFileDescriptor implements DBPDriverFile
     @Override
     public boolean isLocal()
     {
-        return path.startsWith(DriverDescriptor.DRIVERS_FOLDER);
+        return path.startsWith(DriverDescriptor.DRIVERS_FOLDER) || path.startsWith(FILE_SOURCE_MAVEN);
     }
 
     private File getLocalFile()
     {
+        if (path.startsWith(FILE_SOURCE_MAVEN)) {
+            return new File(DriverDescriptor.getCustomDriversHome(), getMavenArtifactFileName());
+        }
         // Try to use relative path from installation dir
         File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
         if (!file.exists()) {
-            // Try to use relative path from workspace dir
-            // [compatibility with 1.x]
-            file = new File(DBeaverCore.getInstance().getWorkspace().getRoot().getLocation().toFile(), path);
-            if (!file.exists()) {
-                // Use custom drivers path
-                file = new File(DriverDescriptor.getCustomDriversHome(), path);
-            }
+            // Use custom drivers path
+            file = new File(DriverDescriptor.getCustomDriversHome(), path);
         }
         return file;
     }
 
+    public String getExternalURL() {
+        if (path.startsWith(FILE_SOURCE_PLATFORM)) {
+            return path;
+        } else if (path.startsWith(FILE_SOURCE_MAVEN)) {
+            String artifactName = path.substring(FILE_SOURCE_MAVEN.length());
+            return "http://unknown/" + artifactName;
+        } else {
+            String primarySource = DriverDescriptor.getDriversPrimarySource();
+            if (!primarySource.endsWith("/") && !path.startsWith("/")) {
+                primarySource += '/';
+            }
+            return primarySource + path;
+        }
+    }
+
+
     @Override
     public File getFile()
     {
-        if (path.startsWith("platform:/")) {
+        if (path.startsWith(FILE_SOURCE_PLATFORM)) {
             try {
                 return RuntimeUtils.getPlatformFile(path);
             } catch (IOException e) {
@@ -200,6 +217,38 @@ public class DriverFileDescriptor implements DBPDriverFile
     public boolean matchesCurrentPlatform()
     {
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
+    }
+
+    private String getMavenArtifactFileName() {
+        String artifactName = path.substring(FILE_SOURCE_MAVEN.length());
+        String ext = fileExtension;
+        String[] artifactNameParts = artifactName.split(":");
+        if (artifactNameParts.length != 3) {
+            log.warn("Bad Maven artifact reference: " + artifactName);
+            return artifactName.replace(':', '.');
+        }
+        String artifactFileName = DriverDescriptor.DRIVERS_FOLDER + "/" + artifactNameParts[1] + "/" +
+            artifactNameParts[0] + "." + artifactNameParts[1] + "." + artifactNameParts[2];
+        if (CommonUtils.isEmpty(ext)) {
+            switch (type) {
+                case lib:
+                    return System.mapLibraryName(artifactFileName);
+                case executable:
+                    if (RuntimeUtils.isPlatformWindows()) {
+                        ext = "exe";
+                    } else {
+                        return artifactFileName;
+                    }
+                    break;
+                case jar:
+                    ext = "jar";
+                    break;
+                case license:
+                    ext = "txt";
+                    break;
+            }
+        }
+        return artifactFileName + '.' + ext;
     }
 
     @Override

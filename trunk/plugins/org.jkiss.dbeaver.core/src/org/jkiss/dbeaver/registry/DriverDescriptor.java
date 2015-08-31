@@ -428,7 +428,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean hasValidLibraries()
     {
         for (DriverFileDescriptor lib : files) {
-            if (lib.getFile().exists() || (!lib.isDisabled() && !CommonUtils.isEmpty(lib.getExternalURL()))) {
+            if (lib.getFile().exists()) {
                 return true;
             }
         }
@@ -894,7 +894,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         final List<DriverFileDescriptor> downloadCandidates = new ArrayList<DriverFileDescriptor>();
         for (DriverFileDescriptor file : files) {
-            if (file.isDisabled() || file.getExternalURL() == null || !file.isLocal()) {
+            if (file.isDisabled() || !file.isLocal()) {
                 // Nothing we can do about it
                 continue;
             }
@@ -987,9 +987,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
         String licenseText = getLicense();
-        if (licenseText != null) {
+        if (!CommonUtils.isEmpty(licenseText)) {
             return acceptLicense(licenseText);
         }
+        // No license
         return true;
     }
 
@@ -1051,13 +1052,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
         }
         String externalURL = file.getExternalURL();
-        if (RegistryConstants.MAPPED_URL.equals(externalURL)) {
-            String primarySource = DriverDescriptor.getDriversPrimarySource();
-            if (!primarySource.endsWith("/") && !file.getPath().startsWith("/")) {
-                primarySource += '/';
-            }
-            externalURL = primarySource + file.getPath();
-        }
 
         URL url = new URL(externalURL);
         monitor.beginTask("Check file " + url.toString() + "...", 1);
@@ -1078,8 +1072,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         monitor.done();
 
         final int contentLength = connection.getContentLength();
-        //final String contentType = connection.getContentType();
-        monitor.beginTask("Download " + file.getExternalURL(), contentLength);
+        monitor.beginTask("Download " + externalURL, contentLength);
         boolean success = false;
         final File localFile = file.getFile();
         final File localDir = localFile.getParentFile();
