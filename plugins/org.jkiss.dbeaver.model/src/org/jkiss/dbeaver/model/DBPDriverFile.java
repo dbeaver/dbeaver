@@ -33,11 +33,11 @@ public interface DBPDriverFile
 
     String getPath();
 
+    String getFileType();
+
     String getDescription();
 
     boolean isCustom();
-
-    String getExternalURL();
 
     boolean isDisabled();
 
