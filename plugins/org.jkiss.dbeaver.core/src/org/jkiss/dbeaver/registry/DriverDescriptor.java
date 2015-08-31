@@ -1317,7 +1317,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
                 curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(idAttr);
                 if (curProvider == null) {
-                    log.warn("Datasource provider '" + idAttr + "' not found");
+                    log.warn("Datasource provider '" + idAttr + "' not found. Bad provider description.");
                 }
             } else if (localName.equals(RegistryConstants.TAG_DRIVER)) {
                 curDriver = null;
@@ -1326,7 +1326,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     if (!CommonUtils.isEmpty(providerId)) {
                         curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
                         if (curProvider == null) {
-                            log.warn("Datasource provider '" + providerId + "' not found");
+                            log.warn("Datasource provider '" + providerId + "' not found. Bad driver description.");
                         }
                     }
                     if (curProvider == null) {
