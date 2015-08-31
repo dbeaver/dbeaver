@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.maven.MavenArtifact;
+import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -140,6 +142,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     private File getLocalFile()
     {
         if (path.startsWith(FILE_SOURCE_MAVEN)) {
+            MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(path);
             return new File(DriverDescriptor.getCustomDriversHome(), getMavenArtifactFileName());
         }
         // Try to use relative path from installation dir
