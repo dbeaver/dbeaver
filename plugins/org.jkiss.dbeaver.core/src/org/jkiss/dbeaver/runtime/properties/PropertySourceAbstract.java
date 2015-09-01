@@ -209,7 +209,10 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             } else {
                 return prop.readValue(object, null);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
+            if (e instanceof InvocationTargetException) {
+                e = ((InvocationTargetException) e).getTargetException();
+            }
             log.error("Error reading property '" + prop.getId() + "' from " + object, e);
             return e.getMessage();
         }
