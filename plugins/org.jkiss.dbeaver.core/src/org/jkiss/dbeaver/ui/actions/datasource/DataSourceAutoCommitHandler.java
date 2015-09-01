@@ -21,6 +21,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
@@ -31,9 +32,11 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 
 import java.util.Map;
 
@@ -47,14 +50,21 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
                 try {
-                    DBSDataSourceContainer container = context.getDataSource().getContainer();
+                    final DBSDataSourceContainer container = context.getDataSource().getContainer();
                     boolean newAutocommit = !container.isDefaultAutoCommit();
                     if (context.isConnected()) {
                         // Get flag from connection
                         newAutocommit = !txnManager.isAutoCommit();
                     }
-                    container.setDefaultAutoCommit(newAutocommit, context, true);
-                    container.persistConfiguration();
+                    container.setDefaultAutoCommit(newAutocommit, context, true, new Runnable() {
+                        @Override
+                        public void run() {
+                            // Save config
+                            container.persistConfiguration();
+                            // Update actions
+                            DataSourcePropertyTester.fireCommandRefresh(ICommandIds.CMD_TOGGLE_AUTOCOMMIT);
+                        }
+                    });
                 } catch (DBException e) {
                     UIUtils.showErrorDialog(null, "Auto-Commit", "Error while toggle auto-commit", e);
                 }

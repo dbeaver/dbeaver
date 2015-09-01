@@ -507,7 +507,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         dataSource.setName(connectionNameText.getText());
         dataSource.setSavePassword(savePasswordCheck.getSelection());
         try {
-            dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true);
+            dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true, null);
             if (dataSource.isConnected()) {
                 int levelIndex = isolationLevel.getSelectionIndex();
                 if (levelIndex <= 0) {

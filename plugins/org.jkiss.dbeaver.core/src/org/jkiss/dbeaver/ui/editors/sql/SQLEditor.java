@@ -287,6 +287,25 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    private void releaseExecutionContext() {
+        if (ownContext && executionContext != null) {
+            // Close context in separate job (otherwise it can block UI)
+            new CloseContextJob(executionContext).schedule();
+        }
+        executionContext = null;
+        ownContext = false;
+        curDataSource = null;
+    }
+
+    private void releaseContainer() {
+        releaseExecutionContext();
+        if (dataSourceContainer != null) {
+            dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
+            dataSourceContainer.release(this);
+            dataSourceContainer = null;
+        }
+    }
+
     private class OpenContextJob extends AbstractJob {
         private final DBPDataSource dataSource;
         private Throwable error;
@@ -314,21 +333,24 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void releaseExecutionContext() {
-        if (ownContext && executionContext != null) {
-            executionContext.close();
+    private class CloseContextJob extends AbstractJob {
+        private final DBCExecutionContext context;
+        protected CloseContextJob(DBCExecutionContext context) {
+            super("Close context " + context.getContextName());
+            this.context = context;
+            setUser(true);
         }
-        executionContext = null;
-        ownContext = false;
-        curDataSource = null;
-    }
 
-    private void releaseContainer() {
-        releaseExecutionContext();
-        if (dataSourceContainer != null) {
-            dataSourceContainer.getPreferenceStore().removePropertyChangeListener(this);
-            dataSourceContainer.release(this);
-            dataSourceContainer = null;
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            monitor.beginTask("Close SQLEditor isolated connection", 1);
+            try {
+                monitor.subTask("Close context " + context.getContextName());
+                context.close();
+            } finally {
+                monitor.done();
+            }
+            return Status.OK_STATUS;
         }
     }
 

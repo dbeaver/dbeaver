@@ -72,7 +72,7 @@ public interface DBSDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isDefaultAutoCommit();
 
-    void setDefaultAutoCommit(boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection)
+    void setDefaultAutoCommit(boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection, Runnable onFinish)
         throws DBException;
 
     @Nullable

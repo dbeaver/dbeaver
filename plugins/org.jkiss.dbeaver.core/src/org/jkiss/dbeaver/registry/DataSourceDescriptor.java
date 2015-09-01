@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -282,7 +283,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void setDefaultAutoCommit(final boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection) throws DBException {
+    public void setDefaultAutoCommit(final boolean autoCommit, DBCExecutionContext updateContext, boolean updateConnection, final Runnable onFinish) throws DBException {
         if (updateContext != null) {
             final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
@@ -296,7 +297,11 @@ public class DataSourceDescriptor
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         } finally {
+                            RuntimeUtils.pause(100);
                             monitor.done();
+                            if (onFinish != null) {
+                                onFinish.run();
+                            }
                         }
                     }
                 });
