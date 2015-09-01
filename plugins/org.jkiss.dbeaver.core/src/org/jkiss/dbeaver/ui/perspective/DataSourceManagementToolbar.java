@@ -523,6 +523,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private synchronized void fillDatabaseList(DatabaseListReader reader, DBSDataSourceContainer dsContainer)
     {
+        if (databaseCombo.isDisposed()) {
+            return;
+        }
         databaseCombo.setRedraw(false);
         try {
             // Remove all but first item (which is constant)
