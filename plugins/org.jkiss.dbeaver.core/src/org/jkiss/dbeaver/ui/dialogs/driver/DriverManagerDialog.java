@@ -254,7 +254,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     public void selectionChanged(SelectionChangedEvent event)
     {
         this.selectedDriver = null;
-        this.selectedProvider = null;
+        this.selectedProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
         this.selectedCategory = null;
         ISelection selection = event.getSelection();
         if (selection instanceof IStructuredSelection) {
@@ -262,14 +262,15 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
             if (selectedObject instanceof DriverDescriptor) {
                 this.selectedDriver = (DriverDescriptor) selectedObject;
                 this.selectedCategory = selectedDriver.getCategory();
+                this.selectedProvider = selectedDriver.getProviderDescriptor();
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
                 this.selectedProvider = (DataSourceProviderDescriptor)selectedObject;
             } else if (selectedObject instanceof DriverTreeViewer.DriverCategory) {
-                this.selectedProvider = null;
+                //this.selectedProvider = null;
                 this.selectedCategory = ((DriverTreeViewer.DriverCategory) selectedObject).getName();
             }
         }
-        //super.updateStatus(new Status(Status.INFO, DBeaverConstants.PLUGIN_ID, selectedDriver == null ? "" : selectedDriver.getDescription()));
+            //super.updateStatus(new Status(Status.INFO, DBeaverConstants.PLUGIN_ID, selectedDriver == null ? "" : selectedDriver.getDescription()));
         this.updateButtons();
     }
 
