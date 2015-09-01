@@ -76,12 +76,15 @@ public abstract class JDBCDataSource
     protected volatile JDBCExecutionContext metaContext;
     @NotNull
     protected final List<JDBCExecutionContext> allContexts = new ArrayList<JDBCExecutionContext>();
+    @NotNull
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;
 
     public JDBCDataSource(DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
         throws DBException
     {
+        this.dataSourceInfo = new JDBCDataSourceInfo(container);
+        this.sqlDialect = new BasicSQLDialect();
         this.container = container;
         this.executionContext = new JDBCExecutionContext(this, "Main");
         this.executionContext.connect(monitor, null, null, false);
@@ -297,10 +300,12 @@ public abstract class JDBCDataSource
             session.close();
 
             if (sqlDialect == null) {
+                log.warn("NULL SQL dialect was created");
                 sqlDialect = new BasicSQLDialect();
             }
             if (dataSourceInfo == null) {
-                dataSourceInfo = new JDBCDataSourceInfo(null);
+                log.warn("NULL datasource info was created");
+                dataSourceInfo = new JDBCDataSourceInfo(container);
             }
         }
     }
@@ -347,7 +352,7 @@ public abstract class JDBCDataSource
 
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        this.dataSourceInfo = null;
+        this.dataSourceInfo = new JDBCDataSourceInfo(container);
         return true;
     }
 
