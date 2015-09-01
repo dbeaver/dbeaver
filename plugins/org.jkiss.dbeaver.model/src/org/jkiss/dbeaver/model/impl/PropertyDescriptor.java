@@ -38,15 +38,15 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
 {
     public enum PropertyType
     {
-        STRING(String.class),
-        BOOLEAN(Boolean.class),
-        SHORT(Short.class),
-        INTEGER(Integer.class),
-        LONG(Long.class),
-        FLOAT(Float.class),
-        DOUBLE(Double.class),
-        NUMERIC(Double.class),
-        RESOURCE(IResource.class);
+        t_string(String.class),
+        t_boolean(Boolean.class),
+        t_short(Short.class),
+        t_integer(Integer.class),
+        t_long(Long.class),
+        t_float(Float.class),
+        t_double(Double.class),
+        t_numeric(Double.class),
+        t_resource(IResource.class);
 
         private final Class<?> valueType;
 
@@ -111,7 +111,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
             type = String.class;
         } else {
             try {
-                type = PropertyType.valueOf(typeString.toUpperCase()).getValueType();
+                type = PropertyType.valueOf("t_" + typeString).getValueType();
             }
             catch (IllegalArgumentException ex) {
                 log.warn(ex);
