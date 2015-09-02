@@ -2503,7 +2503,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository name="Central Repository" url="http://central.maven.org/maven2/"/>
+        <repository id="maven-central" name="Central Repository" url="http://central.maven.org/maven2/"/>
     </extension>
 
 </plugin>

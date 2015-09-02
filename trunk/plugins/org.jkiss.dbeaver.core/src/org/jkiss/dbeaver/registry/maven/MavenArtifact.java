@@ -38,6 +38,7 @@ import java.util.List;
 public class MavenArtifact
 {
     static final Log log = Log.getLog(MavenArtifact.class);
+    public static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 
     private final MavenRepository repository;
     private final String groupId;
@@ -48,6 +49,7 @@ public class MavenArtifact
     private Date lastUpdate;
 
     private List<MavenLocalVersion> localVersions = new ArrayList<MavenLocalVersion>();
+    private String activeVersion;
 
     public MavenArtifact(MavenRepository repository, String groupId, String artifactId)
     {
@@ -57,7 +59,7 @@ public class MavenArtifact
     }
 
     public void loadMetadata() throws IOException {
-        String metadataPath = getArtifactDir() + "maven-metadata.xml";
+        String metadataPath = getArtifactDir() + MAVEN_METADATA_XML;
         URL url = new URL(metadataPath);
         URLConnection connection = url.openConnection();
         connection.connect();
@@ -128,6 +130,18 @@ public class MavenArtifact
 
     public Date getLastUpdate() {
         return lastUpdate;
+    }
+
+    public List<MavenLocalVersion> getLocalVersions() {
+        return localVersions;
+    }
+
+    public String getActiveVersion() {
+        return activeVersion;
+    }
+
+    public void setActiveVersion(String activeVersion) {
+        this.activeVersion = activeVersion;
     }
 
     private String getArtifactDir() {
