@@ -137,7 +137,7 @@
                     description="PostgreSQL standard driver">
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:release"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:[.*jdbc4]"/>
 
                     <property name="loginTimeout" value="10"/>
 

@@ -42,6 +42,10 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * DriverFileDescriptor
@@ -178,18 +182,15 @@ public class DriverFileDescriptor implements DBPDriverFile
             return null;
         }
         String groupId = mavenUri.substring(0, divPos);
+        String artifactId;
+        String version;
         int divPos2 = mavenUri.indexOf(':', divPos + 1);
         if (divPos2 < 0) {
-            log.warn("Bad maven uri, no artifact id: " + mavenUri);
-            return null;
-        }
-        String artifactId = mavenUri.substring(divPos + 1, divPos2);
-        String version = null;
-        int divPos3 = mavenUri.indexOf(':', divPos2 + 1);
-        if (divPos3 < 0) {
+            artifactId = mavenUri.substring(divPos + 1);
             version = DEFAULT_MAVEN_VERSION;
         } else {
-            version = mavenUri.substring(divPos2 + 1, divPos2);;
+            artifactId = mavenUri.substring(divPos + 1, divPos2);
+            version = mavenUri.substring(divPos2 + 1);
         }
         return new String[] {groupId, artifactId, version};
     }
@@ -435,6 +436,24 @@ public class DriverFileDescriptor implements DBPDriverFile
                 versionInfo = artifact.getReleaseVersion();
             } else if (versionInfo.equals("latest")) {
                 versionInfo = artifact.getLatestVersion();
+            } else {
+                if (versionInfo.startsWith("[") && versionInfo.endsWith("]")) {
+                    // Regex - find most recent version matching this pattern
+                    String regex = versionInfo.substring(1, versionInfo.length() - 1);
+                    try {
+                        Pattern versionPattern = Pattern.compile(regex);
+                        List<String> versions = new ArrayList<String>(artifact.getVersions());
+                        Collections.reverse(versions);
+                        for (String version : versions) {
+                            if (versionPattern.matcher(version).matches()) {
+                                versionInfo = version;
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new IOException("Bad version pattern: " + regex);
+                    }
+                }
             }
             monitor.subTask("Download binaries for version " + versionInfo);
             if (localVersion == null) {
