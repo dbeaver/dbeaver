@@ -47,13 +47,16 @@ public class MavenArtifact
     private String releaseVersion;
     private Date lastUpdate;
 
+    private List<MavenLocalVersion> localVersions = new ArrayList<MavenLocalVersion>();
+
     public MavenArtifact(MavenRepository repository, String groupId, String artifactId)
-        throws IOException
     {
         this.repository = repository;
         this.groupId = groupId;
         this.artifactId = artifactId;
+    }
 
+    public void loadMetadata() throws IOException {
         String metadataPath = getArtifactDir() + "maven-metadata.xml";
         URL url = new URL(metadataPath);
         URLConnection connection = url.openConnection();
