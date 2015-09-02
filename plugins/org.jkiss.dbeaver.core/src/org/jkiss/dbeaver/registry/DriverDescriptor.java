@@ -982,7 +982,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    downloadLibraryFile(monitor, file);
+                                    file.downloadLibraryFile(monitor);
                                 } catch (final Exception e) {
                                     log.warn("Can't obtain driver license", e);
                                 }
@@ -1027,7 +1027,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        downloadLibraryFile(monitor, file);
+                        file.downloadLibraryFile(monitor);
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -1045,87 +1045,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             UIUtils.runInUI(null, retryConfirm);
             return retryConfirm.result;
         }
-    }
-
-    private void downloadLibraryFile(DBRProgressMonitor monitor, DriverFileDescriptor file) throws IOException, InterruptedException
-    {
-        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
-        String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
-        Proxy proxy = null;
-        if (!CommonUtils.isEmpty(proxyHost)) {
-            int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
-            if (proxyPort <= 0) {
-                log.warn("Invalid proxy port: " + proxyPort);
-            }
-            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
-        }
-        String externalURL = file.getExternalURL();
-
-        URL url = new URL(externalURL);
-        monitor.beginTask("Check file " + url.toString() + "...", 1);
-        monitor.subTask("Connecting to the server");
-        final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
-        connection.setReadTimeout(10000);
-        connection.setConnectTimeout(10000);
-        connection.setRequestMethod("GET"); //$NON-NLS-1$
-        connection.setInstanceFollowRedirects(true);
-        connection.setRequestProperty(
-            "User-Agent",  //$NON-NLS-1$
-            DBeaverCore.getProductTitle());
-        connection.connect();
-        if (connection.getResponseCode() != 200) {
-            throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());
-        }
-        monitor.worked(1);
-        monitor.done();
-
-        final int contentLength = connection.getContentLength();
-        monitor.beginTask("Download " + externalURL, contentLength);
-        boolean success = false;
-        final File localFile = file.getLocalFile();
-        if (localFile == null) {
-            throw new IOException("No target file for '" + file.getPath() + "'");
-        }
-        final File localDir = localFile.getParentFile();
-        if (!localDir.exists()) {
-            if (!localDir.mkdirs()) {
-                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
-            }
-        }
-        final OutputStream outputStream = new FileOutputStream(localFile);
-        try {
-            final InputStream inputStream = connection.getInputStream();
-            try {
-                final NumberFormat numberFormat = NumberFormat.getNumberInstance();
-                byte[] buffer = new byte[10000];
-                int totalRead = 0;
-                for (;;) {
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException();
-                    }
-                    monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
-                    final int count = inputStream.read(buffer);
-                    if (count <= 0) {
-                        success = true;
-                        break;
-                    }
-                    outputStream.write(buffer, 0, count);
-                    monitor.worked(count);
-                    totalRead += count;
-                }
-            }
-            finally {
-                ContentUtils.close(inputStream);
-            }
-        } finally {
-            ContentUtils.close(outputStream);
-            if (!success) {
-                if (!localFile.delete()) {
-                    log.warn("Can't delete local driver file '" + localFile.getAbsolutePath() + "'");
-                }
-            }
-        }
-        monitor.done();
     }
 
     public String getOrigName()
