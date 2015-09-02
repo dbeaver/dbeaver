@@ -17,12 +17,15 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -157,5 +160,18 @@ public class MavenArtifact
     @Override
     public String toString() {
         return groupId + ":" + artifactId;
+    }
+
+    @Nullable
+    public File getActiveVersionCache() {
+        if (CommonUtils.isEmpty(activeVersion)) {
+            return null;
+        }
+        for (MavenLocalVersion version : localVersions) {
+            if (version.getVersion().equals(activeVersion)) {
+                return version.getCacheFile();
+            }
+        }
+        return null;
     }
 }

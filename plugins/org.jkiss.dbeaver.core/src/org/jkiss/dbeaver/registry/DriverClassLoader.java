@@ -45,8 +45,8 @@ public class DriverClassLoader extends URLClassLoader
         String nativeName = System.mapLibraryName(libname);
         for (DriverFileDescriptor driverFile : driver.getFiles()) {
             if (driverFile.getType() == DBPDriverFileType.lib && driverFile.matchesCurrentPlatform()) {
-                final File localFile = driverFile.getFile();
-                if (localFile.exists()) {
+                final File localFile = driverFile.getLocalFile();
+                if (localFile != null && localFile.exists()) {
                     final String fileName = localFile.getName();
                     if (fileName.equalsIgnoreCase(nativeName)) {
                         return localFile.getAbsolutePath();

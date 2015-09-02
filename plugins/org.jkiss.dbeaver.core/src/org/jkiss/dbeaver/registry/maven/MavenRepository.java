@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -72,29 +73,24 @@ public class MavenRepository
         return url;
     }
 
-    public MavenArtifact getArtifact(String groupId, String artifactId) {
+    @NotNull
+    public MavenArtifact getArtifact(@NotNull String groupId, @NotNull String artifactId) {
         for (MavenArtifact artifact : cachedArtifacts) {
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return artifact;
             }
         }
-        try {
-            MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
-            artifact.loadMetadata();
-            addCachedArtifact(artifact);
-            return artifact;
-        } catch (IOException e) {
-            log.debug(e);
-            return null;
-        }
+        MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
+        addCachedArtifact(artifact);
+        return artifact;
     }
 
-    private synchronized void addCachedArtifact(MavenArtifact artifact) {
+    private synchronized void addCachedArtifact(@NotNull MavenArtifact artifact) {
         cachedArtifacts.add(artifact);
 //        saveCache();
     }
 
-    private File getLocalCacheDir()
+    File getLocalCacheDir()
     {
         File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + id + "/");
         if (!homeFolder.exists()) {

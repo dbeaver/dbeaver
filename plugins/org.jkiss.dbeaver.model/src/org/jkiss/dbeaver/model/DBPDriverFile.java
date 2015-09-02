@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
 import java.io.File;
@@ -43,7 +44,8 @@ public interface DBPDriverFile
 
     boolean isLocal();
 
-    File getFile();
+    @Nullable
+    File getLocalFile();
 
     boolean matchesCurrentPlatform();
 
