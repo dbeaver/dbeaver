@@ -17,29 +17,14 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
-import org.jkiss.dbeaver.Log;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLException;
-import org.xml.sax.Attributes;
-
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 /**
  * Maven artifact descriptor
  */
 public class MavenLocalVersion
 {
-    static final Log log = Log.getLog(MavenLocalVersion.class);
-
     private MavenArtifact artifact;
     private String version;
     private String fileName;
@@ -70,7 +55,10 @@ public class MavenLocalVersion
     }
 
     public File getCacheFile() {
-        return new File(artifact.getRepository().getLocalCacheDir(), fileName);
+        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + fileName);
     }
 
+    public String getExternalURL() {
+        return artifact.getFileURL(version);
+    }
 }

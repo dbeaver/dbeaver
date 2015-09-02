@@ -135,10 +135,10 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
-                    <file type="jar" path="drivers/postgresql/postgresql-9.1-901.jdbc4.jar"/>
-                    <file type="license" path="drivers/postgresql/LICENSE.txt"/>
 
+                    <file type="license" path="drivers/postgresql/LICENSE.txt"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:release"/>
+
                     <property name="loginTimeout" value="10"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>

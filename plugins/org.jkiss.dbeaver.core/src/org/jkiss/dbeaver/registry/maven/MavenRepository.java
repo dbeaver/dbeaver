@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.maven;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -73,16 +74,20 @@ public class MavenRepository
         return url;
     }
 
-    @NotNull
-    public MavenArtifact getArtifact(@NotNull String groupId, @NotNull String artifactId) {
+    @Nullable
+    public MavenArtifact getArtifact(@NotNull String groupId, @NotNull String artifactId, boolean create) {
         for (MavenArtifact artifact : cachedArtifacts) {
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return artifact;
             }
         }
-        MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
-        addCachedArtifact(artifact);
-        return artifact;
+        if (create) {
+            MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
+            addCachedArtifact(artifact);
+            return artifact;
+        } else {
+            return null;
+        }
     }
 
     private synchronized void addCachedArtifact(@NotNull MavenArtifact artifact) {
