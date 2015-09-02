@@ -61,6 +61,7 @@ import java.util.List;
 public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener, DBRRunnableContext {
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
+    public static final String DEFAULT_DS_PROVIDER = "generic";
 
     private DataSourceProviderDescriptor selectedProvider;
     private DataSourceProviderDescriptor onlyManagableProvider;
@@ -228,6 +229,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         monitorPart.setVisible(false);
         //monitorPart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+        setDefaultSelection();
+        this.updateButtons();
         return group;
     }
 
@@ -253,9 +256,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @Override
     public void selectionChanged(SelectionChangedEvent event)
     {
-        this.selectedDriver = null;
-        this.selectedProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
-        this.selectedCategory = null;
+        setDefaultSelection();
+
         ISelection selection = event.getSelection();
         if (selection instanceof IStructuredSelection) {
             Object selectedObject = ((IStructuredSelection) selection).getFirstElement();
@@ -272,6 +274,12 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         }
             //super.updateStatus(new Status(Status.INFO, DBeaverConstants.PLUGIN_ID, selectedDriver == null ? "" : selectedDriver.getDescription()));
         this.updateButtons();
+    }
+
+    private void setDefaultSelection() {
+        this.selectedDriver = null;
+        this.selectedProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(DEFAULT_DS_PROVIDER);
+        this.selectedCategory = null;
     }
 
     @Override
