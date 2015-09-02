@@ -432,6 +432,7 @@ public class DriverFileDescriptor implements DBPDriverFile
             monitor.worked(1);
 
             String versionInfo = artifactInfo[2];
+            List<String> allVersions = artifact.getVersions();
             if (versionInfo.equals("release")) {
                 versionInfo = artifact.getReleaseVersion();
             } else if (versionInfo.equals("latest")) {
@@ -442,7 +443,7 @@ public class DriverFileDescriptor implements DBPDriverFile
                     String regex = versionInfo.substring(1, versionInfo.length() - 1);
                     try {
                         Pattern versionPattern = Pattern.compile(regex);
-                        List<String> versions = new ArrayList<String>(artifact.getVersions());
+                        List<String> versions = new ArrayList<String>(allVersions);
                         Collections.reverse(versions);
                         for (String version : versions) {
                             if (versionPattern.matcher(version).matches()) {
@@ -454,6 +455,13 @@ public class DriverFileDescriptor implements DBPDriverFile
                         throw new IOException("Bad version pattern: " + regex);
                     }
                 }
+            }
+            if (CommonUtils.isEmpty(versionInfo)) {
+                if (allVersions.isEmpty()) {
+                    throw new IOException("Artifact '" + artifact + "' has empty version list");
+                }
+                // Use latest version
+                versionInfo = allVersions.get(allVersions.size() - 1);
             }
             monitor.subTask("Download binaries for version " + versionInfo);
             if (localVersion == null) {
