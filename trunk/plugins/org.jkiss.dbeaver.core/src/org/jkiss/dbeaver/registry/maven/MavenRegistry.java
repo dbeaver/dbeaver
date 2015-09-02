@@ -66,35 +66,16 @@ public class MavenRegistry
     }
 
     @Nullable
-    public MavenArtifact findArtifact(@NotNull String mavenUri) {
-        int divPos = mavenUri.indexOf('/');
-        if (divPos < 0) {
-            log.warn("Bad maven uri: " + mavenUri);
-            return null;
-        }
-        mavenUri = mavenUri.substring(divPos + 1);
-        divPos = mavenUri.indexOf(':');
-        if (divPos < 0) {
-            log.warn("Bad maven uri, no group id: " + mavenUri);
-            return null;
-        }
-        String groupId = mavenUri.substring(0, divPos);
-        int divPos2 = mavenUri.indexOf(':', divPos + 1);
-        if (divPos2 < 0) {
-            log.warn("Bad maven uri, no artifact id: " + mavenUri);
-            return null;
-        }
-        String artifactId = mavenUri.substring(divPos + 1, divPos2);
-        return findArtifact(groupId, artifactId);
-    }
-
-    @Nullable
     public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
         for (MavenRepository repository : repositories) {
-            MavenArtifact artifact = repository.getArtifact(groupId, artifactId);
+            MavenArtifact artifact = repository.getArtifact(groupId, artifactId, false);
             if (artifact != null) {
                 return artifact;
             }
+        }
+        // Create artifact in default repository
+        if (!repositories.isEmpty()) {
+            return repositories.get(0).getArtifact(groupId, artifactId, true);
         }
         return null;
     }

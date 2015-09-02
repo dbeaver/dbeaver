@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -152,9 +154,13 @@ public class MavenArtifact
         return repository.getUrl() + dir + "/";
     }
 
-    public URL getFileURL(String version) throws MalformedURLException {
-        String fileURL = getArtifactDir() + version + "/" + artifactId + ".jar";
-        return new URL(fileURL);
+    public String getFileURL(String version) {
+        return getArtifactDir() + version + "/" + getVersionFileName(version);
+    }
+
+    @NotNull
+    private String getVersionFileName(String version) {
+        return artifactId + "-" + version + ".jar";
     }
 
     @Override
@@ -163,15 +169,35 @@ public class MavenArtifact
     }
 
     @Nullable
-    public File getActiveVersionCache() {
+    public MavenLocalVersion getActiveLocalVersion() {
+        return getLocalVersion(activeVersion);
+    }
+
+    @Nullable
+    public MavenLocalVersion getLocalVersion(String versionStr) {
         if (CommonUtils.isEmpty(activeVersion)) {
             return null;
         }
         for (MavenLocalVersion version : localVersions) {
-            if (version.getVersion().equals(activeVersion)) {
-                return version.getCacheFile();
+            if (version.getVersion().equals(versionStr)) {
+                return version;
             }
         }
         return null;
+    }
+
+    public MavenLocalVersion makeLocalVersion(String versionStr, boolean setActive) throws IllegalArgumentException {
+        MavenLocalVersion version = getLocalVersion(versionStr);
+        if (version == null) {
+            if (!versions.contains(versionStr)) {
+                throw new IllegalArgumentException("Artifact '" + artifactId + "' doesn't support version '" + versionStr + "'");
+            }
+            version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr), new Date());
+            localVersions.add(version);
+        }
+        if (setActive) {
+            activeVersion = versionStr;
+        }
+        return version;
     }
 }
