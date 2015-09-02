@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Maven repository manager.
@@ -38,11 +40,15 @@ public class MavenRepository
     private String name;
     private String url;
 
+    private List<MavenArtifact> cachedArtifacts = new ArrayList<MavenArtifact>();
+
     public MavenRepository(IConfigurationElement config)
     {
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.url = config.getAttribute(RegistryConstants.ATTR_URL);
+
+        loadCache();
     }
 
     public String getName() {
@@ -54,17 +60,30 @@ public class MavenRepository
     }
 
     public MavenArtifact getArtifact(String groupId, String artifactId) {
+        for (MavenArtifact artifact : cachedArtifacts) {
+            if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
+                return artifact;
+            }
+        }
         try {
-            return new MavenArtifact(this, groupId, artifactId);
+            MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
+            artifact.loadMetadata();
+            addCachedArtifact(artifact);
+            return artifact;
         } catch (IOException e) {
             log.debug(e);
             return null;
         }
     }
 
-    public File getCacheLocation()
+    private synchronized void addCachedArtifact(MavenArtifact artifact) {
+        cachedArtifacts.add(artifact);
+        saveCache();
+    }
+
+    private File getLocalCacheDir()
     {
-        File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + id + "/cache");
+        File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + id + "/");
         if (!homeFolder.exists()) {
             if (!homeFolder.mkdirs()) {
                 log.warn("Can't create maven repository '" + name + "' cache folder '" + homeFolder + "'");
@@ -72,6 +91,14 @@ public class MavenRepository
         }
 
         return homeFolder;
+    }
+
+    synchronized private void loadCache() {
+
+    }
+
+    synchronized private void saveCache() {
+
     }
 
 }
