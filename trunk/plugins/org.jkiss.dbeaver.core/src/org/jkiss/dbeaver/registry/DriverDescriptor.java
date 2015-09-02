@@ -428,7 +428,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean hasValidLibraries()
     {
         for (DriverFileDescriptor lib : files) {
-            if (lib.getFile().exists()) {
+            File file = lib.getLocalFile();
+            if (file != null && file.exists()) {
                 return true;
             }
         }
@@ -790,8 +791,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     {
         for (DriverFileDescriptor file : files) {
             if (file.getType() == DBPDriverFileType.license) {
-                final File licenseFile = file.getFile();
-                if (licenseFile.exists()) {
+                final File licenseFile = file.getLocalFile();
+                if (licenseFile != null && licenseFile.exists()) {
                     try {
                         return ContentUtils.readFileToString(licenseFile);
                     } catch (IOException e) {
@@ -866,9 +867,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             if (file.isDisabled() || file.getType() != DBPDriverFileType.jar) {
                 continue;
             }
+            File localFile = file.getLocalFile();
+            if (localFile == null) {
+                continue;
+            }
             URL url;
             try {
-                url = file.getFile().toURI().toURL();
+                url = localFile.toURI().toURL();
             } catch (MalformedURLException e) {
                 log.error(e);
                 continue;
@@ -886,9 +891,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void validateFilesPresence(final DBRRunnableContext runnableContext)
     {
         for (DriverFileDescriptor file : files) {
-            if (file.isCustom() && file.getFile().exists()) {
-                // there are custom files - not need to
-                return;
+            if (file.isCustom()) {
+                File localFile = file.getLocalFile();
+                if (localFile != null && localFile.exists()) {
+                    // there are custom files - not need to
+                    return;
+                }
             }
         }
 
@@ -902,8 +910,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 // Wrong OS or architecture
                 continue;
             }
-            final File libraryFile = file.getFile();
-            if (!libraryFile.exists()) {
+            final File libraryFile = file.getLocalFile();
+            if (libraryFile == null || !libraryFile.exists()) {
                 downloadCandidates.add(file);
             }
         }
@@ -966,8 +974,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         // User must accept all licenses before actual drivers download
         for (final DriverFileDescriptor file : getFiles()) {
             if (file.getType() == DBPDriverFileType.license) {
-                final File libraryFile = file.getFile();
-                if (!libraryFile.exists()) {
+                final File libraryFile = file.getLocalFile();
+                if (libraryFile == null || !libraryFile.exists()) {
                     try {
                         runnableContext.run(true, true, new DBRRunnableWithProgress() {
                             @Override
@@ -1074,7 +1082,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         final int contentLength = connection.getContentLength();
         monitor.beginTask("Download " + externalURL, contentLength);
         boolean success = false;
-        final File localFile = file.getFile();
+        final File localFile = file.getLocalFile();
+        if (localFile == null) {
+            throw new IOException("No target file for '" + file.getPath() + "'");
+        }
         final File localDir = localFile.getParentFile();
         if (!localDir.exists()) {
             if (!localDir.mkdirs()) {
@@ -1524,8 +1535,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         @Override
         protected void buttonPressed(int buttonId) {
-            setReturnCode(buttonId);
-            close();
+            if (buttonId == IDialogConstants.DETAILS_ID) {
+                super.buttonPressed(buttonId);
+            } else {
+                setReturnCode(buttonId);
+                close();
+            }
         }
     }
 

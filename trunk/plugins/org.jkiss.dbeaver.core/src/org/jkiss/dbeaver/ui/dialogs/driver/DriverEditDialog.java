@@ -312,15 +312,16 @@ public class DriverEditDialog extends HelpEnabledDialog
                 {
                     DriverFileDescriptor lib = (DriverFileDescriptor) cell.getElement();
                     cell.setText(lib.getPath());
-                    if (lib.getFile().exists()) {
+                    File localFile = lib.getLocalFile();
+                    if (localFile != null && localFile.exists()) {
                         cell.setForeground(null);
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     }
                     cell.setImage(
-                        !lib.getFile().exists() ?
+                        localFile == null || !localFile.exists() ?
                             PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
-                            lib.getFile().isDirectory() ?
+                            localFile.isDirectory() ?
                                 DBeaverIcons.getImage(DBIcon.TREE_FOLDER) :
                                 DBeaverIcons.getImage((lib.getType() == DBPDriverFileType.jar ? UIIcon.JAR : DBIcon.TYPE_UNKNOWN)));
                 }
@@ -727,8 +728,8 @@ public class DriverEditDialog extends HelpEnabledDialog
             java.util.List<File> libFiles = new ArrayList<File>();
             java.util.List<URL> libURLs = new ArrayList<URL>();
             for (DriverFileDescriptor lib : libList) {
-                File libFile = lib.getFile();
-                if (libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverFileType.jar) {
+                File libFile = lib.getLocalFile();
+                if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverFileType.jar) {
                     libFiles.add(libFile);
                     try {
                         libURLs.add(libFile.toURI().toURL());

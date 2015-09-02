@@ -68,7 +68,7 @@ public class ViewClasspathDialog extends Dialog
             }
 /*
             for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-                libsTable.getList().add(lib.getFile().getPath());
+                libsTable.getList().add(lib.getLocalFile().getPath());
             }
 */
         }

@@ -338,10 +338,9 @@ public class GeneralUtils {
     public static String getExceptionMessage(Throwable ex)
     {
         StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);
+        msg.append(ex.getClass().getSimpleName());
         if (ex.getMessage() != null) {
-            msg.append(ex.getMessage());
-        } else {
-            msg.append(ex.getClass().getSimpleName());
+            msg.append(": ").append(ex.getMessage());
         }
         return msg.toString().trim();
     }
