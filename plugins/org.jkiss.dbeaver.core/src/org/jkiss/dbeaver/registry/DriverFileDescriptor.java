@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -139,11 +140,11 @@ public class DriverFileDescriptor implements DBPDriverFile
         return path.startsWith(DriverDescriptor.DRIVERS_FOLDER) || path.startsWith(FILE_SOURCE_MAVEN);
     }
 
-    private File getLocalFile()
+    private File detectLocalFile()
     {
         if (path.startsWith(FILE_SOURCE_MAVEN)) {
             MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(path);
-            return new File(DriverDescriptor.getCustomDriversHome(), getMavenArtifactFileName());
+            return artifact == null ? null : artifact.getActiveVersionCache();
         }
         // Try to use relative path from installation dir
         File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
@@ -170,8 +171,9 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
 
+    @Nullable
     @Override
-    public File getFile()
+    public File getLocalFile()
     {
         if (path.startsWith(FILE_SOURCE_PLATFORM)) {
             try {
@@ -186,8 +188,8 @@ public class DriverFileDescriptor implements DBPDriverFile
             return libraryFile;
         }
         // Try to get local file
-        File platformFile = getLocalFile();
-        if (platformFile.exists()) {
+        File platformFile = detectLocalFile();
+        if (platformFile != null && platformFile.exists()) {
             // Relative file do not exists - use plain one
             return platformFile;
         }

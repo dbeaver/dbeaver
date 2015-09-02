@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.registry.maven;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 
 import java.util.ArrayList;
@@ -58,11 +60,13 @@ public class MavenRegistry
         }
     }
 
+    @NotNull
     public List<MavenRepository> getRepositories() {
         return repositories;
     }
 
-    public MavenArtifact findArtifact(String mavenUri) {
+    @Nullable
+    public MavenArtifact findArtifact(@NotNull String mavenUri) {
         int divPos = mavenUri.indexOf('/');
         if (divPos < 0) {
             log.warn("Bad maven uri: " + mavenUri);
@@ -84,7 +88,8 @@ public class MavenRegistry
         return findArtifact(groupId, artifactId);
     }
 
-    public MavenArtifact findArtifact(String groupId, String artifactId) {
+    @Nullable
+    public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
         for (MavenRepository repository : repositories) {
             MavenArtifact artifact = repository.getArtifact(groupId, artifactId);
             if (artifact != null) {

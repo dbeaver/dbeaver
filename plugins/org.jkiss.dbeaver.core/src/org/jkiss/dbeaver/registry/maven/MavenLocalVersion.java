@@ -23,6 +23,7 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -39,11 +40,13 @@ public class MavenLocalVersion
 {
     static final Log log = Log.getLog(MavenLocalVersion.class);
 
+    private MavenArtifact artifact;
     private String version;
     private String fileName;
     private Date updateTime;
 
-    public MavenLocalVersion(String version, String fileName, Date updateTime) {
+    public MavenLocalVersion(MavenArtifact artifact, String version, String fileName, Date updateTime) {
+        this.artifact = artifact;
         this.version = version;
         this.fileName = fileName;
         this.updateTime = updateTime;
@@ -65,4 +68,9 @@ public class MavenLocalVersion
     public String toString() {
         return version + ":" + fileName;
     }
+
+    public File getCacheFile() {
+        return new File(artifact.getRepository().getLocalCacheDir(), fileName);
+    }
+
 }
