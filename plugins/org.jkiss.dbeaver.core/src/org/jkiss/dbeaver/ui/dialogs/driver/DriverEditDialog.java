@@ -292,7 +292,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 public void update(ViewerCell cell)
                 {
                     DriverFileDescriptor lib = (DriverFileDescriptor) cell.getElement();
-                    cell.setText(lib.getPath());
+                    cell.setText(lib.getDisplayName());
                     File localFile = lib.getLocalFile();
                     if (localFile != null && localFile.exists()) {
                         cell.setForeground(null);
