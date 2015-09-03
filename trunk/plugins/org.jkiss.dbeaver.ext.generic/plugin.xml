@@ -581,7 +581,7 @@
                     defaultPort=""
                     description="NuoDB"
                     webURL="http://www.nuodb.com/">
-                    <!--<library path="C:\Program Files\Java\lib\jdbc\nuodbjdbc.jar"/>-->
+                    <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:release"/>
                 </driver>
                 <driver
                     id="gemfire_xd"
