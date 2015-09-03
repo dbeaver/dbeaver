@@ -430,6 +430,18 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
+                EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
+                if (fd.open() == IDialogConstants.OK_ID) {
+
+                }
+            }
+        });
+
+        UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+/*
                 DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
                 fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_directory);
                 fd.setFilterPath(curFolder);
@@ -442,6 +454,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                         selected));
                     changeLibContent();
                 }
+*/
             }
         });
 
@@ -481,7 +494,9 @@ public class DriverEditDialog extends HelpEnabledDialog
         });
         downButton.setEnabled(false);
 
-        Button cpButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_classpath, new SelectionAdapter() {
+        UIUtils.createHorizontalLine(libsControlGroup);
+
+        UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_classpath, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -497,7 +512,6 @@ public class DriverEditDialog extends HelpEnabledDialog
         libsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_driver_libraries);
         libsTab.setControl(libsGroup);
     }
-
 
     private void createParametersTab(TabFolder group)
     {
