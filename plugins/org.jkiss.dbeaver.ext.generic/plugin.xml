@@ -497,11 +497,7 @@
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>
 
-                    <file type="jar" path="drivers/sqlite/xerial/sqlite-jdbc-3.8.10.1.jar"/>
-                    <file type="executable" path="drivers/sqlite/shell/linux/sqlite3" os="linux"/>
-                    <file type="executable" path="drivers/sqlite/shell/macos/sqlite3" os="macos"/>
-                    <file type="executable" path="drivers/sqlite/shell/win32/sqlite3.exe" os="win32"/>
-                    <file type="license" path="drivers/sqlite/xerial/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:release"/>
 
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
