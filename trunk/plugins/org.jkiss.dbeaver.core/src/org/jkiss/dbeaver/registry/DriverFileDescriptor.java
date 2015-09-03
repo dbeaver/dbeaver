@@ -391,7 +391,20 @@ public class DriverFileDescriptor implements DBPDriverFile
 
     @Override
     public String toString() {
-        return path;
+        return getDisplayName();
     }
 
+    public String getDisplayName() {
+        if (isMavenArtifact()) {
+            MavenArtifact artifact = getMavenArtifact();
+            if (artifact != null) {
+                MavenLocalVersion version = artifact.getActiveLocalVersion();
+                if (version != null) {
+                    return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + version.getVersion();
+                }
+            }
+        }
+
+        return path;
+    }
 }
