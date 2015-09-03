@@ -192,7 +192,8 @@ public class MavenArtifact
         MavenLocalVersion version = getLocalVersion(versionStr);
         if (version == null) {
             if (!versions.contains(versionStr)) {
-                throw new IllegalArgumentException("Artifact '" + artifactId + "' doesn't support version '" + versionStr + "'");
+                // No version info. Some artifacts do not have older versions in metadata.xml so just warn
+                log.debug("Artifact '" + artifactId + "' do not have version '" + versionStr + "' info in metadata");
             }
             version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr), new Date());
             localVersions.add(version);
@@ -205,6 +206,10 @@ public class MavenArtifact
 
     void addLocalVersion(MavenLocalVersion version) {
         localVersions.add(version);
+    }
+
+    private void removeLocalVersion(MavenLocalVersion version) {
+        localVersions.remove(version);
     }
 
     public void resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
@@ -248,6 +253,11 @@ public class MavenArtifact
             }
             monitor.subTask("Download binaries for version " + versionInfo);
             MavenLocalVersion localVersion = getActiveLocalVersion();
+            if (localVersion != null && !localVersion.getCacheFile().exists()) {
+                log.debug("Drop previous local version '" + localVersion + "' - jar seems to be dropped");
+                removeLocalVersion(localVersion);
+                localVersion = null;
+            }
             if (localVersion == null) {
                 makeLocalVersion(versionInfo, true);
             }
@@ -259,5 +269,6 @@ public class MavenArtifact
             monitor.done();
         }
     }
+
 
 }

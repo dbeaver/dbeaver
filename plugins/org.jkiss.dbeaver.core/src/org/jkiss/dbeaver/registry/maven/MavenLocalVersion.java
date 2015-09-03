@@ -51,7 +51,7 @@ public class MavenLocalVersion
 
     @Override
     public String toString() {
-        return version + ":" + fileName;
+        return artifact.toString() + ":" + version + ":" + fileName;
     }
 
     public File getCacheFile() {
