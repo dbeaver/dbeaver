@@ -319,9 +319,9 @@ public class DriverEditDialog extends HelpEnabledDialog
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     }
                     cell.setImage(
-                        localFile == null || !localFile.exists() ?
-                            PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE) :
-                            localFile.isDirectory() ?
+                         lib.isMavenArtifact() ?
+                             DBeaverIcons.getImage(UIIcon.APACHE) :
+                                localFile != null && localFile.isDirectory() ?
                                 DBeaverIcons.getImage(DBIcon.TREE_FOLDER) :
                                 DBeaverIcons.getImage((lib.getType() == DBPDriverFileType.jar ? UIIcon.JAR : DBIcon.TYPE_UNKNOWN)));
                 }

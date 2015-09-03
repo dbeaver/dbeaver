@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -42,10 +43,6 @@ import java.net.InetSocketAddress;
 import java.net.Proxy;
 import java.net.URL;
 import java.text.NumberFormat;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * DriverFileDescriptor
@@ -57,7 +54,6 @@ public class DriverFileDescriptor implements DBPDriverFile
     public static final String FILE_SOURCE_MAVEN = "maven:/";
     public static final String FILE_SOURCE_REPO = "repo:/";
     public static final String FILE_SOURCE_PLATFORM = "platform:/";
-    private static final String DEFAULT_MAVEN_VERSION = "release";
 
     private final DriverDescriptor driver;
     private final DBPDriverFileType type;
@@ -154,45 +150,13 @@ public class DriverFileDescriptor implements DBPDriverFile
         return path.startsWith(DriverDescriptor.DRIVERS_FOLDER) || isMavenArtifact();
     }
 
-    private boolean isMavenArtifact() {
+    public boolean isMavenArtifact() {
         return path.startsWith(FILE_SOURCE_MAVEN);
     }
 
     @Nullable
     private MavenArtifact getMavenArtifact() {
-        String[] info = getMavenArtifactInfo();
-        if (info == null) {
-            return null;
-        } else {
-            return MavenRegistry.getInstance().findArtifact(info[0], info[1]);
-        }
-    }
-
-    private String[] getMavenArtifactInfo() {
-        String mavenUri = path;
-        int divPos = mavenUri.indexOf('/');
-        if (divPos < 0) {
-            log.warn("Bad maven uri: " + mavenUri);
-            return null;
-        }
-        mavenUri = mavenUri.substring(divPos + 1);
-        divPos = mavenUri.indexOf(':');
-        if (divPos < 0) {
-            log.warn("Bad maven uri, no group id: " + mavenUri);
-            return null;
-        }
-        String groupId = mavenUri.substring(0, divPos);
-        String artifactId;
-        String version;
-        int divPos2 = mavenUri.indexOf(':', divPos + 1);
-        if (divPos2 < 0) {
-            artifactId = mavenUri.substring(divPos + 1);
-            version = DEFAULT_MAVEN_VERSION;
-        } else {
-            artifactId = mavenUri.substring(divPos + 1, divPos2);
-            version = mavenUri.substring(divPos2 + 1);
-        }
-        return new String[] {groupId, artifactId, version};
+        return MavenRegistry.getInstance().findArtifact(new MavenArtifactReference(path));
     }
 
     private File detectLocalFile()
@@ -412,11 +376,8 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
     private void downloadMavenArtifact(DBRProgressMonitor monitor) throws IOException {
-        String[] artifactInfo = getMavenArtifactInfo();
-        if (artifactInfo == null) {
-            throw new IOException("Bad Maven artifact path '" + path + "'");
-        }
-        MavenArtifact artifact = getMavenArtifact();
+        MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
+        MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(artifactInfo);
         if (artifact == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }
@@ -425,55 +386,7 @@ public class DriverFileDescriptor implements DBPDriverFile
             // Already cached
             return;
         }
-        monitor.beginTask("Download Maven artifact '" + artifact + "'", 3);
-        try {
-            monitor.subTask("Download metadata from " + artifact.getRepository().getUrl());
-            artifact.loadMetadata();
-            monitor.worked(1);
-
-            String versionInfo = artifactInfo[2];
-            List<String> allVersions = artifact.getVersions();
-            if (versionInfo.equals("release")) {
-                versionInfo = artifact.getReleaseVersion();
-            } else if (versionInfo.equals("latest")) {
-                versionInfo = artifact.getLatestVersion();
-            } else {
-                if (versionInfo.startsWith("[") && versionInfo.endsWith("]")) {
-                    // Regex - find most recent version matching this pattern
-                    String regex = versionInfo.substring(1, versionInfo.length() - 1);
-                    try {
-                        Pattern versionPattern = Pattern.compile(regex);
-                        List<String> versions = new ArrayList<String>(allVersions);
-                        Collections.reverse(versions);
-                        for (String version : versions) {
-                            if (versionPattern.matcher(version).matches()) {
-                                versionInfo = version;
-                                break;
-                            }
-                        }
-                    } catch (Exception e) {
-                        throw new IOException("Bad version pattern: " + regex);
-                    }
-                }
-            }
-            if (CommonUtils.isEmpty(versionInfo)) {
-                if (allVersions.isEmpty()) {
-                    throw new IOException("Artifact '" + artifact + "' has empty version list");
-                }
-                // Use latest version
-                versionInfo = allVersions.get(allVersions.size() - 1);
-            }
-            monitor.subTask("Download binaries for version " + versionInfo);
-            if (localVersion == null) {
-                artifact.makeLocalVersion(versionInfo, true);
-            }
-            monitor.worked(1);
-            monitor.subTask("Save repository cache");
-            artifact.getRepository().flushCache();
-            monitor.worked(1);
-        } finally {
-            monitor.done();
-        }
+        artifact.resolveVersion(monitor, artifactInfo.getVersion());
     }
 
     @Override
