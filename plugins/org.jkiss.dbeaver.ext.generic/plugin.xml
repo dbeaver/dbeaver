@@ -336,8 +336,7 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="jar" path="drivers/h2/h2-1.4.185.jar"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt"/>
+                    <file type="jar" path="maven:/com.h2database:h2:release"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -348,8 +347,7 @@
                     webURL="http://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded">
-                    <file type="jar" path="drivers/h2/h2-1.4.185.jar"/>
-                    <file type="license" path="drivers/h2/LICENSE.txt"/>
+                    <file type="jar" path="maven:/com.h2database:h2:release"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -373,8 +371,7 @@
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
-                    <file type="jar" path="drivers/derby/derby-10.11.1.1.jar"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:release"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -385,8 +382,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="jar" path="drivers/derby/derbyclient-10.11.1.1.jar"/>
-                    <file type="license" path="drivers/derby/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:release"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -518,8 +514,7 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
-                    <file type="license" path="drivers/mysql/LICENSE.txt"/>
-                    <file type="jar" path="drivers/mysql/mysql-connector-java-5.1.13-bin.jar"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:release"/>
                 </driver>
                 <driver
                     id="vertica"
