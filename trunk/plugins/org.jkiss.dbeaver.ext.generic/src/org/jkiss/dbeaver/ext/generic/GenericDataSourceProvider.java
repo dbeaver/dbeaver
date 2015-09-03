@@ -107,6 +107,9 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
                     newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_FOLDER), connectionInfo.getDatabaseName());
                     newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_FILE), connectionInfo.getDatabaseName());
                 }
+                newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
+                newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
+
                 if (newComponent.startsWith("[")) { //$NON-NLS-1$
                     if (!newComponent.equals(component)) {
                         url.append(newComponent.substring(1, newComponent.length() - 1));
