@@ -402,18 +402,6 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
-                if (fd.open() == IDialogConstants.OK_ID) {
-
-                }
-            }
-        });
-
-        UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-/*
                 DirectoryDialog fd = new DirectoryDialog(getShell(), SWT.MULTI);
                 fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_directory);
                 fd.setFilterPath(curFolder);
@@ -426,7 +414,17 @@ public class DriverEditDialog extends HelpEnabledDialog
                         selected));
                     changeLibContent();
                 }
-*/
+            }
+        });
+
+        UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_add_artifact, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
+                if (fd.open() == IDialogConstants.OK_ID) {
+
+                }
             }
         });
 
@@ -651,6 +649,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         if (clientHomesPanel != null) {
             clientHomesPanel.loadHomes(driver);
         }
+        changeLibSelection();
     }
 
     @Override
