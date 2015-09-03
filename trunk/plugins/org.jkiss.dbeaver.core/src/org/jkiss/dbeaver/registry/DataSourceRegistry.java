@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.jkiss.code.Nullable;
@@ -63,7 +65,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     static final Log log = Log.getLog(DataSourceRegistry.class);
 
-    public static final String CONFIG_FILE_NAME = ".dbeaver-data-sources.xml"; //$NON-NLS-1$
+    public static final String CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
+    public static final String CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
+    public static final String CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
     private final DBPApplication application;
@@ -76,15 +80,22 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     {
         this.application = application;
         this.project = project;
-        IFile configFile = project.getFile(CONFIG_FILE_NAME);
-        if (!configFile.exists()) {
-            configFile = project.getFile(OLD_CONFIG_FILE_NAME);
-        }
-        if (configFile.exists()) {
-            File dsFile = configFile.getLocation().toFile();
-            if (dsFile.exists()) {
-                loadDataSources(dsFile, new SimpleStringEncrypter());
+        try {
+            for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {
+                if (res instanceof IFile) {
+                    IFile file = (IFile) res;
+                    if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
+                        if (file.exists()) {
+                            File dsFile = file.getLocation().toFile();
+                            if (dsFile.exists()) {
+                                loadDataSources(dsFile, new SimpleStringEncrypter());
+                            }
+                        }
+                    }
+                }
             }
+        } catch (CoreException e) {
+            log.error("Error reading datasources configuration", e);
         }
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
     }
