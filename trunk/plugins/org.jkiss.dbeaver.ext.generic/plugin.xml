@@ -445,8 +445,7 @@
                     defaultPort="II7"
                     webURL="http://www.ingres.com/products/ingres-database/"
                     description="Ingres Database">
-                    <file type="jar" path="drivers/ingres/iijdbc.jar"/>
-                    <file type="license" path="drivers/ingres/LICENSE.txt"/>
+                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:release"/>
                 </driver>
                 <driver
                     id="linter"
@@ -456,9 +455,6 @@
                     defaultPort="1070"
                     webURL="http://linter.ru/"
                     description="Linter (????????????) Database">
-                    <file type="jar" path="drivers/linter/LinJdbc.jar"/>
-                    <file type="jar" path="drivers/linter/linjdbc-1.4.jar"/>
-                    <file type="license" path="drivers/linter/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="firebird_jaybird"
