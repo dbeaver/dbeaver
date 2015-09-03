@@ -34,8 +34,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Maven artifact descriptor
@@ -204,4 +206,58 @@ public class MavenArtifact
     void addLocalVersion(MavenLocalVersion version) {
         localVersions.add(version);
     }
+
+    public void resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
+        monitor.beginTask("Download Maven artifact '" + this + "'", 3);
+        try {
+            monitor.subTask("Download metadata from " + repository.getUrl());
+            loadMetadata();
+            monitor.worked(1);
+
+            String versionInfo = versionRef;
+            List<String> allVersions = versions;
+            if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE)) {
+                versionInfo = releaseVersion;
+            } else if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_LATEST)) {
+                versionInfo = latestVersion;
+            } else {
+                if (versionInfo.startsWith("[") && versionInfo.endsWith("]")) {
+                    // Regex - find most recent version matching this pattern
+                    String regex = versionInfo.substring(1, versionInfo.length() - 1);
+                    try {
+                        Pattern versionPattern = Pattern.compile(regex);
+                        List<String> versions = new ArrayList<String>(allVersions);
+                        Collections.reverse(versions);
+                        for (String version : versions) {
+                            if (versionPattern.matcher(version).matches()) {
+                                versionInfo = version;
+                                break;
+                            }
+                        }
+                    } catch (Exception e) {
+                        throw new IOException("Bad version pattern: " + regex);
+                    }
+                }
+            }
+            if (CommonUtils.isEmpty(versionInfo)) {
+                if (allVersions.isEmpty()) {
+                    throw new IOException("Artifact '" + this + "' has empty version list");
+                }
+                // Use latest version
+                versionInfo = allVersions.get(allVersions.size() - 1);
+            }
+            monitor.subTask("Download binaries for version " + versionInfo);
+            MavenLocalVersion localVersion = getActiveLocalVersion();
+            if (localVersion == null) {
+                makeLocalVersion(versionInfo, true);
+            }
+            monitor.worked(1);
+            monitor.subTask("Save repository cache");
+            repository.flushCache();
+            monitor.worked(1);
+        } finally {
+            monitor.done();
+        }
+    }
+
 }

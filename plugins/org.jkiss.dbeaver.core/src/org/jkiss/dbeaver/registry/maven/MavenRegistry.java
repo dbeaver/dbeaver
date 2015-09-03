@@ -66,6 +66,11 @@ public class MavenRegistry
     }
 
     @Nullable
+    public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref) {
+        return findArtifact(ref.getGroupId(), ref.getArtifactId());
+    }
+
+    @Nullable
     public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
         for (MavenRepository repository : repositories) {
             MavenArtifact artifact = repository.getArtifact(groupId, artifactId, false);
