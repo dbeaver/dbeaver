@@ -136,6 +136,7 @@ public class UIIcon {
     public static final DBIcon CONFIGURATION = new DBIcon("configuration", "configuration.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LINK = new DBIcon("link", "misc/link.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CURSOR = new DBIcon("cursor", "misc/cursor.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon APACHE = new DBIcon("apache", "misc/apache.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon GEN_DATABASE = new DBIcon("gen_database", "database.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GEN_DATABASE_TYPE = new DBIcon("gen_database_type", "database_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
