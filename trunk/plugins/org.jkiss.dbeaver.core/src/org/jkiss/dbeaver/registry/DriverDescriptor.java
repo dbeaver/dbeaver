@@ -833,6 +833,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         driverClass = Class.forName(driverClassName);
                     } else {
                         // Load driver classes into core module using plugin class loader
+                        //driverClass = classLoader.loadClass(driverClassName);
                         driverClass = Class.forName(driverClassName, true, classLoader);
                     }
                 }

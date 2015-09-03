@@ -410,8 +410,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar"/>
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -425,8 +424,7 @@
                     webURL="http://hsqldb.org/"
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="jar" path="drivers/hsqldb/hsqldb-2.3.1.jar"/>
-                    <file type="license" path="drivers/hsqldb/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -475,12 +473,8 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="drivers/firebird/jaybird-full-2.2.5.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird22.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird22_x64.dll"/>
-                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird22.so"/>
-                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird22_x64.so"/>
-                    <file type="license" path="drivers/firebird/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk16:release"/>
+                    <file type="jar" path="maven:/javax.resource:connector-api:1.5"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
