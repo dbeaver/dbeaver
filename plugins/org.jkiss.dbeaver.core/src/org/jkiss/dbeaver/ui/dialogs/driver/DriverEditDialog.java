@@ -260,7 +260,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             tabFolder.setSelection(0);
         }
 
-        resetSettings();
+        resetSettings(false);
 
         return group;
     }
@@ -601,15 +601,17 @@ public class DriverEditDialog extends HelpEnabledDialog
         }
     }
 
-    private void resetSettings()
+    private void resetSettings(boolean original)
     {
         boolean isReadOnly = !provider.isDriversManagable();
 
-        driverNameText.setText(CommonUtils.notEmpty(driver.getOrigName()));
-        driverDescText.setText(CommonUtils.notEmpty(driver.getOrigDescription()));
-        driverClassText.setText(CommonUtils.notEmpty(driver.getOrigClassName()));
-        driverURLText.setText(CommonUtils.notEmpty(driver.getOrigSampleURL()));
-        driverPortText.setText(driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()); //$NON-NLS-1$
+        driverNameText.setText(original ? CommonUtils.notEmpty(driver.getOrigName()) : CommonUtils.notEmpty(driver.getName()));
+        driverDescText.setText(original ? CommonUtils.notEmpty(driver.getOrigDescription()) : CommonUtils.notEmpty(driver.getDescription()));
+        driverClassText.setText(original ? CommonUtils.notEmpty(driver.getOrigClassName()) : CommonUtils.notEmpty(driver.getDriverClassName()));
+        driverURLText.setText(original ? CommonUtils.notEmpty(driver.getOrigSampleURL()) : CommonUtils.notEmpty(driver.getSampleURL()));
+        driverPortText.setText(original ?
+            (driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()) : //$NON-NLS-1$
+            (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
 
         {
             driverCategoryCombo.removeAll();
@@ -656,7 +658,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     protected void buttonPressed(int buttonId)
     {
         if (buttonId == IDialogConstants.RETRY_ID) {
-            resetSettings();
+            resetSettings(true);
         } else {
             super.buttonPressed(buttonId);
         }
