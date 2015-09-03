@@ -200,4 +200,8 @@ public class MavenArtifact
         }
         return version;
     }
+
+    void addLocalVersion(MavenLocalVersion version) {
+        localVersions.add(version);
+    }
 }
