@@ -1549,7 +1549,7 @@ public class ResultSetViewer extends Viewer
                 null,
                 model.getRowCount(),
                 getSegmentMaxRows(),
-                curRow == null ? -1 : curRow.getRowNumber(),
+                -1,//curRow == null ? -1 : curRow.getRowNumber(), // Do not reposition cursor after next segment read!
                 null);
         }
     }
