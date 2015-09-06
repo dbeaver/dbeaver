@@ -136,7 +136,6 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
 
-                    <file type="license" path="drivers/postgresql/LICENSE.txt"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:[.*jdbc4]"/>
 
                     <property name="loginTimeout" value="10"/>
@@ -231,8 +230,8 @@
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
                     defaultPort=""
                     description="DB2 iSeries/AS 400 driver">
-                    <file type="jar" path="drivers/db2-jt400/jt400.jar"/>
-                    <file type="license" path="drivers/db2-jt400/LICENSE.txt"/>
+                    <file type="jar" path="maven:/dk.kewill.thirdpartymavencentral:jt400-full:release"/>
+
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="omit-catalog" value="true"/>
