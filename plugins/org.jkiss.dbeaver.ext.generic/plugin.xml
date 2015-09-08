@@ -154,8 +154,7 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver">
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar"/>
-                    <file type="license" path="drivers/oracle/LICENSE.txt"/>
+
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
                 </driver>
@@ -168,9 +167,7 @@
                     defaultPort="50000"
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
-					<file type="jar" path="drivers/db2/db2jcc.jar"/>
-					<file type="jar" path="drivers/db2/db2jcc_license_cu.jar"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt"/>
+
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -190,9 +187,7 @@
                         webURL="http://www.ibm.com/software/data/db2/express/download.html"
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
-                    <file type="jar" path="drivers/db2/db2jcc.jar"/>
-                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt"/>
+
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -210,9 +205,7 @@
                     defaultPort="50000"
                     description="DB2 z/OS driver"
                     note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
-                    <file type="jar" path="drivers/db2/db2jcc.jar"/>
-                    <file type="jar" path="drivers/db2/db2jcc_license_cu.jar"/>
-                    <file type="license" path="drivers/db2/LICENSE.txt"/>
+
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -252,10 +245,9 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt"/>
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:release"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll"/>
                 </driver>
 
                 <driver
@@ -294,8 +286,7 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="drivers/jtds/jtds-1.3.1.jar"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt"/>
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:release"/>
                 </driver>
                 <driver
                     id="sap_maxdb"

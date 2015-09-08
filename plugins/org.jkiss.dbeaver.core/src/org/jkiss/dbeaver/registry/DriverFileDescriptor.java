@@ -147,11 +147,19 @@ public class DriverFileDescriptor implements DBPDriverFile
     @Override
     public boolean isLocal()
     {
-        return path.startsWith(DriverDescriptor.DRIVERS_FOLDER) || isMavenArtifact();
+        return isRepositoryArtifact() || isMavenArtifact();
+    }
+
+    public boolean isRepositoryArtifact() {
+        return path.startsWith(FILE_SOURCE_REPO);
     }
 
     public boolean isMavenArtifact() {
         return path.startsWith(FILE_SOURCE_MAVEN);
+    }
+
+    private String getRepositoryPath() {
+        return path.substring(FILE_SOURCE_REPO.length());
     }
 
     @Nullable
@@ -171,11 +179,17 @@ public class DriverFileDescriptor implements DBPDriverFile
             }
             return null;
         }
+        String localPath;
+        if (isRepositoryArtifact()) {
+            localPath = getRepositoryPath();
+        } else {
+            localPath = path;
+        }
         // Try to use relative path from installation dir
-        File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), path);
+        File file = new File(new File(Platform.getInstallLocation().getURL().getFile()), localPath);
         if (!file.exists()) {
             // Use custom drivers path
-            file = new File(DriverDescriptor.getCustomDriversHome(), path);
+            file = new File(DriverDescriptor.getCustomDriversHome(), localPath);
         }
         return file;
     }
@@ -194,11 +208,18 @@ public class DriverFileDescriptor implements DBPDriverFile
             }
             return null;
         } else {
+            String localPath;
+            if (isRepositoryArtifact()) {
+                localPath = getRepositoryPath();
+            } else {
+                localPath = path;
+            }
+
             String primarySource = DriverDescriptor.getDriversPrimarySource();
-            if (!primarySource.endsWith("/") && !path.startsWith("/")) {
+            if (!primarySource.endsWith("/") && !localPath.startsWith("/")) {
                 primarySource += '/';
             }
-            return primarySource + path;
+            return primarySource + localPath;
         }
     }
 
@@ -214,10 +235,13 @@ public class DriverFileDescriptor implements DBPDriverFile
                 log.warn("Bad file URL: " + path, e);
             }
         }
-        // Try to use direct path
-        File libraryFile = new File(path);
-        if (libraryFile.exists()) {
-            return libraryFile;
+        boolean externalPath = isRepositoryArtifact() || isMavenArtifact();
+        if (!externalPath) {
+            // Try to use direct path
+            File libraryFile = new File(path);
+            if (libraryFile.exists()) {
+                return libraryFile;
+            }
         }
         // Try to get local file
         File platformFile = detectLocalFile();
@@ -227,7 +251,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         }
 
         // Try to get from plugin's bundle/from external resources
-        {
+        if (!externalPath) {
             URL url = driver.getProviderDescriptor().getContributorBundle().getEntry(path);
             if (url == null) {
                 // Find in external resources
@@ -256,6 +280,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
     }
 
+/*
     private String getMavenArtifactFileName() {
         String artifactName = path.substring(FILE_SOURCE_MAVEN.length());
         String ext = fileExtension;
@@ -287,6 +312,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         }
         return artifactFileName + '.' + ext;
     }
+*/
 
     void downloadLibraryFile(DBRProgressMonitor monitor) throws IOException, InterruptedException
     {
