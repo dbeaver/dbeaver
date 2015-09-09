@@ -23,26 +23,28 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.window.IShellProvider;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -52,10 +54,11 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.net.*;
-import java.text.NumberFormat;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -105,6 +108,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean modified;
     private boolean disabled;
     private final List<String> clientHomeIds = new ArrayList<String>();
+    private final List<DriverFileSource> fileSources = new ArrayList<DriverFileSource>();
     private final List<DriverFileDescriptor> files = new ArrayList<DriverFileDescriptor>();
     private final List<DriverFileDescriptor> origFiles = new ArrayList<DriverFileDescriptor>();
     private final List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
@@ -176,6 +180,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this.files.add(new DriverFileDescriptor(this, lib));
         }
         this.origFiles.addAll(this.files);
+
+        for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
+            this.fileSources.add(new DriverFileSource(this, lib));
+        }
 
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.iconPlain == null) {
@@ -420,7 +428,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @Override
     public DBPImage getIcon()
     {
-        if (!isLoaded && (isFailed || (isManagable() && !isInternalDriver() && !hasValidLibraries()))) {
+        if (!isLoaded && (isFailed /*|| (isManagable() && !isInternalDriver() && !hasValidLibraries())*/)) {
             return iconError;
         } else {
             return iconNormal;
@@ -919,32 +927,36 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
-/*
-        // Try to restore old disabled files
-        if (downloadCandidates.isEmpty() && isFailed) {
-            for (DriverFileDescriptor file : files) {
-                if (file.isDisabled() && !file.isCustom() && file.isLocal()) {
-                    file.setDisabled(false);
-                }
-            }
-        }
-*/
-
+        final Shell parentShell = runnableContext instanceof IShellProvider ? ((IShellProvider) runnableContext).getShell() : null;
         if (!downloadCandidates.isEmpty()) {
             final StringBuilder libNames = new StringBuilder();
             for (DriverFileDescriptor lib : downloadCandidates) {
                 if (libNames.length() > 0) libNames.append(", ");
                 libNames.append(lib.getPath());
             }
-            Shell parentShell = null;
-            if (runnableContext instanceof IShellProvider) {
-                parentShell = ((IShellProvider) runnableContext).getShell();
-            }
             DownloadConfirm confirm = new DownloadConfirm(parentShell, libNames);
             UIUtils.runInUI(parentShell, confirm);
             if (confirm.proceed) {
                 // Download drivers
                 downloadLibraryFiles(runnableContext, downloadCandidates);
+            }
+        } else if (!fileSources.isEmpty()) {
+            // We have file source
+            DriverFileSource fileSource = fileSources.get(0);
+            ManualDownloadConfirm confirm = new ManualDownloadConfirm(parentShell, fileSource);
+            UIUtils.runInUI(parentShell, confirm);
+            if (confirm.proceed) {
+                // Open vendor's web site
+                Program.launch(fileSource.getUrl());
+
+                // Open driver editor
+                UIUtils.runInUI(parentShell, new Runnable() {
+                    @Override
+                    public void run() {
+                        DriverEditDialog dialog = new DriverEditDialog(parentShell, DriverDescriptor.this);
+                        dialog.open();
+                    }
+                });
             }
         }
     }
@@ -1503,8 +1515,36 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 shell,
                 DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD,
                 ConfirmationDialog.QUESTION,
-                getName(),
+                getFullName(),
                 libNames) == IDialogConstants.YES_ID;
+        }
+    }
+
+    private class ManualDownloadConfirm implements Runnable {
+        private final Shell shell;
+        private boolean proceed;
+        private final DriverFileSource fileSource;
+
+        public ManualDownloadConfirm(Shell shell, DriverFileSource fileSource)
+        {
+            this.shell = shell;
+            this.fileSource = fileSource;
+        }
+
+        @Override
+        public void run()
+        {
+            StringBuilder fileNames = new StringBuilder();
+            for (DriverFileSource.FileInfo info : fileSource.getFiles()) {
+                if (fileNames.length() > 0) fileNames.append(", ");
+                fileNames.append(info.getName());
+            }
+            proceed = ConfirmationDialog.showConfirmDialog(
+                shell,
+                DBeaverPreferences.CONFIRM_MANUAL_DOWNLOAD,
+                ConfirmationDialog.QUESTION,
+                getFullName(),
+                fileNames.toString()) == IDialogConstants.YES_ID;
         }
     }
 

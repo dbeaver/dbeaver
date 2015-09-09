@@ -31,6 +31,7 @@ public class RegistryConstants {
     public static final String TAG_PARAMETER = "parameter"; //$NON-NLS-1$
     public static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     public static final String TAG_FILE = "file"; //$NON-NLS-1$
+    public static final String TAG_FILE_SOURCE = "fileSource"; //$NON-NLS-1$
     public static final String TAG_LIBRARY = "library"; // [LEGACY: from DBeaver 1.1.0]  //$NON-NLS-1$
     public static final String TAG_PATH = "path"; //$NON-NLS-1$
     public static final String TAG_REPLACE = "replace"; //$NON-NLS-1$
