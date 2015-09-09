@@ -134,6 +134,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
 
+	public static String confirm_driver_download_manual_title;
+	public static String confirm_driver_download_manual_message;
+	public static String confirm_driver_download_manual_toggleMessage;
+
     public static String confirm_version_check_title;
     public static String confirm_version_check_message;
     public static String confirm_version_check_toggleMessage;
