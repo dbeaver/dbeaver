@@ -270,24 +270,6 @@
 
             <drivers managable="true">
                 <driver
-                    id="oracle"
-                    label="Oracle"
-                    class="oracle.jdbc.OracleDriver"
-                    description="Oracle obsolete driver. Use Thin or OCI driver.">
-                </driver>
-                <driver
-                    id="oracle_oci"
-                    label="Oracle OCI"
-                    class="oracle.jdbc.OracleDriver"
-                    sampleURL="jdbc:oracle:oci:@{database}"
-                    defaultPort="1521"
-                    clientRequired="true"
-                    customDriverLoader="true"
-                    webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
-                    description="Oracle OCI driver. Requires Oracle client installation.">
-                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
-                </driver>
-                <driver
                     id="oracle_thin"
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
@@ -295,15 +277,20 @@
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     description="Oracle thin driver. Doesn't require Oracle client.">
-                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.oracle/LICENSE.txt"/>
                     <replace provider="generic" driver="oracle"/>
                     <replace provider="oracle" driver="oracle"/>
                     <replace provider="oracle" driver="oracle_oci"/>
-                    <file type="license" path="drivers/oracle/LICENSE.txt" url="*"/>
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar" url="*"/>
-                    <file type="jar" path="drivers/oracle/orai18n.jar" url="*"/>
-                    <file type="jar" path="drivers/oracle/xdb6.jar" url="*"/>
-                    <file type="jar" path="drivers/oracle/xmlparserv2.jar" url="*"/>
+
+                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
+                        <file name="ojdbc6.jar" description="JDBC driver"/>
+                        <file name="orai18n.jar" description="NLS classes"/>
+                        <file name="xdb6.jar" description="SQLXML support"/>
+                    </fileSource>
+                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12g drivers">
+                        <file name="ojdbc7.jar" description="JDBC driver"/>
+                        <file name="orai18n.jar" description="NLS classes"/>
+                        <file name="xdb6.jar" description="SQLXML support"/>
+                    </fileSource>
                 </driver>
             </drivers>
             <views>
