@@ -157,6 +157,12 @@
 
                     <parameter name="query-get-active-db" value="select sys_context( 'userenv', 'current_schema' ) from dual"/>
                     <parameter name="query-set-active-db" value="alter session set current_schema=?"/>
+
+                    <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
+                        <file name="ojdbc6.jar" description="JDBC driver"/>
+                        <file name="orai18n.jar" description="NLS classes"/>
+                        <file name="xdb6.jar" description="SQLXML support"/>
+                    </fileSource>
                 </driver>
                 <driver
                     id="db2"
@@ -385,7 +391,7 @@
                     defaultPort="1360"
                     webURL="http://developer.mimer.com/"
                     description="Mimer SQL TCP/IP driver">
-                    <file type="jar" path="drivers/mimer/mimjdbc3.jar"/>
+                    <file type="jar" path="repo:/drivers/mimer/mimjdbc3.jar"/>
                 </driver>
                 <driver
                     id="hsqldb_server"
