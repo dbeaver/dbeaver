@@ -865,8 +865,15 @@ public class DriverEditDialog extends HelpEnabledDialog
         protected void buttonPressed(int id)
         {
             if (id == IDialogConstants.RETRY_ID) {
-                DriverEditDialog dialog = new DriverEditDialog(getShell(), (DriverDescriptor) dataSource.getContainer().getDriver());
-                dialog.open();
+                UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                    @Override
+                    public void run() {
+                        DriverEditDialog dialog = new DriverEditDialog(
+                            DBeaverUI.getActiveWorkbenchShell(),
+                            (DriverDescriptor) dataSource.getContainer().getDriver());
+                        dialog.open();
+                    }
+                });
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
