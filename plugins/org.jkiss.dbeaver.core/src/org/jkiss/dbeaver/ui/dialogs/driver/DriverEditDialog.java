@@ -686,7 +686,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             driver.addLibrary(lib);
         }
         for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getFiles())) {
-            if (lib.getType() == DBPDriverFileType.jar && !libList.contains(lib)) {
+            if (!libList.contains(lib)) {
                 driver.removeLibrary(lib);
             }
         }
