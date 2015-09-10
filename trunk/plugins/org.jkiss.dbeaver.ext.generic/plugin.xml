@@ -282,12 +282,21 @@
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-multiple-results" value="true"/>
+
+                    <fileSource url="http://www.microsoft.com/en-us/download/details.aspx?displaylang=en&amp;id=11774"
+                                name="Microsoft JDBC Drivers"
+                                instruction=".">
+                        <file name="sqljdbc41.jar" description="JDBC driver"/>
+                    </fileSource>
+
+<!--
                     <file type="jar" path="drivers/mssql/sqljdbc4.jar"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll"/>
                     <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll"/>
                     <file type="license" path="drivers/mssql/LICENSE.txt"/>
+-->
                 </driver>
 
                 <driver
