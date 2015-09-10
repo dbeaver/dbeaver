@@ -181,6 +181,12 @@
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+
+                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
+                                name="DB2 10.5 GA drivers"
+                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
+                        <file name="db2jcc4.jar" description="JDBC driver"/>
+                    </fileSource>
                 </driver>
 
                 <driver
@@ -201,6 +207,12 @@
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
+
+                    <fileSource url="https://www-304.ibm.com/support/docview.wss?rs=4020&amp;uid=swg21385217"
+                                name="DB2 drivers"
+                                instruction="Download JDBC (JCC) client driver. Extract downloaded archive and copy db2jcc4.jar in some directory. Then add db2jcc4.jar as a library in DBeaver driver editor dialog.">
+                        <file name="db2jcc4.jar" description="JDBC driver"/>
+                    </fileSource>
                 </driver>
                 <driver
                     id="db2_zos"
