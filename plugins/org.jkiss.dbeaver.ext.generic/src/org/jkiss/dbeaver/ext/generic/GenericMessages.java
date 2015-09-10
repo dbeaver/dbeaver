@@ -36,14 +36,12 @@ public class GenericMessages extends NLS {
 
     public static String dialog_connection_db_folder_chooser_text;
 
-    public static String dialog_connection_edit_driver_button;
 
     public static String dialog_connection_general_tab;
 
     public static String dialog_connection_general_tab_tooltip;
 
     public static String dialog_connection_host_label;
-    public static String dialog_connection_driver;
     public static String dialog_connection_jdbc_url_;
 
     public static String dialog_connection_password_label;
