@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * ConnectionPageAbstract
@@ -84,24 +86,31 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     protected void createDriverPanel(Composite parent) {
-        Label divLabel = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        int numColumns = ((GridLayout) parent.getLayout()).numColumns;
+
+        Composite panel = UIUtils.createPlaceholder(parent, 4, 5);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = numColumns;
+        panel.setLayoutData(gd);
+
+        Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 4;
         divLabel.setLayoutData(gd);
 
-        Label driverLabel = new Label(parent, SWT.NONE);
+        Label driverLabel = new Label(panel, SWT.NONE);
         driverLabel.setText(CoreMessages.dialog_connection_driver);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         driverLabel.setLayoutData(gd);
 
-        driverText = new Text(parent, SWT.READ_ONLY);
+        driverText = new Text(panel, SWT.READ_ONLY);
         gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 2;
         gd.grabExcessHorizontalSpace = true;
+        gd.horizontalSpan = 2;
         //gd.widthHint = 200;
         driverText.setLayoutData(gd);
 
-        Button driverButton = new Button(parent, SWT.PUSH);
+        Button driverButton = new Button(panel, SWT.PUSH);
         driverButton.setText(CoreMessages.dialog_connection_edit_driver_button);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
         driverButton.setLayoutData(gd);
