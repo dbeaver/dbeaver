@@ -18,8 +18,18 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
@@ -30,6 +40,8 @@ import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor
 {
     protected IDataSourceConnectionEditorSite site;
+    // Driver name
+    protected Text driverText;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -69,6 +81,49 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 setErrorMessage(e.getMessage());
             }
         }
+    }
+
+    protected void createDriverPanel(Composite parent) {
+        Label divLabel = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 4;
+        divLabel.setLayoutData(gd);
+
+        Label driverLabel = new Label(parent, SWT.NONE);
+        driverLabel.setText(CoreMessages.dialog_connection_driver);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        driverLabel.setLayoutData(gd);
+
+        driverText = new Text(parent, SWT.READ_ONLY);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 2;
+        gd.grabExcessHorizontalSpace = true;
+        //gd.widthHint = 200;
+        driverText.setLayoutData(gd);
+
+        Button driverButton = new Button(parent, SWT.PUSH);
+        driverButton.setText(CoreMessages.dialog_connection_edit_driver_button);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        driverButton.setLayoutData(gd);
+        driverButton.addSelectionListener(new SelectionListener()
+        {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                if (site.openDriverEditor()) {
+                    updateDriverInfo(site.getDriver());
+                }
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e)
+            {
+            }
+        });
+    }
+
+    protected void updateDriverInfo(DBPDriver driver) {
+
     }
 
 }
