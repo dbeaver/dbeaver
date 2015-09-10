@@ -48,15 +48,15 @@ public class DriverFileSource
         }
     }
 
-    private final DriverDescriptor driver;
     private final String url;
     private final String name;
+    private final String instructions;
     private final List<FileInfo> files = new ArrayList<FileInfo>();
 
-    DriverFileSource(DriverDescriptor driver, IConfigurationElement config) {
-        this.driver = driver;
+    DriverFileSource(IConfigurationElement config) {
         this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.instructions = config.getAttribute("instructions");
         for (IConfigurationElement cfg : config.getChildren(RegistryConstants.TAG_FILE)) {
             files.add(new FileInfo(cfg));
         }
@@ -68,6 +68,10 @@ public class DriverFileSource
 
     public String getName() {
         return name;
+    }
+
+    public String getInstructions() {
+        return instructions;
     }
 
     public List<FileInfo> getFiles() {
