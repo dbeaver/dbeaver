@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
@@ -121,7 +122,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             driver.setDescription(driverInfo.getDescription());
             driver.setDriverDefaultPort(driverInfo.getDefaultPort());
             for (String path : driverInfo.getLibraries()) {
-                driver.addLibrary(path);
+                driver.addLibrary(path, DBPDriverFileType.jar);
             }
             driver.setModified(true);
             genericProvider.addDriver(driver);
