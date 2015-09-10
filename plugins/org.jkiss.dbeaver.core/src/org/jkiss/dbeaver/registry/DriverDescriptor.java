@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -927,33 +926,31 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
-        final Shell parentShell = runnableContext instanceof IShellProvider ? ((IShellProvider) runnableContext).getShell() : null;
         if (!downloadCandidates.isEmpty()) {
             final StringBuilder libNames = new StringBuilder();
             for (DriverFileDescriptor lib : downloadCandidates) {
                 if (libNames.length() > 0) libNames.append(", ");
                 libNames.append(lib.getPath());
             }
-            DownloadConfirm confirm = new DownloadConfirm(parentShell, libNames);
-            UIUtils.runInUI(parentShell, confirm);
+            DownloadConfirm confirm = new DownloadConfirm(libNames);
+            UIUtils.runInUI(null, confirm);
             if (confirm.proceed) {
                 // Download drivers
                 downloadLibraryFiles(runnableContext, downloadCandidates);
             }
         } else if (!fileSources.isEmpty()) {
             // We have file source
-            DriverFileSource fileSource = fileSources.get(0);
-            ManualDownloadConfirm confirm = new ManualDownloadConfirm(parentShell, fileSource);
-            UIUtils.runInUI(parentShell, confirm);
+            final DriverFileSource fileSource = fileSources.get(0);
+            ManualDownloadConfirm confirm = new ManualDownloadConfirm(fileSource);
+            UIUtils.runInUI(null, confirm);
             if (confirm.proceed) {
-                // Open vendor's web site
-                Program.launch(fileSource.getUrl());
-
-                // Open driver editor
-                UIUtils.runInUI(parentShell, new Runnable() {
+                UIUtils.runInUI(null, new Runnable() {
                     @Override
                     public void run() {
-                        DriverEditDialog dialog = new DriverEditDialog(parentShell, DriverDescriptor.this);
+                        // Open vendor's web site
+                        Program.launch(fileSource.getUrl());
+                        // Open driver editor
+                        DriverEditDialog dialog = new DriverEditDialog(DBeaverUI.getActiveWorkbenchShell(), DriverDescriptor.this);
                         dialog.open();
                     }
                 });
@@ -1498,13 +1495,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private class DownloadConfirm implements Runnable {
-        private final Shell shell;
         private final StringBuilder libNames;
         private boolean proceed;
 
-        public DownloadConfirm(Shell shell, StringBuilder libNames)
+        public DownloadConfirm(StringBuilder libNames)
         {
-            this.shell = shell;
             this.libNames = libNames;
         }
 
@@ -1512,7 +1507,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         public void run()
         {
             proceed = ConfirmationDialog.showConfirmDialog(
-                shell,
+                null,
                 DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD,
                 ConfirmationDialog.QUESTION,
                 getFullName(),
@@ -1521,13 +1516,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private class ManualDownloadConfirm implements Runnable {
-        private final Shell shell;
         private boolean proceed;
         private final DriverFileSource fileSource;
 
-        public ManualDownloadConfirm(Shell shell, DriverFileSource fileSource)
+        public ManualDownloadConfirm(DriverFileSource fileSource)
         {
-            this.shell = shell;
             this.fileSource = fileSource;
         }
 
@@ -1540,7 +1533,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 fileNames.append(info.getName());
             }
             proceed = ConfirmationDialog.showConfirmDialog(
-                shell,
+                null,
                 DBeaverPreferences.CONFIRM_MANUAL_DOWNLOAD,
                 ConfirmationDialog.QUESTION,
                 getFullName(),
