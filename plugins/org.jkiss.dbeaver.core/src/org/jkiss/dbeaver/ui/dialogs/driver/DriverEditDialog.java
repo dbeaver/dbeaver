@@ -299,12 +299,19 @@ public class DriverEditDialog extends HelpEnabledDialog
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     }
-                    cell.setImage(
-                         lib.isMavenArtifact() ?
-                             DBeaverIcons.getImage(UIIcon.APACHE) :
-                                localFile != null && localFile.isDirectory() ?
-                                DBeaverIcons.getImage(DBIcon.TREE_FOLDER) :
-                                DBeaverIcons.getImage((lib.getType() == DBPDriverFileType.jar ? UIIcon.JAR : DBIcon.TYPE_UNKNOWN)));
+                    DBIcon icon;
+                    if (lib.isMavenArtifact()) {
+                        icon = UIIcon.APACHE;
+                    } else if (localFile != null && localFile.isDirectory()) {
+                        icon = DBIcon.TREE_FOLDER;
+                    } else {
+                        switch (lib.getType()) {
+                            case lib: icon = UIIcon.LIBRARY; break;
+                            case jar: icon = UIIcon.JAR; break;
+                            default: icon = DBIcon.TYPE_UNKNOWN; break;
+                        }
+                    }
+                    cell.setImage(DBeaverIcons.getImage(icon));
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -377,7 +384,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
                 fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_library);
                 fd.setFilterPath(curFolder);
-                String[] filterExt = {"*.jar", "*.*"}; //$NON-NLS-1$ //$NON-NLS-2$
+                String[] filterExt = {"*.jar;*.zip", "*.dll;*.so", "*.*"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = fd.open();
                 if (selected != null) {

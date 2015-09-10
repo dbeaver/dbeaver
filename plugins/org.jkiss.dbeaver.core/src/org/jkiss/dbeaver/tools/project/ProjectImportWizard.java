@@ -29,6 +29,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDriverFileType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
@@ -279,7 +280,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 File libFile = new File(libPath);
                 if (libFile.exists()) {
                     // Just use path as-is (may be it is local re-import or local environments equal to export environment)
-                    driver.addLibrary(libPath);
+                    driver.addLibrary(libPath, DBPDriverFileType.jar);
                 } else {
                     // Get driver library from archive
                     String archiveLibEntry = libMap.get(libPath);
@@ -311,7 +312,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                             while (relativePath.charAt(0) == '/' || relativePath.charAt(0) == '\\') {
                                 relativePath = relativePath.substring(1);
                             }
-                            driver.addLibrary(relativePath);
+                            driver.addLibrary(relativePath, DBPDriverFileType.jar);
                         }
                     }
                 }

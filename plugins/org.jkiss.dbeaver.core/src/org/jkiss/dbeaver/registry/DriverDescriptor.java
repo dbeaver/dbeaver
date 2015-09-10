@@ -655,14 +655,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return null;
     }
 
-    public DriverFileDescriptor addLibrary(String path)
+    public DriverFileDescriptor addLibrary(String path, DBPDriverFileType fileType)
     {
         for (DriverFileDescriptor lib : files) {
             if (lib.getPath().equals(path)) {
                 return lib;
             }
         }
-        DriverFileDescriptor lib = new DriverFileDescriptor(this, DBPDriverFileType.jar, path);
+        DriverFileDescriptor lib = new DriverFileDescriptor(this, fileType, path);
         addLibrary(lib);
         return lib;
     }
@@ -1127,8 +1127,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         for (DriverFileDescriptor lib : this.getFiles()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
                 xml.startElement(RegistryConstants.TAG_LIBRARY);
+                xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
                 xml.addAttribute(RegistryConstants.ATTR_PATH, lib.getPath());
-                if (lib.getType() == DBPDriverFileType.jar && lib.isDisabled()) {
+                if (lib.isDisabled()) {
                     xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                 }
                 xml.endElement();
@@ -1295,13 +1296,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     log.warn("File outside of driver");
                     return;
                 }
+                DBPDriverFileType type;
+                String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
+                if (CommonUtils.isEmpty(typeStr)) {
+                    type = DBPDriverFileType.jar;
+                } else {
+                    try {
+                        type = DBPDriverFileType.valueOf(typeStr);
+                    } catch (IllegalArgumentException e) {
+                        log.warn(e);
+                        type = DBPDriverFileType.jar;
+                    }
+                }
                 String path = atts.getValue(RegistryConstants.ATTR_PATH);
                 DriverFileDescriptor lib = curDriver.getLibrary(path);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                 if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                     lib.setDisabled(true);
                 } else if (lib == null) {
-                    curDriver.addLibrary(path);
+                    curDriver.addLibrary(path, type);
                 }
             } else if (localName.equals(RegistryConstants.TAG_CLIENT_HOME)) {
                 curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
