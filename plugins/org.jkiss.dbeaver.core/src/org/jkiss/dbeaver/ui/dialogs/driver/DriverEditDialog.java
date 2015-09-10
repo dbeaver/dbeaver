@@ -637,21 +637,24 @@ public class DriverEditDialog extends HelpEnabledDialog
         embeddedDriverCheck.setSelection(driver.isEmbedded());
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
 
-        libList = new ArrayList<DriverFileDescriptor>();
-        for (DriverFileDescriptor lib : driver.getFiles()) {
-            if (lib.isDisabled() || (lib.getType() != DBPDriverFileType.jar && lib.getType() != DBPDriverFileType.lib) || !lib.matchesCurrentPlatform()) {
-                continue;
+        if (libTable != null) {
+            libList = new ArrayList<DriverFileDescriptor>();
+            for (DriverFileDescriptor lib : driver.getFiles()) {
+                if (lib.isDisabled() || (lib.getType() != DBPDriverFileType.jar && lib.getType() != DBPDriverFileType.lib) || !lib.matchesCurrentPlatform()) {
+                    continue;
+                }
+                libList.add(lib);
             }
-            libList.add(lib);
+            libTable.setInput(libList);
+            changeLibContent();
+            changeLibSelection();
         }
-        libTable.setInput(libList);
-        changeLibContent();
+
         parametersEditor.loadProperties(driverPropertySource);
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
         if (clientHomesPanel != null) {
             clientHomesPanel.loadHomes(driver);
         }
-        changeLibSelection();
     }
 
     @Override
