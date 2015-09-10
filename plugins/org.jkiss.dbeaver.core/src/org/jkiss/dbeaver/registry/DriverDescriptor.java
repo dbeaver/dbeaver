@@ -181,7 +181,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.origFiles.addAll(this.files);
 
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE_SOURCE)) {
-            this.fileSources.add(new DriverFileSource(this, lib));
+            this.fileSources.add(new DriverFileSource(lib));
         }
 
         this.iconPlain = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
