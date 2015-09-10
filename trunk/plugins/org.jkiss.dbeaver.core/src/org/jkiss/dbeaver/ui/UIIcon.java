@@ -109,6 +109,7 @@ public class UIIcon {
     public static final DBIcon CONFIRM = new DBIcon("confirm", "misc/confirm.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CLOSE = new DBIcon("close", "misc/close.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon JAR = new DBIcon("jar", "misc/jar.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon LIBRARY = new DBIcon("library", "misc/library.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SOURCES = new DBIcon("sources", "misc/sources.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CANCEL = new DBIcon("cancel", "misc/cancel.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PRINT = new DBIcon("print", "misc/print.png"); //$NON-NLS-1$ //$NON-NLS-2$
