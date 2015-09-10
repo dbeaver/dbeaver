@@ -44,8 +44,6 @@ import java.util.List;
  */
 public class GenericConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
-    // Driver name
-    private Text driverText;
     // Host/port
     private Text hostText;
     private Text portText;
@@ -279,45 +277,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         gd.grabExcessVerticalSpace = true;
         placeholder.setLayoutData(gd);
 
-        Label divLabel = new Label(settingsGroup, SWT.SEPARATOR | SWT.HORIZONTAL);
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalSpan = 4;
-        divLabel.setLayoutData(gd);
-
-        {
-            Label driverLabel = new Label(settingsGroup, SWT.NONE);
-            driverLabel.setText(GenericMessages.dialog_connection_driver);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            driverLabel.setLayoutData(gd);
-
-            driverText = new Text(settingsGroup, SWT.READ_ONLY);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 200;
-            driverText.setLayoutData(gd);
-
-            Button driverButton = new Button(settingsGroup, SWT.PUSH);
-            driverButton.setText(GenericMessages.dialog_connection_edit_driver_button);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            driverButton.setLayoutData(gd);
-            driverButton.addSelectionListener(new SelectionListener()
-            {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    if (site.openDriverEditor()) {
-                        parseSampleURL(site.getDriver());
-                        saveAndUpdate();
-                    }
-                }
-
-                @Override
-                public void widgetDefaultSelected(SelectionEvent e)
-                {
-                }
-            });
-        }
+        createDriverPanel(settingsGroup);
         setControl(settingsGroup);
     }
 
@@ -330,6 +290,12 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         gd.widthHint = 0;
         emptyLabel.setLayoutData(gd);
         return emptyLabel;
+    }
+
+    @Override
+    protected void updateDriverInfo(DBPDriver driver) {
+        parseSampleURL(driver);
+        saveAndUpdate();
     }
 
     @Override

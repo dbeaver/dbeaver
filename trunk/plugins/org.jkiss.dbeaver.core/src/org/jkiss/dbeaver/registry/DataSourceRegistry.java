@@ -310,11 +310,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!fromFile.exists()) {
             return;
         }
+        boolean extraConfig = !fromFile.getName().equalsIgnoreCase(CONFIG_FILE_NAME);
         try {
             InputStream is = new FileInputStream(fromFile);
             try {
                 try {
-                    loadDataSources(is, encrypter);
+                    loadDataSources(is, extraConfig, encrypter);
                 } catch (DBException ex) {
                     log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
                 }
@@ -333,12 +334,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(InputStream is, PasswordEncrypter encrypter)
+    private void loadDataSources(InputStream is, boolean extraConfig, PasswordEncrypter encrypter)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);
         try {
-            parser.parse(new DataSourcesParser(encrypter));
+            parser.parse(new DataSourcesParser(extraConfig, encrypter));
         }
         catch (XMLException ex) {
             throw new DBException("Datasource config parse error", ex);
@@ -365,7 +366,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     xml.setButify(true);
                     xml.startElement("data-sources");
                     for (DataSourceDescriptor dataSource : localDataSources) {
-                        saveDataSource(xml, dataSource, encrypter);
+                        if (!dataSource.isProvided()) {
+                            saveDataSource(xml, dataSource, encrypter);
+                        }
                     }
                     xml.endElement();
                     xml.flush();
@@ -603,6 +606,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private class DataSourcesParser implements SAXListener
     {
         DataSourceDescriptor curDataSource;
+        boolean extraConfig;
         PasswordEncrypter encrypter;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
@@ -610,8 +614,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         private DBSObjectFilter curFilter;
         private StringBuilder curQuery;
 
-        private DataSourcesParser(PasswordEncrypter encrypter)
+        private DataSourcesParser(boolean extraConfig, PasswordEncrypter encrypter)
         {
+            this.extraConfig = extraConfig;
             this.encrypter = encrypter;
         }
 
@@ -648,6 +653,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     id,
                     driver,
                     new DBPConnectionConfiguration());
+                if (extraConfig) {
+                    curDataSource.setProvided(true);
+                }
                 curDataSource.setName(name);
                 String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
                 if (!CommonUtils.isEmpty(createDate)) {

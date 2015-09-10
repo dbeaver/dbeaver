@@ -127,6 +127,8 @@ public class DataSourceDescriptor
 
     private final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
 
+    private boolean provided;
+
     private volatile boolean connectFailed = false;
     private volatile Date connectTime = null;
     private volatile boolean disposed = false;
@@ -436,6 +438,14 @@ public class DataSourceDescriptor
             this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
         }
         return clientHome;
+    }
+
+    public boolean isProvided() {
+        return provided;
+    }
+
+    public void setProvided(boolean provided) {
+        this.provided = provided;
     }
 
     @Override

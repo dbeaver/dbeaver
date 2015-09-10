@@ -1359,8 +1359,10 @@ public class CoreMessages extends NLS {
 	public static String ui_properties_tree_viewer_action_reset_value;
 	public static String ui_properties_tree_viewer_category_general;
 	public static String ui_properties_value;
+	public static String dialog_connection_edit_driver_button;
+	public static String dialog_connection_driver;
 
-    static {
+	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);
 	}
