@@ -117,6 +117,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             createClientHomeGroup(bottomControls);
         }
 
+        createDriverPanel(addrGroup);
         setControl(addrGroup);
     }
 
@@ -314,7 +315,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     @Override
     public void loadSettings()
     {
-        //oraHomeSelector.setVisible(isOCI);
+        super.loadSettings();
 
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();

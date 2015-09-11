@@ -170,6 +170,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             //sslCertText = UIUtils.createLabelText(secureGroup, "Certificate Path", "");
         }
 
+        createDriverPanel(addrGroup);
         setControl(addrGroup);
     }
 
@@ -184,6 +185,8 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     @Override
     public void loadSettings()
     {
+        super.loadSettings();
+
         DBPDriver driver = getSite().getDriver();
         if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
             setImageDescriptor(MARIADB_LOGO_IMG);
