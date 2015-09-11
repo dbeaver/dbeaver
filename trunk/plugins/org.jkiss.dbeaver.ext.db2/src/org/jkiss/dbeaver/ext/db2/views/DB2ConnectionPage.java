@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.db2.Activator;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -67,7 +68,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
 
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
-        control.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        control.setLayoutData(new GridData(GridData.FILL_BOTH));
         ModifyListener textListener = new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
@@ -135,6 +136,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             passwordText.addModifyListener(textListener);
         }
 
+        createDriverPanel(control);
         setControl(control);
     }
 
@@ -149,6 +151,8 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
     @Override
     public void loadSettings()
     {
+        super.loadSettings();
+
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (hostText != null) {

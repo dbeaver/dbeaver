@@ -270,13 +270,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             addControlToGroup(GROUP_LOGIN, passwordText);
         }
 
-        Composite placeholder = UIUtils.createPlaceholder(settingsGroup, 1);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
-        gd.horizontalSpan = 4;
-        gd.grabExcessHorizontalSpace = true;
-        gd.grabExcessVerticalSpace = true;
-        placeholder.setLayoutData(gd);
-
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
     }
@@ -328,11 +321,10 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     @Override
     public void loadSettings()
     {
+        super.loadSettings();
+
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
-        if (site.getDriver() != null) {
-            driverText.setText(CommonUtils.toString(site.getDriver().getFullName()));
-        }
         this.parseSampleURL(site.getDriver());
         if (!isCustom) {
             if (hostText != null) {
