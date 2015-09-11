@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -29,8 +30,6 @@ import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -40,7 +39,11 @@ import java.util.regex.Pattern;
 public class MavenArtifact
 {
     static final Log log = Log.getLog(MavenArtifact.class);
+
     public static final String MAVEN_METADATA_XML = "maven-metadata.xml";
+
+    public static final String FILE_JAR = "jar";
+    public static final String FILE_POM = "pom";
 
     private final MavenRepository repository;
     private final String groupId;
@@ -62,10 +65,7 @@ public class MavenArtifact
 
     public void loadMetadata() throws IOException {
         String metadataPath = getArtifactDir() + MAVEN_METADATA_XML;
-        URL url = new URL(metadataPath);
-        URLConnection connection = url.openConnection();
-        connection.connect();
-        InputStream mdStream = connection.getInputStream();
+        InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath);
         try {
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {
@@ -151,13 +151,13 @@ public class MavenArtifact
         return repository.getUrl() + dir + "/";
     }
 
-    public String getFileURL(String version) {
-        return getArtifactDir() + version + "/" + getVersionFileName(version);
+    public String getFileURL(String version, String fileType) {
+        return getArtifactDir() + version + "/" + getVersionFileName(version, fileType);
     }
 
     @NotNull
-    private String getVersionFileName(String version) {
-        return artifactId + "-" + version + ".jar";
+    private String getVersionFileName(String version, String fileType) {
+        return artifactId + "-" + version + "." + fileType;
     }
 
     @Override
@@ -190,7 +190,7 @@ public class MavenArtifact
                 // No version info. Some artifacts do not have older versions in metadata.xml so just warn
                 log.debug("Artifact '" + artifactId + "' do not have version '" + versionStr + "' info in metadata");
             }
-            version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr), new Date());
+            version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr, FILE_JAR), new Date());
             localVersions.add(version);
         }
         if (setActive) {

@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.InetSocketAddress;
-import java.net.Proxy;
-import java.net.URL;
+import java.net.*;
 import java.text.NumberFormat;
 
 /**
@@ -203,7 +200,7 @@ public class DriverFileDescriptor implements DBPDriverFile
             if (artifact != null) {
                 MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
                 if (localVersion != null) {
-                    return localVersion.getExternalURL();
+                    return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
                 }
             }
             return null;
@@ -319,36 +316,12 @@ public class DriverFileDescriptor implements DBPDriverFile
         if (isMavenArtifact()) {
             downloadMavenArtifact(monitor);
         }
-        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
-        String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
-        Proxy proxy = null;
-        if (!CommonUtils.isEmpty(proxyHost)) {
-            int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
-            if (proxyPort <= 0) {
-                log.warn("Invalid proxy port: " + proxyPort);
-            }
-            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
-        }
         String externalURL = getExternalURL();
         if (externalURL == null) {
             throw new IOException("Unresolved file reference: " + getPath());
         }
 
-        URL url = new URL(externalURL);
-        monitor.beginTask("Check file " + url.toString() + "...", 1);
-        monitor.subTask("Connecting to the server");
-        final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
-        connection.setReadTimeout(10000);
-        connection.setConnectTimeout(10000);
-        connection.setRequestMethod("GET"); //$NON-NLS-1$
-        connection.setInstanceFollowRedirects(true);
-        connection.setRequestProperty(
-            "User-Agent",  //$NON-NLS-1$
-            DBeaverCore.getProductTitle());
-        connection.connect();
-        if (connection.getResponseCode() != 200) {
-            throw new IOException("Can't find driver file '" + url + "': " + connection.getResponseMessage());
-        }
+        final URLConnection connection = RuntimeUtils.openConnection(externalURL);
         monitor.worked(1);
         monitor.done();
 
