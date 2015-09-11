@@ -21,7 +21,9 @@ import java.io.File;
 import java.util.Date;
 
 /**
- * Maven artifact descriptor
+ * Maven artifact version info.
+ * It is a resolved version information. This version exists in maven repository and can be obtained.
+ * Also it is cached locally.
  */
 public class MavenLocalVersion
 {
@@ -35,6 +37,10 @@ public class MavenLocalVersion
         this.version = version;
         this.fileName = fileName;
         this.updateTime = updateTime;
+    }
+
+    public MavenArtifact getArtifact() {
+        return artifact;
     }
 
     public String getVersion() {
@@ -58,7 +64,7 @@ public class MavenLocalVersion
         return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + fileName);
     }
 
-    public String getExternalURL() {
-        return artifact.getFileURL(version);
+    public String getExternalURL(String fileType) {
+        return artifact.getFileURL(version, fileType);
     }
 }

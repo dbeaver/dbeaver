@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -28,8 +29,6 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,26 +52,16 @@ public class VersionDescriptor {
     public VersionDescriptor(String fileAddr)
         throws IOException
     {
-        URL url = new URL(fileAddr);
-        URLConnection connection = url.openConnection();
         try {
-            connection.setConnectTimeout(10000);
-            connection.setReadTimeout(10000);
-            connection.connect();
+            InputStream inputStream = RuntimeUtils.openConnectionStream(fileAddr);
             try {
-                InputStream inputStream = connection.getInputStream();
-                try {
-                    Document document = XMLUtils.parseDocument(inputStream);
-                    parseVersionInfo(document);
-                } finally {
-                    ContentUtils.close(inputStream);
-                }
-            } catch (XMLException e) {
-                throw new IOException("XML parse error", e);
+                Document document = XMLUtils.parseDocument(inputStream);
+                parseVersionInfo(document);
+            } finally {
+                ContentUtils.close(inputStream);
             }
-        }
-        finally {
-            // nothing
+        } catch (XMLException e) {
+            throw new IOException("XML parse error", e);
         }
     }
 
