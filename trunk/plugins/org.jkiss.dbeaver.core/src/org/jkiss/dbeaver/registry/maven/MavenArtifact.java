@@ -27,16 +27,11 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Pattern;
 
 /**
@@ -232,13 +227,12 @@ public class MavenArtifact
                     try {
                         Pattern versionPattern = Pattern.compile(regex);
                         List<String> versions = new ArrayList<String>(allVersions);
-                        Collections.reverse(versions);
-                        for (String version : versions) {
-                            if (versionPattern.matcher(version).matches()) {
-                                versionInfo = version;
-                                break;
+                        for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
+                            if (!versionPattern.matcher(iter.next()).matches()) {
+                                iter.remove();
                             }
                         }
+                        versionInfo = findLatestVersion(versions);
                     } catch (Exception e) {
                         throw new IOException("Bad version pattern: " + regex);
                     }
@@ -249,7 +243,7 @@ public class MavenArtifact
                     throw new IOException("Artifact '" + this + "' has empty version list");
                 }
                 // Use latest version
-                versionInfo = allVersions.get(allVersions.size() - 1);
+                versionInfo = findLatestVersion(allVersions);
             }
             monitor.subTask("Download binaries for version " + versionInfo);
             MavenLocalVersion localVersion = getActiveLocalVersion();
@@ -267,6 +261,44 @@ public class MavenArtifact
             monitor.worked(1);
         } finally {
             monitor.done();
+        }
+    }
+
+    private String findLatestVersion(List<String> allVersions) {
+        String latest = null;
+        for (String version : allVersions) {
+            if (latest == null || compareVersions(version, latest) > 0) {
+                latest = version;
+            }
+        }
+        return latest;
+    }
+
+    private int compareVersions(String v1, String v2) {
+        StringTokenizer st1 = new StringTokenizer(v1, ".-_");
+        StringTokenizer st2 = new StringTokenizer(v2, ".-_");
+        while (st1.hasMoreTokens() && st2.hasMoreTokens()) {
+            String t1 = st1.nextToken();
+            String t2 = st2.nextToken();
+            try {
+                int cmp = Integer.parseInt(t1) - Integer.parseInt(t2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+            } catch (NumberFormatException e) {
+                // Non-numeric versions - use lexicographical compare
+                int cmp = t1.compareTo(t2);
+                if (cmp != 0) {
+                    return cmp;
+                }
+            }
+        }
+        if (st1.hasMoreTokens()) {
+            return 1;
+        } else if (st2.hasMoreTokens()) {
+            return -1;
+        } else {
+            return 0;
         }
     }
 
