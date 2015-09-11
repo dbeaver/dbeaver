@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ConnectionPageAbstract
@@ -67,6 +68,14 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
+    public void loadSettings() {
+        DBPDriver driver = site.getDriver();
+        if (driver != null) {
+            driverText.setText(CommonUtils.toString(driver.getFullName()));
+        }
+    }
+
+    @Override
     public void saveSettings(DBSDataSourceContainer dataSource)
     {
         saveConnectionURL(dataSource.getConnectionConfiguration());
@@ -90,9 +99,17 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         int numColumns = ((GridLayout) parent.getLayout()).numColumns;
 
         Composite panel = UIUtils.createPlaceholder(parent, 4, 5);
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = numColumns;
         panel.setLayoutData(gd);
+
+        Composite placeholder = UIUtils.createPlaceholder(panel, 1);
+        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+        gd.horizontalSpan = 4;
+        gd.grabExcessHorizontalSpace = true;
+        gd.grabExcessVerticalSpace = true;
+        placeholder.setLayoutData(gd);
+
 
         Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
