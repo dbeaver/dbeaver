@@ -22,9 +22,11 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.program.Program;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
@@ -32,13 +34,13 @@ import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.net.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -258,6 +260,39 @@ public class RuntimeUtils {
                 finished = true;
             }
         }
+    }
+
+    public static InputStream openConnectionStream(String urlString) throws IOException {
+        URLConnection connection = openConnection(urlString);
+        return connection.getInputStream();
+    }
+
+    public static URLConnection openConnection(String urlString) throws IOException {
+        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
+        Proxy proxy = null;
+        if (!CommonUtils.isEmpty(proxyHost)) {
+            int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
+            if (proxyPort <= 0) {
+                log.warn("Invalid proxy port: " + proxyPort);
+            }
+            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+        }
+
+        URL url = new URL(urlString);
+        final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
+        connection.setReadTimeout(10000);
+        connection.setConnectTimeout(10000);
+        connection.setRequestMethod("GET"); //$NON-NLS-1$
+        connection.setInstanceFollowRedirects(true);
+        connection.setRequestProperty(
+            "User-Agent",  //$NON-NLS-1$
+            DBeaverCore.getProductTitle());
+        connection.connect();
+        if (connection.getResponseCode() != 200) {
+            throw new IOException("File not found '" + urlString + "': " + connection.getResponseMessage());
+        }
+        return connection;
     }
 
 }
