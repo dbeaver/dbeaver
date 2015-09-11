@@ -43,9 +43,14 @@ public class MavenArtifactVersion
     private List<String> licenses;
     private List<MavenArtifactReference> dependencies;
 
-    public MavenArtifactVersion(MavenLocalVersion localVersion) throws IOException {
+    MavenArtifactVersion(MavenLocalVersion localVersion) throws IOException {
         this.localVersion = localVersion;
         loadPOM();
+    }
+
+    MavenArtifactVersion(String name, String version) {
+        this.name = name;
+        this.version = version;
     }
 
     public MavenLocalVersion getLocalVersion() {

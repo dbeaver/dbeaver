@@ -183,6 +183,10 @@ public class MavenArtifact
         return null;
     }
 
+    public MavenArtifactVersion getVersion(MavenLocalVersion localVersion) {
+        return localVersion.getMetaData();
+    }
+
     public MavenLocalVersion makeLocalVersion(String versionStr, boolean setActive) throws IllegalArgumentException {
         MavenLocalVersion version = getLocalVersion(versionStr);
         if (version == null) {
