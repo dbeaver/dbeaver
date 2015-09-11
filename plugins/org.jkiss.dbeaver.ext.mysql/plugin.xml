@@ -134,7 +134,7 @@
                 </folder>
 
             </tree>
-            <drivers managable="false">
+            <drivers managable="true">
                 <driver
                     id="mysql5"
                     label="MySQL"
@@ -144,18 +144,19 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.mysql/LICENSE.txt"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:release"/>
                 </driver>
                 <driver
                     id="mariaDB"
                     label="MariaDB"
                     icon="icons/mariadb_icon.ico"
-                    class="com.mysql.jdbc.Driver"
-                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                    class="org.mariadb.jdbc.Driver"
+                    sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="license" path="platform:/plugin/org.jkiss.dbeaver.ext.mysql/LICENSE.txt"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:release"/>
+                    <file type="jar" path="maven:/org.slf4j:slf4j-api:release"/>
                 </driver>
             </drivers>
             <views>

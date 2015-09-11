@@ -29,10 +29,4 @@
          version="0.0.0"
          unpack="true"/>
 
-   <plugin
-         id="com.ibm.db2.jdbc"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"/>
-
 </feature>
