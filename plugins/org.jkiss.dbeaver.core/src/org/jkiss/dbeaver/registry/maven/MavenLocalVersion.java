@@ -17,7 +17,10 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.dbeaver.Log;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 /**
@@ -27,10 +30,13 @@ import java.util.Date;
  */
 public class MavenLocalVersion
 {
+    static final Log log = Log.getLog(MavenLocalVersion.class);
+
     private MavenArtifact artifact;
     private String version;
     private String fileName;
     private Date updateTime;
+    private MavenArtifactVersion metaData;
 
     public MavenLocalVersion(MavenArtifact artifact, String version, String fileName, Date updateTime) {
         this.artifact = artifact;
@@ -55,11 +61,6 @@ public class MavenLocalVersion
         return updateTime;
     }
 
-    @Override
-    public String toString() {
-        return artifact.toString() + ":" + version + ":" + fileName;
-    }
-
     public File getCacheFile() {
         return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + fileName);
     }
@@ -67,4 +68,22 @@ public class MavenLocalVersion
     public String getExternalURL(String fileType) {
         return artifact.getFileURL(version, fileType);
     }
+
+    public MavenArtifactVersion getMetaData() {
+        if (metaData == null) {
+            try {
+                metaData = new MavenArtifactVersion(this);
+            } catch (IOException e) {
+                log.warn("Error fetching POM file", e);
+                metaData = new MavenArtifactVersion(artifact.getArtifactId(), version);
+            }
+        }
+        return metaData;
+    }
+
+    @Override
+    public String toString() {
+        return artifact.toString() + ":" + version + ":" + fileName;
+    }
+
 }

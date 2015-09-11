@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 /**
  * ConnectionPageAbstract
  */
+
 public abstract class ConnectionPageAbstract extends DialogPage implements IDataSourceConnectionEditor
 {
     protected IDataSourceConnectionEditorSite site;
