@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -86,7 +87,11 @@ public interface DBPDriver extends DBPObject
 
     ClassLoader getClassLoader();
 
-    Collection<? extends DBPDriverFile> getFiles();
+    @NotNull
+    Collection<? extends DBPDriverFile> getDriverFiles();
+
+    @NotNull
+    Collection<? extends DBPDriverFile.FileSource> getDriverFileSources();
 
     Object getDriverInstance(DBRRunnableContext runnableContext) throws DBException;
 
