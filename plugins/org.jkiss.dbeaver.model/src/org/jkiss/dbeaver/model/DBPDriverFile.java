@@ -28,7 +28,22 @@ import java.io.File;
  */
 public interface DBPDriverFile
 {
-    DBPDriverFileType getType();
+    /**
+     * Driver file type
+     */
+    enum FileType
+    {
+        jar,
+        lib,
+        executable,
+        license
+    }
+
+    interface FileSource {
+
+    }
+
+    FileType getType();
 
     OSDescriptor getSystem();
 

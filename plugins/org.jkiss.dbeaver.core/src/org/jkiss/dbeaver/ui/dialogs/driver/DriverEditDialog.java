@@ -37,12 +37,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDriverFileType;
+import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
@@ -396,7 +394,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                             libList.add(
                                 new DriverFileDescriptor(
                                     driver,
-                                    fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverFileType.jar : DBPDriverFileType.lib,
+                                    fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverFile.FileType.jar : DBPDriverFile.FileType.lib,
                                     new File(folderFile, fileName).getAbsolutePath()));
                         }
                         changeLibContent();
@@ -417,7 +415,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     curFolder = fd.getFilterPath();
                     libList.add(new DriverFileDescriptor(
                         driver,
-                        DBPDriverFileType.jar,
+                        DBPDriverFile.FileType.jar,
                         selected));
                     changeLibContent();
                 }
@@ -646,8 +644,8 @@ public class DriverEditDialog extends HelpEnabledDialog
 
         if (libTable != null) {
             libList = new ArrayList<DriverFileDescriptor>();
-            for (DriverFileDescriptor lib : driver.getFiles()) {
-                if (lib.isDisabled() || (lib.getType() != DBPDriverFileType.jar && lib.getType() != DBPDriverFileType.lib) || !lib.matchesCurrentPlatform()) {
+            for (DriverFileDescriptor lib : driver.getDriverFiles()) {
+                if (lib.isDisabled() || (lib.getType() != DBPDriverFile.FileType.jar && lib.getType() != DBPDriverFile.FileType.lib) || !lib.matchesCurrentPlatform()) {
                     continue;
                 }
                 libList.add(lib);
@@ -690,11 +688,11 @@ public class DriverEditDialog extends HelpEnabledDialog
 
         // Set libraries
         for (DriverFileDescriptor lib : CommonUtils.safeCollection(libList)) {
-            driver.addLibrary(lib);
+            driver.addDriverFile(lib);
         }
-        for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getFiles())) {
+        for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getDriverFiles())) {
             if (!libList.contains(lib)) {
-                driver.removeLibrary(lib);
+                driver.removeDriverFile(lib);
             }
         }
 
@@ -762,7 +760,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             java.util.List<URL> libURLs = new ArrayList<URL>();
             for (DriverFileDescriptor lib : libList) {
                 File libFile = lib.getLocalFile();
-                if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverFileType.jar) {
+                if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverFile.FileType.jar) {
                     libFiles.add(libFile);
                     try {
                         libURLs.add(libFile.toURI().toURL());
