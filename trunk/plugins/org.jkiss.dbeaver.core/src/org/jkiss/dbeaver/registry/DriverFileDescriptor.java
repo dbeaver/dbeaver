@@ -21,12 +21,9 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverFile;
-import org.jkiss.dbeaver.model.DBPDriverFileType;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
@@ -35,7 +32,6 @@ import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.net.*;
@@ -53,7 +49,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     public static final String FILE_SOURCE_PLATFORM = "platform:/";
 
     private final DriverDescriptor driver;
-    private final DBPDriverFileType type;
+    private final FileType type;
     private final OSDescriptor system;
     private String path;
     private String fileExtension;
@@ -61,7 +57,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     private boolean custom;
     private boolean disabled;
 
-    public DriverFileDescriptor(DriverDescriptor driver, DBPDriverFileType type, String path)
+    public DriverFileDescriptor(DriverDescriptor driver, FileType type, String path)
     {
         this.driver = driver;
         this.type = type;
@@ -73,7 +69,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     DriverFileDescriptor(DriverDescriptor driver, IConfigurationElement config)
     {
         this.driver = driver;
-        this.type = DBPDriverFileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
+        this.type = FileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
 
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
         this.system = osName == null ? null : new OSDescriptor(
@@ -91,7 +87,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
     @Override
-    public DBPDriverFileType getType()
+    public FileType getType()
     {
         return type;
     }

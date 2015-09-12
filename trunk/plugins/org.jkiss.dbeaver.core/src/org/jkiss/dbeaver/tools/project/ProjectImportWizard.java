@@ -29,7 +29,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDriverFileType;
+import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
@@ -270,7 +270,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
         }
 
         // Add libraries (only for managable drivers with empty library list)
-        if (CommonUtils.isEmpty(driver.getFiles())) {
+        if (CommonUtils.isEmpty(driver.getDriverFiles())) {
             List<String> libraryList = new ArrayList<String>();
             for (Element libElement : XMLUtils.getChildElementList(driverElement, RegistryConstants.TAG_FILE)) {
                 libraryList.add(libElement.getAttribute(RegistryConstants.ATTR_PATH));
@@ -280,7 +280,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 File libFile = new File(libPath);
                 if (libFile.exists()) {
                     // Just use path as-is (may be it is local re-import or local environments equal to export environment)
-                    driver.addLibrary(libPath, DBPDriverFileType.jar);
+                    driver.addDriverFile(libPath, DBPDriverFile.FileType.jar);
                 } else {
                     // Get driver library from archive
                     String archiveLibEntry = libMap.get(libPath);
@@ -312,7 +312,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                             while (relativePath.charAt(0) == '/' || relativePath.charAt(0) == '\\') {
                                 relativePath = relativePath.substring(1);
                             }
-                            driver.addLibrary(relativePath, DBPDriverFileType.jar);
+                            driver.addDriverFile(relativePath, DBPDriverFile.FileType.jar);
                         }
                     }
                 }

@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -639,13 +641,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         clientHomeIds.add(homeId);
     }
 
+    @NotNull
     @Override
-    public Collection<DriverFileDescriptor> getFiles()
+    public Collection<DriverFileDescriptor> getDriverFiles()
     {
         return files;
     }
 
-    public DriverFileDescriptor getLibrary(String path)
+    public DriverFileDescriptor getDriverFile(String path)
     {
         for (DriverFileDescriptor lib : files) {
             if (lib.getPath().equals(path)) {
@@ -655,7 +658,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return null;
     }
 
-    public DriverFileDescriptor addLibrary(String path, DBPDriverFileType fileType)
+    public DriverFileDescriptor addDriverFile(String path, DBPDriverFile.FileType fileType)
     {
         for (DriverFileDescriptor lib : files) {
             if (lib.getPath().equals(path)) {
@@ -663,11 +666,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
         DriverFileDescriptor lib = new DriverFileDescriptor(this, fileType, path);
-        addLibrary(lib);
+        addDriverFile(lib);
         return lib;
     }
 
-    public boolean addLibrary(DriverFileDescriptor descriptor)
+    public boolean addDriverFile(DriverFileDescriptor descriptor)
     {
         if (!files.contains(descriptor)) {
             this.files.add(descriptor);
@@ -677,7 +680,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return false;
     }
 
-    public boolean removeLibrary(DriverFileDescriptor lib)
+    public boolean removeDriverFile(DriverFileDescriptor lib)
     {
         if (!lib.isCustom()) {
             lib.setDisabled(true);
@@ -700,6 +703,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
         return result;
+    }
+
+    @NotNull
+    public List<DriverFileSource> getDriverFileSources() {
+        return fileSources;
     }
 
     @Override
@@ -799,7 +807,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public String getLicense()
     {
         for (DriverFileDescriptor file : files) {
-            if (file.getType() == DBPDriverFileType.license) {
+            if (file.getType() == DBPDriverFile.FileType.license) {
                 final File licenseFile = file.getLocalFile();
                 if (licenseFile != null && licenseFile.exists()) {
                     try {
@@ -874,7 +882,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
         for (DriverFileDescriptor file : files) {
-            if (file.isDisabled() || file.getType() != DBPDriverFileType.jar) {
+            if (file.isDisabled() || file.getType() != DBPDriverFile.FileType.jar) {
                 continue;
             }
             File localFile = file.getLocalFile();
@@ -984,8 +992,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
     {
         // User must accept all licenses before actual drivers download
-        for (final DriverFileDescriptor file : getFiles()) {
-            if (file.getType() == DBPDriverFileType.license) {
+        for (final DriverFileDescriptor file : getDriverFiles()) {
+            if (file.getType() == DBPDriverFile.FileType.license) {
                 final File libraryFile = file.getLocalFile();
                 if (libraryFile == null || !libraryFile.exists()) {
                     try {
@@ -1050,7 +1058,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             // User just canceled download
             return IDialogConstants.CANCEL_ID;
         } catch (InvocationTargetException e) {
-            if (file.getType() == DBPDriverFileType.license) {
+            if (file.getType() == DBPDriverFile.FileType.license) {
                 return IDialogConstants.OK_ID;
             }
             DownloadRetry retryConfirm = new DownloadRetry(file, e.getTargetException());
@@ -1124,7 +1132,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         // Libraries
-        for (DriverFileDescriptor lib : this.getFiles()) {
+        for (DriverFileDescriptor lib : this.getDriverFiles()) {
             if ((export && !lib.isDisabled()) || lib.isCustom() || lib.isDisabled()) {
                 xml.startElement(RegistryConstants.TAG_LIBRARY);
                 xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
@@ -1296,25 +1304,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     log.warn("File outside of driver");
                     return;
                 }
-                DBPDriverFileType type;
+                DBPDriverFile.FileType type;
                 String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
                 if (CommonUtils.isEmpty(typeStr)) {
-                    type = DBPDriverFileType.jar;
+                    type = DBPDriverFile.FileType.jar;
                 } else {
                     try {
-                        type = DBPDriverFileType.valueOf(typeStr);
+                        type = DBPDriverFile.FileType.valueOf(typeStr);
                     } catch (IllegalArgumentException e) {
                         log.warn(e);
-                        type = DBPDriverFileType.jar;
+                        type = DBPDriverFile.FileType.jar;
                     }
                 }
                 String path = atts.getValue(RegistryConstants.ATTR_PATH);
-                DriverFileDescriptor lib = curDriver.getLibrary(path);
+                DriverFileDescriptor lib = curDriver.getDriverFile(path);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                 if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                     lib.setDisabled(true);
                 } else if (lib == null) {
-                    curDriver.addLibrary(path, type);
+                    curDriver.addDriverFile(path, type);
                 }
             } else if (localName.equals(RegistryConstants.TAG_CLIENT_HOME)) {
                 curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
@@ -1519,6 +1527,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         @Override
         public void run()
         {
+            DriverDownloadDialog downloadDialog = new DriverDownloadDialog(DBeaverUI.getActiveWorkbenchWindow(), DriverDescriptor.this);
+            downloadDialog.open();
             proceed = ConfirmationDialog.showConfirmDialog(
                 null,
                 DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD,

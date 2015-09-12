@@ -79,8 +79,8 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
 
     private void loadNativeLib(DBPDriver driver) throws DBException
     {
-        for (DBPDriverFile libFile : driver.getFiles()) {
-            if (libFile.matchesCurrentPlatform() && libFile.getType() == DBPDriverFileType.lib) {
+        for (DBPDriverFile libFile : driver.getDriverFiles()) {
+            if (libFile.matchesCurrentPlatform() && libFile.getType() == DBPDriverFile.FileType.lib) {
                 File localFile = libFile.getLocalFile();
                 if (localFile != null) {
                     try {
