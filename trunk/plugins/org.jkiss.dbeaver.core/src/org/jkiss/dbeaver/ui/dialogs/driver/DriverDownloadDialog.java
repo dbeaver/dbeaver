@@ -23,7 +23,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -53,5 +55,15 @@ public class DriverDownloadDialog extends WizardDialog
         } else {
             finishButton.setText("Open Download Page");
         }
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == EDIT_DRIVER_BUTTON_ID) {
+            cancelPressed();
+            DriverEditDialog dialog = new DriverEditDialog(DBeaverUI.getActiveWorkbenchShell(), driver);
+            dialog.open();
+        }
+        super.buttonPressed(buttonId);
     }
 }

@@ -81,9 +81,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         enableButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         enableButton.setSelection(filter.isEnabled());
         if (!globalFilter) {
-            Link globalLink = new Link(topPanel, SWT.NONE);
-            globalLink.setText(CoreMessages.dialog_filter_global_link);
-            globalLink.addSelectionListener(new SelectionAdapter() {
+            Link globalLink = UIUtils.createLink(topPanel, CoreMessages.dialog_filter_global_link, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     setReturnCode(SHOW_GLOBAL_FILTERS_ID);

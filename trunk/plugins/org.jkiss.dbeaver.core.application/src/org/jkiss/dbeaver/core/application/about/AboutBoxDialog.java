@@ -152,28 +152,24 @@ public class AboutBoxDialog extends Dialog
         gd.horizontalAlignment = GridData.CENTER;
         authorLabel.setLayoutData(gd);
 
-        Link siteLink = new Link(group, SWT.NONE);
-        siteLink.setText(UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)));
-        siteLink.setBackground(background);
-        siteLink.addSelectionListener(new SelectionAdapter() {
+        Link siteLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)), new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 RuntimeUtils.launchProgram(e.text);
             }
         });
+        siteLink.setBackground(background);
         gd = new GridData();
         gd.horizontalAlignment = GridData.CENTER;
         siteLink.setLayoutData(gd);
 
-        Link emailLink = new Link(group, SWT.NONE);
-        emailLink.setText(UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_EMAIL)));
-        emailLink.setBackground(background);
-        emailLink.addSelectionListener(new SelectionAdapter() {
+        Link emailLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_EMAIL)), new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 RuntimeUtils.launchProgram("mailto:" + e.text); //$NON-NLS-1$
             }
         });
+        emailLink.setBackground(background);
         gd = new GridData();
         gd.horizontalAlignment = GridData.CENTER;
         emailLink.setLayoutData(gd);

@@ -17,12 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.data;
 
-import org.eclipse.jface.action.IContributionManager;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -39,8 +37,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -52,8 +52,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -61,8 +61,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.data.*;
-import org.jkiss.dbeaver.ui.data.IAttributeController;
-import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
@@ -439,11 +437,10 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
             final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
             Composite labelGroup = UIUtils.createPlaceholder(parent, 2);
-            labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_HORIZONTAL));
-            Link dictLabel = new Link(labelGroup, SWT.NONE);
-            dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            dictLabel.setText(NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refTable.getName()));
-            dictLabel.addSelectionListener(new SelectionAdapter() {
+            labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Link dictLabel = UIUtils.createLink(
+                labelGroup,
+                NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refTable.getName()), new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     // Open
@@ -465,11 +462,9 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
                     });
                 }
             });
+            dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Link hintLabel = new Link(labelGroup, SWT.NONE);
-            hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
-            hintLabel.setText("(<a>Define Description</a>)");
-            hintLabel.addSelectionListener(new SelectionAdapter() {
+            Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     EditDictionaryDialog dialog = new EditDictionaryDialog(getShell(), "Dictionary structure", refTable);
@@ -478,6 +473,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
                     }
                 }
             });
+            hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
         }
 
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);

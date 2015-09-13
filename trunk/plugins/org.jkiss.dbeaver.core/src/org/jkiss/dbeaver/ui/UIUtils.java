@@ -1226,6 +1226,13 @@ public class UIUtils {
         return saveRunner.getResult();
     }
 
+    public static Link createLink(Composite parent, String text, SelectionListener listener) {
+        Link link = new Link(parent, SWT.NONE);
+        link.setText(text);
+        link.addSelectionListener(listener);
+        return link;
+    }
+
     public static CellEditor createPropertyEditor(Composite parent, DBPPropertySource source, DBPPropertyDescriptor property)
     {
         if (source == null) {
