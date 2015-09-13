@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -41,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -958,7 +958,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     @Override
                     public void run() {
                         // Open vendor's web site
-                        Program.launch(fileSource.getUrl());
+                        RuntimeUtils.openWebBrowser(fileSource.getUrl());
                         // Open driver editor
                         DriverEditDialog dialog = new DriverEditDialog(DBeaverUI.getActiveWorkbenchShell(), DriverDescriptor.this);
                         dialog.open();
