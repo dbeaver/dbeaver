@@ -29,9 +29,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
@@ -127,6 +127,22 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                 }
             });
             removeButton.setEnabled(false);
+
+            mavenRepoTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    boolean enabled = false;
+                    TableItem[] selection = mavenRepoTable.getSelection();
+                    if (selection.length == 1) {
+                        enabled = true;
+                        if (selection[0].getData() instanceof MavenRepository && ((MavenRepository)selection[0].getData()).isPredefined()) {
+                            enabled = false;
+                        }
+                    }
+                    removeButton.setEnabled(enabled);
+                }
+            });
         }
 
         {
@@ -228,7 +244,9 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         }
 
         for (MavenRepository repo : MavenRegistry.getInstance().getRepositories()) {
-            new TableItem(mavenRepoTable, SWT.NONE).setText(new String[]{repo.getId(), repo.getUrl()});
+            TableItem item = new TableItem(mavenRepoTable, SWT.NONE);
+            item.setText(new String[]{repo.getId(), repo.getUrl()});
+            item.setData(repo);
         }
         UIUtils.packColumns(mavenRepoTable, true);
         super.performDefaults();
@@ -253,12 +271,31 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         store.setValue(DBeaverPreferences.UI_PROXY_PASSWORD, password);
         store.setValue(DBeaverPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
 
-        StringBuilder sources = new StringBuilder();
-        for (String item : sourceList.getItems()) {
-            if (sources.length() > 0) sources.append('|');
-            sources.append(item);
+        {
+            StringBuilder sources = new StringBuilder();
+            for (String item : sourceList.getItems()) {
+                if (sources.length() > 0) sources.append('|');
+                sources.append(item);
+            }
+            store.setValue(DBeaverPreferences.UI_DRIVERS_SOURCES, sources.toString());
         }
-        store.setValue(DBeaverPreferences.UI_DRIVERS_SOURCES, sources.toString());
+
+        {
+            StringBuilder mavenRepos = new StringBuilder();
+            for (TableItem item : mavenRepoTable.getItems()) {
+                String repoId = item.getText(0);
+                String repoURL = item.getText(1);
+                MavenRepository repository = MavenRegistry.getInstance().findRepository(repoId);
+                if (repository != null && repository.isPredefined()) {
+                    continue;
+                }
+                if (mavenRepos.length() > 0) mavenRepos.append('|');
+                mavenRepos.append(repoId).append(':').append(repoURL);
+            }
+            store.setValue(DBeaverPreferences.UI_MAVEN_REPOSITORIES, mavenRepos.toString());
+            MavenRegistry.getInstance().loadCustomRepositories();
+        }
+
         PrefUtils.savePreferenceStore(store);
 
         return super.performOk();

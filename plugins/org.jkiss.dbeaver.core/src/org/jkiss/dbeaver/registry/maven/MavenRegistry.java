@@ -22,15 +22,16 @@ import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 public class MavenRegistry
 {
-    static final Log log = Log.getLog(MavenRegistry.class);
-
     private static MavenRegistry instance = null;
 
     public synchronized static MavenRegistry getInstance()
@@ -38,6 +39,7 @@ public class MavenRegistry
         if (instance == null) {
             instance = new MavenRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
+            instance.loadCustomRepositories();
         }
         return instance;
     }
@@ -48,7 +50,7 @@ public class MavenRegistry
     {
     }
 
-    public void loadExtensions(IExtensionRegistry registry)
+    private void loadExtensions(IExtensionRegistry registry)
     {
         // Load data type providers from external plugins
         {
@@ -57,6 +59,31 @@ public class MavenRegistry
                 MavenRepository repository = new MavenRepository(ext);
                 repositories.add(repository);
             }
+        }
+    }
+
+    public void loadCustomRepositories() {
+        // Remove all custom repositories
+        for (Iterator<MavenRepository> iterator = repositories.iterator(); iterator.hasNext(); ) {
+            MavenRepository repository = iterator.next();
+            if (!repository.isPredefined()) {
+                iterator.remove();
+            }
+        }
+        // PArse repositories from preferences
+        String repoString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_MAVEN_REPOSITORIES);
+        if (CommonUtils.isEmpty(repoString)) {
+            return;
+        }
+        for (String repoInfo : repoString.split("\\|")) {
+            int divPos = repoInfo.indexOf(':');
+            if (divPos < 0) {
+                continue;
+            }
+            String repoID = repoInfo.substring(0, divPos);
+            String repoURL = repoInfo.substring(divPos + 1);
+            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL);
+            repositories.add(repo);
         }
     }
 
@@ -85,4 +112,12 @@ public class MavenRegistry
         return null;
     }
 
+    public MavenRepository findRepository(String id) {
+        for (MavenRepository repository : repositories) {
+            if (repository.getId().equals(id)) {
+                return repository;
+            }
+        }
+        return null;
+    }
 }

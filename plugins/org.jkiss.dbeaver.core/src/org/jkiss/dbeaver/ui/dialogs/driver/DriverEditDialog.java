@@ -708,11 +708,15 @@ public class DriverEditDialog extends HelpEnabledDialog
         }
         provider.getRegistry().saveDrivers();
 
-        try {
-            driver.loadDriver(DBeaverUI.getDefaultRunnableContext(), true, true);
-        } catch (Throwable ex) {
-            UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_edit_driver_dialog_driver_error_title, CoreMessages.dialog_edit_driver_dialog_driver_error_message, ex);
+/*      // DO NOT validate driver on close. Otherwise it can cause cyclis errors -> new driver editor dialog, etcv
+        {
+            try {
+                driver.loadDriver(DBeaverUI.getDefaultRunnableContext(), true);
+            } catch (Throwable ex) {
+                UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_edit_driver_dialog_driver_error_title, CoreMessages.dialog_edit_driver_dialog_driver_error_message, ex);
+            }
         }
+*/
 
         super.okPressed();
     }
