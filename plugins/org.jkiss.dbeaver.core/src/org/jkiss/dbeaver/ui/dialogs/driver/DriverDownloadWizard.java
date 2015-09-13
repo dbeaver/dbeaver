@@ -42,7 +42,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         this.driver = driver;
         this.files = files;
         setWindowTitle("Setup driver files");
-        setNeedsProgressMonitor(true);
+        setNeedsProgressMonitor(hasPredefinedFiles());
         loadSettings();
     }
 

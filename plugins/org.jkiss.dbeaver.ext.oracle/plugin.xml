@@ -283,13 +283,13 @@
 
                     <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
                         <file name="ojdbc6.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" description="NLS classes"/>
-                        <file name="xdb6.jar" description="SQLXML support"/>
+                        <file name="orai18n.jar" optional="true" description="NLS classes"/>
+                        <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
                     <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12g drivers">
                         <file name="ojdbc7.jar" description="JDBC driver"/>
-                        <file name="orai18n.jar" description="NLS classes"/>
-                        <file name="xdb6.jar" description="SQLXML support"/>
+                        <file name="orai18n.jar" optional="true" description="NLS classes"/>
+                        <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
                 </driver>
             </drivers>
