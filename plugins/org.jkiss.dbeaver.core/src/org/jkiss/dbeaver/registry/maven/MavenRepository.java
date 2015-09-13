@@ -63,15 +63,23 @@ public class MavenRepository
     private String id;
     private String name;
     private String url;
+    private boolean predefined = false;
 
     private List<MavenArtifact> cachedArtifacts = new ArrayList<MavenArtifact>();
 
     public MavenRepository(IConfigurationElement config)
     {
-        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
-        this.url = config.getAttribute(RegistryConstants.ATTR_URL);
+        this(
+            config.getAttribute(RegistryConstants.ATTR_ID),
+            config.getAttribute(RegistryConstants.ATTR_NAME),
+            config.getAttribute(RegistryConstants.ATTR_URL));
+        this.predefined = true;
+    }
 
+    public MavenRepository(String id, String name, String url) {
+        this.id = id;
+        this.name = name;
+        this.url = url;
         loadCache();
     }
 
@@ -89,6 +97,10 @@ public class MavenRepository
 
     public String getUrl() {
         return url;
+    }
+
+    public boolean isPredefined() {
+        return predefined;
     }
 
     @Nullable
