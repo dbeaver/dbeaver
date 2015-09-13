@@ -77,45 +77,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         infoText.setText(message.toString());
         infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        //UIUtils.createHorizontalLine(composite);
-        UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
-
-        {
-            Composite linksGroup = UIUtils.createPlaceholder(composite, 2);
-            ((GridLayout)linksGroup.getLayout()).makeColumnsEqualWidth = true;
-            linksGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            // Vendor site
-            if (!CommonUtils.isEmpty(driver.getWebURL())) {
-                Link link = UIUtils.createLink(
-                    linksGroup,
-                    "<a>Vendor's website</a>",
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            RuntimeUtils.openWebBrowser(driver.getWebURL());
-                        }
-                    });
-                link.setToolTipText(driver.getWebURL());
-                link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING));
-            } else {
-                UIUtils.createPlaceholder(linksGroup, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            }
-
-            Link link = UIUtils.createLink(
-                linksGroup,
-                "<a>Download configuration</a>",
-                new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        UIUtils.showPreferencesFor(
-                            DBeaverUI.getActiveWorkbenchShell(),
-                            null,
-                            PrefPageDrivers.PAGE_ID);
-                    }
-                });
-            link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
-        }
+        createLinksPanel(composite);
 
         setControl(composite);
     }
