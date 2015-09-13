@@ -968,7 +968,12 @@ public class UIUtils {
 
     public static void showPreferencesFor(Shell shell, Object element, String defPageID)
     {
-        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID, null, null, PreferencesUtil.OPTION_NONE);
+        PreferenceDialog propDialog;
+        if (element == null) {
+            propDialog = PreferencesUtil.createPreferenceDialogOn(shell, defPageID, new String[] { defPageID }, null, PreferencesUtil.OPTION_NONE);
+        } else {
+            propDialog = PreferencesUtil.createPropertyDialogOn(shell, element, defPageID, null, null, PreferencesUtil.OPTION_NONE);
+        }
         if (propDialog != null) {
             propDialog.open();
         }
