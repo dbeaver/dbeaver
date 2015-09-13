@@ -53,7 +53,7 @@ class DriverDownloadAutoPage extends WizardPage {
         StringBuilder message = new StringBuilder();
         message.append("").append(driver.getFullName())
             .append(" driver files are missing.\nDBeaver can download these files automatically.\n\nFiles required by driver:");
-        for (DriverFileDescriptor file : driver.getDriverFiles()) {
+        for (DriverFileDescriptor file : wizard.getFiles()) {
             message.append("\n\t-").append(file.getPath());
         }
         message.append("\n\nOr you can obtain driver files by yourself and add them in driver editor.");

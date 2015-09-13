@@ -24,22 +24,32 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.util.List;
 
 public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     private static final String DRIVER_DOWNLOAD_DIALOG_SETTINGS = "DriverDownload";//$NON-NLS-1$
 
     private DriverDescriptor driver;
+    private List<DriverFileDescriptor> files;
 
-    public DriverDownloadWizard(@NotNull DriverDescriptor driver) {
+    public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<DriverFileDescriptor> files) {
         this.driver = driver;
+        this.files = files;
         setWindowTitle("Setup driver files");
+        setNeedsProgressMonitor(true);
         loadSettings();
     }
 
-    public DriverDescriptor getDriver() {
+    DriverDescriptor getDriver() {
         return driver;
+    }
+
+    List<DriverFileDescriptor> getFiles() {
+        return files;
     }
 
     private void loadSettings()

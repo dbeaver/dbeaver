@@ -18,12 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -40,12 +35,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -936,14 +928,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
-        if (!downloadCandidates.isEmpty()) {
-            final StringBuilder libNames = new StringBuilder();
-            for (DriverFileDescriptor lib : downloadCandidates) {
-                if (libNames.length() > 0) libNames.append(", ");
-                libNames.append(lib.getPath());
+        UIUtils.runInUI(null, new Runnable() {
+            @Override
+            public void run() {
+                DriverDownloadDialog.downloadDriverFiles(DBeaverUI.getActiveWorkbenchWindow(), DriverDescriptor.this, downloadCandidates);
             }
-            DownloadConfirm confirm = new DownloadConfirm(libNames);
-            UIUtils.runInUI(null, confirm);
+        });
+/*
             if (confirm.proceed) {
                 // Download drivers
                 downloadLibraryFiles(runnableContext, downloadCandidates);
@@ -966,32 +957,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 });
             }
         }
+*/
     }
 
-    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<DriverFileDescriptor> files)
-    {
-        if (!acceptDriverLicenses(runnableContext)) {
-            return;
-        }
-
-        for (int i = 0, filesSize = files.size(); i < filesSize; ) {
-            DriverFileDescriptor lib = files.get(i);
-            int result = downloadLibraryFile(runnableContext, lib);
-            switch (result) {
-                case IDialogConstants.CANCEL_ID:
-                case IDialogConstants.ABORT_ID:
-                    return;
-                case IDialogConstants.RETRY_ID:
-                    continue;
-                case IDialogConstants.OK_ID:
-                case IDialogConstants.IGNORE_ID:
-                    i++;
-                    break;
-            }
-        }
-    }
-
-    private boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
+    public boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
     {
         // User must accept all licenses before actual drivers download
         for (final DriverFileDescriptor file : getDriverFiles()) {
@@ -1040,33 +1009,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             return true;
         }
         return false;
-    }
-
-    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DriverFileDescriptor file)
-    {
-        try {
-            runnableContext.run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        file.downloadLibraryFile(monitor);
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-            return IDialogConstants.OK_ID;
-        } catch (InterruptedException e) {
-            // User just canceled download
-            return IDialogConstants.CANCEL_ID;
-        } catch (InvocationTargetException e) {
-            if (file.getType() == DBPDriverFile.FileType.license) {
-                return IDialogConstants.OK_ID;
-            }
-            DownloadRetry retryConfirm = new DownloadRetry(file, e.getTargetException());
-            UIUtils.runInUI(null, retryConfirm);
-            return retryConfirm.result;
-        }
     }
 
     public String getOrigName()
@@ -1454,50 +1396,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return metaURL;
     }
 
-    public static class DownloadErrorDialog extends ErrorDialog {
-
-        public DownloadErrorDialog(
-            Shell parentShell,
-            String dialogTitle,
-            String message,
-            Throwable error)
-        {
-            super(parentShell, dialogTitle, message,
-                GeneralUtils.makeExceptionStatus(error),
-                IStatus.INFO | IStatus.WARNING | IStatus.ERROR);
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(Composite parent) {
-            createButton(
-                parent,
-                IDialogConstants.ABORT_ID,
-                IDialogConstants.ABORT_LABEL,
-                true);
-            createButton(
-                parent,
-                IDialogConstants.RETRY_ID,
-                IDialogConstants.RETRY_LABEL,
-                false);
-            createButton(
-                parent,
-                IDialogConstants.IGNORE_ID,
-                IDialogConstants.IGNORE_LABEL,
-                false);
-            createDetailsButton(parent);
-        }
-
-        @Override
-        protected void buttonPressed(int buttonId) {
-            if (buttonId == IDialogConstants.DETAILS_ID) {
-                super.buttonPressed(buttonId);
-            } else {
-                setReturnCode(buttonId);
-                close();
-            }
-        }
-    }
-
     private class LicenceAcceptor implements Runnable {
         private boolean result;
         private String licenseText;
@@ -1517,76 +1415,5 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private class DownloadConfirm implements Runnable {
-        private final StringBuilder libNames;
-        private boolean proceed;
-
-        public DownloadConfirm(StringBuilder libNames)
-        {
-            this.libNames = libNames;
-        }
-
-        @Override
-        public void run()
-        {
-            DriverDownloadDialog downloadDialog = new DriverDownloadDialog(DBeaverUI.getActiveWorkbenchWindow(), DriverDescriptor.this);
-            downloadDialog.open();
-            proceed = ConfirmationDialog.showConfirmDialog(
-                null,
-                DBeaverPreferences.CONFIRM_DRIVER_DOWNLOAD,
-                ConfirmationDialog.QUESTION,
-                getFullName(),
-                libNames) == IDialogConstants.YES_ID;
-        }
-    }
-
-    private class ManualDownloadConfirm implements Runnable {
-        private boolean proceed;
-        private final DriverFileSource fileSource;
-
-        public ManualDownloadConfirm(DriverFileSource fileSource)
-        {
-            this.fileSource = fileSource;
-        }
-
-        @Override
-        public void run()
-        {
-            StringBuilder fileNames = new StringBuilder();
-            for (DriverFileSource.FileInfo info : fileSource.getFiles()) {
-                if (fileNames.length() > 0) fileNames.append(", ");
-                fileNames.append(info.getName());
-            }
-            proceed = ConfirmationDialog.showConfirmDialog(
-                null,
-                DBeaverPreferences.CONFIRM_MANUAL_DOWNLOAD,
-                ConfirmationDialog.QUESTION,
-                getFullName(),
-                fileNames.toString()) == IDialogConstants.YES_ID;
-        }
-    }
-
-    private class DownloadRetry implements Runnable {
-        private final DriverFileDescriptor file;
-        private final Throwable error;
-        private int result;
-
-        public DownloadRetry(DriverFileDescriptor file, Throwable error)
-        {
-            this.file = file;
-            this.error = error;
-        }
-
-        @Override
-        public void run()
-        {
-            DownloadErrorDialog dialog = new DownloadErrorDialog(
-                null,
-                file.getPath(),
-                "Driver file download failed.\nDo you want to retry?",
-                error);
-            result = dialog.open();
-        }
-    }
 }
 
