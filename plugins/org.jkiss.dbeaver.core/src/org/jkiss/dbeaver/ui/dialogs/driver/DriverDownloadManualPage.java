@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 class DriverDownloadManualPage extends DriverDownloadPage {
 
     private DriverFileSource fileSource;
@@ -45,20 +47,33 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     @Override
     public void createControl(Composite parent) {
         final DriverDescriptor driver = getWizard().getDriver();
+        fileSource = driver.getDriverFileSources().get(0);
 
         setMessage("Download & configure " + driver.getFullName() + " driver files");
 
-        StringBuilder message = new StringBuilder();
-        message.append("").append(driver.getFullName());
-        message.append("\n\nOr you can obtain driver files by yourself and add them in driver editor.");
         initializeDialogUnits(parent);
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        StringBuilder message = new StringBuilder();
+        message.append("Driver ").append(driver.getFullName());
+        message.append("files missing.\n\n" +
+            "According to vendor policy this driver isn''t publicly available and you have to download it manually from vendor''s web site.\n\n" +
+            "After successful driver download you will need to add JAR files in DBeaver libraries list.");
+        if (!CommonUtils.isEmpty(fileSource.getInstructions())) {
+            message.append("\n").append(fileSource.getInstructions());
+        }
+        message.append("\n\nFiles to download: ");
+        for (DriverFileSource.FileInfo file : fileSource.getFiles()) {
+            message.append("\n\t").append(file.getName());
+        }
+
         Text infoText = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
         infoText.setText(message.toString());
-        infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 200;
+        infoText.setLayoutData(gd);
 
         //UIUtils.createHorizontalLine(composite);
         UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -101,8 +116,6 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         }
 
         setControl(composite);
-
-        fileSource = getWizard().getDriver().getDriverFileSources().get(0);
     }
 
 
@@ -114,7 +127,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
                 RuntimeUtils.openWebBrowser(fileSource.getUrl());
             }
         });
-        DriverEditDialog dialog = new DriverEditDialog(DBeaverUI.getActiveWorkbenchShell(), getWizard().getDriver());
+        DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());
         dialog.open();
     }
 
