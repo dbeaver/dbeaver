@@ -174,6 +174,15 @@ public class RuntimeUtils {
         Program.launch(path);
     }
 
+    public static void openWebBrowser(String url)
+    {
+        url = url.trim();
+        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
+            url = "http://" + url;
+        }
+        Program.launch(url);
+    }
+
     public static File getPlatformFile(String platformURL) throws IOException
     {
         URL url = new URL(platformURL);
