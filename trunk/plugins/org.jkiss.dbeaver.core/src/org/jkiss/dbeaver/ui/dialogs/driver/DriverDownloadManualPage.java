@@ -21,10 +21,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileSource;
@@ -32,8 +29,6 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
 
 class DriverDownloadManualPage extends DriverDownloadPage {
 
@@ -51,22 +46,16 @@ class DriverDownloadManualPage extends DriverDownloadPage {
 
         setMessage("Download & configure " + driver.getFullName() + " driver files");
 
-        initializeDialogUnits(parent);
-
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         StringBuilder message = new StringBuilder();
-        message.append("Driver ").append(driver.getFullName());
-        message.append("files missing.\n\n" +
-            "According to vendor policy this driver isn''t publicly available and you have to download it manually from vendor''s web site.\n\n" +
+        message.append("").append(driver.getFullName());
+        message.append(" driver files missing.\n\n" +
+            "According to vendor policy this driver isn't publicly available and you have to download it manually from vendor's web site.\n\n" +
             "After successful driver download you will need to add JAR files in DBeaver libraries list.");
         if (!CommonUtils.isEmpty(fileSource.getInstructions())) {
             message.append("\n").append(fileSource.getInstructions());
-        }
-        message.append("\n\nFiles to download: ");
-        for (DriverFileSource.FileInfo file : fileSource.getFiles()) {
-            message.append("\n\t").append(file.getName());
         }
 
         Text infoText = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
@@ -75,13 +64,29 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         gd.widthHint = 200;
         infoText.setLayoutData(gd);
 
-        //UIUtils.createHorizontalLine(composite);
-        UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
+        Group filesGroup = UIUtils.createControlGroup(composite, "Driver files", 1, -1, -1);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 10;
+        filesGroup.setLayoutData(gd);
+        Table filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
+        filesTable.setHeaderVisible(true);
+        filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, "Required");
+        UIUtils.createTableColumn(filesTable, SWT.LEFT, "Description");
+        for (DriverFileSource.FileInfo file : fileSource.getFiles()) {
+            new TableItem(filesTable, SWT.NONE).setText(new String[] {
+                file.getName(),
+                !file.isOptional() ? "Yes" : "No",
+                CommonUtils.notEmpty(file.getDescription()) });
+        }
+        UIUtils.packColumns(filesTable, true);
 
         {
             Composite linksGroup = UIUtils.createPlaceholder(composite, 2);
-            ((GridLayout)linksGroup.getLayout()).makeColumnsEqualWidth = true;
-            linksGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.verticalIndent = 10;
+            linksGroup.setLayoutData(gd);
 
             // Vendor site
             if (!CommonUtils.isEmpty(driver.getWebURL())) {
