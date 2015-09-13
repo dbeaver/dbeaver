@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
@@ -71,19 +72,21 @@ class DriverDownloadAutoPage extends WizardPage {
 
         {
             Composite linksGroup = UIUtils.createPlaceholder(composite, 2);
+            ((GridLayout)linksGroup.getLayout()).makeColumnsEqualWidth = true;
             linksGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             // Vendor site
             if (!CommonUtils.isEmpty(driver.getWebURL())) {
                 Link link = UIUtils.createLink(
                     linksGroup,
-                    "Vendor's website: <a href=\"" + driver.getWebURL() + "\">" + driver.getWebURL() + "</a>",
+                    "<a>Vendor's website</a>",
                     new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             RuntimeUtils.openWebBrowser(driver.getWebURL());
                         }
                     });
+                link.setToolTipText(driver.getWebURL());
                 link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING));
             } else {
                 UIUtils.createPlaceholder(linksGroup, 1).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

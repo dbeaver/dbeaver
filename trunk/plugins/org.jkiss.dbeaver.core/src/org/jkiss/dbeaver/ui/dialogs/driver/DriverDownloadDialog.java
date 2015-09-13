@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -33,6 +34,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -68,13 +71,24 @@ public class DriverDownloadDialog extends WizardDialog
         createButton(parent, EDIT_DRIVER_BUTTON_ID, "Edit Driver", false);
 
         super.createButtonsForButtonBar(parent);
+        parent.layout();
+    }
 
-        Button finishButton = getButton(IDialogConstants.FINISH_ID);
-        if (CommonUtils.isEmpty(getDriver().getDriverFileSources())) {
-            finishButton.setText("Download");
-        } else {
-            finishButton.setText("Open Download Page");
+    @Override
+    protected Button createButton(Composite parent, int id, String label, boolean defaultButton) {
+        if (id == IDialogConstants.FINISH_ID) {
+            String finishText;
+            if (CommonUtils.isEmpty(getDriver().getDriverFileSources())) {
+                finishText = "Download";
+            } else {
+                finishText = "Open Download Page";
+            }
+            Button button = super.createButton(parent, id, finishText, defaultButton);
+            button.setImage(DBeaverIcons.getImage(UIIcon.BROWSER));
+            setButtonLayoutData(button);
+            return button;
         }
+        return super.createButton(parent, id, label, defaultButton);
     }
 
     @Override
