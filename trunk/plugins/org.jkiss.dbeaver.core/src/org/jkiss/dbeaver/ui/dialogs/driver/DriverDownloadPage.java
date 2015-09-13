@@ -77,7 +77,7 @@ abstract class DriverDownloadPage extends WizardPage {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     UIUtils.showPreferencesFor(
-                        DBeaverUI.getActiveWorkbenchShell(),
+                        null,
                         null,
                         PrefPageDrivers.PAGE_ID);
                 }

@@ -85,6 +85,7 @@ public final class DBeaverPreferences
     public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
     public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
     public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
+    public static final String UI_MAVEN_REPOSITORIES = "ui.maven.repositories"; //$NON-NLS-1$
 
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$
