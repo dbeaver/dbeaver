@@ -307,7 +307,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 */
 
-    void downloadLibraryFile(DBRProgressMonitor monitor) throws IOException, InterruptedException
+    public void downloadLibraryFile(DBRProgressMonitor monitor) throws IOException, InterruptedException
     {
         if (isMavenArtifact()) {
             downloadMavenArtifact(monitor);
