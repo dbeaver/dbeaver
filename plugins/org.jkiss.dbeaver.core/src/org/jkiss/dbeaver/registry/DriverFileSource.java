@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDriverFile;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,10 +35,12 @@ public class DriverFileSource implements DBPDriverFile.FileSource
     public static class FileInfo {
         private final String name;
         private final String description;
+        private final boolean optional;
 
         FileInfo(IConfigurationElement config) {
             this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
             this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+            this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
         }
 
         public String getName() {
@@ -46,6 +49,10 @@ public class DriverFileSource implements DBPDriverFile.FileSource
 
         public String getDescription() {
             return description;
+        }
+
+        public boolean isOptional() {
+            return optional;
         }
     }
 
