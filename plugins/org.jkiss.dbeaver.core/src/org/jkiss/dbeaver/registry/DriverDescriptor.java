@@ -664,9 +664,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public boolean addDriverFile(DriverFileDescriptor descriptor)
     {
+        resetDriverInstance();
         if (!files.contains(descriptor)) {
             this.files.add(descriptor);
-            resetDriverInstance();
             return true;
         }
         return false;
@@ -674,9 +674,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public boolean removeDriverFile(DriverFileDescriptor lib)
     {
+        resetDriverInstance();
         if (!lib.isCustom()) {
             lib.setDisabled(true);
-            resetDriverInstance();
             return true;
         } else {
             return this.files.remove(lib);
@@ -936,30 +936,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
             });
         }
-/*
-            if (confirm.proceed) {
-                // Download drivers
-                downloadLibraryFiles(runnableContext, downloadCandidates);
-            }
-        } else if (!fileSources.isEmpty()) {
-            // We have file source
-            final DriverFileSource fileSource = fileSources.get(0);
-            ManualDownloadConfirm confirm = new ManualDownloadConfirm(fileSource);
-            UIUtils.runInUI(null, confirm);
-            if (confirm.proceed) {
-                UIUtils.runInUI(null, new Runnable() {
-                    @Override
-                    public void run() {
-                        // Open vendor's web site
-                        RuntimeUtils.openWebBrowser(fileSource.getUrl());
-                        // Open driver editor
-                        DriverEditDialog dialog = new DriverEditDialog(DBeaverUI.getActiveWorkbenchShell(), DriverDescriptor.this);
-                        dialog.open();
-                    }
-                });
-            }
-        }
-*/
     }
 
     public boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
