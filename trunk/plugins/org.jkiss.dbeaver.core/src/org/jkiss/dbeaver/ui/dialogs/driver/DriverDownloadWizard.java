@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     private DriverDescriptor driver;
     private List<DriverFileDescriptor> files;
+    private DriverDownloadPage downloadPage;
 
     public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<DriverFileDescriptor> files) {
         this.driver = driver;
@@ -61,7 +63,12 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     @Override
     public void addPages() {
         super.addPages();
-        addPage(new DriverDownloadAutoPage());
+        if (hasPredefinedFiles()) {
+            downloadPage = new DriverDownloadAutoPage();
+        } else {
+            downloadPage = new DriverDownloadManualPage();
+        }
+        addPage(downloadPage);
     }
 
     @Override
@@ -79,9 +86,20 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     @Override
     public boolean performFinish() {
+        downloadPage.performFinish();
         return true;
     }
 
+    public String getFinishText() {
+        if (hasPredefinedFiles()) {
+            return "Download";
+        } else {
+            return "Open Download Page";
+        }
+    }
 
+    private boolean hasPredefinedFiles() {
+        return CommonUtils.isEmpty(getDriver().getDriverFileSources());
+    }
 
 }
