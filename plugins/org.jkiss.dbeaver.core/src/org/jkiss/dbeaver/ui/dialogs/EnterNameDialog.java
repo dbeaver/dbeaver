@@ -42,6 +42,11 @@ public class EnterNameDialog extends Dialog {
         this.propertyValue = propertyValue;
     }
 
+    @Override
+    protected boolean isResizable() {
+        return true;
+    }
+
     public String getResult()
     {
         return result;

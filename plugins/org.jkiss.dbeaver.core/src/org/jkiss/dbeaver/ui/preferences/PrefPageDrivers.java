@@ -36,10 +36,15 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.registry.maven.MavenRegistry;
+import org.jkiss.dbeaver.registry.maven.MavenRepository;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * PrefPageDrivers
@@ -58,6 +63,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
 
     private Text customDriversHome;
     private List sourceList;
+    private Table mavenRepoTable;
 
     @Override
     public void init(IWorkbench workbench)
@@ -75,7 +81,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
-        Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+        Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 300);
         proxyHostText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_host, null); //$NON-NLS-2$
         proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, CoreMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
         proxyUserText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_user, null); //$NON-NLS-2$
@@ -84,13 +90,50 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         {
             Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
             customDriversHome = UIUtils.createOutputFolderChooser(drivers, "Local folder", null);
-            Label sourcesLabel = UIUtils.createControlLabel(drivers, "Drivers' sources");
-            sourcesLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            Composite sourcePH = UIUtils.createPlaceholder(drivers, 2, 5);
-            sourcePH.setLayoutData(new GridData(GridData.FILL_BOTH));
-            sourceList = new List(sourcePH, SWT.BORDER | SWT.SINGLE);
+        }
+
+        {
+            Group mavenGroup = UIUtils.createControlGroup(composite, "Maven repositories", 2, GridData.FILL_HORIZONTAL, 300);
+            mavenRepoTable = new Table(mavenGroup, SWT.BORDER | SWT.FULL_SELECTION);
+            UIUtils.createTableColumn(mavenRepoTable, SWT.LEFT, "Id");
+            UIUtils.createTableColumn(mavenRepoTable, SWT.LEFT, "URL");
+            mavenRepoTable.setHeaderVisible(true);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.heightHint = 60;
+            mavenRepoTable.setLayoutData(gd);
+
+            Composite buttonsPH = UIUtils.createPlaceholder(mavenGroup, 1);
+            UIUtils.createToolButton(buttonsPH, "Add", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    String urlString = EnterNameDialog.chooseName(getShell(), "Enter Maven repository URL", "http://");
+                    if (urlString != null) {
+                        try {
+                            URL url = new URL(urlString);
+                            new TableItem(mavenRepoTable, SWT.NONE).setText(new String[]{url.getHost(), urlString});
+                        } catch (MalformedURLException e1) {
+                            UIUtils.showErrorDialog(getShell(), "Bad URL", "Bad Maven repository URL", e1);
+                        }
+                    }
+                }
+            });
+            final Button removeButton = UIUtils.createToolButton(buttonsPH, "Remove", new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    mavenRepoTable.remove(mavenRepoTable.getSelectionIndices());
+                    mavenRepoTable.notifyListeners(SWT.Selection, new Event());
+                }
+            });
+            removeButton.setEnabled(false);
+        }
+
+        {
+            Group repoGroup = UIUtils.createControlGroup(composite, "File repositories", 2, GridData.FILL_HORIZONTAL, 300);
+            sourceList = new List(repoGroup, SWT.BORDER | SWT.SINGLE);
             sourceList.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Composite buttonsPH = UIUtils.createPlaceholder(sourcePH, 1);
+            Composite buttonsPH = UIUtils.createPlaceholder(repoGroup, 1);
             UIUtils.createToolButton(buttonsPH, "Add", new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -183,6 +226,11 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
         for (String source : DriverDescriptor.getDriversSources()) {
             sourceList.add(source);
         }
+
+        for (MavenRepository repo : MavenRegistry.getInstance().getRepositories()) {
+            new TableItem(mavenRepoTable, SWT.NONE).setText(new String[]{repo.getId(), repo.getUrl()});
+        }
+        UIUtils.packColumns(mavenRepoTable, true);
         super.performDefaults();
     }
 
