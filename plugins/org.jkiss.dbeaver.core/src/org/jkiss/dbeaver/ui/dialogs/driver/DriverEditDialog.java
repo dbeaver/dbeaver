@@ -17,12 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.CellLabelProvider;
@@ -37,15 +35,18 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -55,7 +56,6 @@ import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
-import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -220,9 +220,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 gl.horizontalSpacing = 5;
 
                 UIUtils.createControlLabel(ph, CoreMessages.dialog_edit_driver_label_website);
-                Link urlLabel = new Link(ph, SWT.NONE);
-                urlLabel.setText("<a>" + driver.getWebURL() + "</a>"); //$NON-NLS-1$ //$NON-NLS-2$
-                urlLabel.addSelectionListener(new SelectionAdapter() {
+                Link urlLabel = UIUtils.createLink(ph, "<a>" + driver.getWebURL() + "</a>", new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
@@ -711,7 +709,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         provider.getRegistry().saveDrivers();
 
         try {
-            driver.loadDriver(DBeaverUI.getDefaultRunnableContext(), true);
+            driver.loadDriver(DBeaverUI.getDefaultRunnableContext(), true, true);
         } catch (Throwable ex) {
             UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_edit_driver_dialog_driver_error_title, CoreMessages.dialog_edit_driver_dialog_driver_error_message, ex);
         }

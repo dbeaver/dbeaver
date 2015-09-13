@@ -34,9 +34,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -198,11 +198,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     private Link createLink(Composite composite, String text)
     {
-        Link link = new Link(composite, SWT.NONE);
-        link.setFont(composite.getFont());
-        link.setText("<A>" + text + "</A>");  //$NON-NLS-1$//$NON-NLS-2$
-        link.addSelectionListener(new SelectionListener()
-        {
+        Link link = UIUtils.createLink(composite, "<A>" + text + "</A>", new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
@@ -215,6 +211,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 widgetSelected(e);
             }
         });
+        link.setFont(composite.getFont());
         return link;
     }
 

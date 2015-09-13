@@ -20,15 +20,17 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.utils.CommonUtils;
 
 class DriverDownloadAutoPage extends WizardPage {
 
@@ -42,13 +44,17 @@ class DriverDownloadAutoPage extends WizardPage {
     @Override
     public void createControl(Composite parent) {
         DriverDownloadWizard wizard = (DriverDownloadWizard) getWizard();
+        DriverDescriptor driver = wizard.getDriver();
+
+        setMessage("Download " + driver.getFullName() + " driver files");
 
         StringBuilder message = new StringBuilder();
-        message.append("Download ").append(wizard.getDriver().getFullName()).append(" driver files:\n");
-        for (DriverFileDescriptor file : wizard.getDriver().getDriverFiles()) {
-            message.append("\t-").append(file.getPath()).append("\n");
+        message.append("").append(driver.getFullName())
+            .append(" driver files are missing.\nDBeaver can download these files automatically.\n\nFiles required by driver:");
+        for (DriverFileDescriptor file : driver.getDriverFiles()) {
+            message.append("\n\t-").append(file.getPath());
         }
-
+        message.append("\n\nOr you can obtain driver files by yourself and add them in driver editor.");
         initializeDialogUnits(parent);
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -56,11 +62,54 @@ class DriverDownloadAutoPage extends WizardPage {
 
         Text infoText = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
         infoText.setText(message.toString());
-        infoText.setLayoutData(new GridData(GridData.FILL_BOTH));
+        infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        //UIUtils.createHorizontalLine(composite);
+        UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        {
+            Composite linksGroup = UIUtils.createPlaceholder(composite, 2);
+            linksGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Composite configGroup = UIUtils.createPlaceholder(linksGroup, 1);
+            configGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            // Maven/repo config
+            UIUtils.createLink(
+                configGroup,
+                "<a>Repository configuration</a>",
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+
+                    }
+                });
+            // Proxy config
+            UIUtils.createLink(
+                configGroup,
+                "<a>Proxy configration</a>",
+                new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+
+                    }
+                });
+            Composite webGroup = UIUtils.createPlaceholder(linksGroup, 1);
+            webGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+            // Vendor site
+            if (!CommonUtils.isEmpty(driver.getWebURL())) {
+                Link link = UIUtils.createLink(
+                    webGroup,
+                    "Vendor's website: <a href=\"" + driver.getWebURL() + "\">" + driver.getWebURL() + "</a>",
+                    new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            super.widgetSelected(e);
+                        }
+                    });
+                link.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_END));
+            }
+        }
 
         setControl(composite);
-
-        setMessage("Download " + wizard.getDriver().getFullName() + " driver files");
     }
 
 

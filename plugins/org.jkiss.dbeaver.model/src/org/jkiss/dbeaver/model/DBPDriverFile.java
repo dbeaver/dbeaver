@@ -57,7 +57,7 @@ public interface DBPDriverFile
 
     boolean isDisabled();
 
-    boolean isLocal();
+    boolean isDownloadable();
 
     @Nullable
     File getLocalFile();
