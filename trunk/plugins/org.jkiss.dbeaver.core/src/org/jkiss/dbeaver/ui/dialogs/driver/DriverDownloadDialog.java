@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
@@ -39,9 +40,9 @@ public class DriverDownloadDialog extends WizardDialog
 
     private boolean doDownload = false;
 
-    DriverDownloadDialog(IWorkbenchWindow window, DriverDescriptor driver, List<DriverFileDescriptor> files)
+    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files)
     {
-        super(window.getShell(), new DriverDownloadWizard(driver, files));
+        super(shell, new DriverDownloadWizard(driver, files));
     }
 
     DriverDescriptor getDriver() {
@@ -76,7 +77,7 @@ public class DriverDownloadDialog extends WizardDialog
     protected void buttonPressed(int buttonId) {
         if (buttonId == EDIT_DRIVER_BUTTON_ID) {
             cancelPressed();
-            DriverEditDialog dialog = new DriverEditDialog(DBeaverUI.getActiveWorkbenchShell(), getDriver());
+            DriverEditDialog dialog = new DriverEditDialog(null, getDriver());
             dialog.open();
         }
         super.buttonPressed(buttonId);
@@ -89,8 +90,8 @@ public class DriverDownloadDialog extends WizardDialog
         super.finishPressed();
     }
 
-    public static boolean downloadDriverFiles(IWorkbenchWindow window, DriverDescriptor driver, List<DriverFileDescriptor> files) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(window, driver, files);
+    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files) {
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files);
         dialog.open();
         return dialog.doDownload;
     }
