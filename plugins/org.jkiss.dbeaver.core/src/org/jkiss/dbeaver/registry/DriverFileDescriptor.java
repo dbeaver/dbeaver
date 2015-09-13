@@ -138,7 +138,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
     @Override
-    public boolean isLocal()
+    public boolean isDownloadable()
     {
         return isRepositoryArtifact() || isMavenArtifact();
     }

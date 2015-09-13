@@ -825,10 +825,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void loadDriver(DBRRunnableContext runnableContext)
         throws DBException
     {
-        this.loadDriver(runnableContext, false);
+        this.loadDriver(runnableContext, false, false);
     }
 
-    public void loadDriver(DBRRunnableContext runnableContext, boolean forceReload)
+    public void loadDriver(DBRRunnableContext runnableContext, boolean forceReload, boolean omitDownload)
         throws DBException
     {
         if (isLoaded && !forceReload) {
@@ -836,7 +836,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         isLoaded = false;
 
-        loadLibraries(runnableContext);
+        loadLibraries(runnableContext, omitDownload);
 
         if (!acceptDriverLicenses(runnableContext)) {
             throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
@@ -872,12 +872,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void loadLibraries(DBRRunnableContext runnableContext)
+    private void loadLibraries(DBRRunnableContext runnableContext, boolean omitDownload)
         throws DBException
     {
         this.classLoader = null;
 
-        validateFilesPresence(runnableContext);
+        if (!omitDownload) {
+            validateFilesPresence(runnableContext);
+        }
 
         List<URL> libraryURLs = new ArrayList<URL>();
         // Load libraries
@@ -920,7 +922,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         final List<DriverFileDescriptor> downloadCandidates = new ArrayList<DriverFileDescriptor>();
         for (DriverFileDescriptor file : files) {
-            if (file.isDisabled() || !file.isLocal()) {
+            if (file.isDisabled() || !file.isDownloadable()) {
                 // Nothing we can do about it
                 continue;
             }

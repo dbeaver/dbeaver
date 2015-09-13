@@ -425,9 +425,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
 
                 for (int i = 0; i < filters.size(); i++) {
                     final FilterInfo filterInfo = filters.get(i);
-                    filterInfo.link = new Link(filtersGroup,SWT.NONE);
-                    filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
-                    filterInfo.link.addSelectionListener(new SelectionAdapter() {
+                    filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
                             EditObjectFilterDialog dialog = new EditObjectFilterDialog(
