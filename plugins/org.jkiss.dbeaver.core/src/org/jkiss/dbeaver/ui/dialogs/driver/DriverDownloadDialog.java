@@ -92,6 +92,7 @@ public class DriverDownloadDialog extends WizardDialog
 
     public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files) {
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files);
+        //dialog.setPageSize(1,1);
         dialog.open();
         return dialog.doDownload;
     }
