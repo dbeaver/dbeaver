@@ -928,12 +928,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
-        UIUtils.runInUI(null, new Runnable() {
-            @Override
-            public void run() {
-                DriverDownloadDialog.downloadDriverFiles(DBeaverUI.getActiveWorkbenchWindow(), DriverDescriptor.this, downloadCandidates);
-            }
-        });
+        if (!downloadCandidates.isEmpty() || !fileSources.isEmpty()) {
+            UIUtils.runInUI(null, new Runnable() {
+                @Override
+                public void run() {
+                    DriverDownloadDialog.downloadDriverFiles(DBeaverUI.getActiveWorkbenchWindow(), DriverDescriptor.this, downloadCandidates);
+                }
+            });
+        }
 /*
             if (confirm.proceed) {
                 // Download drivers
