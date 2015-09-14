@@ -45,6 +45,7 @@ public class DriverDownloadDialog extends WizardDialog
     DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload)
     {
         super(shell, new DriverDownloadWizard(driver, files, forceDownload));
+        getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
     }
 
     DriverDescriptor getDriver() {

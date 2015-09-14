@@ -80,7 +80,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle("Driver settings");
-        setNeedsProgressMonitor(true);
+        setNeedsProgressMonitor(hasPredefinedFiles());
         setHelpAvailable(true);
     }
 
