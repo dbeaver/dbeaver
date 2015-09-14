@@ -76,14 +76,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
             for (DriverFileDescriptor file : wizard.getFiles()) {
-                new TableItem(filesTable, SWT.NONE).setText(file.getPath());
+                new TableItem(filesTable, SWT.NONE).setText(file.getDisplayName());
             }
             UIUtils.packColumns(filesTable, true);
         }
 
         if (!wizard.isForceDownload()) {
             Label infoText = new Label(composite, SWT.NONE);
-            infoText.setText("\n\nOr you can obtain driver files by yourself and add them in driver editor.");
+            infoText.setText("\nOr you can obtain driver files by yourself and add them in driver editor.");
             infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
