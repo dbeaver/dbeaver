@@ -27,9 +27,9 @@ public class MavenArtifactReference
 
     private static final String DEFAULT_MAVEN_VERSION = VERSION_PATTERN_RELEASE;
 
-    private final String groupId;
-    private final String artifactId;
-    private final String version;
+    private String groupId;
+    private String artifactId;
+    private String version;
 
     public MavenArtifactReference(String groupId, String artifactId, String version) {
         this.groupId = groupId;
@@ -65,11 +65,33 @@ public class MavenArtifactReference
         return groupId;
     }
 
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
     public String getArtifactId() {
         return artifactId;
     }
 
+    public void setArtifactId(String artifactId) {
+        this.artifactId = artifactId;
+    }
+
     public String getVersion() {
         return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+
+    public String getPath() {
+        return groupId + ":" + artifactId + ":" + version;
+    }
+
+    @Override
+    public String toString() {
+        return getPath();
     }
 }

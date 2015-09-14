@@ -151,6 +151,11 @@ public class DriverFileDescriptor implements DBPDriverFile
         return path.startsWith(FILE_SOURCE_MAVEN);
     }
 
+    public boolean isMavenArtifactResolved() {
+        MavenArtifact artifact = getMavenArtifact();
+        return artifact != null && artifact.getActiveLocalVersion() != null;
+    }
+
     private String getRepositoryPath() {
         return path.substring(FILE_SOURCE_REPO.length());
     }
