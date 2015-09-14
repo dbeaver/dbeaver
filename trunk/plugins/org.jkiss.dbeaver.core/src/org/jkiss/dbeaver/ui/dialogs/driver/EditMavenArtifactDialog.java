@@ -20,28 +20,34 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ListViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.registry.maven.MavenArtifact;
-
-import java.util.StringTokenizer;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * EditMavenArtifactDialog
  */
 class EditMavenArtifactDialog extends Dialog
 {
-    private MavenArtifact artifact;
+    private MavenArtifactReference artifact;
+    private Text groupText;
+    private Text artifactText;
+    private Combo versionText;
 
-    public EditMavenArtifactDialog(Shell shell, MavenArtifact artifact)
+    public EditMavenArtifactDialog(Shell shell, MavenArtifactReference artifact)
     {
         super(shell);
-        this.artifact = artifact;
+        this.artifact = artifact == null ? new MavenArtifactReference("", "", MavenArtifactReference.VERSION_PATTERN_RELEASE) : artifact;
+    }
+
+    public MavenArtifactReference getArtifact() {
+        return artifact;
     }
 
     @Override
@@ -53,40 +59,57 @@ class EditMavenArtifactDialog extends Dialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(CoreMessages.dialog_view_classpath_title);
+        getShell().setText("Edit Maven Artifact");
 
-        Composite group = (Composite) super.createDialogArea(parent);
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.heightHint = 300;
-        gd.widthHint = 400;
-        group.setLayoutData(gd);
+        Composite composite = (Composite) super.createDialogArea(parent);
+        ((GridLayout)composite.getLayout()).numColumns = 2;
 
-        {
-            ListViewer libsTable = new ListViewer(group, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
-            libsTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.widthHint = 200;
 
-            String classPath = System.getProperty("java.class.path"); //$NON-NLS-1$
-            StringTokenizer st = new StringTokenizer(classPath, ";"); //$NON-NLS-1$
-            while (st.hasMoreTokens()) {
-                libsTable.getList().add(st.nextToken());
+        groupText = UIUtils.createLabelText(composite, "Group Id", artifact.getGroupId());
+        groupText.setLayoutData(gd);
+        artifactText = UIUtils.createLabelText(composite, "Artifact Id", artifact.getArtifactId());
+        artifactText.setLayoutData(gd);
+        versionText = UIUtils.createLabelCombo(composite, "Version", SWT.DROP_DOWN | SWT.BORDER);
+        versionText.setLayoutData(gd);
+
+        versionText.setText(artifact.getVersion());
+        versionText.add(MavenArtifactReference.VERSION_PATTERN_RELEASE);
+        versionText.add(MavenArtifactReference.VERSION_PATTERN_LATEST);
+
+        ModifyListener ml = new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateButtons();
             }
-/*
-            for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-                libsTable.getList().add(lib.getLocalFile().getPath());
-            }
-*/
-        }
-        return group;
+        };
+        groupText.addModifyListener(ml);
+        artifactText.addModifyListener(ml);
+        versionText.addModifyListener(ml);
+
+        return composite;
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        createButton(
-            parent,
-            IDialogConstants.OK_ID,
-            IDialogConstants.OK_LABEL,
-            true);
+    protected void createButtonsForButtonBar(Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateButtons();
     }
 
+    private void updateButtons() {
+        getButton(IDialogConstants.OK_ID).setEnabled(
+            !CommonUtils.isEmpty(groupText.getText()) &&
+                !CommonUtils.isEmpty(artifactText.getText()) &&
+                !CommonUtils.isEmpty(versionText.getText())
+        );
+    }
+
+    @Override
+    protected void okPressed() {
+        artifact.setGroupId(groupText.getText());
+        artifact.setArtifactId(artifactText.getText());
+        artifact.setVersion(versionText.getText());
+        super.okPressed();
+    }
 }
