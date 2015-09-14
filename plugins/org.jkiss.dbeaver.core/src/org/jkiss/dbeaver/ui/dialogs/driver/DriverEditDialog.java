@@ -292,6 +292,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                     File localFile = lib.getLocalFile();
                     if (localFile != null && localFile.exists()) {
                         cell.setForeground(null);
+                    } else if (lib.isMavenArtifact() && !lib.isMavenArtifactResolved()) {
+                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     }
@@ -426,7 +428,11 @@ public class DriverEditDialog extends HelpEnabledDialog
             {
                 EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
                 if (fd.open() == IDialogConstants.OK_ID) {
-
+                    libList.add(new DriverFileDescriptor(
+                        driver,
+                        DBPDriverFile.FileType.jar,
+                        DriverFileDescriptor.FILE_SOURCE_MAVEN + fd.getArtifact().getPath()));
+                    changeLibContent();
                 }
             }
         });
