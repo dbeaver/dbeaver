@@ -25,10 +25,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -60,22 +57,35 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         final DriverDescriptor driver = wizard.getDriver();
 
         setMessage("Download " + driver.getFullName() + " driver files");
-
-        StringBuilder message = new StringBuilder();
-        message.append("").append(driver.getFullName())
-            .append(" driver files are missing.\nDBeaver can download these files automatically.\n\nFiles required by driver:");
-        for (DriverFileDescriptor file : wizard.getFiles()) {
-            message.append("\n\t-").append(file.getPath());
-        }
-        message.append("\n\nOr you can obtain driver files by yourself and add them in driver editor.");
         initializeDialogUnits(parent);
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        Text infoText = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
-        infoText.setText(message.toString());
-        infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (!wizard.isForceDownload()) {
+            Label infoText = new Label(composite, SWT.NONE);
+            infoText.setText(driver.getFullName() + " driver files are missing.\nDBeaver can download these files automatically.\n\n");
+            infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
+
+        {
+            Group filesGroup = UIUtils.createControlGroup(composite, "Files required by driver", 1, -1, -1);
+            filesGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Table filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
+            filesTable.setHeaderVisible(true);
+            filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
+            for (DriverFileDescriptor file : wizard.getFiles()) {
+                new TableItem(filesTable, SWT.NONE).setText(file.getPath());
+            }
+            UIUtils.packColumns(filesTable, true);
+        }
+
+        if (!wizard.isForceDownload()) {
+            Label infoText = new Label(composite, SWT.NONE);
+            infoText.setText("\n\nOr you can obtain driver files by yourself and add them in driver editor.");
+            infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        }
 
         createLinksPanel(composite);
 

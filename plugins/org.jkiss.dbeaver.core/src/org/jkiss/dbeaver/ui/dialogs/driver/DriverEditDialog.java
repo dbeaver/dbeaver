@@ -437,6 +437,14 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
         });
 
+        updateVersionButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                DriverFileDescriptor selectedLib = getSelectedLibrary();
+                updateArtifactVersion(selectedLib);
+            }
+        });
+
         deleteButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_delete, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -483,13 +491,6 @@ public class DriverEditDialog extends HelpEnabledDialog
                 cpDialog.open();
             }
         });
-        updateVersionButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                DriverFileDescriptor selectedLib = getSelectedLibrary();
-                updateArtifactVersion(selectedLib);
-            }
-        });
 
         changeLibContent();
 
@@ -500,7 +501,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     }
 
     private void updateArtifactVersion(DriverFileDescriptor lib) {
-
+        DriverDownloadDialog.downloadDriverFiles(getShell(), driver, Collections.singletonList(lib), true);
     }
 
     private void createParametersTab(TabFolder group)
