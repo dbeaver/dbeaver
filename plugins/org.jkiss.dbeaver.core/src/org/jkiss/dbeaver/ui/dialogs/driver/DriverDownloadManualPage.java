@@ -47,16 +47,11 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        StringBuilder message = new StringBuilder();
-        message.append("").append(driver.getFullName());
-        message.append(" driver files missing.\n\n" +
-            "According to vendor policy this driver isn't publicly available and you have to download it manually from vendor's web site.\n\n" +
-            "After successful driver download you will need to add JAR files in DBeaver libraries list.");
-
         Text infoText = new Text(composite, SWT.MULTI | SWT.READ_ONLY | SWT.WRAP);
-        infoText.setText(message.toString());
+        infoText.setText(driver.getFullName() + " driver files missing.\n\n" +
+            "According to vendor policy this driver isn't publicly available\nand you have to download it manually from vendor's web site.\n\n" +
+            "After successful driver download you will need to add JAR files in DBeaver libraries list.");
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.widthHint = 200;
         infoText.setLayoutData(gd);
 
         Group filesGroup = UIUtils.createControlGroup(composite, "Driver files", 1, -1, -1);
