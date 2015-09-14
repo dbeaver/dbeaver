@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
 
@@ -40,9 +42,9 @@ public class DriverDownloadDialog extends WizardDialog
 
     private boolean doDownload = false;
 
-    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files)
+    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload)
     {
-        super(shell, new DriverDownloadWizard(driver, files));
+        super(shell, new DriverDownloadWizard(driver, files, forceDownload));
     }
 
     DriverDescriptor getDriver() {
@@ -55,11 +57,26 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     @Override
+    protected Control createDialogArea(Composite parent) {
+        Control dialogArea = super.createDialogArea(parent);
+        if (getWizard().isForceDownload()) {
+            UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                @Override
+                public void run() {
+                    buttonPressed(IDialogConstants.FINISH_ID);
+                }
+            });
+        }
+        return dialogArea;
+    }
+
+    @Override
     protected void createButtonsForButtonBar(Composite parent) {
-        createButton(parent, EDIT_DRIVER_BUTTON_ID, "Edit Driver", false);
+        if (!getWizard().isForceDownload()) {
+            createButton(parent, EDIT_DRIVER_BUTTON_ID, "Edit Driver", false);
+        }
 
         super.createButtonsForButtonBar(parent);
-        parent.layout();
     }
 
     @Override
@@ -85,14 +102,20 @@ public class DriverDownloadDialog extends WizardDialog
 
     @Override
     protected void finishPressed() {
-        getButton(EDIT_DRIVER_BUTTON_ID).setEnabled(false);
+        Button editButton = getButton(EDIT_DRIVER_BUTTON_ID);
+        if (editButton != null) {
+            editButton.setEnabled(false);
+        }
         doDownload = true;
         super.finishPressed();
     }
 
     public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files);
-        //dialog.setPageSize(1,1);
+        return downloadDriverFiles(shell, driver, files, false);
+    }
+
+    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload) {
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, forceDownload);
         dialog.open();
         return dialog.doDownload;
     }
