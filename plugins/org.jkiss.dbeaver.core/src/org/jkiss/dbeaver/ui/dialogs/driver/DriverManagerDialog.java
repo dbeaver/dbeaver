@@ -17,13 +17,9 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.operation.ModalContext;
 import org.eclipse.jface.viewers.*;
-import org.eclipse.jface.wizard.ProgressMonitorPart;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
@@ -31,20 +27,14 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
@@ -52,13 +42,12 @@ import org.jkiss.dbeaver.ui.controls.DriverTreeViewer;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
  * EditDriverDialog
  */
-public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener, DBRRunnableContext {
+public class DriverManagerDialog extends HelpEnabledDialog implements ISelectionChangedListener, IDoubleClickListener {
 
     private static final String DIALOG_ID = "DBeaver.DriverManagerDialog";//$NON-NLS-1$
     public static final String DEFAULT_DS_PROVIDER = "generic";
@@ -74,7 +63,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private DriverTreeControl treeControl;
     private Image dialogImage;
     //private Label driverDescription;
-    private ProgressMonitorPart monitorPart;
+    //private ProgressMonitorPart monitorPart;
+    private Text descText;
 
     public DriverManagerDialog(Shell shell)
     {
@@ -203,23 +193,14 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
             }
         }
+
+        descText = new Text(group, SWT.READ_ONLY);
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.verticalIndent = 5;
+        gd.horizontalSpan = 2;
+        gd.grabExcessHorizontalSpace = true;
+        descText.setLayoutData(gd);
 /*
-        {
-            Composite descBar = UIUtils.createPlaceholder(group, 1, 5);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            descBar.setLayoutData(gd);
-
-            Text text = new Text(descBar, SWT.READ_ONLY | SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            //gd.verticalIndent = 5;
-            text.setLayoutData(gd);
-        }
-*/
-        //UIUtils.setHelp(group, IHelpContextIds.CTX_DRIVER_MANAGER);
-
-        //driverDescription = new Label(group, SWT.NONE);
-
         monitorPart = new ProgressMonitorPart(group, null, true);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.verticalIndent = 5;
@@ -227,7 +208,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         gd.grabExcessHorizontalSpace = true;
         monitorPart.setLayoutData(gd);
         monitorPart.setVisible(false);
-        //monitorPart.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+*/
 
         setDefaultSelection();
         this.updateButtons();
@@ -297,6 +278,17 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         deleteButton.setEnabled(selectedDriver != null && selectedDriver.getProviderDescriptor().isDriversManagable());
 
         if (selectedDriver != null) {
+            descText.setText(CommonUtils.toString(selectedDriver.getDescription()));
+        } else if (selectedCategory != null) {
+            descText.setText(selectedCategory + " drivers");
+        } else if (selectedProvider != null) {
+            descText.setText(selectedProvider.getName() + " provider");
+        } else {
+            descText.setText("");
+        }
+
+/*
+        if (selectedDriver != null) {
             monitorPart.setTaskName(CommonUtils.toString(selectedDriver.getDescription()));
         } else if (selectedCategory != null) {
             monitorPart.setTaskName(selectedCategory + " drivers");
@@ -305,6 +297,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         } else {
             monitorPart.setTaskName("");
         }
+*/
     }
 
     private void createDriver()
@@ -325,7 +318,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     {
         DriverDescriptor driver = selectedDriver;
         if (driver != null) {
-            driver.validateFilesPresence(this);
+            //driver.validateFilesPresence(this);
 
             DriverEditDialog dialog = new DriverEditDialog(getShell(), driver);
             if (dialog.open() == IDialogConstants.OK_ID) {
@@ -364,7 +357,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
         return super.close();
     }
 
-    @Override
+/*    @Override
     public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException
     {
         // Code copied from WizardDialog
@@ -395,5 +388,5 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 monitorPart.setVisible(false);
             }
         }
-    }
+    }*/
 }
