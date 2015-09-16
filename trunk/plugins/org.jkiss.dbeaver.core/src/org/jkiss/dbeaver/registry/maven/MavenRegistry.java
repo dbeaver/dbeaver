@@ -26,9 +26,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class MavenRegistry
 {
@@ -45,6 +43,8 @@ public class MavenRegistry
     }
 
     private final List<MavenRepository> repositories = new ArrayList<MavenRepository>();
+    // Cache for not found artifact ids. Avoid multiple remote metadata reading
+    private final Set<String> notFoundArtifacts = new HashSet<String>();
 
     private MavenRegistry()
     {
@@ -98,17 +98,19 @@ public class MavenRegistry
     }
 
     @Nullable
-    public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
+    private MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
+        String fullId = groupId + ":" + artifactId;
+        if (notFoundArtifacts.contains(fullId)) {
+            return null;
+        }
+
         for (MavenRepository repository : repositories) {
-            MavenArtifact artifact = repository.getArtifact(groupId, artifactId, false);
+            MavenArtifact artifact = repository.findArtifact(groupId, artifactId);
             if (artifact != null) {
                 return artifact;
             }
         }
-        // Create artifact in default repository
-        if (!repositories.isEmpty()) {
-            return repositories.get(0).getArtifact(groupId, artifactId, true);
-        }
+        notFoundArtifacts.add(fullId);
         return null;
     }
 
