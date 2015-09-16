@@ -520,6 +520,7 @@
                     class="com.ncr.teradata.TeraDriver"
                     sampleURL="jdbc:teradata://{host}/{database}"
                     defaultPort=""
+                    webURL="https://downloads.teradata.com/download/connectivity/jdbc-driver"
                     description="Teradata JDBC driver">
                     <file type="jar" path="drivers/teradata/terajdbc4.jar"/>
                     <file type="jar" path="drivers/teradata/tdgssconfig.jar"/>
