@@ -53,7 +53,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         this.store = store;
         loadProfile();
 
-        store.addPropertyChangeListener(this);
+        //store.addPropertyChangeListener(this);
     }
 
     private void loadProfile()
