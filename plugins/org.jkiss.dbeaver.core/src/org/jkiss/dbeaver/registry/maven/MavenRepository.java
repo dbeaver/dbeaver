@@ -104,19 +104,22 @@ public class MavenRepository
     }
 
     @Nullable
-    public MavenArtifact getArtifact(@NotNull String groupId, @NotNull String artifactId, boolean create) {
+    public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
         for (MavenArtifact artifact : cachedArtifacts) {
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return artifact;
             }
         }
-        if (create) {
-            MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
-            addCachedArtifact(artifact);
-            return artifact;
-        } else {
+        // Not cached - look in remote repository
+        MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
+        try {
+            artifact.loadMetadata();
+        } catch (IOException e) {
+            log.debug("Artifact [" + artifact + "] not found in repository [" + getUrl() + "]");
             return null;
         }
+        cachedArtifacts.add(artifact);
+        return artifact;
     }
 
     private synchronized void addCachedArtifact(@NotNull MavenArtifact artifact) {
