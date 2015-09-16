@@ -42,15 +42,14 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriverFile;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.DriverFileDescriptor;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
@@ -141,7 +140,8 @@ public class DriverEditDialog extends HelpEnabledDialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        if (driver == null) {
+        boolean newDriver = driver == null;
+        if (newDriver) {
             getShell().setText(CoreMessages.dialog_edit_driver_title_create_driver);
             driver = provider.createDriver();
         } else {
@@ -158,16 +158,11 @@ public class DriverEditDialog extends HelpEnabledDialog
         group.setLayoutData(gd);
 
         {
-            Composite propsGroup = new Composite(group, SWT.NONE);
-            propsGroup.setLayout(new GridLayout(2, false));
+            Group propsGroup = UIUtils.createControlGroup(group, "Settings", 4, -1, -1);
             propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name);
-            final Composite namePlaceholder = UIUtils.createPlaceholder(propsGroup, 3, 5);
-            namePlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
-
-            driverNameText = new Text(namePlaceholder, SWT.BORDER | advStyle);
-            driverNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            driverNameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name + "*", driver.getName(), SWT.BORDER | advStyle, gd);
             driverNameText.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e)
@@ -176,10 +171,31 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
 
-            driverCategoryCombo = UIUtils.createLabelCombo(namePlaceholder, CoreMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
-            driverDescText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
+            UIUtils.createControlLabel(propsGroup, "Driver Type");
+            final CImageCombo providerCombo = new CImageCombo(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
+            providerCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            if (newDriver) {
+                for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+                    if (p.isDriversManagable()) {
+                        providerCombo.add(DBeaverIcons.getImage(p.getIcon()), p.getName(), null, p);
+                    }
+                }
+                providerCombo.select(provider);
+                providerCombo.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        provider = (DataSourceProviderDescriptor) providerCombo.getItem(providerCombo.getSelectionIndex()).getData();
+                        driver = provider.createDriver();
+                    }
+                });
+            } else {
+                providerCombo.add(DBeaverIcons.getImage(provider.getIcon()), provider.getName(), null, provider);
+                providerCombo.select(provider);
+            }
 
-            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name, CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name + "*", CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle, gd);
             driverClassText.addModifyListener(new ModifyListener()
             {
                 @Override
@@ -189,7 +205,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
 
-            driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle);
+            driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
             driverURLText.addModifyListener(new ModifyListener()
             {
                 @Override
@@ -199,13 +215,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                 }
             });
 
-            boolean hasSite = !CommonUtils.isEmpty(driver.getWebURL());
-
-            UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_label_default_port);
-            Composite ph = hasSite ? UIUtils.createPlaceholder(propsGroup, 3) : propsGroup;
-            ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            driverPortText = new Text(ph, SWT.BORDER | advStyle);
-            driverPortText.setText(driver.getDefaultPort() == null ? "" : driver.getDefaultPort()); //$NON-NLS-1$
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            driverPortText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_default_port, driver.getDefaultPort() == null ? "" : driver.getDefaultPort(), SWT.BORDER | advStyle, gd);
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(new ModifyListener()
             {
@@ -215,23 +226,51 @@ public class DriverEditDialog extends HelpEnabledDialog
                     onChangeProperty();
                 }
             });
-            if (hasSite) {
-                GridLayout gl = (GridLayout)ph.getLayout();
-                gl.horizontalSpacing = 5;
 
-                UIUtils.createControlLabel(ph, CoreMessages.dialog_edit_driver_label_website);
-                Link urlLabel = UIUtils.createLink(ph, "<a>" + driver.getWebURL() + "</a>", new SelectionAdapter() {
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            embeddedDriverCheck = UIUtils.createLabelCheckbox(propsGroup, "Embedded", "Embedded driver", driver.isEmbedded());
+            embeddedDriverCheck.setLayoutData(gd);
+        }
+
+        {
+            Group infoGroup = UIUtils.createControlGroup(group, "Description", 2, -1, -1);
+            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, CoreMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
+            driverCategoryCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            if (isReadOnly) {
+                driverCategoryCombo.setEnabled(false);
+            }
+            Set<String> categories = new TreeSet<String>();
+            for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
+                for (DriverDescriptor drv : p.getEnabledDrivers()) {
+                    if (!CommonUtils.isEmpty(drv.getCategory())) {
+                        categories.add(drv.getCategory());
+                    }
+                }
+            }
+            for (String category : categories) {
+                driverCategoryCombo.add(category);
+            }
+            if (!CommonUtils.isEmpty(driver.getCategory())) {
+                driverCategoryCombo.setText(driver.getCategory());
+            } else if (!CommonUtils.isEmpty(defaultCategory)) {
+                driverCategoryCombo.setText(defaultCategory);
+            }
+
+            driverDescText = UIUtils.createLabelText(infoGroup, CoreMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
+
+            if (!CommonUtils.isEmpty(driver.getWebURL())) {
+                UIUtils.createControlLabel(infoGroup, CoreMessages.dialog_edit_driver_label_website);
+                Link urlLabel = UIUtils.createLink(infoGroup, "<a>" + driver.getWebURL() + "</a>", new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void widgetSelected(SelectionEvent e) {
                         RuntimeUtils.launchProgram(driver.getWebURL());
                     }
                 });
                 urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
             }
-
-            embeddedDriverCheck = UIUtils.createLabelCheckbox(propsGroup, "Embedded", "Embedded driver", driver.isEmbedded());
         }
 
         {
@@ -624,27 +663,6 @@ public class DriverEditDialog extends HelpEnabledDialog
         driverPortText.setText(original ?
             (driver.getOrigDefaultPort() == null ? "" : driver.getOrigDefaultPort()) : //$NON-NLS-1$
             (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
-
-        {
-            driverCategoryCombo.removeAll();
-            if (isReadOnly) {
-                driverCategoryCombo.setEnabled(false);
-            }
-            Set<String> categories = new HashSet<String>();
-            for (DriverDescriptor drv : driver.getProviderDescriptor().getEnabledDrivers()) {
-                if (!CommonUtils.isEmpty(drv.getCategory())) {
-                    categories.add(drv.getCategory());
-                }
-            }
-            for (String category : categories) {
-                driverCategoryCombo.add(category);
-            }
-            if (!CommonUtils.isEmpty(driver.getCategory())) {
-                driverCategoryCombo.setText(driver.getCategory());
-            } else if (!CommonUtils.isEmpty(defaultCategory)) {
-                driverCategoryCombo.setText(defaultCategory);
-            }
-        }
 
         embeddedDriverCheck.setSelection(driver.isEmbedded());
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
