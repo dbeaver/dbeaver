@@ -222,12 +222,17 @@ public class BundlePreferenceStore extends AbstractPreferenceStore {
 
     @Override
     public void setValue(String name, String value) {
+        String oldValue = getString(name);
+        if (CommonUtils.equalObjects(oldValue, value)) {
+            return;
+        }
         if (getDefaultString(name).equals(value)) {
             props.remove(name);
         } else {
             props.put(name, value);
         }
         dirty = true;
+        firePropertyChangeEvent(name, oldValue, value);
     }
 
     @Override

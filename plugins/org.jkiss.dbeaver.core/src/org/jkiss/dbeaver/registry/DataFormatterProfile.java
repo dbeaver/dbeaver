@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -33,7 +34,7 @@ import java.util.Map;
 /**
  * DataFormatterProfile
  */
-public class DataFormatterProfile implements DBDDataFormatterProfile {
+public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPreferenceListener {
 
     private static final String PROP_LANGUAGE = "dataformat.profile.language"; //$NON-NLS-1$
     private static final String PROP_COUNTRY = "dataformat.profile.country"; //$NON-NLS-1$
@@ -51,6 +52,8 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
         this.name = profileName;
         this.store = store;
         loadProfile();
+
+        store.addPropertyChangeListener(this);
     }
 
     private void loadProfile()
@@ -224,6 +227,14 @@ public class DataFormatterProfile implements DBDDataFormatterProfile {
                     PrefUtils.setPreferenceDefaultValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), defaultValue);
                 }
             }
+        }
+    }
+
+    @Override
+    public void preferenceChange(PreferenceChangeEvent event) {
+        if (event.getProperty() != null && event.getProperty().startsWith(DATAFORMAT_PREFIX)) {
+            // Reload this profile
+            loadProfile();
         }
     }
 }

@@ -361,7 +361,6 @@ public class PrefPageDataFormat extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        PrefUtils.savePreferenceStore(store);
     }
 
     @Override
