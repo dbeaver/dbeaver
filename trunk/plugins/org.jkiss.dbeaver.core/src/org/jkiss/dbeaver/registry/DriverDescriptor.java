@@ -938,6 +938,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    @Override
+    public void updateFiles(DBRRunnableContext runnableContext) {
+
+    }
+
     public boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
     {
         // User must accept all licenses before actual drivers download

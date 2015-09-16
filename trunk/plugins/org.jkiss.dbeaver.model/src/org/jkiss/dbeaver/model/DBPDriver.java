@@ -97,6 +97,8 @@ public interface DBPDriver extends DBPObject
 
     void validateFilesPresence(DBRRunnableContext runnableContext);
 
+    void updateFiles(DBRRunnableContext runnableContext);
+
     void loadDriver(DBRRunnableContext runnableContext) throws DBException;
 
 }
