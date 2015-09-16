@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,6 +34,8 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.DataFormatterRegistry;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.LocaleSelectorControl;
 import org.jkiss.dbeaver.ui.dialogs.DataFormatProfilesEditDialog;
@@ -360,6 +363,20 @@ public class PrefPageDataFormat extends TargetPrefPage
             formatterProfile.saveProfile();
         } catch (Exception e) {
             log.warn(e);
+        }
+        // Update all derived profiles
+        if (formatterProfile == DataFormatterRegistry.getInstance().getGlobalProfile()) {
+            for (DBDDataFormatterProfile profile : DataFormatterRegistry.getInstance().getCustomProfiles()) {
+                profile.reset();
+            }
+            for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
+                if (project.isOpen()) {
+                    DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                    for (DataSourceDescriptor ds : dsRegistry.getDataSources()) {
+                        ds.getDataFormatterProfile().reset();
+                    }
+                }
+            }
         }
     }
 
