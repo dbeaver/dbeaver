@@ -63,6 +63,9 @@ public class MavenRegistry
     }
 
     public void loadCustomRepositories() {
+        // Clear not-found cache
+        notFoundArtifacts.clear();
+
         // Remove all custom repositories
         for (Iterator<MavenRepository> iterator = repositories.iterator(); iterator.hasNext(); ) {
             MavenRepository repository = iterator.next();
