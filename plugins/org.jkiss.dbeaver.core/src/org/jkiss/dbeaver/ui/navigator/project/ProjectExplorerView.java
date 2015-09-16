@@ -131,15 +131,14 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         }));
         columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
+            private SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm");
             @Override
             public String getText(Object element) {
                 DBNNode node = (DBNNode) element;
                 if (node instanceof DBNResource) {
                     IResource resource = ((DBNResource) node).getResource();
                     if (resource instanceof IFile) {
-                        return
-                            SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.SHORT, SimpleDateFormat.SHORT)
-                                .format(new Date(resource.getLocation().toFile().lastModified()));
+                        return sdf.format(new Date(resource.getLocation().toFile().lastModified()));
                     }
                 }
                 return "";
