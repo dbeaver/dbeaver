@@ -89,6 +89,8 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
                 this.setMessage(selectedDriver.getDescription());
             } else if (selectedObject instanceof DataSourceProviderDescriptor) {
                 this.setMessage(((DataSourceProviderDescriptor) selectedObject).getDescription());
+            } else if (selectedObject instanceof DriverTreeViewer.DriverCategory) {
+                this.setMessage(((DriverTreeViewer.DriverCategory) selectedObject).getName() + " drivers");
             }
         }
         getWizard().getContainer().updateButtons();
