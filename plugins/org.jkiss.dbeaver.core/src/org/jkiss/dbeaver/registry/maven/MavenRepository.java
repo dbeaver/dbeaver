@@ -103,6 +103,10 @@ public class MavenRepository
         return predefined;
     }
 
+    public boolean isLocal() {
+        return false;
+    }
+
     @Nullable
     public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
         for (MavenArtifact artifact : cachedArtifacts) {
