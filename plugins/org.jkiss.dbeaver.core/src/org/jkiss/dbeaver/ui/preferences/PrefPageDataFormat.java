@@ -364,20 +364,6 @@ public class PrefPageDataFormat extends TargetPrefPage
         } catch (Exception e) {
             log.warn(e);
         }
-        // Update all derived profiles
-        if (formatterProfile == DataFormatterRegistry.getInstance().getGlobalProfile()) {
-            for (DBDDataFormatterProfile profile : DataFormatterRegistry.getInstance().getCustomProfiles()) {
-                profile.reset();
-            }
-            for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
-                if (project.isOpen()) {
-                    DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-                    for (DataSourceDescriptor ds : dsRegistry.getDataSources()) {
-                        ds.getDataFormatterProfile().reset();
-                    }
-                }
-            }
-        }
     }
 
     @Override
