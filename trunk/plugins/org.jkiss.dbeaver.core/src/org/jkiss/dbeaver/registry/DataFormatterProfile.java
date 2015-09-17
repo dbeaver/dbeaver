@@ -45,15 +45,12 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     private DBPPreferenceStore store;
     private String name;
     private Locale locale;
-    private Map<String, Map<Object, Object>> properties = new HashMap<String, Map<Object, Object>>();
 
     DataFormatterProfile(String profileName, DBPPreferenceStore store)
     {
         this.name = profileName;
         this.store = store;
         loadProfile();
-
-        //store.addPropertyChangeListener(this);
     }
 
     private void loadProfile()
@@ -72,21 +69,6 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
                 this.locale = new Locale(language, country, variant);
             }
         }
-        properties.clear();
-        for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
-            Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
-            Map<Object, Object> formatterProps = new HashMap<Object, Object>();
-            for (DBPPropertyDescriptor prop : formatter.getProperties()) {
-                Object defaultValue = defaultProperties.get(prop.getId());
-                Object propValue = PrefUtils.getPreferenceValue(
-                    store,
-                    DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), prop.getDataType());
-                if (propValue != null && !CommonUtils.equalObjects(defaultValue, propValue)) {
-                    formatterProps.put(prop.getId(), propValue);
-                }
-            }
-            properties.put(formatter.getId(), formatterProps);
-        }
     }
 
     @Override
@@ -96,17 +78,6 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
         store.setValue(PROP_COUNTRY, locale.getCountry());
         store.setValue(PROP_VARIANT, locale.getVariant());
 
-        for (DataFormatterDescriptor formatter : DataFormatterRegistry.getInstance().getDataFormatters()) {
-            Map<Object, Object> formatterProps = properties.get(formatter.getId());
-            for (DBPPropertyDescriptor prop : formatter.getProperties()) {
-                Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
-                if (propValue != null) {
-                    PrefUtils.setPreferenceValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), propValue);
-                } else {
-                    store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
-                }
-            }
-        }
         PrefUtils.savePreferenceStore(store);
     }
 
@@ -143,13 +114,33 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     @Override
     public Map<Object, Object> getFormatterProperties(String typeId)
     {
-        return properties.get(typeId);
+        DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
+        Map<Object, Object> defaultProperties = formatter.getSample().getDefaultProperties(locale);
+        Map<Object, Object> formatterProps = new HashMap<Object, Object>();
+        for (DBPPropertyDescriptor prop : formatter.getProperties()) {
+            Object defaultValue = defaultProperties.get(prop.getId());
+            Object propValue = PrefUtils.getPreferenceValue(
+                store,
+                DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), prop.getDataType());
+            if (propValue != null && !CommonUtils.equalObjects(defaultValue, propValue)) {
+                formatterProps.put(prop.getId(), propValue);
+            }
+        }
+        return formatterProps;
     }
 
     @Override
-    public void setFormatterProperties(String typeId, Map<Object, Object> properties)
+    public void setFormatterProperties(String typeId, Map<Object, Object> formatterProps)
     {
-        this.properties.put(typeId, new HashMap<Object, Object>(properties));
+        DataFormatterDescriptor formatter = DataFormatterRegistry.getInstance().getDataFormatter(typeId);
+        for (DBPPropertyDescriptor prop : formatter.getProperties()) {
+            Object propValue = formatterProps == null ? null : formatterProps.get(prop.getId());
+            if (propValue != null) {
+                PrefUtils.setPreferenceValue(store, DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId(), propValue);
+            } else {
+                store.setToDefault(DATAFORMAT_TYPE_PREFIX + formatter.getId() + "." + prop.getId());
+            }
+        }
     }
 
     @Override
