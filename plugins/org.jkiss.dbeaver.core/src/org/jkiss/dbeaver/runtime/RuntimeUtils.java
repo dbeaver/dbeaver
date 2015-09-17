@@ -289,17 +289,23 @@ public class RuntimeUtils {
         }
 
         URL url = new URL(urlString);
-        final HttpURLConnection connection = (HttpURLConnection) (proxy == null ? url.openConnection() : url.openConnection(proxy));
+        final URLConnection connection = (proxy == null ? url.openConnection() : url.openConnection(proxy));
         connection.setReadTimeout(10000);
         connection.setConnectTimeout(10000);
-        connection.setRequestMethod("GET"); //$NON-NLS-1$
-        connection.setInstanceFollowRedirects(true);
-        connection.setRequestProperty(
-            "User-Agent",  //$NON-NLS-1$
-            DBeaverCore.getProductTitle());
+        if (connection instanceof HttpURLConnection) {
+            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+            httpConnection.setRequestMethod("GET"); //$NON-NLS-1$
+            httpConnection.setInstanceFollowRedirects(true);
+            connection.setRequestProperty(
+                "User-Agent",  //$NON-NLS-1$
+                DBeaverCore.getProductTitle());
+        }
         connection.connect();
-        if (connection.getResponseCode() != 200) {
-            throw new IOException("File not found '" + urlString + "': " + connection.getResponseMessage());
+        if (connection instanceof HttpURLConnection) {
+            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+            if (httpConnection.getResponseCode() != 200) {
+                throw new IOException("File not found '" + urlString + "': " + httpConnection.getResponseMessage());
+            }
         }
         return connection;
     }
