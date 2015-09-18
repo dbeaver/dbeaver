@@ -62,6 +62,9 @@ public class MavenLocalVersion
     }
 
     public File getCacheFile() {
+        if (artifact.getRepository().isLocal()) {
+            return new File(getExternalURL(MavenArtifact.FILE_JAR));
+        }
         return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + fileName);
     }
 
