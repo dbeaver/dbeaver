@@ -26,40 +26,53 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.*;
 
 public class MavenRegistry
 {
+    public static final String MAVEN_LOCAL_REPO_ID = "local";
+    public static final String MAVEN_LOCAL_REPO_NAME = "Local Repository";
+    public static final String MAVEN_LOCAL_REPO_FOLDER = "maven-local";
+
     private static MavenRegistry instance = null;
 
     public synchronized static MavenRegistry getInstance()
     {
         if (instance == null) {
             instance = new MavenRegistry();
-            instance.loadExtensions(Platform.getExtensionRegistry());
             instance.loadCustomRepositories();
         }
         return instance;
     }
 
     private final List<MavenRepository> repositories = new ArrayList<MavenRepository>();
+    private final MavenRepository localRepository;
     // Cache for not found artifact ids. Avoid multiple remote metadata reading
     private final Set<String> notFoundArtifacts = new HashSet<String>();
 
     private MavenRegistry()
     {
-    }
-
-    private void loadExtensions(IExtensionRegistry registry)
-    {
-        // Load data type providers from external plugins
+        // Load repositories info
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(MavenRepository.EXTENSION_ID);
+            IConfigurationElement[] extElements = Platform.getExtensionRegistry().getConfigurationElementsFor(MavenRepository.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 MavenRepository repository = new MavenRepository(ext);
                 repositories.add(repository);
             }
         }
+        // Create local repository
+        String localRepoURL;
+        try {
+            localRepoURL = Platform.getInstallLocation().getDataArea(MAVEN_LOCAL_REPO_FOLDER).toString();
+        } catch (IOException e) {
+            localRepoURL = Platform.getInstallLocation().getURL().toString() + "/" + MAVEN_LOCAL_REPO_FOLDER;
+        }
+        localRepository = new MavenRepository(
+            MAVEN_LOCAL_REPO_ID,
+            MAVEN_LOCAL_REPO_NAME,
+            localRepoURL,
+            true);
     }
 
     public void loadCustomRepositories() {
@@ -85,7 +98,7 @@ public class MavenRegistry
             }
             String repoID = repoInfo.substring(0, divPos);
             String repoURL = repoInfo.substring(divPos + 1);
-            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL);
+            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL, false);
             repositories.add(repo);
         }
     }
@@ -107,12 +120,20 @@ public class MavenRegistry
             return null;
         }
 
+        // Try all available repositories
         for (MavenRepository repository : repositories) {
             MavenArtifact artifact = repository.findArtifact(groupId, artifactId);
             if (artifact != null) {
                 return artifact;
             }
         }
+        // Try local repository
+        MavenArtifact artifact = localRepository.findArtifact(groupId, artifactId);
+        if (artifact != null) {
+            return artifact;
+        }
+
+        // Not found
         notFoundArtifacts.add(fullId);
         return null;
     }

@@ -63,6 +63,7 @@ public class MavenRepository
     private String id;
     private String name;
     private String url;
+    private boolean local;
     private boolean predefined = false;
 
     private List<MavenArtifact> cachedArtifacts = new ArrayList<MavenArtifact>();
@@ -72,15 +73,19 @@ public class MavenRepository
         this(
             config.getAttribute(RegistryConstants.ATTR_ID),
             config.getAttribute(RegistryConstants.ATTR_NAME),
-            config.getAttribute(RegistryConstants.ATTR_URL));
+            config.getAttribute(RegistryConstants.ATTR_URL),
+            false);
         this.predefined = true;
     }
 
-    public MavenRepository(String id, String name, String url) {
+    MavenRepository(String id, String name, String url, boolean local) {
         this.id = id;
         this.name = name;
         this.url = url;
-        loadCache();
+        this.local = local;
+        if (!local) {
+            loadCache();
+        }
     }
 
     public void flushCache() {
@@ -104,7 +109,7 @@ public class MavenRepository
     }
 
     public boolean isLocal() {
-        return false;
+        return local;
     }
 
     @Nullable
