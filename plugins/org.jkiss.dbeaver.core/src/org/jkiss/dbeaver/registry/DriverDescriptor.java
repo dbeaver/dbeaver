@@ -956,7 +956,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    file.downloadLibraryFile(monitor);
+                                    file.downloadLibraryFile(monitor, false);
                                 } catch (final Exception e) {
                                     log.warn("Can't obtain driver license", e);
                                 }

@@ -131,6 +131,17 @@ public class MavenRegistry
         return null;
     }
 
+    public void resetArtifactInfo(MavenArtifactReference artifactReference) {
+        String groupId = artifactReference.getGroupId();
+        String artifactId = artifactReference.getArtifactId();
+        String fullId = groupId + ":" + artifactId;
+        notFoundArtifacts.remove(fullId);
+        for (MavenRepository repository : repositories) {
+            repository.resetArtifactCache(groupId, artifactId);
+        }
+        localRepository.resetArtifactCache(groupId, artifactId);
+    }
+
     @Nullable
     private MavenArtifact findInRepositories(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
         // Try all available repositories (without resolve)
@@ -155,4 +166,5 @@ public class MavenRegistry
         }
         return null;
     }
+
 }

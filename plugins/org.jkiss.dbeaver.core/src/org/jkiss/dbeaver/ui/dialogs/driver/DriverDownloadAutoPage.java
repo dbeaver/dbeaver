@@ -127,7 +127,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        file.downloadLibraryFile(monitor);
+                        file.downloadLibraryFile(monitor, getWizard().isUpdateVersion());
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }
