@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileDescriptor;
@@ -42,9 +41,9 @@ public class DriverDownloadDialog extends WizardDialog
 
     private boolean doDownload = false;
 
-    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload)
+    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean updateVersion, boolean forceDownload)
     {
-        super(shell, new DriverDownloadWizard(driver, files, forceDownload));
+        super(shell, new DriverDownloadWizard(driver, files, updateVersion, forceDownload));
         getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
     }
 
@@ -116,7 +115,14 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, forceDownload);
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, false, forceDownload);
+        dialog.setMinimumPageSize(100, 100);
+        dialog.open();
+        return dialog.doDownload;
+    }
+
+    public static boolean updateDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload) {
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, true, forceDownload);
         dialog.setMinimumPageSize(100, 100);
         dialog.open();
         return dialog.doDownload;
