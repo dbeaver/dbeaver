@@ -36,14 +36,16 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     private DriverDescriptor driver;
     private List<DriverFileDescriptor> files;
+    private boolean updateVersion;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
-    public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload) {
+    public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<DriverFileDescriptor> files, boolean updateVersion, boolean forceDownload) {
         this.driver = driver;
         this.files = files;
+        this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
-        setWindowTitle("Setup driver files");
+        setWindowTitle(updateVersion ? "Update driver files" : "Setup driver files");
         setNeedsProgressMonitor(hasPredefinedFiles());
         loadSettings();
     }
