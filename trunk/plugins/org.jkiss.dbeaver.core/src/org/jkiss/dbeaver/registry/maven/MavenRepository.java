@@ -84,9 +84,7 @@ public class MavenRepository
         if (!url.endsWith("/")) url += "/";
         this.url = url;
         this.local = local;
-        if (!local) {
-            loadCache();
-        }
+        loadCache();
     }
 
     public void flushCache() {

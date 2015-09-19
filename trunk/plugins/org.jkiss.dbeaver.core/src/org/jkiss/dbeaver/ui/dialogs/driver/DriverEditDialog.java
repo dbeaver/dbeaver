@@ -479,10 +479,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         updateVersionButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-//                driver.updateFiles();
-//                DriverDownloadDialog.downloadDriverFiles(getShell(), driver, Collections.singletonList(lib), true);
-                DriverFileDescriptor selectedLib = getSelectedLibrary();
-                updateArtifactVersion(selectedLib);
+                DriverDownloadDialog.updateDriverFiles(getShell(), driver, libList, true);
             }
         });
 
@@ -539,10 +536,6 @@ public class DriverEditDialog extends HelpEnabledDialog
         libsTab.setText(CoreMessages.dialog_edit_driver_tab_name_driver_libraries);
         libsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_tooltip_driver_libraries);
         libsTab.setControl(libsGroup);
-    }
-
-    private void updateArtifactVersion(DriverFileDescriptor lib) {
-        DriverDownloadDialog.downloadDriverFiles(getShell(), driver, Collections.singletonList(lib), true);
     }
 
     private void createParametersTab(TabFolder group)
