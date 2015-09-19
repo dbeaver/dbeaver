@@ -323,10 +323,10 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 */
 
-    public void downloadLibraryFile(DBRProgressMonitor monitor) throws IOException, InterruptedException
+    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion) throws IOException, InterruptedException
     {
         if (isMavenArtifact()) {
-            downloadMavenArtifact(monitor);
+            downloadMavenArtifact(monitor, updateVersion);
         }
         String externalURL = getExternalURL();
         if (externalURL == null) {
@@ -386,16 +386,23 @@ public class DriverFileDescriptor implements DBPDriverFile
         monitor.done();
     }
 
-    private void downloadMavenArtifact(DBRProgressMonitor monitor) throws IOException {
+    private void downloadMavenArtifact(DBRProgressMonitor monitor, boolean updateVersion) throws IOException {
         MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
+        if (updateVersion) {
+            MavenRegistry.getInstance().resetArtifactInfo(artifactInfo);
+        }
         MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(artifactInfo);
         if (artifact == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }
-        MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
-        if (localVersion != null && localVersion.getCacheFile().exists()) {
-            // Already cached
-            return;
+        if (updateVersion) {
+            artifact.loadMetadata();
+        } else {
+            MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
+            if (localVersion != null && localVersion.getCacheFile().exists()) {
+                // Already cached
+                return;
+            }
         }
         artifact.resolveVersion(monitor, artifactInfo.getVersion());
     }

@@ -480,6 +480,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e) {
                 DriverDownloadDialog.updateDriverFiles(getShell(), driver, libList, true);
+                changeLibContent();
             }
         });
 

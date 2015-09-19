@@ -62,6 +62,10 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return forceDownload;
     }
 
+    public boolean isUpdateVersion() {
+        return updateVersion;
+    }
+
     private void loadSettings()
     {
         IDialogSettings section = UIUtils.getDialogSettings(DRIVER_DOWNLOAD_DIALOG_SETTINGS);

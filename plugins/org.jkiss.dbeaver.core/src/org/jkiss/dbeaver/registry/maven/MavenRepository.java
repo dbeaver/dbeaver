@@ -34,6 +34,7 @@ import org.xml.sax.Attributes;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -131,6 +132,15 @@ public class MavenRepository
             return artifact;
         }
         return null;
+    }
+
+    void resetArtifactCache(@NotNull String groupId, @NotNull String artifactId) {
+        for (Iterator<MavenArtifact> iterator = cachedArtifacts.iterator(); iterator.hasNext(); ) {
+            MavenArtifact artifact = iterator.next();
+            if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
+                iterator.remove();
+            }
+        }
     }
 
     private synchronized void addCachedArtifact(@NotNull MavenArtifact artifact) {
