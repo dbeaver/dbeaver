@@ -119,22 +119,32 @@ public class MavenRegistry
         if (notFoundArtifacts.contains(fullId)) {
             return null;
         }
-
-        // Try all available repositories
-        for (MavenRepository repository : repositories) {
-            MavenArtifact artifact = repository.findArtifact(groupId, artifactId);
-            if (artifact != null) {
-                return artifact;
-            }
+        MavenArtifact artifact = findInRepositories(groupId, artifactId, false);
+        if (artifact == null) {
+            artifact = findInRepositories(groupId, artifactId, true);
         }
-        // Try local repository
-        MavenArtifact artifact = localRepository.findArtifact(groupId, artifactId);
         if (artifact != null) {
             return artifact;
         }
 
         // Not found
         notFoundArtifacts.add(fullId);
+        return null;
+    }
+
+    @Nullable
+    private MavenArtifact findInRepositories(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
+        // Try all available repositories (without resolve)
+        for (MavenRepository repository : repositories) {
+            MavenArtifact artifact = repository.findArtifact(groupId, artifactId, resolve);
+            if (artifact != null) {
+                return artifact;
+            }
+        }
+        MavenArtifact artifact = localRepository.findArtifact(groupId, artifactId, resolve);
+        if (artifact != null) {
+            return artifact;
+        }
         return null;
     }
 
