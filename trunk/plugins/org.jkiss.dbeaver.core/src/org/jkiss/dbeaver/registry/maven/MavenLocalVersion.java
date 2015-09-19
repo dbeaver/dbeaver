@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Date;
 
 /**
@@ -31,6 +34,7 @@ import java.util.Date;
 public class MavenLocalVersion
 {
     static final Log log = Log.getLog(MavenLocalVersion.class);
+    private static final java.lang.String FILE_PROTOCOL = "file:/";
 
     private MavenArtifact artifact;
     private String version;
@@ -63,7 +67,13 @@ public class MavenLocalVersion
 
     public File getCacheFile() {
         if (artifact.getRepository().isLocal()) {
-            return new File(getExternalURL(MavenArtifact.FILE_JAR));
+            String externalURL = getExternalURL(MavenArtifact.FILE_JAR);
+            try {
+                return new File(new URL(externalURL).toURI());
+            } catch (Exception e) {
+                log.warn("Bad repository URL", e);
+                return new File(externalURL);
+            }
         }
         return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + fileName);
     }
