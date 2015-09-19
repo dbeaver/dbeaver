@@ -64,6 +64,11 @@ public class MavenArtifact
     }
 
     public void loadMetadata() throws IOException {
+        latestVersion = null;
+        releaseVersion = null;
+        versions.clear();
+        lastUpdate = null;
+
         String metadataPath = getArtifactDir() + MAVEN_METADATA_XML;
         InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath);
         try {
@@ -211,7 +216,7 @@ public class MavenArtifact
         localVersions.remove(version);
     }
 
-    public void resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
+    public MavenLocalVersion resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
         monitor.beginTask("Download Maven artifact '" + this + "'", 3);
         try {
             monitor.subTask("Download metadata from " + repository.getUrl());
@@ -257,12 +262,14 @@ public class MavenArtifact
                 localVersion = null;
             }
             if (localVersion == null) {
-                makeLocalVersion(versionInfo, true);
+                localVersion = makeLocalVersion(versionInfo, true);
             }
             monitor.worked(1);
             monitor.subTask("Save repository cache");
             repository.flushCache();
             monitor.worked(1);
+
+            return localVersion;
         } finally {
             monitor.done();
         }

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
@@ -34,7 +35,8 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
-import java.net.*;
+import java.net.URL;
+import java.net.URLConnection;
 import java.text.NumberFormat;
 
 /**
@@ -171,6 +173,15 @@ public class DriverFileDescriptor implements DBPDriverFile
             MavenArtifact artifact = getMavenArtifact();
             if (artifact != null) {
                 MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
+                if (localVersion == null && artifact.getRepository().isLocal()) {
+                    // In case of local artifact make version resolve
+                    MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
+                    try {
+                        localVersion = artifact.resolveVersion(VoidProgressMonitor.INSTANCE, artifactInfo.getVersion());
+                    } catch (IOException e) {
+                        log.warn("Error resolving local artifact [" + artifact + "] version", e);
+                    }
+                }
                 if (localVersion != null) {
                     return localVersion.getCacheFile();
                 }

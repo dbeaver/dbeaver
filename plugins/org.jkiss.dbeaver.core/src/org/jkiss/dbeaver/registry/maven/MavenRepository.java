@@ -81,6 +81,7 @@ public class MavenRepository
     MavenRepository(String id, String name, String url, boolean local) {
         this.id = id;
         this.name = name;
+        if (!url.endsWith("/")) url += "/";
         this.url = url;
         this.local = local;
         if (!local) {
@@ -113,22 +114,25 @@ public class MavenRepository
     }
 
     @Nullable
-    public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
+    public MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
         for (MavenArtifact artifact : cachedArtifacts) {
             if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
                 return artifact;
             }
         }
-        // Not cached - look in remote repository
-        MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
-        try {
-            artifact.loadMetadata();
-        } catch (IOException e) {
-            log.debug("Artifact [" + artifact + "] not found in repository [" + getUrl() + "]");
-            return null;
+        if (resolve) {
+            // Not cached - look in remote repository
+            MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
+            try {
+                artifact.loadMetadata();
+            } catch (IOException e) {
+                log.debug("Artifact [" + artifact + "] not found in repository [" + getUrl() + "]");
+                return null;
+            }
+            cachedArtifacts.add(artifact);
+            return artifact;
         }
-        cachedArtifacts.add(artifact);
-        return artifact;
+        return null;
     }
 
     private synchronized void addCachedArtifact(@NotNull MavenArtifact artifact) {
@@ -244,4 +248,8 @@ public class MavenRepository
         }
     }
 
+    @Override
+    public String toString() {
+        return url;
+    }
 }
