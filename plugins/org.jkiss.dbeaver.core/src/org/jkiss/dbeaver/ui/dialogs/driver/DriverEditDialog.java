@@ -309,7 +309,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         {
             Composite libsListGroup = new Composite(libsGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
-            gd.heightHint = 200;
+            //gd.heightHint = 200;
             libsListGroup.setLayoutData(gd);
             GridLayout layout = new GridLayout(1, false);
             layout.marginHeight = 0;

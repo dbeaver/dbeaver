@@ -81,17 +81,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
-        Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 300);
-        proxyHostText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_host, null); //$NON-NLS-2$
-        proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, CoreMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
-        proxyUserText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_user, null); //$NON-NLS-2$
-        proxyPasswordText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_password, null, SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
-
-        {
-            Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
-            customDriversHome = UIUtils.createOutputFolderChooser(drivers, "Local folder", null);
-        }
-
         {
             Group mavenGroup = UIUtils.createControlGroup(composite, "Maven repositories", 2, GridData.FILL_HORIZONTAL, 300);
             mavenRepoTable = new Table(mavenGroup, SWT.BORDER | SWT.FULL_SELECTION);
@@ -212,6 +201,20 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                 }
             });
         }
+
+        {
+            Group proxyObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_http_proxy, 4, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            proxyHostText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_host, null); //$NON-NLS-2$
+            proxyPortSpinner = UIUtils.createLabelSpinner(proxyObjects, CoreMessages.pref_page_ui_general_spinner_proxy_port, 0, 0, 65535);
+            proxyUserText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_user, null); //$NON-NLS-2$
+            proxyPasswordText = UIUtils.createLabelText(proxyObjects, CoreMessages.pref_page_ui_general_label_proxy_password, null, SWT.PASSWORD | SWT.BORDER); //$NON-NLS-2$
+        }
+
+        {
+            Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
+            customDriversHome = UIUtils.createOutputFolderChooser(drivers, "Local folder", null);
+        }
+
 
 
         performDefaults();
