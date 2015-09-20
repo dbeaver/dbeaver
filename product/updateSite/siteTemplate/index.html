@@ -13,7 +13,7 @@
 			xmlFile = document.implementation.createDocument("", "", null);
 			stylesheet = document.implementation.createDocument("", "", null);
 			if (xmlFile.load){
-				xmlFile.load("site.xml");
+				xmlFile.load("category.xml");
 				stylesheet.load("web/site.xsl");
 			} else {
 				alert("Document could not be loaded by browser.");
@@ -25,7 +25,7 @@
 		else if (window.ActiveXObject) {
 			xmlFile = new ActiveXObject("msxml2.DOMDocument.3.0");
 			xmlFile.async = false;
-			xmlFile.load("site.xml");
+			xmlFile.load("category.xml");
 			stylesheet = new ActiveXObject("msxml2.FreeThreadedDOMDocument.3.0");
 			stylesheet.async = false;
 			stylesheet.load("web/site.xsl");
