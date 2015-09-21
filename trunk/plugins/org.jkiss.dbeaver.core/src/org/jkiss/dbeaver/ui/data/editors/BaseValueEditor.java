@@ -83,53 +83,52 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 }
             });
 
-            inlineControl.addTraverseListener(new TraverseListener() {
-                @Override
-                public void keyTraversed(TraverseEvent e)
-                {
-                    if (e.detail == SWT.TRAVERSE_RETURN) {
-                        saveValue();
-                        e.doit = false;
-                        e.detail = SWT.TRAVERSE_NONE;
-                    } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                        valueController.closeInlineEditor();
-                        e.doit = false;
-                        e.detail = SWT.TRAVERSE_NONE;
-                    } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-                        saveValue();
-                        valueController.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
-                        e.doit = false;
-                        e.detail = SWT.TRAVERSE_NONE;
+            if (!UIUtils.isInDialog(inlineControl)) {
+                inlineControl.addTraverseListener(new TraverseListener() {
+                    @Override
+                    public void keyTraversed(TraverseEvent e) {
+                        if (e.detail == SWT.TRAVERSE_RETURN) {
+                            saveValue();
+                            e.doit = false;
+                            e.detail = SWT.TRAVERSE_NONE;
+                        } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                            valueController.closeInlineEditor();
+                            e.doit = false;
+                            e.detail = SWT.TRAVERSE_NONE;
+                        } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                            saveValue();
+                            valueController.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                            e.doit = false;
+                            e.detail = SWT.TRAVERSE_NONE;
+                        }
                     }
-                }
-            });
-            inlineControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e)
-                {
-                    // Check new focus control in async mode
-                    // (because right now focus is still on edit control)
-                    inlineControl.getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            if (inlineControl.isDisposed()) {
-                                return;
-                            }
-                            Control newFocus = inlineControl.getDisplay().getFocusControl();
-                            if (newFocus != null) {
-                                for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {
-                                    if (fc == valueController.getEditPlaceholder()) {
-                                        // New focus is still a child of inline placeholder - do not close it
-                                        return;
+                });
+                inlineControl.addFocusListener(new FocusAdapter() {
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        // Check new focus control in async mode
+                        // (because right now focus is still on edit control)
+                        inlineControl.getDisplay().asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (inlineControl.isDisposed()) {
+                                    return;
+                                }
+                                Control newFocus = inlineControl.getDisplay().getFocusControl();
+                                if (newFocus != null) {
+                                    for (Control fc = newFocus.getParent(); fc != null; fc = fc.getParent()) {
+                                        if (fc == valueController.getEditPlaceholder()) {
+                                            // New focus is still a child of inline placeholder - do not close it
+                                            return;
+                                        }
                                     }
                                 }
+                                saveValue();
                             }
-                            saveValue();
-                        }
-                    });
-                }
-            });
+                        });
+                    }
+                });
+            }
         }
     }
 
