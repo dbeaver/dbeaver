@@ -90,6 +90,7 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
 import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
@@ -1441,7 +1442,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     /////////////////////////////
     // Value controller
 
-    public class SpreadsheetValueController extends ResultSetValueController {
+    public class SpreadsheetValueController extends ResultSetValueController implements IMultiController {
 
         public SpreadsheetValueController(@NotNull IResultSetController controller, @NotNull DBDAttributeBinding binding, @NotNull ResultSetRow row, @NotNull EditType editType, @Nullable Composite inlinePlaceholder) {
             super(controller, binding, row, editType, inlinePlaceholder);

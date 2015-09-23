@@ -203,10 +203,8 @@ abstract class ViewValuePanel extends Composite {
     {
         try {
             Object newValue = valueViewer.extractEditorValue();
-            //previewController.closeInlineEditor();
             previewController.updateValue(newValue);
         } catch (DBException e) {
-            previewController.closeInlineEditor();
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
         }
     }

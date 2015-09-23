@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 
@@ -82,8 +83,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 }
             });
 
-            // if (!UIUtils.isInDialog(inlineControl)) { // In dialog it also should handle all standard stuff because we have params dialog
-            {
+             if (valueController instanceof IMultiController) { // In dialog it also should handle all standard stuff because we have params dialog
                 inlineControl.addTraverseListener(new TraverseListener() {
                     @Override
                     public void keyTraversed(TraverseEvent e) {
@@ -92,12 +92,12 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
                         } else if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                            valueController.closeInlineEditor();
+                            ((IMultiController) valueController).closeInlineEditor();
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
                         } else if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
                             saveValue();
-                            valueController.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                            ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
                             e.doit = false;
                             e.detail = SWT.TRAVERSE_NONE;
                         }
@@ -136,10 +136,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     {
         try {
             Object newValue = extractEditorValue();
-            valueController.closeInlineEditor();
+            ((IMultiController) valueController).closeInlineEditor();
             valueController.updateValue(newValue);
         } catch (DBException e) {
-            valueController.closeInlineEditor();
+            ((IMultiController) valueController).closeInlineEditor();
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
         }
     }
