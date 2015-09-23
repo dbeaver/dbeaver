@@ -206,11 +206,6 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             }
 
             @Override
-            public void unregisterEditor(IValueEditorStandalone editor)
-            {
-            }
-
-            @Override
             public void showMessage(String message, boolean error)
             {
             }
@@ -236,10 +231,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
 
     @Override
     public void closeValueEditor() {
-        if (this.valueController != null) {
-            this.valueController.unregisterEditor(this);
-            this.valueController = null;
-        }
+        this.valueController = null;
         this.setReturnCode(CANCEL);
         this.close();
     }
@@ -354,10 +346,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             return result;
         } finally {
             dialogCount--;
-            if (this.valueController != null) {
-                this.valueController.unregisterEditor(this);
-                this.valueController = null;
-            }
+            this.valueController = null;
         }
     }
 

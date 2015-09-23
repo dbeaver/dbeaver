@@ -75,15 +75,15 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             // Let's focus on it in async mode
             inlineControl.getDisplay().asyncExec(new Runnable() {
                 @Override
-                public void run()
-                {
+                public void run() {
                     if (!inlineControl.isDisposed()) {
                         inlineControl.setFocus();
                     }
                 }
             });
 
-            if (!UIUtils.isInDialog(inlineControl)) {
+            // if (!UIUtils.isInDialog(inlineControl)) { // In dialog it also should handle all standard stuff because we have params dialog
+            {
                 inlineControl.addTraverseListener(new TraverseListener() {
                     @Override
                     public void keyTraversed(TraverseEvent e) {

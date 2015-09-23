@@ -464,11 +464,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
 
         @Override
-        public void unregisterEditor(IValueEditorStandalone editor)
-        {
-        }
-
-        @Override
         public void showMessage(String message, boolean error)
         {
             updateStatus(new Status(error ? Status.ERROR : Status.INFO, DBeaverCore.PLUGIN_ID, message));
