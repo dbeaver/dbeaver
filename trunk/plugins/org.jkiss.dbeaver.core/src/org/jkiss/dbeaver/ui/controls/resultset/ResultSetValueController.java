@@ -190,15 +190,6 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
     @Override
-    public void closeInlineEditor()
-    {
-    }
-
-    @Override
-    public void nextInlineEditor(boolean next) {
-    }
-
-    @Override
     public void showMessage(String message, boolean error)
     {
         controller.setStatus(message, error);
