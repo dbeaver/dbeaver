@@ -134,8 +134,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     }
 
-    private boolean valueEditorRegistered = false;
-
     private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
     private ColumnInfoPanel infoPanel;
     private boolean dirty;
@@ -232,8 +230,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         super.init(site, input);
         setPartName(input.getName());
 
-        valueEditorRegistered = true;
-
         DBDContent content = getContent();
         if (content == null) {
             return;
@@ -257,13 +253,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         this.partsLoaded = true;
         ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 
-        if (valueEditorRegistered) {
-            IValueController valueController = getValueController();
-            if (valueController != null) {
-                valueController.unregisterEditor(this);
-            }
-            valueEditorRegistered = false;
-        }
         if (getEditorInput() != null) {
             // Release CONTENT input resources
             try {
@@ -453,7 +442,8 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Control getControl()
     {
-        return getControl(getActivePage());
+        int activePage = getActivePage();
+        return activePage < 0 ? null : getControl(activePage);
     }
 
     @Override
@@ -501,16 +491,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         IWorkbenchPage workbenchPage = this.getEditorSite().getWorkbenchWindow().getActivePage();
         if (workbenchPage != null) {
             workbenchPage.closeEditor(this, false);
-        } else {
-            // Special case - occurred when entire workbench is closed
-            // We need to unregister editor and release all resource here
-            if (valueEditorRegistered) {
-                IValueController valueController = getValueController();
-                if (valueController != null) {
-                    valueController.unregisterEditor(this);
-                }
-                valueEditorRegistered = false;
-            }
         }
     }
 

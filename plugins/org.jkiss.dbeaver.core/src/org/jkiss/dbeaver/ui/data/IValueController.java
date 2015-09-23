@@ -127,8 +127,6 @@ public interface IValueController
      */
     void nextInlineEditor(boolean next);
 
-    void unregisterEditor(IValueEditorStandalone editor);
-
     /**
      * Show error/warning message in grid control.
      * @param message error message

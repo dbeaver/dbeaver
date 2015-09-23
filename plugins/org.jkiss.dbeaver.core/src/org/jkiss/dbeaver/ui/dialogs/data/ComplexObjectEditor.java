@@ -361,12 +361,6 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public void unregisterEditor(IValueEditorStandalone editor)
-        {
-
-        }
-
-        @Override
         public void showMessage(String message, boolean error)
         {
 

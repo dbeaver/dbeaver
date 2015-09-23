@@ -666,10 +666,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private void closeEditors() {
         List<IValueEditorStandalone> editors = new ArrayList<IValueEditorStandalone>(openEditors.values());
         for (IValueEditorStandalone editor : editors) {
-            editor.closeValueEditor();
-        }
-        if (!openEditors.isEmpty()) {
-            log.warn("Some value editors are still registered at result set: " + openEditors.size());
+            if (editor.getControl() != null && !editor.getControl().isDisposed()) {
+                editor.closeValueEditor();
+            }
         }
         openEditors.clear();
     }
@@ -686,10 +685,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         if (!inline) {
-            for (SpreadsheetValueController valueController : openEditors.keySet()) {
+            for (Iterator<SpreadsheetValueController> iterator = openEditors.keySet().iterator(); iterator.hasNext(); ) {
+                SpreadsheetValueController valueController = iterator.next();
                 if (attr == valueController.getBinding() && row == valueController.getCurRow()) {
-                    openEditors.get(valueController).showValueEditor();
-                    return null;
+                    IValueEditorStandalone editor = openEditors.get(valueController);
+                    if (editor.getControl() != null && !editor.getControl().isDisposed()) {
+                        editor.showValueEditor();
+                        return null;
+                    } else {
+                        // Remove disposed editor from the list
+                        iterator.remove();
+                    }
                 }
             }
         }
@@ -1483,7 +1489,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             openEditors.put(this, editor);
         }
 
-        @Override
         public void unregisterEditor(IValueEditorStandalone editor) {
             openEditors.remove(this);
         }
