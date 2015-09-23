@@ -116,18 +116,6 @@ public interface IValueController
     IContributionManager getEditBar();
 
     /**
-     * Closes current value editor.
-     * This action may initiated by editor control (e.g. on Enter or Esc key)
-     */
-    void closeInlineEditor();
-
-    /**
-     * Closes current editor and activated next cell editor
-     * @param next true for next and false for previous cell
-     */
-    void nextInlineEditor(boolean next);
-
-    /**
      * Show error/warning message in grid control.
      * @param message error message
      * @param error true for error, false for informational message

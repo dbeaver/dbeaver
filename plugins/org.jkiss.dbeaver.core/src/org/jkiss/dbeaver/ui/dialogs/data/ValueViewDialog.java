@@ -196,16 +196,6 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             }
 
             @Override
-            public void closeInlineEditor()
-            {
-            }
-
-            @Override
-            public void nextInlineEditor(boolean next)
-            {
-            }
-
-            @Override
             public void showMessage(String message, boolean error)
             {
             }

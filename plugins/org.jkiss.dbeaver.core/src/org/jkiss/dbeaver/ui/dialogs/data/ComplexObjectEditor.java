@@ -349,18 +349,6 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public void closeInlineEditor()
-        {
-            disposeOldEditor();
-        }
-
-        @Override
-        public void nextInlineEditor(boolean next)
-        {
-
-        }
-
-        @Override
         public void showMessage(String message, boolean error)
         {
 

@@ -45,10 +45,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
-import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -322,7 +319,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         }
     }
 
-    private class ParameterValueController implements IValueController {
+    private class ParameterValueController implements IValueController, IMultiController {
 
         private final SQLQueryParameter parameter;
         private final Composite placeholder;
