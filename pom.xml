@@ -39,9 +39,6 @@
 		<module>plugins/org.jkiss.dbeaver.model</module>
 		<module>plugins/org.jkiss.dbeaver.test</module>
 
-		<module>contrib/drivers/plugins/com.ibm.db2.jdbc</module>
-		<module>contrib/drivers/plugins/com.oracle.jdbc</module>
-
 		<module>features/org.jkiss.dbeaver.core.feature</module>
 		<module>features/org.jkiss.dbeaver.ext.db2.feature</module>
 		<module>features/org.jkiss.dbeaver.ext.generic.feature</module>
