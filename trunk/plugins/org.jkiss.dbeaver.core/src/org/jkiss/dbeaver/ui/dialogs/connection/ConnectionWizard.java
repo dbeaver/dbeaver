@@ -201,7 +201,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             if (ownerMonitor != null) {
                 monitor = ownerMonitor;
             }
-            monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
+            monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 4);
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
             try {
@@ -219,6 +219,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 if (dataSource == null) {
                     throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
                 }
+                monitor.subTask("Initialize connection");
+                dataSource.initialize(monitor);
+                monitor.worked(1);
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
 
                 DBPDataSourceInfo info = dataSource.getInfo();
