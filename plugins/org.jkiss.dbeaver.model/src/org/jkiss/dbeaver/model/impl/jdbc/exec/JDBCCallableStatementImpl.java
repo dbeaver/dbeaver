@@ -55,14 +55,30 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         boolean disableLogging)
     {
         super(connection, original, query, disableLogging);
-        // Try to bind parameters
+
+        // Find procedure definition
         try {
-            DBSProcedure procedure = DBUtils.findProcedure(connection, query);
-            if (procedure != null) {
-                bindProcedure(procedure);
+            procedure = DBUtils.findProcedure(connection, query);
+        } catch (DBException e) {
+            log.debug(e);
+        }
+
+        // Bind procedure parameters
+        try {
+            ParameterMetaData paramsMeta = original.getParameterMetaData();
+            if (paramsMeta != null) {
+                bindProcedureFromJDBC(paramsMeta);
             }
         } catch (Exception e) {
             log.debug(e);
+            // Try to bind parameters from procedure meta info
+            try {
+                if (procedure != null) {
+                    bindProcedureFromMeta();
+                }
+            } catch (Exception e1) {
+                log.debug(e1);
+            }
         }
     }
 
@@ -76,9 +92,26 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     // Procedure bindings
     ////////////////////////////////////////////////////////////////////
 
+    void bindProcedureFromJDBC(@NotNull ParameterMetaData paramsMeta) throws DBException {
+        try {
+            int parameterCount = paramsMeta.getParameterCount();
+            if (parameterCount > 0) {
+                for (int index = 0; index < parameterCount; index++) {
+                    int parameterMode = paramsMeta.getParameterMode(index + 1);
+                    if (parameterMode == ParameterMetaData.parameterModeOut || parameterMode == ParameterMetaData.parameterModeInOut) {
+                        registerOutParameter(index + 1, paramsMeta.getParameterType(index + 1));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error binding callable statement parameters from metadata", e);
+        }
+    }
 
-    void bindProcedure(@NotNull DBSProcedure procedure) throws DBException {
-        this.procedure = procedure;
+    void bindProcedureFromMeta() throws DBException {
+        if (procedure == null) {
+            return;
+        }
         try {
             Collection<? extends DBSProcedureParameter> params = procedure.getParameters(getConnection().getProgressMonitor());
             if (!CommonUtils.isEmpty(params)) {
