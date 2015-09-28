@@ -328,8 +328,8 @@
                     defaultPort="7200"
                     webURL="http://www.sdn.sap.com/irj/sdn/maxdb"
                     description="SAP MaxDB - The SAP Database System">
-                    <file type="jar" path="drivers/maxdb/sapdbc.jar"/>
-                    <file type="license" path="drivers/maxdb/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/maxdb/sapdbc.jar"/>
+                    <file type="license" path="repo:/drivers/maxdb/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUAL"/>
                     <parameter name="query-set-active-db" value="SET CURRENT_SCHEMA = ?"/>
                 </driver>
@@ -457,8 +457,8 @@
                     defaultPort="1972"
                     webURL="http://www.intersystems.com/cache/"
                     description="Intersystems Cache">
-                    <file type="jar" path="drivers/cache/CacheDB.jar"/>
-                    <file type="license" path="drivers/cache/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/cache/CacheDB.jar"/>
+                    <file type="license" path="repo:/drivers/cache/LICENSE.txt"/>
                 </driver>
                 <driver
                     id="ingres"
@@ -566,8 +566,8 @@
                     <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
-                    <file type="license" path="drivers/csvjdbc/LICENSE.txt"/>
-                    <file type="jar" path="drivers/csvjdbc/csvjdbc-1.0-23.jar"/>
+                    <file type="license" path="repo:/drivers/csvjdbc/LICENSE.txt"/>
+                    <file type="jar" path="repo:/drivers/csvjdbc/csvjdbc-1.0-23.jar"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -578,11 +578,11 @@
                     webURL="http://ucanaccess.sourceforge.net/site.html"
                     embedded="true"
                     description="Microsoft Access driver">
-                    <file type="license" path="repo:/drivers/ucanaccess/LICENSE.txt"/>
-                    <file type="jar" path="repo:/drivers/ucanaccess/ucanaccess-2.0.1.jar"/>
-                    <file type="jar" path="repo:/drivers/ucanaccess/commons-lang-2.6.jar"/>
-                    <file type="jar" path="repo:/drivers/ucanaccess/hsqldb.jar"/>
-                    <file type="jar" path="repo:/drivers/ucanaccess/jackcess-2.0.1.jar"/>
+
+                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:release"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
+                    <file type="jar" path="maven:/com.healthmarketscience.jackcess:jackcess:release"/>
+                    <file type="jar" path="maven:/commons-lang:commons-lang:release"/>
                 </driver>
                 <driver
                     id="netezza"
