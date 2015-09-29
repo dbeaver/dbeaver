@@ -88,16 +88,11 @@ public interface DBPDriver extends DBPObject
     ClassLoader getClassLoader();
 
     @NotNull
-    Collection<? extends DBPDriverFile> getDriverFiles();
-
-    @NotNull
-    Collection<? extends DBPDriverFile.FileSource> getDriverFileSources();
+    Collection<? extends DBPDriverLibrary> getDriverLibraries();
 
     Object getDriverInstance(DBRRunnableContext runnableContext) throws DBException;
 
     void validateFilesPresence(DBRRunnableContext runnableContext);
-
-    void updateFiles(DBRRunnableContext runnableContext);
 
     void loadDriver(DBRRunnableContext runnableContext) throws DBException;
 

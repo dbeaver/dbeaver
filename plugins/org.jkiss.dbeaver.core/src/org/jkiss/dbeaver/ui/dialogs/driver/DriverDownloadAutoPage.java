@@ -21,24 +21,17 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDriverFile;
+import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.DriverFileDescriptor;
+import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -75,7 +68,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             filesTable.setHeaderVisible(true);
             filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
-            for (DriverFileDescriptor file : wizard.getFiles()) {
+            for (DriverLibraryDescriptor file : wizard.getFiles()) {
                 new TableItem(filesTable, SWT.NONE).setText(file.getDisplayName());
             }
             UIUtils.packColumns(filesTable, true);
@@ -97,14 +90,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         downloadLibraryFiles(new RunnableContextDelegate(getContainer()), getWizard().getFiles());
     }
 
-    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<DriverFileDescriptor> files)
+    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<DriverLibraryDescriptor> files)
     {
         if (!getWizard().getDriver().acceptDriverLicenses(runnableContext)) {
             return;
         }
 
         for (int i = 0, filesSize = files.size(); i < filesSize; ) {
-            DriverFileDescriptor lib = files.get(i);
+            DriverLibraryDescriptor lib = files.get(i);
             int result = downloadLibraryFile(runnableContext, lib);
             switch (result) {
                 case IDialogConstants.CANCEL_ID:
@@ -120,7 +113,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
     }
 
-    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DriverFileDescriptor file)
+    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DriverLibraryDescriptor file)
     {
         try {
             runnableContext.run(true, true, new DBRRunnableWithProgress() {
@@ -138,7 +131,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             // User just canceled download
             return IDialogConstants.CANCEL_ID;
         } catch (InvocationTargetException e) {
-            if (file.getType() == DBPDriverFile.FileType.license) {
+            if (file.getType() == DBPDriverLibrary.FileType.license) {
                 return IDialogConstants.OK_ID;
             }
             DownloadRetry retryConfirm = new DownloadRetry(file, e.getTargetException());
@@ -148,11 +141,11 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     private class DownloadRetry implements Runnable {
-        private final DriverFileDescriptor file;
+        private final DriverLibraryDescriptor file;
         private final Throwable error;
         private int result;
 
-        public DownloadRetry(DriverFileDescriptor file, Throwable error)
+        public DownloadRetry(DriverLibraryDescriptor file, Throwable error)
         {
             this.file = file;
             this.error = error;

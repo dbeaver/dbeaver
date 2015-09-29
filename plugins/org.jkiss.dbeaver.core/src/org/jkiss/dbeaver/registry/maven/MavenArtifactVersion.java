@@ -26,7 +26,9 @@ import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Maven artifact version descriptor (POM).
@@ -40,8 +42,8 @@ public class MavenArtifactVersion
     private String version;
     private String description;
     private String url;
-    private List<String> licenses;
-    private List<MavenArtifactReference> dependencies;
+    private List<MavenArtifactLicense> licenses;
+    private List<MavenArtifactDependency> dependencies;
 
     MavenArtifactVersion(MavenLocalVersion localVersion) throws IOException {
         this.localVersion = localVersion;
@@ -73,12 +75,24 @@ public class MavenArtifactVersion
         return url;
     }
 
-    public List<String> getLicenses() {
+    public List<MavenArtifactLicense> getLicenses() {
         return licenses;
     }
 
-    public List<MavenArtifactReference> getDependencies() {
+    public List<MavenArtifactDependency> getDependencies() {
         return dependencies;
+    }
+
+    @Override
+    public String toString() {
+        return localVersion.toString();
+    }
+
+    private enum ParserState {
+        ROOT,
+        LICENSE,
+        DEPENDENCIES,
+        DEPENDENCY
     }
 
     private void loadPOM() throws IOException {
@@ -87,30 +101,69 @@ public class MavenArtifactVersion
         try {
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {
-                private boolean inRoot = true;
+                private ParserState state = ParserState.ROOT;
                 private String lastTag;
+                private Map<String, String> attributes = new HashMap<String, String>();
+
                 @Override
                 public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
                     lastTag = localName;
+                    if ("license".equals(localName)) {
+                        state = ParserState.LICENSE;
+                    } else if ("dependencies".equals(localName)) {
+                        state = ParserState.DEPENDENCIES;
+                    } else if ("dependency".equals(localName) && state == ParserState.DEPENDENCIES) {
+                        state = ParserState.DEPENDENCY;
+                    }
                 }
+
                 @Override
                 public void saxText(SAXReader reader, String data) throws XMLException {
-                    if (inRoot) {
-                        if ("name".equals(lastTag)) {
-                            name = data;
-                        } else if ("version".equals(lastTag)) {
-                            version = data;
-                        } else if ("description".equals(lastTag)) {
-                            description = data;
-                        } else if ("url".equals(lastTag)) {
-                            url = data;
-                        }
+                    switch (state) {
+                        case ROOT:
+                            if ("name".equals(lastTag)) {
+                                name = data;
+                            } else if ("version".equals(lastTag)) {
+                                version = data;
+                            } else if ("description".equals(lastTag)) {
+                                description = data;
+                            } else if ("url".equals(lastTag)) {
+                                url = data;
+                            }
+                            break;
+                        case LICENSE:
+                        case DEPENDENCY:
+                            attributes.put(lastTag, data);
+                            break;
                     }
                 }
 
                 @Override
                 public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
                     lastTag = null;
+                    if ("license".equals(localName) && state == ParserState.LICENSE) {
+                        state = ParserState.ROOT;
+                        licenses.add(new MavenArtifactLicense(
+                            attributes.get("name"),
+                            attributes.get("url")
+                        ));
+                        attributes.clear();
+                    } else if ("dependencies".equals(localName) && state == ParserState.DEPENDENCIES) {
+                        state = ParserState.ROOT;
+                        dependencies.add(new MavenArtifactDependency(
+                            new MavenArtifactReference(
+                                attributes.get("groupId"),
+                                attributes.get("artifactId"),
+                                attributes.get("version")
+                            ),
+                            attributes.get("type"),
+                            Boolean.valueOf(attributes.get("optional"))
+                        ));
+                        attributes.clear();
+                    } else if ("dependency".equals(localName) && state == ParserState.DEPENDENCY) {
+                        state = ParserState.DEPENDENCIES;
+                        attributes.clear();
+                    }
                 }
             });
         } catch (XMLException e) {
@@ -118,11 +171,6 @@ public class MavenArtifactVersion
         } finally {
             mdStream.close();
         }
-    }
-
-    @Override
-    public String toString() {
-        return localVersion.toString();
     }
 
 }

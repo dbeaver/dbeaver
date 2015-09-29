@@ -25,7 +25,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.DriverFileDescriptor;
+import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,7 +41,7 @@ public class DriverDownloadDialog extends WizardDialog
 
     private boolean doDownload = false;
 
-    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean updateVersion, boolean forceDownload)
+    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<DriverLibraryDescriptor> files, boolean updateVersion, boolean forceDownload)
     {
         super(shell, new DriverDownloadWizard(driver, files, updateVersion, forceDownload));
         getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
@@ -110,18 +110,18 @@ public class DriverDownloadDialog extends WizardDialog
         super.finishPressed();
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files) {
+    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverLibraryDescriptor> files) {
         return downloadDriverFiles(shell, driver, files, false);
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload) {
+    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DriverLibraryDescriptor> files, boolean forceDownload) {
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, false, forceDownload);
         dialog.setMinimumPageSize(100, 100);
         dialog.open();
         return dialog.doDownload;
     }
 
-    public static boolean updateDriverFiles(Shell shell, DriverDescriptor driver, List<DriverFileDescriptor> files, boolean forceDownload) {
+    public static boolean updateDriverFiles(Shell shell, DriverDescriptor driver, List<DriverLibraryDescriptor> files, boolean forceDownload) {
         DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, true, forceDownload);
         dialog.setMinimumPageSize(100, 100);
         dialog.open();
