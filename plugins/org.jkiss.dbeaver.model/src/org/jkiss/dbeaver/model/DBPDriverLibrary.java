@@ -18,15 +18,16 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 
 import java.io.File;
+import java.util.Collection;
 
 /**
- * DBPDriver local path
+ * Driver library
  */
-public interface DBPDriverFile
+public interface DBPDriverLibrary
 {
     /**
      * Driver file type
@@ -39,18 +40,13 @@ public interface DBPDriverFile
         license
     }
 
-    interface FileSource {
-
-    }
-
+    @NotNull
     FileType getType();
 
-    OSDescriptor getSystem();
-
+    @NotNull
     String getPath();
 
-    String getFileType();
-
+    @Nullable
     String getDescription();
 
     boolean isCustom();
@@ -63,5 +59,8 @@ public interface DBPDriverFile
     File getLocalFile();
 
     boolean matchesCurrentPlatform();
+
+    @Nullable
+    Collection<DBPDriverLibrary> getDependencies();
 
 }

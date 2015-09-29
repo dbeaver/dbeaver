@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDriverFile;
+import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -38,17 +38,19 @@ import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.text.NumberFormat;
+import java.util.Collection;
 
 /**
- * DriverFileDescriptor
+ * DriverLibraryDescriptor
  */
-public class DriverFileDescriptor implements DBPDriverFile
+public class DriverLibraryDescriptor implements DBPDriverLibrary
 {
-    static final Log log = Log.getLog(DriverFileDescriptor.class);
+    static final Log log = Log.getLog(DriverLibraryDescriptor.class);
 
     public static final String FILE_SOURCE_MAVEN = "maven:/";
     public static final String FILE_SOURCE_REPO = "repo:/";
     public static final String FILE_SOURCE_PLATFORM = "platform:/";
+    public static final String FILE_SOURCE_LOCAL = "file:/";
 
     private final DriverDescriptor driver;
     private final FileType type;
@@ -59,7 +61,7 @@ public class DriverFileDescriptor implements DBPDriverFile
     private boolean custom;
     private boolean disabled;
 
-    public DriverFileDescriptor(DriverDescriptor driver, FileType type, String path)
+    public DriverLibraryDescriptor(DriverDescriptor driver, FileType type, String path)
     {
         this.driver = driver;
         this.type = type;
@@ -68,7 +70,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         this.custom = true;
     }
 
-    DriverFileDescriptor(DriverDescriptor driver, IConfigurationElement config)
+    DriverLibraryDescriptor(DriverDescriptor driver, IConfigurationElement config)
     {
         this.driver = driver;
         this.type = FileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
@@ -95,20 +97,9 @@ public class DriverFileDescriptor implements DBPDriverFile
     }
 
     @Override
-    public OSDescriptor getSystem()
-    {
-        return system;
-    }
-
-    @Override
     public String getPath()
     {
         return path;
-    }
-
-    @Override
-    public String getFileType() {
-        return null;
     }
 
     @Override
@@ -145,7 +136,7 @@ public class DriverFileDescriptor implements DBPDriverFile
         return isRepositoryArtifact() || isMavenArtifact();
     }
 
-    public boolean isRepositoryArtifact() {
+    private boolean isRepositoryArtifact() {
         return path.startsWith(FILE_SOURCE_REPO);
     }
 
@@ -287,6 +278,12 @@ public class DriverFileDescriptor implements DBPDriverFile
     public boolean matchesCurrentPlatform()
     {
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
+    }
+
+    @Nullable
+    @Override
+    public Collection<DBPDriverLibrary> getDependencies() {
+        return null;
     }
 
 /*

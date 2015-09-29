@@ -34,7 +34,6 @@ import java.util.Date;
 public class MavenLocalVersion
 {
     static final Log log = Log.getLog(MavenLocalVersion.class);
-    private static final java.lang.String FILE_PROTOCOL = "file:/";
 
     private MavenArtifact artifact;
     private String version;

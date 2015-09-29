@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDriverFile;
+import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -102,7 +102,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private Text driverPortText;
     private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
-    private List<DriverFileDescriptor> libList = new ArrayList<DriverFileDescriptor>();
+    private List<DriverLibraryDescriptor> libList = new ArrayList<DriverLibraryDescriptor>();
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
@@ -326,7 +326,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 @Override
                 public void update(ViewerCell cell)
                 {
-                    DriverFileDescriptor lib = (DriverFileDescriptor) cell.getElement();
+                    DriverLibraryDescriptor lib = (DriverLibraryDescriptor) cell.getElement();
                     cell.setText(lib.getDisplayName());
                     File localFile = lib.getLocalFile();
                     if (localFile != null && localFile.exists()) {
@@ -431,9 +431,9 @@ public class DriverEditDialog extends HelpEnabledDialog
                         File folderFile = new File(curFolder);
                         for (String fileName : fileNames) {
                             libList.add(
-                                new DriverFileDescriptor(
+                                new DriverLibraryDescriptor(
                                     driver,
-                                    fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverFile.FileType.jar : DBPDriverFile.FileType.lib,
+                                    fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
                                     new File(folderFile, fileName).getAbsolutePath()));
                         }
                         changeLibContent();
@@ -452,9 +452,9 @@ public class DriverEditDialog extends HelpEnabledDialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
-                    libList.add(new DriverFileDescriptor(
+                    libList.add(new DriverLibraryDescriptor(
                         driver,
-                        DBPDriverFile.FileType.jar,
+                        DBPDriverLibrary.FileType.jar,
                         selected));
                     changeLibContent();
                 }
@@ -467,10 +467,10 @@ public class DriverEditDialog extends HelpEnabledDialog
             {
                 EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
                 if (fd.open() == IDialogConstants.OK_ID) {
-                    libList.add(new DriverFileDescriptor(
+                    libList.add(new DriverLibraryDescriptor(
                         driver,
-                        DBPDriverFile.FileType.jar,
-                        DriverFileDescriptor.FILE_SOURCE_MAVEN + fd.getArtifact().getPath()));
+                        DBPDriverLibrary.FileType.jar,
+                        DriverLibraryDescriptor.FILE_SOURCE_MAVEN + fd.getArtifact().getPath()));
                     changeLibContent();
                 }
             }
@@ -498,7 +498,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                DriverFileDescriptor selectedLib = getSelectedLibrary();
+                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
                 Collections.swap(libList, selIndex, selIndex - 1);
                 changeLibContent();
@@ -511,7 +511,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                DriverFileDescriptor selectedLib = getSelectedLibrary();
+                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
                 Collections.swap(libList, selIndex, selIndex + 1);
                 changeLibContent();
@@ -615,10 +615,10 @@ public class DriverEditDialog extends HelpEnabledDialog
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
-    private DriverFileDescriptor getSelectedLibrary()
+    private DriverLibraryDescriptor getSelectedLibrary()
     {
         IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
-        return selection == null || selection.isEmpty() ? null : (DriverFileDescriptor) selection.getFirstElement();
+        return selection == null || selection.isEmpty() ? null : (DriverLibraryDescriptor) selection.getFirstElement();
     }
 
     private void changeLibContent()
@@ -630,7 +630,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void changeLibSelection()
     {
-        DriverFileDescriptor selectedLib = getSelectedLibrary();
+        DriverLibraryDescriptor selectedLib = getSelectedLibrary();
         deleteButton.setEnabled(selectedLib != null);
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
         downButton.setEnabled(libList.indexOf(selectedLib) < libList.size() - 1);
@@ -662,9 +662,9 @@ public class DriverEditDialog extends HelpEnabledDialog
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
 
         if (libTable != null) {
-            libList = new ArrayList<DriverFileDescriptor>();
-            for (DriverFileDescriptor lib : driver.getDriverFiles()) {
-                if (lib.isDisabled() || (lib.getType() != DBPDriverFile.FileType.jar && lib.getType() != DBPDriverFile.FileType.lib) || !lib.matchesCurrentPlatform()) {
+            libList = new ArrayList<DriverLibraryDescriptor>();
+            for (DriverLibraryDescriptor lib : driver.getDriverLibraries()) {
+                if (lib.isDisabled() || (lib.getType() != DBPDriverLibrary.FileType.jar && lib.getType() != DBPDriverLibrary.FileType.lib) || !lib.matchesCurrentPlatform()) {
                     continue;
                 }
                 libList.add(lib);
@@ -706,10 +706,10 @@ public class DriverEditDialog extends HelpEnabledDialog
         driver.setModified(true);
 
         // Set libraries
-        for (DriverFileDescriptor lib : CommonUtils.safeCollection(libList)) {
+        for (DriverLibraryDescriptor lib : CommonUtils.safeCollection(libList)) {
             driver.addDriverFile(lib);
         }
-        for (DriverFileDescriptor lib : CommonUtils.copyList(driver.getDriverFiles())) {
+        for (DriverLibraryDescriptor lib : CommonUtils.copyList(driver.getDriverLibraries())) {
             if (!libList.contains(lib)) {
                 driver.removeDriverFile(lib);
             }
@@ -781,9 +781,9 @@ public class DriverEditDialog extends HelpEnabledDialog
         {
             java.util.List<File> libFiles = new ArrayList<File>();
             java.util.List<URL> libURLs = new ArrayList<URL>();
-            for (DriverFileDescriptor lib : libList) {
+            for (DriverLibraryDescriptor lib : libList) {
                 File libFile = lib.getLocalFile();
-                if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverFile.FileType.jar) {
+                if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverLibrary.FileType.jar) {
                     libFiles.add(libFile);
                     try {
                         libURLs.add(libFile.toURI().toURL());
