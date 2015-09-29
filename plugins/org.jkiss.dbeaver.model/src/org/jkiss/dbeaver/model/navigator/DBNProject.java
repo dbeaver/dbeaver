@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -129,6 +131,7 @@ public class DBNProject extends DBNResource implements IAdaptable
         if (!getProject().isOpen()) {
             try {
                 getProject().open(monitor.getNestedMonitor());
+                getProject().refreshLocal(IFile.DEPTH_ONE, monitor.getNestedMonitor());
             } catch (CoreException e) {
                 throw new DBException("Can't open project '" + getProject().getName() + "'", e);
             }
