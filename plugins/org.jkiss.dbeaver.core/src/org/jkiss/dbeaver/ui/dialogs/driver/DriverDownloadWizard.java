@@ -23,6 +23,7 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -35,12 +36,12 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
     private static final String DRIVER_DOWNLOAD_DIALOG_SETTINGS = "DriverDownload";//$NON-NLS-1$
 
     private DriverDescriptor driver;
-    private List<DriverLibraryDescriptor> files;
+    private List<? extends DBPDriverLibrary> files;
     private boolean updateVersion;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
-    public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<DriverLibraryDescriptor> files, boolean updateVersion, boolean forceDownload) {
+    public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<? extends DBPDriverLibrary> files, boolean updateVersion, boolean forceDownload) {
         this.driver = driver;
         this.files = files;
         this.updateVersion = updateVersion;
@@ -54,7 +55,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return driver;
     }
 
-    List<DriverLibraryDescriptor> getFiles() {
+    List<? extends DBPDriverLibrary> getFiles() {
         return files;
     }
 

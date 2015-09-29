@@ -58,6 +58,8 @@ public interface DBPDriverLibrary
 
     boolean isDownloadable();
 
+    boolean isMavenArtifact();
+
     @Nullable
     String getExternalURL();
 
