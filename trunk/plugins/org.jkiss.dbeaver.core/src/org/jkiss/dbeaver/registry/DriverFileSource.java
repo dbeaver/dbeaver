@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDriverFile;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -28,7 +27,7 @@ import java.util.List;
 /**
  * DriverFileSource
  */
-public class DriverFileSource implements DBPDriverFile.FileSource
+public class DriverFileSource
 {
     static final Log log = Log.getLog(DriverFileSource.class);
 

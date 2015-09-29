@@ -182,7 +182,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 Set<File> libFiles = new HashSet<File>();
                 Map<String, File> libPathMap = new HashMap<String, File>();
                 for (DriverDescriptor driver : exportData.usedDrivers) {
-                    for (DriverFileDescriptor fileDescriptor : driver.getDriverFiles()) {
+                    for (DriverLibraryDescriptor fileDescriptor : driver.getDriverLibraries()) {
                         final File libraryFile = fileDescriptor.getLocalFile();
                         if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {
                             libFiles.add(libraryFile);
