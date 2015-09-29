@@ -29,6 +29,7 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.*;
@@ -182,7 +183,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 Set<File> libFiles = new HashSet<File>();
                 Map<String, File> libPathMap = new HashMap<String, File>();
                 for (DriverDescriptor driver : exportData.usedDrivers) {
-                    for (DriverLibraryDescriptor fileDescriptor : driver.getDriverLibraries()) {
+                    for (DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {
                         final File libraryFile = fileDescriptor.getLocalFile();
                         if (libraryFile != null && !fileDescriptor.isDisabled() && libraryFile.exists()) {
                             libFiles.add(libraryFile);

@@ -280,7 +280,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                 File libFile = new File(libPath);
                 if (libFile.exists()) {
                     // Just use path as-is (may be it is local re-import or local environments equal to export environment)
-                    driver.addDriverFile(libPath, DBPDriverLibrary.FileType.jar);
+                    driver.addDriverLibrary(libPath, DBPDriverLibrary.FileType.jar);
                 } else {
                     // Get driver library from archive
                     String archiveLibEntry = libMap.get(libPath);
@@ -312,7 +312,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                             while (relativePath.charAt(0) == '/' || relativePath.charAt(0) == '\\') {
                                 relativePath = relativePath.substring(1);
                             }
-                            driver.addDriverFile(relativePath, DBPDriverLibrary.FileType.jar);
+                            driver.addDriverLibrary(relativePath, DBPDriverLibrary.FileType.jar);
                         }
                     }
                 }

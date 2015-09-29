@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileManager;
-import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -69,7 +68,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             filesTable.setHeaderVisible(true);
             filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
-            for (DriverLibraryDescriptor file : wizard.getFiles()) {
+            for (DBPDriverLibrary file : wizard.getFiles()) {
                 new TableItem(filesTable, SWT.NONE).setText(file.getDisplayName());
             }
             UIUtils.packColumns(filesTable, true);
@@ -91,14 +90,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         downloadLibraryFiles(new RunnableContextDelegate(getContainer()), getWizard().getFiles());
     }
 
-    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<DriverLibraryDescriptor> files)
+    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<? extends DBPDriverLibrary> files)
     {
         if (!getWizard().getDriver().acceptDriverLicenses(runnableContext)) {
             return;
         }
 
         for (int i = 0, filesSize = files.size(); i < filesSize; ) {
-            DriverLibraryDescriptor lib = files.get(i);
+            DBPDriverLibrary lib = files.get(i);
             int result = downloadLibraryFile(runnableContext, lib);
             switch (result) {
                 case IDialogConstants.CANCEL_ID:
@@ -114,7 +113,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
     }
 
-    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DriverLibraryDescriptor file)
+    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DBPDriverLibrary file)
     {
         try {
             runnableContext.run(true, true, new DBRRunnableWithProgress() {
@@ -142,11 +141,11 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     private class DownloadRetry implements Runnable {
-        private final DriverLibraryDescriptor file;
+        private final DBPDriverLibrary file;
         private final Throwable error;
         private int result;
 
-        public DownloadRetry(DriverLibraryDescriptor file, Throwable error)
+        public DownloadRetry(DBPDriverLibrary file, Throwable error)
         {
             this.file = file;
             this.error = error;

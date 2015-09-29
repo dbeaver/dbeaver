@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.program.Program;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -129,7 +130,8 @@ public class RuntimeUtils {
         return DBeaverCore.getInstance().getLocalSystem().isWindows() ? binName + ".exe" : binName;
     }
 
-    public static IStatus stripStack(IStatus status) {
+    @NotNull
+    public static IStatus stripStack(@NotNull IStatus status) {
         if (status instanceof MultiStatus) {
             IStatus[] children = status.getChildren();
             if (children != null) {
@@ -145,7 +147,7 @@ public class RuntimeUtils {
             }
             return new Status(status.getSeverity(), status.getPlugin(), status.getCode(), messagePrefix + status.getMessage(), null);
         }
-        return null;
+        return status;
     }
 
     public static void pause(int ms)

@@ -138,6 +138,7 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
         return path.startsWith(FILE_SOURCE_REPO);
     }
 
+    @Override
     public boolean isMavenArtifact() {
         return path.startsWith(FILE_SOURCE_MAVEN);
     }

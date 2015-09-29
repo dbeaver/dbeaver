@@ -707,11 +707,11 @@ public class DriverEditDialog extends HelpEnabledDialog
 
         // Set libraries
         for (DriverLibraryDescriptor lib : CommonUtils.safeCollection(libList)) {
-            driver.addDriverFile(lib);
+            driver.addDriverLibrary(lib);
         }
         for (DriverLibraryDescriptor lib : CommonUtils.copyList(driver.getDriverLibraries())) {
             if (!libList.contains(lib)) {
-                driver.removeDriverFile(lib);
+                driver.removeDriverLibrary(lib);
             }
         }
 
@@ -781,7 +781,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         {
             java.util.List<File> libFiles = new ArrayList<File>();
             java.util.List<URL> libURLs = new ArrayList<URL>();
-            for (DriverLibraryDescriptor lib : libList) {
+            for (DBPDriverLibrary lib : libList) {
                 File libFile = lib.getLocalFile();
                 if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverLibrary.FileType.jar) {
                     libFiles.add(libFile);
