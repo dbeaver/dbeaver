@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.formatter;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.util.ArrayList;
 import java.util.List;
