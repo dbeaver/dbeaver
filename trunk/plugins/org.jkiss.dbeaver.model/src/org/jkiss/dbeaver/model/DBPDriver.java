@@ -77,8 +77,6 @@ public interface DBPDriver extends DBPObject
 
     Object getDriverParameter(String name);
 
-    Collection<? extends DBPDriverLocalPath> getPathList();
-
     boolean isSupportedByLocalSystem();
 
     Collection<String> getClientHomeIds();

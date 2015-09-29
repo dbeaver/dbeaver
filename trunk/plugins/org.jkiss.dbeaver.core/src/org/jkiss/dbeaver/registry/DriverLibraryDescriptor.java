@@ -25,7 +25,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
@@ -33,12 +32,10 @@ import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.text.NumberFormat;
 import java.util.Collection;
 
 /**
@@ -196,6 +193,7 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
     }
 
     @Nullable
+    @Override
     public String getExternalURL() {
         if (path.startsWith(FILE_SOURCE_PLATFORM)) {
             return path;
@@ -285,95 +283,6 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
     @Override
     public Collection<DBPDriverLibrary> getDependencies() {
         return null;
-    }
-
-    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion) throws IOException, InterruptedException
-    {
-        if (isMavenArtifact()) {
-            MavenArtifact artifact = downloadMavenArtifact(monitor, updateVersion);
-            if (artifact.getRepository().isLocal()) {
-                // No need to download local artifacts
-                return;
-            }
-        }
-        String externalURL = getExternalURL();
-        if (externalURL == null) {
-            throw new IOException("Unresolved file reference: " + getPath());
-        }
-
-        final URLConnection connection = RuntimeUtils.openConnection(externalURL);
-        monitor.worked(1);
-        monitor.done();
-
-        final int contentLength = connection.getContentLength();
-        monitor.beginTask("Download " + externalURL, contentLength);
-        boolean success = false;
-        final File localFile = getLocalFile();
-        if (localFile == null) {
-            throw new IOException("No target file for '" + getPath() + "'");
-        }
-        final File localDir = localFile.getParentFile();
-        if (!localDir.exists()) {
-            if (!localDir.mkdirs()) {
-                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
-            }
-        }
-        final OutputStream outputStream = new FileOutputStream(localFile);
-        try {
-            final InputStream inputStream = connection.getInputStream();
-            try {
-                final NumberFormat numberFormat = NumberFormat.getNumberInstance();
-                byte[] buffer = new byte[10000];
-                int totalRead = 0;
-                for (;;) {
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException();
-                    }
-                    monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
-                    final int count = inputStream.read(buffer);
-                    if (count <= 0) {
-                        success = true;
-                        break;
-                    }
-                    outputStream.write(buffer, 0, count);
-                    monitor.worked(count);
-                    totalRead += count;
-                }
-            }
-            finally {
-                ContentUtils.close(inputStream);
-            }
-        } finally {
-            ContentUtils.close(outputStream);
-            if (!success) {
-                if (!localFile.delete()) {
-                    log.warn("Can't delete local driver file '" + localFile.getAbsolutePath() + "'");
-                }
-            }
-        }
-        monitor.done();
-    }
-
-    private MavenArtifact downloadMavenArtifact(DBRProgressMonitor monitor, boolean updateVersion) throws IOException {
-        MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
-        if (updateVersion) {
-            MavenRegistry.getInstance().resetArtifactInfo(artifactInfo);
-        }
-        MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(artifactInfo);
-        if (artifact == null) {
-            throw new IOException("Maven artifact '" + path + "' not found");
-        }
-        if (updateVersion) {
-            artifact.loadMetadata();
-        } else {
-            MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
-            if (localVersion != null && localVersion.getCacheFile().exists()) {
-                // Already cached
-                return artifact;
-            }
-        }
-        artifact.resolveVersion(monitor, artifactInfo.getVersion());
-        return artifact;
     }
 
     @NotNull
