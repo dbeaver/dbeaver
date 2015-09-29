@@ -104,7 +104,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private final List<DriverFileSource> fileSources = new ArrayList<DriverFileSource>();
     private final List<DriverLibraryDescriptor> files = new ArrayList<DriverLibraryDescriptor>();
     private final List<DriverLibraryDescriptor> origFiles = new ArrayList<DriverLibraryDescriptor>();
-    private final List<DriverPathDescriptor> pathList = new ArrayList<DriverPathDescriptor>();
     private final List<DBPPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<DBPPropertyDescriptor>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<OSDescriptor>();
 
@@ -683,36 +682,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    public Collection<String> getOrderedPathList()
-    {
-        if (pathList.isEmpty()) {
-            return Collections.emptyList();
-        }
-        List<String> result = new ArrayList<String>(pathList.size());
-        for (DriverPathDescriptor path : pathList) {
-            if (path.isEnabled()) {
-                result.add(path.getPath());
-            }
-        }
-        return result;
-    }
-
     @NotNull
     public List<DriverFileSource> getDriverFileSources() {
         return fileSources;
     }
 
-    @Override
-    public Collection<DriverPathDescriptor> getPathList()
-    {
-        return pathList;
-    }
-
-    void addPath(DriverPathDescriptor path)
-    {
-        pathList.add(path);
-    }
-    
     @Override
     public List<DBPPropertyDescriptor> getConnectionPropertyDescriptors()
     {
@@ -951,7 +925,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    file.downloadLibraryFile(monitor, false);
+                                    DriverFileManager.downloadLibraryFile(monitor, file, false);
                                 } catch (final Exception e) {
                                     log.warn("Can't obtain driver license", e);
                                 }
@@ -1073,17 +1047,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             xml.endElement();
         }
 
-        // Path list
-        for (DriverPathDescriptor path : this.getPathList()) {
-            xml.startElement(RegistryConstants.TAG_PATH);
-            xml.addAttribute(RegistryConstants.ATTR_PATH, path.getPath());
-            if (!CommonUtils.isEmpty(path.getComment())) {
-                xml.addAttribute(RegistryConstants.ATTR_COMMENT, path.getComment());
-            }
-            xml.addAttribute(RegistryConstants.ATTR_ENABLED, path.isEnabled());
-            xml.endElement();
-        }
-        
         // Parameters
         for (Map.Entry<Object, Object> paramEntry : customParameters.entrySet()) {
             if (!CommonUtils.equalObjects(paramEntry.getValue(), defaultParameters.get(paramEntry.getKey()))) {
@@ -1248,12 +1211,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
             } else if (localName.equals(RegistryConstants.TAG_CLIENT_HOME)) {
                 curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
-            } else if (localName.equals(RegistryConstants.TAG_PATH)) {
-                DriverPathDescriptor path = new DriverPathDescriptor();
-                path.setPath(atts.getValue(RegistryConstants.ATTR_PATH));
-                path.setComment(atts.getValue(RegistryConstants.ATTR_COMMENT));
-                path.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
-                curDriver.addPath(path);
             } else if (localName.equals(RegistryConstants.TAG_PARAMETER)) {
                 if (curDriver == null) {
                     log.warn("Parameter outside of driver");

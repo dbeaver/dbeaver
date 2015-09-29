@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DriverFileManager;
 import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -120,7 +121,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        file.downloadLibraryFile(monitor, getWizard().isUpdateVersion());
+                        DriverFileManager.downloadLibraryFile(monitor, file, getWizard().isUpdateVersion());
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }
