@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.formatter;
 
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
@@ -46,7 +46,7 @@ public class DataFormatterProfile implements DBDDataFormatterProfile, DBPPrefere
     private String name;
     private Locale locale;
 
-    DataFormatterProfile(String profileName, DBPPreferenceStore store)
+    public DataFormatterProfile(String profileName, DBPPreferenceStore store)
     {
         this.name = profileName;
         this.store = store;

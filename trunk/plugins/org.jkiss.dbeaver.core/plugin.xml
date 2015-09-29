@@ -1861,7 +1861,7 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.registry.DataFormatterRegistry"/>
+                    <instanceof value="org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry"/>
                     <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
                 </or>

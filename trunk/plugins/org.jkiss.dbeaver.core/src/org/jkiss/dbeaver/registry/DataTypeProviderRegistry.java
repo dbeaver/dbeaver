@@ -58,7 +58,7 @@ public class DataTypeProviderRegistry implements DBDValueHandlerRegistry
         {
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataTypeProviderDescriptor.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
-                DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(this, ext);
+                DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(ext);
                 dataTypeProviders.add(provider);
             }
         }
