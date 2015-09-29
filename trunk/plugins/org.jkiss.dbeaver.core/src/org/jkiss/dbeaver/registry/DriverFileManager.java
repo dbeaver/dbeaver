@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
@@ -37,7 +38,7 @@ public class DriverFileManager
 {
     static final Log log = Log.getLog(DriverFileManager.class);
 
-    public static void downloadLibraryFile(DBRProgressMonitor monitor, DriverLibraryDescriptor library, boolean updateVersion) throws IOException, InterruptedException
+    public static void downloadLibraryFile(DBRProgressMonitor monitor, DBPDriverLibrary library, boolean updateVersion) throws IOException, InterruptedException
     {
         if (library.isMavenArtifact()) {
             MavenArtifact artifact = downloadMavenArtifact(monitor, library, updateVersion);
@@ -104,7 +105,7 @@ public class DriverFileManager
         monitor.done();
     }
 
-    private static MavenArtifact downloadMavenArtifact(DBRProgressMonitor monitor, DriverLibraryDescriptor library, boolean updateVersion) throws IOException {
+    private static MavenArtifact downloadMavenArtifact(DBRProgressMonitor monitor, DBPDriverLibrary library, boolean updateVersion) throws IOException {
         MavenArtifactReference artifactInfo = new MavenArtifactReference(library.getPath());
         if (updateVersion) {
             MavenRegistry.getInstance().resetArtifactInfo(artifactInfo);
