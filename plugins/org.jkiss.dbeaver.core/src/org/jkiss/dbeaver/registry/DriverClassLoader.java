@@ -58,15 +58,6 @@ public class DriverClassLoader extends URLClassLoader
                 }
             }
         }
-        final Collection<String> pathList = driver.getOrderedPathList();
-        if (!CommonUtils.isEmpty(pathList)) {
-            for (String path : pathList) {
-                File localFile = new File(path, nativeName);
-                if (localFile.exists()) {
-                    return localFile.getAbsolutePath();
-                }
-            }
-        }
         return super.findLibrary(libname);
     }
 }

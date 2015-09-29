@@ -59,6 +59,9 @@ public interface DBPDriverLibrary
     boolean isDownloadable();
 
     @Nullable
+    String getExternalURL();
+
+    @Nullable
     File getLocalFile();
 
     boolean matchesCurrentPlatform();
