@@ -45,7 +45,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     private DBDValueHandlerProvider instance;
 
-    public DataTypeProviderDescriptor(DataTypeProviderRegistry registry, IConfigurationElement config)
+    public DataTypeProviderDescriptor(IConfigurationElement config)
     {
         super(config);
 
