@@ -41,6 +41,9 @@ public interface DBPDriverLibrary
     }
 
     @NotNull
+    String getDisplayName();
+
+    @NotNull
     FileType getType();
 
     @NotNull

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -50,13 +51,12 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
     public static final String FILE_SOURCE_MAVEN = "maven:/";
     public static final String FILE_SOURCE_REPO = "repo:/";
     public static final String FILE_SOURCE_PLATFORM = "platform:/";
-    public static final String FILE_SOURCE_LOCAL = "file:/";
+    //public static final String FILE_SOURCE_LOCAL = "file:/";
 
     private final DriverDescriptor driver;
     private final FileType type;
     private final OSDescriptor system;
     private String path;
-    private String fileExtension;
     private String description;
     private boolean custom;
     private boolean disabled;
@@ -80,7 +80,6 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
             osName,
             config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
-        this.fileExtension = config.getAttribute(RegistryConstants.ATTR_EXTENSION);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.custom = false;
     }
@@ -90,12 +89,14 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
         return driver;
     }
 
+    @NotNull
     @Override
     public FileType getType()
     {
         return type;
     }
 
+    @NotNull
     @Override
     public String getPath()
     {
@@ -286,40 +287,6 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
         return null;
     }
 
-/*
-    private String getMavenArtifactFileName() {
-        String artifactName = path.substring(FILE_SOURCE_MAVEN.length());
-        String ext = fileExtension;
-        String[] artifactNameParts = artifactName.split(":");
-        if (artifactNameParts.length != 3) {
-            log.warn("Bad Maven artifact reference: " + artifactName);
-            return artifactName.replace(':', '.');
-        }
-        String artifactFileName = DriverDescriptor.DRIVERS_FOLDER + "/" + artifactNameParts[1] + "/" +
-            artifactNameParts[0] + "." + artifactNameParts[1] + "." + artifactNameParts[2];
-        if (CommonUtils.isEmpty(ext)) {
-            switch (type) {
-                case lib:
-                    return System.mapLibraryName(artifactFileName);
-                case executable:
-                    if (RuntimeUtils.isPlatformWindows()) {
-                        ext = "exe";
-                    } else {
-                        return artifactFileName;
-                    }
-                    break;
-                case jar:
-                    ext = "jar";
-                    break;
-                case license:
-                    ext = "txt";
-                    break;
-            }
-        }
-        return artifactFileName + '.' + ext;
-    }
-*/
-
     public void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion) throws IOException, InterruptedException
     {
         if (isMavenArtifact()) {
@@ -409,11 +376,7 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
         return artifact;
     }
 
-    @Override
-    public String toString() {
-        return getDisplayName();
-    }
-
+    @NotNull
     public String getDisplayName() {
         if (isMavenArtifact()) {
             MavenArtifact artifact = getMavenArtifact();
@@ -427,4 +390,10 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
 
         return path;
     }
+
+    @Override
+    public String toString() {
+        return getDisplayName();
+    }
+
 }
