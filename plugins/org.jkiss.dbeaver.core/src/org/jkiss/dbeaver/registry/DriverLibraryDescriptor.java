@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
 import java.io.IOException;
@@ -299,6 +301,25 @@ public class DriverLibraryDescriptor implements DBPDriverLibrary
         }
 
         return path;
+    }
+
+    @NotNull
+    @Override
+    public DBIcon getIcon() {
+        if (isMavenArtifact()) {
+            return UIIcon.APACHE;
+        }
+
+        File localFile = getLocalFile();
+        if (localFile != null && localFile.isDirectory()) {
+            return DBIcon.TREE_FOLDER;
+        } else {
+            switch (type) {
+                case lib: return UIIcon.LIBRARY;
+                case jar: return UIIcon.JAR;
+                default: return DBIcon.TYPE_UNKNOWN;
+            }
+        }
     }
 
     @Override
