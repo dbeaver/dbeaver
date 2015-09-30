@@ -24,11 +24,11 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -36,8 +36,6 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLUtilsPropertyTester extends PropertyTester
 {
-    //static final Log log = Log.getLog(SQLEditorPropertyTester.class);
-
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
     public static final String PROP_CAN_GENERATE = "canGenerate";
     public static final String PROP_HAS_TOOLS = "hasTools";
@@ -71,10 +69,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
             }
         } else if (property.equals(PROP_HAS_TOOLS)) {
             DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
-            if (object != null && object.getDataSource() != null) {
-                DataSourceDescriptor container = (DataSourceDescriptor)object.getDataSource().getContainer();
-                return !CommonUtils.isEmpty(container.getDriver().getProviderDescriptor().getTools(structuredSelection));
-            }
+            return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
         }
         return false;
     }

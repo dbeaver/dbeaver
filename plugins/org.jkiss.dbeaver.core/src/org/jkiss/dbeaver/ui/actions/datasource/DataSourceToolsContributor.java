@@ -28,14 +28,14 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.ToolDescriptor;
-import org.jkiss.dbeaver.registry.ToolGroupDescriptor;
+import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
+import org.jkiss.dbeaver.registry.tools.ToolGroupDescriptor;
+import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -57,9 +57,8 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         }
         DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
 
-        if (selectedObject != null && selectedObject.getDataSource() != null) {
-            DriverDescriptor driver = (DriverDescriptor) selectedObject.getDataSource().getContainer().getDriver();
-            List<ToolDescriptor> tools = driver.getProviderDescriptor().getTools((IStructuredSelection) selection);
+        if (selectedObject != null) {
+            List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);
             fillToolsMenu(menuItems, tools, selection);
         }
     }

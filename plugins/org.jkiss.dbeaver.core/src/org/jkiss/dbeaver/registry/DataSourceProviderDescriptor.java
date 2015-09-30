@@ -18,27 +18,27 @@
 
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.navigator.meta.*;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DataSourceProviderDescriptor
@@ -63,8 +63,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<DBPPropertyDescriptor>();
     private final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
     private final List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
-    private final Map<String, ToolGroupDescriptor> toolGroups = new LinkedHashMap<String, ToolGroupDescriptor>();
-    private final List<ToolDescriptor> tools = new ArrayList<ToolDescriptor>();
     private final String parentId;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
@@ -122,20 +120,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 }
             }
         }
-
-        // Load tools
-        {
-            for (IConfigurationElement toolsElement : config.getChildren(RegistryConstants.TAG_TOOLS)) {
-                for (IConfigurationElement toolElement : toolsElement.getChildren(RegistryConstants.TAG_TOOL_GROUP)) {
-                    ToolGroupDescriptor group = new ToolGroupDescriptor(this, toolElement);
-                    this.toolGroups.put(group.getId(), group);
-                }
-                for (IConfigurationElement toolElement : toolsElement.getChildren(RegistryConstants.TAG_TOOL)) {
-                    this.tools.add(
-                        new ToolDescriptor(this, toolElement));
-                }
-            }
-        }
     }
 
     public void dispose()
@@ -144,8 +128,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             driver.dispose();
         }
         drivers.clear();
-        tools.clear();
-        toolGroups.clear();
         instance = null;
     }
 
@@ -301,32 +283,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
         return null;
-    }
-
-    ToolGroupDescriptor getToolGroup(String id) {
-        return toolGroups.get(id);
-    }
-
-    public List<ToolDescriptor> getTools(IStructuredSelection selection)
-    {
-        List<DBSObject> objects = NavigatorUtils.getSelectedObjects(selection);
-        List<ToolDescriptor> result = new ArrayList<ToolDescriptor>();
-        for (ToolDescriptor descriptor : tools) {
-            if (descriptor.isSingleton() && objects.size() > 1) {
-                continue;
-            }
-            boolean applies = true;
-            for (DBSObject object : objects) {
-                if (!descriptor.appliesTo(object)) {
-                    applies = false;
-                    break;
-                }
-            }
-            if (applies) {
-                result.add(descriptor);
-            }
-        }
-        return result;
     }
 
     private DBXTreeNode loadTreeInfo(IConfigurationElement config)
