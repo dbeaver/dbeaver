@@ -341,11 +341,9 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
-<!--
-                    <file type="jar" path="drivers/informix/ifxjdbc.jar"/>
-                    <file type="jar" path="drivers/informix/ifxlang.jar"/>
-                    <file type="license" path="drivers/informix/LICENSE.txt"/>
--->
+                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar"/>
+                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar"/>
+                    <file type="license" path="repo:/drivers/informix/LICENSE.txt"/>
                     <parameter name="query-get-active-db" value="SELECT ODB_DBName FROM SysMaster:informix.SysOpenDB WHERE ODB_IsCurrent = 'Y' AND ODB_SessionID = DBINFO('sessionid')"/>
                     <parameter name="query-set-active-db" value=""/>
                     <parameter name="legacy-sql-dialect" value="true"/>
