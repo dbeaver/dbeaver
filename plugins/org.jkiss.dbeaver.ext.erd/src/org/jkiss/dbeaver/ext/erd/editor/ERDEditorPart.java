@@ -811,7 +811,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 return;
             }
             if (ERDConstants.PREF_GRID_ENABLED.equals(event.getProperty())) {
-                Boolean enabled = (Boolean)event.getNewValue();
+                Boolean enabled = Boolean.valueOf(event.getNewValue().toString());
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_ENABLED, enabled);
                 graphicalViewer.setProperty(SnapToGrid.PROPERTY_GRID_VISIBLE, enabled);
             } else if (ERDConstants.PREF_GRID_WIDTH.equals(event.getProperty()) || ERDConstants.PREF_GRID_HEIGHT.equals(event.getProperty())) {
