@@ -32,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 
 /**
@@ -237,17 +238,17 @@ public class Spreadsheet extends LightGrid implements Listener {
                     final Control editorControl = presentation.openValueEditor(true);
                     if (editorControl != null && event.keyCode != SWT.CR) {
                         // Forward the same key event to just created control
-                        final Event fwdEvent = new Event();
-                        fwdEvent.type = SWT.KeyDown;
-                        fwdEvent.character = event.character;
-                        fwdEvent.keyCode = event.keyCode;
-                        final Display display = editorControl.getDisplay();
-                        display.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                display.post(fwdEvent);
-                            }
-                        });
+                        final Event kdEvent = new Event();
+                        kdEvent.type = SWT.KeyDown;
+                        kdEvent.character = event.character;
+                        kdEvent.keyCode = event.keyCode;
+                        UIUtils.postEvent(editorControl, kdEvent);
+
+                        final Event kuEvent = new Event();
+                        kuEvent.type = SWT.KeyUp;
+                        kuEvent.character = event.character;
+                        kuEvent.keyCode = event.keyCode;
+                        UIUtils.postEvent(editorControl, kuEvent);
                     }
                 } else if (event.keyCode == SWT.ESC) {
                     // Reset cell value
