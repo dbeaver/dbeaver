@@ -21,7 +21,7 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i48="../../plugins/org.jkiss.dbeaver.core.application/icons/dbeaver.png"/>
+   <windowImages i16="/icons/dbeaver-16x16x32.png" i32="/icons/dbeaver-32x32x32.png" i48="/icons/dbeaver-48x48x32.png" i64="/icons/dbeaver-64x64x32.png" i128="/icons/dbeaver-128x128x32.png" i256="/icons/dbeaver-256x256x32.png"/>
 
    <splash
       location="org.jkiss.dbeaver.core.application"
@@ -29,14 +29,21 @@
       startupMessageRect="25,25,200,15"
       startupForegroundColor="000000" />
    <launcher name="dbeaver">
-      <!--linux icon="../../plugins/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.xpm"/-->
-      <macosx icon="../../plugins/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.icns"/>
+      <linux icon="/icons/dbeaver.xpm"/>
+      <macosx icon="/icons/dbeaver.icns"/>
       <solaris/>
-      <win useIco="true">
-         <ico path="../../plugins/org.jkiss.dbeaver.core.application/icons/logo/dbeaver.ico"/>
-         <bmp/>
+      <win useIco="false">
+         <bmp
+            winSmallHigh="/icons/dbeaver-16x16x32.bmp"
+            winSmallLow="/icons/dbeaver-16x16x8.bmp"
+            winMediumHigh="/icons/dbeaver-32x32x32.bmp"
+            winMediumLow="/icons/dbeaver-32x32x8.bmp"
+            winLargeHigh="/icons/dbeaver-48x48x32.bmp"
+            winLargeLow="/icons/dbeaver-48x48x8.bmp"
+            winExtraLargeHigh="/icons/dbeaver-256x256x32.bmp"/>
       </win>
    </launcher>
+
 
    <vm>
    </vm>
@@ -69,11 +76,10 @@
       <feature id="org.jkiss.dbeaver.standalone.feature"/>
    </features>
 
-  <configurations>
+   <configurations>
       <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
-<!--      <plugin id="org.eclipse.equinox.p2.reconciler.dropins" autoStart="true" startLevel="4" /> -->
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
    </configurations>
 
