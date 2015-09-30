@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.registry.DriverFileManager;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -64,14 +65,18 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         {
             Group filesGroup = UIUtils.createControlGroup(composite, "Files required by driver", 1, -1, -1);
             filesGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Table filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
-            filesTable.setHeaderVisible(true);
-            filesTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
+            Tree filesTree = new Tree(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
+            filesTree.setHeaderVisible(true);
+            filesTree.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
+            UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
             for (DBPDriverLibrary file : wizard.getFiles()) {
-                new TableItem(filesTable, SWT.NONE).setText(file.getDisplayName());
+                TreeItem item = new TreeItem(filesTree, SWT.NONE);
+                item.setImage(DBeaverIcons.getImage(file.getIcon()));
+                item.setText(0, file.getDisplayName());
+                item.setText(1, "");
             }
-            UIUtils.packColumns(filesTable, true);
+            UIUtils.packColumns(filesTree);
         }
 
         if (!wizard.isForceDownload()) {

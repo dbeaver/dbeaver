@@ -39,15 +39,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
@@ -336,19 +337,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     }
-                    DBIcon icon;
-                    if (lib.isMavenArtifact()) {
-                        icon = UIIcon.APACHE;
-                    } else if (localFile != null && localFile.isDirectory()) {
-                        icon = DBIcon.TREE_FOLDER;
-                    } else {
-                        switch (lib.getType()) {
-                            case lib: icon = UIIcon.LIBRARY; break;
-                            case jar: icon = UIIcon.JAR; break;
-                            default: icon = DBIcon.TYPE_UNKNOWN; break;
-                        }
-                    }
-                    cell.setImage(DBeaverIcons.getImage(icon));
+                    cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
