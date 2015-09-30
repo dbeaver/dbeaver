@@ -1318,6 +1318,16 @@ public class UIUtils {
         return false;
     }
 
+    public static void postEvent(Control ownerControl, final Event event) {
+        final Display display = ownerControl.getDisplay();
+        display.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                display.post(event);
+            }
+        });
+    }
+
     private static class SaveRunner implements Runnable {
         private final DBRProgressMonitor monitor;
         private final ISaveablePart saveable;
