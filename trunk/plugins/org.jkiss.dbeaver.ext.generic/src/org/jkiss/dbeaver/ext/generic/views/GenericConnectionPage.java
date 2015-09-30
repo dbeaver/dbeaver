@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
@@ -204,8 +205,8 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gl.marginHeight = 0;
             gl.marginWidth = 0;
             buttonsPanel.setLayout(gl);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 150;
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd.widthHint = 150;
             buttonsPanel.setLayoutData(gd);
 
             Button browseButton = new Button(buttonsPanel, SWT.PUSH);
@@ -460,6 +461,10 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             urlText.setBackground(null);
         }
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
+
+        // Enable ""Create" button
+        String paramCreate = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
+        createButton.setEnabled(!CommonUtils.isEmpty(paramCreate));
 
         settingsGroup.layout();
     }

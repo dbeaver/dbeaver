@@ -109,6 +109,7 @@
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
+                    <property id="create-url-param" label="Create database parameter" description="Database create URL parameter" type="string" required="false" defaultValue=""/>
                     <property id="supports-multiple-results" label="Driver supports multiple results" description="Driver supports multiple results for a single query." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
@@ -388,6 +389,7 @@
                     webURL="http://db.apache.org/"
                     embedded="true"
                     description="Derby (Java DB) embedded driver">
+                    <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
@@ -442,6 +444,7 @@
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
                     <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
+                    <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>

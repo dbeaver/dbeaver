@@ -48,6 +48,7 @@ public class GenericConstants {
     public static final String ENTITY_TYPE_SCHEMA = "schema";
 
     // URL parameter for DB shutdown. Added to support Derby DB shutdown process
+    public static final String PARAM_CREATE_URL_PARAM = "create-url-param";
     public static final String PARAM_SHUTDOWN_URL_PARAM = "shutdown-url-param";
     public static final String TYPE_MODIFIER_IDENTITY = " IDENTITY";
 
