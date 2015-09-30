@@ -71,6 +71,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     private static final String GROUP_PATH = "path"; //$NON-NLS-1$
     private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
+    private Button createButton;
 
     @Override
     public void createControl(Composite composite)
@@ -184,6 +185,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             addControlToGroup(GROUP_DB, emptyLabel);
         }
 
+        // Path
         {
             Label pathLabel = new Label(settingsGroup, SWT.NONE);
             pathLabel.setText(GenericMessages.dialog_connection_path_label);
@@ -197,10 +199,18 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
 
-            Button browseButton = new Button(settingsGroup, SWT.PUSH);
+            Composite buttonsPanel = new Composite(settingsGroup, SWT.NONE);
+            gl = new GridLayout(2, true);
+            gl.marginHeight = 0;
+            gl.marginWidth = 0;
+            buttonsPanel.setLayout(gl);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 150;
+            buttonsPanel.setLayoutData(gd);
+
+            Button browseButton = new Button(buttonsPanel, SWT.PUSH);
             browseButton.setText(GenericMessages.dialog_connection_browse_button);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.horizontalSpan = 1;
+            gd = new GridData(GridData.FILL_HORIZONTAL);
             browseButton.setLayoutData(gd);
             browseButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -235,9 +245,14 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
                 }
             });
 
+            createButton = new Button(buttonsPanel, SWT.PUSH);
+            createButton.setText("Create");
+            createButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            createButton.setEnabled(false);
+
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
-            addControlToGroup(GROUP_PATH, browseButton);
+            addControlToGroup(GROUP_PATH, buttonsPanel);
         }
 
         {
