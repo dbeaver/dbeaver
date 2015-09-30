@@ -44,6 +44,9 @@ public interface DBPDriverLibrary
     String getDisplayName();
 
     @NotNull
+    DBIcon getIcon();
+
+    @NotNull
     FileType getType();
 
     @NotNull

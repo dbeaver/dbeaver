@@ -164,6 +164,13 @@ public class UIUtils {
         return column;
     }
 
+    public static TreeColumn createTreeColumn(Tree tree, int style, String text)
+    {
+        TreeColumn column = new TreeColumn(tree, style);
+        column.setText(text);
+        return column;
+    }
+
     public static void packColumns(Table table)
     {
         packColumns(table, false);
