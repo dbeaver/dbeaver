@@ -308,43 +308,6 @@
                     class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
                 </view>
             </views>
-            <tools>
-                <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.maintenance" label="Statistics"/>
-                <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
-                    description="Execute script with native client"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
-                    label="Execute in SQL*Plus">
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolValidateStructure"
-                    description="Validate Structure"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                    label="Validate Structure"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
-                    description="Gather statistics"
-                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
-                    label="Gather Statistics"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
-                </tool>
-                <tool
-                        class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                        description="Truncate table"
-                        id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
-                        label="Truncate"
-                        singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
-                </tool>
-            </tools>
             <templates>
                 <resolver type="orauser" class="org.jkiss.dbeaver.ext.oracle.model.resolvers.OracleUserResolver" description="Current Oracle user"/>
             </templates>
@@ -430,6 +393,46 @@
             <!--type standard="STRUCT"/-->
 
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.maintenance" label="Statistics"/>
+            <tool
+                    class="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
+                    description="Execute script with native client"
+                    id="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
+                    label="Execute in SQL*Plus">
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataSource"/>
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolValidateStructure"
+                    description="Validate Structure"
+                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                    label="Validate Structure"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
+                    description="Gather statistics"
+                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
+                    label="Gather Statistics"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex"/>
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchema"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                    description="Truncate table"
+                    id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                    label="Truncate"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
+            </tool>
+        </tools>
     </extension>
 
     <extension point="org.eclipse.ui.editors">

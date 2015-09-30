@@ -20,8 +20,7 @@
 
 <plugin>
 
-    <extension
-        point="org.jkiss.dbeaver.dataSourceProvider">
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
               class="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"
               description="MySQL connector"
@@ -174,78 +173,6 @@
                     class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage">
                 </view>
             </views>
-            <tools>
-                <toolGroup
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
-                    label="Table Maintenance"
-                    icon="#tools"/>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
-                    description="Export database"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
-                    label="Export database"
-                    icon="#export"
-                    singleton="true">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
-                    description="Import database"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
-                    label="Import database"
-                    icon="#import"
-                    singleton="true">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
-                    description="Execute script with native client"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
-                    label="Execute script"
-                    singleton="true">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
-                    description="Analyse table(s)"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
-                    label="Analyse"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
-                    description="Check table(s)"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
-                    label="Check"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
-                    description="Optimize table(s)"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
-                    label="Optimize"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
-                    description="Repair table(s)"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
-                    label="Repair"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
-                </tool>
-                <tool
-                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
-                    description="Truncate table(s)"
-                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
-                    label="Truncate"
-                    singleton="false">
-                    <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
-                </tool>
-            </tools>
         </datasource>
     </extension>
 
@@ -344,6 +271,81 @@
             class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
             id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor">
         </editor>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <toolGroup
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance"
+                    label="Table Maintenance"
+                    icon="#tools"/>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
+                    description="Export database"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolExport"
+                    label="Export database"
+                    icon="#export"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
+                    description="Import database"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolImport"
+                    label="Import database"
+                    icon="#import"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
+                    description="Execute script with native client"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.MySQLToolScript"
+                    label="Execute script"
+                    singleton="true">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
+                    description="Analyse table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolAnalyse"
+                    label="Analyse"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
+                    description="Check table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolCheck"
+                    label="Check"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
+                    description="Optimize table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolOptimize"
+                    label="Optimize"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
+                    description="Repair table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolRepair"
+                    label="Repair"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
+                    description="Truncate table(s)"
+                    id="org.jkiss.dbeaver.ext.mysql.tools.maintenance.MySQLToolTruncate"
+                    label="Truncate"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            </tool>
+        </tools>
     </extension>
 
 </plugin>
