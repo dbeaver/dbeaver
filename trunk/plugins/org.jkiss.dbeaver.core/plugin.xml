@@ -34,6 +34,7 @@
     <extension-point id="org.jkiss.dbeaver.resources" name="Resources" schema="schema/org.jkiss.dbeaver.resources.exsd"/>
     <extension-point id="org.jkiss.dbeaver.search" name="Search providers" schema="schema/org.jkiss.dbeaver.search.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="Result set presentations" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.tools" name="Tools" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type

@@ -16,40 +16,35 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.tools;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * ToolDescriptor
  */
-public class ToolDescriptor extends AbstractContextDescriptor {
+public class ToolGroupDescriptor extends AbstractContextDescriptor {
     private final String id;
     private final String label;
     private final String description;
-    private final ObjectType toolType;
     private final DBPImage icon;
-    private final boolean singleton;
-    private final ToolGroupDescriptor group;
+    private final ToolGroupDescriptor parent;
 
-    public ToolDescriptor(
-        DataSourceProviderDescriptor provider, IConfigurationElement config)
+    public ToolGroupDescriptor(IConfigurationElement config)
     {
         super(config);
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.toolType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.singleton = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_SINGLETON));
-        String groupId = config.getAttribute(RegistryConstants.ATTR_GROUP);
-        this.group = CommonUtils.isEmpty(groupId) ? null : provider.getToolGroup(groupId);
+        String parentId = config.getAttribute(RegistryConstants.ATTR_PARENT);
+        this.parent = CommonUtils.isEmpty(parentId) ? null : ToolsRegistry.getInstance().getToolGroup(parentId);
     }
 
     public String getId() {
@@ -68,12 +63,8 @@ public class ToolDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public boolean isSingleton() {
-        return singleton;
-    }
-
-    public ToolGroupDescriptor getGroup() {
-        return group;
+    public ToolGroupDescriptor getParent() {
+        return parent;
     }
 
     @Override
@@ -82,12 +73,6 @@ public class ToolDescriptor extends AbstractContextDescriptor {
             return ((DBSObject) object).getDataSource();
         }
         return super.adaptType(object);
-    }
-
-    public IExternalTool createTool()
-        throws DBException
-    {
-        return toolType.createInstance(IExternalTool.class);
     }
 
 }
