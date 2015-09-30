@@ -32,7 +32,7 @@
                             <archiveFileName>dbeaver-ce-${dbeaver-version}</archiveFileName>
                             <rootFolders>
                                 <!-- for MacOSX, make sure you use a folder ending with .app , see bug 463670 -->
-                                <macosx>Eclipse.app</macosx>
+                                <macosx>DBeaver.app</macosx>
                             </rootFolders>
                         </product>
                     </products>
