@@ -110,6 +110,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 }
             }
             activated.add(connectionInfo);
+        } else if (connectionEditor != null) {
+            connectionEditor.loadSettings();
         }
         getContainer().updateTitleBar();
     }
