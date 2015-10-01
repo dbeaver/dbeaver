@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.core.application;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
@@ -26,7 +25,6 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.actions.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 
@@ -122,17 +120,9 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
 
     private boolean closeActiveTransactions()
     {
-        DBeaverCore core = DBeaverCore.getInstance();
-        for (IProject project : core.getLiveProjects()) {
-            if (project.isOpen()) {
-                DataSourceRegistry registry = core.getProjectRegistry().getDataSourceRegistry(project);
-                if (registry != null) {
-                    for (DataSourceDescriptor dataSourceDescriptor : registry.getDataSources()) {
-                        if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor)) {
-                            return false;
-                        }
-                    }
-                }
+        for (DataSourceDescriptor dataSourceDescriptor : DataSourceDescriptor.getAllDataSources()) {
+            if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor)) {
+                return false;
             }
         }
         return true;
