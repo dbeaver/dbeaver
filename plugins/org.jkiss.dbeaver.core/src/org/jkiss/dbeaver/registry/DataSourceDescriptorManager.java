@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -67,7 +68,7 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
     {
         if (copyFrom != null) {
             DataSourceDescriptor dsTpl = (DataSourceDescriptor)copyFrom;
-            DataSourceRegistry registry = parent != null ? parent : dsTpl.getRegistry();
+            DBPDataSourceRegistry registry = parent != null ? parent : dsTpl.getRegistry();
             DataSourceDescriptor dataSource = new DataSourceDescriptor(
                 registry,
                 DataSourceDescriptor.generateNewId(dsTpl.getDriver()),
