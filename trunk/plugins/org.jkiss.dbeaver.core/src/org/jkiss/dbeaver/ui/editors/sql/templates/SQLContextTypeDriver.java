@@ -12,7 +12,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.templates;
 
 
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 public class SQLContextTypeDriver extends SQLContextTypeAbstract {

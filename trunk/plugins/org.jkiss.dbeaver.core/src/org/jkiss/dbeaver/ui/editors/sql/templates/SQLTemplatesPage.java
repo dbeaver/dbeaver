@@ -35,7 +35,7 @@ import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.texteditor.templates.AbstractTemplatesPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ProxyPageSite;
 import org.jkiss.dbeaver.ui.UIIcon;
