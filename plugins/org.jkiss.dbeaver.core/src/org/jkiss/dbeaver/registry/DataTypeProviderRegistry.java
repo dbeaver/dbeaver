@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 import java.util.ArrayList;
 import java.util.List;

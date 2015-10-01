@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards;
 
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 import java.util.HashMap;
 import java.util.Map;

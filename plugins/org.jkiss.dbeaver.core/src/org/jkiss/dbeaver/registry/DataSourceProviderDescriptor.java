@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.*;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -156,7 +157,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return icon;
     }
 
-    DBPDataSourceProvider getInstance(DriverDescriptor driver)
+    public DBPDataSourceProvider getInstance(DriverDescriptor driver)
         throws DBException
     {
         if (instance == null) {
