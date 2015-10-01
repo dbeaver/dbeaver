@@ -49,6 +49,9 @@ public interface DBPDriverLibrary
     @NotNull
     FileType getType();
 
+    /**
+     * Native library URI.
+     */
     @NotNull
     String getPath();
 

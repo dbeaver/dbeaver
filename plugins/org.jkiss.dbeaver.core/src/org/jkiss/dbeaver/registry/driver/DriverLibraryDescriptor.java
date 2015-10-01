@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;

@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;

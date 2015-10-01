@@ -16,15 +16,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
 
 /**
  * DriverClassLoader

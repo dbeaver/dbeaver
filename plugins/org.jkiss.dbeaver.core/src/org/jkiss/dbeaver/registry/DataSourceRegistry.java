@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
 import org.jkiss.dbeaver.registry.encode.PasswordEncrypter;
 import org.jkiss.dbeaver.registry.encode.SimpleStringEncrypter;

@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
@@ -35,6 +35,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
@@ -130,7 +134,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
     }
 
-    DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
+    public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
@@ -140,7 +144,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         makeIconExtensions();
     }
 
-    DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config)
+    public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config)
     {
         super(providerDescriptor.getPluginId());
         this.providerDescriptor = providerDescriptor;
@@ -255,17 +259,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             getClass().getClassLoader());
     }
 
-    DriverDescriptor getReplacedBy()
+    public DriverDescriptor getReplacedBy()
     {
         return replacedBy;
     }
 
-    void setReplacedBy(DriverDescriptor replaceBy)
+    public void setReplacedBy(DriverDescriptor replaceBy)
     {
         this.replacedBy = replaceBy;
     }
 
-    boolean replaces(DriverDescriptor driver)
+    public boolean replaces(DriverDescriptor driver)
     {
         for (ReplaceInfo replaceInfo : driverReplacements) {
             if (driver.getProviderDescriptor().getId().equals(replaceInfo.providerId) &&
@@ -458,7 +462,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return disabled;
     }
 
-    void setDisabled(boolean disabled)
+    public void setDisabled(boolean disabled)
     {
         this.disabled = disabled;
     }

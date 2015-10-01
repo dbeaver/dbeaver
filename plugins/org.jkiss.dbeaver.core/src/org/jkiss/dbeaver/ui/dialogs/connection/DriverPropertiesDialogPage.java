@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
 

@@ -24,8 +24,7 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
-import org.jkiss.dbeaver.registry.DriverLibraryDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 

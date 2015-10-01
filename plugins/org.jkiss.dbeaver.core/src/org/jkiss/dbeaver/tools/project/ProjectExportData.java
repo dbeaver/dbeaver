@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.tools.project;
 
 import org.eclipse.core.resources.IProject;
-import org.jkiss.dbeaver.registry.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.utils.xml.XMLBuilder;
 
