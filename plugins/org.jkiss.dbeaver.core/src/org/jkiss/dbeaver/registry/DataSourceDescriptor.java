@@ -17,12 +17,14 @@
  */
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
@@ -154,8 +156,6 @@ public class DataSourceDescriptor
         this.createDate = new Date();
         this.preferenceStore = new DataSourcePreferenceStore(this);
         this.virtualModel = new DBVModel(this);
-
-        this.driver.addUser(this);
     }
 
     public boolean isDisposed()
@@ -172,7 +172,6 @@ public class DataSourceDescriptor
         synchronized (users) {
             users.clear();
         }
-        driver.removeUser(this);
         disposed = true;
     }
 
@@ -197,12 +196,7 @@ public class DataSourceDescriptor
 
     public void setDriver(@NotNull DriverDescriptor driver)
     {
-        if (driver == this.driver) {
-            return;
-        }
-        this.driver.removeUser(this);
         this.driver = driver;
-        this.driver.addUser(this);
     }
 
     @NotNull
@@ -1034,6 +1028,28 @@ public class DataSourceDescriptor
         setShowSystemObjects(descriptor.isShowSystemObjects());
         setConnectionReadOnly(descriptor.isConnectionReadOnly());
         folderPath = descriptor.folderPath;
+    }
+
+    public static List<DataSourceDescriptor> getActiveDataSources() {
+        final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        DataSourceRegistry activeRegistry = projectRegistry.getActiveDataSourceRegistry();
+        if (activeRegistry == null) {
+            return Collections.emptyList();
+        }
+        return activeRegistry.getDataSources();
+    }
+
+    public static List<DataSourceDescriptor> getAllDataSources() {
+        List<DataSourceDescriptor> result = new ArrayList<DataSourceDescriptor>();
+        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
+            if (project.isOpen()) {
+                DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                if (registry != null) {
+                    result.addAll(registry.getDataSources());
+                }
+            }
+        }
+        return result;
     }
 
     @Override

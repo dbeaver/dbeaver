@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
@@ -133,12 +132,7 @@ public class SelectDataSourceDialog extends Dialog {
 
     public static DBSDataSourceContainer selectDataSource(Shell parentShell)
     {
-        DataSourceRegistry activeDataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
-		if (activeDataSourceRegistry == null) {
-            UIUtils.showMessageBox(parentShell, CoreMessages.dialog_select_datasource_error_title, CoreMessages.dialog_select_datasource_error_message, SWT.ICON_ERROR);
-            return null;
-		}
-        List<DataSourceDescriptor> datasources = activeDataSourceRegistry.getDataSources();
+        List<DataSourceDescriptor> datasources = DataSourceDescriptor.getActiveDataSources();
         if (datasources.isEmpty()) {
             UIUtils.showMessageBox(parentShell, CoreMessages.dialog_select_datasource_error_title, CoreMessages.dialog_select_datasource_error_message, SWT.ICON_ERROR);
             return null;
