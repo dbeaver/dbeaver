@@ -103,7 +103,7 @@ public class DataSourceDescriptor
     }
 
     @NotNull
-    private final DataSourceRegistry registry;
+    private final DBPDataSourceRegistry registry;
     @NotNull
     private DriverDescriptor driver;
     @NotNull
@@ -141,7 +141,7 @@ public class DataSourceDescriptor
     private DBVModel virtualModel;
 
     public DataSourceDescriptor(
-        @NotNull DataSourceRegistry registry,
+        @NotNull DBPDataSourceRegistry registry,
         @NotNull String id,
         @NotNull DriverDescriptor driver,
         @NotNull DBPConnectionConfiguration connectionInfo)
@@ -461,9 +461,9 @@ public class DataSourceDescriptor
     {
         this.reconnect(monitor, false);
 
-        getRegistry().fireDataSourceEvent(
-                DBPEvent.Action.OBJECT_UPDATE,
-                DataSourceDescriptor.this);
+        getRegistry().notifyDataSourceListeners(new DBPEvent(
+            DBPEvent.Action.OBJECT_UPDATE,
+            DataSourceDescriptor.this));
 
         return true;
     }
@@ -518,7 +518,7 @@ public class DataSourceDescriptor
 
     @NotNull
     @Override
-    public DataSourceRegistry getRegistry()
+    public DBPDataSourceRegistry getRegistry()
     {
         return registry;
     }
@@ -536,7 +536,7 @@ public class DataSourceDescriptor
     @Override
     public void persistConfiguration()
     {
-        registry.saveDataSources();
+        registry.flushConfig();
     }
 
     @Override
@@ -619,10 +619,10 @@ public class DataSourceDescriptor
             connectTime = new Date();
 
             if (reflect) {
-                getRegistry().fireDataSourceEvent(
+                getRegistry().notifyDataSourceListeners(new DBPEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
-                    true);
+                    true));
             }
 
             return true;
@@ -630,10 +630,10 @@ public class DataSourceDescriptor
             // Failed
             connectFailed = true;
             //if (reflect) {
-                getRegistry().fireDataSourceEvent(
+                getRegistry().notifyDataSourceListeners(new DBPEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
                     DataSourceDescriptor.this,
-                    false);
+                    false));
             //}
             if (e instanceof DBException) {
                 throw (DBException)e;
@@ -777,10 +777,10 @@ public class DataSourceDescriptor
 
             if (reflect) {
                 // Reflect UI
-                getRegistry().fireDataSourceEvent(
+                getRegistry().notifyDataSourceListeners(new DBPEvent(
                     DBPEvent.Action.OBJECT_UPDATE,
                     this,
-                    false);
+                    false));
             }
 
             return true;
@@ -846,7 +846,7 @@ public class DataSourceDescriptor
 
     @Override
     public void fireEvent(DBPEvent event) {
-        registry.fireDataSourceEvent(event);
+        registry.notifyDataSourceListeners(event);
     }
 
     @Override
