@@ -30,15 +30,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
@@ -61,10 +57,10 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     static final Log log = Log.getLog(ConnectionWizard.class);
 
     // protected final IProject project;
-    protected final DataSourceRegistry dataSourceRegistry;
+    protected final DBPDataSourceRegistry dataSourceRegistry;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<DriverDescriptor, DataSourceDescriptor>();
 
-    protected ConnectionWizard(DataSourceRegistry dataSourceRegistry)
+    protected ConnectionWizard(DBPDataSourceRegistry dataSourceRegistry)
     {
         setNeedsProgressMonitor(true);
         this.dataSourceRegistry = dataSourceRegistry;
@@ -79,7 +75,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         super.dispose();
     }
 
-    public DataSourceRegistry getDataSourceRegistry() {
+    public DBPDataSourceRegistry getDataSourceRegistry() {
         return dataSourceRegistry;
     }
 
@@ -114,7 +110,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             dataSourceRegistry,
             dataSource.getId(),
             getSelectedDriver(),
-            dataSource.getConnectionConfiguration());
+            new DBPConnectionConfiguration(dataSource.getConnectionConfiguration()));
         try {
             saveSettings(testDataSource);
 

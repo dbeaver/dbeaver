@@ -18,17 +18,25 @@
 package org.jkiss.dbeaver.ext.generic.views;
 
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DriverDescriptor;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -37,6 +45,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
@@ -199,6 +208,12 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
+            pathText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    updateCreateButton(site.getDriver());
+                }
+            });
 
             Composite buttonsPanel = new Composite(settingsGroup, SWT.NONE);
             gl = new GridLayout(2, true);
@@ -250,6 +265,12 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             createButton.setText("Create");
             createButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             createButton.setEnabled(false);
+            createButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    createEmbeddedDatabase();
+                }
+            });
 
             addControlToGroup(GROUP_PATH, pathLabel);
             addControlToGroup(GROUP_PATH, pathText);
@@ -461,12 +482,71 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             urlText.setBackground(null);
         }
         showControlGroup(GROUP_LOGIN, !driver.isAnonymousAccess());
+        updateCreateButton(driver);
 
-        // Enable ""Create" button
-        String paramCreate = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
-        createButton.setEnabled(!CommonUtils.isEmpty(paramCreate));
 
         settingsGroup.layout();
+    }
+
+    private void updateCreateButton(DBPDriver driver) {
+        if (driver == null) {
+            createButton.setEnabled(false);
+            return;
+        }
+        // Enable ""Create" button
+        String paramCreate = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
+        createButton.setEnabled(!CommonUtils.isEmpty(paramCreate) && !CommonUtils.isEmpty(pathText.getText()));
+    }
+
+    private void createEmbeddedDatabase() {
+        String paramCreate = CommonUtils.toString(site.getDriver().getDriverParameter(GenericConstants.PARAM_CREATE_URL_PARAM));
+
+        DataSourceDescriptor dataSource = (DataSourceDescriptor) site.getActiveDataSource();
+        final DataSourceDescriptor testDataSource = new DataSourceDescriptor(
+            site.getDataSourceRegistry(),
+            dataSource.getId(),
+            dataSource.getDriver(),
+            new DBPConnectionConfiguration(dataSource.getConnectionConfiguration()));
+
+        saveSettings(testDataSource);
+        DBPConnectionConfiguration cfg = testDataSource.getConnectionConfiguration();
+        cfg.setUrl(cfg.getUrl() + paramCreate);
+        String databaseName = cfg.getDatabaseName();
+        testDataSource.setName(databaseName);
+
+        if (!UIUtils.confirmAction(getShell(), "Create Database", "Are you sure you want to create database '" + databaseName + "'?")) {
+            testDataSource.dispose();
+            return;
+        }
+
+        try {
+            site.getRunnableContext().run(true, true, new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        createEmbeddedDatabase(monitor, testDataSource);
+                    } catch (DBException e1) {
+                        throw new InvocationTargetException(e1);
+                    }
+                }
+            });
+            MessageDialog.openInformation(getShell(), "Database Create", "Database '" + databaseName + "' created!");
+        } catch (InvocationTargetException e1) {
+            UIUtils.showErrorDialog(getShell(), "Create database", "Error creating database", e1.getTargetException());
+        } catch (InterruptedException e1) {
+            // Just ignore
+        }
+    }
+
+    private void createEmbeddedDatabase(DBRProgressMonitor monitor, DataSourceDescriptor testDataSource) throws DBException {
+        try {
+            // Connect and disconnect immediately
+            testDataSource.connect(monitor);
+
+            testDataSource.disconnect(monitor);
+        } finally {
+            testDataSource.dispose();
+        }
     }
 
     private void saveAndUpdate()

@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -148,6 +150,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
+    @NotNull
     public DBPApplication getApplication() {
         return application;
     }
@@ -214,29 +217,29 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return dsCopy;
     }
 
-    public void addDataSource(DataSourceDescriptor dataSource)
+    public void addDataSource(DBSDataSourceContainer dataSource)
     {
         synchronized (dataSources) {
-            this.dataSources.add(dataSource);
+            this.dataSources.add((DataSourceDescriptor) dataSource);
         }
         this.saveDataSources();
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, dataSource);
     }
 
-    public void removeDataSource(DataSourceDescriptor dataSource)
+    public void removeDataSource(DBSDataSourceContainer dataSource)
     {
         synchronized (dataSources) {
-            this.dataSources.remove(dataSource);
+            this.dataSources.remove((DataSourceDescriptor)dataSource);
         }
         this.saveDataSources();
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
-            dataSource.dispose();
+            ((DataSourceDescriptor)dataSource).dispose();
         }
     }
 
-    public void updateDataSource(DataSourceDescriptor dataSource)
+    public void updateDataSource(DBSDataSourceContainer dataSource)
     {
         this.saveDataSources();
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);
@@ -271,29 +274,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         notifyDataSourceListeners(new DBPEvent(action, object));
     }
 
-    public void fireDataSourceEvent(
-        DBPEvent.Action action,
-        DBSObject object,
-        boolean enabled)
-    {
-        notifyDataSourceListeners(new DBPEvent(action, object, enabled));
-    }
-
-    public void fireDataSourceEvent(
-        DBPEvent.Action action,
-        DBSObject object,
-        Object data)
-    {
-        notifyDataSourceListeners(new DBPEvent(action, object, data));
-    }
-
-    public void fireDataSourceEvent(DBPEvent event)
-    {
-        notifyDataSourceListeners(event);
-    }
-
-    private void notifyDataSourceListeners(
-        final DBPEvent event)
+    public void notifyDataSourceListeners(final DBPEvent event)
     {
         if (dataSourceListeners.isEmpty()) {
             return;

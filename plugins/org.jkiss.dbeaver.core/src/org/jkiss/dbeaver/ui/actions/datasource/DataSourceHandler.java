@@ -168,10 +168,10 @@ public class DataSourceHandler
 
     private static void updateDataSourceObject(DataSourceDescriptor dataSourceDescriptor)
     {
-        dataSourceDescriptor.getRegistry().fireDataSourceEvent(
+        dataSourceDescriptor.getRegistry().notifyDataSourceListeners(new DBPEvent(
             DBPEvent.Action.OBJECT_UPDATE,
             dataSourceDescriptor,
-            false);
+            false));
     }
 
     public static boolean askForPassword(@NotNull final DataSourceDescriptor dataSourceContainer, @Nullable final DBWHandlerConfiguration networkHandler)
