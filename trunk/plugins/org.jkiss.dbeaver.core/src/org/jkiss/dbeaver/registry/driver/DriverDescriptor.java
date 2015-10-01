@@ -125,8 +125,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private Object driverInstance;
     private DriverClassLoader classLoader;
 
-    private final List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
-
     private transient boolean isFailed = false;
 
     static {
@@ -291,29 +289,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.iconError = new DBIconComposite(this.iconPlain, false, null, null, isCustom() ? DBIcon.OVER_LAMP : null, DBIcon.OVER_ERROR);
     }
 
-    public void dispose()
-    {
-        synchronized (usedBy) {
-            if (!usedBy.isEmpty()) {
-                log.error("Driver '" + getName() + "' still used by " + usedBy.size() + " data sources");
-            }
-        }
-    }
-
-    void addUser(DataSourceDescriptor dataSourceDescriptor)
-    {
-        synchronized (usedBy) {
-            usedBy.add(dataSourceDescriptor);
-        }
-    }
-
-    void removeUser(DataSourceDescriptor dataSourceDescriptor)
-    {
-        synchronized (usedBy) {
-            usedBy.remove(dataSourceDescriptor);
-        }
-    }
-
     @Override
     public DriverClassLoader getClassLoader()
     {
@@ -322,6 +297,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public List<DataSourceDescriptor> getUsedBy()
     {
+        List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
+        for (DataSourceDescriptor ds : DataSourceDescriptor.getAllDataSources()) {
+            if (ds.getDriver() == this) {
+                usedBy.add(ds);
+            }
+        }
         return usedBy;
     }
 
@@ -1129,120 +1110,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @Override
     public String toString() {
         return name;
-    }
-
-    static class DriversParser implements SAXListener
-    {
-        DataSourceProviderDescriptor curProvider;
-        DriverDescriptor curDriver;
-
-        @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
-            if (localName.equals(RegistryConstants.TAG_PROVIDER)) {
-                curProvider = null;
-                curDriver = null;
-                String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
-                if (CommonUtils.isEmpty(idAttr)) {
-                    log.warn("No id for driver provider");
-                    return;
-                }
-                curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(idAttr);
-                if (curProvider == null) {
-                    log.warn("Datasource provider '" + idAttr + "' not found. Bad provider description.");
-                }
-            } else if (localName.equals(RegistryConstants.TAG_DRIVER)) {
-                curDriver = null;
-                if (curProvider == null) {
-                    String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
-                    if (!CommonUtils.isEmpty(providerId)) {
-                        curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
-                        if (curProvider == null) {
-                            log.warn("Datasource provider '" + providerId + "' not found. Bad driver description.");
-                        }
-                    }
-                    if (curProvider == null) {
-                        log.warn("Driver outside of datasource provider");
-                        return;
-                    }
-                }
-                String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
-                curDriver = curProvider.getDriver(idAttr);
-                if (curDriver == null) {
-                    curDriver = new DriverDescriptor(curProvider, idAttr);
-                    curProvider.addDriver(curDriver);
-                }
-                if (curProvider.isDriversManagable()) {
-                    curDriver.setCategory(atts.getValue(RegistryConstants.ATTR_CATEGORY));
-                    curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
-                    curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                    curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
-                    curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
-                    curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                    curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
-                }
-                curDriver.setCustomDriverLoader(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
-                curDriver.setModified(true);
-                String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
-                if (CommonUtils.getBoolean(disabledAttr)) {
-                    curDriver.setDisabled(true);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_FILE) || localName.equals(RegistryConstants.TAG_LIBRARY)) {
-                if (curDriver == null) {
-                    log.warn("File outside of driver");
-                    return;
-                }
-                DBPDriverLibrary.FileType type;
-                String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
-                if (CommonUtils.isEmpty(typeStr)) {
-                    type = DBPDriverLibrary.FileType.jar;
-                } else {
-                    try {
-                        type = DBPDriverLibrary.FileType.valueOf(typeStr);
-                    } catch (IllegalArgumentException e) {
-                        log.warn(e);
-                        type = DBPDriverLibrary.FileType.jar;
-                    }
-                }
-                String path = atts.getValue(RegistryConstants.ATTR_PATH);
-                DriverLibraryDescriptor lib = curDriver.getDriverLibrary(path);
-                String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
-                if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
-                    lib.setDisabled(true);
-                } else if (lib == null) {
-                    curDriver.addDriverLibrary(path, type);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_CLIENT_HOME)) {
-                curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
-            } else if (localName.equals(RegistryConstants.TAG_PARAMETER)) {
-                if (curDriver == null) {
-                    log.warn("Parameter outside of driver");
-                    return;
-                }
-                final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setDriverParameter(paramName, paramValue, false);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
-                if (curDriver == null) {
-                    log.warn("Property outside of driver");
-                    return;
-                }
-                final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setConnectionProperty(paramName, paramValue);
-                }
-            }
-        }
-
-        @Override
-        public void saxText(SAXReader reader, String data) {}
-
-        @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
     }
 
     private static class ReplaceInfo {

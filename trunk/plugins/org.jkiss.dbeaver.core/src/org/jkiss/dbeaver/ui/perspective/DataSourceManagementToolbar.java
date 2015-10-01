@@ -38,10 +38,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -263,13 +264,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getDataSources();
         } else {
-            final IProject project = getActiveProject();
-            if (project != null) {
-                DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-                return dataSourceRegistry == null ? Collections.<DBSDataSourceContainer>emptyList() : dataSourceRegistry.getDataSources();
-            }
+            return DataSourceDescriptor.getActiveDataSources();
         }
-        return Collections.emptyList();
     }
 
     public void setActivePart(@Nullable IWorkbenchPart part)

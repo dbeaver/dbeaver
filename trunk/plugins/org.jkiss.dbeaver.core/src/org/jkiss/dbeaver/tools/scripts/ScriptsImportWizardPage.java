@@ -33,14 +33,13 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
@@ -130,12 +129,10 @@ class ScriptsImportWizardPage extends WizardPage {
             UIUtils.createControlLabel(generalSettings, CoreMessages.dialog_scripts_import_wizard_label_default_connection);
             scriptsDataSources = new CImageCombo(generalSettings, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-            final DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(projectRegistry.getActiveProject());
-            if (dataSourceRegistry != null) {
-                for (DataSourceDescriptor dataSourceDescriptor : dataSourceRegistry.getDataSources()) {
-                    scriptsDataSources.add(DBeaverIcons.getImage(dataSourceDescriptor.getObjectImage()), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
-                }
-			}
+            for (DataSourceDescriptor dataSourceDescriptor : DataSourceDescriptor.getActiveDataSources()) {
+                scriptsDataSources.add(DBeaverIcons.getImage(dataSourceDescriptor.getObjectImage()), dataSourceDescriptor.getName(), null, dataSourceDescriptor);
+            }
+
             if (scriptsDataSources.getItemCount() > 0) {
                 scriptsDataSources.select(0);
             }

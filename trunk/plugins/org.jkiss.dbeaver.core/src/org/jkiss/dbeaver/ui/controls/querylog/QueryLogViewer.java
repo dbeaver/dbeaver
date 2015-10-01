@@ -598,7 +598,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             log.error("Error updating Query Log", e);
         }
         finally {
-            logTable.setRedraw(true);
+            if (!logTable.isDisposed()) {
+                logTable.setRedraw(true);
+            }
         }
     }
 
@@ -607,7 +609,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         for (Iterator<QMMStatementExecuteInfo> i = savepoint.getExecutions(); i.hasNext(); ) {
             QMMStatementExecuteInfo exec = i.next();
             TableItem item = objectToItemMap.get(exec.getObjectId());
-            if (item != null) {
+            if (item != null && !item.isDisposed()) {
                 item.setFont(getObjectFont(event));
                 item.setForeground(getObjectForeground(event));
                 item.setBackground(getObjectBackground(event));

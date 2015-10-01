@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
@@ -32,15 +31,16 @@ import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
-import org.jkiss.dbeaver.DBeaverPreferences;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
     //static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
@@ -82,22 +82,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         //PlatformUI.getPreferenceStore().setValue(IWorkbenchPreferenceConstants.SHOW_MEMORY_MONITOR, true);
     }
 
-    /*
-    org.eclipse.ui.preferencePages.Editors
-    org.eclipse.ui.preferencePages.Views
-    org.eclipse.ui.preferencePages.Keys
-    org.eclipse.ui.preferencePages.ContentTypes
-    */
     @Override
     public void postWindowCreate()
     {
-/*
-        // Maximize on start
-        Shell activeShell = UIUtils.getActiveShell();
-        if (activeShell != null) {
-            activeShell.setMaximized(true);
-        }
-*/
         UIUtils.updateMainWindowTitle(getWindowConfigurer().getWindow());
     }
 
@@ -105,20 +92,17 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     public void postWindowOpen() {
         super.postWindowOpen();
 
-        if (DBeaverCore.getInstance().getLiveProjects().size() < 2) {
-            final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-            if (projectRegistry.getActiveDataSourceRegistry() != null && projectRegistry.getActiveDataSourceRegistry().getDataSources().isEmpty()) {
-                // Open New Connection wizard
-                Display.getCurrent().asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        IWorkbenchWindow window = getWindowConfigurer().getWindow();
-                        CreateConnectionDialog dialog = new CreateConnectionDialog(window
-                            , new NewConnectionWizard(projectRegistry.getActiveDataSourceRegistry()));
-                        dialog.open();
-                    }
-                });
-            }
+        if (DBeaverCore.isStandalone() && DataSourceDescriptor.getActiveDataSources().isEmpty()) {
+            // Open New Connection wizard
+            Display.getCurrent().asyncExec(new Runnable() {
+                @Override
+                public void run() {
+                    IWorkbenchWindow window = getWindowConfigurer().getWindow();
+                    CreateConnectionDialog dialog = new CreateConnectionDialog(window
+                        , new NewConnectionWizard(DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry()));
+                    dialog.open();
+                }
+            });
         }
     }
 

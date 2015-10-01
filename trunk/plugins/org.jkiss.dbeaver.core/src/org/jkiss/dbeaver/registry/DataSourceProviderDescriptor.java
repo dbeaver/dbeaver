@@ -125,9 +125,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public void dispose()
     {
-        for (DriverDescriptor driver : drivers) {
-            driver.dispose();
-        }
         drivers.clear();
         instance = null;
     }
