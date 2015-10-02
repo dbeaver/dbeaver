@@ -114,7 +114,11 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
                 break;
         }
 
-        if (noCreateStatements) cmd.add("--no-create-info"); //$NON-NLS-1$
+        if (noCreateStatements) {
+            cmd.add("--no-create-info"); //$NON-NLS-1$
+        } else {
+            cmd.add("--routines"); //$NON-NLS-1$
+        }
         if (addDropStatements) cmd.add("--add-drop-table"); //$NON-NLS-1$
         if (disableKeys) cmd.add("--disable-keys"); //$NON-NLS-1$
         if (extendedInserts) cmd.add("--extended-insert"); //$NON-NLS-1$
