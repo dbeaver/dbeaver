@@ -182,14 +182,12 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         }
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +
-                "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?");
-            try {
+                    "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         additionalInfo.setText(JDBCUtils.safeGetString(dbResult, "TEXT"));
                         additionalInfo.setTypeText(JDBCUtils.safeGetStringTrimmed(dbResult, "TYPE_TEXT"));
@@ -203,11 +201,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                         }
                     }
                     additionalInfo.loaded = true;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         }
         catch (SQLException e) {

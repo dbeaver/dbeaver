@@ -85,15 +85,10 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
         if (realRowCount == null) {
             // Query row count
-            DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.META, "Read row count");
-            try {
+            try (DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.META, "Read row count")) {
                 realRowCount = countData(session, null);
-            }
-            catch (DBException e) {
+            } catch (DBException e) {
                 log.debug("Can't fetch row count", e);
-            }
-            finally {
-                session.close();
             }
         }
         if (realRowCount == null) {
@@ -138,20 +133,14 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         if (partitionInfo == null && partitioned) {
             final JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load partitioning info");
             try {
-                final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?");
-                try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?")) {
                     dbStat.setString(1, getContainer().getName());
                     dbStat.setString(2, getName());
-                    final JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.next()) {
                             partitionInfo = new PartitionInfo(monitor, this.getDataSource(), dbResult);
                         }
-                    } finally {
-                        dbResult.close();
                     }
-                } finally {
-                    dbStat.close();
                 }
             } catch (SQLException e) {
                 throw new DBException(e, session.getDataSource());

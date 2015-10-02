@@ -256,8 +256,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         throws CoreException
     {
         try {
-            InputStream inputStream = new FileInputStream(extFile);
-            try {
+            try (InputStream inputStream = new FileInputStream(extFile)) {
 /*
                 ResourceAttributes atts = contentFile.getResourceAttributes();
                 atts.setReadOnly(false);
@@ -265,12 +264,8 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 */
 
                 File intFile = contentFile.getLocation().toFile();
-                OutputStream outputStream = new FileOutputStream(intFile);
-                try {
+                try (OutputStream outputStream = new FileOutputStream(intFile)) {
                     ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, RuntimeUtils.makeMonitor(monitor));
-                }
-                finally {
-                    outputStream.close();
                 }
 
                 // Append zero empty content to trigger content refresh
@@ -279,9 +274,6 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
                     true,
                     false,
                     monitor);
-            }
-            finally {
-                inputStream.close();
             }
         }
         catch (Throwable e) {

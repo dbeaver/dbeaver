@@ -222,11 +222,10 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             return true;
         }
 
-        final JDBCSession session = unit.getDataSource().getDefaultContext(false).openSession(
+        try (JDBCSession session = unit.getDataSource().getDefaultContext(false).openSession(
             monitor,
             DBCExecutionPurpose.UTIL,
-            "Compile '" + unit.getName() + "'");
-        try {
+            "Compile '" + unit.getName() + "'")) {
             boolean success = true;
             for (DBEPersistAction action : compileActions) {
                 final String script = action.getScript();
@@ -263,8 +262,6 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
             }
 
             return success;
-        } finally {
-            session.close();
         }
     }
 
@@ -275,14 +272,12 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
         OracleObjectType objectType)
     {
         try {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE");
-            try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE")) {
                 dbStat.setString(1, unit.getSchema().getName());
                 dbStat.setString(2, unit.getName());
                 dbStat.setString(3, objectType.getTypeName());
-                final ResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (ResultSet dbResult = dbStat.executeQuery()) {
                     boolean hasErrors = false;
                     while (dbResult.next()) {
                         DBCCompileError error = new DBCCompileError(
@@ -298,11 +293,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                         }
                     }
                     return !hasErrors;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (Exception e) {
             log.error("Can't read user errors", e);

@@ -97,12 +97,11 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     {
         final GenericMetaObject tableObject = getDataSource().getMetaObject(GenericConstants.OBJECT_TABLE);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
-        final JDBCResultSet dbResult = session.getMetaData().getTables(
+        try (JDBCResultSet dbResult = session.getMetaData().getTables(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),
             tableNameMask,
-            null);
-        try {
+            null)) {
             while (dbResult.next()) {
                 if (monitor.isCanceled()) {
                     break;
@@ -122,9 +121,6 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                 }
             }
         }
-        finally {
-            dbResult.close();
-        }
     }
 
     private void findProceduresByMask(JDBCSession session, GenericCatalog catalog, GenericSchema schema, String procNameMask, int maxResults, List<DBSObjectReference> objects)
@@ -132,11 +128,10 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     {
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = session.getProgressMonitor();
-        JDBCResultSet dbResult = session.getMetaData().getProcedures(
+        try (JDBCResultSet dbResult = session.getMetaData().getProcedures(
             catalog == null ? null : catalog.getName(),
             schema == null ? null : schema.getName(),
-            procNameMask);
-        try {
+            procNameMask)) {
             while (dbResult.next()) {
                 if (monitor.isCanceled()) {
                     break;
@@ -159,9 +154,6 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
                     break;
                 }
             }
-        }
-        finally {
-            dbResult.close();
         }
     }
 

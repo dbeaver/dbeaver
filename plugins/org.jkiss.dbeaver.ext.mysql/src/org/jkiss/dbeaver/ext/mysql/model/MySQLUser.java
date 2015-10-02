@@ -171,10 +171,8 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
 
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read catalog privileges");
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName());
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName())) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLGrant> grants = new ArrayList<>();
                     while (dbResult.next()) {
                         List<MySQLPrivilege> privileges = new ArrayList<>();
@@ -220,11 +218,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
                     }
                     this.grants = grants;
                     return this.grants;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         }
         catch (SQLException e) {

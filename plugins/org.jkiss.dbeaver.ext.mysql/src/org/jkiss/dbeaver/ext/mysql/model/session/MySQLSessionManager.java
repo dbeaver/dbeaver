@@ -56,20 +56,14 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     public Collection<MySQLSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement("SHOW FULL PROCESSLIST");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement("SHOW FULL PROCESSLIST")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
                         sessions.add(new MySQLSession(dbResult));
                     }
                     return sessions;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e, session.getDataSource());
@@ -80,14 +74,11 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
     public void alterSession(DBCSession session, MySQLSession sessionType, Map<String, Object> options) throws DBException
     {
         try {
-            JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
                 Boolean.TRUE.equals(options.get(PROP_KILL_QUERY)) ?
                     "KILL QUERY " + sessionType.getPid() :
-                    "KILL CONNECTION " + sessionType.getPid());
-            try {
+                    "KILL CONNECTION " + sessionType.getPid())) {
                 dbStat.execute();
-            } finally {
-                dbStat.close();
             }
         }
         catch (SQLException e) {

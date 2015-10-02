@@ -73,7 +73,7 @@ public abstract class JDBCDataSource
     @NotNull
     protected final JDBCExecutionContext executionContext;
     @Nullable
-    protected volatile JDBCExecutionContext metaContext;
+    protected JDBCExecutionContext metaContext;
     @NotNull
     protected final List<JDBCExecutionContext> allContexts = new ArrayList<>();
     @NotNull
@@ -257,7 +257,7 @@ public abstract class JDBCDataSource
 
     @NotNull
     @Override
-    public JDBCExecutionContext getDefaultContext(boolean meta) {
+    public synchronized JDBCExecutionContext getDefaultContext(boolean meta) {
         if (metaContext != null && meta) {
             return this.metaContext;
         }
@@ -280,8 +280,7 @@ public abstract class JDBCDataSource
                 this.metaContext.connect(monitor, true, null, false);
             }
         }
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_read_database_meta_data);
-        try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
             try {
                 sqlDialect = createSQLDialect(metaData);
@@ -295,10 +294,7 @@ public abstract class JDBCDataSource
             }
         } catch (SQLException ex) {
             throw new DBException("Error getting JDBC meta data", ex, this);
-        }
-        finally {
-            session.close();
-
+        } finally {
             if (sqlDialect == null) {
                 log.warn("NULL SQL dialect was created");
                 sqlDialect = new BasicSQLDialect();

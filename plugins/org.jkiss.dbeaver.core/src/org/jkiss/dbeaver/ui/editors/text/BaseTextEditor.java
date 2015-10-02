@@ -313,16 +313,13 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
 
         String newContent = null;
         try {
-            Reader reader = new InputStreamReader(
+            try (Reader reader = new InputStreamReader(
                 new FileInputStream(loadFile),
-                GeneralUtils.DEFAULT_FILE_CHARSET);
-            try {
+                GeneralUtils.DEFAULT_FILE_CHARSET))
+            {
                 StringWriter buffer = new StringWriter();
                 IOUtils.copyText(reader, buffer, 10000);
                 newContent = buffer.toString();
-            }
-            finally {
-                reader.close();
             }
         }
         catch (IOException e) {

@@ -583,11 +583,11 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
                         }
                     }
                 }
-                final DBCSession session = getExecutionContext().openSession(
+                try (DBCSession session = getExecutionContext().openSession(
                     monitor,
                     DBCExecutionPurpose.UTIL,
-                    NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName()));
-                try {
+                    NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName())))
+                {
                     final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
                     DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
                     Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
@@ -604,8 +604,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
                     }
                     UIUtils.runInUI(getShell(), new Runnable() {
                         @Override
-                        public void run()
-                        {
+                        public void run() {
                             DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkColumn.getAttribute());
 
                             if (editorSelector != null && !editorSelector.isDisposed()) {
@@ -650,9 +649,6 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
                             }
                         }
                     });
-                }
-                finally {
-                    session.close();
                 }
 
             } catch (DBException e) {

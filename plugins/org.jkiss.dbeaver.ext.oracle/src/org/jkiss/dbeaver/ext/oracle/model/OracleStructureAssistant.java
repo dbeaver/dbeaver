@@ -135,18 +135,16 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         final boolean hasConstraints = objectTypesList.contains(OracleObjectType.CONSTRAINT);
 
         // Load tables
-        JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+RULE*/ OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT /*+RULE*/ OWNER, TABLE_NAME, CONSTRAINT_NAME, CONSTRAINT_TYPE\n" +
                 "FROM SYS.ALL_CONSTRAINTS\n" +
                 "WHERE CONSTRAINT_NAME like ?" + (!hasFK ? " AND CONSTRAINT_TYPE<>'R'" : "") +
-                (schema != null ? " AND OWNER=?" : ""));
-        try {
+                (schema != null ? " AND OWNER=?" : ""))) {
             dbStat.setString(1, constrNameMask);
             if (schema != null) {
                 dbStat.setString(2, schema.getName());
             }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
                     if (monitor.isCanceled()) {
@@ -161,11 +159,9 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         constrName,
                         dataSource.getSchema(session.getProgressMonitor(), schemaName),
                         null,
-                        type == DBSEntityConstraintType.FOREIGN_KEY ? OracleObjectType.FOREIGN_KEY : OracleObjectType.CONSTRAINT)
-                    {
+                        type == DBSEntityConstraintType.FOREIGN_KEY ? OracleObjectType.FOREIGN_KEY : OracleObjectType.CONSTRAINT) {
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-                        {
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             OracleSchema tableSchema = schema != null ? schema : dataSource.getSchema(monitor, schemaName);
                             if (tableSchema == null) {
                                 throw new DBException("Constraint schema '" + schemaName + "' not found");
@@ -189,11 +185,6 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     });
                 }
             }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
         }
     }
 
@@ -224,16 +215,15 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         objectTypeClause.append(",'").append(OracleObjectType.SYNONYM.getTypeName()).append("'");
 
         // Seek for objects (join with public synonyms)
-        JDBCPreparedStatement dbStat = session.prepareStatement(
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT /*+RULE*/ DISTINCT OWNER,OBJECT_NAME,OBJECT_TYPE FROM (SELECT OWNER,OBJECT_NAME,OBJECT_TYPE FROM ALL_OBJECTS WHERE " +
-            "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
-            (schema == null ? "" : " AND OWNER=?") +
-            "UNION ALL\n" +
-            "SELECT /*+RULE*/ O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
-            "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n" +
-            "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
-            "\nORDER BY OBJECT_NAME");
-        try {
+                "OBJECT_TYPE IN (" + objectTypeClause + ") AND OBJECT_NAME LIKE ? " +
+                (schema == null ? "" : " AND OWNER=?") +
+                "UNION ALL\n" +
+                "SELECT /*+RULE*/ O.OWNER,O.OBJECT_NAME,O.OBJECT_TYPE\n" +
+                "FROM ALL_SYNONYMS S,ALL_OBJECTS O\n" +
+                "WHERE O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME AND S.OWNER='PUBLIC' AND S.SYNONYM_NAME LIKE ?)" +
+                "\nORDER BY OBJECT_NAME")) {
             if (!caseSensitive) {
                 objectNameMask = objectNameMask.toUpperCase();
             }
@@ -243,8 +233,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             }
             dbStat.setString(schema != null ? 3 : 2, objectNameMask);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (objects.size() < maxResults && dbResult.next()) {
                     if (session.getProgressMonitor().isCanceled()) {
                         break;
@@ -253,8 +242,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     final String objectName = JDBCUtils.safeGetString(dbResult, "OBJECT_NAME");
                     final String objectTypeName = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
                     final OracleObjectType objectType = OracleObjectType.getByType(objectTypeName);
-                    if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType))
-                    {
+                    if (objectType != null && objectType != OracleObjectType.SYNONYM && objectType.isBrowsable() && oracleObjectTypes.contains(objectType)) {
                         OracleSchema objectSchema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
                         if (objectSchema == null) {
                             log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
@@ -262,9 +250,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         }
                         objects.add(new AbstractObjectReference(objectName, objectSchema, null, objectType) {
                             @Override
-                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-                            {
-                                OracleSchema tableSchema = (OracleSchema)getContainer();
+                            public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                                OracleSchema tableSchema = (OracleSchema) getContainer();
                                 DBSObject object = objectType.findObject(session.getProgressMonitor(), tableSchema, objectName);
                                 if (object == null) {
                                     throw new DBException(objectTypeName + " '" + objectName + "' not found in schema '" + tableSchema.getName() + "'");
@@ -275,11 +262,6 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     }
                 }
             }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
         }
     }
 

@@ -69,20 +69,14 @@ public class MySQLPlanAnalyser implements DBCPlan {
         }
         JDBCSession connection = (JDBCSession) session;
         try {
-            JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN EXTENDED " + query);
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN EXTENDED " + query)) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     rootNodes = new ArrayList<>();
                     while (dbResult.next()) {
                         MySQLPlanNode node = new MySQLPlanNode(null, dbResult);
                         rootNodes.add(node);
                     }
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());

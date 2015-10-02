@@ -209,11 +209,9 @@ public class MySQLTable extends MySQLTableBase
         }
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
-            PreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
-            try {
-                ResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (PreparedStatement dbStat = session.prepareStatement(
+                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
+                try (ResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         byte[] ddl;
                         if (isView()) {
@@ -235,12 +233,6 @@ public class MySQLTable extends MySQLTableBase
                         return "DDL is not available";
                     }
                 }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
             }
         }
         catch (SQLException ex) {
@@ -273,11 +265,9 @@ public class MySQLTable extends MySQLTableBase
         }
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
         try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         // filer table description (for INNODB it contains some system information)
                         String desc = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_COMMENT);
@@ -304,11 +294,7 @@ public class MySQLTable extends MySQLTableBase
                         additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_DATA_LENGTH);
                     }
                     additionalInfo.loaded = true;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         }
         catch (SQLException e) {

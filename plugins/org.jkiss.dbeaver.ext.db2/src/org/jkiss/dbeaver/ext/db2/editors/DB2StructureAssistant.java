@@ -114,13 +114,10 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
 
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Find objects by name");
-        try {
+        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
             return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);
-        } finally {
-            session.close();
         }
     }
 
@@ -179,8 +176,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         String sql = buildTableSQL(baseSQL, db2ObjectTypes);
 
         int n = 1;
-        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-        try {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());
             }
@@ -194,8 +190,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
             DB2TableType tableType;
             DB2ObjectType objectType;
 
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
                     if (session.getProgressMonitor().isCanceled()) {
                         break;
@@ -218,11 +213,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                     objectType = tableType.getDb2ObjectType();
                     objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
                 }
-            } finally {
-                dbResult.close();
             }
-        } finally {
-            dbStat.close();
         }
     }
 
@@ -237,8 +228,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         }
 
         int n = 1;
-        JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-        try {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             if (schema != null) {
                 dbStat.setString(n++, schema.getName());
             }
@@ -253,8 +243,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
             DB2Table db2Table;
             DB2View db2View;
 
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
                     if (session.getProgressMonitor().isCanceled()) {
                         break;
@@ -285,11 +274,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
                     }
 
                 }
-            } finally {
-                dbResult.close();
             }
-        } finally {
-            dbStat.close();
         }
     }
 

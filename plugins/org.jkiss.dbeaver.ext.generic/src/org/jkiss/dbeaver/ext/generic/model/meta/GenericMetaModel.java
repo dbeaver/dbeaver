@@ -99,8 +99,7 @@ public class GenericMetaModel {
 
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedures");
-        try {
+        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedures")) {
             // Read procedures
             JDBCResultSet dbResult = session.getMetaData().getProcedures(
                 container.getCatalog() == null ? null : container.getCatalog().getName(),
@@ -208,9 +207,7 @@ public class GenericMetaModel {
             }
 
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
-        } finally {
-            session.close();
+            throw new DBException(e, dataSource);
         }
     }
 

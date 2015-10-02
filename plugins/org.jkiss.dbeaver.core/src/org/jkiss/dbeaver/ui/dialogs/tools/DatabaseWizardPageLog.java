@@ -156,23 +156,20 @@ public class DatabaseWizardPageLog extends WizardPage {
 //                        appendLog(e.getMessage() + lf);
 //                    }
 //                }
-                Reader reader = new InputStreamReader(in);
-                try {
+                try (Reader reader = new InputStreamReader(in)) {
                     StringBuilder buf = new StringBuilder();
-                    for (;;) {
+                    for (; ; ) {
                         int b = reader.read();
                         if (b == -1) {
                             break;
                         }
-                        buf.append((char)b);
+                        buf.append((char) b);
                         if (b == '\n') {
                             appendLog(buf.toString());
                             buf.setLength(0);
                         }
                         //int avail = input.available();
                     }
-                } finally {
-                    reader.close();
                 }
 
             } catch (IOException e) {

@@ -157,8 +157,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         super.initialize(monitor);
 
-        final JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
-        try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info")) {
 
             // First try to get active schema from special register 'CURRENT SCHEMA'
             this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
@@ -179,8 +178,6 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
         } catch (SQLException e) {
             LOG.warn(e);
-        } finally {
-            session.close();
         }
 
         this.dataTypeCache.getAllObjects(monitor, this);
@@ -244,7 +241,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         // disable result set scroll
         // (it doesn't work for some queries and some column types so I have to disable it for ALL queries).
 
-        // DF: DB2 v10 supports "Scrollable Resultsets" with the folowing restrictions (from the DB2 v10.5 infocenter)
+        // DF: DB2 v10 supports "Scrollable Resultsets" with the following restrictions (from the DB2 v10.5 infocenter)
         // Restriction: If the ResultSet is scrollable, and the ResultSet is used to select columns from a table on a DB2 for
         // Linux, UNIX, and Windows server,
         // the SELECT list of the SELECT statement that defines the ResultSet cannot include columns with the following data types:
@@ -393,13 +390,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             LOG.debug("Null current schema");
             return;
         }
-        JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
-        try {
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
             JDBCUtils.executeSQL(session, String.format(SET_CURRENT_SCHEMA, object.getName()));
         } catch (SQLException e) {
             throw new DBCException(e, this);
-        } finally {
-            session.close();
         }
     }
 
@@ -639,13 +633,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBParameters == null) {
-            JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters");
-            try {
+            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters")) {
                 listDBParameters = DB2Utils.readDBCfg(monitor, session);
             } catch (SQLException e) {
                 LOG.warn(e);
-            } finally {
-                session.close();
             }
         }
         return listDBParameters;
@@ -654,13 +645,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBMParameters == null) {
-            JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Instance Parameters");
-            try {
+            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Instance Parameters")) {
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
             } catch (SQLException e) {
                 LOG.warn(e);
-            } finally {
-                session.close();
             }
         }
         return listDBMParameters;
@@ -669,13 +657,10 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2XMLString> getXmlStrings(DBRProgressMonitor monitor) throws DBException
     {
         if (listXMLStrings == null) {
-            JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Global XMLStrings");
-            try {
+            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Global XMLStrings")) {
                 listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
             } catch (SQLException e) {
                 LOG.warn(e);
-            } finally {
-                session.close();
             }
         }
         return listXMLStrings;

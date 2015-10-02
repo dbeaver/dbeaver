@@ -90,8 +90,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<>();
 
             // Load columns
-            JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject);
-            try {
+            try (JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject)) {
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
@@ -165,8 +164,6 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                         dbResult.close();
                     }
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException ex) {
             throw new DBException(ex, session.getDataSource());
