@@ -422,7 +422,7 @@ public class DataSourceProviderRegistry
                     }
                 }
                 String path = atts.getValue(RegistryConstants.ATTR_PATH);
-                DriverLibraryDescriptor lib = curDriver.getDriverLibrary(path);
+                DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
                 String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                 if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                     lib.setDisabled(true);

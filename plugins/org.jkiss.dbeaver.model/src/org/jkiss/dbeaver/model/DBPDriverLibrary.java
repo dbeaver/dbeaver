@@ -29,6 +29,7 @@ import java.util.Collection;
  */
 public interface DBPDriverLibrary
 {
+
     /**
      * Driver file type
      */
@@ -62,9 +63,13 @@ public interface DBPDriverLibrary
 
     boolean isDisabled();
 
+    void setDisabled(boolean diabled);
+
     boolean isDownloadable();
 
     boolean isMavenArtifact();
+
+    boolean isResolved();
 
     @Nullable
     String getExternalURL();

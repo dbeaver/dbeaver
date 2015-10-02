@@ -103,7 +103,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private Text driverPortText;
     private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
-    private List<DriverLibraryDescriptor> libList = new ArrayList<DriverLibraryDescriptor>();
+    private List<DBPDriverLibrary> libList = new ArrayList<DBPDriverLibrary>();
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
@@ -327,12 +327,12 @@ public class DriverEditDialog extends HelpEnabledDialog
                 @Override
                 public void update(ViewerCell cell)
                 {
-                    DriverLibraryDescriptor lib = (DriverLibraryDescriptor) cell.getElement();
+                    DBPDriverLibrary lib = (DBPDriverLibrary) cell.getElement();
                     cell.setText(lib.getDisplayName());
                     File localFile = lib.getLocalFile();
                     if (localFile != null && localFile.exists()) {
                         cell.setForeground(null);
-                    } else if (lib.isMavenArtifact() && !lib.isMavenArtifactResolved()) {
+                    } else if (!lib.isResolved()) {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
@@ -651,8 +651,8 @@ public class DriverEditDialog extends HelpEnabledDialog
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
 
         if (libTable != null) {
-            libList = new ArrayList<DriverLibraryDescriptor>();
-            for (DriverLibraryDescriptor lib : driver.getDriverLibraries()) {
+            libList = new ArrayList<DBPDriverLibrary>();
+            for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
                 if (lib.isDisabled() || (lib.getType() != DBPDriverLibrary.FileType.jar && lib.getType() != DBPDriverLibrary.FileType.lib) || !lib.matchesCurrentPlatform()) {
                     continue;
                 }
@@ -695,10 +695,10 @@ public class DriverEditDialog extends HelpEnabledDialog
         driver.setModified(true);
 
         // Set libraries
-        for (DriverLibraryDescriptor lib : CommonUtils.safeCollection(libList)) {
+        for (DBPDriverLibrary lib : CommonUtils.safeCollection(libList)) {
             driver.addDriverLibrary(lib);
         }
-        for (DriverLibraryDescriptor lib : CommonUtils.copyList(driver.getDriverLibraries())) {
+        for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
             if (!libList.contains(lib)) {
                 driver.removeDriverLibrary(lib);
             }
