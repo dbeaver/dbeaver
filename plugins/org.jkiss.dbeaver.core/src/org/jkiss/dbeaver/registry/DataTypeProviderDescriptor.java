@@ -40,8 +40,8 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
 
     private String id;
     private ObjectType implType;
-    private Set<Object> supportedTypes = new HashSet<Object>();
-    private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<DataSourceProviderDescriptor>();
+    private Set<Object> supportedTypes = new HashSet<>();
+    private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<>();
 
     private DBDValueHandlerProvider instance;
 

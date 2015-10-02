@@ -58,7 +58,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     private Button deleteButton;
     private DBPConnectionType selectedType;
 
-    private Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<DBPConnectionType, DBPConnectionType>();
+    private Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<>();
 
     @Override
     public void init(IWorkbench workbench)
@@ -333,7 +333,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     public boolean performOk()
     {
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        java.util.List<DBPConnectionType> toRemove = new ArrayList<DBPConnectionType>();
+        java.util.List<DBPConnectionType> toRemove = new ArrayList<>();
         for (DBPConnectionType type : registry.getConnectionTypes()) {
             if (!changedInfo.values().contains(type)) {
                 // Remove

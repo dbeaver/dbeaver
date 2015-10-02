@@ -42,7 +42,7 @@ public class InvalidateJob extends DataSourceJob
     }
 
     private long timeSpent;
-    private List<ContextInvalidateResult> invalidateResults = new ArrayList<ContextInvalidateResult>();
+    private List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
 
     public InvalidateJob(
         DBCExecutionContext context)
@@ -64,7 +64,7 @@ public class InvalidateJob extends DataSourceJob
         DBPDataSource dataSource = getExecutionContext().getDataSource();
         // Invalidate datasource
         monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "]");
-        List<DBCExecutionContext> allContexts = new ArrayList<DBCExecutionContext>(dataSource.getAllContexts());
+        List<DBCExecutionContext> allContexts = new ArrayList<>(dataSource.getAllContexts());
         for (DBCExecutionContext context : allContexts) {
             long startTime = System.currentTimeMillis();
             try {

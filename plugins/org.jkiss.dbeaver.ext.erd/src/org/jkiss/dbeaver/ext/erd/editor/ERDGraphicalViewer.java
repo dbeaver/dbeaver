@@ -74,7 +74,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         int tableCount = 0;
     }
 
-    private final Map<DBSDataSourceContainer, DataSourceInfo> usedDataSources = new IdentityHashMap<DBSDataSourceContainer, DataSourceInfo>();
+    private final Map<DBSDataSourceContainer, DataSourceInfo> usedDataSources = new IdentityHashMap<>();
 
 	/**
 	 * ValidationMessageHandler to receive messages
@@ -179,21 +179,21 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             super.setContents(editpart);
             // Reset palette contents
             if (editpart instanceof DiagramPart) {
-                List<DBSEntity> tables = new ArrayList<DBSEntity>();
+                List<DBSEntity> tables = new ArrayList<>();
                 for (Object child : editpart.getChildren()) {
                     if (child instanceof EntityPart) {
                         tables.add(((EntityPart) child).getTable().getObject());
                     }
                 }
                 Collections.sort(tables, DBUtils.<DBSEntity>nameComparator());
-                Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<PaletteDrawer, List<ToolEntryTable>>();
+                Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<>();
                 for (DBSEntity table : tables) {
                     DBSDataSourceContainer container = table.getDataSource().getContainer();
                     PaletteDrawer drawer = getContainerPaletteDrawer(container);
                     if (drawer != null) {
                         List<ToolEntryTable> tools = toolMap.get(drawer);
                         if (tools == null) {
-                            tools = new ArrayList<ToolEntryTable>(tables.size());
+                            tools = new ArrayList<>(tables.size());
                             toolMap.put(drawer, tools);
                         }
                         tools.add(new ToolEntryTable(table));

@@ -52,9 +52,9 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final NodeType nodeType;
     private final ObjectType implType;
     private final ObjectType settingsType;
-    private final List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
-    private final List<ObjectType> pageTypes = new ArrayList<ObjectType>();
-    private final List<DataTransferProcessorDescriptor> processors = new ArrayList<DataTransferProcessorDescriptor>();
+    private final List<ObjectType> sourceTypes = new ArrayList<>();
+    private final List<ObjectType> pageTypes = new ArrayList<>();
+    private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
 
     public DataTransferNodeDescriptor(IConfigurationElement config)
     {
@@ -125,7 +125,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 
     public IWizardPage[] createWizardPages()
     {
-        List<IWizardPage> pages = new ArrayList<IWizardPage>();
+        List<IWizardPage> pages = new ArrayList<>();
         for (ObjectType type : pageTypes) {
             try {
                 type.checkObjectClass(IWizardPage.class);
@@ -166,7 +166,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
      */
     public Collection<DataTransferProcessorDescriptor> getAvailableProcessors(Collection<Class<?>> objectTypes)
     {
-        List<DataTransferProcessorDescriptor> editors = new ArrayList<DataTransferProcessorDescriptor>();
+        List<DataTransferProcessorDescriptor> editors = new ArrayList<>();
         for (DataTransferProcessorDescriptor descriptor : processors) {
             boolean supports = true;
             for (Class objectType : objectTypes) {

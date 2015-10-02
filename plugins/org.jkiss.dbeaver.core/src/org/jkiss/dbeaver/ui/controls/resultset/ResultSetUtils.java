@@ -59,7 +59,7 @@ public class ResultSetUtils
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Discover resultset metadata", 3);
-        Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<DBSEntity, DBDRowIdentifier>();
+        Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<>();
         try {
             monitor.subTask("Discover attributes");
             for (DBDAttributeBindingMeta binding : bindings) {
@@ -162,7 +162,7 @@ public class ResultSetUtils
     private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
         throws DBException
     {
-        List<DBSEntityReferrer> identifiers = new ArrayList<DBSEntityReferrer>(2);
+        List<DBSEntityReferrer> identifiers = new ArrayList<>(2);
         // Check for pseudo attrs (ROWID)
         for (DBDAttributeBinding column : bindings) {
             DBDPseudoAttribute pseudoAttribute = column.getMetaAttribute().getPseudoAttribute();

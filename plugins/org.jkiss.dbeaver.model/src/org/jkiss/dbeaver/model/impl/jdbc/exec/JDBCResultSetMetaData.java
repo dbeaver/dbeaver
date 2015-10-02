@@ -40,8 +40,8 @@ public class JDBCResultSetMetaData implements DBCResultSetMetaData, ResultSetMet
 {
     private JDBCResultSetImpl resultSet;
     private ResultSetMetaData original;
-    private List<DBCAttributeMetaData> columns = new ArrayList<DBCAttributeMetaData>();
-    private Map<String, JDBCTableMetaData> tables = new HashMap<String, JDBCTableMetaData>();
+    private List<DBCAttributeMetaData> columns = new ArrayList<>();
+    private Map<String, JDBCTableMetaData> tables = new HashMap<>();
 
     public JDBCResultSetMetaData(JDBCResultSetImpl resultSet)
         throws DBCException

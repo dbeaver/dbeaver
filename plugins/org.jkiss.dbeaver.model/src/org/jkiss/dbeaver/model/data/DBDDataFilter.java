@@ -41,7 +41,7 @@ public class DBDDataFilter {
 
     public DBDDataFilter(DBDDataFilter source)
     {
-        constraints = new ArrayList<DBDAttributeConstraint>(source.constraints.size());
+        constraints = new ArrayList<>(source.constraints.size());
         for (DBDAttributeConstraint column : source.constraints) {
             constraints.add(new DBDAttributeConstraint(column));
         }
@@ -83,7 +83,7 @@ public class DBDDataFilter {
 
     public List<DBSAttributeBase> getOrderedVisibleAttributes()
     {
-        List<DBDAttributeConstraint> visibleConstraints = new ArrayList<DBDAttributeConstraint>();
+        List<DBDAttributeConstraint> visibleConstraints = new ArrayList<>();
         for (DBDAttributeConstraint constraint : constraints) {
             if (constraint.isVisible()) {
                 visibleConstraints.add(constraint);
@@ -96,7 +96,7 @@ public class DBDDataFilter {
                 return o1.getVisualPosition() - o2.getVisualPosition();
             }
         });
-        List<DBSAttributeBase> attributes = new ArrayList<DBSAttributeBase>(visibleConstraints.size());
+        List<DBSAttributeBase> attributes = new ArrayList<>(visibleConstraints.size());
         for (DBDAttributeConstraint constraint : visibleConstraints) {
             attributes.add(constraint.getAttribute());
         }
@@ -176,7 +176,7 @@ public class DBDDataFilter {
         for (DBDAttributeConstraint constraint : constraints) {
             if (constraint.getOrderPosition() > 0) {
                 if (result == null) {
-                    result = new ArrayList<DBDAttributeConstraint>(constraints.size());
+                    result = new ArrayList<>(constraints.size());
                 }
                 result.add(constraint);
             }

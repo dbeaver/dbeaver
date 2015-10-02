@@ -125,7 +125,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         if (!CommonUtils.isEmpty(typeDesc) &&
             (typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_ENUM) || typeName.equalsIgnoreCase(MySQLConstants.TYPE_NAME_SET)))
         {
-            enumValues = new ArrayList<String>();
+            enumValues = new ArrayList<>();
             Matcher enumMatcher = enumPattern.matcher(typeDesc);
             while (enumMatcher.find()) {
                 String enumStr = enumMatcher.group(1);

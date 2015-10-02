@@ -49,7 +49,7 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
     private final ObjectType presentationType;
     private final DBPImage icon;
     private final int order;
-    private final List<MimeType> contentTypes = new ArrayList<MimeType>();
+    private final List<MimeType> contentTypes = new ArrayList<>();
 
     protected ResultSetPresentationDescriptor(IConfigurationElement config) {
         super(config);

@@ -221,7 +221,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             title = node.getNodeName();
         }
 
-        List<String> nodePath = new ArrayList<String>();
+        List<String> nodePath = new ArrayList<>();
         for (DBNNode parent = node; !(parent instanceof DBNDataSource); parent = parent.getParentNode()) {
             nodePath.add(0, parent.getNodeName());
         }

@@ -39,13 +39,13 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private ResultSetViewer resultSetViewer;
     private int columnsCount;
     private DBDAttributeBindingMeta[] metaColumns;
-    private List<Object[]> rows = new ArrayList<Object[]>();
+    private List<Object[]> rows = new ArrayList<>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
     private long offset;
     private long maxRows;
 
-    private Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<DBCAttributeMetaData, List<DBCException>>();
+    private Map<DBCAttributeMetaData, List<DBCException>> errors = new HashMap<>();
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -108,7 +108,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 // We report certain error only once
                 List<DBCException> errorList = errors.get(metaColumns[i].getMetaAttribute());
                 if (errorList == null) {
-                    errorList = new ArrayList<DBCException>();
+                    errorList = new ArrayList<>();
                     errors.put(metaColumns[i].getMetaAttribute(), errorList);
                 }
                 if (!errorList.contains(e)) {
@@ -154,7 +154,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         nextSegmentRead = false;
 
         errors.clear();
-        rows = new ArrayList<Object[]>();
+        rows = new ArrayList<>();
     }
 
     private void runInUI(Runnable runnable) {

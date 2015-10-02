@@ -795,7 +795,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             if (CommonUtils.isEmpty(allTriggers)) {
                 return Collections.emptyList();
             }
-            List<OracleTrigger> tableTriggers = new ArrayList<OracleTrigger>();
+            List<OracleTrigger> tableTriggers = new ArrayList<>();
             for (OracleTrigger trigger : allTriggers) {
                 if (trigger.getTable() == table) {
                     tableTriggers.add(trigger);

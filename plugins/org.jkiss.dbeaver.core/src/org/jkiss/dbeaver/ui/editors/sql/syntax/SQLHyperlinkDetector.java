@@ -58,7 +58,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         boolean loading = true;
     }
 
-    private Map<String, ObjectLookupCache> linksCache = new HashMap<String, ObjectLookupCache>();
+    private Map<String, ObjectLookupCache> linksCache = new HashMap<>();
 
 
     public SQLHyperlinkDetector(SQLEditorBase editor, SQLSyntaxManager syntaxManager)
@@ -184,7 +184,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            cache.references = new ArrayList<DBSObjectReference>();
+            cache.references = new ArrayList<>();
             try {
 
                 DBSObjectContainer container = null;

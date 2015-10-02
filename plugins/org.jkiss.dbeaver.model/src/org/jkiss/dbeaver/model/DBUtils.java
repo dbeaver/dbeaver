@@ -377,7 +377,7 @@ public final class DBUtils {
     public static <T extends DBPNamedObject> List<T> findObjects(Collection<T> theList, String objectName)
     {
         if (theList != null && !theList.isEmpty()) {
-            List<T> result = new ArrayList<T>();
+            List<T> result = new ArrayList<>();
             for (T object : theList) {
                 if (object.getName().equalsIgnoreCase(objectName)) {
                     result.add(object);
@@ -431,7 +431,7 @@ public final class DBUtils {
     @NotNull
     public static List<DBSObject> getObjectPath(DBSObject object, boolean includeSelf)
     {
-        List<DBSObject> path = new ArrayList<DBSObject>();
+        List<DBSObject> path = new ArrayList<>();
         for (DBSObject obj = includeSelf ? object : object.getParentObject(); obj != null; obj = obj.getParentObject()) {
             path.add(0, obj);
         }
@@ -594,7 +594,7 @@ public final class DBUtils {
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSEntityReferrer && DBUtils.getConstraintAttribute(monitor, (DBSEntityReferrer) fk, entityAttribute) != null) {
                     if (refs == null) {
-                        refs = new ArrayList<DBSEntityReferrer>();
+                        refs = new ArrayList<>();
                     }
                     refs.add((DBSEntityReferrer)fk);
                 }
@@ -614,7 +614,7 @@ public final class DBUtils {
             return Collections.emptyList();
         }
 
-        List<DBSEntityConstraint> identifiers = new ArrayList<DBSEntityConstraint>();
+        List<DBSEntityConstraint> identifiers = new ArrayList<>();
         // Check constraints
         Collection<? extends DBSEntityConstraint> uniqueKeys = entity.getConstraints(monitor);
         if (uniqueKeys != null) {
@@ -678,7 +678,7 @@ public final class DBUtils {
         if (constraintColumns == null) {
             return Collections.emptyList();
         }
-        List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>(constraintColumns.size());
+        List<DBSEntityAttribute> attributes = new ArrayList<>(constraintColumns.size());
         for (DBSEntityAttributeRef column : constraintColumns) {
             attributes.add(column.getAttribute());
         }
@@ -1225,7 +1225,7 @@ public final class DBUtils {
     }
 
     public static DBCLogicalOperator[] getDefaultOperators(DBSAttributeBase attribute) {
-        List<DBCLogicalOperator> operators = new ArrayList<DBCLogicalOperator>();
+        List<DBCLogicalOperator> operators = new ArrayList<>();
         DBPDataKind dataKind = attribute.getDataKind();
         if (!attribute.isRequired()) {
             operators.add(DBCLogicalOperator.IS_NULL);
@@ -1281,7 +1281,7 @@ public final class DBUtils {
         if (ex.getNextException() == null) {
             return Collections.singletonList(ex);
         }
-        List<SQLException> chain = new ArrayList<SQLException>();
+        List<SQLException> chain = new ArrayList<>();
         for (SQLException e = ex; e != null; e = e.getNextException()) {
             if (chain.contains(e)) {
                 break;

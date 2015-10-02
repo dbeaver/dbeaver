@@ -121,7 +121,7 @@ public class ColumnInfoPanel extends Composite {
         public List<KeyColumnValue> getColumns()
         {
             List<DBDAttributeBinding> rowAttributes = rowController.getRowAttributes();
-            List<KeyColumnValue> columns = new ArrayList<KeyColumnValue>();
+            List<KeyColumnValue> columns = new ArrayList<>();
             for (DBDAttributeBinding binding : rowIdentifier.getAttributes()) {
                 columns.add(new KeyColumnValue(binding, rowController.getAttributeValue(binding)));
             }

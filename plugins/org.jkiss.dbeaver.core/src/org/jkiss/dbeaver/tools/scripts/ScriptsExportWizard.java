@@ -127,7 +127,7 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
 
     private File makeExternalFile(IResource folder, File outputFolder)
     {
-        List<IResource> path = new ArrayList<IResource>();
+        List<IResource> path = new ArrayList<>();
         for (IResource f = folder; f.getParent() instanceof IFolder; f = f.getParent()) {
             path.add(0, f);
         }

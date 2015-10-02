@@ -101,7 +101,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
 
         providersFolder = new TabFolder(group, SWT.TOP);
         providersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        providers = new ArrayList<ObjectSearchProvider>(ObjectSearchRegistry.getInstance().getProviders());
+        providers = new ArrayList<>(ObjectSearchRegistry.getInstance().getProviders());
         for (ObjectSearchProvider provider : providers) {
             IObjectSearchPage searchPage;
             try {

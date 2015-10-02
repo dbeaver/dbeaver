@@ -65,7 +65,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
         this.library = JDBCUtils.safeGetString(dbResult, "LIBRARY");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        optionsCache = new JDBCObjectSimpleCache<DB2Wrapper, DB2WrapperOption>(DB2WrapperOption.class, C_OP, name);
+        optionsCache = new JDBCObjectSimpleCache<>(DB2WrapperOption.class, C_OP, name);
     }
 
     @Override

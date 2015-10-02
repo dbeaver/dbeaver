@@ -47,7 +47,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
     {
         super(constraint.getTable(), constraint.getName(), constraint.getDescription(), constraint.getConstraintType(), constraint.isPersisted());
         if (constraint.columns != null) {
-            this.columns = new ArrayList<GenericTableConstraintColumn>(constraint.columns.size());
+            this.columns = new ArrayList<>(constraint.columns.size());
             for (GenericTableConstraintColumn sourceColumn : constraint.columns) {
                 this.columns.add(new GenericTableConstraintColumn(this, sourceColumn));
             }
@@ -63,7 +63,7 @@ public class GenericPrimaryKey extends GenericTableConstraint
     public void addColumn(GenericTableConstraintColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<GenericTableConstraintColumn>();
+            columns = new ArrayList<>();
         }
         this.columns.add(column);
     }

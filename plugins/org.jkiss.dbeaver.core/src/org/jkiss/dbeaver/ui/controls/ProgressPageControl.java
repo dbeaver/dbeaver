@@ -520,7 +520,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         private boolean completed = false;
         private String curStatus;
-        private final java.util.List<TaskInfo> tasksRunning = new ArrayList<TaskInfo>();
+        private final java.util.List<TaskInfo> tasksRunning = new ArrayList<>();
 
         @Override
         public DBRProgressMonitor overwriteMonitor(final DBRProgressMonitor monitor)

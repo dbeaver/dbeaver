@@ -47,7 +47,7 @@ public class ClientHomesSelector extends Composite
     private Combo homesCombo;
     //private Label versionLabel;
     private DBPDriver driver;
-    private List<String> homeIds = new ArrayList<String>();
+    private List<String> homeIds = new ArrayList<>();
     private String currentHomeId;
 
     public ClientHomesSelector(
@@ -102,7 +102,7 @@ public class ClientHomesSelector extends Composite
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        Set<String> homes = new LinkedHashSet<String>(
+        Set<String> homes = new LinkedHashSet<>(
             driver.getClientManager().findClientHomeIds());
         homes.addAll(driver.getClientHomeIds());
 

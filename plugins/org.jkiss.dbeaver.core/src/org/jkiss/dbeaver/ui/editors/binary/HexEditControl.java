@@ -434,10 +434,10 @@ public class HexEditControl extends Composite {
         this.bytesPerLine = bytesPerLine;
         this.colorCaretLine = new Color(Display.getCurrent(), 232, 242, 254);  // very light blue
         this.colorHighlight = new Color(Display.getCurrent(), 255, 248, 147);  // mellow yellow
-        this.highlightRangesInScreen = new ArrayList<Integer>();
+        this.highlightRangesInScreen = new ArrayList<>();
 
         this.myClipboard = new BinaryClipboard(parent.getDisplay());
-        this.longSelectionListeners = new ArrayList<SelectionListener>();
+        this.longSelectionListeners = new ArrayList<>();
         addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e)
@@ -1307,7 +1307,7 @@ public class HexEditControl extends Composite {
         if (!mergerInit(changeRanges, highlightRanges)) {
             return null;
         }
-        List<StyleRange> result = new ArrayList<StyleRange>();
+        List<StyleRange> result = new ArrayList<>();
         mergerNext();
         int start = mergeRangesPosition;
         boolean blue = mergeRangesIsBlue;
@@ -1537,7 +1537,7 @@ public class HexEditControl extends Composite {
 
         StringBuilder newText = cookAddresses(newLinesStart, linesShifted * bytesPerLine);
 
-        List<Long> changeRanges = new ArrayList<Long>();
+        List<Long> changeRanges = new ArrayList<>();
         int actuallyRead;
         try {
             actuallyRead = content.get(ByteBuffer.wrap(tmpRawBuffer, 0, linesShifted * bytesPerLine),

@@ -58,7 +58,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
             return null;
         }
         final INavigatorModelView navigatorView = (INavigatorModelView)workbenchPart;
-        final List<DBNNode> refreshObjects = new ArrayList<DBNNode>();
+        final List<DBNNode> refreshObjects = new ArrayList<>();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         DBNNode rootNode = navigatorView.getRootNode();
@@ -89,7 +89,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
 
-                Set<DBNNode> refreshedSet = new HashSet<DBNNode>();
+                Set<DBNNode> refreshedSet = new HashSet<>();
                 for (DBNNode node : refreshObjects) {
                     if (node.isDisposed() || node.isLocked()) {
                         // Skip locked nodes

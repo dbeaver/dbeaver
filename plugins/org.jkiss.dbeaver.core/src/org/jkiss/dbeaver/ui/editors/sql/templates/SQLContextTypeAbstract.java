@@ -41,9 +41,9 @@ public abstract class SQLContextTypeAbstract extends TemplateContextType {
     private void addDatabaseProposals()
     {
         addResolver(new SQLEntityResolver());
-        addResolver(new SQLContainerResolver<DBSSchema>(
+        addResolver(new SQLContainerResolver<>(
             SQLContainerResolver.VAR_NAME_SCHEMA, "Schema", DBSSchema.class));
-        addResolver(new SQLContainerResolver<DBSCatalog>(
+        addResolver(new SQLContainerResolver<>(
             SQLContainerResolver.VAR_NAME_CATALOG, "Catalog", DBSCatalog.class));
         addResolver(new SQLAttributeResolver());
     }

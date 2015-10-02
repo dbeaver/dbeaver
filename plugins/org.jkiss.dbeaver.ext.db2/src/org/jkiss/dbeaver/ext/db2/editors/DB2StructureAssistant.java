@@ -107,7 +107,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         LOG.debug(objectNameMask);
 
-        List<DB2ObjectType> db2ObjectTypes = new ArrayList<DB2ObjectType>(objectTypes.length);
+        List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(objectTypes.length);
         for (DBSObjectType dbsObjectType : objectTypes) {
             db2ObjectTypes.add((DB2ObjectType) dbsObjectType);
         }
@@ -132,7 +132,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         List<DB2ObjectType> db2ObjectTypes, boolean caseSensitive, int maxResults) throws SQLException, DBException
     {
 
-        List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
+        List<DBSObjectReference> objects = new ArrayList<>();
 
         String searchObjectNameMask = objectNameMask;
         if (!caseSensitive) {
@@ -350,7 +350,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
     private String buildTableSQL(String baseStatement, List<DB2ObjectType> objectTypes)
     {
-        List<Character> listChars = new ArrayList<Character>(objectTypes.size());
+        List<Character> listChars = new ArrayList<>(objectTypes.size());
         for (DB2ObjectType objectType : objectTypes) {
             if (objectType.equals(DB2ObjectType.ALIAS)) {
                 listChars.add(DB2TableType.A.name().charAt(0));

@@ -62,10 +62,10 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private boolean caseSensitive;
     private int maxResults;
     private int matchTypeIndex;
-    private Set<DBSObjectType> checkedTypes = new HashSet<DBSObjectType>();
-    private Set<String> searchHistory = new LinkedHashSet<String>();
-    private Set<String> savedTypeNames = new HashSet<String>();
-    private List<DBNNode> sourceNodes = new ArrayList<DBNNode>();
+    private Set<DBSObjectType> checkedTypes = new HashSet<>();
+    private Set<String> searchHistory = new LinkedHashSet<>();
+    private Set<String> savedTypeNames = new HashSet<>();
+    private List<DBNNode> sourceNodes = new ArrayList<>();
 
     public SearchMetadataPage() {
 		super("Database objects search");
@@ -349,7 +349,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         if (dataSource == null || assistant == null) {
             throw new IllegalStateException("No active datasource");
         }
-        java.util.List<DBSObjectType> objectTypes = new ArrayList<DBSObjectType>();
+        java.util.List<DBSObjectType> objectTypes = new ArrayList<>();
         for (TableItem item : typesTable.getItems()) {
             if (item.getChecked()) {
                 objectTypes.add((DBSObjectType) item.getData());

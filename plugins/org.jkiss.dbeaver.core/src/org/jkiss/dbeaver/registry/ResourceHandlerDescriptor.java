@@ -46,9 +46,9 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     private ObjectType handlerType;
     private DBPResourceHandler handler;
-    private List<IContentType> contentTypes = new ArrayList<IContentType>();
-    private List<ObjectType> resourceTypes = new ArrayList<ObjectType>();
-    private List<String> roots = new ArrayList<String>();
+    private List<IContentType> contentTypes = new ArrayList<>();
+    private List<ObjectType> resourceTypes = new ArrayList<>();
+    private List<String> roots = new ArrayList<>();
     private String defaultRoot;
 
     ResourceHandlerDescriptor(IConfigurationElement config)

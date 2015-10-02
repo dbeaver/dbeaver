@@ -72,7 +72,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         try {
             JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS");
             try {
-                List<GenericSequence> result = new ArrayList<GenericSequence>();
+                List<GenericSequence> result = new ArrayList<>();
 
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {

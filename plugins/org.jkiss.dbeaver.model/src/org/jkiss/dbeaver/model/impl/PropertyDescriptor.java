@@ -91,7 +91,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         if (CommonUtils.isEmpty(category)) {
             category = NAME_UNDEFINED;
         }
-        List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+        List<PropertyDescriptor> properties = new ArrayList<>();
         IConfigurationElement[] propElements = config.getChildren(PropertyDescriptor.TAG_PROPERTY);
         for (IConfigurationElement prop : propElements) {
             properties.add(new PropertyDescriptor(category, prop));

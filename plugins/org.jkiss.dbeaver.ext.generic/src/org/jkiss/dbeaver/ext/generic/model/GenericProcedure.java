@@ -244,7 +244,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     private void addColumn(GenericProcedureParameter column)
     {
         if (this.columns == null) {
-            this.columns = new ArrayList<GenericProcedureParameter>();
+            this.columns = new ArrayList<>();
         }
         this.columns.add(column);
     }

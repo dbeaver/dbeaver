@@ -60,7 +60,7 @@ public class MySQLSessionManager implements DBAServerSessionManager<MySQLSession
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLSession> sessions = new ArrayList<MySQLSession>();
+                    List<MySQLSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
                         sessions.add(new MySQLSession(dbResult));
                     }

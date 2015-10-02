@@ -42,7 +42,7 @@ public class NavigatorHandlerLocalFolderCreate extends AbstractHandler {
 
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection structSelection = (IStructuredSelection) selection;
-            List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
+            List<DBNDataSource> dataSources = new ArrayList<>();
             for (Iterator iter = structSelection.iterator(); iter.hasNext(); ) {
                 Object element = iter.next();
                 if (element instanceof DBNDataSource) {

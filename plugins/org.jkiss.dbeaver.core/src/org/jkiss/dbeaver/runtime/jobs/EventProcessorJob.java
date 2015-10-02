@@ -59,7 +59,7 @@ public abstract class EventProcessorJob extends AbstractJob {
         DBPConnectionConfiguration info = container.getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
-            Map<String, Object> variables = new HashMap<String, Object>();
+            Map<String, Object> variables = new HashMap<>();
             for (Map.Entry<Object, Object> entry : info.getProperties().entrySet()) {
                 variables.put(CommonUtils.toString(entry.getKey()), entry.getValue());
             }

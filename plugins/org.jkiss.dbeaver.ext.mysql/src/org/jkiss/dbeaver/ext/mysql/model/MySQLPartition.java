@@ -95,7 +95,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
     private void addSubPartitions(MySQLPartition partition)
     {
         if (subPartitions == null) {
-            subPartitions = new ArrayList<MySQLPartition>();
+            subPartitions = new ArrayList<>();
         }
         subPartitions.add(partition);
     }

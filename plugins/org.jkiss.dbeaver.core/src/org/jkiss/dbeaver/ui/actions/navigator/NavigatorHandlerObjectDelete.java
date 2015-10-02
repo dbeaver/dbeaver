@@ -59,7 +59,7 @@ import java.util.*;
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
     private IStructuredSelection structSelection;
     private Boolean deleteAll;
-    private List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<DBRRunnableWithProgress>();
+    private List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<>();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

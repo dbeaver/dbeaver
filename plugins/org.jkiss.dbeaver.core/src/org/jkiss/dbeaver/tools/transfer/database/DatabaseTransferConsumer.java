@@ -88,7 +88,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         DBCResultSetMetaData metaData = resultSet.getMeta();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
-        targetAttributes = new ArrayList<DBSEntityAttribute>(columnMappings.length);
+        targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.size(); i++) {
             ColumnMapping columnMapping = new ColumnMapping(rsAttributes.get(i));
             columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
@@ -322,7 +322,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             sql.append(targetDataSource.getSQLDialect().getCatalogSeparator());
         }
         sql.append(DBUtils.getQuotedIdentifier(targetDataSource, tableName)).append("(\n");
-        Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<DBSAttributeBase, DatabaseMappingAttribute>();
+        Map<DBSAttributeBase, DatabaseMappingAttribute> mappedAttrs = new HashMap<>();
         for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
             if (attr.getMappingType() != DatabaseMappingType.create) {
                 continue;

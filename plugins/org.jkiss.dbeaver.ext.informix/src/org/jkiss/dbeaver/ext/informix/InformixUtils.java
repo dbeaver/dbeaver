@@ -46,7 +46,7 @@ public class InformixUtils {
 			GenericDataSource datasource) throws DBException {
 		JDBCSession session = datasource.getDefaultContext(true).openSession(monitor,
 				DBCExecutionPurpose.META, "Load source code");
-		List<String> result = new ArrayList<String>();
+		List<String> result = new ArrayList<>();
 		try {
 			JDBCPreparedStatement dbStat = session
 					.prepareStatement(sqlStatement);

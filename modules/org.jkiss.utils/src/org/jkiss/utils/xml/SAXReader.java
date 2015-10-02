@@ -30,13 +30,13 @@ public final class SAXReader implements org.xml.sax.ContentHandler {
     public static final int DEFAULT_POOL_SIZE = 10;
 
     private static javax.xml.parsers.SAXParserFactory saxParserFactory = null;
-    private static List<Parser> parsersPool = new ArrayList<Parser>();
+    private static List<Parser> parsersPool = new ArrayList<>();
 
     private org.xml.sax.InputSource inputSource;
     private org.xml.sax.Locator locator;
 
-    private Map<String, Object> attributes = new HashMap<String, Object>();
-    private List<SAXListener> elementLayers = new ArrayList<SAXListener>();
+    private Map<String, Object> attributes = new HashMap<>();
+    private List<SAXListener> elementLayers = new ArrayList<>();
     private SAXListener curListener;
     private StringBuilder textValue = new StringBuilder();
     private int depth = 0;

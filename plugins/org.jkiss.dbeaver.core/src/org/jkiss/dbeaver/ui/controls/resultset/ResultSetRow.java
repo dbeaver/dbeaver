@@ -97,7 +97,7 @@ public class ResultSetRow {
 
     void addChange(DBDAttributeBinding attr, @Nullable Object oldValue) {
         if (changes == null) {
-            changes = new IdentityHashMap<DBDAttributeBinding, Object>();
+            changes = new IdentityHashMap<>();
         }
         changes.put(attr, oldValue);
     }
@@ -124,7 +124,7 @@ public class ResultSetRow {
     @NotNull
     public CollectionElementData getCollectionData(DBDAttributeBinding binding, DBDCollection collection) {
         if (collections == null) {
-            collections = new HashMap<DBDValue, CollectionElementData>();
+            collections = new HashMap<>();
         }
         CollectionElementData ced = collections.get(collection);
         if (ced == null) {

@@ -79,7 +79,7 @@ public abstract class OracleTableConstraintBase extends JDBCTableConstraint<Orac
     public void addColumn(OracleTableConstraintColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<OracleTableConstraintColumn>();
+            columns = new ArrayList<>();
         }
         this.columns.add(column);
     }

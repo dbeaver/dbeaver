@@ -39,7 +39,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     private static Map<String,String> connectionsProps;
 
     static {
-        connectionsProps = new HashMap<String, String>();
+        connectionsProps = new HashMap<>();
 
         // Program name
         connectionsProps.put("v$session.program", DBeaverCore.getProductTitle());
@@ -130,7 +130,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     @Override
     public Collection<String> findClientHomeIds()
     {
-        List<String> homeIds = new ArrayList<String>();
+        List<String> homeIds = new ArrayList<>();
         for (OracleHomeDescriptor home : OCIUtils.getOraHomes()) {
             homeIds.add(home.getHomeId());
         }

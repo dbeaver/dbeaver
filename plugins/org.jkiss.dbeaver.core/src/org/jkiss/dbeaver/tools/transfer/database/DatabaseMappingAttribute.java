@@ -181,7 +181,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             if (dataType == null) {
                 // Type not supported by target database
                 // Let's try to find something similar
-                List<DBSDataType> possibleTypes = new ArrayList<DBSDataType>();
+                List<DBSDataType> possibleTypes = new ArrayList<>();
                 for (DBSDataType type : dataTypeProvider.getDataTypes()) {
                     if (type.getDataKind() == dataKind) {
                         possibleTypes.add(type);

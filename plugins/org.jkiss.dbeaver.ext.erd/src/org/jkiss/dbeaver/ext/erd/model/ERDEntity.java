@@ -55,7 +55,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
     public void addColumn(ERDEntityAttribute column, boolean reflect)
 	{
         if (columns == null) {
-            columns = new ArrayList<ERDEntityAttribute>();
+            columns = new ArrayList<>();
         }
 		if (columns.contains(column))
 		{
@@ -104,7 +104,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
 	public void addForeignKeyRelationship(ERDAssociation rel, boolean reflect)
 	{
         if (foreignKeyRelationships == null) {
-            foreignKeyRelationships = new ArrayList<ERDAssociation>();
+            foreignKeyRelationships = new ArrayList<>();
         }
 		foreignKeyRelationships.add(rel);
         if (reflect) {
@@ -121,7 +121,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
 	public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect)
 	{
         if (primaryKeyRelationships == null) {
-            primaryKeyRelationships = new ArrayList<ERDAssociation>();
+            primaryKeyRelationships = new ArrayList<>();
         }
 		primaryKeyRelationships.add(table);
         if (reflect) {
@@ -228,7 +228,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
             Set<DBSEntityAttribute> keyColumns = null;
             if (attributeVisibility == ERDAttributeVisibility.KEYS) {
-                keyColumns = new HashSet<DBSEntityAttribute>();
+                keyColumns = new HashSet<>();
                 try {
                     for (DBSEntityAssociation assoc : CommonUtils.safeCollection(entity.getAssociations(monitor))) {
                         if (assoc instanceof DBSEntityReferrer) {
@@ -291,7 +291,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
     public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
     {
         try {
-            Set<DBSEntityAttribute> fkColumns = new HashSet<DBSEntityAttribute>();
+            Set<DBSEntityAttribute> fkColumns = new HashSet<>();
             // Make associations
             Collection<? extends DBSEntityAssociation> fks = getObject().getAssociations(monitor);
             if (fks != null) {
@@ -303,7 +303,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                     if (entity2 == null) {
                         //log.debug("Table '" + fk.getReferencedKey().getTable().getFullQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
-                            unresolvedKeys = new ArrayList<DBSEntityAssociation>();
+                            unresolvedKeys = new ArrayList<>();
                         }
                         unresolvedKeys.add(fk);
                     } else {

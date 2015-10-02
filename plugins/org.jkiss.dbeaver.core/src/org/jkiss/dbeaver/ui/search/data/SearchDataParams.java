@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class SearchDataParams {
 
-    List<DBSDataContainer> sources = new ArrayList<DBSDataContainer>();
+    List<DBSDataContainer> sources = new ArrayList<>();
     String searchString;
     boolean caseSensitive;
     boolean fastSearch; // Indexed

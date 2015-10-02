@@ -124,7 +124,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private DBDAttributeBinding curAttribute;
     private int columnOrder = SWT.NONE;
 
-    private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<SpreadsheetValueController, IValueEditorStandalone>();
+    private final Map<SpreadsheetValueController, IValueEditorStandalone> openEditors = new HashMap<>();
 
     private SpreadsheetFindReplaceTarget findReplaceTarget;
 
@@ -665,7 +665,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     // Edit
 
     private void closeEditors() {
-        List<IValueEditorStandalone> editors = new ArrayList<IValueEditorStandalone>(openEditors.values());
+        List<IValueEditorStandalone> editors = new ArrayList<>(openEditors.values());
         for (IValueEditorStandalone editor : editors) {
             if (editor.getControl() != null && !editor.getControl().isDisposed()) {
                 editor.closeValueEditor();
@@ -1020,7 +1020,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         spreadsheet.deselectAll();
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            List<GridPos> cellSelection = new ArrayList<GridPos>();
+            List<GridPos> cellSelection = new ArrayList<>();
             for (Iterator iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                 Object cell = iter.next();
                 if (cell instanceof GridPos) {
@@ -1069,7 +1069,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public List toList()
         {
-            return new ArrayList<GridPos>(spreadsheet.getSelection());
+            return new ArrayList<>(spreadsheet.getSelection());
         }
 
         @Override
@@ -1094,7 +1094,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
                 return Collections.singletonList(currentRow);
             } else {
-                List<ResultSetRow> rows = new ArrayList<ResultSetRow>();
+                List<ResultSetRow> rows = new ArrayList<>();
                 Collection<Integer> rowSelection = spreadsheet.getRowSelection();
                 for (Integer row : rowSelection) {
                     rows.add(controller.getModel().getRow(row));

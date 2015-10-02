@@ -36,7 +36,7 @@ import java.util.List;
 public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferrer
 {
     private final DBVEntity entity;
-    private final List<DBVEntityConstraintColumn> attributes = new ArrayList<DBVEntityConstraintColumn>();
+    private final List<DBVEntityConstraintColumn> attributes = new ArrayList<>();
     private DBSEntityConstraintType type;
     private String name;
 

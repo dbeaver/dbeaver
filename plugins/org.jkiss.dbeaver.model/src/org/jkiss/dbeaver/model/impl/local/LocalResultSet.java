@@ -35,8 +35,8 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
 {
     protected final DBCSession session;
     protected final SOURCE_STMT statement;
-    private final List<DBCAttributeMetaData> metaColumns = new ArrayList<DBCAttributeMetaData>();
-    protected final List<Object[]> rows = new ArrayList<Object[]>();
+    private final List<DBCAttributeMetaData> metaColumns = new ArrayList<>();
+    protected final List<Object[]> rows = new ArrayList<>();
     protected int curPosition = -1;
 
     public LocalResultSet(DBCSession session, SOURCE_STMT statement)

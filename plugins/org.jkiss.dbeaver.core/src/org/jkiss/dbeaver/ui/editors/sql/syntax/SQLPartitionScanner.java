@@ -52,7 +52,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     };
 
     // Syntax higlight
-    List<IPredicateRule> rules = new ArrayList<IPredicateRule>();
+    List<IPredicateRule> rules = new ArrayList<>();
     IToken commentToken = new Token(SQL_COMMENT);
     IToken multilineCommentToken = new Token(SQL_MULTILINE_COMMENT);
     //IToken sqlIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);

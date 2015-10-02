@@ -91,7 +91,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
         this.objectInfo = JDBCUtils.safeGetXML(dbResult, "OBJECTINFO");
         this.objectInfoString = objectInfo.getString();
 
-        xmlschemaDepCache = new JDBCObjectSimpleCache<DB2XMLSchema, DB2XMLSchemaDep>(DB2XMLSchemaDep.class, C_DEP,
+        xmlschemaDepCache = new JDBCObjectSimpleCache<>(DB2XMLSchemaDep.class, C_DEP,
             schema.getName(), getName());
 
     }

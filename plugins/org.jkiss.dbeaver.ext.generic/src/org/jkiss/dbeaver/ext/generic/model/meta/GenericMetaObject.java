@@ -30,7 +30,7 @@ public class GenericMetaObject {
 
     private final String type;
     private final String readQuery;
-    private final Map<String, GenericMetaColumn> columnsMap = new HashMap<String, GenericMetaColumn>();
+    private final Map<String, GenericMetaColumn> columnsMap = new HashMap<>();
 
     public GenericMetaObject(IConfigurationElement cfg)
     {

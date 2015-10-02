@@ -71,7 +71,7 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
             this.auditPolicyName = JDBCUtils.safeGetString(resultSet, "AUDITPOLICYNAME");
         }
 
-        this.roleDepCache = new JDBCObjectSimpleCache<DB2Role, DB2RoleDep>(DB2RoleDep.class, C_RL, getName());
+        this.roleDepCache = new JDBCObjectSimpleCache<>(DB2RoleDep.class, C_RL, getName());
     }
 
     // -----------------------

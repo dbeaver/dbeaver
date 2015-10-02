@@ -144,9 +144,9 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
             this.staticAsDynamic = JDBCUtils.safeGetBoolean(dbResult, "STATICASDYNAMIC", DB2YesNo.Y.name());
         }
 
-        packageDepCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageDep>(DB2PackageDep.class, C_DEP, schema.getName(),
+        packageDepCache = new JDBCObjectSimpleCache<>(DB2PackageDep.class, C_DEP, schema.getName(),
             getName());
-        packageStatementsCache = new JDBCObjectSimpleCache<DB2Package, DB2PackageStatement>(DB2PackageStatement.class, C_STM,
+        packageStatementsCache = new JDBCObjectSimpleCache<>(DB2PackageStatement.class, C_STM,
             schema.getName(), getName());
     }
 

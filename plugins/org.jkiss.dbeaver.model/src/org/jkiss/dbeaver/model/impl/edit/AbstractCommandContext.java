@@ -39,12 +39,12 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     static final Log log = Log.getLog(AbstractCommandContext.class);
 
     private final DBCExecutionContext executionContext;
-    private final List<CommandInfo> commands = new ArrayList<CommandInfo>();
-    private final List<CommandInfo> undidCommands = new ArrayList<CommandInfo>();
+    private final List<CommandInfo> commands = new ArrayList<>();
+    private final List<CommandInfo> undidCommands = new ArrayList<>();
     private List<CommandQueue> commandQueues;
 
-    private final Map<Object, Object> userParams = new HashMap<Object, Object>();
-    private final List<DBECommandListener> listeners = new ArrayList<DBECommandListener>();
+    private final Map<Object, Object> userParams = new HashMap<>();
+    private final List<DBECommandListener> listeners = new ArrayList<>();
 
     private final boolean atomic;
 
@@ -89,7 +89,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
 
         // Execute commands
-        List<CommandInfo> executedCommands = new ArrayList<CommandInfo>();
+        List<CommandInfo> executedCommands = new ArrayList<>();
         try {
             for (CommandQueue queue : commandQueues) {
                 // Make list of not-executed commands
@@ -107,7 +107,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                         //if (CommonUtils.isEmpty(cmd.persistActions)) {
                             DBEPersistAction[] persistActions = cmd.command.getPersistActions();
                             if (!ArrayUtils.isEmpty(persistActions)) {
-                                cmd.persistActions = new ArrayList<PersistInfo>(persistActions.length);
+                                cmd.persistActions = new ArrayList<>(persistActions.length);
                                 for (DBEPersistAction action : persistActions) {
                                     cmd.persistActions.add(new PersistInfo(action));
                                 }
@@ -239,7 +239,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     public Collection<? extends DBECommand<?>> getFinalCommands()
     {
         synchronized (commands) {
-            List<DBECommand<?>> cmdCopy = new ArrayList<DBECommand<?>>(commands.size());
+            List<DBECommand<?>> cmdCopy = new ArrayList<>(commands.size());
             for (CommandQueue queue : getCommandQueues()) {
                 for (CommandInfo cmdInfo : queue.commands) {
                     while (cmdInfo.mergedBy != null) {
@@ -258,7 +258,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     public Collection<? extends DBECommand<?>> getUndoCommands()
     {
         synchronized (commands) {
-            List<DBECommand<?>> result = new ArrayList<DBECommand<?>>();
+            List<DBECommand<?>> result = new ArrayList<>();
             for (int i = commands.size() - 1; i >= 0; i--) {
                 CommandInfo cmd = commands.get(i);
                 while (cmd.prevInBatch != null) {
@@ -278,7 +278,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     public Collection<DBPObject> getEditedObjects()
     {
         final List<CommandQueue> queues = getCommandQueues();
-        List<DBPObject> result = new ArrayList<DBPObject>(queues.size());
+        List<DBPObject> result = new ArrayList<>(queues.size());
         for (CommandQueue queue : queues) {
             result.add(queue.getObject());
         }
@@ -450,7 +450,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         if (getUndoCommand() == null) {
             throw new IllegalStateException("Can't undo command");
         }
-        List<CommandInfo> processedCommands = new ArrayList<CommandInfo>();
+        List<CommandInfo> processedCommands = new ArrayList<>();
         synchronized (commands) {
             CommandInfo lastCommand = commands.get(commands.size() - 1);
             if (!lastCommand.command.isUndoable()) {
@@ -482,7 +482,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         if (getRedoCommand() == null) {
             throw new IllegalStateException("Can't redo command");
         }
-        List<CommandInfo> processedCommands = new ArrayList<CommandInfo>();
+        List<CommandInfo> processedCommands = new ArrayList<>();
         synchronized (commands) {
             // Just redo UI changes and put command on the top of stack
             CommandInfo commandInfo = null;
@@ -518,7 +518,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         if (commandQueues != null) {
             return commandQueues;
         }
-        commandQueues = new ArrayList<CommandQueue>();
+        commandQueues = new ArrayList<>();
 
         CommandInfo aggregator = null;
         // Create queues from commands
@@ -549,8 +549,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
         // Merge commands
         for (CommandQueue queue : commandQueues) {
-            final Map<DBECommand, CommandInfo> mergedByMap = new IdentityHashMap<DBECommand, CommandInfo>();
-            final List<CommandInfo> mergedCommands = new ArrayList<CommandInfo>();
+            final Map<DBECommand, CommandInfo> mergedByMap = new IdentityHashMap<>();
+            final List<CommandInfo> mergedCommands = new ArrayList<>();
             for (int i = 0; i < queue.commands.size(); i++) {
                 CommandInfo lastCommand = queue.commands.get(i);
                 lastCommand.mergedBy = null;
@@ -688,7 +688,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         private List<DBECommandQueue> subQueues;
         private final DBPObject object;
         private final DBEObjectManager objectManager;
-        private List<CommandInfo> commands = new ArrayList<CommandInfo>();
+        private List<CommandInfo> commands = new ArrayList<>();
 
         private CommandQueue(DBEObjectManager objectManager, CommandQueue parent, DBPObject object)
         {
@@ -703,7 +703,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         void addSubQueue(CommandQueue queue)
         {
             if (subQueues == null) {
-                subQueues = new ArrayList<DBECommandQueue>();
+                subQueues = new ArrayList<>();
             }
             subQueues.add(queue);
         }

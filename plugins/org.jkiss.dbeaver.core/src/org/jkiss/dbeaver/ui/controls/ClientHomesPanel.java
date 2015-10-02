@@ -206,7 +206,7 @@ public class ClientHomesPanel extends Composite
 
     public Collection<String> getHomeIds()
     {
-        java.util.List<String> homes = new ArrayList<String>();
+        java.util.List<String> homes = new ArrayList<>();
         for (TableItem item : homesTable.getItems()) {
             homes.add(((HomeInfo)item.getData()).home.getHomeId());
         }
@@ -224,9 +224,9 @@ public class ClientHomesPanel extends Composite
             log.error("Client manager is not supported by driver '" + driver.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
-        Set<String> providedHomes = new LinkedHashSet<String>(
+        Set<String> providedHomes = new LinkedHashSet<>(
             clientManager.findClientHomeIds());
-        Set<String> allHomes = new LinkedHashSet<String>(providedHomes);
+        Set<String> allHomes = new LinkedHashSet<>(providedHomes);
         allHomes.addAll(driver.getClientHomeIds());
 
         for (String homeId : allHomes) {

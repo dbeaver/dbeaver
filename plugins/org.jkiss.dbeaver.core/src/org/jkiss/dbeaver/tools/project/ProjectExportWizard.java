@@ -138,7 +138,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                 meta.endElement();
             }
 
-            Map<IProject, Integer> resCountMap = new HashMap<IProject, Integer>();
+            Map<IProject, Integer> resCountMap = new HashMap<>();
             monitor.beginTask(CoreMessages.dialog_project_export_wizard_monitor_collect_info, exportData.getProjectsToExport().size());
             for (IProject project : exportData.getProjectsToExport()) {
                 // Add used drivers to export data
@@ -181,8 +181,8 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
 
             if (exportData.isExportDrivers()) {
                 // Export driver libraries
-                Set<File> libFiles = new HashSet<File>();
-                Map<String, File> libPathMap = new HashMap<String, File>();
+                Set<File> libFiles = new HashSet<>();
+                Map<String, File> libPathMap = new HashMap<>();
                 for (DriverDescriptor driver : exportData.usedDrivers) {
                     for (DBPDriverLibrary fileDescriptor : driver.getDriverLibraries()) {
                         final File libraryFile = fileDescriptor.getLocalFile();
@@ -202,7 +202,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                     exportData.archiveStream.closeEntry();
 
                     exportData.meta.startElement(ExportConstants.TAG_LIBRARIES);
-                    Set<String> libFileNames = new HashSet<String>();
+                    Set<String> libFileNames = new HashSet<>();
                     for (String libPath : libPathMap.keySet()) {
                         final File libFile = libPathMap.get(libPath);
                         // Check for file name duplications

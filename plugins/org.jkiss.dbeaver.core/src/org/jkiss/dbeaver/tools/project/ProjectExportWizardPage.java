@@ -89,7 +89,7 @@ class ProjectExportWizardPage extends WizardPage {
             outDir = RuntimeUtils.getUserHomeDir().getAbsolutePath();
         }
 
-        Set<IProject> projectList = new LinkedHashSet<IProject>();
+        Set<IProject> projectList = new LinkedHashSet<>();
         final ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getSelection();
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
@@ -214,7 +214,7 @@ class ProjectExportWizardPage extends WizardPage {
 
     private List<IProject> getProjectsToExport()
     {
-        List<IProject> result = new ArrayList<IProject>();
+        List<IProject> result = new ArrayList<>();
         for (TableItem item : projectsTable.getItems()) {
             if (item.getChecked()) {
                 result.add((IProject) item.getData());

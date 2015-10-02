@@ -57,8 +57,8 @@ public class DataFormatterRegistry
         return instance;
     }
 
-    private final List<DataFormatterDescriptor> dataFormatterList = new ArrayList<DataFormatterDescriptor>();
-    private final Map<String, DataFormatterDescriptor> dataFormatterMap = new HashMap<String, DataFormatterDescriptor>();
+    private final List<DataFormatterDescriptor> dataFormatterList = new ArrayList<>();
+    private final Map<String, DataFormatterDescriptor> dataFormatterMap = new HashMap<>();
     private DBDDataFormatterProfile globalProfile;
     private List<DBDDataFormatterProfile> customProfiles = null;
 
@@ -126,7 +126,7 @@ public class DataFormatterRegistry
 
     private void loadProfiles()
     {
-        customProfiles = new ArrayList<DBDDataFormatterProfile>();
+        customProfiles = new ArrayList<>();
 
         File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, true);
         if (!storeFile.exists()) {

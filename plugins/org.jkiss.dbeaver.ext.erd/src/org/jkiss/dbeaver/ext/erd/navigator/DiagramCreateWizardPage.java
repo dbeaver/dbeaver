@@ -135,7 +135,7 @@ class DiagramCreateWizardPage extends WizardPage {
     	if (contentTree == null) {
 			return Collections.emptyList();
 		}
-        List<DBNNode> nodes = new ArrayList<DBNNode>();
+        List<DBNNode> nodes = new ArrayList<>();
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
         for (Object obj : viewer.getCheckedElements()) {
             DBNNode node = (DBNNode)obj;

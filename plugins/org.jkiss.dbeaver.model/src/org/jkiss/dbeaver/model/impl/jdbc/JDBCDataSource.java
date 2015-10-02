@@ -75,7 +75,7 @@ public abstract class JDBCDataSource
     @Nullable
     protected volatile JDBCExecutionContext metaContext;
     @NotNull
-    protected final List<JDBCExecutionContext> allContexts = new ArrayList<JDBCExecutionContext>();
+    protected final List<JDBCExecutionContext> allContexts = new ArrayList<>();
     @NotNull
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;

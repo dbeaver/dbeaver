@@ -49,7 +49,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
     private final String CATEGORY = toString();
     private IPositionUpdater positionUpdater = new ExclusivePositionUpdater(CATEGORY);
-    private List<SymbolLevel> bracketLevelStack = new ArrayList<SymbolLevel>();
+    private List<SymbolLevel> bracketLevelStack = new ArrayList<>();
     private SQLEditorBase editor;
     private ISourceViewer sourceViewer;
 

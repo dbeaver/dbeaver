@@ -50,7 +50,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
         Widget widget,
         DBEPropertyHandler<OBJECT_TYPE> handler)
     {
-        new ControlPropertyCommandListener<OBJECT_TYPE>(objectEditor, widget, handler);
+        new ControlPropertyCommandListener<>(objectEditor, widget, handler);
     }
 
     public ControlPropertyCommandListener(
@@ -175,7 +175,7 @@ public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
                     };
                     if (curCommand == null) {
                         if (!CommonUtils.equalObjects(newValue, originalValue)) {
-                            curCommand = new DBECommandProperty<OBJECT_TYPE>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);;
+                            curCommand = new DBECommandProperty<>(objectEditor.getDatabaseObject(), handler, originalValue, newValue);;
                             objectEditor.addChangeCommand(curCommand, commandReflector);
                         }
                     } else {

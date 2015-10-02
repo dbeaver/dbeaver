@@ -426,7 +426,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
     {
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
         boolean allowsCreate = true;
-        java.util.List<String> items = new ArrayList<String>();
+        java.util.List<String> items = new ArrayList<>();
         if (element instanceof DatabaseMappingContainer) {
             if (settings.getContainerNode() == null) {
                 allowsCreate = false;

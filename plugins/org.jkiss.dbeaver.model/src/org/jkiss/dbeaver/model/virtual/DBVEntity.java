@@ -127,7 +127,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public void setProperty(String name, @Nullable String value)
     {
         if (properties == null) {
-            properties = new LinkedHashMap<String, String>();
+            properties = new LinkedHashMap<>();
         }
         if (value == null) {
             properties.remove(name);
@@ -168,7 +168,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public DBVEntityConstraint getBestIdentifier()
     {
         if (entityConstraints == null) {
-            entityConstraints = new ArrayList<DBVEntityConstraint>();
+            entityConstraints = new ArrayList<>();
         }
         if (entityConstraints.isEmpty()) {
             entityConstraints.add(new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, "PRIMARY"));
@@ -179,7 +179,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public void addConstraint(DBVEntityConstraint constraint)
     {
         if (entityConstraints == null) {
-            entityConstraints = new ArrayList<DBVEntityConstraint>();
+            entityConstraints = new ArrayList<>();
         }
         entityConstraints.add(constraint);
     }
@@ -213,7 +213,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (CommonUtils.isEmpty(descriptionColumnNames)) {
             return Collections.emptyList();
         }
-        java.util.List<DBSEntityAttribute> result = new ArrayList<DBSEntityAttribute>();
+        java.util.List<DBSEntityAttribute> result = new ArrayList<>();
         Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
         StringTokenizer st = new StringTokenizer(descriptionColumnNames, ",");
         while (st.hasMoreTokens()) {
@@ -235,7 +235,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             return DBUtils.getQuotedIdentifier(keyColumn);
         }
         // Find all string columns
-        Map<String, DBSEntityAttribute> stringColumns = new TreeMap<String, DBSEntityAttribute>();
+        Map<String, DBSEntityAttribute> stringColumns = new TreeMap<>();
         for (DBSEntityAttribute column : allColumns) {
             if (column != keyColumn &&
                 column.getDataKind() == DBPDataKind.STRING &&
@@ -280,7 +280,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public void copyFrom(DBVEntity copy)
     {
         if (!CommonUtils.isEmpty(copy.entityConstraints)) {
-            this.entityConstraints = new ArrayList<DBVEntityConstraint>(copy.entityConstraints.size());
+            this.entityConstraints = new ArrayList<>(copy.entityConstraints.size());
             for (DBVEntityConstraint c : copy.entityConstraints) {
                 DBVEntityConstraint constraint = new DBVEntityConstraint(this, c.getConstraintType(), c.getName());
                 constraint.copyFrom(c);
@@ -288,7 +288,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
         }
         if (!CommonUtils.isEmpty(copy.properties)) {
-            this.properties = new LinkedHashMap<String, String>(copy.properties);
+            this.properties = new LinkedHashMap<>(copy.properties);
         }
     }
 

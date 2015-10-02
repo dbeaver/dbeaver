@@ -71,7 +71,7 @@ public class DataSourceDescriptor
     public static class FilterMapping {
         public final String typeName;
         public DBSObjectFilter defaultFilter;
-        public Map<String, DBSObjectFilter> customFilters = new HashMap<String, DBSObjectFilter>();
+        public Map<String, DBSObjectFilter> customFilters = new HashMap<>();
 
         FilterMapping(String typeName)
         {
@@ -119,7 +119,7 @@ public class DataSourceDescriptor
     private boolean savePassword;
     private boolean showSystemObjects;
     private boolean connectionReadOnly;
-    private final Map<String, FilterMapping> filterMap = new HashMap<String, FilterMapping>();
+    private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private Date createDate;
     private Date updateDate;
     private Date loginDate;
@@ -129,7 +129,7 @@ public class DataSourceDescriptor
     @Nullable
     private DBPDataSource dataSource;
 
-    private final List<DBPDataSourceUser> users = new ArrayList<DBPDataSourceUser>();
+    private final List<DBPDataSourceUser> users = new ArrayList<>();
 
     private boolean provided;
 
@@ -137,7 +137,7 @@ public class DataSourceDescriptor
     private volatile Date connectTime = null;
     private volatile boolean disposed = false;
     private volatile boolean connecting = false;
-    private final List<DBRProcessDescriptor> childProcesses = new ArrayList<DBRProcessDescriptor>();
+    private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
     private String folderPath;
 
@@ -692,7 +692,7 @@ public class DataSourceDescriptor
             {
                 List<DBPDataSourceUser> usersStamp;
                 synchronized (users) {
-                    usersStamp = new ArrayList<DBPDataSourceUser>(users);
+                    usersStamp = new ArrayList<>(users);
                 }
                 int jobCount = 0;
                 // Save all unsaved data
@@ -811,7 +811,7 @@ public class DataSourceDescriptor
     public Collection<DBPDataSourceUser> getUsers()
     {
         synchronized (users) {
-            return new ArrayList<DBPDataSourceUser>(users);
+            return new ArrayList<>(users);
         }
     }
 
@@ -1040,7 +1040,7 @@ public class DataSourceDescriptor
     }
 
     public static List<DataSourceDescriptor> getAllDataSources() {
-        List<DataSourceDescriptor> result = new ArrayList<DataSourceDescriptor>();
+        List<DataSourceDescriptor> result = new ArrayList<>();
         for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
             if (project.isOpen()) {
                 DataSourceRegistry registry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);

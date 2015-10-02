@@ -40,7 +40,7 @@ class ProjectExportData {
     ProjectRegistry projectRegistry;
     XMLBuilder meta;
     ZipOutputStream archiveStream;
-    Set<DriverDescriptor> usedDrivers = new HashSet<DriverDescriptor>();
+    Set<DriverDescriptor> usedDrivers = new HashSet<>();
 
     public ProjectExportData(List<IProject> projects, File outputFolder, boolean exportDrivers, String archiveFileName)
     {

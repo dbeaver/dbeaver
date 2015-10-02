@@ -146,7 +146,7 @@ public class DBNProject extends DBNResource implements IAdaptable
 
     public DBNResource findResource(IResource resource)
     {
-        List<IResource> path = new ArrayList<IResource>();
+        List<IResource> path = new ArrayList<>();
         for (IResource parent = resource; !(parent instanceof IProject); parent = parent.getParent()) {
             path.add(0, parent);
         }

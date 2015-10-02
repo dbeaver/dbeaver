@@ -87,7 +87,7 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
                 objectNameMask,
                 params.isCaseSensitive(),
                 params.getMaxResults());
-            List<DBNNode> nodes = new ArrayList<DBNNode>();
+            List<DBNNode> nodes = new ArrayList<>();
             for (DBSObjectReference reference : objects) {
                 if (monitor.isCanceled()) {
                     break;

@@ -55,10 +55,10 @@ public class DataSourceProviderRegistry
         return instance;
     }
 
-    private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<DataSourceProviderDescriptor>();
-    private final List<DBPRegistryListener> registryListeners = new ArrayList<DBPRegistryListener>();
-    private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<String, DBPConnectionType>();
-    private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<String, ExternalResourceDescriptor>();
+    private final List<DataSourceProviderDescriptor> dataSourceProviders = new ArrayList<>();
+    private final List<DBPRegistryListener> registryListeners = new ArrayList<>();
+    private final Map<String, DBPConnectionType> connectionTypes = new LinkedHashMap<>();
+    private final Map<String, ExternalResourceDescriptor> resourceContributions = new HashMap<>();
 
     private DataSourceProviderRegistry()
     {
@@ -96,7 +96,7 @@ public class DataSourceProviderRegistry
 
         // Resolve all driver replacements
         {
-            List<DriverDescriptor> allDrivers = new ArrayList<DriverDescriptor>();
+            List<DriverDescriptor> allDrivers = new ArrayList<>();
             for (DataSourceProviderDescriptor provider : dataSourceProviders) {
                 allDrivers.addAll(provider.getDrivers());
             }

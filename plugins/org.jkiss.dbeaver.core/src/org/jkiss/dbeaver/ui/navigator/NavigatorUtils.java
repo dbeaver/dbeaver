@@ -122,7 +122,7 @@ public class NavigatorUtils {
         if (selection.isEmpty()) {
             return Collections.emptyList();
         }
-        List<DBSObject> result = new ArrayList<DBSObject>();
+        List<DBSObject> result = new ArrayList<>();
         for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
             Object selectedObject = iter.next();
             if (selectedObject instanceof DBSWrapper) {
@@ -275,8 +275,8 @@ public class NavigatorUtils {
             @Override
             public void dragSetData (DragSourceEvent event) {
                 if (!selection.isEmpty()) {
-                    List<DBNNode> nodes = new ArrayList<DBNNode>();
-                    List<DBPNamedObject> objects = new ArrayList<DBPNamedObject>();
+                    List<DBNNode> nodes = new ArrayList<>();
+                    List<DBPNamedObject> objects = new ArrayList<>();
                     String lineSeparator = CommonUtils.getLineSeparator();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> i = selection.iterator(); i.hasNext(); ) {

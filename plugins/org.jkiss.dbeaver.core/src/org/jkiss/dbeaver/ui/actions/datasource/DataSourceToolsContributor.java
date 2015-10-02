@@ -71,7 +71,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {
-                    Map<ToolGroupDescriptor, MenuManager> groupsMap = new HashMap<ToolGroupDescriptor, MenuManager>();
+                    Map<ToolGroupDescriptor, MenuManager> groupsMap = new HashMap<>();
                     for (ToolDescriptor tool : tools) {
                         hasTools = true;
                         MenuManager parentMenu = null;

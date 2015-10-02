@@ -89,14 +89,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<String, EditorDefaults>();
+    private static final Map<String, EditorDefaults> defaultPageMap = new HashMap<>();
 
-    private final Map<String, IEditorPart> editorMap = new LinkedHashMap<String, IEditorPart>();
+    private final Map<String, IEditorPart> editorMap = new LinkedHashMap<>();
     private IEditorPart activeEditor;
     private DBECommandAdapter commandListener;
     private IFolderListener folderListener;
     private boolean hasPropertiesEditor;
-    private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<IEditorPart, IEditorActionBarContributor>();
+    private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
 
     public EntityEditor()
     {
@@ -808,7 +808,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
 
-        List<DBNDatabaseNode> nodeList = new ArrayList<DBNDatabaseNode>();
+        List<DBNDatabaseNode> nodeList = new ArrayList<>();
         for (DBNNode n = node; n != null; n = n.getParentNode()) {
             if (n instanceof DBNDatabaseNode) {
                 nodeList.add(0, (DBNDatabaseNode)n);

@@ -96,7 +96,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
 
     private DBEPersistAction[] createOrReplaceProcedureQuery(OracleDataType dataType)
     {
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<>();
         String header = OracleUtils.normalizeSourceName(dataType, false);
         if (!CommonUtils.isEmpty(header)) {
             actions.add(

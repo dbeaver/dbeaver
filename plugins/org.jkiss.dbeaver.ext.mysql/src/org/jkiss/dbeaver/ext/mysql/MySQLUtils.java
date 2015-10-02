@@ -37,7 +37,7 @@ public class MySQLUtils {
 
     static final Log log = Log.getLog(MySQLUtils.class);
 
-    private static Map<String, Integer> typeMap = new HashMap<String, Integer>();
+    private static Map<String, Integer> typeMap = new HashMap<>();
     public static final String COLUMN_POSTFIX_PRIV = "_priv";
 
     static {
@@ -86,7 +86,7 @@ public class MySQLUtils {
     {
         // Now collect all privileges columns
         try {
-            List<String> privs = new ArrayList<String>();
+            List<String> privs = new ArrayList<>();
             ResultSetMetaData rsMetaData = resultSet.getMetaData();
             int colCount = rsMetaData.getColumnCount();
             for (int i = 0; i < colCount; i++) {
@@ -105,7 +105,7 @@ public class MySQLUtils {
     public static Map<String, Boolean> collectPrivileges(List<String> privNames, ResultSet resultSet)
     {
         // Now collect all privileges columns
-        Map<String, Boolean> privs = new TreeMap<String, Boolean>();
+        Map<String, Boolean> privs = new TreeMap<>();
         for (String privName : privNames) {
             privs.put(privName, "Y".equals(JDBCUtils.safeGetString(resultSet, privName + COLUMN_POSTFIX_PRIV)));
         }

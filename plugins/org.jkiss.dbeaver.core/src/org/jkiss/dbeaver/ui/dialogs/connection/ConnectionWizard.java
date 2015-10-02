@@ -58,7 +58,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
     // protected final IProject project;
     protected final DBPDataSourceRegistry dataSourceRegistry;
-    private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<DriverDescriptor, DataSourceDescriptor>();
+    private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
 
     protected ConnectionWizard(DBPDataSourceRegistry dataSourceRegistry)
     {

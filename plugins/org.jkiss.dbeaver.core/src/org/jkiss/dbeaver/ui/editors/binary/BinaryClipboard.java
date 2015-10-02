@@ -175,7 +175,7 @@ public class BinaryClipboard {
     private static final File clipboardFile = new File(clipboardDir, "dbeaver-binary-clipboard.tmp");
     private static final long maxClipboardDataInMemory = 4 * 1024 * 1024;  // 4 Megs for byte[], 4 Megs for text
 
-    private final Map<File, Integer> filesReferencesCounter = new HashMap<File, Integer>();
+    private final Map<File, Integer> filesReferencesCounter = new HashMap<>();
     private final Clipboard clipboard;
 
     /**

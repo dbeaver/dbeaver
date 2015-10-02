@@ -46,8 +46,8 @@ public class VersionDescriptor {
     private String baseURL;
     private String releaseNotes;
 
-    private final List<DistributionDescriptor> distributions = new ArrayList<DistributionDescriptor>();
-    private final List<UpdateSiteDescriptor> updateSites = new ArrayList<UpdateSiteDescriptor>();
+    private final List<DistributionDescriptor> distributions = new ArrayList<>();
+    private final List<UpdateSiteDescriptor> updateSites = new ArrayList<>();
 
     public VersionDescriptor(String fileAddr)
         throws IOException

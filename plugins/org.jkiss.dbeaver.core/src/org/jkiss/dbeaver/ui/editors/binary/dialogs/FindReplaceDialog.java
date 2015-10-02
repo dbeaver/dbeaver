@@ -87,8 +87,8 @@ public class FindReplaceDialog extends Dialog {
         }
     };
 
-    private static final List<Object[]> findReplaceFindList = new ArrayList<Object[]>();
-    private static final List<Object[]> findReplaceReplaceList = new ArrayList<Object[]>();
+    private static final List<Object[]> findReplaceFindList = new ArrayList<>();
+    private static final List<Object[]> findReplaceReplaceList = new ArrayList<>();
 
     private HexEditControl editControl = null;
     private TextHexInputGroup lastFocused = null;

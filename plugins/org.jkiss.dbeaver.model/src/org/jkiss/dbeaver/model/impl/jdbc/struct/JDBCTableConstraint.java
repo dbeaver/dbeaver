@@ -150,7 +150,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             query.append(", ").append(descColumns);
         }
         query.append(" FROM ").append(DBUtils.getObjectFullName(keyColumn.getParentObject()));
-        List<String> conditions = new ArrayList<String>();
+        List<String> conditions = new ArrayList<>();
         if (keyPattern != null) {
             if (keyPattern instanceof CharSequence) {
                 if (((CharSequence)keyPattern).length() > 0) {
@@ -199,9 +199,9 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             if (dbStat.executeStatement()) {
                 DBCResultSet dbResult = dbStat.openResultSet();
                 try {
-                    List<DBDLabelValuePair> values = new ArrayList<DBDLabelValuePair>();
+                    List<DBDLabelValuePair> values = new ArrayList<>();
                     List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
-                    List<DBDValueHandler> colHandlers = new ArrayList<DBDValueHandler>(metaColumns.size());
+                    List<DBDValueHandler> colHandlers = new ArrayList<>(metaColumns.size());
                     for (DBCAttributeMetaData col : metaColumns) {
                         colHandlers.add(DBUtils.findValueHandler(session, col));
                     }

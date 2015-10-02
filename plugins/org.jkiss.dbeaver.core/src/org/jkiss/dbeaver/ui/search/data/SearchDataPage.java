@@ -60,7 +60,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private DatabaseNavigatorTree dataSourceTree;
 
     private SearchDataParams params = new SearchDataParams();
-    private Set<String> searchHistory = new LinkedHashSet<String>();
+    private Set<String> searchHistory = new LinkedHashSet<>();
     private CheckboxTreeManager checkboxTreeManager;
     private DBPPreferenceStore store;
 
@@ -311,7 +311,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
     protected List<DBSDataContainer> getCheckedSources()
     {
-        List<DBSDataContainer> result = new ArrayList<DBSDataContainer>();
+        List<DBSDataContainer> result = new ArrayList<>();
         for (Object sel : ((CheckboxTreeViewer)dataSourceTree.getViewer()).getCheckedElements()) {
             if (sel instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) sel).getObject();

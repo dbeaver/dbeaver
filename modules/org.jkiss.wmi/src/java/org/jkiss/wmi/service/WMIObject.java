@@ -49,14 +49,14 @@ public class WMIObject extends WMIQualifiedObject {
 
     public Collection<WMIObjectAttribute> getAttributes(long flags) throws WMIException
     {
-        List<WMIObjectAttribute> attributes = new ArrayList<WMIObjectAttribute>();
+        List<WMIObjectAttribute> attributes = new ArrayList<>();
         readAttributes(flags, attributes);
         return attributes;
     }
 
     public Collection<WMIObjectMethod> getMethods(long flags) throws WMIException
     {
-        List<WMIObjectMethod> methods = new ArrayList<WMIObjectMethod>();
+        List<WMIObjectMethod> methods = new ArrayList<>();
         readMethods(flags, methods);
         return methods;
     }

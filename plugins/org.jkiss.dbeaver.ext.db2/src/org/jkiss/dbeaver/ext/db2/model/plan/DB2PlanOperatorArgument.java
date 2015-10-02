@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class DB2PlanOperatorArgument implements DBPNamedObject {
 
-    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<String, String>(128); // See init below
+    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(128); // See init below
 
     private String argumentType;
     private String argumentValue;

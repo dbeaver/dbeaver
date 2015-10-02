@@ -69,7 +69,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     @Override
     public DBEPersistAction[] getPersistActions()
     {
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<>();
         boolean newUser = !getObject().isPersisted();
         if (newUser) {
             actions.add(

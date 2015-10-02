@@ -142,7 +142,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         @Override
         public Object[] getPossibleValues(JDBCTableColumn column)
         {
-            Set<String> typeNames = new TreeSet<String>();
+            Set<String> typeNames = new TreeSet<>();
             if (column.getDataSource() instanceof DBPDataTypeProvider) {
                 for (DBSDataType type : ((DBPDataTypeProvider) column.getDataSource()).getDataTypes()) {
                     if (type.getDataKind() != DBPDataKind.UNKNOWN && !CommonUtils.isEmpty(type.getName()) && Character.isLetter(type.getName().charAt(0))) {

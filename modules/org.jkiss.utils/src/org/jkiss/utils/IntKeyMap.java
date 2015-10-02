@@ -565,7 +565,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * Subclass overrides this to alter the behavior of put method.
 	 */
 	void addEntry(int hash, int key, VALUE value, int bucketIndex) {
-		table[bucketIndex] = new IntEntry<VALUE>(hash, key, value, table[bucketIndex]);
+		table[bucketIndex] = new IntEntry<>(hash, key, value, table[bucketIndex]);
 		if (size++ >= threshold)
 			resize(2 * table.length);
 	}
@@ -579,7 +579,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * clone, and readObject.
 	 */
 	void createEntry(int hash, int key, VALUE value, int bucketIndex) {
-		table[bucketIndex] = new IntEntry<VALUE>(hash, key, value, table[bucketIndex]);
+		table[bucketIndex] = new IntEntry<>(hash, key, value, table[bucketIndex]);
 		size++;
 	}
 

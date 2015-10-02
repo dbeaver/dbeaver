@@ -105,7 +105,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
             WMIObjectCollectorSink sink = new WMIObjectCollectorSink(monitor, getService());
             getService().enumInstances("__NAMESPACE", sink, WMIConstants.WBEM_FLAG_SHALLOW);
             sink.waitForFinish();
-            List<WMINamespace> children = new ArrayList<WMINamespace>();
+            List<WMINamespace> children = new ArrayList<>();
             for (WMIObject object : sink.getObjectList()) {
                 String nsName = CommonUtils.toString(object.getValue("Name"));
                 children.add(new WMINamespace(this, dataSource, nsName, null));
@@ -165,9 +165,9 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
 
             getService().enumClasses(null, sink, WMIConstants.WBEM_FLAG_DEEP);
             sink.waitForFinish();
-            List<WMIClass> allClasses = new ArrayList<WMIClass>();
-            List<WMIClass> allAssociations = new ArrayList<WMIClass>();
-            List<WMIClass> rootClasses = new ArrayList<WMIClass>();
+            List<WMIClass> allClasses = new ArrayList<>();
+            List<WMIClass> allAssociations = new ArrayList<>();
+            List<WMIClass> rootClasses = new ArrayList<>();
             for (WMIObject object : sink.getObjectList()) {
                 WMIClass superClass = null;
                 String superClassName = (String)object.getValue(WMIConstants.CLASS_PROP_SUPER_CLASS);
@@ -229,7 +229,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     @Override
     public Collection<? extends WMIContainer> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        List<WMIContainer> children = new ArrayList<WMIContainer>();
+        List<WMIContainer> children = new ArrayList<>();
         children.addAll(getNamespaces(monitor));
         children.addAll(getClasses(monitor));
         children.addAll(getAssociations(monitor));

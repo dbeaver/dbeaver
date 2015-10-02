@@ -134,7 +134,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.indexTablespace = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
         this.longTablespace = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
 
-        this.partitionCache = new JDBCObjectSimpleCache<DB2Table, DB2TablePartition>(DB2TablePartition.class, C_PT,
+        this.partitionCache = new JDBCObjectSimpleCache<>(DB2TablePartition.class, C_PT,
             schema.getName(), getName());
 
     }

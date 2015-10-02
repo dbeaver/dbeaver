@@ -80,7 +80,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             return new IContributionItem[0];
         }
 
-        List<IContributionItem> menu = new ArrayList<IContributionItem>();
+        List<IContributionItem> menu = new ArrayList<>();
         if (structuredSelection instanceof IResultSetSelection) {
             // Results
             makeResultSetContributions(menu, (IResultSetSelection) structuredSelection);
@@ -372,7 +372,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             if (CommonUtils.isEmpty(keyAttributes)) {
                 return getAllAttributes(monitor);
             }
-            List<DBSEntityAttribute> valueAttributes = new ArrayList<DBSEntityAttribute>(getAllAttributes(monitor));
+            List<DBSEntityAttribute> valueAttributes = new ArrayList<>(getAllAttributes(monitor));
             for (Iterator<DBSEntityAttribute> iter = valueAttributes.iterator(); iter.hasNext(); ) {
                 if (keyAttributes.contains(iter.next())) {
                     iter.remove();

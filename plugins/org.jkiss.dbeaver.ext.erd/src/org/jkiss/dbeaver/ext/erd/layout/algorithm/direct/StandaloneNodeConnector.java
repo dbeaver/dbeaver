@@ -84,7 +84,7 @@ public class StandaloneNodeConnector {
             });
 
             // Find unconnected nodes
-            List<Node> unconnectedNodes = new ArrayList<Node>();
+            List<Node> unconnectedNodes = new ArrayList<>();
             for (int i = 0; i < nodeList.size(); i++) {
                 Node sourceNode = (Node) nodeList.get(i);
                 if (sourceNode.outgoing.size() + sourceNode.incoming.size() == 0) {

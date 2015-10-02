@@ -452,7 +452,7 @@ public enum DB2ObjectType implements DBSObjectType {
     // ---
     // Init
     // ---
-    private static Map<String, DB2ObjectType> typeMap = new HashMap<String, DB2ObjectType>();
+    private static Map<String, DB2ObjectType> typeMap = new HashMap<>();
 
     static {
         for (DB2ObjectType type : values()) {

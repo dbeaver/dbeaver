@@ -46,7 +46,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
     private EditShellCommandsDialogPage pageEvents;
-    private List<WizardPrefPage> prefPages = new ArrayList<WizardPrefPage>();
+    private List<WizardPrefPage> prefPages = new ArrayList<>();
 
     /**
      * Constructor for SampleNewWizard.

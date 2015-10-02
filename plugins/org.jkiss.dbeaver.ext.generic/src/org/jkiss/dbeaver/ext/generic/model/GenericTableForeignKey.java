@@ -73,7 +73,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     public void addColumn(GenericTableForeignKeyColumnTable column)
     {
         if (columns == null) {
-            columns = new ArrayList<GenericTableForeignKeyColumnTable>();
+            columns = new ArrayList<>();
         }
         this.columns.add(column);
     }

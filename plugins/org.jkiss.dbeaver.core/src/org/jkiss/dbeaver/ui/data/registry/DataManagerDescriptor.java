@@ -46,7 +46,7 @@ public class DataManagerDescriptor extends AbstractDescriptor
 
     private String id;
     private ObjectType implType;
-    private final List<SupportInfo> supportInfos = new ArrayList<SupportInfo>();
+    private final List<SupportInfo> supportInfos = new ArrayList<>();
 
     private static class SupportInfo {
         DBPDataKind dataKind;

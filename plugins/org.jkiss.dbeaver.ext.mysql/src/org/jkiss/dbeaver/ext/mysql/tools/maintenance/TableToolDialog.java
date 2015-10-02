@@ -56,7 +56,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<MySQLTable>
 
             @Override
             public void processObjectResults(MySQLTable object, DBCResultSet resultSet) throws DBCException {
-                Map<String, String> statusMap = new LinkedHashMap<String, String>();
+                Map<String, String> statusMap = new LinkedHashMap<>();
                 while (resultSet.nextRow()) {
                     statusMap.put(
                         CommonUtils.toString(resultSet.getAttributeValue("Msg_type")),

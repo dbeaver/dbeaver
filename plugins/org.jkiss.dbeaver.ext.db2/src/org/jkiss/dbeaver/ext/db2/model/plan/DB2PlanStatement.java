@@ -162,7 +162,7 @@ public class DB2PlanStatement {
     private void loadChildren(JDBCSession session) throws SQLException
     {
 
-        mapDataObjects = new HashMap<String, DB2PlanObject>(32);
+        mapDataObjects = new HashMap<>(32);
         JDBCPreparedStatement sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OBJECT",
             "OBJECT_SCHEMA,OBJECT_NAME"));
         try {
@@ -181,7 +181,7 @@ public class DB2PlanStatement {
             sqlStmt.close();
         }
 
-        mapOperators = new HashMap<String, DB2PlanOperator>(64);
+        mapOperators = new HashMap<>(64);
         sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID"));
         try {
             setQueryParameters(sqlStmt);
@@ -202,7 +202,7 @@ public class DB2PlanStatement {
             sqlStmt.close();
         }
 
-        listStreams = new ArrayList<DB2PlanStream>();
+        listStreams = new ArrayList<>();
         sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC"));
         try {
             setQueryParameters(sqlStmt);

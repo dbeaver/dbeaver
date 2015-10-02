@@ -88,7 +88,7 @@ public class ContentValueManager extends BaseValueManager {
         } else if (value instanceof DBDContent) {
             DBDContent content = (DBDContent)value;
             boolean isText = ContentUtils.isTextContent(content);
-            List<ContentEditorPart> parts = new ArrayList<ContentEditorPart>();
+            List<ContentEditorPart> parts = new ArrayList<>();
             if (isText) {
                 parts.add(new ContentTextEditorPart());
                 if (ContentUtils.isXML(content)) {

@@ -51,7 +51,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button csAutoInsertCheck;
     private Combo csInsertCase;
     private Button csHideDuplicates;
-    private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<RulerColumnDescriptor, Button>();
+    private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<>();
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
     private Button acBracketsCheck;

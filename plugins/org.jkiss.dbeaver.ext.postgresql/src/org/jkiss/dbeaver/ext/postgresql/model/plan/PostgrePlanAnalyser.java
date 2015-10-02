@@ -108,7 +108,7 @@ public class PostgrePlanAnalyser implements DBCPlan {
     }
 
     private void parsePlan(SQLXML planXML) throws SQLException, XMLException {
-        rootNodes = new ArrayList<DBCPlanNode>();
+        rootNodes = new ArrayList<>();
         Document planDocument = XMLUtils.parseDocument(planXML.getBinaryStream());
         Element queryElement = XMLUtils.getChildElement(planDocument.getDocumentElement(), "Query");
         for (Element planElement : XMLUtils.getChildElementList(queryElement, "Plan")) {

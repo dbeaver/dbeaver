@@ -30,8 +30,8 @@ import java.util.Map;
 
 public class TreeLoadNode implements ILabelProvider {
 
-    private static final Map<Object, Object> loadingFiles = new HashMap<Object, Object>();
-    private static final Map<Object, Object> placeHolders = new HashMap<Object, Object>();
+    private static final Map<Object, Object> loadingFiles = new HashMap<>();
+    private static final Map<Object, Object> placeHolders = new HashMap<>();
 
     public static final Object LOADING_FAMILY = new Object();
 

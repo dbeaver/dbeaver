@@ -41,7 +41,7 @@ public class DBDRowIdentifier implements DBPObject {
 
     private final DBSEntity entity;
     private final DBSEntityReferrer entityIdentifier;
-    private final List<DBDAttributeBinding> attributes = new ArrayList<DBDAttributeBinding>();
+    private final List<DBDAttributeBinding> attributes = new ArrayList<>();
 
     public DBDRowIdentifier(@NotNull DBSEntity entity, @NotNull DBSEntityReferrer entityIdentifier)
     {

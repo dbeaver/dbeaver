@@ -44,7 +44,7 @@ import java.util.*;
 public class HexPreferencesManager {
 
     static final int itemsDisplayed = 9;  // Number of font names displayed in list
-    static final java.util.Set<Integer> scalableSizes = new TreeSet<Integer>(
+    static final java.util.Set<Integer> scalableSizes = new TreeSet<>(
         Arrays.asList(6, 7, 8, 9, 10, 11, 12, 13, 14, 16, 18, 22, 32, 72));
 
     private static final String TEXT_BOLD = CoreMessages.editor_binary_hex_font_style_bold;
@@ -104,7 +104,7 @@ public class HexPreferencesManager {
     public HexPreferencesManager(FontData aFontData)
     {
         sampleFontData = aFontData;
-        fontsSorted = new TreeMap<String, Set<Integer>>();
+        fontsSorted = new TreeMap<>();
     }
 
 
@@ -291,8 +291,8 @@ public class HexPreferencesManager {
 
     void populateFixedCharWidthFonts()
     {
-        fontsNonScalable = new ArrayList<FontData>(Arrays.asList(Display.getCurrent().getFontList(null, false)));
-        fontsScalable = new ArrayList<FontData>(Arrays.asList(Display.getCurrent().getFontList(null, true)));
+        fontsNonScalable = new ArrayList<>(Arrays.asList(Display.getCurrent().getFontList(null, false)));
+        fontsScalable = new ArrayList<>(Arrays.asList(Display.getCurrent().getFontList(null, true)));
         if (fontsNonScalable.size() == 0 && fontsScalable.size() == 0) {
             fontsNonScalable = null;
             fontsScalable = null;
@@ -300,7 +300,7 @@ public class HexPreferencesManager {
             return;
         }
         fontsListCurrent = fontsNonScalable;
-        fontsRejected = new HashSet<String>();
+        fontsRejected = new HashSet<>();
         fontsGc = new GC(parent);
         Display.getCurrent().asyncExec(new Runnable() {
             @Override
@@ -334,7 +334,7 @@ public class HexPreferencesManager {
                 } else {
                     Set<Integer> heights = fontsSorted.get(fontData.getName());
                     if (heights == null) {
-                        heights = new TreeSet<Integer>();
+                        heights = new TreeSet<>();
                         fontsSorted.put(fontData.getName(), heights);
                     }
                     heights.add(fontData.getHeight());

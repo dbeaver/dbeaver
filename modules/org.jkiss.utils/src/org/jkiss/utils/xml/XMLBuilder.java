@@ -68,7 +68,7 @@ public class XMLBuilder
         public void addNamespace(String nsURI, String nsPrefix)
         {
             if (nsStack == null) {
-                nsStack = new HashMap<String, String>();
+                nsStack = new HashMap<>();
             }
             nsStack.put(nsURI, nsPrefix);
         }
@@ -102,7 +102,7 @@ public class XMLBuilder
     private Element element = null;
     private boolean butify = false;
 
-    private List<Element> trashElements = new java.util.ArrayList<Element>();
+    private List<Element> trashElements = new java.util.ArrayList<>();
 
     public XMLBuilder(
         java.io.OutputStream stream,

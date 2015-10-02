@@ -47,7 +47,7 @@ public class DataTypeProviderRegistry implements DBDValueHandlerRegistry
         return instance;
     }
 
-    private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<DataTypeProviderDescriptor>();
+    private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<>();
 
     private DataTypeProviderRegistry()
     {

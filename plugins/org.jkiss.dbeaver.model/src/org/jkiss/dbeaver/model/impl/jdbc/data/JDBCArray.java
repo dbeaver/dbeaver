@@ -116,7 +116,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
         try {
             DBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, dbResult, ModelMessages.model_jdbc_array_result_set, true);
             try {
-                List<Object> data = new ArrayList<Object>();
+                List<Object> data = new ArrayList<>();
                 while (dbResult.next()) {
                     // Fetch second column - it contains value
                     data.add(valueHandler.fetchValueObject(session, resultSet, type, 1));

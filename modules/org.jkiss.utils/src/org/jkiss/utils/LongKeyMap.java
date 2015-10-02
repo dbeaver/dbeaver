@@ -565,7 +565,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 * Subclass overrides this to alter the behavior of put method.
 	 */
 	void addEntry(int hash, long key, VALUE value, int bucketIndex) {
-		table[bucketIndex] = new LongEntry<VALUE>(hash, key, value, table[bucketIndex]);
+		table[bucketIndex] = new LongEntry<>(hash, key, value, table[bucketIndex]);
 		if (size++ >= threshold)
 			resize(2 * table.length);
 	}
@@ -579,7 +579,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	 * clone, and readObject.
 	 */
 	void createEntry(int hash, long key, VALUE value, int bucketIndex) {
-		table[bucketIndex] = new LongEntry<VALUE>(hash, key, value, table[bucketIndex]);
+		table[bucketIndex] = new LongEntry<>(hash, key, value, table[bucketIndex]);
 		size++;
 	}
 

@@ -36,7 +36,7 @@ public class NetworkHandlerRegistry
         return instance;
     }
 
-    private final List<NetworkHandlerDescriptor> descriptors = new ArrayList<NetworkHandlerDescriptor>();
+    private final List<NetworkHandlerDescriptor> descriptors = new ArrayList<>();
 
     private NetworkHandlerRegistry(IExtensionRegistry registry)
     {

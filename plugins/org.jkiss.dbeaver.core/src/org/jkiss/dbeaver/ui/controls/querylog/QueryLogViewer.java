@@ -288,8 +288,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private final IWorkbenchPartSite site;
     private Table logTable;
-    private java.util.List<ColumnDescriptor> columns = new ArrayList<ColumnDescriptor>();
-    private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<TableItem>();
+    private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
+    private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
     private QMEventFilter filter;
 
     private final Color colorLightGreen;

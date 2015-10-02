@@ -56,7 +56,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     private static final DBSForeignKeyModifyRule[] FK_RULES;
 
     static {
-        List<DBSForeignKeyModifyRule> rules = new ArrayList<DBSForeignKeyModifyRule>(DB2DeleteUpdateRule.values().length);
+        List<DBSForeignKeyModifyRule> rules = new ArrayList<>(DB2DeleteUpdateRule.values().length);
         for (DB2DeleteUpdateRule db2DeleteUpdateRule : DB2DeleteUpdateRule.values()) {
             rules.add(db2DeleteUpdateRule.getRule());
         }
@@ -107,7 +107,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
 
         foreignKey.setName(fkName);
 
-        List<DB2TableKeyColumn> columns = new ArrayList<DB2TableKeyColumn>(editDialog.getColumns().size());
+        List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
         DB2TableKeyColumn column;
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {

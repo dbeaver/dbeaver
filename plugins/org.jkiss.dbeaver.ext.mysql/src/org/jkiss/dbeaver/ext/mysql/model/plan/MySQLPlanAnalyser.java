@@ -73,7 +73,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    rootNodes = new ArrayList<DBCPlanNode>();
+                    rootNodes = new ArrayList<>();
                     while (dbResult.next()) {
                         MySQLPlanNode node = new MySQLPlanNode(null, dbResult);
                         rootNodes.add(node);

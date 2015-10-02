@@ -34,7 +34,7 @@ public abstract class AbstractContextDescriptor extends AbstractDescriptor
 {
     private static final String OBJECT_TYPE = "objectType";
 
-    private List<ObjectType> objectTypes = new ArrayList<ObjectType>();
+    private List<ObjectType> objectTypes = new ArrayList<>();
 
     public AbstractContextDescriptor(IConfigurationElement config)
     {

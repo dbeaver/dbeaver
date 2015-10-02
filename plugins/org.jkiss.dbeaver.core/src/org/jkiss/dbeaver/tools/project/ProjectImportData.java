@@ -40,7 +40,7 @@ class ProjectImportData {
     private File importFile = null;
     private boolean importDriverLibraries = true;
     private Document metaTree;
-    private Map<String, String> projectNameMap = new HashMap<String, String>();
+    private Map<String, String> projectNameMap = new HashMap<>();
 
     public File getImportFile()
     {

@@ -98,8 +98,8 @@ public class CheckboxTreeManager implements ICheckStateListener {
     }
 
     private void updateElementHierarchy(final DBRProgressMonitor monitor, final Object element, final boolean checked, final boolean change) throws DBException {
-        final List<DBNDatabaseNode> targetChildren = new ArrayList<DBNDatabaseNode>();
-        final List<DBNDatabaseNode> targetContainers = new ArrayList<DBNDatabaseNode>();
+        final List<DBNDatabaseNode> targetChildren = new ArrayList<>();
+        final List<DBNDatabaseNode> targetContainers = new ArrayList<>();
         collectChildren(monitor, element, targetChildren, targetContainers, !change);
 
         // Run ui
@@ -171,7 +171,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
     }
 
     public void updateCheckStates() {
-        Set<DBNDatabaseNode> parentList = new LinkedHashSet<DBNDatabaseNode>();
+        Set<DBNDatabaseNode> parentList = new LinkedHashSet<>();
         for (Object element : viewer.getCheckedElements()) {
             for (DBNNode node = ((DBNDatabaseNode)element).getParentNode(); node != null; node = node.getParentNode()) {
                 if (node instanceof DBNDatabaseNode) {

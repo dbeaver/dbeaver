@@ -153,7 +153,7 @@ public enum OracleObjectType implements DBSObjectType {
     
     static final Log log = Log.getLog(OracleObjectType.class);
 
-    private static Map<String, OracleObjectType> typeMap = new HashMap<String, OracleObjectType>();
+    private static Map<String, OracleObjectType> typeMap = new HashMap<>();
 
     static {
         for (OracleObjectType type : values()) {

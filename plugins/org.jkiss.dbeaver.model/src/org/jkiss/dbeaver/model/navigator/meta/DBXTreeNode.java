@@ -142,7 +142,7 @@ public abstract class DBXTreeNode
                 }
             }
             if (hasExpr) {
-                List<DBXTreeNode> filteredChildren = new ArrayList<DBXTreeNode>(children.size());
+                List<DBXTreeNode> filteredChildren = new ArrayList<>(children.size());
                 for (DBXTreeNode child : children) {
                     if (child.isVisible(context)) {
                         filteredChildren.add(child);
@@ -162,7 +162,7 @@ public abstract class DBXTreeNode
     public void addChild(DBXTreeNode child)
     {
         if (this.children == null) {
-            this.children = new ArrayList<DBXTreeNode>();
+            this.children = new ArrayList<>();
         }
         this.children.add(child);
     }
@@ -190,7 +190,7 @@ public abstract class DBXTreeNode
     public void addIcon(DBXTreeIcon icon)
     {
         if (this.icons == null) {
-            this.icons = new ArrayList<DBXTreeIcon>();
+            this.icons = new ArrayList<>();
         }
         this.icons.add(icon);
     }

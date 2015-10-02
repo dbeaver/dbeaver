@@ -46,7 +46,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     private DBSDataManipulator target;
     private String targetName;
     private DatabaseMappingType mappingType;
-    private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<DatabaseMappingAttribute>();
+    private List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
 
     public DatabaseMappingContainer(DBSDataContainer source)
     {

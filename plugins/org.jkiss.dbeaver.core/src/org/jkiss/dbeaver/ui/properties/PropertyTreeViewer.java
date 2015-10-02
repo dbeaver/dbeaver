@@ -211,7 +211,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
     private Map<String, TreeNode> loadTreeNodes(TreeNode parent, DBPPropertySource propertySource)
     {
-        Map<String, TreeNode> categories = new LinkedHashMap<String, TreeNode>();
+        Map<String, TreeNode> categories = new LinkedHashMap<>();
         final DBPPropertyDescriptor[] props = propertySource.getPropertyDescriptors2();
         for (DBPPropertyDescriptor prop : props) {
             String categoryName = prop.getCategory();
@@ -587,7 +587,7 @@ public class PropertyTreeViewer extends TreeViewer {
         final DBPPropertySource propertySource;
         final DBPPropertyDescriptor property;
         final String category;
-        final List<TreeNode> children = new ArrayList<TreeNode>();
+        final List<TreeNode> children = new ArrayList<>();
 
         private TreeNode(TreeNode parent, DBPPropertySource propertySource, DBPPropertyDescriptor property, String category)
         {

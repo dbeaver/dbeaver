@@ -91,7 +91,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
 
     private DBEPersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
     {
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<>();
         String header = OracleUtils.normalizeSourceName(pack, false);
         if (!CommonUtils.isEmpty(header)) {
             actions.add(

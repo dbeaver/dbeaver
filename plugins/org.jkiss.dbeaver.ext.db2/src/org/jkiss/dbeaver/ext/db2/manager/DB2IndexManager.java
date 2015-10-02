@@ -54,7 +54,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2Table> {
     private static final List<DBSIndexType> IX_TYPES;
 
     static {
-        IX_TYPES = new ArrayList<DBSIndexType>(DB2IndexType.values().length);
+        IX_TYPES = new ArrayList<>(DB2IndexType.values().length);
         for (DB2IndexType db2IndexType : DB2IndexType.values()) {
             if (db2IndexType.isValidForCreation()) {
                 IX_TYPES.add(db2IndexType.getDBSIndexType());

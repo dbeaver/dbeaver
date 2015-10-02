@@ -111,7 +111,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         if (listener == null) return;
 
         if (selectionListeners == null) {
-            selectionListeners = new HashSet<ISelectionChangedListener>();
+            selectionListeners = new HashSet<>();
         }
         selectionListeners.add(listener);
     }

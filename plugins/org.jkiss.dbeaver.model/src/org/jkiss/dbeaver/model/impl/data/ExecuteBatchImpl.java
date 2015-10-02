@@ -42,7 +42,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     static final Log log = Log.getLog(ExecuteBatchImpl.class);
 
     protected final DBSAttributeBase[] attributes;
-    protected final List<Object[]> values = new ArrayList<Object[]>();
+    protected final List<Object[]> values = new ArrayList<>();
     protected final DBDDataReceiver keysReceiver;
     protected final boolean reuseStatement;
 

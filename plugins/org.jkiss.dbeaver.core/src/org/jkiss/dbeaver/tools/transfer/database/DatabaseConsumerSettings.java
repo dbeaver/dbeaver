@@ -51,7 +51,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
 
     private String containerNodePath;
     private DBNDatabaseNode containerNode;
-    private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<DBSDataContainer, DatabaseMappingContainer>();
+    private Map<DBSDataContainer, DatabaseMappingContainer> dataMappings = new LinkedHashMap<>();
     private boolean openNewConnections = true;
     private boolean useTransactions = true;
     private int commitAfterRows = 10000;

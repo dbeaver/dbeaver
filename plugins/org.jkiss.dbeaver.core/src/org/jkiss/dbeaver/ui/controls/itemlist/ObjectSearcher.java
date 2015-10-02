@@ -53,7 +53,7 @@ public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> impleme
                 for (OBJECT_TYPE node : nodes) {
                     if (matchesSearch(node)) {
                         if (curSearchResult == null) {
-                            curSearchResult = new LinkedHashSet<OBJECT_TYPE>(50);
+                            curSearchResult = new LinkedHashSet<>(50);
                         }
                         curSearchResult.add(node);
                         updateObject(node);

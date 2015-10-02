@@ -82,7 +82,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
 
         final ObjectCreateCommand createCommand = makeCreateCommand(newObject);
         commandContext.getUserParams().put(newObject, createCommand);
-        commandContext.addCommand(createCommand, new CreateObjectReflector<OBJECT_TYPE>(this), true);
+        commandContext.addCommand(createCommand, new CreateObjectReflector<>(this), true);
 
         return newObject;
     }
@@ -92,7 +92,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
     {
         commandContext.addCommand(
             new ObjectDeleteCommand(object, ModelMessages.model_jdbc_delete_object),
-            new DeleteObjectReflector<OBJECT_TYPE>(this),
+            new DeleteObjectReflector<>(this),
             true);
     }
 

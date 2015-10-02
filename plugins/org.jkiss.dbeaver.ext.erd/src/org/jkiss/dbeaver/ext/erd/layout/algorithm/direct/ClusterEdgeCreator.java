@@ -42,8 +42,8 @@ public class ClusterEdgeCreator {
     DirectedGraph graph;
 
     //List edgesAdded;
-    List<Node> encountered = new ArrayList<Node>();
-    List<Cluster> clusters = new ArrayList<Cluster>();
+    List<Node> encountered = new ArrayList<>();
+    List<Cluster> clusters = new ArrayList<>();
 
     Cluster currentCluster = null;
 
@@ -195,7 +195,7 @@ public class ClusterEdgeCreator {
      */
     private class Cluster {
 
-        List<Node> set = new ArrayList<Node>();
+        List<Node> set = new ArrayList<>();
 
         public String toString() {
             return set.toString();

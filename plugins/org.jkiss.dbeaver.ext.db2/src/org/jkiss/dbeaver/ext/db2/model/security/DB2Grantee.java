@@ -57,7 +57,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
         super(dataSource, true);
         this.name = JDBCUtils.safeGetStringTrimmed(resultSet, keyColName);
 
-        cachePerObject = new HashMap<Class<?>, Collection<? extends DB2AuthBase>>(12);
+        cachePerObject = new HashMap<>(12);
     }
 
     // -----------------
@@ -188,7 +188,7 @@ public abstract class DB2Grantee extends DB2GlobalObject implements DBPRefreshab
     {
         Collection<T> listAuths = (Collection<T>) cachePerObject.get(authClass.getClass());
         if (listAuths == null) {
-            listAuths = new ArrayList<T>();
+            listAuths = new ArrayList<>();
             for (DB2AuthBase db2Auth : authCache.getAllObjects(monitor, this)) {
                 if (authClass.isInstance(db2Auth)) {
                     listAuths.add((T) db2Auth);

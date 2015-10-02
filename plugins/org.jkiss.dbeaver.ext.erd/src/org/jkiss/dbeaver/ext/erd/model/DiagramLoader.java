@@ -125,8 +125,8 @@ public class DiagramLoader
         final String type;
         final TableLoadInfo pkTable;
         final TableLoadInfo fkTable;
-        final Map<String, String> columns = new LinkedHashMap<String, String>();
-        final List<Point> bends = new ArrayList<Point>();
+        final Map<String, String> columns = new LinkedHashMap<>();
+        final List<Point> bends = new ArrayList<>();
 
         private RelationLoadInfo(String name, String type, TableLoadInfo pkTable, TableLoadInfo fkTable)
         {
@@ -138,7 +138,7 @@ public class DiagramLoader
     }
 
     private static class DataSourceObjects {
-        List<ERDEntity> entities = new ArrayList<ERDEntity>();
+        List<ERDEntity> entities = new ArrayList<>();
     }
 
     public static void load(DBRProgressMonitor monitor, IProject project, DiagramPart diagramPart, InputStream in)
@@ -166,9 +166,9 @@ public class DiagramLoader
             throw new DBException("Unsupported diagram version: " + diagramVersion);
         }
 
-        List<TableLoadInfo> tableInfos = new ArrayList<TableLoadInfo>();
-        List<RelationLoadInfo> relInfos = new ArrayList<RelationLoadInfo>();
-        Map<String, TableLoadInfo> tableMap = new HashMap<String, TableLoadInfo>();
+        List<TableLoadInfo> tableInfos = new ArrayList<>();
+        List<RelationLoadInfo> relInfos = new ArrayList<>();
+        Map<String, TableLoadInfo> tableMap = new HashMap<>();
 
         final Element entitiesElem = XMLUtils.getChildElement(diagramElem, TAG_ENTITIES);
         if (entitiesElem != null) {
@@ -208,7 +208,7 @@ public class DiagramLoader
                     String tableId = entityElem.getAttribute(ATTR_ID);
                     String tableName = entityElem.getAttribute(ATTR_NAME);
                     monitor.subTask("Load " + tableName);
-                    List<String> path = new ArrayList<String>();
+                    List<String> path = new ArrayList<>();
                     for (Element pathElem : XMLUtils.getChildElementList(entityElem, TAG_PATH)) {
                         path.add(0, pathElem.getAttribute(ATTR_NAME));
                     }
@@ -329,7 +329,7 @@ public class DiagramLoader
         }
 
         // Fill entities
-        List<DBSEntity> tableList = new ArrayList<DBSEntity>();
+        List<DBSEntity> tableList = new ArrayList<>();
         for (TableLoadInfo info : tableInfos) {
             tableList.add(info.table);
         }
@@ -375,7 +375,7 @@ public class DiagramLoader
         throws IOException
     {
         // Prepare DS objects map
-        Map<DBSDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<DBSDataSourceContainer, DataSourceObjects>();
+        Map<DBSDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
         if (diagram != null) {
             for (ERDEntity erdEntity : diagram.getEntities()) {
                 final DBSDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
@@ -388,7 +388,7 @@ public class DiagramLoader
             }
         }
 
-        Map<ERDEntity, TableSaveInfo> infoMap = new IdentityHashMap<ERDEntity, TableSaveInfo>();
+        Map<ERDEntity, TableSaveInfo> infoMap = new IdentityHashMap<>();
 
         // Save as XML
         XMLBuilder xml = new XMLBuilder(out, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);

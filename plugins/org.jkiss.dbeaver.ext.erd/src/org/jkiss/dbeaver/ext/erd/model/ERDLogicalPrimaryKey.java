@@ -36,7 +36,7 @@ public class ERDLogicalPrimaryKey implements DBSEntityConstraint,DBSEntityReferr
     private DBSEntity entity;
     private String name;
     private String description;
-    private List<? extends DBSTableConstraintColumn> columns = new ArrayList<DBSTableConstraintColumn>();
+    private List<? extends DBSTableConstraintColumn> columns = new ArrayList<>();
 
     public ERDLogicalPrimaryKey(ERDEntity entity, String name, String description)
     {

@@ -69,7 +69,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     public <SUB_TYPE> Collection<SUB_TYPE> getTypedObjects(DBRProgressMonitor monitor, OWNER owner, Class<SUB_TYPE> type)
         throws DBException
     {
-        List<SUB_TYPE> result = new ArrayList<SUB_TYPE>();
+        List<SUB_TYPE> result = new ArrayList<>();
         for (OBJECT object : getAllObjects(monitor, owner)) {
             if (type.isInstance(object)) {
                 result.add(type.cast(object));
@@ -156,7 +156,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     private synchronized Map<String, OBJECT> getObjectMap()
     {
         if (objectMap == null) {
-            this.objectMap = new HashMap<String, OBJECT>();
+            this.objectMap = new HashMap<>();
             for (OBJECT object : objectList) {
                 this.objectMap.put(
                     caseSensitive ?

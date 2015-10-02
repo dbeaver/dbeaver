@@ -50,7 +50,7 @@ public enum QMObjectType {
 
     public static String toString(Collection<QMObjectType> objectTypes)
     {
-        List<String> names = new ArrayList<String>(objectTypes.size());
+        List<String> names = new ArrayList<>(objectTypes.size());
         for (QMObjectType type : objectTypes) {
             names.add(type.name());
         }
@@ -59,7 +59,7 @@ public enum QMObjectType {
 
     public static Collection<QMObjectType> fromString(String str)
     {
-        List<QMObjectType> objectTypes = new ArrayList<QMObjectType>();
+        List<QMObjectType> objectTypes = new ArrayList<>();
         for (String otName : CommonUtils.splitString(str, ',')) {
             try {
                 objectTypes.add(QMObjectType.valueOf(otName));

@@ -69,7 +69,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     {
         final OracleTable table = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(2);
+        List<DBEPersistAction> actions = new ArrayList<>(2);
         if (!hasComment || command.getProperties().size() > 1) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$

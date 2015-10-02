@@ -40,7 +40,7 @@ public class QMControllerImpl implements QMController {
 
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;
-    private List<QMExecutionHandler> handlers = new ArrayList<QMExecutionHandler>();
+    private List<QMExecutionHandler> handlers = new ArrayList<>();
 
     public QMControllerImpl() {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(

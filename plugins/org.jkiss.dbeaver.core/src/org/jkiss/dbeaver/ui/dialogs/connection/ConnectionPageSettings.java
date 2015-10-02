@@ -60,7 +60,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private IDataSourceConnectionEditor connectionEditor;
     @Nullable
     private DataSourceDescriptor dataSource;
-    private final Set<DataSourceDescriptor> activated = new HashSet<DataSourceDescriptor>();
+    private final Set<DataSourceDescriptor> activated = new HashSet<>();
     private IDialogPage[] subPages, extraPages;
 
     /**
@@ -168,7 +168,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
             if (wizard.isNew() && !ArrayUtils.isEmpty(subPages)) {
                 // Create tab folder
-                List<IDialogPage> allPages = new ArrayList<IDialogPage>();
+                List<IDialogPage> allPages = new ArrayList<>();
                 allPages.add(connectionEditor);
                 Collections.addAll(allPages, subPages);
 

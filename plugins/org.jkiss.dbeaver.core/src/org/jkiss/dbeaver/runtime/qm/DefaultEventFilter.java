@@ -40,7 +40,7 @@ public class DefaultEventFilter implements QMEventFilter {
     private boolean showTransactions = false;
     private boolean showQueries = false;
 
-    private java.util.List<DBCExecutionPurpose> showPurposes = new ArrayList<DBCExecutionPurpose>();
+    private java.util.List<DBCExecutionPurpose> showPurposes = new ArrayList<>();
 
     public DefaultEventFilter()
     {

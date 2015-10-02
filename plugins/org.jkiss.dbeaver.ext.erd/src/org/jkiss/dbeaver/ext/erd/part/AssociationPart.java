@@ -135,7 +135,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         conn.setConnectionRouter(cLayer.getConnectionRouter());
         if (!CommonUtils.isEmpty(association.getInitBends())) {
-            List<AbsoluteBendpoint> connBends = new ArrayList<AbsoluteBendpoint>();
+            List<AbsoluteBendpoint> connBends = new ArrayList<>();
             for (Point bend : association.getInitBends()) {
                 connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
             }
@@ -149,7 +149,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             int entityWidth = figureSize.width;
             int entityHeight = figureSize.height;
 
-            List<RelativeBendpoint> bends = new ArrayList<RelativeBendpoint>();
+            List<RelativeBendpoint> bends = new ArrayList<>();
             {
                 RelativeBendpoint bp1 = new RelativeBendpoint(conn);
                 bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
@@ -211,7 +211,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     private List<AttributePart> getEntityAttributes(EntityPart source, Collection<? extends DBSEntityAttribute> columns)
     {
-        List<AttributePart> erdColumns = new ArrayList<AttributePart>(source.getChildren());
+        List<AttributePart> erdColumns = new ArrayList<>(source.getChildren());
         for (Iterator<AttributePart> iter = erdColumns.iterator(); iter.hasNext(); ) {
             if (!columns.contains(iter.next().getColumn().getObject())) {
                 iter.remove();
@@ -267,9 +267,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         if (constraint instanceof List) {
             // Make constraint copy
             List<Bendpoint> curList = (List<Bendpoint>) constraint;
-            return new ArrayList<Bendpoint>(curList);
+            return new ArrayList<>(curList);
         } else {
-            return new ArrayList<Bendpoint>();
+            return new ArrayList<>();
         }
     }
 
