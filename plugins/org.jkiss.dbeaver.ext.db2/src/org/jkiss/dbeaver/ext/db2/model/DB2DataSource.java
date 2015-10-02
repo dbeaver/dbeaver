@@ -18,17 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.db2.DB2Constants;
-import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
-import org.jkiss.dbeaver.ext.db2.DB2Messages;
-import org.jkiss.dbeaver.ext.db2.DB2SQLDialect;
-import org.jkiss.dbeaver.ext.db2.DB2Utils;
+import org.jkiss.dbeaver.ext.db2.*;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
@@ -53,19 +49,18 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.SQLException;
@@ -233,7 +228,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
     {
-        final JDBCDataSourceInfo info = new JDBCDataSourceInfo(metaData);
+        final DB2DataSourceInfo info = new DB2DataSourceInfo(metaData);
 
         // Compute Database version
         version = DB2Constants.DB2v9_1; // Be defensive, assume lowest possible version
