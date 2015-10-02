@@ -49,19 +49,23 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         @Override
         public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
             final String typeName = column.getTypeName();
-            boolean useMaxLength = false;
             final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
+            sql.append(' ').append(typeName);
             if (dataType == null) {
                 log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
             } else if (dataType.getDataKind() == DBPDataKind.STRING) {
                 if (typeName.indexOf('(') == -1) {
-                    useMaxLength = true;
+                    final long maxLength = column.getMaxLength();
+                    if (maxLength > 0) {
+                        sql.append('(').append(maxLength).append(')');
+                    }
                 }
-            }
-            final long maxLength = column.getMaxLength();
-            sql.append(' ').append(typeName);
-            if (useMaxLength && maxLength > 0) {
-                sql.append('(').append(maxLength).append(')');
+            } else if (typeName.equalsIgnoreCase("DECIMAL")) {
+                int scale = column.getScale();
+                int precision = column.getPrecision();
+                if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
+                    sql.append('(').append(precision).append(',').append(scale).append(')');
+                }
             }
         }
     };
