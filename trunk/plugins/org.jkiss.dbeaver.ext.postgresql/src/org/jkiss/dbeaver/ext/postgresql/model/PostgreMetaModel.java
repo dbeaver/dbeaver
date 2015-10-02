@@ -57,26 +57,20 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
-        try {
+        try (JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
-        } finally {
-            session.close();
         }
     }
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
-        try {
+        try (JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
             return JDBCUtils.queryString(session, "SELECT pg_get_functiondef(p.oid) FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
                 "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
-        } finally {
-            session.close();
         }
     }
 
@@ -88,20 +82,15 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?");
-            try {
+        try (JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?")) {
                 dbStat.setString(1, container.getName());
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<GenericSequence> result = new ArrayList<>();
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
-                        JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name);
-                        try {
-                            JDBCResultSet seqResults = dbSeqStat.executeQuery();
-                            try {
+                        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name)) {
+                            try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                                 seqResults.next();
                                 GenericSequence sequence = new GenericSequence(
                                     container,
@@ -112,24 +101,14 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                                     JDBCUtils.safeGetLong(seqResults, 3),
                                     JDBCUtils.safeGetLong(seqResults, 4));
                                 result.add(sequence);
-                            } finally {
-                                seqResults.close();
                             }
-                        } finally {
-                            dbSeqStat.close();
                         }
                     }
                     return result;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
-        } finally {
-            session.close();
         }
     }
 

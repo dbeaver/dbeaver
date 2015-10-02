@@ -825,8 +825,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         }
 
         private boolean implementsDriver(JarFile currentFile, JarEntry current, int depth) throws IOException {
-            InputStream classStream = currentFile.getInputStream(current);
-            try {
+            try (InputStream classStream = currentFile.getInputStream(current)) {
                 ClassReader cr = new ClassReader(classStream);
                 int access = cr.getAccess();
                 if (depth == 0 && ((access & Opcodes.ACC_PUBLIC) == 0 || (access & Opcodes.ACC_ABSTRACT) != 0)) {
@@ -850,8 +849,6 @@ public class DriverEditDialog extends HelpEnabledDialog
                         }
                     }
                 }
-            } finally {
-                classStream.close();
             }
             return false;
         }

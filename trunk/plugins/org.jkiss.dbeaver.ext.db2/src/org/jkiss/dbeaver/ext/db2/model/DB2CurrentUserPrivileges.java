@@ -104,13 +104,10 @@ public class DB2CurrentUserPrivileges {
             dbStat = session.prepareStatement(SEL_AUTHORITIES);
             try {
                 dbStat.setString(1, currentAuthId);
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         listAuthorities.add(dbResult.getString(1));
                     }
-                } finally {
-                    dbResult.close();
                 }
             } finally {
                 dbStat.close();
@@ -122,13 +119,10 @@ public class DB2CurrentUserPrivileges {
         try {
             dbStat.setString(1, currentAuthId);
             dbStat.setString(2, currentAuthId);
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
                     listObjectPrivileges.add(dbResult.getString(1));
                 }
-            } finally {
-                dbResult.close();
             }
         } finally {
             dbStat.close();

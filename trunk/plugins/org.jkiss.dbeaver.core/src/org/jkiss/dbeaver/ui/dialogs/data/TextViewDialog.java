@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -237,8 +238,8 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Object prevValue = getValueController().getValue();
         if (prevValue instanceof DBDContent) {
-            DBCSession session = getValueController().getExecutionContext().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor");
-            try {
+            DBCExecutionContext context = getValueController().getExecutionContext();
+            try (DBCSession session = context.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor")) {
                 if (ContentUtils.isTextContent((DBDContent) prevValue)) {
                     String strValue = isTextEditorActive() ? textEdit.getText() : getBinaryString();
                     return getValueController().getValueHandler().getValueFromObject(
@@ -257,8 +258,6 @@ public class TextViewDialog extends ValueViewDialog {
             } catch (Exception e) {
                 UIUtils.showErrorDialog(getShell(), "Extract editor value", "Can't extract editor value", e);
                 return null;
-            } finally {
-                session.close();
             }
         } else if (isTextEditorActive()) {
             return textEdit.getText();

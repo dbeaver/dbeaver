@@ -122,12 +122,12 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 super.subTask(name);
             }
         };
-        DBCSession session = getExecutionContext().openSession(
+        PumpVisualizer visualizer = new PumpVisualizer();
+        try (DBCSession session = getExecutionContext().openSession(
             proxyMonitor,
             DBCExecutionPurpose.USER,
-            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.getName()));
-        PumpVisualizer visualizer = new PumpVisualizer();
-        try {
+            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.getName())))
+        {
             visualizer.schedule(PROGRESS_VISUALIZE_PERIOD * 2);
             statistics = dataContainer.readData(
                 session,
@@ -136,13 +136,10 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 offset,
                 maxRows,
                 DBSDataContainer.FLAG_READ_PSEUDO);
-        }
-        catch (DBException e) {
+        } catch (DBException e) {
             error = e;
-        }
-        finally {
+        } finally {
             visualizer.finished = true;
-            session.close();
         }
 
         return Status.OK_STATUS;

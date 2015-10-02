@@ -105,8 +105,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 
     private void importProjects(DBRProgressMonitor monitor) throws IOException, DBException
     {
-        ZipFile zipFile = new ZipFile(data.getImportFile(), ZipFile.OPEN_READ);
-        try {
+        try (ZipFile zipFile = new ZipFile(data.getImportFile(), ZipFile.OPEN_READ)) {
             ZipEntry metaEntry = zipFile.getEntry(ExportConstants.META_FILENAME);
             if (metaEntry == null) {
                 throw new DBException("Cannot find meta file");
@@ -180,9 +179,6 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
             } finally {
                 metaStream.close();
             }
-        }
-        finally {
-            zipFile.close();
         }
     }
 

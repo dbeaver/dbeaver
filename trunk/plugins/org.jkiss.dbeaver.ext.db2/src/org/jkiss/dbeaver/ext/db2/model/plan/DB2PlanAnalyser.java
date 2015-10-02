@@ -106,12 +106,9 @@ public class DB2PlanAnalyser implements DBCPlan {
             dbStat = session.prepareStatement(String.format(SEL_STMT, planTableSchema));
             try {
                 dbStat.setInt(1, stmtNo);
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     dbResult.next();
                     db2PlanStatement = new DB2PlanStatement(session, dbResult, planTableSchema);
-                } finally {
-                    dbResult.close();
                 }
             } finally {
                 dbStat.close();
@@ -133,12 +130,9 @@ public class DB2PlanAnalyser implements DBCPlan {
     private void cleanExplainTables(JDBCSession session, Integer stmtNo, String planTableSchema) throws SQLException
     {
         // Delete previous statement rows
-        JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_DELETE, planTableSchema, planTableSchema));
-        try {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(String.format(PT_DELETE, planTableSchema, planTableSchema))) {
             dbStat.setInt(1, stmtNo);
             dbStat.execute();
-        } finally {
-            dbStat.close();
         }
     }
 

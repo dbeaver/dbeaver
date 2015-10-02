@@ -73,8 +73,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         DBPConnectionBootstrap bootstrap = dataSource.getContainer().getConnectionConfiguration().getBootstrap();
         List<String> initQueries = bootstrap.getInitQueries();
         if (!CommonUtils.isEmpty(initQueries)) {
-            DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries");
-            try {
+            try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
                 for (String query : initQueries) {
                     try {
                         DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false);
@@ -92,9 +91,6 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
                         }
                     }
                 }
-            }
-            finally {
-                session.close();
             }
         }
     }

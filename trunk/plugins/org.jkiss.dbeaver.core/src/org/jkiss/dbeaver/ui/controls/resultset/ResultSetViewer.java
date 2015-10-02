@@ -1352,6 +1352,9 @@ public class ResultSetViewer extends Viewer
             throw new DBException("Referenced constraint [" + refConstraint + "] is no a referrer");
         }
         DBSEntity targetEntity = refConstraint.getParentObject();
+        if (targetEntity == null) {
+            throw new DBException("Null constraint parent");
+        }
         if (!(targetEntity instanceof DBSDataContainer)) {
             throw new DBException("Entity [" + DBUtils.getObjectFullName(targetEntity) + "] is not a data container");
         }
@@ -1772,8 +1775,7 @@ public class ResultSetViewer extends Viewer
         final Object[] cells;
         final int currentRowNumber = rowNum;
         // Copy cell values in new context
-        DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name);
-        try {
+        try (DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_add_new_row_context_name)) {
             if (docAttribute != null) {
                 cells = new Object[1];
                 if (copyCurrent && currentRowNumber >= 0 && currentRowNumber < model.getRowCount()) {
@@ -1826,8 +1828,6 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             }
-        } finally {
-            session.close();
         }
         curRow = model.addNewRow(rowNum, cells);
         redrawData(true);

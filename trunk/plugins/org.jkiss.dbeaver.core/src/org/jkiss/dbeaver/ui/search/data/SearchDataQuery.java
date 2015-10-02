@@ -95,8 +95,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         continue;
                     }
                     SearchTableMonitor searchMonitor = new SearchTableMonitor();
-                    DBCSession session = dataSource.getDefaultContext(false).openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName);
-                    try {
+                    try (DBCSession session = dataSource.getDefaultContext(false).openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName)) {
                         TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
                         findRows(session, dataContainer, dataReceiver);
 
@@ -106,8 +105,6 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         }
                     } catch (DBCException e) {
                         log.error("Error searching string in '" + objectName + "'", e);
-                    } finally {
-                        session.close();
                     }
 
                     monitor.worked(1);

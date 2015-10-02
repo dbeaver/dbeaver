@@ -76,21 +76,15 @@ public class PostgrePlanAnalyser implements DBCPlan {
             if (oldAutoCommit) {
                 connection.setAutoCommit(false);
             }
-            JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN (FORMAT XML, ANALYSE) " + query);
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (JDBCPreparedStatement dbStat = connection.prepareStatement("EXPLAIN (FORMAT XML, ANALYSE) " + query)) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         SQLXML planXML = dbResult.getSQLXML(1);
                         parsePlan(planXML);
                     }
                 } catch (XMLException e) {
                     throw new DBCException("Can't parse plan XML", e);
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());

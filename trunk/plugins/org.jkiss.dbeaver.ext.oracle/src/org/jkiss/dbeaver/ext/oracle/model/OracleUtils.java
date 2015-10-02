@@ -81,19 +81,17 @@ public class OracleUtils {
             JDBCUtils.executeProcedure(
                 session,
                 "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DBMS_METADATA.GET_DDL(?,?" +
-                (schema == null ? "": ",?") +
-                ") TXT " +
-                "FROM DUAL");
-            try {
+                    (schema == null ? "" : ",?") +
+                    ") TXT " +
+                    "FROM DUAL")) {
                 dbStat.setString(1, objectType);
                 dbStat.setString(2, object.getName());
                 if (schema != null) {
                     dbStat.setString(3, schema.getName());
                 }
-                final JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         return dbResult.getString(1);
                     } else {
@@ -101,12 +99,6 @@ public class OracleUtils {
                         return "EMPTY DDL";
                     }
                 }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
@@ -177,17 +169,15 @@ public class OracleUtils {
             DBCExecutionPurpose.META,
             "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
         try {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT FROM SYS.ALL_SOURCE " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
-                    "ORDER BY LINE");
-            try {
+                    "ORDER BY LINE")) {
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
                 dbStat.setString(2, sourceOwner.getName());
                 dbStat.setString(3, sourceObject.getName());
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                final JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder source = null;
                     int lineCount = 0;
                     while (dbResult.next()) {
@@ -204,12 +194,6 @@ public class OracleUtils {
                     }
                     return source == null ? null : source.toString();
                 }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
@@ -265,14 +249,12 @@ public class OracleUtils {
             DBCExecutionPurpose.META,
             "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'");
         try {
-            final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?");
-            try {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
                 dbStat.setString(1, objectType.getTypeName());
                 dbStat.setString(2, object.getSchema().getName());
                 dbStat.setString(3, DBObjectNameCaseTransformer.transformObjectName(object, object.getName()));
-                final JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         return "VALID".equals(dbResult.getString("STATUS"));
                     } else {
@@ -280,12 +262,6 @@ public class OracleUtils {
                         return false;
                     }
                 }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());

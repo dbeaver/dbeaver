@@ -58,8 +58,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
-        try {
+        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition")) {
             String activeCatalog = dataSource.getSelectedEntityName();
             boolean switchDatabase = !catalog.equals(activeCatalog);
             if (switchDatabase) {
@@ -70,20 +69,14 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 }
             }
             try {
-                JDBCPreparedStatement dbStat = session.prepareStatement("sp_helptext '" + schema + "." + name + "'");
-                try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("sp_helptext '" + schema + "." + name + "'")) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         StringBuilder sql = new StringBuilder();
                         while (dbResult.nextRow()) {
                             sql.append(dbResult.getString(1));
                         }
                         return sql.toString();
-                    } finally {
-                        dbResult.close();
                     }
-                } finally {
-                    dbStat.close();
                 }
             } finally {
                 if (switchDatabase) {
@@ -96,8 +89,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             }
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
-        } finally {
-            session.close();
         }
     }
 

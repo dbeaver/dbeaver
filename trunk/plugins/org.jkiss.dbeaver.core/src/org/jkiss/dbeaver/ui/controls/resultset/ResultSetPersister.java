@@ -365,8 +365,7 @@ class ResultSetPersister {
         private Throwable executeStatements(DBRProgressMonitor monitor)
         {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
-            DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update);
-            try {
+            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, CoreMessages.controls_resultset_viewer_job_update)) {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
@@ -405,8 +404,7 @@ class ResultSetPersister {
                                 batch.close();
                             }
                             processStatementChanges(statement);
-                        }
-                        catch (DBException e) {
+                        } catch (DBException e) {
                             processStatementError(statement, session);
                             return e;
                         }
@@ -427,8 +425,7 @@ class ResultSetPersister {
                                 batch.close();
                             }
                             processStatementChanges(statement);
-                        }
-                        catch (DBException e) {
+                        } catch (DBException e) {
                             processStatementError(statement, session);
                             return e;
                         }
@@ -459,8 +456,7 @@ class ResultSetPersister {
                                 batch.close();
                             }
                             processStatementChanges(statement);
-                        }
-                        catch (DBException e) {
+                        } catch (DBException e) {
                             processStatementError(statement, session);
                             return e;
                         }
@@ -468,22 +464,18 @@ class ResultSetPersister {
                     }
 
                     return null;
-                }
-                finally {
+                } finally {
                     if (txnManager != null && this.savepoint != null) {
                         try {
                             txnManager.releaseSavepoint(monitor, this.savepoint);
-                        }
-                        catch (Throwable e) {
+                        } catch (Throwable e) {
                             // Maybe savepoints not supported
                             log.debug("Can't release savepoint", e);
                         }
                     }
                 }
-            }
-            finally {
+            } finally {
                 monitor.done();
-                session.close();
             }
         }
 

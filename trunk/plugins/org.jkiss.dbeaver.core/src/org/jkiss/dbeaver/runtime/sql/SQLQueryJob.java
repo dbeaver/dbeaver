@@ -136,9 +136,10 @@ public class SQLQueryJob extends DataSourceJob
     {
         statistics = new DBCStatistics();
         try {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
-            DBCSession session = getExecutionContext().openSession(monitor, queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER, "SQL Query");
-            try {
+            DBCExecutionContext context = getExecutionContext();
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            DBCExecutionPurpose purpose = queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER;
+            try (DBCSession session = context.openSession(monitor, purpose, "SQL Query")) {
                 // Set transaction settings (only if autocommit is off)
                 QMUtils.getDefaultHandler().handleScriptBegin(session);
 
@@ -232,9 +233,6 @@ public class SQLQueryJob extends DataSourceJob
                     Status.OK,
                     DBeaverCore.getCorePluginID(),
                     "SQL job completed");
-            }
-            finally {
-                session.close();
             }
         }
         catch (Throwable ex) {

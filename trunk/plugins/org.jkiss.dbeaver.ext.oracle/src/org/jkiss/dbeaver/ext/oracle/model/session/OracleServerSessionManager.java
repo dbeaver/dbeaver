@@ -57,23 +57,17 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     public Collection<OracleServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
                 "SELECT s.*,sq.SQL_TEXT FROM V$SESSION s\n" +
-                "LEFT OUTER JOIN V$SQL sq ON sq.SQL_ID=s.SQL_ID\n" +
-                "WHERE s.TYPE='USER'");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                    "LEFT OUTER JOIN V$SQL sq ON sq.SQL_ID=s.SQL_ID\n" +
+                    "WHERE s.TYPE='USER'")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<OracleServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
                         sessions.add(new OracleServerSession(dbResult));
                     }
                     return sessions;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e, session.getDataSource());
@@ -99,11 +93,8 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
             } else if (!toKill) {
                 sql.append(" POST_TRANSACTION");
             }
-            JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql.toString());
-            try {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql.toString())) {
                 dbStat.execute();
-            } finally {
-                dbStat.close();
             }
         }
         catch (SQLException e) {

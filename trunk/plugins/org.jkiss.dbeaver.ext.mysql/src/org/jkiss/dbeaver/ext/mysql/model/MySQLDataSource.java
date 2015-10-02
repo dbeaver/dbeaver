@@ -124,26 +124,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         super.initialize(monitor);
 
         dataTypeCache.getAllObjects(monitor, this);
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata");
-        try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata")) {
             // Read engines
             {
                 engines = new ArrayList<>();
-                JDBCPreparedStatement dbStat = session.prepareStatement("SHOW ENGINES");
-                try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW ENGINES")) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             MySQLEngine engine = new MySQLEngine(this, dbResult);
                             engines.add(engine);
                         }
-                    } finally {
-                        dbResult.close();
                     }
-                } catch (SQLException ex ) {
+                } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
-                } finally {
-                    dbStat.close();
                 }
             }
 
@@ -152,16 +145,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 charsets = new ArrayList<>();
                 JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CHARSET");
                 try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             MySQLCharset charset = new MySQLCharset(this, dbResult);
                             charsets.add(charset);
                         }
-                    } finally {
-                        dbResult.close();
                     }
-                } catch (SQLException ex ) {
+                } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
                 } finally {
                     dbStat.close();
@@ -172,8 +162,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 collations = new LinkedHashMap<>();
                 dbStat = session.prepareStatement("SHOW COLLATION");
                 try {
-                    JDBCResultSet dbResult = dbStat.executeQuery();
-                    try {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
                             MySQLCharset charset = getCharset(charsetName);
@@ -185,10 +174,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                             collations.put(collation.getName(), collation);
                             charset.addCollation(collation);
                         }
-                    } finally {
-                        dbResult.close();
                     }
-                } catch (SQLException ex ) {
+                } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
                 } finally {
                     dbStat.close();
@@ -201,17 +188,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             {
                 // Get active schema
                 try {
-                    JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DATABASE()");
-                    try {
-                        JDBCResultSet resultSet = dbStat.executeQuery();
-                        try {
+                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DATABASE()")) {
+                        try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                             resultSet.next();
                             activeCatalogName = resultSet.getString(1);
-                        } finally {
-                            resultSet.close();
                         }
-                    } finally {
-                        dbStat.close();
                     }
                 } catch (SQLException e) {
                     log.error(e);
@@ -220,9 +201,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex, this);
-        }
-        finally {
-            session.close();
         }
     }
 
@@ -323,19 +301,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             log.debug("Null current database");
             return;
         }
-        JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(catalog));
-            try {
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(catalog))) {
                 dbStat.execute();
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBCException(e, this);
-        }
-        finally {
-            session.close();
         }
     }
 
@@ -379,30 +350,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load users");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM mysql.user ORDER BY user");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load users")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM mysql.user ORDER BY user")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLUser> userList = new ArrayList<>();
                     while (dbResult.next()) {
-                            MySQLUser user = new MySQLUser(this, dbResult);
-                            userList.add(user);
-                        }
+                        MySQLUser user = new MySQLUser(this, dbResult);
+                        userList.add(user);
+                    }
                     return userList;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             throw new DBException(ex, this);
-        }
-        finally {
-            session.close();
         }
     }
 
@@ -476,30 +436,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load privileges");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load privileges")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLPrivilege> privileges = new ArrayList<>();
                     while (dbResult.next()) {
-                            MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
-                            privileges.add(user);
-                        }
+                        MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
+                        privileges.add(user);
+                    }
                     return privileges;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             throw new DBException(ex, this);
-        }
-        finally {
-            session.close();
         }
     }
 
@@ -534,15 +483,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load status");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW " + 
-                (global ? "GLOBAL " : "") + 
-                (status ? "STATUS" : "VARIABLES"));
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SHOW " +
+                    (global ? "GLOBAL " : "") +
+                    (status ? "STATUS" : "VARIABLES"))) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLParameter> parameters = new ArrayList<>();
                     while (dbResult.next()) {
                         MySQLParameter parameter = new MySQLParameter(
@@ -552,18 +498,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                         parameters.add(parameter);
                     }
                     return parameters;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             throw new DBException(ex, this);
-        }
-        finally {
-            session.close();
         }
     }
 

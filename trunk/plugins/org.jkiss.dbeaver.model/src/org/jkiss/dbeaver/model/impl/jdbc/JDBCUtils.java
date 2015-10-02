@@ -509,75 +509,57 @@ public class JDBCUtils {
 
     public static void executeSQL(Connection session, String sql, Object ... params) throws SQLException
     {
-        final PreparedStatement dbStat = session.prepareStatement(sql);
-        try {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     dbStat.setObject(i + 1, params[i]);
                 }
             }
             dbStat.execute();
-        } finally {
-            dbStat.close();
         }
     }
 
     public static void executeProcedure(Connection session, String sql) throws SQLException
     {
-        final PreparedStatement dbStat = session.prepareCall(sql);
-        try {
+        try (PreparedStatement dbStat = session.prepareCall(sql)) {
             dbStat.execute();
-        } finally {
-            dbStat.close();
         }
     }
 
     public static <T> T executeQuery(Connection session, String sql, Object ... params) throws SQLException
     {
-        final PreparedStatement dbStat = session.prepareStatement(sql);
-        try {
+        try (PreparedStatement dbStat = session.prepareStatement(sql)) {
             if (params != null) {
                 for (int i = 0; i < params.length; i++) {
                     dbStat.setObject(i + 1, params[i]);
                 }
             }
-            ResultSet resultSet = dbStat.executeQuery();
-            try {
+            try (ResultSet resultSet = dbStat.executeQuery()) {
                 if (resultSet.next()) {
                     return (T) resultSet.getObject(1);
                 } else {
                     return null;
                 }
-            } finally {
-                resultSet.close();
             }
-        } finally {
-            dbStat.close();
         }
     }
 
     @Nullable
     public static String queryString(JDBCSession session, String sql, Object... args) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = session.prepareStatement(sql);
-        try {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
                     dbStat.setObject(i + 1, args[i]);
                 }
             }
-            JDBCResultSet resultSet = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                 if (resultSet.next()) {
                     return resultSet.getString(1);
                 } else {
                     return null;
                 }
-            } finally {
-                resultSet.close();
             }
-        } finally {
-            dbStat.close();
         }
     }
 

@@ -219,31 +219,25 @@ public class SecurityUtils {
 
     public static KeyManagerFactory openSecuredKeyManager(File path, String password)
         throws IOException, GeneralSecurityException {
-        FileInputStream ksf = new FileInputStream(path);
-        try {
+        try (FileInputStream ksf = new FileInputStream(path)) {
             KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(ksf, password.toCharArray());
             KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             kmf.init(ks, password.toCharArray());
             return kmf;
-        } finally {
-            ksf.close();
         }
     }
 
     public static TrustManagerFactory openSecuredTrustManager(File path, String password)
         throws IOException, GeneralSecurityException
     {
-        FileInputStream ksf = new FileInputStream(path);
-        try {
+        try (FileInputStream ksf = new FileInputStream(path)) {
             KeyStore ks = KeyStore.getInstance("JKS");
             ks.load(ksf, password.toCharArray());
 
             TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             tmf.init(ks);
             return tmf;
-        } finally {
-            ksf.close();
         }
     }
 

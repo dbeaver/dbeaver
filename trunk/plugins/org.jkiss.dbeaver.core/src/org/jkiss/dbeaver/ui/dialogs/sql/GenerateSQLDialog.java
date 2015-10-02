@@ -117,8 +117,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
-                DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
-                try {
+                try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
                     for (String line : scriptLines) {
                         DBCStatement statement = DBUtils.prepareStatement(session, line, false);
                         try {
@@ -129,8 +128,6 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
                     }
                 } catch (DBCException e) {
                     return GeneralUtils.makeExceptionStatus(e);
-                } finally {
-                    session.close();
                 }
                 return Status.OK_STATUS;
             }

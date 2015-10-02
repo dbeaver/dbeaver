@@ -87,8 +87,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         }
         JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load objects from " + owner.getName());
         try {
-            JDBCStatement dbStat = prepareObjectsStatement(session, owner);
-            try {
+            try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
                 monitor.subTask("Execute query");
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                 dbStat.executeStatement();
@@ -112,9 +111,6 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                         dbResult.close();
                     }
                 }
-            }
-            finally {
-                dbStat.close();
             }
         }
         catch (SQLException ex) {

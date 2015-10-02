@@ -167,15 +167,12 @@ public class DB2PlanStatement {
             "OBJECT_SCHEMA,OBJECT_NAME"));
         try {
             setQueryParameters(sqlStmt);
-            JDBCResultSet res = sqlStmt.executeQuery();
-            try {
+            try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 DB2PlanObject db2PlanObject;
                 while (res.next()) {
                     db2PlanObject = new DB2PlanObject(res);
                     mapDataObjects.put(db2PlanObject.getNodeName(), db2PlanObject);
                 }
-            } finally {
-                res.close();
             }
         } finally {
             sqlStmt.close();
@@ -185,8 +182,7 @@ public class DB2PlanStatement {
         sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_OPERATOR", "OPERATOR_ID"));
         try {
             setQueryParameters(sqlStmt);
-            JDBCResultSet res = sqlStmt.executeQuery();
-            try {
+            try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 DB2PlanOperator db2PlanOperator;
                 while (res.next()) {
                     db2PlanOperator = new DB2PlanOperator(session, res, this, planTableSchema);
@@ -195,8 +191,6 @@ public class DB2PlanStatement {
                         rootNode = db2PlanOperator;
                     }
                 }
-            } finally {
-                res.close();
             }
         } finally {
             sqlStmt.close();
@@ -206,13 +200,10 @@ public class DB2PlanStatement {
         sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_STREAM", "STREAM_ID DESC"));
         try {
             setQueryParameters(sqlStmt);
-            JDBCResultSet res = sqlStmt.executeQuery();
-            try {
+            try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
                     listStreams.add(new DB2PlanStream(res, this));
                 }
-            } finally {
-                res.close();
             }
         } finally {
             sqlStmt.close();

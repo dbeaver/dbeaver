@@ -161,8 +161,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                     }
                 });
                 monitor.beginTask(jobName, objects.size());
-                DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName);
-                try {
+                try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, jobName)) {
                     for (int i = 0; i < objects.size(); i++) {
                         if (monitor.isCanceled()) {
                             break;
@@ -220,7 +219,6 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         monitor.worked(1);
                     }
                 } finally {
-                    session.close();
                     monitor.done();
                     UIUtils.runInDetachedUI(getShell(), new Runnable() {
                         @Override
