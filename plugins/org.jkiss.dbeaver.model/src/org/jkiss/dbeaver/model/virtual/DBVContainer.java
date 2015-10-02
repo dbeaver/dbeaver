@@ -37,8 +37,8 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     private final DBVContainer parent;
     private String name;
     private String description;
-    private Map<String, DBVContainer> containers = new LinkedHashMap<String, DBVContainer>();
-    private Map<String, DBVEntity> entities = new LinkedHashMap<String, DBVEntity>();
+    private Map<String, DBVContainer> containers = new LinkedHashMap<>();
+    private Map<String, DBVEntity> entities = new LinkedHashMap<>();
 
     public DBVContainer(DBVContainer parent, String name)
     {

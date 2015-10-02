@@ -66,7 +66,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
-        this.constraints = new ArrayList<DBDAttributeConstraint>(dataFilter.getConstraints());
+        this.constraints = new ArrayList<>(dataFilter.getConstraints());
         Collections.sort(this.constraints, new Comparator<DBDAttributeConstraint>() {
             @Override
             public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
@@ -227,7 +227,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     public void widgetSelected(SelectionEvent e)
                     {
                         dataFilter.reset();
-                        constraints = new ArrayList<DBDAttributeConstraint>(dataFilter.getConstraints());
+                        constraints = new ArrayList<>(dataFilter.getConstraints());
                         columnsViewer.setInput(constraints);
                         //columnsViewer.refresh();
                         orderText.setText(""); //$NON-NLS-1$

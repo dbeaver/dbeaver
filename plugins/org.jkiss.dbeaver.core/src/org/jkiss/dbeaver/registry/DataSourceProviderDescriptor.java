@@ -59,11 +59,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private DBPImage icon;
     private DBPDataSourceProvider instance;
     private DBXTreeNode treeDescriptor;
-    private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<String, DBXTreeNode>();
+    private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManagable;
-    private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<DBPPropertyDescriptor>();
-    private final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
-    private final List<DataSourceViewDescriptor> views = new ArrayList<DataSourceViewDescriptor>();
+    private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
+    private final List<DriverDescriptor> drivers = new ArrayList<>();
+    private final List<DataSourceViewDescriptor> views = new ArrayList<>();
     private final String parentId;
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
@@ -226,7 +226,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     public List<DriverDescriptor> getEnabledDrivers()
     {
-        List<DriverDescriptor> eDrivers = new ArrayList<DriverDescriptor>();
+        List<DriverDescriptor> eDrivers = new ArrayList<>();
         for (DriverDescriptor driver : drivers) {
             if (!driver.isDisabled() && driver.getReplacedBy() == null && driver.isSupportedByLocalSystem()) {
                 eDrivers.add(driver);

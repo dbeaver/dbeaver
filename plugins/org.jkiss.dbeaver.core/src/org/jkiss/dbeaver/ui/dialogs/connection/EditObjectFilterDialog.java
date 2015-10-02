@@ -192,7 +192,7 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
     }
 
     private List<String> collectValues(Table table) {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
             if (value.isEmpty() || value.equals("%")) { //$NON-NLS-1$

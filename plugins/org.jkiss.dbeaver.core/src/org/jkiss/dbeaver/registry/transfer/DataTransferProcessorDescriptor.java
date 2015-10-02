@@ -39,11 +39,11 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
     private final DataTransferNodeDescriptor node;
     private final String id;
     private final ObjectType processorType;
-    private final List<ObjectType> sourceTypes = new ArrayList<ObjectType>();
+    private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final String name;
     private final String description;
     private final DBPImage icon;
-    private final List<DBPPropertyDescriptor> properties = new ArrayList<DBPPropertyDescriptor>();
+    private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
     public DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
     {

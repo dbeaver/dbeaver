@@ -584,7 +584,7 @@ public class OracleDataSource extends JDBCDataSource
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
-            List<ErrorPosition> positions = new ArrayList<ErrorPosition>();
+            List<ErrorPosition> positions = new ArrayList<>();
             while (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
                 pos.info = matcher.group(1);

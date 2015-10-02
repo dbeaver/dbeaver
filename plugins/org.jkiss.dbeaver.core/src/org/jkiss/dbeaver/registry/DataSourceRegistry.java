@@ -78,8 +78,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     private final DBPApplication application;
     private final IProject project;
 
-    private final List<DataSourceDescriptor> dataSources = new ArrayList<DataSourceDescriptor>();
-    private final List<DBPEventListener> dataSourceListeners = new ArrayList<DBPEventListener>();
+    private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
+    private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
 
     public DataSourceRegistry(DBPApplication application, IProject project)
     {
@@ -282,7 +282,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
         final List<DBPEventListener> listeners;
         synchronized (dataSourceListeners) {
-            listeners = new ArrayList<DBPEventListener>(dataSourceListeners);
+            listeners = new ArrayList<>(dataSourceListeners);
         }
         for (DBPEventListener listener : listeners) {
             listener.handleDataSourceEvent(event);

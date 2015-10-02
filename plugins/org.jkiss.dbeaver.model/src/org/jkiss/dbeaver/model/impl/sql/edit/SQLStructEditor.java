@@ -47,7 +47,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveabl
 
     protected Collection<NestedObjectCommand> getNestedOrderedCommands(final StructCreateCommand structCommand)
     {
-        List<NestedObjectCommand> nestedCommands = new ArrayList<NestedObjectCommand>();
+        List<NestedObjectCommand> nestedCommands = new ArrayList<>();
         nestedCommands.addAll(structCommand.getObjectCommands().values());
         Collections.sort(nestedCommands, new Comparator<NestedObjectCommand>() {
             @Override
@@ -81,7 +81,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveabl
     protected class StructCreateCommand extends ObjectCreateCommand
         implements DBECommandAggregator<OBJECT_TYPE> {
 
-        private final Map<DBPObject, NestedObjectCommand> objectCommands = new LinkedHashMap<DBPObject, NestedObjectCommand>();
+        private final Map<DBPObject, NestedObjectCommand> objectCommands = new LinkedHashMap<>();
 
         public StructCreateCommand(OBJECT_TYPE object, String table)
         {

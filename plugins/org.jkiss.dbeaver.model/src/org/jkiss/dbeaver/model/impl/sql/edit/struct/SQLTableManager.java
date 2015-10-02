@@ -64,7 +64,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             log.warn("Object change command not found"); //$NON-NLS-1$
             return null;
         }
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<>();
         final String tableName = table.getFullQualifiedName();
 
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();

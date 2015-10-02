@@ -66,7 +66,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
             String searchString = params.getSearchString();
 
             //monitor.subTask("Collect tables");
-            Set<DBPDataSource> dataSources = new HashSet<DBPDataSource>();
+            Set<DBPDataSource> dataSources = new HashSet<>();
             for (DBSDataContainer searcher : params.sources) {
                 dataSources.add(searcher.getDataSource());
             }
@@ -134,7 +134,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
         }
         try {
 
-            List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
+            List<DBDAttributeConstraint> constraints = new ArrayList<>();
             for (DBSEntityAttribute attribute : entity.getAttributes(session.getProgressMonitor())) {
                 if (params.fastSearch) {
                     if (!DBUtils.isIndexedAttribute(session.getProgressMonitor(), attribute)) {

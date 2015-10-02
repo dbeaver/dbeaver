@@ -149,7 +149,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
         if (commentAction == null) {
             return super.makeStructObjectCreateActions(command);
         } else {
-            List<DBEPersistAction> actionList = new ArrayList<DBEPersistAction>(Arrays.asList(super
+            List<DBEPersistAction> actionList = new ArrayList<>(Arrays.asList(super
                 .makeStructObjectCreateActions(command)));
             actionList.add(commentAction);
             return actionList.toArray(new DBEPersistAction[actionList.size()]);
@@ -165,7 +165,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     {
         DB2Table db2Table = command.getObject();
 
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(2);
+        List<DBEPersistAction> actions = new ArrayList<>(2);
 
         if (command.getProperties().size() > 1) {
             StringBuilder sb = new StringBuilder(128);

@@ -85,8 +85,8 @@ public class GraphAnimation
 		while (root.getParent() != null)
 			root = root.getParent();
 
-		initialStates = new HashMap<IFigure, Object>();
-		finalStates = new HashMap<IFigure, Object>();
+		initialStates = new HashMap<>();
+		finalStates = new HashMap<>();
 
 		//This part records all layout results.
 		root.validate();

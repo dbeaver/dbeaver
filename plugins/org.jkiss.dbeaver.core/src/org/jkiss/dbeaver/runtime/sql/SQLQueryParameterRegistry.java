@@ -41,7 +41,7 @@ public class SQLQueryParameterRegistry
     public static final String TAG_PARAMETER = "parameter";
 
     private static SQLQueryParameterRegistry registry;
-    private final Map<String, ParameterInfo> parameterMap = new LinkedHashMap<String, ParameterInfo>();
+    private final Map<String, ParameterInfo> parameterMap = new LinkedHashMap<>();
 
     public static class ParameterInfo {
         public String name;

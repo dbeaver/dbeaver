@@ -67,9 +67,9 @@ public class DataTransferSettings {
     private DataTransferNodeDescriptor consumer;
 
     private DataTransferProcessorDescriptor processor;
-    private Map<DataTransferProcessorDescriptor, Map<Object,Object>> processorPropsHistory = new HashMap<DataTransferProcessorDescriptor, Map<Object, Object>>();
+    private Map<DataTransferProcessorDescriptor, Map<Object,Object>> processorPropsHistory = new HashMap<>();
 
-    private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<Class, NodeSettings>();
+    private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<>();
 
     private boolean consumerOptional;
     private int maxJobCount = DEFAULT_THREADS_NUM;
@@ -78,7 +78,7 @@ public class DataTransferSettings {
 
     public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers)
     {
-        dataPipes = new ArrayList<DataTransferPipe>();
+        dataPipes = new ArrayList<>();
         if (!ArrayUtils.isEmpty(producers) && !ArrayUtils.isEmpty(consumers)) {
             if (producers.length != consumers.length) {
                 throw new IllegalArgumentException("Producers number must match consumers number");
@@ -121,7 +121,7 @@ public class DataTransferSettings {
         }
 
         Collection<Class<?>> objectTypes = getObjectTypes();
-        List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
+        List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
         if (ArrayUtils.isEmpty(producers)) {
             nodes.addAll(registry.getAvailableProducers(objectTypes));
@@ -195,7 +195,7 @@ public class DataTransferSettings {
     public Collection<Class<?>> getObjectTypes()
     {
         List<DataTransferPipe> dataPipes = getDataPipes();
-        Set<Class<?>> objectTypes = new HashSet<Class<?>>();
+        Set<Class<?>> objectTypes = new HashSet<>();
         for (DataTransferPipe transferPipe : dataPipes) {
             if (transferPipe.getProducer() != null) {
                 objectTypes.add(transferPipe.getProducer().getSourceObject().getClass());
@@ -289,7 +289,7 @@ public class DataTransferSettings {
         this.processor = processor;
         if (consumer != null && processor != null) {
             if (!processorPropsHistory.containsKey(processor)) {
-                processorPropsHistory.put(processor, new HashMap<Object, Object>());
+                processorPropsHistory.put(processor, new HashMap<>());
             }
         }
         // Configure pipes
@@ -369,7 +369,7 @@ public class DataTransferSettings {
                 String propNamesId = procSection.get("@propNames");
                 DataTransferNodeDescriptor node = DataTransferRegistry.getInstance().getNodeById(nodeId);
                 if (node != null) {
-                    Map<Object, Object> props = new HashMap<Object, Object>();
+                    Map<Object, Object> props = new HashMap<>();
                     DataTransferProcessorDescriptor nodeProcessor = node.getProcessor(processorId);
                     if (nodeProcessor != null) {
                         for (String prop : CommonUtils.splitString(propNamesId, ',')) {

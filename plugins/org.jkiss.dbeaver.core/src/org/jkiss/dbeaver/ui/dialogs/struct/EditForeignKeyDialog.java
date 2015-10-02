@@ -99,7 +99,7 @@ public class EditForeignKeyDialog extends Dialog {
 
     private DBSTableConstraint curConstraint;
     private List<? extends DBSEntityAttribute> ownColumns;
-    private List<FKColumnInfo> fkColumns = new ArrayList<FKColumnInfo>();
+    private List<FKColumnInfo> fkColumns = new ArrayList<>();
     private DBSForeignKeyModifyRule onDeleteRule;
     private DBSForeignKeyModifyRule onUpdateRule;
 
@@ -254,7 +254,7 @@ public class EditForeignKeyDialog extends Dialog {
         uniqueKeyCombo.removeAll();
 
         try {
-            curConstraints = new ArrayList<DBSTableConstraint>();
+            curConstraints = new ArrayList<>();
             curConstraint = null;
             final DBeaverCore core = DBeaverCore.getInstance();
             if (refTableNode != null) {
@@ -320,7 +320,7 @@ public class EditForeignKeyDialog extends Dialog {
                 Collection<? extends DBSEntityAttribute> tmpColumns = ownTable.getAttributes(VoidProgressMonitor.INSTANCE);
                 ownColumns = tmpColumns == null ?
                     Collections.<DBSTableColumn>emptyList() :
-                    new ArrayList<DBSEntityAttribute>(ownTable.getAttributes(VoidProgressMonitor.INSTANCE));
+                    new ArrayList<>(ownTable.getAttributes(VoidProgressMonitor.INSTANCE));
                 if (!CommonUtils.isEmpty(ownColumns)) {
                     for (DBSEntityAttribute ownColumn : ownColumns) {
                         if (ownColumn.getName().equals(pkColumn.getAttribute().getName()) && ownTable != pkColumn.getAttribute().getParentObject()) {

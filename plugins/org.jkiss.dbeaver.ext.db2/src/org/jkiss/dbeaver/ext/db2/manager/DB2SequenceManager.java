@@ -90,7 +90,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     @Override
     protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        List<DBEPersistAction> listeCommands = new ArrayList<DBEPersistAction>(2);
+        List<DBEPersistAction> listeCommands = new ArrayList<>(2);
 
         String sql = buildStatement(command.getObject(), false);
         listeCommands.add(new SQLDatabasePersistAction("Create Sequence", sql));
@@ -106,7 +106,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     @Override
     protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        List<DBEPersistAction> listeActions = new ArrayList<DBEPersistAction>(2);
+        List<DBEPersistAction> listeActions = new ArrayList<>(2);
 
         String sql = buildStatement(command.getObject(), true);
         listeActions.add(new SQLDatabasePersistAction("Alter Sequence", sql));

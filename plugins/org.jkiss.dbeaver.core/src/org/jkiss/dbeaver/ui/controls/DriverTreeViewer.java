@@ -50,12 +50,12 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
     private Object site;
     private List<DataSourceProviderDescriptor> providers;
     private Font boldFont;
-    private final Map<String,DriverCategory> categories = new HashMap<String, DriverCategory>();
-    private final List<Object> driverList = new ArrayList<Object>();
+    private final Map<String,DriverCategory> categories = new HashMap<>();
+    private final List<Object> driverList = new ArrayList<>();
 
     public static class DriverCategory {
         final String name;
-        final List<DriverDescriptor> drivers = new ArrayList<DriverDescriptor>();
+        final List<DriverDescriptor> drivers = new ArrayList<>();
 
         public DriverCategory(String name)
         {

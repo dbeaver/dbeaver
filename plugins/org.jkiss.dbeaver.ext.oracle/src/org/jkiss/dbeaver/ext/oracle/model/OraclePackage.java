@@ -162,7 +162,7 @@ public class OraclePackage extends OracleSchemaObject
     @Override
     public DBEPersistAction[] getCompileActions()
     {
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<>();
         /*if (!CommonUtils.isEmpty(sourceDeclaration)) */{
             actions.add(
                 new OracleObjectPersistAction(
@@ -214,7 +214,7 @@ public class OraclePackage extends OracleSchemaObject
         @Override
         protected void invalidateObjects(DBRProgressMonitor monitor, OraclePackage owner, Iterator<OracleProcedurePackaged> objectIter)
         {
-            Map<String, OracleProcedurePackaged> overloads = new HashMap<String, OracleProcedurePackaged>();
+            Map<String, OracleProcedurePackaged> overloads = new HashMap<>();
             while (objectIter.hasNext()) {
                 final OracleProcedurePackaged proc = objectIter.next();
                 if (CommonUtils.isEmpty(proc.getName())) {

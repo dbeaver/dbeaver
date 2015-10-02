@@ -252,7 +252,7 @@ public class DB2Utils {
     {
         LOG.debug("Get List Of Usable Tablespaces For Explain Tables");
 
-        List<String> listTablespaces = new ArrayList<String>();
+        List<String> listTablespaces = new ArrayList<>();
         JDBCPreparedStatement dbStat = session.prepareStatement(SEL_LIST_TS_EXPLAIN);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
@@ -351,7 +351,7 @@ public class DB2Utils {
     {
         LOG.debug("readApplications");
 
-        List<DB2ServerApplication> listApplications = new ArrayList<DB2ServerApplication>();
+        List<DB2ServerApplication> listApplications = new ArrayList<>();
         JDBCPreparedStatement dbStat = session.prepareStatement(SEL_APP);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
@@ -372,7 +372,7 @@ public class DB2Utils {
     {
         LOG.debug("readDBCfg");
 
-        List<DB2Parameter> listDBParameters = new ArrayList<DB2Parameter>();
+        List<DB2Parameter> listDBParameters = new ArrayList<>();
         JDBCPreparedStatement dbStat = session.prepareStatement(SEL_DBCFG);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
@@ -393,7 +393,7 @@ public class DB2Utils {
     {
         LOG.debug("readDBMCfg");
 
-        List<DB2Parameter> listDBMParameters = new ArrayList<DB2Parameter>();
+        List<DB2Parameter> listDBMParameters = new ArrayList<>();
         JDBCPreparedStatement dbStat = session.prepareStatement(SEL_DBMCFG);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();
@@ -414,7 +414,7 @@ public class DB2Utils {
     {
         LOG.debug("readXMLStrings");
 
-        List<DB2XMLString> listXMLStrings = new ArrayList<DB2XMLString>();
+        List<DB2XMLString> listXMLStrings = new ArrayList<>();
         JDBCPreparedStatement dbStat = session.prepareStatement(SEL_XMLSTRINGS);
         try {
             JDBCResultSet dbResult = dbStat.executeQuery();

@@ -63,7 +63,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
                 properties = Collections.emptyList();
             } else {
                 Collection<WMIObjectAttribute> props = metaObject.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS);
-                properties = new ArrayList<DBCAttributeMetaData>(props.size());
+                properties = new ArrayList<>(props.size());
                 int index = 0;
                 for (WMIObjectAttribute prop : props) {
                     if (!prop.isSystem()) {

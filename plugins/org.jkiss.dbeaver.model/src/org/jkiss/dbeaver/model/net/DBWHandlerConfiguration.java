@@ -43,7 +43,7 @@ public class DBWHandlerConfiguration {
     {
         this.descriptor = descriptor;
         this.driver = driver;
-        this.properties = new HashMap<String, String>();
+        this.properties = new HashMap<>();
     }
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerConfiguration configuration)
@@ -54,7 +54,7 @@ public class DBWHandlerConfiguration {
         this.userName = configuration.userName;
         this.password = configuration.password;
         this.savePassword = configuration.savePassword;
-        this.properties = new HashMap<String, String>(configuration.properties);
+        this.properties = new HashMap<>(configuration.properties);
     }
 
     public <T extends DBWNetworkHandler> T createHandler(Class<T> type) throws DBException

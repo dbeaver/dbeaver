@@ -47,7 +47,7 @@ public class ViewerColumnController {
 
     private final String configId;
     private final ColumnViewer viewer;
-    private final List<ColumnInfo> columns = new ArrayList<ColumnInfo>();
+    private final List<ColumnInfo> columns = new ArrayList<>();
     private boolean clickOnHeader;
 
     public static ViewerColumnController getFromControl(Control control)
@@ -209,7 +209,7 @@ public class ViewerColumnController {
 
     private Collection<ColumnInfo> getVisibleColumns()
     {
-        Set<ColumnInfo> visibleList = new TreeSet<ColumnInfo>(new ColumnInfoComparator());
+        Set<ColumnInfo> visibleList = new TreeSet<>(new ColumnInfoComparator());
         for (ColumnInfo column : columns) {
             if (column.visible) {
                 visibleList.add(column);
@@ -288,7 +288,7 @@ public class ViewerColumnController {
 
     private class ConfigDialog extends Dialog {
 
-        private final Map<ColumnInfo, Button> buttonMap = new HashMap<ColumnInfo, Button>();
+        private final Map<ColumnInfo, Button> buttonMap = new HashMap<>();
         protected ConfigDialog()
         {
             super(viewer.getControl().getShell());
@@ -308,7 +308,7 @@ public class ViewerColumnController {
 
             UIUtils.createControlLabel(composite, "Select columns you want to display");
 
-            Set<ColumnInfo> orderedList = new TreeSet<ColumnInfo>(new ColumnInfoComparator());
+            Set<ColumnInfo> orderedList = new TreeSet<>(new ColumnInfoComparator());
             orderedList.addAll(columns);
             for (ColumnInfo columnInfo : orderedList) {
                 Button check = new Button(composite, SWT.CHECK);

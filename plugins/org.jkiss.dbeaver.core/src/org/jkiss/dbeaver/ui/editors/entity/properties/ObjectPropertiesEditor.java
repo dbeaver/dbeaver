@@ -71,12 +71,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private FolderComposite folderComposite;
     private ObjectEditorPageControl pageControl;
-    private final List<IFolderListener> folderListeners = new ArrayList<IFolderListener>();
+    private final List<IFolderListener> folderListeners = new ArrayList<>();
     private String curFolderId;
 
-    private final List<IRefreshablePart> refreshClients = new ArrayList<IRefreshablePart>();
-    private final List<ISaveablePart> nestedSaveable = new ArrayList<ISaveablePart>();
-    private final Map<IFolder, IEditorActionBarContributor> pageContributors = new HashMap<IFolder, IEditorActionBarContributor>();
+    private final List<IRefreshablePart> refreshClients = new ArrayList<>();
+    private final List<ISaveablePart> nestedSaveable = new ArrayList<>();
+    private final Map<IFolder, IEditorActionBarContributor> pageContributors = new HashMap<>();
 
     public ObjectPropertiesEditor()
     {
@@ -360,7 +360,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     public FolderInfo[] collectFolders(IWorkbenchPart part)
     {
-        List<FolderInfo> tabList = new ArrayList<FolderInfo>();
+        List<FolderInfo> tabList = new ArrayList<>();
         makeStandardPropertiesTabs(tabList);
         if (part instanceof IDatabaseEditor) {
             makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);

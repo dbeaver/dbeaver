@@ -48,7 +48,7 @@ public class SharedTextColors implements ISharedTextColors {
             return null;
 
         if (fDisplayTable == null)
-            fDisplayTable = new HashMap<Display, Map<RGB, Color>>(2);
+            fDisplayTable = new HashMap<>(2);
 
         Display display = Display.getCurrent();
         if (display == null) {
@@ -58,7 +58,7 @@ public class SharedTextColors implements ISharedTextColors {
 
         Map<RGB, Color> colorTable = fDisplayTable.get(display);
         if (colorTable == null) {
-            colorTable = new HashMap<RGB, Color>(10);
+            colorTable = new HashMap<>(10);
             fDisplayTable.put(curDisplay, colorTable);
             display.disposeExec(new Runnable() {
                 @Override

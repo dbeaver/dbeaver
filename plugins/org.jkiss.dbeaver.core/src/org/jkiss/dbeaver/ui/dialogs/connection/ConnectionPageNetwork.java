@@ -58,7 +58,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         private final Button useHandlerCheck;
         private final TabItem tabItem;
         ControlEnableState blockEnableState;
-        private final Map<String, DBWHandlerConfiguration> loadedConfigs = new HashMap<String, DBWHandlerConfiguration>();
+        private final Map<String, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
         private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
         {
@@ -70,7 +70,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
     }
 
     private final ConnectionWizard wizard;
-    private Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<NetworkHandlerDescriptor, HandlerBlock>();
+    private Map<NetworkHandlerDescriptor, HandlerBlock> configurations = new HashMap<>();
 
     ConnectionPageNetwork(ConnectionWizard wizard)
     {
@@ -175,7 +175,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
     void saveConfigurations(DataSourceDescriptor dataSource)
     {
         boolean foundHandlers = false;
-        java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<DBWHandlerConfiguration>();
+        java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<>();
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(dataSource.getId());
             if (configuration != null) {

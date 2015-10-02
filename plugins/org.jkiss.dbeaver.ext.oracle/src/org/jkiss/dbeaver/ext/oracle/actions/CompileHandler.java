@@ -156,7 +156,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
 
     private List<OracleSourceObject> getSelectedObjects(ExecutionEvent event)
     {
-        List<OracleSourceObject> objects = new ArrayList<OracleSourceObject>();
+        List<OracleSourceObject> objects = new ArrayList<>();
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             for (Iterator<?> iter = ((IStructuredSelection) currentSelection).iterator(); iter.hasNext(); ) {
@@ -180,7 +180,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
-        List<OracleSourceObject> objects = new ArrayList<OracleSourceObject>();
+        List<OracleSourceObject> objects = new ArrayList<>();
         IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
         if (partSite != null) {
             final ISelectionProvider selectionProvider = partSite.getSelectionProvider();

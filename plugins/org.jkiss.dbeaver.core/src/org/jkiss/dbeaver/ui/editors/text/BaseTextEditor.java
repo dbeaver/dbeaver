@@ -85,7 +85,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
     public static Map<String, Integer> getActionMap()
     {
         if (ACTION_TRANSLATE_MAP == null) {
-            ACTION_TRANSLATE_MAP = new HashMap<String, Integer>();
+            ACTION_TRANSLATE_MAP = new HashMap<>();
             for (IdMapEntry entry : ACTION_MAP) {
                 ACTION_TRANSLATE_MAP.put(entry.getActionId(), entry.getAction());
             }

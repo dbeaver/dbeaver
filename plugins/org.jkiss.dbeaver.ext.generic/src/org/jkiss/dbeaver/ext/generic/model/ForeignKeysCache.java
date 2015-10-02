@@ -45,7 +45,7 @@ import java.util.Map;
 */
 class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, GenericTable, GenericTableForeignKey, GenericTableForeignKeyColumnTable> {
 
-    private final Map<String, GenericPrimaryKey> pkMap = new HashMap<String, GenericPrimaryKey>();
+    private final Map<String, GenericPrimaryKey> pkMap = new HashMap<>();
     private final GenericMetaObject foreignKeyObject;
 
     ForeignKeysCache(TableCache tableCache)

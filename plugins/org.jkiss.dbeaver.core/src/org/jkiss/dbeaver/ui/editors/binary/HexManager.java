@@ -210,7 +210,7 @@ public class HexManager {
 
         if (hexEditControl == null) {
             if (listOfStatusChangedListeners == null)
-                listOfStatusChangedListeners = new ArrayList<Listener>();
+                listOfStatusChangedListeners = new ArrayList<>();
             listOfStatusChangedListeners.add(aListener);
         } else {
             hexEditControl.addListener(SWT.Modify, aListener);
@@ -230,7 +230,7 @@ public class HexManager {
 
         if (hexEditControl == null) {
             if (listOfLongListeners == null)
-                listOfLongListeners = new ArrayList<SelectionListener>();
+                listOfLongListeners = new ArrayList<>();
             listOfLongListeners.add(listener);
         } else {
             hexEditControl.addLongSelectionListener(listener);

@@ -35,7 +35,7 @@ import java.util.List;
 public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
 
     private final IPreferencePage preferencePage;
-    private final List<WizardPrefPage> subPages = new ArrayList<WizardPrefPage>();
+    private final List<WizardPrefPage> subPages = new ArrayList<>();
 
     public WizardPrefPage(IPreferencePage preferencePage, String title, String description)
     {

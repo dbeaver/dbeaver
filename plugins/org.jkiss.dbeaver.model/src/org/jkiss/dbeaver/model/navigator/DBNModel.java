@@ -52,9 +52,9 @@ public class DBNModel implements IResourceChangeListener {
 
     private final DBPApplication application;
     private DBNRoot root;
-    private final List<INavigatorListener> listeners = new ArrayList<INavigatorListener>();
+    private final List<INavigatorListener> listeners = new ArrayList<>();
     private transient INavigatorListener[] listenersCopy = null;
-    private final Map<DBSObject, Object> nodeMap = new HashMap<DBSObject, Object>();
+    private final Map<DBSObject, Object> nodeMap = new HashMap<>();
 
     public DBNModel(DBPApplication application) {
         this.application = application;
@@ -161,7 +161,7 @@ public class DBNModel implements IResourceChangeListener {
         if (node != null) {
             return node;
         }
-        List<DBSObject> path = new ArrayList<DBSObject>();
+        List<DBSObject> path = new ArrayList<>();
         for (DBSObject item = object; item != null; item = item.getParentObject()) {
             path.add(0, item);
         }
@@ -284,7 +284,7 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
         }
-        List<DBSObject> path = new ArrayList<DBSObject>();
+        List<DBSObject> path = new ArrayList<>();
         for (DBSObject item = object.getParentObject(); item != null; item = item.getParentObject()) {
             path.add(0, item);
         }
@@ -331,7 +331,7 @@ public class DBNModel implements IResourceChangeListener {
                 nodeMap.put(node.getObject(), node);
             } else if (obj instanceof DBNNode) {
                 // Second node - make a list
-                List<DBNNode> nodeList = new ArrayList<DBNNode>(2);
+                List<DBNNode> nodeList = new ArrayList<>(2);
                 nodeList.add((DBNNode)obj);
                 nodeList.add(node);
                 nodeMap.put(node.getObject(), nodeList);

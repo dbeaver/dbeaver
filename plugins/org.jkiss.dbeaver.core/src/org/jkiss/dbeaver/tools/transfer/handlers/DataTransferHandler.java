@@ -44,8 +44,8 @@ public abstract class DataTransferHandler extends AbstractHandler {
             return null;
         }
         IStructuredSelection ss = (IStructuredSelection)selection;
-        final List<IDataTransferProducer> producers = new ArrayList<IDataTransferProducer>();
-        final List<IDataTransferConsumer> consumers = new ArrayList<IDataTransferConsumer>();
+        final List<IDataTransferProducer> producers = new ArrayList<>();
+        final List<IDataTransferConsumer> consumers = new ArrayList<>();
         for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {
             Object object = iter.next();
 

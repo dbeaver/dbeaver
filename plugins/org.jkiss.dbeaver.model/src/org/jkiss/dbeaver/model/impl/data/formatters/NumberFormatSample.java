@@ -37,7 +37,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
     public Map<Object, Object> getDefaultProperties(Locale locale)
     {
         NumberFormat tmp = NumberFormat.getNumberInstance(locale);
-        Map<Object, Object> props = new HashMap<Object, Object>();
+        Map<Object, Object> props = new HashMap<>();
         props.put(PROP_USE_GROUPING, tmp.isGroupingUsed());
         props.put(PROP_MAX_INT_DIGITS, tmp.getMaximumIntegerDigits());
         props.put(PROP_MIN_INT_DIGITS, tmp.getMinimumIntegerDigits());

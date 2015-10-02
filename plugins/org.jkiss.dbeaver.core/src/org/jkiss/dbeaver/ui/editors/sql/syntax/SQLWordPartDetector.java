@@ -109,7 +109,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                     break;
                 }
                 if (prevWords == null) {
-                    prevWords = new ArrayList<String>();
+                    prevWords = new ArrayList<>();
                 }
                 prevWords.add(prevWord);
                 prevOffset--;

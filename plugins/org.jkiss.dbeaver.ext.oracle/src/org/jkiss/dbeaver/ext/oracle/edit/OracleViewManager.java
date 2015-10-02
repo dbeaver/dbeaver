@@ -96,7 +96,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     {
         final OracleView view = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(2);
+        List<DBEPersistAction> actions = new ArrayList<>(2);
         if (!hasComment || command.getProperties().size() > 1) {
             StringBuilder decl = new StringBuilder(200);
             final String lineSeparator = GeneralUtils.getDefaultLineSeparator();

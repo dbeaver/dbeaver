@@ -59,8 +59,8 @@ public class DBSObjectFilter
             this.name = filter.name;
             this.description = filter.description;
             this.enabled = filter.enabled;
-            this.include = filter.include == null ? null : new ArrayList<String>(filter.include);
-            this.exclude = filter.exclude == null ? null : new ArrayList<String>(filter.exclude);
+            this.include = filter.include == null ? null : new ArrayList<>(filter.include);
+            this.exclude = filter.exclude == null ? null : new ArrayList<>(filter.exclude);
         }
     }
 
@@ -102,7 +102,7 @@ public class DBSObjectFilter
     public void addInclude(String name)
     {
         if (include == null) {
-            include = new ArrayList<String>();
+            include = new ArrayList<>();
         }
         include.add(name);
         this.includePatterns = null;
@@ -122,7 +122,7 @@ public class DBSObjectFilter
     public void addExclude(String name)
     {
         if (exclude == null) {
-            exclude = new ArrayList<String>();
+            exclude = new ArrayList<>();
         }
         exclude.add(name);
         this.excludePatterns = null;
@@ -153,7 +153,7 @@ public class DBSObjectFilter
     public synchronized boolean matches(String name)
     {
         if (includePatterns == null && !CommonUtils.isEmpty(include)) {
-            includePatterns = new ArrayList<Pattern>(include.size());
+            includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {
                 if (!inc.isEmpty()) {
                     includePatterns.add(Pattern.compile(
@@ -176,7 +176,7 @@ public class DBSObjectFilter
         }
 
         if (excludePatterns == null && !CommonUtils.isEmpty(exclude)) {
-            excludePatterns = new ArrayList<Pattern>(exclude.size());
+            excludePatterns = new ArrayList<>(exclude.size());
             for (String exc : exclude) {
                 if (!exc.isEmpty()) {
                     excludePatterns.add(Pattern.compile(

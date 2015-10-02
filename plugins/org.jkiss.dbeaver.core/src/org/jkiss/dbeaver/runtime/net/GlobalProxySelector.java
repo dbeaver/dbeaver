@@ -77,7 +77,7 @@ public class GlobalProxySelector extends ProxySelector {
                             }
                             Proxy proxy = new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(proxyHost, portNumber));
                             if (proxies == null) {
-                                proxies = new ArrayList<Proxy>();
+                                proxies = new ArrayList<>();
                             }
                             proxies.add(proxy);
                         }

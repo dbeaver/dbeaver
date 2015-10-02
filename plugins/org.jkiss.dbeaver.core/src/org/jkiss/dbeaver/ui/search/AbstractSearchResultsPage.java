@@ -85,13 +85,13 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     public void populateObjects(DBRProgressMonitor monitor, Collection<OBJECT_TYPE> objects)
     {
         if (itemList != null && !itemList.isDisposed()) {
-            List<DBNNode> nodes = new ArrayList<DBNNode>(objects.size());
+            List<DBNNode> nodes = new ArrayList<>(objects.size());
             for (OBJECT_TYPE object : objects) {
                 nodes.add(getNodeFromObject(object));
             }
             TreeViewer itemsViewer = (TreeViewer) itemList.getItemsViewer();
             Collection<DBNNode> oldNodes = itemList.getListData();
-            List<DBNNode> newNodes = new ArrayList<DBNNode>();
+            List<DBNNode> newNodes = new ArrayList<>();
             if (!CommonUtils.isEmpty(oldNodes)) {
                 newNodes.addAll(oldNodes);
             }
@@ -153,7 +153,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     private static class ResultsNode {
         DBNNode node;
         ResultsNode parent;
-        final List<ResultsNode> children = new ArrayList<ResultsNode>();
+        final List<ResultsNode> children = new ArrayList<>();
 
         public ResultsNode(DBNNode node, ResultsNode parent)
         {
@@ -229,8 +229,8 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         private void rebuildObjectTree(Collection<DBNNode> nodeList)
         {
             rootResults = new ResultsNode(getRootNode(), null);
-            nodeMap = new IdentityHashMap<DBNNode, ResultsNode>();
-            final List<DBNNode> allParents = new ArrayList<DBNNode>();
+            nodeMap = new IdentityHashMap<>();
+            final List<DBNNode> allParents = new ArrayList<>();
             for (DBNNode node : nodeList) {
                 // Collect parent nodes
                 allParents.clear();

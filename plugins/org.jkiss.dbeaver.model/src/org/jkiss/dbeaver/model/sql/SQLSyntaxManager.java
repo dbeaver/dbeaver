@@ -47,7 +47,7 @@ public class SQLSyntaxManager {
     @NotNull
     private String catalogSeparator;
     @NotNull
-    private Set<String> statementDelimiters = new LinkedHashSet<String>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
+    private Set<String> statementDelimiters = new LinkedHashSet<>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
 
     private char escapeChar;
     private boolean unassigned;

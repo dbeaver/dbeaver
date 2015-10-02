@@ -31,7 +31,7 @@ import java.util.Collection;
 public abstract class DB2PlanNode implements DBCPlanNode {
 
     private DB2PlanNode parent;
-    private Collection<DB2PlanNode> listNestedNodes = new ArrayList<DB2PlanNode>(64);
+    private Collection<DB2PlanNode> listNestedNodes = new ArrayList<>(64);
 
     protected DB2PlanNode() {
     }

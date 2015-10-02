@@ -83,7 +83,7 @@ public class ERDExportGraphML
                 xml.addAttribute("edgedefault", "directed");
                 xml.addAttribute("id", "G");
 
-                Map<ERDEntity, String> entityMap = new HashMap<ERDEntity, String>();
+                Map<ERDEntity, String> entityMap = new HashMap<>();
                 int nodeNum = 0;
                 for (ERDEntity entity : diagram.getEntities()) {
                     nodeNum++;

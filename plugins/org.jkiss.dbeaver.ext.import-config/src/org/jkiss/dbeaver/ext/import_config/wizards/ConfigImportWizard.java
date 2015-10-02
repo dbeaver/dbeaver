@@ -99,7 +99,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no connection URL pattern specified");
         }
         final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
-        List<DriverDescriptor> matchedDrivers = new ArrayList<DriverDescriptor>();
+        List<DriverDescriptor> matchedDrivers = new ArrayList<>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
             for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
                 if (driver.getDriverClassName().equals(driverInfo.getDriverClass())) {

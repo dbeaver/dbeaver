@@ -38,9 +38,9 @@ import java.util.Map;
 
 public class NewConnectionWizard extends ConnectionWizard
 {
-    private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<DataSourceProviderDescriptor>();
+    private List<DataSourceProviderDescriptor> availableProvides = new ArrayList<>();
     private ConnectionPageDriver pageDrivers;
-    private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<DataSourceProviderDescriptor, ConnectionPageSettings>();
+    private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
 

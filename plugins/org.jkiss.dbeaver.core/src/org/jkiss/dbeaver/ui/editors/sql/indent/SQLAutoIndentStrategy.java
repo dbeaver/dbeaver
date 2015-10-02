@@ -33,7 +33,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
     private String partitioning;
 
-    private Map<Integer, String> autoCompletionMap = new HashMap<Integer, String>();
+    private Map<Integer, String> autoCompletionMap = new HashMap<>();
 
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.

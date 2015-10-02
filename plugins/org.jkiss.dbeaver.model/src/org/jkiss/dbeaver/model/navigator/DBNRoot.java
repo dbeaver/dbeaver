@@ -31,7 +31,7 @@ import java.util.*;
 public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 {
     private final DBNModel model;
-    private List<DBNProject> projects = new ArrayList<DBNProject>();
+    private List<DBNProject> projects = new ArrayList<>();
 
     public DBNRoot(DBNModel model)
     {

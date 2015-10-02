@@ -654,7 +654,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     }
 
                     if (parameters == null) {
-                        parameters = new ArrayList<SQLQueryParameter>();
+                        parameters = new ArrayList<>();
                     }
 
                     SQLQueryParameter parameter = new SQLQueryParameter(

@@ -98,7 +98,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     public Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException {
         Collection<GenericTable> tables = getTables(monitor);
         if (tables != null) {
-            List<GenericTable> filtered = new ArrayList<GenericTable>();
+            List<GenericTable> filtered = new ArrayList<>();
             for (GenericTable table : tables) {
                 if (table.isView()) {
                     filtered.add(table);
@@ -113,7 +113,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     public Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException {
         Collection<GenericTable> tables = getTables(monitor);
         if (tables != null) {
-            List<GenericTable> filtered = new ArrayList<GenericTable>();
+            List<GenericTable> filtered = new ArrayList<>();
             for (GenericTable table : tables) {
                 if (!table.isView()) {
                     filtered.add(table);
@@ -173,7 +173,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
                     Collection<GenericTable> tables = getTables(monitor);
                     monitor.beginTask("Cache indexes from tables", tables.size());
                     try {
-                        List<GenericTableIndex> tmpIndexMap = new ArrayList<GenericTableIndex>();
+                        List<GenericTableIndex> tmpIndexMap = new ArrayList<>();
                         for (GenericTable table : tables) {
                             if (monitor.isCanceled()) {
                                 return;
@@ -357,14 +357,14 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
     public void addProcedure(GenericProcedure procedure) {
         if (procedures == null) {
-            procedures = new ArrayList<GenericProcedure>();
+            procedures = new ArrayList<>();
         }
         procedures.add(procedure);
     }
 
     public void addPackage(GenericPackage procedurePackage) {
         if (packages == null) {
-            packages = new ArrayList<GenericPackage>();
+            packages = new ArrayList<>();
         }
         packages.add(procedurePackage);
     }
@@ -376,7 +376,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
 
         // Order procedures
         if (sequences == null) {
-            sequences = new ArrayList<GenericSequence>();
+            sequences = new ArrayList<>();
         } else {
             DBUtils.orderObjects(sequences);
         }

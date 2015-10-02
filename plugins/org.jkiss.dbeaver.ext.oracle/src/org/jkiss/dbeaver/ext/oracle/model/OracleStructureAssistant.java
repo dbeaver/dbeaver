@@ -99,7 +99,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         JDBCSession session = dataSource.getDefaultContext(true).openSession(
             monitor, DBCExecutionPurpose.META, "Find objects by name");
         try {
-            List<DBSObjectReference> objects = new ArrayList<DBSObjectReference>();
+            List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects
             searchAllObjects(session, schema, objectNameMask, objectTypes, caseSensitive, maxResults, objects);
@@ -201,7 +201,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         throws SQLException, DBException
     {
         StringBuilder objectTypeClause = new StringBuilder(100);
-        final List<OracleObjectType> oracleObjectTypes = new ArrayList<OracleObjectType>(objectTypes.length + 2);
+        final List<OracleObjectType> oracleObjectTypes = new ArrayList<>(objectTypes.length + 2);
         for (DBSObjectType objectType : objectTypes) {
             if (objectType instanceof OracleObjectType) {
                 oracleObjectTypes.add((OracleObjectType) objectType);

@@ -65,7 +65,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
         super(source);
         this.nonUnique = source.nonUnique;
         if (source.columns != null) {
-            this.columns = new ArrayList<MySQLTableIndexColumn>(source.columns.size());
+            this.columns = new ArrayList<>(source.columns.size());
             for (MySQLTableIndexColumn sourceColumn : source.columns) {
                 this.columns.add(new MySQLTableIndexColumn(this, sourceColumn));
             }
@@ -113,7 +113,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
     public void addColumn(MySQLTableIndexColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<MySQLTableIndexColumn>();
+            columns = new ArrayList<>();
         }
         columns.add(column);
     }

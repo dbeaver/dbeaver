@@ -54,7 +54,7 @@ public class OCIUtils
      * A list of Oracle client homes found in the system.
      * The first one is always a current Oracle home (from PATH) 
      */
-    private static final List<OracleHomeDescriptor> oraHomes = new ArrayList<OracleHomeDescriptor>();
+    private static final List<OracleHomeDescriptor> oraHomes = new ArrayList<>();
     private static boolean oraHomesSearched = false;
 
 /*
@@ -291,7 +291,7 @@ public class OCIUtils
      */
     public static List<String> parseTnsNames(String tnsnamesPath)
     {
-        ArrayList<String> aliases = new ArrayList<String>();
+        ArrayList<String> aliases = new ArrayList<>();
 
         File tnsnamesOra = new File (tnsnamesPath);
         if (tnsnamesOra.exists()) {

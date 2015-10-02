@@ -54,7 +54,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     private static final Log LOG = Log.getLog(DB2DataType.class);
 
-    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>(32); // See init below
+    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>(32); // See init below
 
     private DBSObject parentNode; // see below
 

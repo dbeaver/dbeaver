@@ -51,7 +51,7 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
     private Button waitFinishCheck;
     private Table eventTypeTable;
 
-    private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<DBPConnectionEventType, DBRShellCommand>();
+    private final Map<DBPConnectionEventType, DBRShellCommand> eventsCache = new HashMap<>();
 
     protected EditShellCommandsDialogPage(DataSourceDescriptor dataSource)
     {

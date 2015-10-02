@@ -76,7 +76,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
             newUser.setMaxConnections(tplUser.getMaxConnections());
             newUser.setMaxUserConnections(tplUser.getMaxUserConnections());
         }
-        commandContext.addCommand(new CommandCreateUser(newUser), new CreateObjectReflector<MySQLUser>(this), true);
+        commandContext.addCommand(new CommandCreateUser(newUser), new CreateObjectReflector<>(this), true);
 
         return newUser;
     }
@@ -84,7 +84,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
     @Override
     public void deleteObject(DBECommandContext commandContext, MySQLUser user, Map<String, Object> options)
     {
-        commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector<MySQLUser>(this), true);
+        commandContext.addCommand(new CommandDropUser(user), new DeleteObjectReflector<>(this), true);
     }
 
     @Override
@@ -93,7 +93,7 @@ public class MySQLUserManager extends AbstractObjectManager<MySQLUser> implement
         if (!queue.isEmpty()) {
             // Add privileges flush to the tail
             queue.add(
-                new SQLScriptCommand<MySQLUser>(
+                new SQLScriptCommand<>(
                     queue.getObject(),
                     MySQLMessages.edit_user_manager_command_flush_privileges,
                     "FLUSH PRIVILEGES")); //$NON-NLS-1$

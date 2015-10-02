@@ -128,7 +128,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         try {
             // Read engines
             {
-                engines = new ArrayList<MySQLEngine>();
+                engines = new ArrayList<>();
                 JDBCPreparedStatement dbStat = session.prepareStatement("SHOW ENGINES");
                 try {
                     JDBCResultSet dbResult = dbStat.executeQuery();
@@ -149,7 +149,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
             // Read charsets and collations
             {
-                charsets = new ArrayList<MySQLCharset>();
+                charsets = new ArrayList<>();
                 JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CHARSET");
                 try {
                     JDBCResultSet dbResult = dbStat.executeQuery();
@@ -169,7 +169,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                 Collections.sort(charsets, DBUtils.<MySQLCharset>nameComparator());
 
 
-                collations = new LinkedHashMap<String, MySQLCollation>();
+                collations = new LinkedHashMap<>();
                 dbStat = session.prepareStatement("SHOW COLLATION");
                 try {
                     JDBCResultSet dbResult = dbStat.executeQuery();
@@ -385,7 +385,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLUser> userList = new ArrayList<MySQLUser>();
+                    List<MySQLUser> userList = new ArrayList<>();
                     while (dbResult.next()) {
                             MySQLUser user = new MySQLUser(this, dbResult);
                             userList.add(user);
@@ -458,7 +458,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     public List<MySQLPrivilege> getPrivilegesByKind(DBRProgressMonitor monitor, MySQLPrivilege.Kind kind)
         throws DBException
     {
-        List<MySQLPrivilege> privs = new ArrayList<MySQLPrivilege>();
+        List<MySQLPrivilege> privs = new ArrayList<>();
         for (MySQLPrivilege priv : getPrivileges(monitor)) {
             if (priv.getKind() == kind) {
                 privs.add(priv);
@@ -482,7 +482,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+                    List<MySQLPrivilege> privileges = new ArrayList<>();
                     while (dbResult.next()) {
                             MySQLPrivilege user = new MySQLPrivilege(this, dbResult);
                             privileges.add(user);
@@ -543,7 +543,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLParameter> parameters = new ArrayList<MySQLParameter>();
+                    List<MySQLParameter> parameters = new ArrayList<>();
                     while (dbResult.next()) {
                         MySQLParameter parameter = new MySQLParameter(
                             this,

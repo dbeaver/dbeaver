@@ -99,7 +99,7 @@ public class DB2CurrentUserPrivileges {
 
         // DF: There is no easy way to get this information from DB2 v9.1
         // WE consider the user has no system authorities
-        listAuthorities = new ArrayList<String>();
+        listAuthorities = new ArrayList<>();
         if (db2DataSource.isAtLeastV9_5()) {
             dbStat = session.prepareStatement(SEL_AUTHORITIES);
             try {
@@ -117,7 +117,7 @@ public class DB2CurrentUserPrivileges {
             }
         }
 
-        listObjectPrivileges = new ArrayList<String>();
+        listObjectPrivileges = new ArrayList<>();
         dbStat = session.prepareStatement(SEL_OBJECTS);
         try {
             dbStat.setString(1, currentAuthId);

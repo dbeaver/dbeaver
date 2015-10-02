@@ -64,7 +64,7 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<OracleServerSession> sessions = new ArrayList<OracleServerSession>();
+                    List<OracleServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
                         sessions.add(new OracleServerSession(dbResult));
                     }

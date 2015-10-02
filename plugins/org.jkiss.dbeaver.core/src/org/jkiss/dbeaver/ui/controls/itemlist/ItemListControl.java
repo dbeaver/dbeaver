@@ -142,7 +142,7 @@ public class ItemListControl extends NodeListControl
             throws InvocationTargetException, InterruptedException
         {
             try {
-                List<DBNNode> items = new ArrayList<DBNNode>();
+                List<DBNNode> items = new ArrayList<>();
                 List<? extends DBNNode> children = getRootNode().getChildren(getProgressMonitor());
                 if (CommonUtils.isEmpty(children)) {
                     return items;

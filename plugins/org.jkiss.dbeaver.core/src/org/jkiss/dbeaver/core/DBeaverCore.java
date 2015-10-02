@@ -80,7 +80,7 @@ public class DBeaverCore implements DBPApplication {
     private QMLogFileWriter qmLogWriter;
     private ProjectRegistry projectRegistry;
 
-    private final List<IPluginService> activatedServices = new ArrayList<IPluginService>();
+    private final List<IPluginService> activatedServices = new ArrayList<>();
 
     private static boolean disposed = false;
 
@@ -406,7 +406,7 @@ public class DBeaverCore implements DBPApplication {
     @NotNull
     public List<IProject> getLiveProjects()
     {
-        List<IProject> result = new ArrayList<IProject>();
+        List<IProject> result = new ArrayList<>();
         for (IProject project : workspace.getRoot().getProjects()) {
             if (project.exists() && !project.isHidden()) {
                 result.add(project);

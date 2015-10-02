@@ -113,7 +113,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
                 OracleMessages.editors_oracle_session_editor_confirm_title,
                 false);
             if (dialog.open() == IDialogConstants.YES_ID) {
-                Map<String, Object> options = new HashMap<String, Object>();
+                Map<String, Object> options = new HashMap<>();
                 if (kill) {
                     options.put(OracleServerSessionManager.PROP_KILL_SESSION, kill);
                 }

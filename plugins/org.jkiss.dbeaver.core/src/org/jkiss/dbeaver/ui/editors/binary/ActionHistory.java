@@ -71,7 +71,7 @@ public class ActionHistory {
             throw new NullPointerException("null content");
 
         content = aContent;
-        actionList = new ArrayList<Object[]>();
+        actionList = new ArrayList<>();
     }
 
 
@@ -118,7 +118,7 @@ public class ActionHistory {
     {
         if (integerList.size() > 1L || !isSingle) {  // block delete
             BinaryContent.Range range = newRangeFromIntegerList(position, integerList);
-            List<Range> oneElementList = new ArrayList<Range>();
+            List<Range> oneElementList = new ArrayList<>();
             oneElementList.add(range);
             addLostRanges(oneElementList);
         } else {
@@ -131,7 +131,7 @@ public class ActionHistory {
     void addLostByte(long position, Integer integer)
     {
         if (deletedList == null)
-            deletedList = new ArrayList<Integer>();
+            deletedList = new ArrayList<>();
 
         updateNewRange(position);
         if (isBackspace) {
@@ -393,7 +393,7 @@ public class ActionHistory {
     private void startAction(ActionType type, boolean isSingle)
     {
         endAction();
-        currentAction = new ArrayList<Range>();
+        currentAction = new ArrayList<>();
         currentActionType = type;
         mergingSingles = isSingle;
     }

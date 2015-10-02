@@ -33,7 +33,7 @@ public class DBPConnectionBootstrap
 
     public DBPConnectionBootstrap()
     {
-        this.initQueries = new ArrayList<String>();
+        this.initQueries = new ArrayList<>();
         this.ignoreErrors = false;
     }
 
@@ -42,7 +42,7 @@ public class DBPConnectionBootstrap
         this.defaultObjectName = info.defaultObjectName;
         this.defaultAutoCommit = info.defaultAutoCommit;
         this.defaultTransactionIsolation = info.defaultTransactionIsolation;
-        this.initQueries = new ArrayList<String>(info.initQueries);
+        this.initQueries = new ArrayList<>(info.initQueries);
         this.ignoreErrors = info.ignoreErrors;
     }
 

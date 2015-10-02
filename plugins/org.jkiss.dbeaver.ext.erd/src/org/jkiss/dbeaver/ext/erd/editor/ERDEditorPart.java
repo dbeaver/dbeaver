@@ -115,7 +115,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     /**
      * the list of action ids that are to EditPart actions
      */
-    private List<String> editPartActionIDs = new ArrayList<String>();
+    private List<String> editPartActionIDs = new ArrayList<>();
 
     /**
      * the overview outline page
@@ -408,7 +408,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         // Setup zoom manager
         ZoomManager zoomManager = rootPart.getZoomManager();
 
-        List<String> zoomLevels = new ArrayList<String>(3);
+        List<String> zoomLevels = new ArrayList<>(3);
         zoomLevels.add(ZoomManager.FIT_ALL);
         zoomLevels.add(ZoomManager.FIT_WIDTH);
         zoomLevels.add(ZoomManager.FIT_HEIGHT);
@@ -970,7 +970,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     List<String> errorMessages = entityDiagram.getErrorMessages();
                     if (!errorMessages.isEmpty()) {
                         // log.debug(message);
-                        List<Status> messageStatuses = new ArrayList<Status>(errorMessages.size());
+                        List<Status> messageStatuses = new ArrayList<>(errorMessages.size());
                         for (String error : errorMessages) {
                             messageStatuses.add(new Status(Status.ERROR, DBeaverCore.getCorePluginID(), error));
                         }

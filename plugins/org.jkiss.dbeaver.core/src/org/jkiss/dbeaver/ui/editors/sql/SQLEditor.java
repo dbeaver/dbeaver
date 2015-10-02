@@ -127,14 +127,14 @@ public class SQLEditor extends SQLEditorBase implements
     private SQLEditorOutputViewer outputViewer;
 
     private volatile QueryProcessor curQueryProcessor;
-    private final List<QueryProcessor> queryProcessors = new ArrayList<QueryProcessor>();
+    private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
     private DBSDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
-    private final List<SQLQuery> runningQueries = new ArrayList<SQLQuery>();
+    private final List<SQLQuery> runningQueries = new ArrayList<>();
 
     public SQLEditor()
     {
@@ -162,7 +162,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (document == null || runningQueries.isEmpty()) {
                 return null;
             }
-            List<Integer> lines = new ArrayList<Integer>(runningQueries.size() * 2);
+            List<Integer> lines = new ArrayList<>(runningQueries.size() * 2);
             for (SQLQuery statementInfo : runningQueries) {
                 try {
                     int firstLine = document.getLineOfOffset(statementInfo.getOffset());
@@ -746,7 +746,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private List<SQLQuery> extractScriptQueries(int startOffset, int length)
     {
-        List<SQLQuery> queryList = new ArrayList<SQLQuery>();
+        List<SQLQuery> queryList = new ArrayList<>();
 
         IDocument document = getDocument();
         if (document == null) {
@@ -1061,7 +1061,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         private SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
-        private final List<QueryResultsContainer> resultProviders = new ArrayList<QueryResultsContainer>();
+        private final List<QueryResultsContainer> resultProviders = new ArrayList<>();
         private DBDDataReceiver curDataReceiver = null;
 
         public QueryProcessor() {

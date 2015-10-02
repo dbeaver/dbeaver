@@ -170,7 +170,7 @@ public class DB2PlanOperator extends DB2PlanNode {
     private void loadChildren(JDBCSession session) throws SQLException
     {
 
-        listArguments = new ArrayList<DB2PlanOperatorArgument>();
+        listArguments = new ArrayList<>();
         JDBCPreparedStatement sqlStmt = session.prepareStatement(String
             .format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
         try {
@@ -187,7 +187,7 @@ public class DB2PlanOperator extends DB2PlanNode {
             sqlStmt.close();
         }
 
-        listPredicates = new ArrayList<DB2PlanOperatorPredicate>();
+        listPredicates = new ArrayList<>();
         sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
         try {
             setQueryParameters(sqlStmt);

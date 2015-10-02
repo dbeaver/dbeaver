@@ -38,7 +38,7 @@ public class SQLContextTypeRegistry extends ContextTypeRegistry {
                 addContextType(contextType);
                 provider.loadTemplateVariableResolvers(contextType);
             } else {
-                Set<String> categoriesAdded = new HashSet<String>();
+                Set<String> categoriesAdded = new HashSet<>();
                 for (DriverDescriptor driver : provider.getEnabledDrivers()) {
                     if (!CommonUtils.isEmpty(driver.getCategory())) {
                         if (categoriesAdded.contains(driver.getCategory())) {

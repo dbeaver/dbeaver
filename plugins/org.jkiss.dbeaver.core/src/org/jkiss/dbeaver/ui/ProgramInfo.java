@@ -31,7 +31,7 @@ import java.util.Map;
  * Program info
  */
 public class ProgramInfo {
-    private static final Map<String, ProgramInfo> programMap = new HashMap<String, ProgramInfo>();
+    private static final Map<String, ProgramInfo> programMap = new HashMap<>();
 
     private final Program program;
     private DBIconBinary image;

@@ -37,7 +37,7 @@ public class ERDLogicalForeignKey implements DBSEntityAssociation, DBSEntityRefe
     private String name;
     private String description;
     private ERDLogicalPrimaryKey pk;
-    private List<? extends DBSEntityAttributeRef> columns = new ArrayList<DBSEntityAttributeRef>();
+    private List<? extends DBSEntityAttributeRef> columns = new ArrayList<>();
 
     public ERDLogicalForeignKey(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
     {

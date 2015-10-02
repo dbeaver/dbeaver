@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class ERDEditorAdapter implements IAdapterFactory {
 
-    private static Map<Control, ERDEditorPart> editorsMap = new IdentityHashMap<Control, ERDEditorPart>();
+    private static Map<Control, ERDEditorPart> editorsMap = new IdentityHashMap<>();
 
     static synchronized void mapControl(Control control, ERDEditorPart editor)
     {

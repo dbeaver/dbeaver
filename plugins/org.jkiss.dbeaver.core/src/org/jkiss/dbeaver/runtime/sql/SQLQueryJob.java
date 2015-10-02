@@ -79,7 +79,7 @@ public class SQLQueryJob extends DataSourceJob
     private long rsMaxRows;
 
     private DBCStatement curStatement;
-    private final List<DBCResultSet> curResultSets = new ArrayList<DBCResultSet>();
+    private final List<DBCResultSet> curResultSets = new ArrayList<>();
     private Throwable lastError = null;
 
     private DBCStatistics statistics;
@@ -448,7 +448,7 @@ public class SQLQueryJob extends DataSourceJob
     private Boolean prepareStatementParameters(SQLQuery sqlStatement) {
         // Bind parameters
         if (!CommonUtils.isEmpty(sqlStatement.getParameters())) {
-            List<SQLQueryParameter> unresolvedParams = new ArrayList<SQLQueryParameter>();
+            List<SQLQueryParameter> unresolvedParams = new ArrayList<>();
             for (SQLQueryParameter param : sqlStatement.getParameters()) {
                 if (!param.isResolved()) {
                     unresolvedParams.add(param);

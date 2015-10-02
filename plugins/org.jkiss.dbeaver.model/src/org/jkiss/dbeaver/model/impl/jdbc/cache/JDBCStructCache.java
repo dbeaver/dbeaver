@@ -47,7 +47,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
 
     private final Object objectNameColumn;
     private volatile boolean childrenCached = false;
-    private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<OBJECT, SimpleObjectCache<OBJECT, CHILD>>();
+    private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<>();
 
     abstract protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT forObject)
         throws SQLException;
@@ -87,7 +87,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
             "Load child objects");
         try {
-            Map<OBJECT, List<CHILD>> objectMap = new HashMap<OBJECT, List<CHILD>>();
+            Map<OBJECT, List<CHILD>> objectMap = new HashMap<>();
 
             // Load columns
             JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject);
@@ -131,7 +131,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             // Add to map
                             List<CHILD> children = objectMap.get(object);
                             if (children == null) {
-                                children = new ArrayList<CHILD>();
+                                children = new ArrayList<>();
                                 objectMap.put(object, children);
                             }
                             children.add(child);
@@ -204,7 +204,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 // Create new empty children cache
                 // This may happen only when invoked for newly created object (e.g. when we create new column
                 // in a new created table)
-                nestedCache = new SimpleObjectCache<OBJECT, CHILD>();
+                nestedCache = new SimpleObjectCache<>();
                 nestedCache.setCache(new ArrayList<CHILD>());
                 childrenCache.put(forObject, nestedCache);
             }
@@ -255,7 +255,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);
             if (nestedCache == null) {
-                nestedCache = new SimpleObjectCache<OBJECT, CHILD>();
+                nestedCache = new SimpleObjectCache<>();
                 nestedCache.setCaseSensitive(caseSensitive);
                 childrenCache.put(parent, nestedCache);
             }

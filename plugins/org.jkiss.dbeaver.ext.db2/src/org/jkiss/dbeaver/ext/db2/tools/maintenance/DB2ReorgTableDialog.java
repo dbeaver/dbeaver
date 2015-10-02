@@ -70,8 +70,8 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
     private Button dlgAccesReadOnly;
     private Button dlgAccesReadWrite;
 
-    private final List<String> listTempTsNames = new ArrayList<String>();
-    private final List<String> listIndexNames = new ArrayList<String>();
+    private final List<String> listTempTsNames = new ArrayList<>();
+    private final List<String> listIndexNames = new ArrayList<>();
 
     public DB2ReorgTableDialog(IWorkbenchPartSite partSite, final Collection<DB2Table> selectedTables)
     {

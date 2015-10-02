@@ -50,8 +50,8 @@ public class FolderComposite extends Composite implements IFolderContainer {
     @Nullable
     private FolderInfo[] folders;
 
-    private final Map<FolderInfo, Composite> contentsMap = new HashMap<FolderInfo, Composite>();
-    private List<IFolderListener> listeners = new ArrayList<IFolderListener>();
+    private final Map<FolderInfo, Composite> contentsMap = new HashMap<>();
+    private List<IFolderListener> listeners = new ArrayList<>();
     private FolderPane[] folderPanes;
 
     private class FolderPane {
@@ -228,16 +228,16 @@ public class FolderComposite extends Composite implements IFolderContainer {
     public void setFolders(@NotNull final FolderInfo[] folders) {
         this.folders = folders;
 
-        List<List<FolderInfo>> groups = new ArrayList<List<FolderInfo>>();
+        List<List<FolderInfo>> groups = new ArrayList<>();
         List<FolderInfo> curGroup = null;
         for (FolderInfo folder : folders) {
             if (folder.isEmbeddable()) {
-                groups.add(curGroup = new ArrayList<FolderInfo>());
+                groups.add(curGroup = new ArrayList<>());
                 curGroup.add(folder);
                 curGroup = null;
             } else {
                 if (curGroup == null) {
-                    groups.add(curGroup = new ArrayList<FolderInfo>());
+                    groups.add(curGroup = new ArrayList<>());
                 }
                 curGroup.add(folder);
             }

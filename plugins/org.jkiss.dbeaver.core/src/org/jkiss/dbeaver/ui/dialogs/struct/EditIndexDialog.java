@@ -52,7 +52,7 @@ public class EditIndexDialog extends AttributesSelectorDialog {
         DBSTable table,
         Collection<DBSIndexType> indexTypes) {
         super(shell, title, table);
-        this.indexTypes = new ArrayList<DBSIndexType>(indexTypes);
+        this.indexTypes = new ArrayList<>(indexTypes);
         Assert.isTrue(!CommonUtils.isEmpty(this.indexTypes));
     }
 

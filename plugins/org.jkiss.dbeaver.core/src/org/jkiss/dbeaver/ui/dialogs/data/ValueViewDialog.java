@@ -542,7 +542,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            final Map<Object, String> keyValues = new TreeMap<Object, String>();
+            final Map<Object, String> keyValues = new TreeMap<>();
             try {
                 IAttributeController attributeController = (IAttributeController)valueController;
                 final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
@@ -569,7 +569,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
                     // Our column is not a first on in foreign key.
                     // So, fill uo preceeding keys
                     List<DBDAttributeBinding> rowAttributes = attributeController.getRowController().getRowAttributes();
-                    precedingKeys = new ArrayList<DBDAttributeValue>();
+                    precedingKeys = new ArrayList<>();
                     for (DBSEntityAttributeRef precColumn : allColumns) {
                         if (precColumn == fkColumn) {
                             // Enough

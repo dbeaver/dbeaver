@@ -95,7 +95,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                 dbStat.setString(1, container.getName());
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<GenericSequence> result = new ArrayList<GenericSequence>();
+                    List<GenericSequence> result = new ArrayList<>();
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
                         JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name);

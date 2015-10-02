@@ -61,7 +61,7 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
 
     protected static List<DBNNode> loadTreeState(DBPPreferenceStore store, String propName)
     {
-        final List<DBNNode> result = new ArrayList<DBNNode>();
+        final List<DBNNode> result = new ArrayList<>();
         final String sources = store.getString(propName);
         if (!CommonUtils.isEmpty(sources)) {
             try {
@@ -70,7 +70,7 @@ public abstract class AbstractSearchPage extends DialogPage implements IObjectSe
                     public void run(DBRProgressMonitor monitor)
                     {
                         // Keep broken datasources to make connect attempt only once
-                        Set<DBNDataSource> brokenDataSources = new HashSet<DBNDataSource>();
+                        Set<DBNDataSource> brokenDataSources = new HashSet<>();
 
                         // Find all nodes
                         StringTokenizer st = new StringTokenizer(sources, "|"); //$NON-NLS-1$

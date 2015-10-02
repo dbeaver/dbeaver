@@ -76,10 +76,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private Font boldFont;
 
     private boolean connectionNameChanged = false;
-    private java.util.List<FilterInfo> filters = new ArrayList<FilterInfo>();
+    private java.util.List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
     private boolean activated = false;
-    private java.util.List<DBPTransactionIsolation> supportedLevels = new ArrayList<DBPTransactionIsolation>();
+    private java.util.List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
     private java.util.List<String> bootstrapQueries;
     private boolean ignoreBootstrapErrors;
 
@@ -107,7 +107,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
 
-        bootstrapQueries = new ArrayList<String>();
+        bootstrapQueries = new ArrayList<>();
     }
 
     ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
@@ -564,7 +564,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                final java.util.List<String> schemaNames = new ArrayList<String>();
+                final java.util.List<String> schemaNames = new ArrayList<>();
                 Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
                 if (children != null) {
                     for (DBSObject child : children) {

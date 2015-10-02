@@ -45,7 +45,7 @@ public class DataTransferRegistry {
         return instance;
     }
 
-    private List<DataTransferNodeDescriptor> nodes = new ArrayList<DataTransferNodeDescriptor>();
+    private List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
 
     private DataTransferRegistry(IExtensionRegistry registry)
     {
@@ -70,7 +70,7 @@ public class DataTransferRegistry {
 
     List<DataTransferNodeDescriptor> getAvailableNodes(DataTransferNodeDescriptor.NodeType nodeType, Collection<Class<?>> objectTypes)
     {
-        List<DataTransferNodeDescriptor> result = new ArrayList<DataTransferNodeDescriptor>();
+        List<DataTransferNodeDescriptor> result = new ArrayList<>();
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeType() == nodeType) {
                 for (Class objectType : objectTypes) {

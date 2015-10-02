@@ -62,7 +62,7 @@ public class ExecuteStatementCountHandler extends AbstractHandler implements SQL
             Statement statement = CCJSqlParserUtil.parse(query.getQuery());
             if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
                 PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                List<SelectItem> selectItems = new ArrayList<SelectItem>();
+                List<SelectItem> selectItems = new ArrayList<>();
                 Function countFunc = new Function();
                 countFunc.setName("count");
                 countFunc.setParameters(new ExpressionList(Collections.<Expression>singletonList(new Column("*"))));

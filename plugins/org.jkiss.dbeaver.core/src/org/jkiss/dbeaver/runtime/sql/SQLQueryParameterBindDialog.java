@@ -63,11 +63,11 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     private IWorkbenchPartSite ownerSite;
     private DBCExecutionContext executionContext;
     private List<SQLQueryParameter> parameters;
-    private List<DBSDataType> validDataTypes = new ArrayList<DBSDataType>();
+    private List<DBSDataType> validDataTypes = new ArrayList<>();
     private TableEditor tableEditor;
     private Table paramTable;
 
-    private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<String, SQLQueryParameterRegistry.ParameterInfo>();
+    private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
 
     protected SQLQueryParameterBindDialog(IWorkbenchPartSite ownerSite, DBCExecutionContext executionContext, List<SQLQueryParameter> parameters)
     {

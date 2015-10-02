@@ -54,13 +54,13 @@ class ResultSetPersister {
     @NotNull
     private final DBDAttributeBinding[] columns;
 
-    private final List<ResultSetRow> deletedRows = new ArrayList<ResultSetRow>();
-    private final List<ResultSetRow> addedRows = new ArrayList<ResultSetRow>();
-    private final List<ResultSetRow> changedRows = new ArrayList<ResultSetRow>();
-    private final Map<ResultSetRow, DBDRowIdentifier> rowIdentifiers = new LinkedHashMap<ResultSetRow, DBDRowIdentifier>();
-    private final List<DataStatementInfo> insertStatements = new ArrayList<DataStatementInfo>();
-    private final List<DataStatementInfo> deleteStatements = new ArrayList<DataStatementInfo>();
-    private final List<DataStatementInfo> updateStatements = new ArrayList<DataStatementInfo>();
+    private final List<ResultSetRow> deletedRows = new ArrayList<>();
+    private final List<ResultSetRow> addedRows = new ArrayList<>();
+    private final List<ResultSetRow> changedRows = new ArrayList<>();
+    private final Map<ResultSetRow, DBDRowIdentifier> rowIdentifiers = new LinkedHashMap<>();
+    private final List<DataStatementInfo> insertStatements = new ArrayList<>();
+    private final List<DataStatementInfo> deleteStatements = new ArrayList<>();
+    private final List<DataStatementInfo> updateStatements = new ArrayList<>();
 
     ResultSetPersister(@NotNull ResultSetViewer viewer)
     {
@@ -597,10 +597,10 @@ class ResultSetPersister {
         final ResultSetRow row;
         @NotNull
         final DBSEntity entity;
-        final List<DBDAttributeValue> keyAttributes = new ArrayList<DBDAttributeValue>();
-        final List<DBDAttributeValue> updateAttributes = new ArrayList<DBDAttributeValue>();
+        final List<DBDAttributeValue> keyAttributes = new ArrayList<>();
+        final List<DBDAttributeValue> updateAttributes = new ArrayList<>();
         boolean executed = false;
-        final Map<Integer, Object> updatedCells = new HashMap<Integer, Object>();
+        final Map<Integer, Object> updatedCells = new HashMap<>();
 
         DataStatementInfo(@NotNull DBSManipulationType type, @NotNull ResultSetRow row, @NotNull DBSEntity entity)
         {

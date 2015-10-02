@@ -48,7 +48,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         this.container = container;
         this.packageName = packageName;
         this.nameFromCatalog = nameFromCatalog;
-        this.procedures = new ArrayList<GenericProcedure>();
+        this.procedures = new ArrayList<>();
     }
 
     @NotNull

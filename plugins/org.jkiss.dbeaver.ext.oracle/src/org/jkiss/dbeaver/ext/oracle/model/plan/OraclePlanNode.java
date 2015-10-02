@@ -126,7 +126,7 @@ public class OraclePlanNode implements DBCPlanNode {
         }
         if (parent != null) {
             if (parent.nested == null) {
-                parent.nested = new ArrayList<OraclePlanNode>();
+                parent.nested = new ArrayList<>();
             }
             parent.nested.add(this);
         }

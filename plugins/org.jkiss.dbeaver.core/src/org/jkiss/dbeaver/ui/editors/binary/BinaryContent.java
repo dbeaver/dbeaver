@@ -136,7 +136,7 @@ public class BinaryContent {
     private List<Integer> changeList = null;
     private boolean changesInserted = false;
     private long changesPosition = -1L;
-    private TreeSet<Range> ranges = new TreeSet<Range>();
+    private TreeSet<Range> ranges = new TreeSet<>();
     private Iterator<Range> tailTree = null;
 
     /**
@@ -183,7 +183,7 @@ public class BinaryContent {
     public void addModifyListener(ModifyListener listener)
     {
         if (listeners == null)
-            listeners = new ArrayList<ModifyListener>();
+            listeners = new ArrayList<>();
 
         listeners.add(listener);
     }
@@ -283,7 +283,7 @@ public class BinaryContent {
         initSubtreeTraversing(startPosition, length);
         if (!tailTree.hasNext()) return;
 
-        java.util.List<Range> deleted = new ArrayList<Range>();
+        java.util.List<Range> deleted = new ArrayList<>();
         Range firstRange = tailTree.next();
         Range secondRange = (Range) firstRange.clone();  // will be tail part of firstRange
         Range lastRange = null;
@@ -735,7 +735,7 @@ public class BinaryContent {
         BinaryContent.Range firstRange = ranges.get(0);
         BinaryContent.Range lastRange = ranges.get(ranges.size() - 1);
         splitAndShift(firstRange.position, lastRange.exclusiveEnd() - firstRange.position);
-        List<Range> cloned = new ArrayList<Range>(ranges.size());
+        List<Range> cloned = new ArrayList<>(ranges.size());
         for (Range range : ranges) cloned.add((Range)range.clone());
         this.ranges.addAll(cloned);
 
@@ -919,7 +919,7 @@ public class BinaryContent {
                     goingRange = tailTree.next();
             }
         }
-        List<Range> cloned = new ArrayList<Range>(ranges.size());
+        List<Range> cloned = new ArrayList<>(ranges.size());
         for (Range range : ranges) cloned.add((Range)range.clone());
         this.ranges.addAll(cloned);
 
@@ -1081,7 +1081,7 @@ public class BinaryContent {
                 commitChanges();
             }
         }
-        changeList = new ArrayList<Integer>();
+        changeList = new ArrayList<>();
         changeList.add(getFromRanges(position));
         changesInserted = insert;
         changesPosition = position;

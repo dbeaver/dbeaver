@@ -46,16 +46,16 @@ public class CompareObjectsExecutor {
     private CompareObjectsSettings settings;
 
     private final List<DBNDatabaseNode> rootNodes;
-    private final Map<DBPDataSource, DataSourcePropertyFilter> dataSourceFilters = new IdentityHashMap<DBPDataSource, DataSourcePropertyFilter>();
+    private final Map<DBPDataSource, DataSourcePropertyFilter> dataSourceFilters = new IdentityHashMap<>();
 
     private final DBRProgressListener initializeFinisher;
     private final ILazyPropertyLoadListener lazyPropertyLoadListener;
 
     private volatile int initializedCount = 0;
     private volatile IStatus initializeError;
-    private final Map<Object, Map<DBPPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<Object, Map<DBPPropertyDescriptor, Object>>();
+    private final Map<Object, Map<DBPPropertyDescriptor, Object>> propertyValues = new IdentityHashMap<>();
 
-    private final List<CompareReportLine> reportLines = new ArrayList<CompareReportLine>();
+    private final List<CompareReportLine> reportLines = new ArrayList<>();
     private int reportDepth = 0;
     private CompareReportLine lastLine;
 
@@ -98,7 +98,7 @@ public class CompareObjectsExecutor {
             }
         }
         if (lastLine.properties == null) {
-            lastLine.properties = new ArrayList<CompareReportProperty>();
+            lastLine.properties = new ArrayList<>();
         }
         lastLine.properties.add(reportProperty);
 
@@ -240,7 +240,7 @@ public class CompareObjectsExecutor {
             DBSObject databaseObject = node.getObject();
             Map<DBPPropertyDescriptor, Object> nodeProperties = propertyValues.get(databaseObject);
             if (nodeProperties == null) {
-                nodeProperties = new IdentityHashMap<DBPPropertyDescriptor, Object>();
+                nodeProperties = new IdentityHashMap<>();
                 propertyValues.put(databaseObject, nodeProperties);
             }
             PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties);
@@ -292,7 +292,7 @@ public class CompareObjectsExecutor {
     {
         // Compare children
         int nodeCount = nodes.size();
-        List<List<DBNDatabaseNode>> allChildren = new ArrayList<List<DBNDatabaseNode>>(nodeCount);
+        List<List<DBNDatabaseNode>> allChildren = new ArrayList<>(nodeCount);
         for (int i = 0; i < nodeCount; i++) {
             DBNDatabaseNode node = nodes.get(i);
             // Cache structure if possible
@@ -302,7 +302,7 @@ public class CompareObjectsExecutor {
             allChildren.add(CommonUtils.safeList(node.getChildren(monitor)));
         }
 
-        Set<String> allChildNames = new LinkedHashSet<String>();
+        Set<String> allChildNames = new LinkedHashSet<>();
         for (List<DBNDatabaseNode> childList : allChildren) {
             for (DBNDatabaseNode child : childList) {
                 DBXTreeNode meta = child.getMeta();
@@ -332,7 +332,7 @@ public class CompareObjectsExecutor {
                 }
             }
 
-            List<DBNDatabaseNode> nodesToCompare = new ArrayList<DBNDatabaseNode>(nodeCount);
+            List<DBNDatabaseNode> nodesToCompare = new ArrayList<>(nodeCount);
             for (int i = 0; i < nodeCount; i++) {
                 if (childIndexes[i] == -1) {
                     // Missing

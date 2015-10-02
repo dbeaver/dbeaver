@@ -179,7 +179,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     {
         if (childNodes == null && allowsChildren()) {
             if (this.initializeNode(monitor, null)) {
-                final List<DBNDatabaseNode> tmpList = new ArrayList<DBNDatabaseNode>();
+                final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 if (!monitor.isCanceled()) {
                     this.childNodes = tmpList;
@@ -588,9 +588,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 // Nothing to reload
                 return;
             }
-            oldChildren = new ArrayList<DBNDatabaseNode>(childNodes);
+            oldChildren = new ArrayList<>(childNodes);
         }
-        List<DBNDatabaseNode> newChildren = new ArrayList<DBNDatabaseNode>();
+        List<DBNDatabaseNode> newChildren = new ArrayList<>();
         loadChildren(monitor, getMeta(), oldChildren, newChildren);
         synchronized (this) {
             childNodes = newChildren;
@@ -638,7 +638,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (CommonUtils.isEmpty(childMetas)) {
             return null;
         } else {
-            List<Class<?>> result = new ArrayList<Class<?>>();
+            List<Class<?>> result = new ArrayList<>();
             for (DBXTreeNode childMeta : childMetas) {
                 if (childMeta instanceof DBXTreeItem) {
                     Class<?> childrenType = getChildrenClass((DBXTreeItem) childMeta);

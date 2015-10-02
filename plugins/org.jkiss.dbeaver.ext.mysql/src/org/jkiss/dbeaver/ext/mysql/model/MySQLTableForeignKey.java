@@ -54,7 +54,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
     public void addColumn(MySQLTableForeignKeyColumnTable column)
     {
         if (columns == null) {
-            columns = new ArrayList<MySQLTableForeignKeyColumnTable>();
+            columns = new ArrayList<>();
         }
         columns.add(column);
     }

@@ -308,7 +308,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         @Override
         protected OracleSegment<OracleTablespace> fetchObject(@NotNull JDBCSession session, @NotNull OracleTablespace owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
-            return new OracleSegment<OracleTablespace>(session.getProgressMonitor(), owner, resultSet);
+            return new OracleSegment<>(session.getProgressMonitor(), owner, resultSet);
         }
     }
 

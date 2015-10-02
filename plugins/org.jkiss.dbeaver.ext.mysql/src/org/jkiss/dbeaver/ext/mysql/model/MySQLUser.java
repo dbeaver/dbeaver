@@ -165,7 +165,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             return this.grants;
         }
         if (!isPersisted()) {
-            this.grants = new ArrayList<MySQLGrant>();
+            this.grants = new ArrayList<>();
             return this.grants;
         }
 
@@ -175,9 +175,9 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             try {
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    List<MySQLGrant> grants = new ArrayList<MySQLGrant>();
+                    List<MySQLGrant> grants = new ArrayList<>();
                     while (dbResult.next()) {
-                        List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+                        List<MySQLPrivilege> privileges = new ArrayList<>();
                         boolean allPrivilegesFlag = false;
                         boolean grantOption = false;
                         String catalog = null;

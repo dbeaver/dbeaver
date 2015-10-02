@@ -169,8 +169,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     public static Collection<DBNDatabaseNode> getNodesByObjects(Collection<Object> objects)
     {
         DBNModel model = DBeaverCore.getInstance().getNavigatorModel();
-        List<DBNDatabaseNode> result = new ArrayList<DBNDatabaseNode>();
-        List<Object> missingObjects = new ArrayList<Object>();
+        List<DBNDatabaseNode> result = new ArrayList<>();
+        List<Object> missingObjects = new ArrayList<>();
         for (Object object : objects) {
             if (object instanceof DBSObject) {
                 DBNDatabaseNode node = model.findNode((DBSObject) object);
@@ -226,7 +226,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         {
             this.model = model;
             this.objects = objects;
-            this.nodes = new ArrayList<DBNDatabaseNode>(objects.size());
+            this.nodes = new ArrayList<>(objects.size());
         }
 
         @Override

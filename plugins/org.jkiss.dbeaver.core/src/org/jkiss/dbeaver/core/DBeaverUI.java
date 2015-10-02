@@ -67,7 +67,7 @@ public class DBeaverUI implements DBUICallback {
 
     private SharedTextColors sharedTextColors;
     private TrayIconHandler trayItem;
-    private final List<IDisposable> globalDisposables = new ArrayList<IDisposable>();
+    private final List<IDisposable> globalDisposables = new ArrayList<>();
 
     public static DBeaverUI getInstance()
     {
@@ -99,7 +99,7 @@ public class DBeaverUI implements DBUICallback {
             trayItem.hide();
         }
 
-        List<IDisposable> dispList = new ArrayList<IDisposable>(globalDisposables);
+        List<IDisposable> dispList = new ArrayList<>(globalDisposables);
         Collections.reverse(dispList);
         for (IDisposable disp : dispList) {
             try {

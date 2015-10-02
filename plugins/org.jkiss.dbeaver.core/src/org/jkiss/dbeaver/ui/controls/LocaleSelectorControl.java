@@ -100,7 +100,7 @@ public class LocaleSelectorControl extends Composite
 
         Locale[] locales = Locale.getAvailableLocales();
 
-        Set<String> languages = new TreeSet<String>();
+        Set<String> languages = new TreeSet<>();
         for (Locale locale : locales) {
             languages.add(locale.getLanguage() + " - " + locale.getDisplayLanguage()); //$NON-NLS-1$
         }
@@ -173,7 +173,7 @@ public class LocaleSelectorControl extends Composite
         String language = getIsoCode(languageCombo.getText());
         Locale[] locales = Locale.getAvailableLocales();
         countryCombo.removeAll();
-        Set<String> countries = new TreeSet<String>();
+        Set<String> countries = new TreeSet<>();
         for (Locale locale : locales) {
             if (language.equals(locale.getLanguage()) && !CommonUtils.isEmpty(locale.getCountry())) {
                 countries.add(locale.getCountry() + " - " + locale.getDisplayCountry()); //$NON-NLS-1$
@@ -196,7 +196,7 @@ public class LocaleSelectorControl extends Composite
         String country = getIsoCode(countryCombo.getText());
         Locale[] locales = Locale.getAvailableLocales();
         variantCombo.removeAll();
-        Set<String> variants = new TreeSet<String>();
+        Set<String> variants = new TreeSet<>();
         for (Locale locale : locales) {
             if (language.equals(locale.getLanguage()) && country.equals(locale.getCountry())) {
                 if (!CommonUtils.isEmpty(locale.getVariant())) {

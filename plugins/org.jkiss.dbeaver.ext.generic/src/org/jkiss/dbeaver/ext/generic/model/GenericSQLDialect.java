@@ -33,7 +33,7 @@ import java.util.List;
  */
 public class GenericSQLDialect extends JDBCSQLDialect {
 
-    private static List<String> EXEC_KEYWORDS = new ArrayList<String>();
+    private static List<String> EXEC_KEYWORDS = new ArrayList<>();
 
     static {
         EXEC_KEYWORDS.add("EXEC");

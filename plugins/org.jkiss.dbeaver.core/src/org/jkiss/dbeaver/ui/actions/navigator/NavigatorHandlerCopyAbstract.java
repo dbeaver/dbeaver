@@ -65,9 +65,9 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                 @Override
                 public void run()
                 {
-                    List<DBNNode> selectedNodes = new ArrayList<DBNNode>();
-                    List<DBPNamedObject> selectedObjects = new ArrayList<DBPNamedObject>();
-                    List<String> selectedFiles = new ArrayList<String>();
+                    List<DBNNode> selectedNodes = new ArrayList<>();
+                    List<DBPNamedObject> selectedObjects = new ArrayList<>();
+                    List<String> selectedFiles = new ArrayList<>();
                     StringBuilder buf = new StringBuilder();
                     for (Iterator<?> iter = structSelection.iterator(); iter.hasNext(); ) {
                         Object object = iter.next();
@@ -99,8 +99,8 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                         buf.append(objectValue);
                     }
                     {
-                        List<Object> dataList = new ArrayList<Object>();
-                        List<Transfer> dataTypeList = new ArrayList<Transfer>();
+                        List<Object> dataList = new ArrayList<>();
+                        List<Transfer> dataTypeList = new ArrayList<>();
                         if (buf.length() > 0) {
                             dataList.add(buf.toString());
                             dataTypeList.add(TextTransfer.getInstance());

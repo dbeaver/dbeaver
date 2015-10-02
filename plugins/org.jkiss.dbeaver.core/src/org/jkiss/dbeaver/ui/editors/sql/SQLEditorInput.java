@@ -83,7 +83,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
             preferenceStore = DBeaverCore.getGlobalPreferenceStore();
         }
         String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
-        Map<String, Object> vars = new HashMap<String, Object>();
+        Map<String, Object> vars = new HashMap<>();
         vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getName());
         vars.put(VAR_FILE_NAME, scriptName);
         vars.put(VAR_FILE_EXT, getFile().getFullPath().getFileExtension());

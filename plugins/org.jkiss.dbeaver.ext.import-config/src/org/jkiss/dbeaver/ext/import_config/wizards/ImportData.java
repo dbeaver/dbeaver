@@ -26,8 +26,8 @@ import java.util.List;
  */
 public class ImportData {
 
-    private List<ImportDriverInfo> drivers = new ArrayList<ImportDriverInfo>();
-    private List<ImportConnectionInfo> connections = new ArrayList<ImportConnectionInfo>();
+    private List<ImportDriverInfo> drivers = new ArrayList<>();
+    private List<ImportConnectionInfo> connections = new ArrayList<>();
 
     public List<ImportDriverInfo> getDrivers()
     {

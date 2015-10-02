@@ -43,11 +43,11 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     private static final long EVENT_DISPATCH_PERIOD = 250;
     private static final int MAX_HISTORY_EVENTS = 1000;
 
-    private Map<String, QMMSessionInfo> sessionMap = new HashMap<String, QMMSessionInfo>();
-    private List<QMMetaListener> listeners = new ArrayList<QMMetaListener>();
-    private List<QMMetaEvent> eventPool = new ArrayList<QMMetaEvent>();
+    private Map<String, QMMSessionInfo> sessionMap = new HashMap<>();
+    private List<QMMetaListener> listeners = new ArrayList<>();
+    private List<QMMetaEvent> eventPool = new ArrayList<>();
     private final Object historySync = new Object();
-    private List<QMMetaEvent> pastEvents = new ArrayList<QMMetaEvent>();
+    private List<QMMetaEvent> pastEvents = new ArrayList<>();
     private boolean running = true;
 
     public QMMCollectorImpl()
@@ -58,7 +58,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     public synchronized void dispose()
     {
         if (!sessionMap.isEmpty()) {
-            List<QMMSessionInfo> openSessions = new ArrayList<QMMSessionInfo>();
+            List<QMMSessionInfo> openSessions = new ArrayList<>();
             for (QMMSessionInfo session : sessionMap.values()) {
                 if (!session.isClosed()) {
                     openSessions.add(session);
@@ -106,7 +106,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         if (listeners.size() == 1) {
             return Collections.singletonList(listeners.get(0));
         }
-        return new ArrayList<QMMetaListener>(listeners);
+        return new ArrayList<>(listeners);
     }
 
     private synchronized void fireMetaEvent(final QMMObject object, final QMMetaEvent.Action action)
@@ -120,7 +120,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             return Collections.emptyList();
         }
         List<QMMetaEvent> events = eventPool;
-        eventPool = new ArrayList<QMMetaEvent>();
+        eventPool = new ArrayList<>();
         return events;
     }
 
@@ -137,7 +137,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     public List<QMMetaEvent> getPastEvents()
     {
         synchronized (historySync) {
-            return new ArrayList<QMMetaEvent>(pastEvents);
+            return new ArrayList<>(pastEvents);
         }
     }
 
@@ -306,7 +306,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 pastEvents.addAll(events);
                 int size = pastEvents.size();
                 if (size > MAX_HISTORY_EVENTS) {
-                    pastEvents = new ArrayList<QMMetaEvent>(pastEvents.subList(
+                    pastEvents = new ArrayList<>(pastEvents.subList(
                         size - MAX_HISTORY_EVENTS,
                         size));
                 }

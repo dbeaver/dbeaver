@@ -288,7 +288,7 @@ class GridColumn {
 
     private void addChild(GridColumn gridColumn) {
         if (children == null) {
-            children = new ArrayList<GridColumn>();
+            children = new ArrayList<>();
         }
         children.add(gridColumn);
     }

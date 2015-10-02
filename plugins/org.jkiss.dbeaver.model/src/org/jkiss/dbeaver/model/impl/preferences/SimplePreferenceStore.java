@@ -38,8 +38,8 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore impl
 
     public SimplePreferenceStore()
     {
-        defaultProperties = new HashMap<String, String>();
-        properties = new HashMap<String, String>();
+        defaultProperties = new HashMap<>();
+        properties = new HashMap<>();
     }
 
     protected SimplePreferenceStore(DBPPreferenceStore parentStore)

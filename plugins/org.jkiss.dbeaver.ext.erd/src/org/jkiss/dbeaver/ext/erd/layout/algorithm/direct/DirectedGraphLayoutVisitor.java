@@ -57,7 +57,7 @@ public class DirectedGraphLayoutVisitor {
      */
     public void layoutDiagram(AbstractGraphicalEditPart diagram)
     {
-        partToNodesMap = new IdentityHashMap<EditPart, Object>();
+        partToNodesMap = new IdentityHashMap<>();
 
         graph = new DirectedGraph();
         graph.setDirection(PositionConstants.EAST);
@@ -202,7 +202,7 @@ public class DirectedGraphLayoutVisitor {
         //conn.setLineJoin(SWT.JOIN_BEVEL);
         //conn.setTargetDecoration(new PolygonDecoration());
         if (edgeNodes != null && edgeNodes.size() > 1) {
-            List<AbsoluteBendpoint> bends = new ArrayList<AbsoluteBendpoint>();
+            List<AbsoluteBendpoint> bends = new ArrayList<>();
             for (int i = 0; i < edgeNodes.size(); i++) {
                 Node vn = edgeNodes.getNode(i);
                 int x = vn.x;

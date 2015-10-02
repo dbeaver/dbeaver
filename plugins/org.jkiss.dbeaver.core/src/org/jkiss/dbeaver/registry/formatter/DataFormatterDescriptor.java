@@ -41,7 +41,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     private String id;
     private String name;
     private String description;
-    private List<PropertyDescriptor> properties = new ArrayList<PropertyDescriptor>();
+    private List<PropertyDescriptor> properties = new ArrayList<>();
     private DBDDataFormatterSample sample;
     private ObjectType formatterType;
 

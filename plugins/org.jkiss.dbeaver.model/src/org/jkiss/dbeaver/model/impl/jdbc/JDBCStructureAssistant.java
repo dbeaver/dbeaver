@@ -71,7 +71,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         int maxResults)
         throws DBException
     {
-        List<DBSObjectReference> references = new ArrayList<DBSObjectReference>();
+        List<DBSObjectReference> references = new ArrayList<>();
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name);
         try {
             for (DBSObjectType type : objectTypes) {

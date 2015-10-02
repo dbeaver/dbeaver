@@ -35,7 +35,7 @@ import java.util.Map;
 public class SQLContext extends DocumentTemplateContext implements DBPContextProvider {
 
     private SQLEditorBase editor;
-    private Map<String, SQLVariable> variables = new HashMap<String, SQLVariable>();
+    private Map<String, SQLVariable> variables = new HashMap<>();
 
     public SQLContext(TemplateContextType type, IDocument document, Position position, SQLEditorBase editor)
     {

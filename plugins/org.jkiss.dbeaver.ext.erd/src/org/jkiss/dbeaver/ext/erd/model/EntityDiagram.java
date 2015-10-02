@@ -40,16 +40,16 @@ import java.util.*;
 public class EntityDiagram extends ERDObject<DBSObject>
 {
 	private String name;
-	private List<ERDEntity> entities = new ArrayList<ERDEntity>();
+	private List<ERDEntity> entities = new ArrayList<>();
 	private boolean layoutManualDesired = true;
 	private boolean layoutManualAllowed = false;
-    private Map<DBSEntity, ERDEntity> tableMap = new IdentityHashMap<DBSEntity, ERDEntity>();
-    private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<ERDObject, Rectangle>();
-    private List<ERDNote> notes = new ArrayList<ERDNote>();
+    private Map<DBSEntity, ERDEntity> tableMap = new IdentityHashMap<>();
+    private Map<ERDObject, Rectangle> initBounds = new IdentityHashMap<>();
+    private List<ERDNote> notes = new ArrayList<>();
     private boolean needsAutoLayout;
     private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
 
-    private List<String> errorMessages = new ArrayList<String>();
+    private List<String> errorMessages = new ArrayList<>();
 
     public EntityDiagram(DBSObject container, String name)
 	{
@@ -313,7 +313,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     public List<ERDObject> getContents()
     {
-        List<ERDObject> children = new ArrayList<ERDObject>(entities.size() + notes.size());
+        List<ERDObject> children = new ArrayList<>(entities.size() + notes.size());
         children.addAll(entities);
         children.addAll(notes);
         return children;

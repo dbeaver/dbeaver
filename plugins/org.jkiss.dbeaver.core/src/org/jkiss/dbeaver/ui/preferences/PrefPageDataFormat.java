@@ -61,7 +61,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
     private String profileName;
     private Locale profileLocale;
-    private Map<String, Map<Object, Object>> profileProperties = new HashMap<String, Map<Object, Object>>();
+    private Map<String, Map<Object, Object>> profileProperties = new HashMap<>();
     private Combo profilesCombo;
     private PropertySourceCustom propertySource;
 
@@ -206,7 +206,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             return;
         }
         formatterProfile = profile;
-        formatterDescriptors = new ArrayList<DataFormatterDescriptor>(DataFormatterRegistry.getInstance().getDataFormatters());
+        formatterDescriptors = new ArrayList<>(DataFormatterRegistry.getInstance().getDataFormatters());
 
         profileName = formatterProfile.getProfileName();
         profileLocale = formatterProfile.getLocale();
@@ -299,7 +299,7 @@ public class PrefPageDataFormat extends TargetPrefPage
 
             Map<Object, Object> defProps = formatterDescriptor.getSample().getDefaultProperties(profileLocale);
             Map<Object, Object> props = profileProperties.get(formatterDescriptor.getId());
-            Map<Object, Object> formatterProps = new HashMap<Object, Object>();
+            Map<Object, Object> formatterProps = new HashMap<>();
             if (defProps != null && !defProps.isEmpty()) {
                 formatterProps.putAll(defProps);
             }

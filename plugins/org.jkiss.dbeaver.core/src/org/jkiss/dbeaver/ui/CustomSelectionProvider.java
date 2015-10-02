@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class CustomSelectionProvider implements ISelectionProvider {
 
-    private List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
+    private List<ISelectionChangedListener> listeners = new ArrayList<>();
     private ISelection selection;
 
     public CustomSelectionProvider()

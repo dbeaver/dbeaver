@@ -124,12 +124,12 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         super(db2DataSource, true);
         this.name = name;
 
-        this.sequenceCache = new JDBCObjectSimpleCache<DB2Schema, DB2Sequence>(DB2Sequence.class, C_SEQ, name);
-        this.packageCache = new JDBCObjectSimpleCache<DB2Schema, DB2Package>(DB2Package.class, C_PKG, name);
-        this.xmlSchemaCache = new JDBCObjectSimpleCache<DB2Schema, DB2XMLSchema>(DB2XMLSchema.class, C_XSR, name);
+        this.sequenceCache = new JDBCObjectSimpleCache<>(DB2Sequence.class, C_SEQ, name);
+        this.packageCache = new JDBCObjectSimpleCache<>(DB2Package.class, C_PKG, name);
+        this.xmlSchemaCache = new JDBCObjectSimpleCache<>(DB2XMLSchema.class, C_XSR, name);
 
         if (db2DataSource.isAtLeastV9_7()) {
-            this.moduleCache = new JDBCObjectSimpleCache<DB2Schema, DB2Module>(DB2Module.class, C_MOD, name);
+            this.moduleCache = new JDBCObjectSimpleCache<>(DB2Module.class, C_MOD, name);
         }
 
         String datatypeSQL;
@@ -138,7 +138,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
         } else {
             datatypeSQL = C_DTT;
         }
-        this.udtCache = new JDBCObjectSimpleCache<DB2Schema, DB2DataType>(DB2DataType.class, datatypeSQL, name);
+        this.udtCache = new JDBCObjectSimpleCache<>(DB2DataType.class, datatypeSQL, name);
 
     }
 
@@ -245,7 +245,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     @Override
     public Collection<DB2TableBase> getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        List<DB2TableBase> allChildren = new ArrayList<DB2TableBase>();
+        List<DB2TableBase> allChildren = new ArrayList<>();
         allChildren.addAll(tableCache.getAllObjects(monitor, this));
         allChildren.addAll(viewCache.getAllObjects(monitor, this));
         allChildren.addAll(mqtCache.getAllObjects(monitor, this));

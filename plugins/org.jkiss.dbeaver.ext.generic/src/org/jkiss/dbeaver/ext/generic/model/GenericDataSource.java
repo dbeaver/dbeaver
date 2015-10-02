@@ -339,7 +339,7 @@ public class GenericDataSource extends JDBCDataSource
                 monitor.worked(1);
                 final GenericMetaObject catalogObject = getMetaObject(GenericConstants.OBJECT_CATALOG);
                 final DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null, false);
-                final List<String> catalogNames = new ArrayList<String>();
+                final List<String> catalogNames = new ArrayList<>();
                 try {
                     JDBCResultSet dbResult = metaData.getCatalogs();
                     try {
@@ -384,7 +384,7 @@ public class GenericDataSource extends JDBCDataSource
                     log.warn(e);
                 }
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
-                    this.catalogs = new ArrayList<GenericCatalog>();
+                    this.catalogs = new ArrayList<>();
                     for (String catalogName : catalogNames) {
                         GenericCatalog catalog = new GenericCatalog(this, catalogName);
                         this.catalogs.add(catalog);
@@ -423,7 +423,7 @@ public class GenericDataSource extends JDBCDataSource
             final GenericMetaObject schemaObject = getMetaObject(GenericConstants.OBJECT_SCHEMA);
             final DBSObjectFilter schemaFilters = getContainer().getObjectFilter(GenericSchema.class, null, false);
 
-            final List<GenericSchema> tmpSchemas = new ArrayList<GenericSchema>();
+            final List<GenericSchema> tmpSchemas = new ArrayList<>();
             JDBCResultSet dbResult = null;
             boolean catalogSchemas = false;
             if (catalog != null) {
