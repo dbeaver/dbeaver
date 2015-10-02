@@ -175,13 +175,10 @@ public class DB2PlanOperator extends DB2PlanNode {
             .format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
         try {
             setQueryParameters(sqlStmt);
-            JDBCResultSet res = sqlStmt.executeQuery();
-            try {
+            try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
                     listArguments.add(new DB2PlanOperatorArgument(res));
                 }
-            } finally {
-                res.close();
             }
         } finally {
             sqlStmt.close();
@@ -191,13 +188,10 @@ public class DB2PlanOperator extends DB2PlanNode {
         sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
         try {
             setQueryParameters(sqlStmt);
-            JDBCResultSet res = sqlStmt.executeQuery();
-            try {
+            try (JDBCResultSet res = sqlStmt.executeQuery()) {
                 while (res.next()) {
                     listPredicates.add(new DB2PlanOperatorPredicate(res, this));
                 }
-            } finally {
-                res.close();
             }
         } finally {
             sqlStmt.close();

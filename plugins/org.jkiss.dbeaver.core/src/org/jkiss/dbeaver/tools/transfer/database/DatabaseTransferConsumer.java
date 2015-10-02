@@ -388,8 +388,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         throws DBCException
     {
         DBCExecutionContext context = dataSource.getDefaultContext(true);
-        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.META_DDL, "Create target metadata");
-        try {
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.META_DDL, "Create target metadata")) {
             DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
             try {
                 dbStat.executeStatement();
@@ -401,9 +400,6 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 // Commit DDL changes
                 txnManager.commit(session);
             }
-        }
-        finally {
-            session.close();
         }
     }
 

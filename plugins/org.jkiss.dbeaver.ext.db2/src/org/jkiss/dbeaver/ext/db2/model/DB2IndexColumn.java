@@ -66,7 +66,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     public DB2IndexColumn(DBRProgressMonitor monitor, DB2Index db2Index, ResultSet dbResult) throws DBException
     {
 
-        DB2DataSource db2DataSource = (DB2DataSource) db2Index.getDataSource();
+        DB2DataSource db2DataSource = db2Index.getDataSource();
 
         this.db2Index = db2Index;
         this.colSeq = JDBCUtils.safeGetInteger(dbResult, "COLSEQ");
@@ -88,15 +88,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         if ((virtualCol == null) || (virtualCol.isNotVirtual())) {
             this.tableColumn = db2Table.getAttribute(monitor, columnName);
             if (tableColumn == null) {
-                StringBuilder sb = new StringBuilder(64);
-                sb.append("Column '");
-                sb.append(columnName);
-                sb.append("' not found in table '");
-                sb.append(db2Table.getName());
-                sb.append("' for index '");
-                sb.append(db2Index.getName());
-                sb.append("'");
-                throw new DBException(sb.toString());
+                throw new DBException("Column '" + columnName + "' not found in table '" + db2Table.getName() + "' for index '" + db2Index.getName() + "'");
             }
         } else {
             // Virtual Column
@@ -127,10 +119,8 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     private DB2View getDependentView(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String indexSchema, String indexName)
         throws DBException
     {
-        JDBCSession session = db2DataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.UTIL, "Read Index view dependency");
-        try {
-            JDBCPreparedStatement stmtSel = session.prepareStatement(I_DEP);
-            try {
+        try (JDBCSession session = db2DataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.UTIL, "Read Index view dependency")) {
+            try (JDBCPreparedStatement stmtSel = session.prepareStatement(I_DEP)) {
                 stmtSel.setString(1, indexSchema);
                 stmtSel.setString(2, indexName);
                 JDBCResultSet dbResult = stmtSel.executeQuery();
@@ -141,14 +131,10 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
                 } else {
                     return null;
                 }
-            } finally {
-                stmtSel.close();
             }
 
         } catch (SQLException e) {
             throw new DBException(e, db2DataSource);
-        } finally {
-            session.close();
         }
     }
 
@@ -201,7 +187,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     @Override
     public String getName()
     {
-        if ((virtualCol != null) & (virtualCol.isVirtual())) {
+        if ((virtualCol != null) && (virtualCol.isVirtual())) {
             return virtualColName;
         } else {
             return tableColumn.getName();

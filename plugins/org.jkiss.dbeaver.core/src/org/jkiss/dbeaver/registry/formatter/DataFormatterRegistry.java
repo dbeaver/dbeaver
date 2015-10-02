@@ -133,28 +133,19 @@ public class DataFormatterRegistry
             return;
         }
         try {
-            InputStream is = new FileInputStream(storeFile);
-            try {
+            try (InputStream is = new FileInputStream(storeFile)) {
+                SAXReader parser = new SAXReader(is);
                 try {
-                    SAXReader parser = new SAXReader(is);
-                    try {
-                        parser.parse(new FormattersParser());
-                    }
-                    catch (XMLException ex) {
-                        throw new DBException("Datasource config parse error", ex);
-                    }
-                } catch (DBException ex) {
-                    log.warn("Can't load profiles config from " + storeFile.getPath(), ex);
+                    parser.parse(new FormattersParser());
+                } catch (XMLException ex) {
+                    throw new DBException("Datasource config parse error", ex);
                 }
-                finally {
-                    is.close();
-                }
+            } catch (DBException ex) {
+                log.warn("Can't load profiles config from " + storeFile.getPath(), ex);
             }
-            catch (IOException ex) {
-                log.warn("IO error", ex);
-            }
-        } catch (FileNotFoundException ex) {
-            log.warn("Can't open config file " + storeFile.getAbsolutePath(), ex);
+        }
+        catch (IOException ex) {
+            log.warn("IO error", ex);
         }
     }
 

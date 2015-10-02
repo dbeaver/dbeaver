@@ -102,8 +102,7 @@ public class OraclePlanAnalyser implements DBCPlan {
                 " WHERE STATEMENT_ID=? ORDER BY ID");
             try {
                 dbStat.setString(1, planStmtId);
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     rootNodes = new ArrayList<>();
                     IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
                     while (dbResult.next()) {
@@ -113,8 +112,6 @@ public class OraclePlanAnalyser implements DBCPlan {
                             rootNodes.add(node);
                         }
                     }
-                } finally {
-                    dbResult.close();
                 }
             } finally {
                 dbStat.close();

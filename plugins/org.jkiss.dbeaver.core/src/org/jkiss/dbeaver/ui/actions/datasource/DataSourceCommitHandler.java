@@ -48,13 +48,10 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
                 throws InvocationTargetException, InterruptedException {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                 if (txnManager != null) {
-                    DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction");
-                    try {
+                    try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
                         txnManager.commit(session);
                     } catch (DBCException e) {
                         throw new InvocationTargetException(e);
-                    } finally {
-                        session.close();
                     }
                 }
             }

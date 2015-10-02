@@ -205,11 +205,8 @@ public class SQLTemplateStore extends TemplateStore {
             String templatesConfig = getString(PREF_STORE_KEY);
             if (!CommonUtils.isEmpty(templatesConfig)) {
                 // Save it in templates file
-                FileWriter writer = new FileWriter(configurationFile);
-                try {
+                try (FileWriter writer = new FileWriter(configurationFile)) {
                     writer.write(templatesConfig);
-                } finally {
-                    writer.close();
                 }
             } else {
                 if (configurationFile.exists()) {

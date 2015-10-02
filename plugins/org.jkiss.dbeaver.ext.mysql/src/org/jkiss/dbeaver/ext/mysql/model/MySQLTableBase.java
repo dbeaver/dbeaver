@@ -100,11 +100,9 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         }
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
         try {
-            PreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName());
-            try {
-                ResultSet dbResult = dbStat.executeQuery();
-                try {
+            try (PreparedStatement dbStat = session.prepareStatement(
+                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
+                try (ResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         byte[] ddl;
                         if (isView()) {
@@ -126,12 +124,6 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
                         return "DDL is not available";
                     }
                 }
-                finally {
-                    dbResult.close();
-                }
-            }
-            finally {
-                dbStat.close();
             }
         }
         catch (SQLException ex) {

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -48,8 +49,8 @@ public class CollectionElementData {
         for (int i = 0; i < count; i++) {
             elements[i] = new DBDAttributeBindingElement(collectionBinding, collection, i);
         }
-        DBCSession session = collectionBinding.getDataSource().getDefaultContext(true).openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Collection types read");
-        try {
+        DBCExecutionContext context = collectionBinding.getDataSource().getDefaultContext(true);
+        try (DBCSession session = context.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Collection types read")) {
             Object[] row = new Object[1];
             List<Object[]> rows = Collections.singletonList(row);
             for (int i = 0; i < count; i++) {
@@ -60,8 +61,6 @@ public class CollectionElementData {
                     log.error("Error binding collection element", e);
                 }
             }
-        } finally {
-            session.close();
         }
     }
 

@@ -48,15 +48,12 @@ public class InformixUtils {
 				DBCExecutionPurpose.META, "Load source code");
 		List<String> result = new ArrayList<>();
 		try {
-			JDBCPreparedStatement dbStat = session
-					.prepareStatement(sqlStatement);
-			try {
+			try (JDBCPreparedStatement dbStat = session
+				.prepareStatement(sqlStatement)) {
 				JDBCResultSet dbResult = dbStat.executeQuery();
 				while (dbResult.nextRow())
 					result.add(dbResult.getString(1));
 				return result;
-			} finally {
-				dbStat.close();
 			}
 
 		} catch (SQLException e) {

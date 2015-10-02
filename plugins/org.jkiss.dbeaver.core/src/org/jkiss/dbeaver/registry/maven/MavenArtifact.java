@@ -70,8 +70,7 @@ public class MavenArtifact
         lastUpdate = null;
 
         String metadataPath = getArtifactDir() + MAVEN_METADATA_XML;
-        InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath);
-        try {
+        try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {
                 public String lastTag;
@@ -106,8 +105,6 @@ public class MavenArtifact
             });
         } catch (XMLException e) {
             log.warn("Error parsing artifact metadata", e);
-        } finally {
-            mdStream.close();
         }
     }
 

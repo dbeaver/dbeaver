@@ -46,8 +46,10 @@ public class ContentUtils {
 
     static final Log log = Log.getLog(ContentUtils.class);
 
+    public static final String DEFAULT_CHARSET = "UTF-8";
+
     static {
-        GeneralUtils.BOM_MAP.put("UTF-8", new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
+        GeneralUtils.BOM_MAP.put(DEFAULT_CHARSET, new byte[] {(byte) 0xEF, (byte) 0xBB, (byte) 0xBF} );
         GeneralUtils.BOM_MAP.put("UTF-16", new byte[] {(byte) 0xFE, (byte) 0xFF} );
         GeneralUtils.BOM_MAP.put("UTF-16BE", new byte[] {(byte) 0xFE, (byte) 0xFF} );
         GeneralUtils.BOM_MAP.put("UTF-16LE", new byte[] {(byte) 0xFF, (byte) 0xFE} );
@@ -107,12 +109,8 @@ public class ContentUtils {
         throws IOException
     {
         try {
-            OutputStream os = new FileOutputStream(file);
-            try {
+            try (OutputStream os = new FileOutputStream(file)) {
                 copyStreams(contentStream, file.length(), os, monitor);
-            }
-            finally {
-                os.close();
             }
             // Check for cancel
             if (monitor.isCanceled()) {
@@ -131,15 +129,9 @@ public class ContentUtils {
         throws IOException
     {
         try {
-            Writer writer = new OutputStreamWriter(
-                new FileOutputStream(file),
-                charset);
 
-            try {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), charset)) {
                 copyStreams(contentReader, file.length(), writer, monitor);
-            }
-            finally {
-                writer.close();
             }
             // Check for cancel
             if (monitor.isCanceled()) {
@@ -266,12 +258,8 @@ public class ContentUtils {
         //localFile.appendContents(inputStream, true, false, monitor.getNestedMonitor());
         File file = localFile.getLocation().toFile();
         try {
-            OutputStream outputStream = new FileOutputStream(file);
-            try {
+            try (OutputStream outputStream = new FileOutputStream(file)) {
                 ContentUtils.copyStreams(inputStream, contentLength, outputStream, monitor);
-            }
-            finally {
-                outputStream.close();
             }
         }
         finally {
@@ -296,14 +284,10 @@ public class ContentUtils {
         }
         File file = localFile.getLocation().toFile();
         try {
-            OutputStream outputStream = new FileOutputStream(file);
-            try {
-                Writer writer = new OutputStreamWriter(outputStream, charset);
+            try (OutputStream outputStream = new FileOutputStream(file)) {
+                Writer writer = new OutputStreamWriter(outputStream, charset == null ? DEFAULT_CHARSET : charset);
                 ContentUtils.copyStreams(reader, contentLength, writer, monitor);
                 writer.flush();
-            }
-            finally {
-                outputStream.close();
             }
         }
         finally {

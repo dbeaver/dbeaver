@@ -51,27 +51,18 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read Vertica object definition");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT EXPORT_OBJECTS('','" + sourceObject.getFullQualifiedName() + "');");
-            try {
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read Vertica object definition")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT EXPORT_OBJECTS('','" + sourceObject.getFullQualifiedName() + "');")) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
                         sql.append(dbResult.getString(1));
                     }
                     return sql.toString();
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
-        } finally {
-            session.close();
         }
     }
 

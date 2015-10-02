@@ -100,13 +100,9 @@ public class ContentImageEditorPart extends EditorPart implements ContentEditorP
                 final IPath absolutePath = ((IPathEditorInput)getEditorInput()).getPath();
                 File localFile = absolutePath.toFile();
                 if (localFile.exists()) {
-                    InputStream inputStream = new FileInputStream(localFile);
-                    try {
+                    try (InputStream inputStream = new FileInputStream(localFile)) {
                         contentValid = imageViewer.loadImage(inputStream);
                         imageViewer.update();
-                    }
-                    finally {
-                        inputStream.close();
                     }
                 }
             }

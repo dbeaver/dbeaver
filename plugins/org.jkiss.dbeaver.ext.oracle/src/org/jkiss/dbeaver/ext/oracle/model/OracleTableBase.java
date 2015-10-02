@@ -137,8 +137,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         throws DBException
     {
         if (comment == null) {
-            final JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table comments");
-            try {
+            try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table comments")) {
                 comment = JDBCUtils.queryString(
                     session,
                     "SELECT COMMENTS FROM ALL_TAB_COMMENTS WHERE OWNER=? AND TABLE_NAME=? AND TABLE_TYPE=?",
@@ -150,8 +149,6 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
                 }
             } catch (SQLException e) {
                 log.warn("Can't fetch table '" + getName() + "' comment", e);
-            } finally {
-                session.close();
             }
         }
         return comment;

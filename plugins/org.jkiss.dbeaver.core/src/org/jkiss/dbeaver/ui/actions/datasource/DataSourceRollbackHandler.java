@@ -49,13 +49,10 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler
                 throws InvocationTargetException, InterruptedException {
                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
                 if (txnManager != null) {
-                    DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction");
-                    try {
+                    try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Rollback transaction")) {
                         txnManager.rollback(session, null);
                     } catch (DBCException e) {
                         throw new InvocationTargetException(e);
-                    } finally {
-                        session.close();
                     }
                 }
             }

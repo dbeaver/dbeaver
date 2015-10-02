@@ -328,8 +328,7 @@ public class GenericDataSource extends JDBCDataSource
             // Use basic data types
             dataTypeCache.fillStandardTypes(this);
         }
-        JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read generic metadata");
-        try {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read generic metadata")) {
             // Read metadata
             JDBCDatabaseMetaData metaData = session.getMetaData();
             boolean catalogsFiltered = false;
@@ -341,8 +340,7 @@ public class GenericDataSource extends JDBCDataSource
                 final DBSObjectFilter catalogFilters = getContainer().getObjectFilter(GenericCatalog.class, null, false);
                 final List<String> catalogNames = new ArrayList<>();
                 try {
-                    JDBCResultSet dbResult = metaData.getCatalogs();
-                    try {
+                    try (JDBCResultSet dbResult = metaData.getCatalogs()) {
                         int totalCatalogs = 0;
                         while (dbResult.next()) {
                             String catalogName = GenericUtils.safeGetString(catalogObject, dbResult, JDBCConstants.TABLE_CAT);
@@ -370,8 +368,6 @@ public class GenericDataSource extends JDBCDataSource
                             // It's ok to use "%" instead of catalog name anyway
                             catalogNames.clear();
                         }
-                    } finally {
-                        dbResult.close();
                     }
                 } catch (UnsupportedOperationException e) {
                     // Just skip it
@@ -410,9 +406,6 @@ public class GenericDataSource extends JDBCDataSource
 
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex, this);
-        }
-        finally {
-            session.close();
         }
     }
 
@@ -741,10 +734,8 @@ public class GenericDataSource extends JDBCDataSource
             }
         } else {
             try {
-                JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB);
-                try {
-                    JDBCResultSet resultSet = dbStat.executeQuery();
-                    try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(queryGetActiveDB)) {
+                    try (JDBCResultSet resultSet = dbStat.executeQuery()) {
                         resultSet.next();
                         selectedEntityName = JDBCUtils.safeGetStringTrimmed(resultSet, 1);
                         if (!CommonUtils.isEmpty(selectedEntityName)) {
@@ -754,11 +745,7 @@ public class GenericDataSource extends JDBCDataSource
                                 selectedEntityName = selectedEntityName.substring(divPos + 1);
                             }
                         }
-                    } finally {
-                        resultSet.close();
                     }
-                } finally {
-                    dbStat.close();
                 }
             } catch (SQLException e) {
                 log.debug(e);
@@ -789,11 +776,8 @@ public class GenericDataSource extends JDBCDataSource
                     throw new DBCException("Active database can't be changed for this kind of datasource!");
                 }
                 String changeQuery = querySetActiveDB.replaceFirst("\\?", entity.getName());
-                JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery);
-                try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(changeQuery)) {
                     dbStat.execute();
-                } finally {
-                    dbStat.close();
                 }
             }
         } catch (SQLException e) {

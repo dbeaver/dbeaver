@@ -102,17 +102,10 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(getProgressMonitor(), "View sessions");
-                try {
-                    DBCSession session = isolatedContext.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions");
-                    try {
+                try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(getProgressMonitor(), "View sessions")) {
+                    try (DBCSession session = isolatedContext.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Retrieve server sessions")) {
                         return sessionManager.getSessions(session, null);
                     }
-                    finally {
-                        session.close();
-                    }
-                } finally {
-                    isolatedContext.close();
                 }
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {
@@ -140,17 +133,11 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(getProgressMonitor(), "View sessions");
-                try {
-                    DBCSession session = isolatedContext.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session");
-                    try {
+                try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(getProgressMonitor(), "View sessions")) {
+                    try (DBCSession session = isolatedContext.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Kill server session")) {
                         sessionManager.alterSession(session, this.session, options);
                         return null;
-                    } finally {
-                        session.close();
                     }
-                } finally {
-                    isolatedContext.close();
                 }
             } catch (Throwable ex) {
                 if (ex instanceof InvocationTargetException) {

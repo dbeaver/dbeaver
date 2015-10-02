@@ -227,8 +227,7 @@ public class OracleDataSource extends JDBCDataSource
 
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
-            final JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info");
-            try {
+            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info")) {
                 // Set session settings
                 DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
                 Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);
@@ -255,8 +254,8 @@ public class OracleDataSource extends JDBCDataSource
                 // Check DBA role
                 this.isAdmin = "YES".equals(
                     JDBCUtils.queryString(
-                    session,
-                    "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
+                        session,
+                        "SELECT 'YES' FROM USER_ROLE_PRIVS WHERE GRANTED_ROLE='DBA'"));
                 this.isAdminVisible = isAdmin;
                 if (!isAdminVisible) {
                     Object showAdmin = connectionInfo.getProperty(OracleConstants.PROP_ALWAYS_SHOW_DBA);
@@ -273,9 +272,6 @@ public class OracleDataSource extends JDBCDataSource
             } catch (SQLException e) {
                 //throw new DBException(e);
                 log.warn(e);
-            }
-            finally {
-                session.close();
             }
         }
         // Cache data types
@@ -504,14 +500,10 @@ public class OracleDataSource extends JDBCDataSource
         String sql = enable ?
             "BEGIN DBMS_OUTPUT.ENABLE(" + OracleConstants.MAXIMUM_DBMS_OUTPUT_SIZE + "); END;" :
             "BEGIN DBMS_OUTPUT.DISABLE; END;";
-        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output");
-        try {
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, (enable ? "Enable" : "Disable ") + "DBMS output")) {
             JDBCUtils.executeSQL((JDBCSession) session, sql);
         } catch (SQLException e) {
             throw new DBCException(e, this);
-        }
-        finally {
-            session.close();
         }
     }
 
@@ -526,47 +518,39 @@ public class OracleDataSource extends JDBCDataSource
 
     @Override
     public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
-        JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output");
-        try {
-            final JDBCCallableStatement dbCall = session.prepareCall(
+        try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
+            try (JDBCCallableStatement dbCall = session.prepareCall(
                 "DECLARE " +
                     "l_line varchar2(255); " +
                     "l_done number; " +
                     "l_buffer long; " +
-                "BEGIN " +
+                    "BEGIN " +
                     "LOOP " +
-                        "EXIT WHEN LENGTH(l_buffer)+255 > :maxbytes OR l_done = 1; " +
-                        "DBMS_OUTPUT.GET_LINE( l_line, l_done ); " +
-                        "l_buffer := l_buffer || l_line || chr(10); " +
+                    "EXIT WHEN LENGTH(l_buffer)+255 > :maxbytes OR l_done = 1; " +
+                    "DBMS_OUTPUT.GET_LINE( l_line, l_done ); " +
+                    "l_buffer := l_buffer || l_line || chr(10); " +
                     "END LOOP; " +
                     ":done := l_done; " +
                     ":buffer := l_buffer; " +
-                "END;");
-            try {
-                dbCall.registerOutParameter( 2, java.sql.Types.INTEGER );
-                dbCall.registerOutParameter( 3, java.sql.Types.VARCHAR );
+                    "END;")) {
+                dbCall.registerOutParameter(2, java.sql.Types.INTEGER);
+                dbCall.registerOutParameter(3, java.sql.Types.VARCHAR);
 
-                for(;;) {
-                    dbCall.setInt( 1, 32000 );
+                for (; ; ) {
+                    dbCall.setInt(1, 32000);
                     dbCall.executeUpdate();
                     String outputString = dbCall.getString(3);
                     if (!CommonUtils.isEmptyTrimmed(outputString)) {
                         output.write(outputString);
                     }
                     int status = dbCall.getInt(2);
-                    if ( status == 1 ) {
+                    if (status == 1) {
                         break;
                     }
                 }
             }
-            finally {
-                dbCall.close();
-            }
         } catch (SQLException e) {
             throw new DBCException(e, this);
-        }
-        finally {
-            session.close();
         }
     }
 

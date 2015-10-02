@@ -478,15 +478,12 @@ public class OracleDataType extends OracleObject<DBSObject>
         if (schema == null || !TYPE_CODE_COLLECTION.equals(typeCode) || !getDataSource().isAtLeastV10()) {
             return null;
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load collection types");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM SYS.ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?");
-            try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load collection types")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT ELEM_TYPE_OWNER,ELEM_TYPE_NAME,ELEM_TYPE_MOD FROM SYS.ALL_COLL_TYPES WHERE OWNER=? AND TYPE_NAME=?")) {
                 dbStat.setString(1, schema.getName());
                 dbStat.setString(2, getName());
-                JDBCResultSet dbResults = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResults = dbStat.executeQuery()) {
                     if (dbResults.next()) {
                         String compTypeSchema = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_OWNER");
                         String compTypeName = JDBCUtils.safeGetString(dbResults, "ELEM_TYPE_NAME");
@@ -495,16 +492,10 @@ public class OracleDataType extends OracleObject<DBSObject>
                     } else {
                         log.warn("Can't resolve collection type [" + getName() + "]");
                     }
-                } finally {
-                    dbResults.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (Exception e) {
             log.warn("Error reading collection types", e);
-        } finally {
-            session.close();
         }
 
         return componentType;

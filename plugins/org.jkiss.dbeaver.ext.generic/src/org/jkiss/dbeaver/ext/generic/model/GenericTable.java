@@ -229,19 +229,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
         if (rowCount == null) {
             // Query row count
-            DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Read row count");
-            try {
+            try (DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Read row count")) {
                 rowCount = countData(session, null);
-            }
-            catch (DBException e) {
+            } catch (DBException e) {
                 // do not throw this error - row count is optional info and some providers may fail
                 log.debug("Can't fetch row count: " + e.getMessage());
 //                if (indexes != null) {
 //                    rowCount = getRowCountFromIndexes(monitor);
 //                }
-            }
-            finally {
-                session.close();
             }
         }
         if (rowCount == null) {
@@ -294,8 +289,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<>();
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
-        try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations")) {
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
@@ -303,11 +297,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
-            JDBCResultSet dbResult = metaData.getExportedKeys(
-                    getCatalog() == null ? null : getCatalog().getName(),
-                    getSchema() == null ? null : getSchema().getName(),
-                    getName());
-            try {
+            try (JDBCResultSet dbResult = metaData.getExportedKeys(
+                getCatalog() == null ? null : getCatalog().getName(),
+                getSchema() == null ? null : getSchema().getName(),
+                getName())) {
                 while (dbResult.next()) {
                     ForeignKeyInfo fkInfo = new ForeignKeyInfo();
                     fkInfo.pkColumnName = GenericUtils.safeGetStringTrimmed(fkObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
@@ -323,9 +316,6 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                     fkInfo.defferabilityNum = GenericUtils.safeGetInt(fkObject, dbResult, JDBCConstants.DEFERRABILITY);
                     fkInfos.add(fkInfo);
                 }
-            }
-            finally {
-                dbResult.close();
             }
 
             List<GenericTableForeignKey> fkList = new ArrayList<>();
@@ -392,7 +382,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 }
 
                 // Find (or create) FK
-                GenericTableForeignKey fk = null;
+                GenericTableForeignKey fk;
                 if (CommonUtils.isEmpty(info.fkName)) {
                     // Make fake FK name
                     info.fkName = info.fkTableName.toUpperCase() + "_FK" + info.keySeq;
@@ -422,10 +412,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBException(ex, getDataSource());
         }
     }
 

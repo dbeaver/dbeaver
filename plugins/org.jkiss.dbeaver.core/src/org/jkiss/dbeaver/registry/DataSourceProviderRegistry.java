@@ -166,15 +166,10 @@ public class DataSourceProviderRegistry
     {
         if (driversConfig.exists()) {
             try {
-                InputStream is = new FileInputStream(driversConfig);
-                try {
+                try (InputStream is = new FileInputStream(driversConfig)) {
                     new SAXReader(is).parse(new DriversParser());
-                }
-                catch (XMLException ex) {
+                } catch (XMLException ex) {
                     log.warn("Drivers config parse error", ex);
-                }
-                finally {
-                    is.close();
                 }
             } catch (Exception ex) {
                 log.warn("Error loading drivers from " + driversConfig.getPath(), ex);
@@ -212,14 +207,10 @@ public class DataSourceProviderRegistry
     private void loadConnectionTypes(File configFile)
     {
         try {
-            InputStream is = new FileInputStream(configFile);
-            try {
+            try (InputStream is = new FileInputStream(configFile)) {
                 new SAXReader(is).parse(new ConnectionTypeParser());
             } catch (XMLException ex) {
                 log.warn("Can't load connection types config from " + configFile.getPath(), ex);
-            }
-            finally {
-                is.close();
             }
         }
         catch (Exception ex) {

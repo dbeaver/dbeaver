@@ -231,8 +231,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         log.error("Can't obtain connection metadata", e);
                     }
                 } else {
-                    DBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection");
-                    try {
+                    try (DBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection")) {
                         if (session instanceof Connection) {
                             try {
                                 Connection connection = (Connection) session;
@@ -245,8 +244,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                                 log.error("Can't obtain connection metadata", e);
                             }
                         }
-                    } finally {
-                        session.close();
                     }
                 }
                 new DisconnectJob(container).schedule();

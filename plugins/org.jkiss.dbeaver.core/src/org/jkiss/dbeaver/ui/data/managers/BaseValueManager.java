@@ -48,14 +48,11 @@ public abstract class BaseValueManager implements IValueManager {
                 throw new DBCException(CoreMessages.editors_sql_status_not_connected_to_database);
             }
             // We are going to create NULL value - it shouldn't result in any DB roundtrips so let's use dummy monitor
-            DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Set NULL value");
-            try {
+            try (DBCSession session = executionContext.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Set NULL value")) {
                 return DBUtils.makeNullValue(
                     session,
                     valueController.getValueHandler(),
                     valueController.getValueType());
-            } finally {
-                session.close();
             }
         } catch (DBCException e) {
             log.error("Can't make NULL value", e);

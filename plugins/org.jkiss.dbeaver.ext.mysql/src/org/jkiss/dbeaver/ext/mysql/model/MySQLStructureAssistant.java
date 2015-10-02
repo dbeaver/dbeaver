@@ -105,18 +105,16 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load tables
-        JDBCPreparedStatement dbStat = session.prepareStatement(
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME +
-            " FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " + MySQLConstants.COL_TABLE_NAME + " LIKE ? " +
+                " FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " + MySQLConstants.COL_TABLE_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_TABLE_NAME + " LIMIT " + maxResults);
-        try {
+                " ORDER BY " + MySQLConstants.COL_TABLE_NAME + " LIMIT " + maxResults)) {
             dbStat.setString(1, tableNameMask.toLowerCase());
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
                     if (monitor.isCanceled()) {
@@ -126,8 +124,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     objects.add(new AbstractObjectReference(tableName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_TABLE) {
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-                        {
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Table catalog '" + catalogName + "' not found");
@@ -141,11 +138,6 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     });
                 }
             }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
         }
     }
 
@@ -155,18 +147,16 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load procedures
-        JDBCPreparedStatement dbStat = session.prepareStatement(
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MySQLConstants.COL_ROUTINE_SCHEMA + "," + MySQLConstants.COL_ROUTINE_NAME +
-            " FROM " + MySQLConstants.META_TABLE_ROUTINES + " WHERE " + MySQLConstants.COL_ROUTINE_NAME + " LIKE ? " +
+                " FROM " + MySQLConstants.META_TABLE_ROUTINES + " WHERE " + MySQLConstants.COL_ROUTINE_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME + " LIMIT " + maxResults);
-        try {
+                " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME + " LIMIT " + maxResults)) {
             dbStat.setString(1, procNameMask.toLowerCase());
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
                     if (monitor.isCanceled()) {
@@ -176,8 +166,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String procName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME);
                     objects.add(new AbstractObjectReference(procName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-                        {
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog procCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (procCatalog == null) {
                                 throw new DBException("Procedure catalog '" + catalogName + "' not found");
@@ -191,11 +180,6 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     });
                 }
             }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
         }
     }
 
@@ -205,18 +189,16 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load constraints
-        JDBCPreparedStatement dbStat = session.prepareStatement(
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_CONSTRAINT_NAME + "," + MySQLConstants.COL_CONSTRAINT_TYPE +
-            " FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MySQLConstants.COL_CONSTRAINT_NAME + " LIKE ? " +
+                " FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MySQLConstants.COL_CONSTRAINT_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_CONSTRAINT_NAME + " LIMIT " + maxResults);
-        try {
+                " ORDER BY " + MySQLConstants.COL_CONSTRAINT_NAME + " LIMIT " + maxResults)) {
             dbStat.setString(1, constrNameMask.toLowerCase());
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
                     if (monitor.isCanceled()) {
@@ -228,8 +210,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String constrType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CONSTRAINT_TYPE);
                     objects.add(new AbstractObjectReference(constrName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_CONSTRAINT) {
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-                        {
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Constraint catalog '" + catalogName + "' not found");
@@ -252,11 +233,6 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     });
                 }
             }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
         }
     }
 
@@ -266,18 +242,16 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
         // Load columns
-        JDBCPreparedStatement dbStat = session.prepareStatement(
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT " + MySQLConstants.COL_TABLE_SCHEMA + "," + MySQLConstants.COL_TABLE_NAME + "," + MySQLConstants.COL_COLUMN_NAME +
-            " FROM " + MySQLConstants.META_TABLE_COLUMNS + " WHERE " + MySQLConstants.COL_COLUMN_NAME + " LIKE ? " +
+                " FROM " + MySQLConstants.META_TABLE_COLUMNS + " WHERE " + MySQLConstants.COL_COLUMN_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
-                " ORDER BY " + MySQLConstants.COL_COLUMN_NAME + " LIMIT " + maxResults);
-        try {
+                " ORDER BY " + MySQLConstants.COL_COLUMN_NAME + " LIMIT " + maxResults)) {
             dbStat.setString(1, constrNameMask.toLowerCase());
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
-            JDBCResultSet dbResult = dbStat.executeQuery();
-            try {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 int tableNum = maxResults;
                 while (dbResult.next() && tableNum-- > 0) {
                     if (monitor.isCanceled()) {
@@ -288,8 +262,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
                     objects.add(new AbstractObjectReference(columnName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_TABLE_COLUMN) {
                         @Override
-                        public String getFullQualifiedName()
-                        {
+                        public String getFullQualifiedName() {
                             return DBUtils.getQuotedIdentifier(dataSource, catalogName) +
                                 '.' +
                                 DBUtils.getQuotedIdentifier(dataSource, tableName) +
@@ -297,9 +270,9 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                                 DBUtils.getQuotedIdentifier(dataSource, columnName);
 
                         }
+
                         @Override
-                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException
-                        {
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             MySQLCatalog tableCatalog = catalog != null ? catalog : dataSource.getCatalog(catalogName);
                             if (tableCatalog == null) {
                                 throw new DBException("Column catalog '" + catalogName + "' not found");
@@ -317,11 +290,6 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     });
                 }
             }
-            finally {
-                dbResult.close();
-            }
-        } finally {
-            dbStat.close();
         }
     }
 

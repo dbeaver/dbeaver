@@ -94,26 +94,19 @@ class ProjectImportData {
     boolean loadArchiveMeta(WizardPage page)
     {
         try {
-            ZipFile zipFile = new ZipFile(importFile, ZipFile.OPEN_READ);
-            try {
+            try (ZipFile zipFile = new ZipFile(importFile, ZipFile.OPEN_READ)) {
                 ZipEntry metaEntry = zipFile.getEntry(ExportConstants.META_FILENAME);
                 if (metaEntry == null) {
                     page.setMessage("Cannot find meta file", IMessageProvider.ERROR);
                     return false;
                 }
-                InputStream metaStream = zipFile.getInputStream(metaEntry);
-                try {
+                try (InputStream metaStream = zipFile.getInputStream(metaEntry)) {
                     metaTree = XMLUtils.parseDocument(metaStream);
                 } catch (XMLException e) {
                     page.setMessage("Cannot parse meta file: " + e.getMessage(), IMessageProvider.ERROR);
                     return false;
-                } finally {
-                    metaStream.close();
                 }
                 return true;
-            }
-            finally {
-                zipFile.close();
             }
         } catch (IOException e) {
             page.setMessage("Cannot open archive '" + importFile.getAbsolutePath() + "': " + e.getMessage(), IMessageProvider.ERROR);

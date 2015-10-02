@@ -97,8 +97,7 @@ public class MavenArtifactVersion
 
     private void loadPOM() throws IOException {
         String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
-        InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL);
-        try {
+        try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {
                 private ParserState state = ParserState.ROOT;
@@ -168,8 +167,6 @@ public class MavenArtifactVersion
             });
         } catch (XMLException e) {
             log.warn("Error parsing POM", e);
-        } finally {
-            mdStream.close();
         }
     }
 

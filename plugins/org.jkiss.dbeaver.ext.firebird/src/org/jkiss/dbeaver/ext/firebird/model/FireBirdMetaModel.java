@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.firebird.model;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -44,8 +42,6 @@ import java.util.regex.Pattern;
  */
 public class FireBirdMetaModel extends GenericMetaModel
 {
-    static final Log log = Log.getLog(FireBirdMetaModel.class);
-
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" line ([0-9]+), column ([0-9]+)");
 
     public FireBirdMetaModel(IConfigurationElement cfg) {
@@ -68,14 +64,11 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS");
-            try {
+        try (JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS")) {
                 List<GenericSequence> result = new ArrayList<>();
 
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
                         if (name == null) {
@@ -94,35 +87,23 @@ public class FireBirdMetaModel extends GenericMetaModel
                         );
                         result.add(sequence);
                     }
-                } finally {
-                    dbResult.close();
                 }
 
                 // Obtain sequence values
                 for (GenericSequence sequence : result) {
-                    JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + sequence.getName() + ", 0) from RDB$DATABASE");
-                    try {
-                        JDBCResultSet seqResults = dbSeqStat.executeQuery();
-                        try {
+                    try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT GEN_ID(" + sequence.getName() + ", 0) from RDB$DATABASE")) {
+                        try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                             seqResults.next();
                             sequence.setLastValue(JDBCUtils.safeGetLong(seqResults, 1));
-                        } finally {
-                            seqResults.close();
                         }
-                    } finally {
-                        dbSeqStat.close();
                     }
                 }
 
                 return result;
 
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
-        } finally {
-            session.close();
         }
     }
 
