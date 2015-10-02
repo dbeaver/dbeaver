@@ -760,8 +760,7 @@ public class GenericDataSource extends JDBCDataSource
             log.debug("Null current entity");
             return;
         }
-        JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog");
-        try {
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             if (selectedEntityFromAPI) {
                 // Use JDBC API to change entity
                 if (selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
@@ -781,10 +780,7 @@ public class GenericDataSource extends JDBCDataSource
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBCException(e, context.getDataSource());
         }
         selectedEntityName = entity.getName();
     }

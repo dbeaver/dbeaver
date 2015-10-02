@@ -207,8 +207,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return "";
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
-        try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
                 try (ResultSet dbResult = dbStat.executeQuery()) {
@@ -234,12 +233,8 @@ public class MySQLTable extends MySQLTableBase
                     }
                 }
             }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+        } catch (SQLException ex) {
+            throw new DBException(ex, getDataSource());
         }
     }
 
@@ -263,8 +258,8 @@ public class MySQLTable extends MySQLTableBase
             additionalInfo.loaded = true;
             return;
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
-        try {
+        MySQLDataSource dataSource = getDataSource();
+        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -282,11 +277,11 @@ public class MySQLTable extends MySQLTableBase
                             }
                             additionalInfo.description = desc;
                         }
-                        additionalInfo.engine = getDataSource().getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
+                        additionalInfo.engine = dataSource.getEngine(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ENGINE));
                         additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_TABLE_ROWS);
                         additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, MySQLConstants.COL_AUTO_INCREMENT);
                         additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, MySQLConstants.COL_CREATE_TIME);
-                        additionalInfo.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION));
+                        additionalInfo.collation = dataSource.getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION));
                         if (additionalInfo.collation != null) {
                             additionalInfo.charset = additionalInfo.collation.getCharset();
                         }
@@ -296,11 +291,8 @@ public class MySQLTable extends MySQLTableBase
                     additionalInfo.loaded = true;
                 }
             }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        } finally {
-            session.close();
+        } catch (SQLException e) {
+            throw new DBCException(e, dataSource);
         }
     }
 
@@ -311,8 +303,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
-        try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
@@ -423,16 +414,12 @@ public class MySQLTable extends MySQLTableBase
                         fk.addColumn(fkColumnInfo);
                     }
                 }
-            }
-            finally {
+            } finally {
                 dbResult.close();
             }
             return fkList;
         } catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBException(ex, getDataSource());
         }
     }
 

@@ -185,8 +185,7 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
             additionalInfo.loaded = true;
             return;
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
-        try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_VIEWS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=?")) {
                 dbStat.setString(1, getContainer().getName());
@@ -208,12 +207,8 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
                     additionalInfo.loaded = true;
                 }
             }
-        }
-        catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-        finally {
-            session.close();
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
         }
     }
 

@@ -143,8 +143,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Read charsets and collations
             {
                 charsets = new ArrayList<>();
-                JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CHARSET");
-                try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CHARSET")) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             MySQLCharset charset = new MySQLCharset(this, dbResult);
@@ -153,15 +152,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                     }
                 } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
-                } finally {
-                    dbStat.close();
                 }
                 Collections.sort(charsets, DBUtils.<MySQLCharset>nameComparator());
 
 
                 collations = new LinkedHashMap<>();
-                dbStat = session.prepareStatement("SHOW COLLATION");
-                try {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW COLLATION")) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             String charsetName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARSET);
@@ -177,8 +173,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                     }
                 } catch (SQLException ex) {
                     // Engines are not supported. Shame on it. Leave this list empty
-                } finally {
-                    dbStat.close();
                 }
             }
 
@@ -198,9 +192,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
                     log.error(e);
                 }
             }
-
-        } catch (SQLException ex) {
-            throw new DBException("Error reading metadata", ex, this);
         }
     }
 

@@ -119,8 +119,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         GenericProcedure procedure = null;
 
         final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);
-        final JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedure columns");
-        try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedure columns")) {
             final JDBCResultSet dbResult;
             if (functionResultType == null) {
                 dbResult = session.getMetaData().getProcedureColumns(
@@ -229,14 +228,11 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
                     previousPosition = position;
                 }
-            }
-            finally {
+            } finally {
                 dbResult.close();
             }
         } catch (SQLException e) {
-            throw new DBException(e, session.getDataSource());
-        } finally {
-            session.close();
+            throw new DBException(e, getDataSource());
         }
 
     }
