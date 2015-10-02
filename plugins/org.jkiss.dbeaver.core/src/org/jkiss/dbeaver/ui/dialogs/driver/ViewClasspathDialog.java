@@ -66,11 +66,6 @@ public class ViewClasspathDialog extends Dialog
             while (st.hasMoreTokens()) {
                 libsTable.getList().add(st.nextToken());
             }
-/*
-            for (DriverLibraryDescriptor lib : driver.getLibraries()) {
-                libsTable.getList().add(lib.getLocalFile().getPath());
-            }
-*/
         }
         return group;
     }
