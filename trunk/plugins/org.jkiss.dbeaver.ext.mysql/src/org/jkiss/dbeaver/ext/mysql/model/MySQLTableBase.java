@@ -98,8 +98,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         if (!isPersisted()) {
             return "";
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL");
-        try {
+        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
                 try (ResultSet dbResult = dbStat.executeQuery()) {
@@ -125,12 +124,8 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
                     }
                 }
             }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+        } catch (SQLException ex) {
+            throw new DBException(ex, getDataSource());
         }
     }
 
