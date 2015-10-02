@@ -49,7 +49,7 @@ public class BrowseObjectDialog extends Dialog {
     private boolean singleSelection;
     private Class[] allowedTypes;
     private Class[] resultTypes;
-    private List<DBNNode> selectedObjects = new ArrayList<DBNNode>();
+    private List<DBNNode> selectedObjects = new ArrayList<>();
     private DatabaseNavigatorTree navigatorTree;
 
     private BrowseObjectDialog(

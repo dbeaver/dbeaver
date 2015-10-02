@@ -32,10 +32,10 @@ import java.util.*;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
-    private List<DBNDataSource> dataSources = new ArrayList<DBNDataSource>();
+    private List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
     private volatile List<DBNNode> children;
-    private final List<DBNLocalFolder> folders = new ArrayList<DBNLocalFolder>();
+    private final List<DBNLocalFolder> folders = new ArrayList<>();
 
     public DBNProjectDatabases(DBNProject parentNode, DBPDataSourceRegistry dataSourceRegistry)
     {
@@ -128,7 +128,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
     {
         if (children == null) {
-            children = new ArrayList<DBNNode>();
+            children = new ArrayList<>();
             for (DBNDataSource dataSource : dataSources) {
                 String folderPath = dataSource.getDataSourceContainer().getFolderPath();
                 if (CommonUtils.isEmpty(folderPath)) {

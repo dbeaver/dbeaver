@@ -116,7 +116,7 @@ public class XMLUtils
         Element parent,
         String nodeName)
 	{
-		List<Element> list = new ArrayList<Element>();
+		List<Element> list = new ArrayList<>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
 				nodeName.equals(node.getNodeName()))
@@ -132,7 +132,7 @@ public class XMLUtils
 		Element parent,
 		String nsURI)
 	{
-		List<Element> list = new ArrayList<Element>();
+		List<Element> list = new ArrayList<>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
 				node.getNamespaceURI().equals( nsURI ))
@@ -149,7 +149,7 @@ public class XMLUtils
 		String nodeName,
 		String nsURI)
 	{
-		List<Element> list = new ArrayList<Element>();
+		List<Element> list = new ArrayList<>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE &&
 				node.getLocalName().equals( nodeName ) &&
@@ -166,7 +166,7 @@ public class XMLUtils
 		Element parent,
 		String[] nodeNameList)
 	{
-		List<Element> list = new ArrayList<Element>();
+		List<Element> list = new ArrayList<>();
 		for (org.w3c.dom.Node node = parent.getFirstChild(); node != null; node = node.getNextSibling()) {
 			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
 				for (int i = 0; i < nodeNameList.length; i++) {

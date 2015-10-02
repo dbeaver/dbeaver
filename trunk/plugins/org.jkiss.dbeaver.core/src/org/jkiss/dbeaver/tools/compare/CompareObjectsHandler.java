@@ -50,7 +50,7 @@ public class CompareObjectsHandler extends AbstractHandler {
             log.error("At least 2 objects must be selected to perform compare");
             return null;
         }
-        List<DBNDatabaseNode> nodes = new ArrayList<DBNDatabaseNode>();
+        List<DBNDatabaseNode> nodes = new ArrayList<>();
         Class<?> firstType = null;
         DBXTreeNode firstMeta = null;
         for (Iterator<?> iter = ss.iterator(); iter.hasNext(); ) {

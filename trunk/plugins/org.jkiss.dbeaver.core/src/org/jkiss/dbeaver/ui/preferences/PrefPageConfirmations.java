@@ -47,7 +47,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 
-    private Map<String, Combo> confirmChecks = new HashMap<String, Combo>();
+    private Map<String, Combo> confirmChecks = new HashMap<>();
 
     @Override
     public void init(IWorkbench workbench)

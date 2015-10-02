@@ -55,7 +55,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
     private DBSEntity entity;
     //private TableViewer columnsViewer;
     private Table columnsTable;
-    private List<AttributeInfo> attributes = new ArrayList<AttributeInfo>();
+    private List<AttributeInfo> attributes = new ArrayList<>();
     private Button toggleButton;
 
     private static class AttributeInfo {
@@ -168,7 +168,7 @@ public abstract class AttributesSelectorDialog extends Dialog {
     protected void fillAttributes(final DBSEntity entity)
     {
         // Collect attributes
-        final List<DBSEntityAttribute> attributes = new ArrayList<DBSEntityAttribute>();
+        final List<DBSEntityAttribute> attributes = new ArrayList<>();
         try {
             DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
@@ -300,11 +300,10 @@ public abstract class AttributesSelectorDialog extends Dialog {
 
     public Collection<DBSEntityAttribute> getSelectedAttributes()
     {
-        List<DBSEntityAttribute> tableColumns = new ArrayList<DBSEntityAttribute>();
-        Set<AttributeInfo> orderedAttributes = new TreeSet<AttributeInfo>(new Comparator<AttributeInfo>() {
+        List<DBSEntityAttribute> tableColumns = new ArrayList<>();
+        Set<AttributeInfo> orderedAttributes = new TreeSet<>(new Comparator<AttributeInfo>() {
             @Override
-            public int compare(AttributeInfo o1, AttributeInfo o2)
-            {
+            public int compare(AttributeInfo o1, AttributeInfo o2) {
                 return o1.position - o2.position;
             }
         });

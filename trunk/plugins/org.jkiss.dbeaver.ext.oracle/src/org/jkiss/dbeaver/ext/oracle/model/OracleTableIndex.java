@@ -131,7 +131,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
     public void addColumn(OracleTableIndexColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<OracleTableIndexColumn>();
+            columns = new ArrayList<>();
         }
         columns.add(column);
     }

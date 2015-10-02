@@ -90,8 +90,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private SoftReference<DBSDataSourceContainer> curDataSourceContainer = null;
 
-    private final List<DBPDataSourceRegistry> handledRegistries = new ArrayList<DBPDataSourceRegistry>();
-    private final List<DatabaseListReader> dbListReads = new ArrayList<DatabaseListReader>();
+    private final List<DBPDataSourceRegistry> handledRegistries = new ArrayList<>();
+    private final List<DatabaseListReader> dbListReads = new ArrayList<>();
 
     private static class DatabaseListReader extends DataSourceJob {
         private final CurrentDatabasesInfo databasesInfo;
@@ -123,7 +123,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
                     databasesInfo.list = CommonUtils.isEmpty(children) ?
                         Collections.<DBSObject>emptyList() :
-                        new ArrayList<DBSObject>(children);
+                        new ArrayList<>(children);
                     databasesInfo.active = objectSelector.getSelectedObject();
                     // Cache navigator nodes
                     if (children != null) {
@@ -309,7 +309,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         boolean update = force;
         if (!update) {
             // Check if there are any changes
-            final List<DBSDataSourceContainer> oldDataSources = new ArrayList<DBSDataSourceContainer>();
+            final List<DBSDataSourceContainer> oldDataSources = new ArrayList<>();
             for (TableItem item : connectionCombo.getItems()) {
                 if (item.getData() instanceof DBSDataSourceContainer) {
                     oldDataSources.add((DBSDataSourceContainer) item.getData());
@@ -509,7 +509,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     }
                 }
 
-                curDataSourceContainer = new SoftReference<DBSDataSourceContainer>(dsContainer);
+                curDataSourceContainer = new SoftReference<>(dsContainer);
             } else {
                 curDataSourceContainer = null;
                 databaseCombo.removeAll();

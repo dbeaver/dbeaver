@@ -46,7 +46,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     private static Map<String,String> connectionsProps;
 
     static {
-        connectionsProps = new HashMap<String, String>();
+        connectionsProps = new HashMap<>();
 
         // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
         // Widely appears in MyISAM tables (joomla, etc)
@@ -120,7 +120,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     public Collection<String> findClientHomeIds()
     {
         findLocalClients();
-        Set<String> homes = new LinkedHashSet<String>();
+        Set<String> homes = new LinkedHashSet<>();
         for (MySQLServerHome home : localServers.values()) {
             homes.add(home.getHomeId());
         }
@@ -152,7 +152,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         if (localServers != null) {
             return;
         }
-        localServers = new LinkedHashMap<String, MySQLServerHome>();
+        localServers = new LinkedHashMap<>();
         // read from path
         String path = System.getenv("PATH");
         if (path != null) {

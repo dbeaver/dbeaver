@@ -173,7 +173,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
 
     private Collection<DBSEntity> collectDatabaseTables(DBRProgressMonitor monitor, DBSObject root) throws DBException
     {
-        Set<DBSEntity> result = new LinkedHashSet<DBSEntity>();
+        Set<DBSEntity> result = new LinkedHashSet<>();
 
         // Cache structure
         if (root instanceof DBSObjectContainer) {
@@ -224,7 +224,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             }
             try {
                 monitor.subTask("Read associations");
-                List<DBSEntity> secondLevelEntities = new ArrayList<DBSEntity>();
+                List<DBSEntity> secondLevelEntities = new ArrayList<>();
                 for (DBSEntity entity : result) {
                     if (entity != rootTable && entity.getEntityType() == DBSEntityType.ASSOCIATION) {
                         // Read all association's associations

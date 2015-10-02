@@ -46,7 +46,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects
     // in DatabaseMetaData.getTables method (PostgreSQL especially)
-    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<String>();
+    private static final Set<String> INVALID_TABLE_TYPES = new HashSet<>();
 
     static {
         // [JDBC: PostgreSQL]

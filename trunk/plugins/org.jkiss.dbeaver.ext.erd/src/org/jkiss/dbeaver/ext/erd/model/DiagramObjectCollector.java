@@ -41,8 +41,8 @@ public class DiagramObjectCollector {
     static final Log log = Log.getLog(DiagramObjectCollector.class);
 
     private final EntityDiagram diagram;
-    private final List<ERDEntity> erdEntities = new ArrayList<ERDEntity>();
-    private final Map<DBSEntity, ERDEntity> tableMap = new HashMap<DBSEntity, ERDEntity>();
+    private final List<ERDEntity> erdEntities = new ArrayList<>();
+    private final Map<DBSEntity, ERDEntity> tableMap = new HashMap<>();
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {
@@ -55,7 +55,7 @@ public class DiagramObjectCollector {
         Collection<? extends DBSObject> roots)
         throws DBException
     {
-        Set<DBSEntity> tables = new LinkedHashSet<DBSEntity>();
+        Set<DBSEntity> tables = new LinkedHashSet<>();
         collectTables(monitor, roots, tables);
         return tables;
     }
@@ -146,14 +146,14 @@ public class DiagramObjectCollector {
 
     public static List<ERDEntity> generateEntityList(final EntityDiagram diagram, Collection<DBPNamedObject> objects)
     {
-        final List<DBSObject> roots = new ArrayList<DBSObject>();
+        final List<DBSObject> roots = new ArrayList<>();
         for (DBPNamedObject object : objects) {
             if (object instanceof DBSObject) {
                 roots.add((DBSObject) object);
             }
         }
 
-        final List<ERDEntity> entities = new ArrayList<ERDEntity>();
+        final List<ERDEntity> entities = new ArrayList<>();
 
         try {
             DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {

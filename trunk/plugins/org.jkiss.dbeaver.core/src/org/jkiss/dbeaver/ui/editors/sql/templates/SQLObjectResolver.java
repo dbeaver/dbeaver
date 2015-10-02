@@ -48,7 +48,7 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
     @Override
     protected String[] resolveAll(final TemplateContext context)
     {
-        final List<T> entities = new ArrayList<T>();
+        final List<T> entities = new ArrayList<>();
         if (context instanceof DBPContextProvider) {
             try {
                 DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {

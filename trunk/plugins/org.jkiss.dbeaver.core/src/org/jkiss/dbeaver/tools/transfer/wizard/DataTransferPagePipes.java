@@ -183,7 +183,7 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         DataTransferSettings settings = getWizard().getSettings();
         Collection<Class<?>> objectTypes = settings.getObjectTypes();
 
-        List<TransferTarget> transferTargets = new ArrayList<TransferTarget>();
+        List<TransferTarget> transferTargets = new ArrayList<>();
         for (DataTransferNodeDescriptor consumer : DataTransferRegistry.getInstance().getAvailableConsumers(objectTypes)) {
             Collection<DataTransferProcessorDescriptor> processors = consumer.getAvailableProcessors(objectTypes);
             if (CommonUtils.isEmpty(processors)) {

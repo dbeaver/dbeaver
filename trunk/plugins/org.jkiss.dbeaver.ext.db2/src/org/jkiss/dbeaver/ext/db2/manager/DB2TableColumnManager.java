@@ -100,7 +100,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     {
         DB2TableColumn db2Column = command.getObject();
 
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(3);
+        List<DBEPersistAction> actions = new ArrayList<>(3);
 
         String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
         actions.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));

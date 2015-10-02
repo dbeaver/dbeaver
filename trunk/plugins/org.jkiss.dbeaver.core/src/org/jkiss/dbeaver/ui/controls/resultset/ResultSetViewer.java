@@ -158,13 +158,13 @@ public class ResultSetViewer extends Viewer
     // Mode
     private boolean recordMode;
 
-    private final List<IResultSetListener> listeners = new ArrayList<IResultSetListener>();
+    private final List<IResultSetListener> listeners = new ArrayList<>();
 
     private volatile ResultSetDataPumpJob dataPumpJob;
 
     private final ResultSetModel model = new ResultSetModel();
     private StateItem curState = null;
-    private final List<StateItem> stateHistory = new ArrayList<StateItem>();
+    private final List<StateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
     private ToolItem filtersApplyButton;
@@ -1357,7 +1357,7 @@ public class ResultSetViewer extends Viewer
         }
 
         // make constraints
-        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>();
+        List<DBDAttributeConstraint> constraints = new ArrayList<>();
         int visualPosition = 0;
         // Set conditions
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
@@ -1837,7 +1837,7 @@ public class ResultSetViewer extends Viewer
 
     void deleteSelectedRows()
     {
-        Set<ResultSetRow> rowsToDelete = new LinkedHashSet<ResultSetRow>();
+        Set<ResultSetRow> rowsToDelete = new LinkedHashSet<>();
         if (recordMode) {
             rowsToDelete.add(curRow);
         } else {

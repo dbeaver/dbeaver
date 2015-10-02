@@ -42,7 +42,7 @@ public class ResultSetModel {
 
     // Attributes
     private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];
-    private List<DBDAttributeBinding> visibleAttributes = new ArrayList<DBDAttributeBinding>();
+    private List<DBDAttributeBinding> visibleAttributes = new ArrayList<>();
     private DBDAttributeBinding documentAttribute = null;
     private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
@@ -50,7 +50,7 @@ public class ResultSetModel {
 
 
     // Data
-    private List<ResultSetRow> curRows = new ArrayList<ResultSetRow>();
+    private List<ResultSetRow> curRows = new ArrayList<>();
     private int changesCount = 0;
     private volatile boolean hasData = false;
     // Flag saying that edited values update is in progress
@@ -70,7 +70,7 @@ public class ResultSetModel {
     @NotNull
     public DBDDataFilter createDataFilter()
     {
-        List<DBDAttributeConstraint> constraints = new ArrayList<DBDAttributeConstraint>(attributes.length);
+        List<DBDAttributeConstraint> constraints = new ArrayList<>(attributes.length);
         for (DBDAttributeBinding binding : attributes) {
             addConstraints(constraints, binding);
         }
@@ -511,7 +511,7 @@ public class ResultSetModel {
     {
         int rowCount = rows.size();
         int firstRowNum = curRows.size();
-        List<ResultSetRow> newRows = new ArrayList<ResultSetRow>(rowCount);
+        List<ResultSetRow> newRows = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; i++) {
             newRows.add(
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
@@ -523,7 +523,7 @@ public class ResultSetModel {
     {
         // Refresh all rows
         this.releaseAll();
-        this.curRows = new ArrayList<ResultSetRow>();
+        this.curRows = new ArrayList<>();
 
         hasData = false;
     }
@@ -613,7 +613,7 @@ public class ResultSetModel {
     {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
-            List<ResultSetRow> rowsToRemove = new ArrayList<ResultSetRow>(rows);
+            List<ResultSetRow> rowsToRemove = new ArrayList<>(rows);
             Collections.sort(rowsToRemove, new Comparator<ResultSetRow>() {
                 @Override
                 public int compare(ResultSetRow o1, ResultSetRow o2) {
@@ -662,7 +662,7 @@ public class ResultSetModel {
     {
         this.dataFilter = dataFilter;
         // Check if filter misses some attributes
-        List<DBDAttributeConstraint> newConstraints = new ArrayList<DBDAttributeConstraint>();
+        List<DBDAttributeConstraint> newConstraints = new ArrayList<>();
         for (DBDAttributeBinding binding : attributes) {
             if (dataFilter.getConstraint(binding) == null) {
                 addConstraints(newConstraints, binding);
@@ -672,7 +672,7 @@ public class ResultSetModel {
             dataFilter.addConstraints(newConstraints);
         }
 
-        List<DBDAttributeBinding> newBindings = new ArrayList<DBDAttributeBinding>();
+        List<DBDAttributeBinding> newBindings = new ArrayList<>();
 
         for (DBSAttributeBase attr : this.dataFilter.getOrderedVisibleAttributes()) {
             DBDAttributeBinding binding = getAttributeBinding(attr);

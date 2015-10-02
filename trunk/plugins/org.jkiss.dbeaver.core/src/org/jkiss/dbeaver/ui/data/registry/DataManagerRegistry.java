@@ -45,7 +45,7 @@ public class DataManagerRegistry {
         return instance;
     }
 
-    private List<DataManagerDescriptor> managers = new ArrayList<DataManagerDescriptor>();
+    private List<DataManagerDescriptor> managers = new ArrayList<>();
 
     private DataManagerRegistry(IExtensionRegistry registry)
     {

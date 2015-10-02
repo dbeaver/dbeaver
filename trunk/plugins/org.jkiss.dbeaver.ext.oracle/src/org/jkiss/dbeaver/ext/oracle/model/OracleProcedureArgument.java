@@ -210,7 +210,7 @@ public class OracleProcedureArgument implements DBSProcedureParameter, DBSTypedO
     void addAttribute(OracleProcedureArgument attribute)
     {
         if (attributes == null) {
-            attributes = new ArrayList<OracleProcedureArgument>();
+            attributes = new ArrayList<>();
         }
         attributes.add(attribute);
     }

@@ -50,7 +50,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     private String nodeType;
     private String entity;
     private String cost;
-    private Map<String, String> attributes = new LinkedHashMap<String, String>();
+    private Map<String, String> attributes = new LinkedHashMap<>();
 
     public PostgrePlanNode(PostgrePlanNode parent, Element element) {
         this.parent = parent;
@@ -78,7 +78,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         if (nestedPlansElement != null) {
             for (Element planElement : XMLUtils.getChildElementList(nestedPlansElement, "Plan")) {
                 if (nested == null) {
-                    nested = new ArrayList<PostgrePlanNode>();
+                    nested = new ArrayList<>();
                 }
                 nested.add(new PostgrePlanNode(null, planElement));
             }

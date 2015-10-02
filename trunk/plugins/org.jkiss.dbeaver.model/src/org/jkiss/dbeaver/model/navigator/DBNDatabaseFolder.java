@@ -146,7 +146,7 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException
     {
         List<DBNDatabaseNode> children = getChildren(monitor);
-        List<DBSObject> childObjects = new ArrayList<DBSObject>();
+        List<DBSObject> childObjects = new ArrayList<>();
         if (!CommonUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 childObjects.add(child.getObject());

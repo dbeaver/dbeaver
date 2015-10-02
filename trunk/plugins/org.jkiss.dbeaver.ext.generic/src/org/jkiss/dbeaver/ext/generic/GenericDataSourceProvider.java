@@ -39,7 +39,7 @@ import java.util.Map;
 
 public class GenericDataSourceProvider extends JDBCDataSourceProvider {
 
-    private final Map<String, GenericMetaModel> metaModels = new HashMap<String, GenericMetaModel>();
+    private final Map<String, GenericMetaModel> metaModels = new HashMap<>();
     private static final String EXTENSION_ID = "org.jkiss.dbeaver.generic.meta";
 
     public GenericDataSourceProvider()

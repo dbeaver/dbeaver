@@ -71,7 +71,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
     private Composite settingsGroup;
 
-    private Map<String, List<Control>> propGroupMap = new HashMap<String, List<Control>>();
+    private Map<String, List<Control>> propGroupMap = new HashMap<>();
 
     private static final String GROUP_URL = "url"; //$NON-NLS-1$
     private static final String GROUP_HOST = "host"; //$NON-NLS-1$
@@ -574,7 +574,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     {
         List<Control> controlList = propGroupMap.get(group);
         if (controlList == null) {
-            controlList = new ArrayList<Control>();
+            controlList = new ArrayList<>();
             propGroupMap.put(group, controlList);
         }
         controlList.add(control);

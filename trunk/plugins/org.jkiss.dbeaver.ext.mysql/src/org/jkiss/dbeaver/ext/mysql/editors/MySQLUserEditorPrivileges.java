@@ -226,7 +226,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
             }
         }
         if (!found) {
-            List<MySQLPrivilege> privileges = new ArrayList<MySQLPrivilege>();
+            List<MySQLPrivilege> privileges = new ArrayList<>();
             if (!privilege.isGrantOption()) {
                 privileges.add(privilege);
             }
@@ -270,7 +270,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         if (grants == null) {
             return;
         }
-        List<MySQLGrant> curGrants = new ArrayList<MySQLGrant>();
+        List<MySQLGrant> curGrants = new ArrayList<>();
         for (MySQLGrant grant : grants) {
             if (grant.matches(selectedCatalog) && grant.matches(selectedTable)) {
                 curGrants.add(grant);
@@ -311,7 +311,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     @Override
     protected void processGrants(List<MySQLGrant> grantsTmp)
     {
-        this.grants = new ArrayList<MySQLGrant>(grantsTmp);
+        this.grants = new ArrayList<>(grantsTmp);
         for (Iterator<MySQLGrant> i = grants.iterator(); i.hasNext();) {
             MySQLGrant grant = i.next();
             if (!grant.isAllPrivileges() && !grant.hasNonAdminPrivileges()) {
@@ -403,8 +403,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 @Override
                 public void completeLoading(java.util.List<MySQLPrivilege> privs) {
                     super.completeLoading(privs);
-                    List<MySQLPrivilege> otherPrivs = new ArrayList<MySQLPrivilege>();
-                    List<MySQLPrivilege> tablePrivs = new ArrayList<MySQLPrivilege>();
+                    List<MySQLPrivilege> otherPrivs = new ArrayList<>();
+                    List<MySQLPrivilege> tablePrivs = new ArrayList<>();
                     for (MySQLPrivilege priv : privs) {
                         if (priv.getKind() == MySQLPrivilege.Kind.ADMIN) {
                             continue;

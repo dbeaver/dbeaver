@@ -128,7 +128,7 @@ public class DBCStatistics {
     public void addMessage(String message)
     {
         if (messages == null) {
-            messages = new ArrayList<String>();
+            messages = new ArrayList<>();
         }
         messages.add(message);
     }
@@ -142,7 +142,7 @@ public class DBCStatistics {
 
     public void addInfo(String name, Object value) {
         if (infoMap == null) {
-            infoMap = new LinkedHashMap<String, Object>();
+            infoMap = new LinkedHashMap<>();
         }
         infoMap.put(name, value);
     }

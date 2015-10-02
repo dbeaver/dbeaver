@@ -131,7 +131,7 @@ public class WMIClass extends WMIContainer
     void addSubClass(WMIClass wmiClass)
     {
         if (subClasses == null) {
-            subClasses = new ArrayList<WMIClass>();
+            subClasses = new ArrayList<>();
         }
         subClasses.add(wmiClass);
     }
@@ -220,7 +220,7 @@ public class WMIClass extends WMIContainer
         for (WMIClassAttribute attr : getAllAttributes(monitor)) {
             if (attr.isKey()) {
                 if (constraints == null) {
-                    constraints = new ArrayList<WMIClassConstraint>();
+                    constraints = new ArrayList<>();
                 }
                 constraints.add(new WMIClassConstraint(this, attr));
             }
@@ -240,7 +240,7 @@ public class WMIClass extends WMIContainer
         if (superClass == null) {
             return getAttributes(monitor);
         } else {
-            List<WMIClassAttribute> allAttrs = new ArrayList<WMIClassAttribute>();
+            List<WMIClassAttribute> allAttrs = new ArrayList<>();
             for (WMIClass c = this; c != null; c = c.superClass) {
                 for (WMIClassAttribute attr : c.getAttributes(monitor)) {
                     boolean overridden = false;
@@ -265,7 +265,7 @@ public class WMIClass extends WMIContainer
             return;
         }
         try {
-            attributes = new ArrayList<WMIClassAttribute>();
+            attributes = new ArrayList<>();
             for (WMIObjectAttribute prop : classObject.getAttributes(WMIConstants.WBEM_FLAG_CLASS_LOCAL_AND_OVERRIDES)) {
                 if (monitor.isCanceled()) {
                     break;
@@ -288,7 +288,7 @@ public class WMIClass extends WMIContainer
                         continue;
                     }
                     if (referenceAttributes == null) {
-                        referenceAttributes = new ArrayList<WMIClassReference>();
+                        referenceAttributes = new ArrayList<>();
                     }
                     WMIClassReference reference = new WMIClassReference(this, prop, refClass);
                     referenceAttributes.add(reference);
@@ -326,7 +326,7 @@ public class WMIClass extends WMIContainer
             return;
         }
         try {
-            methods = new ArrayList<WMIClassMethod>();
+            methods = new ArrayList<>();
             for (WMIObjectMethod prop : classObject.getMethods(WMIConstants.WBEM_FLAG_LOCAL_ONLY)) {
                 if (monitor.isCanceled()) {
                     break;
@@ -347,7 +347,7 @@ public class WMIClass extends WMIContainer
         if (superClass == null && CommonUtils.isEmpty(referenceAttributes)) {
             return null;
         }
-        List<DBSEntityAssociation> associations = new ArrayList<DBSEntityAssociation>();
+        List<DBSEntityAssociation> associations = new ArrayList<>();
         if (superClass != null) {
             associations.add(new WMIClassInheritance(superClass, this));
         }
@@ -360,7 +360,7 @@ public class WMIClass extends WMIContainer
     @Override
     public List<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
     {
-        List<DBSEntityAssociation> references = new ArrayList<DBSEntityAssociation>();
+        List<DBSEntityAssociation> references = new ArrayList<>();
         if (subClasses != null) {
             for (WMIClass ss : subClasses) {
                 references.add(new WMIClassInheritance(this, ss));

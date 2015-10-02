@@ -74,7 +74,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
         this.supportsBatchUpdates = false;
 
         this.supportsTransactions = false;
-        this.supportedIsolations = new ArrayList<DBPTransactionIsolation>();
+        this.supportedIsolations = new ArrayList<>();
         this.supportedIsolations.add(0, JDBCTransactionIsolation.NONE);
         this.supportsScroll = true;
     }
@@ -152,7 +152,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             supportsTransactions = true;
         }
 
-        supportedIsolations = new ArrayList<DBPTransactionIsolation>();
+        supportedIsolations = new ArrayList<>();
         try {
             for (JDBCTransactionIsolation txi : JDBCTransactionIsolation.values()) {
                 if (metaData.supportsTransactionIsolationLevel(txi.getCode())) {

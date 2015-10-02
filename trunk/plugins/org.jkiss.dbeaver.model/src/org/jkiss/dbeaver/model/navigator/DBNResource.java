@@ -146,7 +146,7 @@ public class DBNResource extends DBNNode
 
     protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
-        List<DBNNode> result = new ArrayList<DBNNode>();
+        List<DBNNode> result = new ArrayList<>();
         try {
             IResource[] members = ((IContainer) resource).members();
             for (IResource member : members) {

@@ -68,7 +68,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @Nullable
     public static IFile findRecentScript(IProject project, @Nullable DBSDataSourceContainer container) throws CoreException
     {
-        List<IFile> scripts = new ArrayList<IFile>();
+        List<IFile> scripts = new ArrayList<>();
         findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
         long recentTimestamp = 0l;
         IFile recentFile = null;

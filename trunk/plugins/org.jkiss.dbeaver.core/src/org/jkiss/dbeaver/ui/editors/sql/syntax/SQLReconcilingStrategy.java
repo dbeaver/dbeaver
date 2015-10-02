@@ -117,7 +117,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         }
         Map<Annotation, Position> addedAnnotations = null;
         if (!addedPositions.isEmpty()) {
-            addedAnnotations = new HashMap<Annotation, Position>();
+            addedAnnotations = new HashMap<>();
             for (SQLScriptPosition pos : addedPositions) {
                 addedAnnotations.put(pos.getFoldingAnnotation(), pos);
             }

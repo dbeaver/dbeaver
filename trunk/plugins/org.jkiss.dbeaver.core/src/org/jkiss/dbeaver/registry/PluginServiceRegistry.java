@@ -54,7 +54,7 @@ public class PluginServiceRegistry
         return instance;
     }
 
-    private final List<IPluginService> services = new ArrayList<IPluginService>();
+    private final List<IPluginService> services = new ArrayList<>();
 
     private PluginServiceRegistry(IExtensionRegistry registry)
     {

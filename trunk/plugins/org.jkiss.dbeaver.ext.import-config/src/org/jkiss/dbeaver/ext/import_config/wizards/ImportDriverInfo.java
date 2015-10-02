@@ -32,8 +32,8 @@ public class ImportDriverInfo {
     private String name;
     private String sampleURL;
     private String driverClass;
-    private List<String> libraries = new ArrayList<String>();
-    private Map<Object, Object> properties = new HashMap<Object, Object>();
+    private List<String> libraries = new ArrayList<>();
+    private Map<Object, Object> properties = new HashMap<>();
     private String defaultPort;
     private String description;
 

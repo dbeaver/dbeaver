@@ -50,9 +50,9 @@ public class DBPConnectionConfiguration implements DBPObject
     public DBPConnectionConfiguration()
     {
         this.connectionType = DBPConnectionType.DEFAULT_TYPE;
-        this.properties = new HashMap<Object, Object>();
-        this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>();
-        this.handlers = new ArrayList<DBWHandlerConfiguration>();
+        this.properties = new HashMap<>();
+        this.events = new HashMap<>();
+        this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
     }
 
@@ -67,12 +67,12 @@ public class DBPConnectionConfiguration implements DBPObject
         this.url = info.url;
         this.clientHomeId = info.clientHomeId;
         this.connectionType = info.connectionType;
-        this.properties = new HashMap<Object, Object>(info.properties);
-        this.events = new HashMap<DBPConnectionEventType, DBRShellCommand>(info.events.size());
+        this.properties = new HashMap<>(info.properties);
+        this.events = new HashMap<>(info.events.size());
         for (Map.Entry<DBPConnectionEventType, DBRShellCommand> entry : info.events.entrySet()) {
             this.events.put(entry.getKey(), new DBRShellCommand(entry.getValue()));
         }
-        this.handlers = new ArrayList<DBWHandlerConfiguration>(info.handlers.size());
+        this.handlers = new ArrayList<>(info.handlers.size());
         for (DBWHandlerConfiguration handler : info.handlers) {
             this.handlers.add(new DBWHandlerConfiguration(handler));
         }

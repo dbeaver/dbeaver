@@ -52,7 +52,7 @@ public class GenericMetaModel {
     static final Log log = Log.getLog(GenericMetaModel.class);
 
     private String id;
-    private final Map<String, GenericMetaObject> objects = new HashMap<String, GenericMetaObject>();
+    private final Map<String, GenericMetaObject> objects = new HashMap<>();
     private String[] driverClass;
 
     public GenericMetaModel(IConfigurationElement cfg)
@@ -138,7 +138,7 @@ public class GenericMetaModel {
 
                     if (!CommonUtils.isEmpty(packageName)) {
                         if (packageMap == null) {
-                            packageMap = new TreeMap<String, GenericPackage>();
+                            packageMap = new TreeMap<>();
                         }
                         procedurePackage = packageMap.get(packageName);
                         if (procedurePackage == null) {
@@ -250,7 +250,7 @@ public class GenericMetaModel {
     }
 
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        return new ArrayList<GenericSequence>();
+        return new ArrayList<>();
     }
 
     public JDBCBasicDataTypeCache createDataTypeCache(DBSDataSourceContainer container) {

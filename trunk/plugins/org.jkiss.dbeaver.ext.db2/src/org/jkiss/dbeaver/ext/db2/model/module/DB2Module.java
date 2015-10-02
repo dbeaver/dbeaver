@@ -88,13 +88,13 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
-        this.conditionCache = new JDBCObjectSimpleCache<DB2Module, DB2ModuleCondition>(DB2ModuleCondition.class, C_CON,
+        this.conditionCache = new JDBCObjectSimpleCache<>(DB2ModuleCondition.class, C_CON,
             schema.getName(), name);
-        this.functionCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_FCT, schema.getName(), name);
-        this.methodCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_MOD, schema.getName(), name);
-        this.procedureCache = new JDBCObjectSimpleCache<DB2Module, DB2Routine>(DB2Routine.class, C_PRC, schema.getName(), name);
-        this.typeCache = new JDBCObjectSimpleCache<DB2Module, DB2DataType>(DB2DataType.class, C_TYP, schema.getName(), name);
-        this.variableCache = new JDBCObjectSimpleCache<DB2Module, DB2Variable>(DB2Variable.class, C_VAR, schema.getName(), name);
+        this.functionCache = new JDBCObjectSimpleCache<>(DB2Routine.class, C_FCT, schema.getName(), name);
+        this.methodCache = new JDBCObjectSimpleCache<>(DB2Routine.class, C_MOD, schema.getName(), name);
+        this.procedureCache = new JDBCObjectSimpleCache<>(DB2Routine.class, C_PRC, schema.getName(), name);
+        this.typeCache = new JDBCObjectSimpleCache<>(DB2DataType.class, C_TYP, schema.getName(), name);
+        this.variableCache = new JDBCObjectSimpleCache<>(DB2Variable.class, C_VAR, schema.getName(), name);
 
     }
 

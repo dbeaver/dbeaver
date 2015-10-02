@@ -159,7 +159,7 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     public Collection<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<OracleTableForeignKey> refs = new ArrayList<OracleTableForeignKey>();
+        List<OracleTableForeignKey> refs = new ArrayList<>();
         // This is dummy implementation
         // Get references from this schema only
         final Collection<OracleTableForeignKey> allForeignKeys =

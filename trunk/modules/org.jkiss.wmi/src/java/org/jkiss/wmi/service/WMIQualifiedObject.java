@@ -35,7 +35,7 @@ public abstract class WMIQualifiedObject {
         if (qualifiers == null) {
             synchronized (this) {
                 if (qualifiers == null) {
-                    qualifiers = new ArrayList<WMIQualifier>();
+                    qualifiers = new ArrayList<>();
                     readObjectQualifiers(qualifiers);
                 }
             }

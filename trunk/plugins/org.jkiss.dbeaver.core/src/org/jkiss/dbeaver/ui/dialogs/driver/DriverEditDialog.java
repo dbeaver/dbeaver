@@ -103,7 +103,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private Text driverPortText;
     private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
-    private List<DBPDriverLibrary> libList = new ArrayList<DBPDriverLibrary>();
+    private List<DBPDriverLibrary> libList = new ArrayList<>();
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
@@ -243,7 +243,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             if (isReadOnly) {
                 driverCategoryCombo.setEnabled(false);
             }
-            Set<String> categories = new TreeSet<String>();
+            Set<String> categories = new TreeSet<>();
             for (DataSourceProviderDescriptor p : DataSourceProviderRegistry.getInstance().getDataSourceProviders()) {
                 for (DriverDescriptor drv : p.getEnabledDrivers()) {
                     if (!CommonUtils.isEmpty(drv.getCategory())) {
@@ -651,7 +651,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 //        anonymousCheck.setSelection(driver.isAnonymousAccess());
 
         if (libTable != null) {
-            libList = new ArrayList<DBPDriverLibrary>();
+            libList = new ArrayList<>();
             for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
                 if (lib.isDisabled() || (lib.getType() != DBPDriverLibrary.FileType.jar && lib.getType() != DBPDriverLibrary.FileType.lib) || !lib.matchesCurrentPlatform()) {
                     continue;
@@ -750,7 +750,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         public static final String SQL_DRIVER_CLASS_NAME = "java/sql/Driver";
         public static final String OBJECT_CLASS_NAME = "java/lang/Object";
         public static final String CLASS_FILE_EXT = ".class";
-        private java.util.List<String> driverClassNames = new ArrayList<String>();
+        private java.util.List<String> driverClassNames = new ArrayList<>();
 
         private ClassFindJob() {
         }
@@ -768,8 +768,8 @@ public class DriverEditDialog extends HelpEnabledDialog
 
         private void findDriverClasses(IProgressMonitor monitor)
         {
-            java.util.List<File> libFiles = new ArrayList<File>();
-            java.util.List<URL> libURLs = new ArrayList<URL>();
+            java.util.List<File> libFiles = new ArrayList<>();
+            java.util.List<URL> libURLs = new ArrayList<>();
             for (DBPDriverLibrary lib : libList) {
                 File libFile = lib.getLocalFile();
                 if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverLibrary.FileType.jar) {

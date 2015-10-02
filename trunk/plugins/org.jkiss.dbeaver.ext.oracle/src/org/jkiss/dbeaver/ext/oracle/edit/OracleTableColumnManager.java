@@ -79,7 +79,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
         final OracleTableColumn column = command.getObject();
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>(2);
+        List<DBEPersistAction> actions = new ArrayList<>(2);
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
             actions.add(new SQLDatabasePersistAction(

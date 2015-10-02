@@ -177,7 +177,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                 protected CellEditor getCellEditor(Object element)
                 {
                     try {
-                        java.util.List<String> items = new ArrayList<String>();
+                        java.util.List<String> items = new ArrayList<>();
                         DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) element;
                         if (mapping.getParent().getMappingType() == DatabaseMappingType.existing &&
                             mapping.getParent().getTarget() instanceof DBSEntity)
@@ -267,7 +267,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) element;
 
-                    Set<String> types = new LinkedHashSet<String>();
+                    Set<String> types = new LinkedHashSet<>();
                     DBPDataSource dataSource = settings.getTargetDataSource(attrMapping);
                     if (dataSource instanceof DBPDataTypeProvider) {
                         for (DBSDataType type : ((DBPDataTypeProvider) dataSource).getDataTypes()) {

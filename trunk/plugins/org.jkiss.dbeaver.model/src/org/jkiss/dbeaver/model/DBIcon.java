@@ -123,7 +123,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon OVER_EXTERNAL = new DBIcon("over_external", "over/external_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OVER_REFERENCE = new DBIcon("over_reference", "over/reference_ovr.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
-    private static Map<String, DBPImage> iconMap = new HashMap<String, DBPImage>();
+    private static Map<String, DBPImage> iconMap = new HashMap<>();
 
 
     static  {

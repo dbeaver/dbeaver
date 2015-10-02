@@ -105,7 +105,7 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
         if (source == null) {
             return null;
         }
-        List<DBEPersistAction> actions = new ArrayList<DBEPersistAction>();
+        List<DBEPersistAction> actions = new ArrayList<>();
         actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, trigger);
         return actions.toArray(new DBEPersistAction[actions.size()]);

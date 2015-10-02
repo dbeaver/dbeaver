@@ -53,7 +53,7 @@ import java.util.*;
 public class MigrateConnectionWizard extends Wizard
 {
     private final DataSourceRegistry registry;
-    private final Set<DBSDataSourceContainer> selectedConnections = new HashSet<DBSDataSourceContainer>();
+    private final Set<DBSDataSourceContainer> selectedConnections = new HashSet<>();
     private PageConnections pageConnections;
     private PageDriver pageDriver;
 
@@ -168,7 +168,7 @@ public class MigrateConnectionWizard extends Wizard
 
         public List<DataSourceDescriptor> getSelectedConnections()
         {
-            final List<DataSourceDescriptor> result = new ArrayList<DataSourceDescriptor>();
+            final List<DataSourceDescriptor> result = new ArrayList<>();
             for (TableItem item : connectionsViewer.getItems()) {
                 if (item.getChecked()) {
                     result.add((DataSourceDescriptor) item.getData());

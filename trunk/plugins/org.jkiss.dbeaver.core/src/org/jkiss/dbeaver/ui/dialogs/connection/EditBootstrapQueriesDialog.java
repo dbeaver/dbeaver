@@ -47,7 +47,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
 
     public EditBootstrapQueriesDialog(Shell shell, Collection<String> queries, boolean ignoreErrors) {
         super(shell, IHelpContextIds.CTX_EDIT_OBJECT_FILTERS);
-        this.queries = new ArrayList<String>(queries);
+        this.queries = new ArrayList<>(queries);
         this.ignoreErrors = ignoreErrors;
     }
 
@@ -136,7 +136,7 @@ public class EditBootstrapQueriesDialog extends HelpEnabledDialog {
     }
 
     private List<String> collectValues(Table table) {
-        List<String> values = new ArrayList<String>();
+        List<String> values = new ArrayList<>();
         for (TableItem item : table.getItems()) {
             String value = item.getText().trim();
             if (value.isEmpty() || value.equals("%")) { //$NON-NLS-1$

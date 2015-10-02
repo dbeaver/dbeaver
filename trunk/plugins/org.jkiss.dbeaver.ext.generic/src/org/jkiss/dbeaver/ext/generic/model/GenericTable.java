@@ -292,7 +292,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         throws DBException
     {
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
-            return new ArrayList<GenericTableForeignKey>();
+            return new ArrayList<>();
         }
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
@@ -300,7 +300,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it
             final GenericMetaObject fkObject = getDataSource().getMetaObject(GenericConstants.OBJECT_FOREIGN_KEY);
-            final List<ForeignKeyInfo> fkInfos = new ArrayList<ForeignKeyInfo>();
+            final List<ForeignKeyInfo> fkInfos = new ArrayList<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult = metaData.getExportedKeys(
@@ -328,8 +328,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
                 dbResult.close();
             }
 
-            List<GenericTableForeignKey> fkList = new ArrayList<GenericTableForeignKey>();
-            Map<String, GenericTableForeignKey> fkMap = new HashMap<String, GenericTableForeignKey>();
+            List<GenericTableForeignKey> fkList = new ArrayList<>();
+            Map<String, GenericTableForeignKey> fkMap = new HashMap<>();
             for (ForeignKeyInfo info : fkInfos) {
                 DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(info.deleteRuleNum);
                 DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(info.updateRuleNum);

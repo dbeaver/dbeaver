@@ -99,7 +99,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
     private int importScripts(DBRProgressMonitor monitor, ScriptsImportData importData) throws IOException, DBException, CoreException
     {
-        List<Pattern> masks = new ArrayList<Pattern>();
+        List<Pattern> masks = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(importData.getFileMasks(), ",; "); //$NON-NLS-1$
         while (st.hasMoreTokens()) {
             String mask = st.nextToken().trim();
@@ -108,7 +108,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 masks.add(Pattern.compile(mask));
             }
         }
-        List<File> filesToImport = new ArrayList<File>();
+        List<File> filesToImport = new ArrayList<>();
         collectFiles(importData.getInputDir(), masks, filesToImport);
         if (filesToImport.isEmpty()) {
             return 0;
@@ -121,7 +121,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         for (File file : filesToImport) {
             // Create dirs
             monitor.subTask(file.getName());
-            List<File> path = new ArrayList<File>();
+            List<File> path = new ArrayList<>();
             for (File parent = file.getParentFile(); !parent.equals(importData.getInputDir()); parent = parent.getParentFile()) {
                 path.add(0, parent);
             }

@@ -54,7 +54,7 @@ public class MySQLToolScript implements IExternalTool
 
     public static List<String> getMySQLToolCommandLine(AbstractToolWizard toolWizard) throws IOException
     {
-        java.util.List<String> cmd = new ArrayList<String>();
+        java.util.List<String> cmd = new ArrayList<>();
         toolWizard.fillProcessParameters(cmd);
 
         if (toolWizard.isVerbose()) {

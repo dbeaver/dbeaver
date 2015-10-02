@@ -50,7 +50,7 @@ public class SelectObjectDialog<T> extends Dialog {
 
     private String title;
     private Collection<T> objects;
-    private List<T> selectedObjects = new ArrayList<T>();
+    private List<T> selectedObjects = new ArrayList<>();
     private boolean singleSelection;
 
     private SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, Collection<T> objects)
@@ -150,7 +150,7 @@ public class SelectObjectDialog<T> extends Dialog {
 
     public static <T> List<T> selectObjects(Shell parentShell, String title, Collection<T> objects)
     {
-        SelectObjectDialog<T> scDialog = new SelectObjectDialog<T>(parentShell, title, false, objects);
+        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, false, objects);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {
@@ -160,7 +160,7 @@ public class SelectObjectDialog<T> extends Dialog {
 
     public static <T> T selectObject(Shell parentShell, String title, Collection<T> objects)
     {
-        SelectObjectDialog<T> scDialog = new SelectObjectDialog<T>(parentShell, title, true, objects);
+        SelectObjectDialog<T> scDialog = new SelectObjectDialog<>(parentShell, title, true, objects);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             final List<T> selectedObjects = scDialog.getSelectedObjects();
             return CommonUtils.isEmpty(selectedObjects) ? null : selectedObjects.get(0);

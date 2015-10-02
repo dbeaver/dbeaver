@@ -617,7 +617,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
                     continue;
                 }
                 if (warnings == null) {
-                    warnings = new ArrayList<Throwable>();
+                    warnings = new ArrayList<>();
                 }
                 if (warnings.contains(warning)) {
                     // Cycle

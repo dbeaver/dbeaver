@@ -46,15 +46,15 @@ public class ProjectRegistry implements DBPProjectManager {
         DataSourceRegistry.OLD_CONFIG_FILE_NAME
     };
 
-    private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<ResourceHandlerDescriptor>();
-    private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<String, ResourceHandlerDescriptor>();
+    private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
+    private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<>();
 
-    private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<IProject, DataSourceRegistry>();
-    private final Set<IProject> busyProjects = new HashSet<IProject>();
+    private final Map<IProject, DataSourceRegistry> projectDatabases = new HashMap<>();
+    private final Set<IProject> busyProjects = new HashSet<>();
     private IProject activeProject;
     private IWorkspace workspace;
 
-    private final List<DBPProjectListener> projectListeners = new ArrayList<DBPProjectListener>();
+    private final List<DBPProjectListener> projectListeners = new ArrayList<>();
 
     public ProjectRegistry(IWorkspace workspace)
     {

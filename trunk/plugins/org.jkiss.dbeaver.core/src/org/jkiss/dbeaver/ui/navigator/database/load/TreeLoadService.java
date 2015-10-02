@@ -75,7 +75,7 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
             DBNNode node = children.get(i);
             if (node instanceof DBNDatabaseNode && !((DBNDatabaseNode) node).getMeta().isNavigable()) {
                 if (filtered == null) {
-                    filtered = new ArrayList<DBNNode>(children.size());
+                    filtered = new ArrayList<>(children.size());
                     for (int k = 0; k < i; k++) {
                         filtered.add(children.get(k));
                     }

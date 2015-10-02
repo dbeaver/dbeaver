@@ -44,7 +44,7 @@ public class ResultSetPresentationRegistry {
         return instance;
     }
 
-    private List<ResultSetPresentationDescriptor> presentations = new ArrayList<ResultSetPresentationDescriptor>();
+    private List<ResultSetPresentationDescriptor> presentations = new ArrayList<>();
 
 
     private ResultSetPresentationRegistry(IExtensionRegistry registry)
@@ -77,7 +77,7 @@ public class ResultSetPresentationRegistry {
 
     public List<ResultSetPresentationDescriptor> getAvailablePresentations(DBCResultSet resultSet, IResultSetContext context)
     {
-        List<ResultSetPresentationDescriptor> result = new ArrayList<ResultSetPresentationDescriptor>();
+        List<ResultSetPresentationDescriptor> result = new ArrayList<>();
         for (ResultSetPresentationDescriptor descriptor : presentations) {
             if (descriptor.supportedBy(resultSet, context)) {
                 result.add(descriptor);

@@ -90,7 +90,7 @@ public class MySQLTable extends MySQLTableBase
         }
     }
 
-    private SimpleObjectCache<MySQLTable, MySQLTableForeignKey> foreignKeys = new SimpleObjectCache<MySQLTable, MySQLTableForeignKey>();
+    private SimpleObjectCache<MySQLTable, MySQLTableForeignKey> foreignKeys = new SimpleObjectCache<>();
     private final PartitionCache partitionCache = new PartitionCache();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
@@ -183,7 +183,7 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<MySQLTrigger> triggers = new ArrayList<MySQLTrigger>();
+        List<MySQLTrigger> triggers = new ArrayList<>();
         for (MySQLTrigger trigger : getContainer().triggerCache.getAllObjects(monitor, getContainer())) {
             if (trigger.getTable() == this) {
                 triggers.add(trigger);
@@ -321,14 +321,14 @@ public class MySQLTable extends MySQLTableBase
     private List<MySQLTableForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
         throws DBException
     {
-        List<MySQLTableForeignKey> fkList = new ArrayList<MySQLTableForeignKey>();
+        List<MySQLTableForeignKey> fkList = new ArrayList<>();
         if (!isPersisted()) {
             return fkList;
         }
         JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations");
         try {
-            Map<String, MySQLTableForeignKey> fkMap = new HashMap<String, MySQLTableForeignKey>();
-            Map<String, MySQLTableConstraint> pkMap = new HashMap<String, MySQLTableConstraint>();
+            Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
+            Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();
             // Load indexes
             JDBCResultSet dbResult;
@@ -451,7 +451,7 @@ public class MySQLTable extends MySQLTableBase
     }
 
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
-        Map<String, MySQLPartition> partitionMap = new HashMap<String, MySQLPartition>();
+        Map<String, MySQLPartition> partitionMap = new HashMap<>();
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLTable mySQLTable) throws SQLException
         {
@@ -505,7 +505,7 @@ public class MySQLTable extends MySQLTableBase
         @Override
         public Object[] getPossibleValues(MySQLTable object)
         {
-            final List<MySQLEngine> engines = new ArrayList<MySQLEngine>();
+            final List<MySQLEngine> engines = new ArrayList<>();
             for (MySQLEngine engine : object.getDataSource().getEngines()) {
                 if (engine.getSupport() == MySQLEngine.Support.YES || engine.getSupport() == MySQLEngine.Support.DEFAULT) {
                     engines.add(engine);

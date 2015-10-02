@@ -43,15 +43,15 @@ public class BasicSQLDialect implements SQLDialect {
     private static final String[] DEFAULT_LINE_COMMENTS = {"--"};
 
     // Keywords
-    private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<String, DBPKeywordType>();
+    private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
-    protected final TreeSet<String> reservedWords = new TreeSet<String>();
-    protected final TreeSet<String> functions = new TreeSet<String>();
-    protected final TreeSet<String> types = new TreeSet<String>();
-    protected final TreeSet<String> tableQueryWords = new TreeSet<String>();
-    protected final TreeSet<String> columnQueryWords = new TreeSet<String>();
+    protected final TreeSet<String> reservedWords = new TreeSet<>();
+    protected final TreeSet<String> functions = new TreeSet<>();
+    protected final TreeSet<String> types = new TreeSet<>();
+    protected final TreeSet<String> tableQueryWords = new TreeSet<>();
+    protected final TreeSet<String> columnQueryWords = new TreeSet<>();
     // Comments
-    protected Pair<String, String> multiLineComments = new Pair<String, String>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
+    protected Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
 
     public BasicSQLDialect()
     {
@@ -125,7 +125,7 @@ public class BasicSQLDialect implements SQLDialect {
     public List<String> getMatchedKeywords(@NotNull String word)
     {
         word = word.toUpperCase();
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (String keyword : allKeywords.tailMap(word).keySet()) {
             if (keyword.startsWith(word)) {
                 result.add(keyword);

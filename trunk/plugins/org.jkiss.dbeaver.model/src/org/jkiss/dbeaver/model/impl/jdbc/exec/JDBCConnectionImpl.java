@@ -675,7 +675,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         if (original == null) {
             throw new IllegalArgumentException("Null statement");
         }
-        return new JDBCStatementImpl<Statement>(this, original, !isLoggingEnabled());
+        return new JDBCStatementImpl<>(this, original, !isLoggingEnabled());
     }
 
     protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, @Nullable String sql)

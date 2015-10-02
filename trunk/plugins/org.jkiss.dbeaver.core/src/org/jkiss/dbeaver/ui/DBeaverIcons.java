@@ -52,8 +52,8 @@ public class DBeaverIcons
         }
     }
 
-    private static Map<String, IconDescriptor> imageMap = new HashMap<String, IconDescriptor>();
-    private static Map<String, IconDescriptor> compositeMap = new HashMap<String, IconDescriptor>();
+    private static Map<String, IconDescriptor> imageMap = new HashMap<>();
+    private static Map<String, IconDescriptor> compositeMap = new HashMap<>();
 
     public static Image getImage(DBPImage image)
     {

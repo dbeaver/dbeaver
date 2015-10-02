@@ -104,7 +104,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
 
     public List<DBNDataSource> getDataSources()
     {
-        List<DBNDataSource> children = new ArrayList<DBNDataSource>();
+        List<DBNDataSource> children = new ArrayList<>();
         DBNProjectDatabases parent = (DBNProjectDatabases) getParentNode();
         for (DBNDataSource dataSource : parent.getDataSources()) {
             if (getName().equals(dataSource.getDataSourceContainer().getFolderPath())) {

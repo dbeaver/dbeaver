@@ -43,8 +43,8 @@ public class QMMSessionInfo extends QMMObject {
     public QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
     {
         this.containerId = context.getDataSource().getContainer().getId();
-        this.reference = new SoftReference<DBCExecutionContext>(context);
-        this.container = new SoftReference<DBSDataSourceContainer>(context.getDataSource().getContainer());
+        this.reference = new SoftReference<>(context);
+        this.container = new SoftReference<>(context.getDataSource().getContainer());
         this.previous = previous;
         this.transactional = transactional;
         if (transactional) {

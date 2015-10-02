@@ -42,8 +42,8 @@ public class EntityDeleteCommand extends Command
 	private ERDEntity entity;
 	private EntityDiagram entityDiagram;
 	private int index = -1;
-	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<ERDAssociation>();
-	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<ERDAssociation>();
+	private List<ERDAssociation> foreignKeyRelationships = new ArrayList<>();
+	private List<ERDAssociation> primaryKeyRelationships = new ArrayList<>();
 	private Rectangle bounds;
 
     public EntityDeleteCommand(EntityDiagram entityDiagram, EntityPart entityPart, Rectangle originalBounds) {

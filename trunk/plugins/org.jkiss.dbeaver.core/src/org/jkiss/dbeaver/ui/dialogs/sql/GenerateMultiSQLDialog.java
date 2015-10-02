@@ -86,7 +86,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     protected String[] generateSQLScript()
     {
         List<T> checkedObjects = getCheckedObjects();
-        List<String> lines = new ArrayList<String>();
+        List<String> lines = new ArrayList<>();
         for (T object : checkedObjects) {
             generateObjectCommand(lines, object);
         }
@@ -95,7 +95,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
     }
 
     public List<T> getCheckedObjects() {
-        List<T> checkedObjects = new ArrayList<T>();
+        List<T> checkedObjects = new ArrayList<>();
         if (objectsTable != null) {
             for (TableItem item : objectsTable.getItems()) {
                 if (item.getChecked()) {
@@ -141,9 +141,9 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
         final String jobName = getShell().getText();
         final SQLScriptProgressListener<T> scriptListener = getScriptListener();
         final List<T> objects = getCheckedObjects();
-        final Map<T, List<String>> objectsSQL = new LinkedHashMap<T, List<String>>();
+        final Map<T, List<String>> objectsSQL = new LinkedHashMap<>();
         for (T object : objects) {
-            final List<String> lines = new ArrayList<String>();
+            final List<String> lines = new ArrayList<>();
             generateObjectCommand(lines, object);
             objectsSQL.put(object, lines);
         }

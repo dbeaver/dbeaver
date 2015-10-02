@@ -33,7 +33,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
     private final String catalogName;
     private final String schemaName;
     private final String tableName;
-    private final List<JDBCColumnMetaData> columns = new ArrayList<JDBCColumnMetaData>();
+    private final List<JDBCColumnMetaData> columns = new ArrayList<>();
 
     JDBCTableMetaData(@NotNull JDBCResultSetMetaData resultSetMetaData, String catalogName, String schemaName, @NotNull String tableName)
     {

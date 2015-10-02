@@ -112,7 +112,7 @@ public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> ext
         @Override
         protected void invalidateObjects(DBRProgressMonitor monitor, OracleProcedureBase owner, Iterator<OracleProcedureArgument> objectIter)
         {
-            IntKeyMap<OracleProcedureArgument> argStack = new IntKeyMap<OracleProcedureArgument>();
+            IntKeyMap<OracleProcedureArgument> argStack = new IntKeyMap<>();
             while (objectIter.hasNext()) {
                 OracleProcedureArgument argument = objectIter.next();
                 final int curDataLevel = argument.getDataLevel();

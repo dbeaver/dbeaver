@@ -50,7 +50,7 @@ public class SQLIdentifierDetector extends SQLWordDetector
         if (!containsSeparator(identifier)) {
             return Collections.singletonList(identifier);
         }
-        List<String> tokens = new ArrayList<String>();
+        List<String> tokens = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(identifier, String.valueOf(structSeparator));
         while (st.hasMoreTokens()) {
             tokens.add(st.nextToken());

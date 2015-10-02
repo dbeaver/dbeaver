@@ -38,7 +38,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     QMMTransactionSavepointInfo(QMMTransactionInfo transaction, DBCSavepoint reference, String name, QMMTransactionSavepointInfo previous)
     {
         this.transaction = transaction;
-        this.reference = new SoftReference<DBCSavepoint>(reference);
+        this.reference = new SoftReference<>(reference);
         this.name = name;
         this.previous = previous;
     }

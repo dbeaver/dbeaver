@@ -61,7 +61,7 @@ class ScriptsExportWizardPage extends WizardPage {
     private Button overwriteCheck;
     private Text directoryText;
     private DatabaseNavigatorTree scriptsNavigator;
-    private final List<DBNResource> selectedResources = new ArrayList<DBNResource>();
+    private final List<DBNResource> selectedResources = new ArrayList<>();
 
     protected ScriptsExportWizardPage(String pageName)
     {
@@ -172,7 +172,7 @@ class ScriptsExportWizardPage extends WizardPage {
 
     public ScriptsExportData getExportData()
     {
-        Set<IResource> result = new LinkedHashSet<IResource>();
+        Set<IResource> result = new LinkedHashSet<>();
         // Add folders
         for (DBNResource resourceNode : selectedResources) {
             final IResource resource = resourceNode.getResource();

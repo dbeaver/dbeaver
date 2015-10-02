@@ -76,7 +76,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     @Override
     protected List<String> getCommandLine() throws IOException
     {
-        List<String> cmd = new ArrayList<String>();
+        List<String> cmd = new ArrayList<>();
         fillProcessParameters(cmd);
         DBPConnectionConfiguration conInfo = getConnectionInfo();
         String url;

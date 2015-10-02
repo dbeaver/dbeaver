@@ -76,7 +76,7 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
     // plus a few de-facto standard types
     public void fillStandardTypes(DBSObject owner)
     {
-        List<DBSDataType> standardTypes = new ArrayList<DBSDataType>();
+        List<DBSDataType> standardTypes = new ArrayList<>();
         Collections.addAll(standardTypes,
             new JDBCDataType(owner, Types.INTEGER, "INTEGER", null, false, true, 0, 0, 0),
             new JDBCDataType(owner, Types.FLOAT, "FLOAT", null, false, true, 0, 0, 0),

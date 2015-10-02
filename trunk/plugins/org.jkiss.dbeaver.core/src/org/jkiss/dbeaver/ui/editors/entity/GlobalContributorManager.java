@@ -35,7 +35,7 @@ public class GlobalContributorManager implements IDatabaseEditorContributorManag
 
     private static class ActionContributorInfo {
         final IEditorActionBarContributor contributor;
-        final List<IEditorPart> editors = new ArrayList<IEditorPart>();
+        final List<IEditorPart> editors = new ArrayList<>();
 
         private ActionContributorInfo(IEditorActionBarContributor contributor)
         {
@@ -43,7 +43,7 @@ public class GlobalContributorManager implements IDatabaseEditorContributorManag
         }
     }
 
-    private Map<Class<? extends IEditorActionBarContributor>, ActionContributorInfo> contributorMap = new HashMap<Class<? extends IEditorActionBarContributor>, ActionContributorInfo>();
+    private Map<Class<? extends IEditorActionBarContributor>, ActionContributorInfo> contributorMap = new HashMap<>();
 
     public static GlobalContributorManager getInstance()
     {

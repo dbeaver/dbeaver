@@ -184,7 +184,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
     private static List<DBXTreeNode> collectInlineMetas(DBNDatabaseNode node, DBXTreeNode meta)
     {
-        final List<DBXTreeNode> inlineMetas = new ArrayList<DBXTreeNode>();
+        final List<DBXTreeNode> inlineMetas = new ArrayList<>();
 
         if (meta instanceof DBXTreeFolder) {
             // If this is a folder - iterate through all its children
@@ -377,7 +377,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     private class NodeSelectionProvider implements ISelectionProvider, ISelectionChangedListener {
 
         private final ISelectionProvider original;
-        private final List<ISelectionChangedListener> listeners = new ArrayList<ISelectionChangedListener>();
+        private final List<ISelectionChangedListener> listeners = new ArrayList<>();
         private final StructuredSelection defaultSelection;
 
         public NodeSelectionProvider(ISelectionProvider original)

@@ -74,8 +74,8 @@ public class OracleDataType extends OracleObject<DBSObject>
         }
     }
 
-    static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<String, TypeDesc>();
-    static final Map<Integer, TypeDesc> PREDEFINED_TYPE_IDS = new HashMap<Integer, TypeDesc>();
+    static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>();
+    static final Map<Integer, TypeDesc> PREDEFINED_TYPE_IDS = new HashMap<>();
     static  {
         PREDEFINED_TYPES.put("BFILE", new TypeDesc(DBPDataKind.CONTENT, java.sql.Types.OTHER, 0, 0, 0));
         PREDEFINED_TYPES.put("BINARY ROWID", new TypeDesc(DBPDataKind.ROWID, java.sql.Types.ROWID, 0, 0, 0));

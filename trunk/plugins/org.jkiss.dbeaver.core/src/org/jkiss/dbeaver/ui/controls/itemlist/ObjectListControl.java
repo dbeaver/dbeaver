@@ -68,7 +68,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private ColumnViewer itemsViewer;
     //private ColumnViewerEditor itemsEditor;
     @NotNull
-    private final List<ObjectColumn> columns = new ArrayList<ObjectColumn>();
+    private final List<ObjectColumn> columns = new ArrayList<>();
     private IDoubleClickListener doubleClickHandler;
     private PropertySourceAbstract listPropertySource;
 
@@ -83,7 +83,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     private Job lazyLoadingJob = null;
     private Map<OBJECT_TYPE, List<ObjectColumn>> lazyObjects;
-    private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<OBJECT_TYPE, Map<String, Object>>();
+    private final Map<OBJECT_TYPE, Map<String, Object>> lazyCache = new IdentityHashMap<>();
     private volatile boolean lazyLoadCanceled;
     private List<OBJECT_TYPE> objectList = null;
 
@@ -350,7 +350,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
             {
                 // Collect list of items' classes
-                final List<Class<?>> classList = new ArrayList<Class<?>>();
+                final List<Class<?>> classList = new ArrayList<>();
                 Class<?>[] baseTypes = getListBaseTypes(items);
                 if (!ArrayUtils.isEmpty(baseTypes)) {
                     Collections.addAll(classList, baseTypes);
@@ -390,7 +390,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (!itemsControl.isDisposed()) {
                 if (reload || objectList.isEmpty()) {
                     // Set viewer content
-                    objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<OBJECT_TYPE>(items);
+                    objectList = CommonUtils.isEmpty(items) ? new ArrayList<OBJECT_TYPE>() : new ArrayList<>(items);
 
                     // Pack columns
                     sampleItems = true;
@@ -532,11 +532,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private synchronized void addLazyObject(OBJECT_TYPE object, ObjectColumn column)
     {
         if (lazyObjects == null) {
-            lazyObjects = new LinkedHashMap<OBJECT_TYPE, List<ObjectColumn>>();
+            lazyObjects = new LinkedHashMap<>();
         }
         List<ObjectColumn> objectColumns = lazyObjects.get(object);
         if (objectColumns == null) {
-            objectColumns = new ArrayList<ObjectColumn>();
+            objectColumns = new ArrayList<>();
             lazyObjects.put(object, objectColumns);
             //System.out.println("LAZY: " + object);
         }
@@ -677,7 +677,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     @NotNull
     protected Set<DBPPropertyDescriptor> getAllProperties()
     {
-        Set<DBPPropertyDescriptor> props = new LinkedHashSet<DBPPropertyDescriptor>();
+        Set<DBPPropertyDescriptor> props = new LinkedHashSet<>();
         for (ObjectColumn column : columns) {
             props.addAll(column.propMap.values());
         }
@@ -834,7 +834,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         String id;
         Item item;
         ViewerColumn column;
-        Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<Class<?>, ObjectPropertyDescriptor>();
+        Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();
 
         private ObjectColumn(ViewerColumn column, Item item, String id) {
             this.id = id;
@@ -989,7 +989,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 synchronized (lazyCache) {
                     objectCache = lazyCache.get(element);
                     if (objectCache == null) {
-                        objectCache = new HashMap<String, Object>();
+                        objectCache = new HashMap<>();
                         lazyCache.put(element, objectCache);
                     }
                 }

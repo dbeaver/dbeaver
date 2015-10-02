@@ -67,7 +67,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     {
         monitor = visualizer.overwriteMonitor(monitor);
 
-        LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<RESULT>(this, monitor);
+        LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<>(this, monitor);
         updateUIJob.schedule();
         this.loadingService.setProgressMonitor(monitor);
         Throwable error = null;

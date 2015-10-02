@@ -64,7 +64,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         this.qualifier = source.qualifier;
         this.cardinality = source.cardinality;
         if (source.columns != null) {
-            this.columns = new ArrayList<GenericTableIndexColumn>(source.columns.size());
+            this.columns = new ArrayList<>(source.columns.size());
             for (GenericTableIndexColumn sourceColumn : source.columns) {
                 this.columns.add(new GenericTableIndexColumn(this, sourceColumn));
             }
@@ -125,7 +125,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
     public void addColumn(GenericTableIndexColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<GenericTableIndexColumn>();
+            columns = new ArrayList<>();
         }
         columns.add(column);
     }

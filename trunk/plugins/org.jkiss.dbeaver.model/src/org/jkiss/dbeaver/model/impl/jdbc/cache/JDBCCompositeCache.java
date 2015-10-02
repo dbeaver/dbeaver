@@ -62,7 +62,7 @@ public abstract class JDBCCompositeCache<
     private final Object parentColumnName;
     private final Object objectColumnName;
 
-    private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<PARENT, List<OBJECT>>();
+    private final Map<PARENT, List<OBJECT>> objectCache = new IdentityHashMap<>();
 
     protected JDBCCompositeCache(
         JDBCStructCache<OWNER,?,?> parentCache,
@@ -181,7 +181,7 @@ public abstract class JDBCCompositeCache<
 
     private class ObjectInfo {
         final OBJECT object;
-        final List<ROW_REF> rows = new ArrayList<ROW_REF>();
+        final List<ROW_REF> rows = new ArrayList<>();
         public boolean broken;
 
         public ObjectInfo(OBJECT object)
@@ -207,8 +207,8 @@ public abstract class JDBCCompositeCache<
             parentCache.loadChildren(monitor, owner, null);
         }
 
-        Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<PARENT, Map<String, ObjectInfo>>();
-        List<OBJECT> precachedObjects = new ArrayList<OBJECT>();
+        Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<>();
+        List<OBJECT> precachedObjects = new ArrayList<>();
 
         // Load index columns
         DBPDataSource dataSource = owner.getDataSource();
@@ -264,7 +264,7 @@ public abstract class JDBCCompositeCache<
                         // Add to map
                         Map<String, ObjectInfo> objectMap = parentObjectMap.get(parent);
                         if (objectMap == null) {
-                            objectMap = new TreeMap<String, ObjectInfo>();
+                            objectMap = new TreeMap<>();
                             parentObjectMap.put(parent, objectMap);
                         }
 
@@ -313,7 +313,7 @@ public abstract class JDBCCompositeCache<
             if (forParent != null || !parentObjectMap.isEmpty()) {
                 if (forParent == null) {
                     // Cache global object list
-                    List<OBJECT> globalCache = new ArrayList<OBJECT>();
+                    List<OBJECT> globalCache = new ArrayList<>();
                     for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
                         if (objMap != null) {
                             for (ObjectInfo info : objMap.values()) {
@@ -342,7 +342,7 @@ public abstract class JDBCCompositeCache<
                     continue;
                 }
                 Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
-                ArrayList<OBJECT> objects = new ArrayList<OBJECT>(objectInfos.size());
+                ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
                 for (ObjectInfo objectInfo : objectInfos) {
                     if (!objectInfo.broken) {
                         cacheChildren(objectInfo.object, objectInfo.rows);

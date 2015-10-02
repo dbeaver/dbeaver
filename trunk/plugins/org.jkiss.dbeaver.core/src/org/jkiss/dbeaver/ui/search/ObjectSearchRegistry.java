@@ -38,7 +38,7 @@ public class ObjectSearchRegistry
         return instance;
     }
 
-    private final List<ObjectSearchProvider> providers = new ArrayList<ObjectSearchProvider>();
+    private final List<ObjectSearchProvider> providers = new ArrayList<>();
 
     public ObjectSearchRegistry(IExtensionRegistry registry)
     {

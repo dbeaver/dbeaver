@@ -276,7 +276,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     private void resolveMapsFromData(DBCSession session, List<Object[]> rows) throws DBException {
         // Analyse rows and extract meta information from values
-        List<Pair<DBSAttributeBase, Object[]>> valueAttributes = new ArrayList<Pair<DBSAttributeBase, Object[]>>();
+        List<Pair<DBSAttributeBase, Object[]>> valueAttributes = new ArrayList<>();
         for (int i = 0; i < rows.size(); i++) {
             Object value = rows.get(i)[getOrdinalPosition()];
             if (value instanceof DBDCollection) {
@@ -304,7 +304,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                         Object[] valueList = new Object[rows.size()];
                         valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
                         valueAttributes.add(
-                            new Pair<DBSAttributeBase, Object[]>(
+                            new Pair<>(
                                 attr,
                                 valueList));
                     }
@@ -322,7 +322,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
         }
         if (nestedBindings == null) {
-            nestedBindings = new ArrayList<DBDAttributeBinding>();
+            nestedBindings = new ArrayList<>();
         } else {
             for (DBDAttributeBinding binding : nestedBindings) {
                 maxPosition = Math.max(maxPosition, binding.getOrdinalPosition());
@@ -360,7 +360,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     private void createNestedTypeBindings(DBCSession session, DBSEntity type, List<Object[]> rows) throws DBException {
         if (nestedBindings == null) {
-            nestedBindings = new ArrayList<DBDAttributeBinding>();
+            nestedBindings = new ArrayList<>();
         }
         for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(type.getAttributes(session.getProgressMonitor()))) {
             DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, nestedAttr);

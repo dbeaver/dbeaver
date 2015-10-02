@@ -35,7 +35,7 @@ public class SQLVariable extends TemplateVariable {
 
     private SQLContext context;
     private TemplateVariableResolver resolver;
-    private final Map<Object, Object[]> fValueMap = new HashMap<Object, Object[]>();
+    private final Map<Object, Object[]> fValueMap = new HashMap<>();
     private Object fKey;
     private Object fCurrentChoice;
 

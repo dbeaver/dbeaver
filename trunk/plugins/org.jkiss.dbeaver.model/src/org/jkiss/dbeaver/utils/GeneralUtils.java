@@ -52,7 +52,7 @@ public class GeneralUtils {
     public static final Charset ASCII_CHARSET = Charset.forName("US-ASCII");
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-    static final Map<String, byte[]> BOM_MAP = new HashMap<String, byte[]>();
+    static final Map<String, byte[]> BOM_MAP = new HashMap<>();
     static final char[] HEX_CHAR_TABLE = {
       '0', '1', '2', '3',
       '4', '5', '6', '7',

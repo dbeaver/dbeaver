@@ -70,7 +70,7 @@ public class SQLTemplateStore extends TemplateStore {
 
     private Collection<TemplatePersistenceData> readContributedTemplates() throws IOException
     {
-        Collection<TemplatePersistenceData> templates = new ArrayList<TemplatePersistenceData>();
+        Collection<TemplatePersistenceData> templates = new ArrayList<>();
         readIncludedTemplates(
             DBeaverCore.PLUGIN_ID,
             templates,

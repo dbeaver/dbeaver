@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
-    private static Map<String, String> connectionsProps = new HashMap<String, String>();
+    private static Map<String, String> connectionsProps = new HashMap<>();
 
     // ------------
     // Constructors

@@ -134,7 +134,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     }
 
-    private List<ContentPartInfo> contentParts = new ArrayList<ContentPartInfo>();
+    private List<ContentPartInfo> contentParts = new ArrayList<>();
     private ColumnInfoPanel infoPanel;
     private boolean dirty;
     private boolean partsLoaded;
@@ -168,7 +168,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             {
                 try {
                     // Check for dirty parts
-                    final List<ContentEditorPart> dirtyParts = new ArrayList<ContentEditorPart>();
+                    final List<ContentEditorPart> dirtyParts = new ArrayList<>();
                     for (ContentPartInfo partInfo : contentParts) {
                         if (partInfo.activated && partInfo.editorPart.isDirty()) {
                             dirtyParts.add(partInfo.editorPart);

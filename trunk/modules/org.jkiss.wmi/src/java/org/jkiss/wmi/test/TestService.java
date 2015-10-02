@@ -157,7 +157,7 @@ public class TestService {
 
         public ObjectCollectorSink()
         {
-            this.objectList = new ArrayList<WMIObject>();
+            this.objectList = new ArrayList<>();
         }
 
         @Override

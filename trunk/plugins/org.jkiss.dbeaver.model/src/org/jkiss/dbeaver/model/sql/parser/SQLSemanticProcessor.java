@@ -110,7 +110,7 @@ public class SQLSemanticProcessor {
         if (filter.hasOrdering()) {
             List<OrderByElement> orderByElements = select.getOrderByElements();
             if (orderByElements == null) {
-                orderByElements = new ArrayList<OrderByElement>();
+                orderByElements = new ArrayList<>();
                 select.setOrderByElements(orderByElements);
             }
             Table orderTable = tableAlias == null ? null : new Table(tableAlias);

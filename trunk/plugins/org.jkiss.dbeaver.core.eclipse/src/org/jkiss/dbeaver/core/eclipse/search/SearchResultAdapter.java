@@ -15,8 +15,8 @@ import java.util.List;
 public abstract class SearchResultAdapter implements ISearchResult {
 
     private final SearchQueryAdapter queryAdapter;
-    private final List<ISearchResultListener> listeners = new ArrayList<ISearchResultListener>();
-    private final List<Object> objects = new ArrayList<Object>();
+    private final List<ISearchResultListener> listeners = new ArrayList<>();
+    private final List<Object> objects = new ArrayList<>();
 
     protected SearchResultAdapter(SearchQueryAdapter queryAdapter)
     {

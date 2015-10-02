@@ -32,8 +32,8 @@ import java.util.List;
  */
 public class SQLTokenizedFormatter implements SQLFormatter {
     private SQLFormatterConfiguration formatterCfg;
-    private List<Boolean> functionBracket = new ArrayList<Boolean>();
-    private Collection<String> statementDelimiters = new ArrayList<String>(2);
+    private List<Boolean> functionBracket = new ArrayList<>();
+    private Collection<String> statementDelimiters = new ArrayList<>(2);
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
@@ -140,7 +140,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
         }
 
         int indent = 0;
-        final List<Integer> bracketIndent = new ArrayList<Integer>();
+        final List<Integer> bracketIndent = new ArrayList<>();
         FormatterToken prev = new FormatterToken(FormatterConstants.SPACE, " "); //$NON-NLS-1$
         boolean encounterBetween = false;
         for (int index = 0; index < argList.size(); index++) {

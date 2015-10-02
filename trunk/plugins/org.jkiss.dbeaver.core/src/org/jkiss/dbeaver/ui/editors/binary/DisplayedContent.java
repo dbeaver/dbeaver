@@ -50,7 +50,7 @@ public class DisplayedContent implements StyledTextContent {
     DisplayedContent(int numberOfColumns, int numberOfLines)
     {
         data = new StringBuilder(numberOfColumns * numberOfLines * 2);  // account for replacements
-        textListeners = new HashSet<TextChangeListener>();
+        textListeners = new HashSet<>();
         setDimensions(numberOfColumns, numberOfLines);
     }
 

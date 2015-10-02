@@ -94,7 +94,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         this.activeQuery = null;
 
         this.wordDetector = new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
-        final List<SQLCompletionProposal> proposals = new ArrayList<SQLCompletionProposal>();
+        final List<SQLCompletionProposal> proposals = new ArrayList<>();
         final String wordPart = wordDetector.getWordPart();
 
         QueryType queryType = null;
@@ -364,7 +364,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
         }
 
-        final List<String> nameList = new ArrayList<String>();
+        final List<String> nameList = new ArrayList<>();
         if (token == null) {
             token = "";
         }

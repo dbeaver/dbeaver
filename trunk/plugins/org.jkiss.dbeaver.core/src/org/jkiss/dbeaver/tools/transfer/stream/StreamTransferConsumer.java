@@ -90,7 +90,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         // Prepare columns
-        metaColumns = new ArrayList<DBDAttributeBinding>();
+        metaColumns = new ArrayList<>();
         List<DBCAttributeMetaData> attributes = resultSet.getMeta().getAttributes();
         for (DBCAttributeMetaData attribute : attributes) {
             DBDAttributeBinding columnBinding = DBUtils.getAttributeBinding(session, attribute);

@@ -189,9 +189,9 @@ public class CommonUtils {
     public static <T> List<T> copyList(@Nullable Collection<T> theList)
     {
         if (theList == null) {
-            return new ArrayList<T>();
+            return new ArrayList<>();
         } else {
-            return new ArrayList<T>(theList);
+            return new ArrayList<>(theList);
         }
     }
 
@@ -372,7 +372,7 @@ public class CommonUtils {
         if (CommonUtils.isEmpty(str)) {
             return Collections.emptyList();
         } else {
-            List<String> result = new ArrayList<String>();
+            List<String> result = new ArrayList<>();
             StringTokenizer st = new StringTokenizer(str, String.valueOf(delimiter));
             while (st.hasMoreTokens()) {
                 result.add(st.nextToken());
@@ -475,7 +475,7 @@ public class CommonUtils {
 
     @NotNull
     public static <T> List<T> filterCollection(@NotNull Collection<?> collection, @NotNull Class<T> type) {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
         for (Object item : collection) {
             if (type.isInstance(item)) {
                 result.add(type.cast(item));

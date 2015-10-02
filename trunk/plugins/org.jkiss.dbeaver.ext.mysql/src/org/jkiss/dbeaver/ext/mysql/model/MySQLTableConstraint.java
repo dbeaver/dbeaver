@@ -46,7 +46,7 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
     public void addColumn(MySQLTableConstraintColumn column)
     {
         if (columns == null) {
-            columns = new ArrayList<MySQLTableConstraintColumn>();
+            columns = new ArrayList<>();
         }
         this.columns.add(column);
     }

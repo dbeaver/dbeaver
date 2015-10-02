@@ -339,7 +339,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             }
 
             // Functions
-            Set<String> allFunctions = new HashSet<String>();
+            Set<String> allFunctions = new HashSet<>();
             for (String func : makeStringList(metaData.getNumericFunctions())) {
                 allFunctions.add(func.toUpperCase());
             }
@@ -364,7 +364,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     private static List<String> makeStringList(String source)
     {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         if (source != null && source.length() > 0) {
             StringTokenizer st = new StringTokenizer(source, ";,"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {

@@ -53,7 +53,7 @@ public class ERDPreferencePage extends PreferencePage implements IWorkbenchPrefe
     private Button snapCheck;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
-    private java.util.List<Button> visibilityButtons = new ArrayList<Button>();
+    private java.util.List<Button> visibilityButtons = new ArrayList<>();
 
     @Override
     protected Control createContents(Composite parent)

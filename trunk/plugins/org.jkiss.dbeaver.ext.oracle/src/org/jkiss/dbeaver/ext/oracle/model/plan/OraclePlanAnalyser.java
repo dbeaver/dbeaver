@@ -104,8 +104,8 @@ public class OraclePlanAnalyser implements DBCPlan {
                 dbStat.setString(1, planStmtId);
                 JDBCResultSet dbResult = dbStat.executeQuery();
                 try {
-                    rootNodes = new ArrayList<OraclePlanNode>();
-                    IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<OraclePlanNode>();
+                    rootNodes = new ArrayList<>();
+                    IntKeyMap<OraclePlanNode> allNodes = new IntKeyMap<>();
                     while (dbResult.next()) {
                         OraclePlanNode node = new OraclePlanNode(dataSource, allNodes, dbResult);
                         allNodes.put(node.getId(), node);

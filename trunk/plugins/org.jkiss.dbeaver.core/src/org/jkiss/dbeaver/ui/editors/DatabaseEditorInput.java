@@ -53,7 +53,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     private final DBECommandContext commandContext;
     private String defaultPageId;
     private String defaultFolderId;
-    private Map<String, Object> attributes = new LinkedHashMap<String, Object>();
+    private Map<String, Object> attributes = new LinkedHashMap<>();
     private PropertySourceEditable propertySource;
 
     protected DatabaseEditorInput(NODE node)
@@ -201,7 +201,7 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
 
     @Override
     public Collection<String> getAttributeNames() {
-        return new ArrayList<String>(attributes.keySet());
+        return new ArrayList<>(attributes.keySet());
     }
 
     @Override

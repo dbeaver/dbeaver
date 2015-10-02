@@ -57,7 +57,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
     public PropertySourceCustom makeProperties(DBRRunnableContext runnableContext, DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
-        Map<Object, Object> connectionProps = new HashMap<Object, Object>();
+        Map<Object, Object> connectionProps = new HashMap<>();
         connectionProps.putAll(driver.getConnectionProperties());
         connectionProps.putAll(connectionInfo.getProperties());
         driverProvidedProperties = null;
@@ -121,7 +121,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     }
 
     private List<DBPPropertyDescriptor> getAllProperties(DBPDriver driver, boolean includeCustom) {
-        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<DBPPropertyDescriptor>();
+        List<DBPPropertyDescriptor> propertyDescriptors = new ArrayList<>();
         propertyDescriptors.addAll(driver.getConnectionPropertyDescriptors());
         if (driverProvidedProperties != null) {
             propertyDescriptors.addAll(driverProvidedProperties);
@@ -137,7 +137,7 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         try {
             final DBPPropertyDescriptor[] connectionsProps =
                 driver.getDataSourceProvider().getConnectionProperties(runnableContext, driver, connectionInfo);
-            driverProvidedProperties = new ArrayList<DBPPropertyDescriptor>();
+            driverProvidedProperties = new ArrayList<>();
             if (connectionsProps != null) {
                 Collections.addAll(driverProvidedProperties, connectionsProps);
             }
@@ -149,13 +149,13 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
     private void loadCustomProperties(DBPDriver driver, Map<Object, Object> properties)
     {
         // Collect all driver (and all other) properties
-        Set<String> propNames = new TreeSet<String>();
+        Set<String> propNames = new TreeSet<>();
         List<DBPPropertyDescriptor> allProperties = getAllProperties(driver, false);
         for (DBPPropertyDescriptor prop : allProperties) {
             propNames.add(CommonUtils.toString(prop.getId()));
         }
 
-        customProperties = new ArrayList<DBPPropertyDescriptor>();
+        customProperties = new ArrayList<>();
         // Find prop values which are not from driver
         for (Object propId : properties.keySet()) {
             final String propName = propId.toString();

@@ -49,9 +49,9 @@ public class SQLRuleManager extends RuleBasedScanner {
     @NotNull
     private SQLSyntaxManager syntaxManager;
     @NotNull
-    private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<Integer, SQLScriptPosition>();
-    private Set<SQLScriptPosition> addedPositions = new HashSet<SQLScriptPosition>();
-    private Set<SQLScriptPosition> removedPositions = new HashSet<SQLScriptPosition>();
+    private TreeMap<Integer, SQLScriptPosition> positions = new TreeMap<>();
+    private Set<SQLScriptPosition> addedPositions = new HashSet<>();
+    private Set<SQLScriptPosition> removedPositions = new HashSet<>();
 
     public SQLRuleManager(SQLSyntaxManager syntaxManager)
     {
@@ -74,7 +74,7 @@ public class SQLRuleManager extends RuleBasedScanner {
     {
         Set<SQLScriptPosition> posList = removedPositions;
         if (clear) {
-            removedPositions = new HashSet<SQLScriptPosition>();
+            removedPositions = new HashSet<>();
         }
         return posList;
     }
@@ -84,7 +84,7 @@ public class SQLRuleManager extends RuleBasedScanner {
     {
         Set<SQLScriptPosition> posList = addedPositions;
         if (clear) {
-            addedPositions = new HashSet<SQLScriptPosition>();
+            addedPositions = new HashSet<>();
         }
         return posList;
     }
@@ -118,7 +118,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
 
         setDefaultReturnToken(otherToken);
-        List<IRule> rules = new ArrayList<IRule>();
+        List<IRule> rules = new ArrayList<>();
 
         SQLDialect dialect = syntaxManager.getDialect();
         // Add rule for single-line comments.

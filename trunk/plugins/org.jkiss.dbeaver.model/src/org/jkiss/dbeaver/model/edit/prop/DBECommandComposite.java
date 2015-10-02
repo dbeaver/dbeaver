@@ -30,7 +30,7 @@ import java.util.Map;
 public abstract class DBECommandComposite<OBJECT_TYPE extends DBPObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>>
     extends DBECommandAbstract<OBJECT_TYPE> {
 
-    private Map<Object, Object> properties = new HashMap<Object, Object>();
+    private Map<Object, Object> properties = new HashMap<>();
 
     protected DBECommandComposite(OBJECT_TYPE object, String title)
     {

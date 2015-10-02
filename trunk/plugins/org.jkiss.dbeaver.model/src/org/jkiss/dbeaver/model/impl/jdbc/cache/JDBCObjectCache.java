@@ -79,7 +79,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             return;
         }
 
-        List<OBJECT> tmpObjectList = new ArrayList<OBJECT>();
+        List<OBJECT> tmpObjectList = new ArrayList<>();
 
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
