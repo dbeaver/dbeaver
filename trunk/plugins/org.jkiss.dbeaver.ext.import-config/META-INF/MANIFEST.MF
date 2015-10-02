@@ -9,5 +9,5 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.core,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Vendor: JKISS

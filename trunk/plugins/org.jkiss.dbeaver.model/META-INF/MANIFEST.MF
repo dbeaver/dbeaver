@@ -4,7 +4,7 @@ Bundle-Name: DBeaver Model Plug-in
 Bundle-SymbolicName: org.jkiss.dbeaver.model;singleton:=true
 Bundle-Version: 1.0.4
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model,
