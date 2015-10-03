@@ -19,6 +19,9 @@
 package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
@@ -41,7 +44,7 @@ import java.util.Map;
  * 
  * @author Denis Forveille
  */
-public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn, DB2TableBase> {
+public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn, DB2TableBase> implements DBEObjectRenamer<DB2TableColumn> {
 
     private static final String SQL_ALTER = "ALTER TABLE %s ALTER COLUMN %s ";
     private static final String SQL_COMMENT = "COMMENT ON COLUMN %s.%s IS '%s'";
@@ -176,5 +179,23 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         String tableName = db2Column.getTable().getFullQualifiedName();
         String reorgSQL = String.format(SQL_REORG, tableName);
         return new SQLDatabasePersistAction(CMD_REORG, reorgSQL);
+    }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, DB2TableColumn object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    {
+        final DB2TableColumn column = command.getObject();
+
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
+                "Rename column",
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " RENAME COLUMN " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName()) + " TO " + command.getNewName())
+        };
     }
 }

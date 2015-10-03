@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableColumnGenerated;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -44,7 +45,7 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBSTableColumn, DBPHiddenObject {
+public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBSTableColumn, DBPHiddenObject, DBPNamedObject2 {
 
     private DB2DataType dataType;
     private DB2Schema dataTypeSchema;
