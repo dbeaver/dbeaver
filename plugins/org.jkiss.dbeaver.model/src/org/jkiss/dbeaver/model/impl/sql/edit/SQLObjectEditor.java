@@ -122,7 +122,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
 
     protected abstract DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
 
-    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
+    protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command)
     {
         return null;
     }
