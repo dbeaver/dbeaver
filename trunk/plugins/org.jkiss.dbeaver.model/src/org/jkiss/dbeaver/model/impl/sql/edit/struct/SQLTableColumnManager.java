@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -180,12 +180,16 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     }
 
     @Override
-    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandComposite<OBJECT_TYPE, PropertyHandler> command)
+    protected StringBuilder getNestedDeclaration(TABLE_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command)
     {
         OBJECT_TYPE column = command.getObject();
 
         // Create column
         String columnName = DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName());
+
+        if (command instanceof SQLObjectEditor.ObjectRenameCommand) {
+            columnName = ((ObjectRenameCommand) command).getNewName();
+        }
 
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName);
