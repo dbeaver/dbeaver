@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,24 +51,17 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
     {
         final List<T> entities = new ArrayList<>();
         if (context instanceof DBPContextProvider) {
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            resolveObjects(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
-                        }
+            RuntimeUtils.runTask(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException {
+                    try {
+                        resolveObjects(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                });
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            } catch (InterruptedException e) {
-                // skip
-            }
+                }
+            }, 1000);
         }
         if (!CommonUtils.isEmpty(entities)) {
             String[] result = new String[entities.size()];
