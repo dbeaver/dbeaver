@@ -38,13 +38,13 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -206,6 +206,9 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     private class ObjectDocumentProvider extends BaseTextDocumentProvider {
+
+        private String sourceText;
+
         @Override
         public boolean isReadOnly(Object element) {
             return SQLEditorNested.this.isReadOnly();
@@ -220,25 +223,33 @@ public abstract class SQLEditorNested<T extends DBSObject>
         protected IDocument createDocument(Object element) throws CoreException {
             final Document document = new Document();
 
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            if (sourceText == null) {
+                document.set("-- Loading '" + getEditorInput().getName() + "' source...");
+                TasksJob.runTask("Read source", new DBRRunnableWithProgress() {
                     @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
+                    public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
-                            String sourceText = getSourceText(monitor);
-                            if (sourceText != null) {
-                                document.set(sourceText);
+                            sourceText = getSourceText(monitor);
+                            if (sourceText != null && !isDisposed()) {
+                                UIUtils.runInUI(null, new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        try {
+                                            doResetDocument(getEditorInput(), monitor.getNestedMonitor());
+                                        } catch (CoreException e) {
+                                            log.error(e);
+                                        }
+                                    }
+                                });
                             }
                         } catch (DBException e) {
+                            sourceText = e.getMessage();
                             throw new InvocationTargetException(e);
                         }
                     }
                 });
-            } catch (InvocationTargetException e) {
-                UIUtils.showErrorDialog(getSite().getShell(), "Source text read error", "Can't get SQL text", e.getTargetException());
-            } catch (InterruptedException e) {
-                // just skip it
+            } else {
+                document.set(sourceText);
             }
 
             return document;
