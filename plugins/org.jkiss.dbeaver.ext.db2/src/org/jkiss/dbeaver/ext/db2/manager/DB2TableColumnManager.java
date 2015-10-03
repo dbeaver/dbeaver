@@ -195,7 +195,7 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + " RENAME COLUMN " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName()) + " TO " + command.getNewName())
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " + command.getNewName())
         };
     }
 }

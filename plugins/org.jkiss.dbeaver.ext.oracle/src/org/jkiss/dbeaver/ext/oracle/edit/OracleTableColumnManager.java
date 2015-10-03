@@ -112,7 +112,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + " RENAME COLUMN " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName()) + " TO " + command.getNewName())
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " + command.getNewName())
         };
     }
 

@@ -108,7 +108,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + " CHANGE " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName()) + " " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " " +
                     getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
