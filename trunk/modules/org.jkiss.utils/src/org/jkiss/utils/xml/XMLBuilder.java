@@ -20,6 +20,7 @@ package org.jkiss.utils.xml;
 
 import org.jkiss.utils.Base64;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +31,7 @@ import java.util.Map;
 public class XMLBuilder
 {
 
-    private static final class Element
+    public final class Element implements AutoCloseable
     {
 
         private Element parent;
@@ -84,6 +85,10 @@ public class XMLBuilder
                 (parent != null ? parent.getNamespacePrefix(nsURI) : null);
         }
 
+        @Override
+        public void close() throws IOException {
+            XMLBuilder.this.endElement();
+        }
     }
 
     // At the beginning and after tag closing
@@ -191,14 +196,14 @@ public class XMLBuilder
         this.butify = butify;
     }
 
-    public XMLBuilder startElement(
+    public Element startElement(
         String elementName)
         throws java.io.IOException
     {
         return this.startElement(null, null, elementName);
     }
 
-    public XMLBuilder startElement(
+    public Element startElement(
         String nsURI,
         String elementName)
         throws java.io.IOException
@@ -210,7 +215,7 @@ public class XMLBuilder
          NS prefix will be used in element name if its directly specified
          as nsPrefix parameter or if nsURI has been declared above
      */
-    public XMLBuilder startElement(
+    public Element startElement(
         String nsURI,
         String nsPrefix,
         String elementName)
@@ -264,7 +269,7 @@ public class XMLBuilder
             element.addNamespace(nsURI, nsPrefix);
         }
 
-        return this;
+        return element;
     }
 
     public XMLBuilder endElement()
@@ -472,12 +477,28 @@ public class XMLBuilder
         }
         writer.write("]]>");
 
-        /*
-          char[] writeBuffer = new char[IOUtils.DEFAULT_BUFFER_SIZE];
-          for (int br = reader.read(writeBuffer); br != -1; br = reader.read(writeBuffer)) {
-              StringUtil.writeEscapedString(writeBuffer, 0, br, writer);
-          }
-          */
+        state = STATE_TEXT_ADDED;
+
+        return this;
+    }
+
+    public XMLBuilder addTextData(
+        String text)
+        throws java.io.IOException
+    {
+        switch (state) {
+            case STATE_ELEM_OPENED:
+                writer.write('>');
+            case STATE_TEXT_ADDED:
+            case STATE_NOTHING:
+                break;
+            default:
+                break;
+        }
+
+        writer.write("<![CDATA[");
+        writer.write(text);
+        writer.write("]]>");
 
         state = STATE_TEXT_ADDED;
 
@@ -580,6 +601,17 @@ public class XMLBuilder
     {
         this.startElement(elementName);
         this.addText(elementValue);
+        this.endElement();
+        return this;
+    }
+
+    public XMLBuilder addElementText(
+        String elementName,
+        String elementValue)
+        throws java.io.IOException
+    {
+        this.startElement(elementName);
+        this.addTextData(elementValue);
         this.endElement();
         return this;
     }
