@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
@@ -62,7 +61,6 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -196,7 +194,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     @Nullable
-    private IAdaptable getActiveObject()
+    private static IAdaptable getActiveObject(IWorkbenchPart activePart)
     {
         if (activePart instanceof IEditorPart) {
             return ((IEditorPart) activePart).getEditorInput();
@@ -207,29 +205,20 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    private IProject getActiveProject()
-    {
-        final IAdaptable activeObject = getActiveObject();
-        if (activeObject instanceof IEditorInput) {
-            final IFile file = EditorUtils.getFileFromEditorInput((IEditorInput) activeObject);
-            if (file != null) {
-                // If this is a content editor file may belong to temp project
-                if (file.getProject() != DBeaverCore.getInstance().getTempProject()) {
-                    return file.getProject();
-                }
-            }
-        }
-        return DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-    }
-
     @Nullable
     private DBSDataSourceContainer getDataSourceContainer()
     {
-        if (activePart instanceof IDataSourceContainerProvider) {
-            return ((IDataSourceContainerProvider)activePart).getDataSourceContainer();
+        return getDataSourceContainer(activePart);
+    }
+
+    @Nullable
+    private static DBSDataSourceContainer getDataSourceContainer(IWorkbenchPart part)
+    {
+        if (part instanceof IDataSourceContainerProvider) {
+            return ((IDataSourceContainerProvider)part).getDataSourceContainer();
         }
 
-        final IAdaptable activeObject = getActiveObject();
+        final IAdaptable activeObject = getActiveObject(part);
         if (activeObject == null) {
             return null;
         }
@@ -250,7 +239,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (activePart instanceof IDataSourceContainerProviderEx) {
             return (IDataSourceContainerProviderEx) activePart;
         } else {
-            final IAdaptable activeObject = getActiveObject();
+            final IAdaptable activeObject = getActiveObject(activePart);
             if (activeObject == null) {
                 return null;
             }
@@ -281,7 +270,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         if (activePart != part || activePart == null) {
             // Update previous statuses
-            DBSDataSourceContainer container = getDataSourceContainer();
+            DBSDataSourceContainer container = getDataSourceContainer(activePart);
+            if (container == getDataSourceContainer(part)) {
+                // The same container
+                return;
+            }
             if (container != null) {
                 container.getPreferenceStore().removePropertyChangeListener(this);
             }
