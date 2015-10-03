@@ -141,7 +141,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
     protected void processObjectRename(DBECommandContext commandContext, OBJECT_TYPE object, String newName) throws DBException
     {
         ObjectRenameCommand command = new ObjectRenameCommand(object, ModelMessages.model_jdbc_rename_object, newName);
-        commandContext.addCommand(command, new RenameObjectReflector());
+        commandContext.addCommand(command, new RenameObjectReflector(), true);
     }
 
     protected class PropertyHandler
