@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -37,7 +38,7 @@ import java.util.List;
 /**
  * OracleTableColumn
  */
-public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBPHiddenObject
+public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBPHiddenObject, DBPNamedObject2
 {
     static final Log log = Log.getLog(OracleTableColumn.class);
 
