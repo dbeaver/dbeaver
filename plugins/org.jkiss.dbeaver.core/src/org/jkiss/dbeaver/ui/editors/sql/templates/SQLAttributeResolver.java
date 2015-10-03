@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -54,32 +55,26 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
         final String tableName = tableVariable == null ? null : tableVariable.getDefaultValue();
         if (!CommonUtils.isEmpty(tableName)) {
             final List<DBSEntityAttribute> attributes = new ArrayList<>();
-            try {
-                DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                    {
-                        try {
-                            List<DBSEntity> entities = new ArrayList<>();
-                            SQLEntityResolver.resolveTables(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
-                            if (!CommonUtils.isEmpty(entities)) {
-                                DBSEntity table = DBUtils.findObject(entities, tableName);
-                                if (table != null) {
-                                    attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
-                                }
+            DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor)
+                    throws InvocationTargetException, InterruptedException
+                {
+                    try {
+                        List<DBSEntity> entities = new ArrayList<>();
+                        SQLEntityResolver.resolveTables(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
+                        if (!CommonUtils.isEmpty(entities)) {
+                            DBSEntity table = DBUtils.findObject(entities, tableName);
+                            if (table != null) {
+                                attributes.addAll(CommonUtils.safeCollection(table.getAttributes(monitor)));
                             }
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
                         }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                };
-                DBeaverUI.runInProgressService(runnable);
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            } catch (InterruptedException e) {
-                // skip
-            }
+                }
+            };
+            RuntimeUtils.runTask(runnable, 1000);
             if (!CommonUtils.isEmpty(attributes)) {
                 String[] result = new String[attributes.size()];
                 for (int i = 0; i < attributes.size(); i++) {
