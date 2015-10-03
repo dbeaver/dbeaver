@@ -18,9 +18,13 @@
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.jface.text.ITextViewer;
+import org.eclipse.jface.text.Position;
+import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextPresentation;
 import org.eclipse.jface.text.contentassist.*;
+import org.eclipse.jface.text.templates.Template;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -40,6 +44,9 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -68,10 +75,19 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     private int documentOffset;
     private String activeQuery = null;
     private SQLWordPartDetector wordDetector;
+    private static boolean lookupTemplates = false;
 
     public SQLCompletionProcessor(SQLEditorBase editor)
     {
         this.editor = editor;
+    }
+
+    public static boolean isLookupTemplates() {
+        return lookupTemplates;
+    }
+
+    public static void setLookupTemplates(boolean lookupTemplates) {
+        SQLCompletionProcessor.lookupTemplates = lookupTemplates;
     }
 
     /**
@@ -94,9 +110,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         this.activeQuery = null;
 
         this.wordDetector = new SQLWordPartDetector(viewer.getDocument(), editor.getSyntaxManager(), documentOffset);
-        final List<SQLCompletionProposal> proposals = new ArrayList<>();
         final String wordPart = wordDetector.getWordPart();
 
+        if (lookupTemplates) {
+            return makeTemplateProposals(viewer, documentOffset, wordPart);
+        }
+
+        final List<SQLCompletionProposal> proposals = new ArrayList<>();
         QueryType queryType = null;
         {
             final String prevKeyWord = wordDetector.getPrevKeyWord();
@@ -192,6 +212,26 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
         }
         return proposals.toArray(new ICompletionProposal[proposals.size()]);
+    }
+
+    @NotNull
+    private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, int documentOffset, String wordPart) {
+        final List<SQLTemplateCompletionProposal> templateProposals = new ArrayList<>();
+        // Templates
+        for (Template template : editor.getTemplatesPage().getTemplateStore().getTemplates()) {
+            if (template.getName().startsWith(wordPart)) {
+                templateProposals.add(new SQLTemplateCompletionProposal(
+                    template,
+                    new SQLContext(
+                        SQLTemplatesRegistry.getInstance().getTemplateContextRegistry().getContextType(template.getContextTypeId()),
+                        viewer.getDocument(),
+                        new Position(wordDetector.getStartOffset(), wordDetector.getLength()),
+                        editor),
+                    new Region(documentOffset, 0),
+                    null));
+            }
+        }
+        return templateProposals.toArray(new ICompletionProposal[templateProposals.size()]);
     }
 
     private void makeStructureProposals(

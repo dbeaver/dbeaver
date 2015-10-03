@@ -222,6 +222,7 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.word.wrap" name="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.word.wrap.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.export.data" name="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.navigate.object" name="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.navigate.object.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.assist.templates" name="%command.org.jkiss.dbeaver.ui.editors.sql.assist.templates.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.assist.templates.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.import.data" name="%command.org.jkiss.dbeaver.core.import.data.name" description="%command.org.jkiss.dbeaver.core.import.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
         <command id="org.jkiss.dbeaver.core.compare.objects" name="%command.org.jkiss.dbeaver.core.compare.objects.name" description="%command.org.jkiss.dbeaver.core.compare.objects.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -858,6 +859,13 @@
                     <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase">
                         <test property="org.jkiss.dbeaver.ui.editors.sql.canNavigate"/>
                     </adapt>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates" class="org.jkiss.dbeaver.ui.editors.sql.handlers.AssistTemplatesHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <adapt type="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1683,40 +1691,45 @@
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="CTRL+Enter"/>
         <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"
-                contextId="org.jkiss.dbeaver.ui.editors.sql"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+\"/>
+              commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"
+              contextId="org.jkiss.dbeaver.ui.editors.sql"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="CTRL+\"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="ALT+X"/>
         <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"
-                contextId="org.jkiss.dbeaver.ui.editors.sql"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+ALT+X"/>
+              commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"
+              contextId="org.jkiss.dbeaver.ui.editors.sql"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="CTRL+ALT+X"/>
         <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"
-                contextId="org.jkiss.dbeaver.ui.editors.sql"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="CTRL+ALT+C"/>
+              commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"
+              contextId="org.jkiss.dbeaver.ui.editors.sql"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="CTRL+ALT+C"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="CTRL+SHIFT+E"/>
         <key
-                commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"
-                contextId="org.jkiss.dbeaver.ui.editors.sql"
-                schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-                sequence="F6"/>
+              commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"
+              contextId="org.jkiss.dbeaver.ui.editors.sql"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="F6"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
               sequence="F4"/>
+        <key
+              commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates"
+              contextId="org.jkiss.dbeaver.ui.editors.sql"
+              schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+              sequence="SHIFT+TAB"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
