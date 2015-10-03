@@ -19,14 +19,17 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -38,7 +41,7 @@ import java.sql.Types;
 /**
  * MySQL table column manager
  */
-public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableColumn, MySQLTableBase> {
+public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableColumn, MySQLTableBase> implements DBEObjectRenamer<MySQLTableColumn>  {
 
     @Nullable
     @Override
@@ -48,7 +51,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandComposite<MySQLTableColumn, PropertyHandler> command)
+    public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command)
     {
         StringBuilder decl = super.getNestedDeclaration(owner, command);
         final MySQLTableColumn column = command.getObject();
@@ -90,4 +93,23 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
                 "Modify column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + " MODIFY COLUMN " + getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, MySQLTableColumn object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    {
+        final MySQLTableColumn column = command.getObject();
+
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
+                "Rename column",
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " CHANGE " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName()) + " " +
+                    getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
 }
