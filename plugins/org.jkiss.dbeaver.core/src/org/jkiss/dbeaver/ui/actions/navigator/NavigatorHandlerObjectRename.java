@@ -24,6 +24,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -116,6 +117,10 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                             } else {
                                 ObjectSaver renamer = new ObjectSaver(commandTarget.getContext());
                                 TasksJob.runTask("Rename object '" + object.getName() + "'", renamer);
+                            }
+                        } else {
+                            for (DBECommand command : commandTarget.getContext().getFinalCommands()) {
+                                System.out.println(command);
                             }
                         }
                         return true;
