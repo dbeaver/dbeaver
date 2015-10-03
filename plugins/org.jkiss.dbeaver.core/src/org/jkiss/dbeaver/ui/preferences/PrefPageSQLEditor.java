@@ -51,6 +51,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button csAutoInsertCheck;
     private Combo csInsertCase;
     private Button csHideDuplicates;
+    private Button csShortName;
     private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<>();
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
@@ -75,7 +76,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
-            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
+            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS)
         ;
     }
 
@@ -127,6 +129,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csInsertCase.add("Lower case");
 
             csHideDuplicates = UIUtils.createLabelCheckbox(assistGroup, "Hide duplicate names from\nnon-active schemas", false);
+            csShortName = UIUtils.createLabelCheckbox(assistGroup, "Use short object names\n(omit schema/catalog)", false);
         }
 
         // Rulers
@@ -198,6 +201,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
             csHideDuplicates.setSelection(store.getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
+            csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
             acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
@@ -229,6 +233,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
+            store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
 
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
@@ -261,6 +266,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);
+        store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
 
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
