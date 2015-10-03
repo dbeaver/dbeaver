@@ -569,7 +569,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private SQLCompletionProposal makeProposalsFromObject(DBPNamedObject object, @Nullable DBPImage objectIcon)
     {
-        String objectFullName = DBUtils.getObjectFullName(object);
+        String objectName = DBUtils.getObjectFullName(object);
 
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
@@ -592,7 +592,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // If we replace short name with referenced object
             // and current active schema (catalog) is not this object's container then
             // replace with full qualified name
-            if (object instanceof DBSObjectReference) {
+            if (!getPreferences().getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) && object instanceof DBSObjectReference) {
                 if (wordDetector.getFullWord().indexOf(editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
@@ -615,7 +615,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         return createCompletionProposal(
             replaceString,
-            objectFullName,
+            objectName,
             info.toString(),
             objectIcon,
             isSingleObject,

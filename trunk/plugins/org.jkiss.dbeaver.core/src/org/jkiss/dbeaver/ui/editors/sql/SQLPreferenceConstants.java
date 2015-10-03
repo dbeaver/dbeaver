@@ -25,6 +25,7 @@ public class SQLPreferenceConstants
     public static final String AUTO_ACTIVATION_DELAY                   = "auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "proposal.insert.case";
     public static final String HIDE_DUPLICATE_PROPOSALS                = "hide.duplicate.proposals";
+    public static final String PROPOSAL_SHORT_NAME                     = "proposals.short.name";
 
     // Syntax Validation
     public static final String SYNTAX_VALIDATION                       = "syntax.validation";
