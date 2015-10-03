@@ -216,10 +216,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     @NotNull
     private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, int documentOffset, String wordPart) {
+        wordPart = wordPart.toLowerCase();
         final List<SQLTemplateCompletionProposal> templateProposals = new ArrayList<>();
         // Templates
         for (Template template : editor.getTemplatesPage().getTemplateStore().getTemplates()) {
-            if (template.getName().startsWith(wordPart)) {
+            if (template.getName().toLowerCase().startsWith(wordPart)) {
                 templateProposals.add(new SQLTemplateCompletionProposal(
                     template,
                     new SQLContext(
