@@ -19,12 +19,14 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -39,7 +41,7 @@ import java.util.List;
 /**
  * Oracle table column manager
  */
-public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableColumn, OracleTableBase> {
+public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableColumn, OracleTableBase> implements DBEObjectRenamer<OracleTableColumn> {
 
     protected final ColumnModifier<OracleTableColumn> OracleNotNullModifier = new ColumnModifier<OracleTableColumn>() {
         @Override
@@ -95,4 +97,23 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
         }
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, OracleTableColumn object, String newName) throws DBException {
+        processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    {
+        final OracleTableColumn column = command.getObject();
+
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
+                "Rename column",
+                "ALTER TABLE " + column.getTable().getFullQualifiedName() + " RENAME COLUMN " +
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), column.getName()) + " TO " + command.getNewName())
+        };
+    }
+
 }
