@@ -12,6 +12,7 @@
     <artifactId>dbeaver-update</artifactId>
     <version>1.0.0</version>
     <packaging>eclipse-repository</packaging>
+    <name>DBeaver CE Repository</name>
 
     <build>
         <plugins>
