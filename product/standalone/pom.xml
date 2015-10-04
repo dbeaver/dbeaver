@@ -12,7 +12,7 @@
     <version>1.0.0</version>
     <artifactId>ce-product</artifactId>
     <packaging>eclipse-repository</packaging>
-    <name>DBeaver Community Edition</name>
+    <name>DBeaver CE Standalone</name>
 
     <build>
         <plugins>
