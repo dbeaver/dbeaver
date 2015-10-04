@@ -224,6 +224,9 @@ public class MavenArtifact
             List<String> allVersions = versions;
             if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE)) {
                 versionInfo = releaseVersion;
+                if (!CommonUtils.isEmpty(versionInfo) && isBetaVersion(versionInfo)) {
+                    versionInfo = null;
+                }
             } else if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_LATEST)) {
                 versionInfo = latestVersion;
             } else {
@@ -272,9 +275,16 @@ public class MavenArtifact
         }
     }
 
+    private static boolean isBetaVersion(String versionInfo) {
+        return versionInfo.contains("beta") || versionInfo.contains("alpha");
+    }
+
     private String findLatestVersion(List<String> allVersions) {
         String latest = null;
         for (String version : allVersions) {
+            if (isBetaVersion(version)) {
+                continue;
+            }
             if (latest == null || compareVersions(version, latest) > 0) {
                 latest = version;
             }
