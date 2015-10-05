@@ -17,10 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.eclipse.ui.dialogs.PatternFilter;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
@@ -30,9 +30,11 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -40,9 +42,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -52,10 +54,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 {
     static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
-    private TreeViewer viewer;
+    private TreeViewer treeViewer;
     private DBNModel model;
     private TreeEditor treeEditor;
     private boolean checkEnabled;
+    private ISelection defaultSelection;
+    private volatile boolean isFiltering = false;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -64,8 +68,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot)
     {
+        //super(parent, style, new TreeFilter(), true);
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
+        this.defaultSelection = new StructuredSelection(rootNode);
         this.model = DBeaverCore.getInstance().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(new DisposeListener() {
@@ -79,61 +85,65 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
         });
 
+        treeViewer = doCreateTreeViewer(this, style);
+
+        treeViewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
+        treeViewer.setUseHashlookup(true);
+        if (rootNode.getParentNode() == null) {
+            //this.treeViewer.setAutoExpandLevel(2);
+        }
+        treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer));
+        treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
+        treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
+
+        initEditor();
+    }
+
+    public boolean isFiltering() {
+        return isFiltering;
+    }
+
+
+/*
+    protected WorkbenchJob doCreateRefreshJob() {
+        WorkbenchJob job = super.doCreateRefreshJob();
+        job.addJobChangeListener(new TreeRefreshJobListener());
+        return job;
+    }
+*/
+
+    protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
         checkEnabled = (style & SWT.CHECK) != 0;
 
         // Create tree
-        final ISelection defaultSelection = new StructuredSelection(rootNode);
         // TODO: there are problems with this tree when we have a lot of items.
         // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
         // TODO: But we need multiple selection (to copy, export, etc)
         // TODO: need to do something with it
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
-            this.viewer = new CheckboxTreeViewer(this, treeStyle);
-//            ((CheckboxTreeViewer)this.viewer).setCheckStateProvider(new ICheckStateProvider() {
-//                @Override
-//                public boolean isChecked(Object element) {
-//                    TreeItem widget = (TreeItem) viewer.testFindItem(element);
-//                    return widget.getChecked();
-//                }
-//
-//                @Override
-//                public boolean isGrayed(Object element) {
-//                    return element instanceof DBNContainer;
-//                }
-//            });
+            return new CheckboxTreeViewer(parent, treeStyle);
         } else {
             //FilteredTree filteredTree = new FilteredTree(this, treeStyle, new TreeFilter(), true);
-            this.viewer = new TreeViewer(this, treeStyle) {
+            return new TreeViewer(parent, treeStyle) {
                 @Override
-                public ISelection getSelection()
-                {
+                public ISelection getSelection() {
                     ISelection selection = super.getSelection();
-                    return selection.isEmpty() ? defaultSelection : selection;
+                    return selection.isEmpty() && defaultSelection != null ? defaultSelection : selection;
                 }
             };
         }
-        this.viewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
-        this.viewer.setUseHashlookup(true);
-        if (rootNode.getParentNode() == null) {
-            //this.viewer.setAutoExpandLevel(2);
-        }
-        this.viewer.setLabelProvider(new DatabaseNavigatorLabelProvider(this.viewer));
-        this.viewer.setContentProvider(new DatabaseNavigatorContentProvider(this.viewer, showRoot));
-        this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
-
-        initEditor();
     }
 
     public DBNNode getModel()
     {
-        DatabaseNavigatorContent content = (DatabaseNavigatorContent) this.viewer.getInput();
+        DatabaseNavigatorContent content = (DatabaseNavigatorContent) this.treeViewer.getInput();
         return content.getRootNode();
     }
 
     private void initEditor()
     {
-        Tree treeControl = this.viewer.getTree();
+        Tree treeControl = this.treeViewer.getTree();
 
         treeEditor = new TreeEditor(treeControl);
         treeEditor.horizontalAlignment = SWT.LEFT;
@@ -151,7 +161,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     @NotNull
     public TreeViewer getViewer()
     {
-        return viewer;
+        return treeViewer;
     }
 
     @Override
@@ -166,9 +176,9 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         @Override
                         public void run()
                         {
-                            if (!viewer.getControl().isDisposed()) {
+                            if (!treeViewer.getControl().isDisposed()) {
                                 if (!parentNode.isDisposed()) {
-                                    viewer.refresh(getViewerObject(parentNode));
+                                    treeViewer.refresh(getViewerObject(parentNode));
                                 }
                             }
                         }
@@ -180,24 +190,24 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     @Override
                     public void run()
                     {
-                        if (!viewer.getControl().isDisposed() && !viewer.isBusy()) {
+                        if (!treeViewer.getControl().isDisposed() && !treeViewer.isBusy()) {
                             if (event.getNode() != null) {
                                 switch (event.getNodeChange()) {
                                     case LOAD:
-                                        viewer.refresh(getViewerObject(event.getNode()));
+                                        treeViewer.refresh(getViewerObject(event.getNode()));
                                         expandNodeOnLoad(event.getNode());
                                         break;
                                     case UNLOAD:
-                                        viewer.collapseToLevel(event.getNode(), -1);
-                                        viewer.refresh(getViewerObject(event.getNode()));
+                                        treeViewer.collapseToLevel(event.getNode(), -1);
+                                        treeViewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                     case REFRESH:
-                                        viewer.update(getViewerObject(event.getNode()), null);
+                                        treeViewer.update(getViewerObject(event.getNode()), null);
                                         break;
                                     case LOCK:
                                     case UNLOCK:
                                     case STRUCT_REFRESH:
-                                        viewer.refresh(getViewerObject(event.getNode()));
+                                        treeViewer.refresh(getViewerObject(event.getNode()));
                                         break;
                                 }
                             } else {
@@ -230,7 +240,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 DBeaverUI.runInProgressService(runnable);
                 if (runnable.getResult() != null) {
                     showNode(runnable.getResult());
-                    viewer.expandToLevel(runnable.getResult(), 1);
+                    treeViewer.expandToLevel(runnable.getResult(), 1);
                 }
             } catch (InvocationTargetException e) {
                 log.error("Can't expand node", e.getTargetException());
@@ -260,21 +270,21 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     Object getViewerObject(DBNNode node)
     {
-        if (((DatabaseNavigatorContent) viewer.getInput()).getRootNode() == node) {
-            return viewer.getInput();
+        if (((DatabaseNavigatorContent) treeViewer.getInput()).getRootNode() == node) {
+            return treeViewer.getInput();
         } else {
             return node;
         }
     }
 
     public void showNode(DBNNode node) {
-        viewer.reveal(node);
-        viewer.setSelection(new StructuredSelection(node));
+        treeViewer.reveal(node);
+        treeViewer.setSelection(new StructuredSelection(node));
     }
 
     public void reloadTree(final DBNNode rootNode)
     {
-        DatabaseNavigatorTree.this.viewer.setInput(new DatabaseNavigatorContent(rootNode));
+        DatabaseNavigatorTree.this.treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
     private class TreeSelectionAdapter implements MouseListener {
@@ -308,7 +318,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         public void changeSelection(MouseEvent e) {
             disposeOldEditor();
-            final TreeItem newSelection = viewer.getTree().getItem(new Point(e.x, e.y));
+            final TreeItem newSelection = treeViewer.getTree().getItem(new Point(e.x, e.y));
             if (newSelection == null) {
                 //curSelection = null;
                 return;
@@ -336,7 +346,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             protected IStatus runInUIThread(DBRProgressMonitor monitor)
             {
                 try {
-                    if (!viewer.getTree().isDisposed() && viewer.getTree().isFocusControl() && curSelection != null && !canceled) {
+                    if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection != null && !canceled) {
                         getDisplay().asyncExec(new Runnable() {
                             @Override
                             public void run()
@@ -365,7 +375,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
         final DBNNode node = (DBNNode) item.getData();
 
-        Text text = new Text(viewer.getTree(), SWT.BORDER);
+        Text text = new Text(treeViewer.getTree(), SWT.BORDER);
         text.setText(node.getNodeName());
         text.selectAll();
         text.setFocus();
@@ -384,18 +394,18 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     Text text = (Text) treeEditor.getEditor();
                     final String newName = text.getText();
                     disposeOldEditor();
-                    viewer.getTree().setFocus();
+                    treeViewer.getTree().setFocus();
                     if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
                         NavigatorHandlerObjectRename.renameNode(DBeaverUI.getActiveWorkbenchWindow(), node, newName);
                     }
                 } else if (e.keyCode == SWT.ESC) {
                     disposeOldEditor();
-                    viewer.getTree().setFocus();
+                    treeViewer.getTree().setFocus();
                 }
             }
         });
         final Rectangle itemBounds = item.getBounds(0);
-        final Rectangle treeBounds = viewer.getTree().getBounds();
+        final Rectangle treeBounds = treeViewer.getTree().getBounds();
         treeEditor.minimumWidth = Math.max(itemBounds.width, 50);
         treeEditor.minimumWidth = Math.min(treeEditor.minimumWidth, treeBounds.width - (itemBounds.x - treeBounds.x) - item.getImageBounds(0).width - 4);
 
@@ -410,13 +420,29 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private static class TreeFilter extends PatternFilter {
         @Override
-        public boolean isElementVisible(Viewer viewer, Object element) {
-            Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) viewer)
-                .getContentProvider()).getParent(element);
-            if (parent != null && isLeafMatch(viewer, parent)) {
+        public boolean isElementVisible(Viewer treeViewer, Object element) {
+            if (element instanceof DBNDatabaseItem || element instanceof DBNResource) {
+                Object parent = ((ITreeContentProvider) ((AbstractTreeViewer) treeViewer)
+                    .getContentProvider()).getParent(element);
+                if (parent != null && isLeafMatch(treeViewer, parent)) {
+                    return true;
+                }
+                return isParentMatch(treeViewer, element) || isLeafMatch(treeViewer, element);
+            } else {
                 return true;
             }
-            return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
+        }
+    }
+
+    private class TreeRefreshJobListener extends JobChangeAdapter {
+        @Override
+        public void aboutToRun(IJobChangeEvent event) {
+            isFiltering = true;
+        }
+
+        @Override
+        public void done(IJobChangeEvent event) {
+            isFiltering = false;
         }
     }
 }

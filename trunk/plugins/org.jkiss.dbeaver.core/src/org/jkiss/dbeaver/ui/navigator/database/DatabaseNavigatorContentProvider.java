@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.navigator.database;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
@@ -43,12 +41,12 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 
-    private TreeViewer viewer;
+    private DatabaseNavigatorTree navigatorTree;
     private boolean showRoot;
 
-    DatabaseNavigatorContentProvider(TreeViewer viewer, boolean showRoot)
+    DatabaseNavigatorContentProvider(DatabaseNavigatorTree navigatorTree, boolean showRoot)
     {
-        this.viewer = viewer;
+        this.navigatorTree = navigatorTree;
         this.showRoot = showRoot;
     }
 
@@ -110,9 +108,12 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
             return EMPTY_CHILDREN;
         }
         if (parentNode instanceof DBNDatabaseNode && ((DBNDatabaseNode)parentNode).needsInitialization()) {
+            if (navigatorTree.isFiltering()) {
+                return EMPTY_CHILDREN;
+            }
             return TreeLoadVisualizer.expandChildren(
-                viewer,
-                new TreeLoadService("Loading", ((DBNDatabaseNode)parentNode)));
+                navigatorTree.getViewer(),
+                new TreeLoadService("Loading", ((DBNDatabaseNode) parentNode)));
         } else {
             try {
                 // Read children with null monitor cos' it's not a lazy node
@@ -124,14 +125,10 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                 } else {
                     return children.toArray(new Object[children.size()]);
                 }
-                //return DBNNode.convertNodesToObjects(children);
             }
             catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    ex = ((InvocationTargetException)ex).getTargetException();
-                }
                 UIUtils.showErrorDialog(
-                    viewer.getControl().getShell(),
+                    navigatorTree.getViewer().getControl().getShell(),
                     "Navigator error",
                     ex.getMessage(),
                     ex);
@@ -140,8 +137,8 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                     @Override
                     public void run()
                     {
-                        viewer.collapseToLevel(parent, 1);
-                        viewer.refresh(parent);
+                        navigatorTree.getViewer().collapseToLevel(parent, 1);
+                        navigatorTree.getViewer().refresh(parent);
                     }
                 });
                 return EMPTY_CHILDREN;
