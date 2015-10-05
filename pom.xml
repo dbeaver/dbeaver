@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<dbeaver-version>3.5.0</dbeaver-version>
+		<dbeaver-version>3.5.1</dbeaver-version>
 		<tycho-version>0.23.1</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<!--eclipse-repository-url>http://download.eclipse.org/eclipse/updates/3.6</eclipse-repository-url-->
