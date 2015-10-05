@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -56,7 +57,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         for (IConfigurationElement typeElement : typeElements) {
             String typeName = typeElement.getAttribute(RegistryConstants.ATTR_NAME);
             if (typeName != null) {
-                supportedTypes.add(typeName.toLowerCase());
+                supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
             } else {
                 typeName = typeElement.getAttribute(RegistryConstants.ATTR_STANDARD);
                 if (typeName == null) {
@@ -116,7 +117,7 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
         String typeName = typedObject.getTypeName();
         return
             supportedTypes.contains(typedObject.getTypeID()) ||
-            (typeName != null && supportedTypes.contains(typeName.toLowerCase())) ||
+            (typeName != null && supportedTypes.contains(typeName.toLowerCase(Locale.ENGLISH))) ||
             supportedTypes.contains(ALL_TYPES_PATTERN);
     }
 

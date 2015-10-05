@@ -104,7 +104,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     public DBVContainer getContainer(String name, boolean createNew)
     {
-        DBVContainer container = containers.get(name.toLowerCase());
+        DBVContainer container = containers.get(name);
         if (container == null && createNew) {
             container = new DBVContainer(this, name);
             addContainer(container);
@@ -114,7 +114,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     void addContainer(DBVContainer container)
     {
-        containers.put(container.getName().toLowerCase(), container);
+        containers.put(container.getName(), container);
     }
 
     public Collection<DBVEntity> getEntities() {
@@ -123,7 +123,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     public DBVEntity getEntity(String name, boolean createNew)
     {
-        String dictName = name.toLowerCase();
+        String dictName = name;
         DBVEntity entity = entities.get(dictName);
         if (entity == null && createNew) {
             entity = new DBVEntity(this, name, null);
@@ -134,7 +134,7 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
 
     void addEntity(DBVEntity entity)
     {
-        entities.put(entity.getName().toLowerCase(), entity);
+        entities.put(entity.getName(), entity);
     }
 
     @Override
@@ -160,14 +160,14 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         for (DBVContainer child : container.getContainers()) {
             DBVContainer myChild = new DBVContainer(this, child.getName());
             myChild.copyFrom(child);
-            containers.put(myChild.getName().toLowerCase(), myChild);
+            containers.put(myChild.getName(), myChild);
         }
 
         this.entities.clear();
         for (DBVEntity child : container.getEntities()) {
             DBVEntity myChild = new DBVEntity(this, child.getName(), child.getDescriptionColumnNames());
             myChild.copyFrom(child);
-            entities.put(myChild.getName().toLowerCase(), myChild);
+            entities.put(myChild.getName(), myChild);
         }
     }
 

@@ -41,44 +41,44 @@ public class MySQLUtils {
     public static final String COLUMN_POSTFIX_PRIV = "_priv";
 
     static {
-        typeMap.put("BIT", java.sql.Types.BIT);
-        typeMap.put("TINYINT", java.sql.Types.TINYINT);
-        typeMap.put("SMALLINT", java.sql.Types.SMALLINT);
-        typeMap.put("MEDIUMINT", java.sql.Types.INTEGER);
-        typeMap.put("INT", java.sql.Types.INTEGER);
-        typeMap.put("INTEGER", java.sql.Types.INTEGER);
-        typeMap.put("INT24", java.sql.Types.INTEGER);
-        typeMap.put("BIGINT", java.sql.Types.BIGINT);
-        typeMap.put("REAL", java.sql.Types.DOUBLE);
-        typeMap.put("FLOAT", java.sql.Types.FLOAT);
-        typeMap.put("DECIMAL", java.sql.Types.DECIMAL);
-        typeMap.put("NUMERIC", java.sql.Types.DECIMAL);
-        typeMap.put("DOUBLE", java.sql.Types.DOUBLE);
-        typeMap.put("CHAR", java.sql.Types.CHAR);
-        typeMap.put("VARCHAR", java.sql.Types.VARCHAR);
-        typeMap.put("DATE", java.sql.Types.DATE);
-        typeMap.put("TIME", java.sql.Types.TIME);
-        typeMap.put("YEAR", java.sql.Types.DATE);
-        typeMap.put("TIMESTAMP", java.sql.Types.TIMESTAMP);
-        typeMap.put("DATETIME", java.sql.Types.TIMESTAMP);
-        typeMap.put("TINYBLOB", java.sql.Types.BINARY);
-        typeMap.put("BLOB", java.sql.Types.LONGVARBINARY);
-        typeMap.put("MEDIUMBLOB", java.sql.Types.LONGVARBINARY);
-        typeMap.put("LONGBLOB", java.sql.Types.LONGVARBINARY);
-        typeMap.put("TINYTEXT", java.sql.Types.VARCHAR);
-        typeMap.put("TEXT", java.sql.Types.LONGVARCHAR);
-        typeMap.put("MEDIUMTEXT", java.sql.Types.LONGVARCHAR);
-        typeMap.put("LONGTEXT", java.sql.Types.LONGVARCHAR);
+        typeMap.put("bit", java.sql.Types.BIT);
+        typeMap.put("tinyint", java.sql.Types.TINYINT);
+        typeMap.put("smallint", java.sql.Types.SMALLINT);
+        typeMap.put("mediumint", java.sql.Types.INTEGER);
+        typeMap.put("int", java.sql.Types.INTEGER);
+        typeMap.put("integer", java.sql.Types.INTEGER);
+        typeMap.put("int24", java.sql.Types.INTEGER);
+        typeMap.put("bigint", java.sql.Types.BIGINT);
+        typeMap.put("real", java.sql.Types.DOUBLE);
+        typeMap.put("float", java.sql.Types.FLOAT);
+        typeMap.put("decimal", java.sql.Types.DECIMAL);
+        typeMap.put("numeric", java.sql.Types.DECIMAL);
+        typeMap.put("double", java.sql.Types.DOUBLE);
+        typeMap.put("char", java.sql.Types.CHAR);
+        typeMap.put("varchar", java.sql.Types.VARCHAR);
+        typeMap.put("date", java.sql.Types.DATE);
+        typeMap.put("time", java.sql.Types.TIME);
+        typeMap.put("year", java.sql.Types.DATE);
+        typeMap.put("timestamp", java.sql.Types.TIMESTAMP);
+        typeMap.put("datetime", java.sql.Types.TIMESTAMP);
+        typeMap.put("tinyblob", java.sql.Types.BINARY);
+        typeMap.put("blob", java.sql.Types.LONGVARBINARY);
+        typeMap.put("mediumblob", java.sql.Types.LONGVARBINARY);
+        typeMap.put("longblob", java.sql.Types.LONGVARBINARY);
+        typeMap.put("tinytext", java.sql.Types.VARCHAR);
+        typeMap.put("text", java.sql.Types.LONGVARCHAR);
+        typeMap.put("mediumtext", java.sql.Types.LONGVARCHAR);
+        typeMap.put("longtext", java.sql.Types.LONGVARCHAR);
         typeMap.put(MySQLConstants.TYPE_NAME_ENUM, java.sql.Types.CHAR);
         typeMap.put(MySQLConstants.TYPE_NAME_SET, java.sql.Types.CHAR);
-        typeMap.put("GEOMETRY", java.sql.Types.BINARY);
-        typeMap.put("BINARY", java.sql.Types.BINARY);
-        typeMap.put("VARBINARY", java.sql.Types.VARBINARY);
+        typeMap.put("geometry", java.sql.Types.BINARY);
+        typeMap.put("binary", java.sql.Types.BINARY);
+        typeMap.put("varbinary", java.sql.Types.VARBINARY);
     }
 
     public static int typeNameToValueType(String typeName)
     {
-        Integer valueType = typeMap.get(typeName.toUpperCase());
+        Integer valueType = typeMap.get(typeName.toLowerCase(Locale.ENGLISH));
         return valueType == null ? java.sql.Types.OTHER : valueType;
     }
 
