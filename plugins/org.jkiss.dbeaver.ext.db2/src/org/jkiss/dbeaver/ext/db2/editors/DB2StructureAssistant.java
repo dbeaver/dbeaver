@@ -134,7 +134,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         String searchObjectNameMask = objectNameMask;
         if (!caseSensitive) {
-            searchObjectNameMask = searchObjectNameMask.toUpperCase(Locale.ENGLISH);
+            searchObjectNameMask = searchObjectNameMask.toUpperCase();
         }
 
         int nbResults = 0;
