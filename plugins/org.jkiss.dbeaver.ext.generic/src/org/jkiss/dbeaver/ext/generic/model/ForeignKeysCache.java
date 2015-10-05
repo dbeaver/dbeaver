@@ -35,10 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * Foreign key cache
@@ -153,7 +150,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
         if (CommonUtils.isEmpty(fkName)) {
             // [JDBC] Some drivers return empty foreign key names
-            fkName = parent.getName().toUpperCase() + "_FK_" + pkTable.getName().toUpperCase();
+            fkName = parent.getName().toUpperCase() + "_FK_" + pkTable.getName().toUpperCase(Locale.ENGLISH);
         }
         return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
     }

@@ -45,10 +45,7 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -392,7 +389,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             DBDDisplayFormat format = DBDDisplayFormat.UI;
             Object formatProp = processorProperties.get(StreamConsumerSettings.PROP_FORMAT);
             if (formatProp != null) {
-                format = DBDDisplayFormat.valueOf(formatProp.toString().toUpperCase());
+                format = DBDDisplayFormat.valueOf(formatProp.toString().toUpperCase(Locale.ENGLISH));
             }
             return format;
         }

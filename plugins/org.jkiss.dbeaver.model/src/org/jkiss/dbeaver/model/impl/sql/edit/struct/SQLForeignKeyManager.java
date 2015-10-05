@@ -33,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * JDBC foreign key manager
@@ -86,7 +87,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         if (!legacySyntax) {
             decl.append(constraintName).append(" "); //$NON-NLS-1$
         }
-        decl.append(foreignKey.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
+        decl.append(foreignKey.getConstraintType().getName().toUpperCase(Locale.ENGLISH)) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         try {
             // Get columns using void monitor

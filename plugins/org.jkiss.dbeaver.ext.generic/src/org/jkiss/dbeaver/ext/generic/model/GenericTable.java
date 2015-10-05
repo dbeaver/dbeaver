@@ -76,7 +76,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.tableType = tableType;
         this.description = remarks;
         if (!CommonUtils.isEmpty(this.getTableType())) {
-            String type = this.getTableType().toUpperCase();
+            String type = this.getTableType().toUpperCase(Locale.ENGLISH);
             this.isView = (type.contains("VIEW"));
             this.isSystem =
                 (type.contains("SYSTEM")) || // general rule

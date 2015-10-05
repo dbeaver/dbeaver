@@ -24,6 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
+import java.util.Locale;
+
 /**
 * BooleanInlineEditor
 */
@@ -58,6 +60,6 @@ public class BooleanInlineEditor extends BaseValueEditor<Combo> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setText(value == null ? "FALSE" : value.toString().toUpperCase());
+        control.setText(value == null ? "FALSE" : value.toString().toUpperCase(Locale.ENGLISH));
     }
 }

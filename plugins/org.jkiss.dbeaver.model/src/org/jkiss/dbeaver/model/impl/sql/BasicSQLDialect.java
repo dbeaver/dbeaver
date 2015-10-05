@@ -117,7 +117,7 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public DBPKeywordType getKeywordType(@NotNull String word)
     {
-        return allKeywords.get(word.toUpperCase());
+        return allKeywords.get(word.toUpperCase(Locale.ENGLISH));
     }
 
     @NotNull

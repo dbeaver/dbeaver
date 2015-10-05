@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Used to scan and detect for SQL keywords.
@@ -105,7 +106,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                 String prevWord = document.get(prevOffset, prevStartOffset - prevOffset);
                 SQLDialect dialect = syntaxManager.getDialect();
                 if (dialect.isEntityQueryWord(prevWord) || dialect.isAttributeQueryWord(prevWord)) {
-                    this.prevKeyWord = prevWord.toUpperCase();
+                    this.prevKeyWord = prevWord.toUpperCase(Locale.ENGLISH);
                     break;
                 }
                 if (prevWords == null) {

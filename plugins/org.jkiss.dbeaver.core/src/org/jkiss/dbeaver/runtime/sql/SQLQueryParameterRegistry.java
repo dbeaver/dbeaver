@@ -31,6 +31,7 @@ import org.xml.sax.Attributes;
 
 import java.io.*;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 public class SQLQueryParameterRegistry
@@ -70,12 +71,12 @@ public class SQLQueryParameterRegistry
 
     public ParameterInfo getParameter(String name)
     {
-        return parameterMap.get(name.toUpperCase());
+        return parameterMap.get(name.toUpperCase(Locale.ENGLISH));
     }
 
     public void setParameter(String name, String type, String value)
     {
-        parameterMap.put(name.toUpperCase(), new ParameterInfo(name, type, value));
+        parameterMap.put(name.toUpperCase(Locale.ENGLISH), new ParameterInfo(name, type, value));
     }
 
     private void loadProfiles()

@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import java.util.Locale;
+
 /**
  * DBSManipulationType
  */
@@ -46,11 +48,11 @@ public class DBSManipulationType
 
     public static DBSManipulationType getByName(String name)
     {
-        if (name.toUpperCase().equals(INSERT.getName())) {
+        if (name.toUpperCase(Locale.ENGLISH).equals(INSERT.getName())) {
             return INSERT;
-        } else if (name.toUpperCase().equals(DELETE.getName())) {
+        } else if (name.toUpperCase(Locale.ENGLISH).equals(DELETE.getName())) {
             return DELETE;
-        } if (name.toUpperCase().equals(UPDATE.getName())) {
+        } if (name.toUpperCase(Locale.ENGLISH).equals(UPDATE.getName())) {
             return UPDATE;
         } else {
             return UNKNOWN;

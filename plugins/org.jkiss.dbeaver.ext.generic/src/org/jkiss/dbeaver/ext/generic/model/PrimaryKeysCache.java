@@ -32,6 +32,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Index cache implementation
@@ -72,7 +73,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     protected String getDefaultObjectName(String parentName) {
-        return parentName.toUpperCase() + "_PK";
+        return parentName.toUpperCase(Locale.ENGLISH) + "_PK";
     }
 
     @Override

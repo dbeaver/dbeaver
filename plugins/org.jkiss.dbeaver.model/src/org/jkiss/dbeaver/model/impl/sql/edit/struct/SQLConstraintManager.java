@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 import java.util.List;
+import java.util.Locale;
 
 /**
  * JDBC constraint manager
@@ -83,7 +84,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         if (!legacySyntax) {
             decl.append(constraintName).append(" ");
         }
-        decl.append(constraint.getConstraintType().getName().toUpperCase()) //$NON-NLS-1$
+        decl.append(constraint.getConstraintType().getName().toUpperCase(Locale.ENGLISH)) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         try {
