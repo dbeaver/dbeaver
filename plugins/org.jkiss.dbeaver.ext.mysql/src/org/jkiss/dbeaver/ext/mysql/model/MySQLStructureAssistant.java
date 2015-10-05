@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectType;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * MySQLStructureAssistant
@@ -110,7 +111,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                 " FROM " + MySQLConstants.META_TABLE_TABLES + " WHERE " + MySQLConstants.COL_TABLE_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
                 " ORDER BY " + MySQLConstants.COL_TABLE_NAME + " LIMIT " + maxResults)) {
-            dbStat.setString(1, tableNameMask.toLowerCase());
+            dbStat.setString(1, tableNameMask.toLowerCase(Locale.ENGLISH));
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
@@ -152,7 +153,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                 " FROM " + MySQLConstants.META_TABLE_ROUTINES + " WHERE " + MySQLConstants.COL_ROUTINE_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?") +
                 " ORDER BY " + MySQLConstants.COL_ROUTINE_NAME + " LIMIT " + maxResults)) {
-            dbStat.setString(1, procNameMask.toLowerCase());
+            dbStat.setString(1, procNameMask.toLowerCase(Locale.ENGLISH));
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
@@ -194,7 +195,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                 " FROM " + MySQLConstants.META_TABLE_TABLE_CONSTRAINTS + " WHERE " + MySQLConstants.COL_CONSTRAINT_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
                 " ORDER BY " + MySQLConstants.COL_CONSTRAINT_NAME + " LIMIT " + maxResults)) {
-            dbStat.setString(1, constrNameMask.toLowerCase());
+            dbStat.setString(1, constrNameMask.toLowerCase(Locale.ENGLISH));
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }
@@ -247,7 +248,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                 " FROM " + MySQLConstants.META_TABLE_COLUMNS + " WHERE " + MySQLConstants.COL_COLUMN_NAME + " LIKE ? " +
                 (catalog == null ? "" : " AND " + MySQLConstants.COL_TABLE_SCHEMA + "=?") +
                 " ORDER BY " + MySQLConstants.COL_COLUMN_NAME + " LIMIT " + maxResults)) {
-            dbStat.setString(1, constrNameMask.toLowerCase());
+            dbStat.setString(1, constrNameMask.toLowerCase(Locale.ENGLISH));
             if (catalog != null) {
                 dbStat.setString(2, catalog.getName());
             }

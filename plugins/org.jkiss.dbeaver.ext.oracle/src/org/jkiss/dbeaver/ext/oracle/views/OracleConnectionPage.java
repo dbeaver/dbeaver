@@ -422,7 +422,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         connectionProperties.put(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());
 
         if (userRoleCombo.getSelectionIndex() > 0) {
-            connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase());
+            connectionProperties.put(OracleConstants.PROP_INTERNAL_LOGON, userRoleCombo.getText().toLowerCase(Locale.ENGLISH));
         } else {
             connectionProperties.remove(OracleConstants.PROP_INTERNAL_LOGON);
         }

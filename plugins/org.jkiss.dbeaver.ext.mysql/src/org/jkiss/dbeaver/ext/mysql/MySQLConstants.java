@@ -144,8 +144,8 @@ public class MySQLConstants {
 
     public static final String EXTRA_AUTO_INCREMENT = "auto_increment";
 
-    public static final String TYPE_NAME_ENUM = "ENUM";
-    public static final String TYPE_NAME_SET = "SET";
+    public static final String TYPE_NAME_ENUM = "enum";
+    public static final String TYPE_NAME_SET = "set";
 
     public static final DBSIndexType INDEX_TYPE_BTREE = new DBSIndexType("BTREE", "BTree");
     public static final DBSIndexType INDEX_TYPE_FULLTEXT = new DBSIndexType("FULLTEXT", "Full Text");

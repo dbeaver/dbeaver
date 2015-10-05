@@ -242,7 +242,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 column.getMaxLength() < MAX_DESC_COLUMN_LENGTH &&
                 column.getMaxLength() >= MIN_DESC_COLUMN_LENGTH)
             {
-                stringColumns.put(column.getName().toLowerCase(), column);
+                stringColumns.put(column.getName(), column);
             }
         }
         if (stringColumns.isEmpty()) {

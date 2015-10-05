@@ -35,6 +35,7 @@ import javax.activation.MimeTypeParseException;
 import java.io.*;
 import java.net.URI;
 import java.text.MessageFormat;
+import java.util.Locale;
 
 /**
  * Content manipulation utilities
@@ -403,7 +404,7 @@ public class ContentUtils {
     public static boolean isTextContent(DBDContent content)
     {
         String contentType = content == null ? null : content.getContentType();
-        return contentType != null && contentType.toLowerCase().startsWith("text");
+        return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
     public static boolean isXML(DBDContent content)
