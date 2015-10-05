@@ -42,6 +42,8 @@ public class MySQLUtils {
 
     static {
         typeMap.put("bit", java.sql.Types.BIT);
+        typeMap.put("bool", java.sql.Types.BOOLEAN);
+        typeMap.put("boolean", java.sql.Types.BOOLEAN);
         typeMap.put("tinyint", java.sql.Types.TINYINT);
         typeMap.put("smallint", java.sql.Types.SMALLINT);
         typeMap.put("mediumint", java.sql.Types.INTEGER);
@@ -52,8 +54,10 @@ public class MySQLUtils {
         typeMap.put("real", java.sql.Types.DOUBLE);
         typeMap.put("float", java.sql.Types.FLOAT);
         typeMap.put("decimal", java.sql.Types.DECIMAL);
+        typeMap.put("dec", java.sql.Types.DECIMAL);
         typeMap.put("numeric", java.sql.Types.DECIMAL);
         typeMap.put("double", java.sql.Types.DOUBLE);
+        typeMap.put("double precision", java.sql.Types.DOUBLE);
         typeMap.put("char", java.sql.Types.CHAR);
         typeMap.put("varchar", java.sql.Types.VARCHAR);
         typeMap.put("date", java.sql.Types.DATE);
@@ -61,14 +65,17 @@ public class MySQLUtils {
         typeMap.put("year", java.sql.Types.DATE);
         typeMap.put("timestamp", java.sql.Types.TIMESTAMP);
         typeMap.put("datetime", java.sql.Types.TIMESTAMP);
+
         typeMap.put("tinyblob", java.sql.Types.BINARY);
         typeMap.put("blob", java.sql.Types.LONGVARBINARY);
         typeMap.put("mediumblob", java.sql.Types.LONGVARBINARY);
         typeMap.put("longblob", java.sql.Types.LONGVARBINARY);
+
         typeMap.put("tinytext", java.sql.Types.VARCHAR);
         typeMap.put("text", java.sql.Types.LONGVARCHAR);
         typeMap.put("mediumtext", java.sql.Types.LONGVARCHAR);
         typeMap.put("longtext", java.sql.Types.LONGVARCHAR);
+
         typeMap.put(MySQLConstants.TYPE_NAME_ENUM, java.sql.Types.CHAR);
         typeMap.put(MySQLConstants.TYPE_NAME_SET, java.sql.Types.CHAR);
         typeMap.put("geometry", java.sql.Types.BINARY);
