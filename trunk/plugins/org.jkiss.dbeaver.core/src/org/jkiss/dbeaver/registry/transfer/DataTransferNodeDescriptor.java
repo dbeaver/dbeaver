@@ -32,6 +32,7 @@ import org.jkiss.utils.ArrayUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * DataTransferNodeDescriptor
@@ -64,7 +65,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-        this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase());
+        this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {

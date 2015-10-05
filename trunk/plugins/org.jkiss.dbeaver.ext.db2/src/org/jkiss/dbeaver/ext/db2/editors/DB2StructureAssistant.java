@@ -43,6 +43,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * DB2 Structure Assistant
@@ -133,7 +134,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         String searchObjectNameMask = objectNameMask;
         if (!caseSensitive) {
-            searchObjectNameMask = searchObjectNameMask.toUpperCase();
+            searchObjectNameMask = searchObjectNameMask.toUpperCase(Locale.ENGLISH);
         }
 
         int nbResults = 0;

@@ -32,6 +32,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Index cache implementation
@@ -106,7 +107,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
         }
         if (CommonUtils.isEmpty(indexName)) {
             // [JDBC] Some drivers return empty index names
-            indexName = parent.getName().toUpperCase() + "_INDEX";
+            indexName = parent.getName().toUpperCase(Locale.ENGLISH) + "_INDEX";
         }
 
         return new GenericTableIndex(

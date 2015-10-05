@@ -379,7 +379,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         final Object roleName = connectionProperties.get(OracleConstants.PROP_INTERNAL_LOGON);
         if (roleName != null) {
-            userRoleCombo.setText(roleName.toString().toUpperCase());
+            userRoleCombo.setText(roleName.toString().toUpperCase(Locale.ENGLISH));
         }
     }
 

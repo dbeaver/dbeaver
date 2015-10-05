@@ -38,6 +38,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 
@@ -180,7 +181,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
                         String catalog;
                         String table;
 
-                        String grantString = JDBCUtils.safeGetString(dbResult, 1).trim().toUpperCase();
+                        String grantString = JDBCUtils.safeGetString(dbResult, 1).trim().toUpperCase(Locale.ENGLISH);
                         if (grantString.endsWith(" WITH GRANT OPTION")) {
                             grantOption = true;//privileges.add(getDataSource().getPrivilege(monitor, MySQLPrivilege.GRANT_PRIVILEGE));
                         }
