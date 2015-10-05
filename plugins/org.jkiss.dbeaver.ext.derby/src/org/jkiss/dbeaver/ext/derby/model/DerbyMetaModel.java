@@ -48,14 +48,11 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition");
-        try {
+        try (JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT v.VIEWDEFINITION from SYS.SYSVIEWS v,SYS.SYSTABLES t,SYS.SYSSCHEMAS s\n" +
                 "WHERE v.TABLEID=t.TABLEID AND t.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=? AND t.TABLENAME=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
-        } finally {
-            session.close();
         }
     }
 
@@ -81,16 +78,13 @@ public class DerbyMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
-        try {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
+        try (JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT seq.SEQUENCENAME,seq.CURRENTVALUE,seq.MINIMUMVALUE,seq.MAXIMUMVALUE,seq.INCREMENT\n" +
-                "FROM sys.SYSSEQUENCES seq,sys.SYSSCHEMAS s\n" +
-                "WHERE seq.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=?");
-            try {
+                    "FROM sys.SYSSEQUENCES seq,sys.SYSSCHEMAS s\n" +
+                    "WHERE seq.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=?")) {
                 dbStat.setString(1, container.getName());
-                JDBCResultSet dbResult = dbStat.executeQuery();
-                try {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<GenericSequence> result = new ArrayList<GenericSequence>();
                     while (dbResult.next()) {
                         GenericSequence sequence = new GenericSequence(
@@ -104,16 +98,10 @@ public class DerbyMetaModel extends GenericMetaModel
                         result.add(sequence);
                     }
                     return result;
-                } finally {
-                    dbResult.close();
                 }
-            } finally {
-                dbStat.close();
             }
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
-        } finally {
-            session.close();
         }
     }
 
