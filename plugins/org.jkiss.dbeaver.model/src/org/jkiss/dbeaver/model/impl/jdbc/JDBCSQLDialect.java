@@ -313,7 +313,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             Collection<? extends DBSDataType> supportedDataTypes = dataSource.getDataTypes();
             if (supportedDataTypes != null) {
                 for (DBSDataType dataType : supportedDataTypes) {
-                    types.add(dataType.getName().toUpperCase());
+                    types.add(dataType.getName().toUpperCase(Locale.ENGLISH));
                 }
             }
 

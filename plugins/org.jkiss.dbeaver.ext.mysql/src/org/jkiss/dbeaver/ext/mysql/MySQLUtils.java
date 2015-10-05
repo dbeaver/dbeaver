@@ -98,7 +98,7 @@ public class MySQLUtils {
             int colCount = rsMetaData.getColumnCount();
             for (int i = 0; i < colCount; i++) {
                 String colName = rsMetaData.getColumnName(i + 1);
-                if (colName.toLowerCase().endsWith(COLUMN_POSTFIX_PRIV)) {
+                if (colName.toLowerCase(Locale.ENGLISH).endsWith(COLUMN_POSTFIX_PRIV)) {
                     privs.add(colName.substring(0, colName.length() - COLUMN_POSTFIX_PRIV.length()));
                 }
             }

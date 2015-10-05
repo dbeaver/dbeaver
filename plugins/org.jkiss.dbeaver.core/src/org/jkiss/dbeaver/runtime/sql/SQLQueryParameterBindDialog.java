@@ -378,10 +378,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                 isNumber = false;
             }
             if (!isNumber && parameter.isNamed()) {
-                SQLQueryParameterRegistry.ParameterInfo info = savedParamValues.get(paramName.toUpperCase());
+                SQLQueryParameterRegistry.ParameterInfo info = savedParamValues.get(paramName.toUpperCase(Locale.ENGLISH));
                 if (info == null) {
                     info = new SQLQueryParameterRegistry.ParameterInfo(paramName, parameter.getTypeName(), displayString);
-                    savedParamValues.put(paramName.toUpperCase(), info);
+                    savedParamValues.put(paramName.toUpperCase(Locale.ENGLISH), info);
                 } else {
                     info.type = parameter.getTypeName();
                     info.value = displayString;

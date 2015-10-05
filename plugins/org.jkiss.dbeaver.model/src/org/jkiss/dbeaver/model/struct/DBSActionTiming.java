@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import java.util.Locale;
+
 /**
  * DBSEntityConstraintType
  */
@@ -45,9 +47,9 @@ public class DBSActionTiming
 
     public static DBSActionTiming getByName(String name)
     {
-        if (name.toUpperCase().equals(BEFORE.getName())) {
+        if (name.toUpperCase(Locale.ENGLISH).equals(BEFORE.getName())) {
             return BEFORE;
-        } else if (name.toUpperCase().equals(AFTER.getName())) {
+        } else if (name.toUpperCase(Locale.ENGLISH).equals(AFTER.getName())) {
             return AFTER;
         } else {
             return UNKNOWN;
