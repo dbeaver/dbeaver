@@ -1,61 +1,19 @@
 DBeaver build
 =================================
-=================================
-
-We use Eclipse pde build to compile and package DBeaver product.
-Certain installers (Windows, Debian, etc) are created by additional tools.
 
 Prerequisites
 =================================
 
-Java SDK 1.6 or later (should be default JDK with binaries in PATH)
-Apache Ant 1.7 or later (should be in PATH)
-Eclipse 3.7 (RCP developers package, with GEF plugins)
-
-For Windows installer NSIS installation is required.
+Java SDK 1.7 or later (should be default JDK with binaries in PATH)
+Apache Maven 2 or later (should be in PATH)
 
 Prepare build
 =================================
 
 Checkout entire DBeaver module from version control system.
-I'll mention root directory of DBeaver sources as $ROOT%.
-Go to "product" folder. Copy "local.sample" file into "local.properties".
-Edit local.properties file:
+In the root folder type
 
-buildDirectory=%ROOT%/product/build
-	Directory where all temporary build files will be placed
-baseLocation=%ECLIPSE_HOME_FOLDER%
-	Eclipse installation directory
-equinoxLauncherPluginVersion=1.2.0.v20110502 
-	Version of equinox launcher. 
-	Find org.eclipse.equinox.launcher_*.jar file in your Eclipse "plugins" folder end enter version number here.
-pdeBuildPluginVersion=3.7.0.v20110512-1320
-	PDE build version.
-	Find org.eclipse.pde.build_3* folder in your Eclipse "plugins" folder and enter version here.
-configs=Build configurations list
-	Leave just those configurations you want to build.
-	For example: "win32, win32, x86 & win32,win32,x86_64"
+	mvn clean install
 
-nsisDirectory=%NSIS_HOME_GOLDER%
-	NSIS installation directory (required only for windows installers)
-releaseFilesDirectory=
-	Some folder where to place releases. Doesn't required for regular developers
-babelLocation=
-	Needed only if you build product with multiple localizations
-locales=
-	Needed only if you build product with multiple localizations
-
-Build
-=================================
-
-Execute "ant all" command (when you are in the "product" folder).
-Build takes a few minutes. After it successfully completes you will have set of zip archives in "build" folder and
-set of installers in "dist" folder.
-
-Note that target "all" builds all available installers so, if you don't have NSIS installed on your computer
-windows installer will fail. Also some unix installers will fail on Windows computer.
-But you may build only required installers.
-Execute "antt build" command to create plain archives.
-Then you may execute any of "dist-*" targets, like "dist-win", "dist-deb", etc. Examine "build.xml" file to
-see all available targets.
-
+It will build binaries for DBeaver standalone version and for Eclipse repository.
+Binaries (zip archives) are located in "product/standalone/target/products/" folder.
