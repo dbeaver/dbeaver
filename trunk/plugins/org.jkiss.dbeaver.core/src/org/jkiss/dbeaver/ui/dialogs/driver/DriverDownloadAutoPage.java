@@ -17,9 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -28,7 +30,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverLibraryAbstract;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Collection;
 import java.util.List;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
@@ -88,6 +90,37 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         createLinksPanel(composite);
 
         setControl(composite);
+    }
+
+    @Override
+    void resolveLibraries() {
+        try {
+            new RunnableContextDelegate(getContainer()).run(true, true, new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        for (DBPDriverLibrary library : getWizard().getFiles()) {
+                            resolveDependencies(monitor, library);
+                        }
+                    } catch (IOException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InterruptedException e) {
+            // User just canceled download
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
+        }
+    }
+
+    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library) throws IOException {
+        Collection<DBPDriverLibrary> dependencies = library.getDependencies(monitor);
+        if (dependencies != null && !dependencies.isEmpty()) {
+            for (DBPDriverLibrary dep : dependencies) {
+                resolveDependencies(monitor, dep);
+            }
+        }
     }
 
     @Override

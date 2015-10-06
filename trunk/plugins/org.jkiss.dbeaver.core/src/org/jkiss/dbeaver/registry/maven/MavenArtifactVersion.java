@@ -26,9 +26,7 @@ import org.xml.sax.Attributes;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Maven artifact version descriptor (POM).
@@ -42,8 +40,10 @@ public class MavenArtifactVersion
     private String version;
     private String description;
     private String url;
-    private List<MavenArtifactLicense> licenses;
-    private List<MavenArtifactDependency> dependencies;
+    private MavenArtifactReference parent;
+    private Map<String, String> properties = new LinkedHashMap<>();
+    private List<MavenArtifactLicense> licenses = new ArrayList<>();
+    private List<MavenArtifactDependency> dependencies = new ArrayList<>();
 
     MavenArtifactVersion(MavenLocalVersion localVersion) throws IOException {
         this.localVersion = localVersion;
@@ -75,6 +75,14 @@ public class MavenArtifactVersion
         return url;
     }
 
+    public MavenArtifactReference getParent() {
+        return parent;
+    }
+
+    public Map<String, String> getProperties() {
+        return properties;
+    }
+
     public List<MavenArtifactLicense> getLicenses() {
         return licenses;
     }
@@ -90,6 +98,8 @@ public class MavenArtifactVersion
 
     private enum ParserState {
         ROOT,
+        PARENT,
+        PROPERTIES,
         LICENSE,
         DEPENDENCIES,
         DEPENDENCY
@@ -107,7 +117,11 @@ public class MavenArtifactVersion
                 @Override
                 public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
                     lastTag = localName;
-                    if ("license".equals(localName)) {
+                    if ("parent".equals(localName) && state == ParserState.ROOT) {
+                        state = ParserState.PARENT;
+                    } else if ("properties".equals(localName)) {
+                        state = ParserState.PROPERTIES;
+                    } else if ("license".equals(localName)) {
                         state = ParserState.LICENSE;
                     } else if ("dependencies".equals(localName)) {
                         state = ParserState.DEPENDENCIES;
@@ -130,6 +144,8 @@ public class MavenArtifactVersion
                                 url = data;
                             }
                             break;
+                        case PARENT:
+                        case PROPERTIES:
                         case LICENSE:
                         case DEPENDENCY:
                             attributes.put(lastTag, data);
@@ -149,6 +165,8 @@ public class MavenArtifactVersion
                         attributes.clear();
                     } else if ("dependencies".equals(localName) && state == ParserState.DEPENDENCIES) {
                         state = ParserState.ROOT;
+                        attributes.clear();
+                    } else if ("dependency".equals(localName) && state == ParserState.DEPENDENCY) {
                         dependencies.add(new MavenArtifactDependency(
                             new MavenArtifactReference(
                                 attributes.get("groupId"),
@@ -158,10 +176,20 @@ public class MavenArtifactVersion
                             attributes.get("type"),
                             Boolean.valueOf(attributes.get("optional"))
                         ));
-                        attributes.clear();
-                    } else if ("dependency".equals(localName) && state == ParserState.DEPENDENCY) {
                         state = ParserState.DEPENDENCIES;
                         attributes.clear();
+                    } else if ("properties".equals(localName) && state == ParserState.PROPERTIES) {
+                        properties.putAll(attributes);
+                        attributes.clear();
+                        state = ParserState.ROOT;
+                    } else if ("parent".equals(localName) && state == ParserState.PARENT) {
+                        parent = new MavenArtifactReference(
+                            attributes.get("groupId"),
+                            attributes.get("artifactId"),
+                            attributes.get("version")
+                        );
+                        attributes.clear();
+                        state = ParserState.ROOT;
                     }
                 }
             });

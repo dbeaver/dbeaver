@@ -147,7 +147,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
     }
 
-    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion) throws IOException, InterruptedException
+    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException, InterruptedException
     {
         String externalURL = getExternalURL();
         if (externalURL == null) {
