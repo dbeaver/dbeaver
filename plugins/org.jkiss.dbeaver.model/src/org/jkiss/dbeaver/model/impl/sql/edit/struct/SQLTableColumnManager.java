@@ -79,6 +79,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         }
     };
 
+    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = new ColumnModifier<OBJECT_TYPE>() {
+        @Override
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+            sql.append(column.isRequired() ? " NOT NULL" : " NULL");
+        }
+    };
+
     protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = new ColumnModifier<OBJECT_TYPE>() {
         @Override
         public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
@@ -92,7 +99,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     };
 
 
-    protected ColumnModifier<OBJECT_TYPE>[] getSupportedModifiers()
+    protected ColumnModifier[] getSupportedModifiers()
     {
         return new ColumnModifier[] {DataTypeModifier, NotNullModifier, DefaultModifier};
     }
@@ -193,7 +200,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
 
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName);
-        for (ColumnModifier<OBJECT_TYPE> modifier : getSupportedModifiers()) {
+        for (ColumnModifier modifier : getSupportedModifiers()) {
             modifier.appendModifier(column, decl);
         }
 
