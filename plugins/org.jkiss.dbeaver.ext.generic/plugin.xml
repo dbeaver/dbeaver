@@ -650,6 +650,8 @@
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:release"/>
                 </driver>
 
+                <!-- Cloudera -->
+
             </drivers>
 
             <views>
