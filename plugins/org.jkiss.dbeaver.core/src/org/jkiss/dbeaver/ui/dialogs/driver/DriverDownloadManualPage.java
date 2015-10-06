@@ -103,6 +103,11 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     }
 
     @Override
+    void resolveLibraries() {
+        // do nothing
+    }
+
+    @Override
     void performFinish() {
         UIUtils.runInDetachedUI(getShell(), new Runnable() {
             @Override

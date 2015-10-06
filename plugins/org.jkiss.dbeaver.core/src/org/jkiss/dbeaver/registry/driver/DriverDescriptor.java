@@ -31,9 +31,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -48,7 +46,6 @@ import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -897,6 +894,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public boolean acceptDriverLicenses(DBRRunnableContext runnableContext)
     {
+/*
         // User must accept all licenses before actual drivers download
         for (final DBPDriverLibrary file : libraries) {
             if (file.getType() == DBPDriverLibrary.FileType.license) {
@@ -924,6 +922,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         if (!CommonUtils.isEmpty(licenseText)) {
             return acceptLicense(licenseText);
         }
+*/
         // No license
         return true;
     }

@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.maven.MavenArtifact;
-import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
-import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
-import org.jkiss.dbeaver.registry.maven.MavenRegistry;
+import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
@@ -126,7 +123,18 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<DBPDriverLibrary> getDependencies() {
+    public Collection<DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
+        MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
+        if (localVersion == null) {
+            return null;
+        }
+        MavenArtifactVersion metaData = localVersion.getMetaData();
+        if (metaData == null) {
+            return null;
+        }
+        for (MavenArtifactDependency dependency : metaData.getDependencies()) {
+            System.out.println(dependency);
+        }
         return null;
     }
 
@@ -148,35 +156,32 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return UIIcon.APACHE;
     }
 
-    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion) throws IOException, InterruptedException {
-        MavenArtifact artifact = downloadMavenArtifact(monitor, updateVersion);
-        if (artifact.getRepository().isLocal()) {
+    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException, InterruptedException {
+        MavenLocalVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
+        if (localVersion.getArtifact().getRepository().isLocal()) {
             // No need to download local artifacts
             return;
         }
-        super.downloadLibraryFile(monitor, updateVersion);
+        super.downloadLibraryFile(monitor, forceUpdate);
     }
 
-    private MavenArtifact downloadMavenArtifact(DBRProgressMonitor monitor, boolean updateVersion) throws IOException {
+    private MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
         MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
-        if (updateVersion) {
+        if (forceUpdate) {
             MavenRegistry.getInstance().resetArtifactInfo(artifactInfo);
         }
         MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(artifactInfo);
         if (artifact == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }
-        if (updateVersion) {
-            artifact.loadMetadata();
-        } else {
+        if (!forceUpdate) {
             MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
             if (localVersion != null && localVersion.getCacheFile().exists()) {
                 // Already cached
-                return artifact;
+                return localVersion;
             }
         }
-        artifact.resolveVersion(monitor, artifactInfo.getVersion());
-        return artifact;
+        return artifact.resolveVersion(monitor, artifactInfo.getVersion());
     }
 
 }

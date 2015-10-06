@@ -197,6 +197,7 @@ public class MavenArtifact
                 log.debug("Artifact '" + artifactId + "' do not have version '" + versionStr + "' info in metadata");
             }
             version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr, FILE_JAR), new Date());
+            version.getMetaData();
             localVersions.add(version);
         }
         if (setActive) {
