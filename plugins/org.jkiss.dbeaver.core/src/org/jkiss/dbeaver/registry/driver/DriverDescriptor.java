@@ -166,7 +166,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.isLoaded = false;
 
         for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE)) {
-            this.libraries.add(new DriverLibraryDescriptor(this, lib));
+            DriverLibraryAbstract library = DriverLibraryAbstract.createFromConfig(this, lib);
+            if (library != null) {
+                this.libraries.add(library);
+            }
         }
         this.origFiles.addAll(this.libraries);
 
@@ -636,7 +639,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 return lib;
             }
         }
-        DriverLibraryDescriptor lib = new DriverLibraryDescriptor(this, fileType, path);
+        DriverLibraryAbstract lib = DriverLibraryAbstract.createFromPath(this, fileType, path);
         addDriverLibrary(lib);
         return lib;
     }
@@ -905,7 +908,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                             {
                                 try {
-                                    DriverFileManager.downloadLibraryFile(monitor, file, false);
+                                    file.downloadLibraryFile(monitor, false);
                                 } catch (final Exception e) {
                                     log.warn("Can't obtain driver license", e);
                                 }

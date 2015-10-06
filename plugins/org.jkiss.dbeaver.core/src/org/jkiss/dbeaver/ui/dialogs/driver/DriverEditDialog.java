@@ -44,7 +44,8 @@ import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverLibraryDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryAbstract;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -420,7 +421,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                         File folderFile = new File(curFolder);
                         for (String fileName : fileNames) {
                             libList.add(
-                                new DriverLibraryDescriptor(
+                                DriverLibraryAbstract.createFromPath(
                                     driver,
                                     fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
                                     new File(folderFile, fileName).getAbsolutePath()));
@@ -441,7 +442,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
-                    libList.add(new DriverLibraryDescriptor(
+                    libList.add(DriverLibraryAbstract.createFromPath(
                         driver,
                         DBPDriverLibrary.FileType.jar,
                         selected));
@@ -456,10 +457,10 @@ public class DriverEditDialog extends HelpEnabledDialog
             {
                 EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
                 if (fd.open() == IDialogConstants.OK_ID) {
-                    libList.add(new DriverLibraryDescriptor(
+                    libList.add(DriverLibraryAbstract.createFromPath(
                         driver,
                         DBPDriverLibrary.FileType.jar,
-                        DriverLibraryDescriptor.FILE_SOURCE_MAVEN + fd.getArtifact().getPath()));
+                        DriverLibraryMavenArtifact.PATH_PREFIX + fd.getArtifact().getPath()));
                     changeLibContent();
                 }
             }
@@ -487,7 +488,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+                DriverLibraryAbstract selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
                 Collections.swap(libList, selIndex, selIndex - 1);
                 changeLibContent();
@@ -500,7 +501,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+                DriverLibraryAbstract selectedLib = getSelectedLibrary();
                 int selIndex = libList.indexOf(selectedLib);
                 Collections.swap(libList, selIndex, selIndex + 1);
                 changeLibContent();
@@ -604,10 +605,10 @@ public class DriverEditDialog extends HelpEnabledDialog
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
     }
 
-    private DriverLibraryDescriptor getSelectedLibrary()
+    private DriverLibraryAbstract getSelectedLibrary()
     {
         IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
-        return selection == null || selection.isEmpty() ? null : (DriverLibraryDescriptor) selection.getFirstElement();
+        return selection == null || selection.isEmpty() ? null : (DriverLibraryAbstract) selection.getFirstElement();
     }
 
     private void changeLibContent()
@@ -619,7 +620,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void changeLibSelection()
     {
-        DriverLibraryDescriptor selectedLib = getSelectedLibrary();
+        DriverLibraryAbstract selectedLib = getSelectedLibrary();
         deleteButton.setEnabled(selectedLib != null);
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
         downButton.setEnabled(libList.indexOf(selectedLib) < libList.size() - 1);

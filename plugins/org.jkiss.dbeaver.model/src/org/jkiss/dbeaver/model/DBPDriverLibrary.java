@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -67,8 +69,6 @@ public interface DBPDriverLibrary
 
     boolean isDownloadable();
 
-    boolean isMavenArtifact();
-
     boolean isResolved();
 
     @Nullable
@@ -82,4 +82,6 @@ public interface DBPDriverLibrary
     @Nullable
     Collection<DBPDriverLibrary> getDependencies();
 
+    void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion)
+        throws IOException, InterruptedException;
 }
