@@ -70,9 +70,13 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
             decl.append(" AUTO_INCREMENT"); //$NON-NLS-1$
         }
         if (!CommonUtils.isEmpty(column.getComment())) {
-            decl.append(" COMMENT '").append(column.getComment()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
+            decl.append(" COMMENT '").append(escapeComment(column.getComment())).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
         return decl;
+    }
+
+    private String escapeComment(String comment) {
+        return comment.replace("'", "\\'");
     }
 
     @Override
