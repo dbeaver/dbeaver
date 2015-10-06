@@ -607,16 +607,6 @@
                     <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:release"/>
                 </driver>
                 <driver
-                    id="gemfire_xd"
-                    label="GemfireXD"
-                    class="com.pivotal.gemfirexd.jdbc.ClientDriver"
-                    sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
-                    defaultPort="1527"
-                    description="Pivotal GemfireXD"
-                    webURL="http://blog.pivotal.io/tag/gemfire-xd">
-                    <!--<library path="C:\Program Files\Java\lib\jdbc\gemfirexd-client.jar"/>-->
-                </driver>
-                <driver
                     id="exasol"
                     label="ExaSol"
                     class="com.exasol.jdbc.EXADriver"
@@ -636,6 +626,28 @@
                     description=""
                     webURL="http://scn.sap.com/community/developer-center/hana">
                     <!--<library path="C:\Program Files\Java\lib\jdbc\ngdbc.jar"/>-->
+                </driver>
+
+                <!-- Hadoop -->
+                <driver
+                    id="gemfire_xd"
+                    label="GemfireXD"
+                    class="com.pivotal.gemfirexd.jdbc.ClientDriver"
+                    sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
+                    defaultPort="1527"
+                    description="Pivotal GemfireXD"
+                    webURL="http://blog.pivotal.io/tag/gemfire-xd">
+                    <!--<library path="C:\Program Files\Java\lib\jdbc\gemfirexd-client.jar"/>-->
+                </driver>
+                <driver
+                    id="apache_hive2"
+                    label="Hive"
+                    class="org.apache.hive.jdbc.HiveDriver"
+                    sampleURL="jdbc:hive2://{host}[:{port}]/{database}"
+                    defaultPort="10000"
+                    description="Apache Hive JDBC"
+                    webURL="https://cwiki.apache.org/confluence/display/Hive/Home">
+                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:release"/>
                 </driver>
 
             </drivers>
