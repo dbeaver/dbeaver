@@ -35,6 +35,8 @@ public class MavenArtifactVersion
 {
     static final Log log = Log.getLog(MavenArtifactVersion.class);
 
+    public static final String PROP_PROJECT_VERSION = "project.version";
+
     private MavenLocalVersion localVersion;
     private String name;
     private String version;
@@ -111,7 +113,7 @@ public class MavenArtifactVersion
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {
                 private ParserState state = ParserState.ROOT;
-                private String lastTag;
+                private String lastTag, lastText;
                 private Map<String, String> attributes = new HashMap<String, String>();
 
                 @Override
@@ -132,6 +134,7 @@ public class MavenArtifactVersion
 
                 @Override
                 public void saxText(SAXReader reader, String data) throws XMLException {
+                    lastText = data;
                     switch (state) {
                         case ROOT:
                             if ("name".equals(lastTag)) {
@@ -145,7 +148,6 @@ public class MavenArtifactVersion
                             }
                             break;
                         case PARENT:
-                        case PROPERTIES:
                         case LICENSE:
                         case DEPENDENCY:
                             attributes.put(lastTag, data);
@@ -155,7 +157,6 @@ public class MavenArtifactVersion
 
                 @Override
                 public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
-                    lastTag = null;
                     if ("license".equals(localName) && state == ParserState.LICENSE) {
                         state = ParserState.ROOT;
                         licenses.add(new MavenArtifactLicense(
@@ -190,12 +191,20 @@ public class MavenArtifactVersion
                         );
                         attributes.clear();
                         state = ParserState.ROOT;
+                    } else if (state == ParserState.PROPERTIES) {
+                        attributes.put(lastTag, lastText);
                     }
+                    lastTag = null;
                 }
             });
         } catch (XMLException e) {
             log.warn("Error parsing POM", e);
         }
+
+        if (version == null) {
+            version = parent.getVersion();
+        }
+        properties.put(PROP_PROJECT_VERSION, version);
     }
 
 }
