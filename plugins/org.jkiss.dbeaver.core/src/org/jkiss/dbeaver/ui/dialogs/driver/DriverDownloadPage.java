@@ -40,6 +40,8 @@ abstract class DriverDownloadPage extends WizardPage {
         return (DriverDownloadWizard) super.getWizard();
     }
 
+    abstract void resolveLibraries();
+
     abstract void performFinish();
 
     protected void createLinksPanel(Composite composite) {

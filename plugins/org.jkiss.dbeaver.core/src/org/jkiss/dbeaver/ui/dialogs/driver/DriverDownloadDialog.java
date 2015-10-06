@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IPageChangedListener;
+import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -45,6 +47,12 @@ public class DriverDownloadDialog extends WizardDialog
     {
         super(shell, new DriverDownloadWizard(driver, files, updateVersion, forceDownload));
         getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
+        addPageChangedListener(new IPageChangedListener() {
+            @Override
+            public void pageChanged(PageChangedEvent event) {
+                getWizard().pageActivated(event.getSelectedPage());
+            }
+        });
     }
 
     DriverDescriptor getDriver() {

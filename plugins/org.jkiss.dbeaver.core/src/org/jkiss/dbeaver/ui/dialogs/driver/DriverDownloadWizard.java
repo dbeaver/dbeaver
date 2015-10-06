@@ -83,6 +83,10 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         addPage(downloadPage);
     }
 
+    void pageActivated(Object selectedPage) {
+        downloadPage.resolveLibraries();
+    }
+
     @Override
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle("Driver settings");

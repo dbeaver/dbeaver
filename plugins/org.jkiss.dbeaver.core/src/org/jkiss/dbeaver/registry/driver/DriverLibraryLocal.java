@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
@@ -129,7 +130,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<DBPDriverLibrary> getDependencies() {
+    public Collection<DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
         return null;
     }
 

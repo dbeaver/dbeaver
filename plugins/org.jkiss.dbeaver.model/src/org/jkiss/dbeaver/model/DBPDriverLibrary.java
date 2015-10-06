@@ -80,8 +80,8 @@ public interface DBPDriverLibrary
     boolean matchesCurrentPlatform();
 
     @Nullable
-    Collection<DBPDriverLibrary> getDependencies();
+    Collection<DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException;
 
-    void downloadLibraryFile(DBRProgressMonitor monitor, boolean updateVersion)
+    void downloadLibraryFile(DBRProgressMonitor monitor, boolean forceUpdate)
         throws IOException, InterruptedException;
 }
