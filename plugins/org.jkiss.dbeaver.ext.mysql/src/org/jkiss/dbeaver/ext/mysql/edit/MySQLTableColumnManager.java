@@ -51,6 +51,11 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
+    protected ColumnModifier[] getSupportedModifiers()
+    {
+        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NullNotNullModifier};
+    }
+
     @Override
     public StringBuilder getNestedDeclaration(MySQLTableBase owner, DBECommandAbstract<MySQLTableColumn> command)
     {
