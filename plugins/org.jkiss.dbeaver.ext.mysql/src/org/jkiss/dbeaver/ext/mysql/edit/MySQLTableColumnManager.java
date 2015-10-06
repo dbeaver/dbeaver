@@ -86,7 +86,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
 
         final MySQLTableColumn column = new MySQLTableColumn(parent);
         column.setName(getNewColumnName(context, parent));
-        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
+        column.setTypeName(columnType == null ? "integer" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         column.setOrdinalPosition(-1);
