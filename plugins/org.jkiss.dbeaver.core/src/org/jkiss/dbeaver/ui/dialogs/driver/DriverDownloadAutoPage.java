@@ -161,7 +161,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         {
             DownloadErrorDialog dialog = new DownloadErrorDialog(
                 null,
-                file.getPath(),
+                file.getDisplayName(),
                 "Driver file download failed.\nDo you want to retry?",
                 error);
             result = dialog.open();
