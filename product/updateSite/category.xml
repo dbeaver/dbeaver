@@ -8,19 +8,19 @@
         <description>3rd party JDBC drivers for DBeaver</description>
     </category-def>
 
-    <feature id="org.jkiss.dbeaver.runtime.feature" version="0.0.0">
+    <feature id="org.jkiss.dbeaver.runtime.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.generic.feature" version="0.0.0">
+    <feature id="org.jkiss.dbeaver.ext.generic.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.mysql.feature" version="0.0.0">
+    <feature id="org.jkiss.dbeaver.ext.mysql.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.oracle.feature" version="0.0.0">
+    <feature id="org.jkiss.dbeaver.ext.oracle.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
-    <feature id="org.jkiss.dbeaver.ext.db2.feature" version="0.0.0">
+    <feature id="org.jkiss.dbeaver.ext.db2.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
 </site>
