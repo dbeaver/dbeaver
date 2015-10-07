@@ -88,7 +88,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         vars.put(VAR_FILE_NAME, scriptName);
         vars.put(VAR_FILE_EXT, getFile().getFullPath().getFileExtension());
         vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
-        return GeneralUtils.replaceVariables(pattern, vars);
+        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
     }
 
     @Override

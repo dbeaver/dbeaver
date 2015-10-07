@@ -19,20 +19,24 @@ package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
-import org.xml.sax.Attributes;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Maven artifact version descriptor (POM).
  */
-public class MavenArtifactVersion
-{
+public class MavenArtifactVersion {
     static final Log log = Log.getLog(MavenArtifactVersion.class);
 
     public static final String PROP_PROJECT_VERSION = "project.version";
@@ -42,10 +46,28 @@ public class MavenArtifactVersion
     private String version;
     private String description;
     private String url;
-    private MavenArtifactReference parent;
+    private MavenArtifactVersion parent;
+    private MavenArtifactReference parentReference;
     private Map<String, String> properties = new LinkedHashMap<>();
     private List<MavenArtifactLicense> licenses = new ArrayList<>();
-    private List<MavenArtifactDependency> dependencies = new ArrayList<>();
+    private List<MavenArtifactDependency> dependencies;
+    private List<MavenArtifactDependency> dependencyManagement;
+
+    private final GeneralUtils.IVariableResolver variableResolver = new GeneralUtils.IVariableResolver() {
+        @Override
+        public String get(String name) {
+            String value = properties.get(name);
+            if (value == null) {
+                if (parent != null) {
+                    return parent.variableResolver.get(name);
+                }
+                if (name.equals(PROP_PROJECT_VERSION)) {
+                    value = version;
+                }
+            }
+            return value;
+        }
+    };
 
     MavenArtifactVersion(MavenLocalVersion localVersion) throws IOException {
         this.localVersion = localVersion;
@@ -77,8 +99,8 @@ public class MavenArtifactVersion
         return url;
     }
 
-    public MavenArtifactReference getParent() {
-        return parent;
+    public MavenArtifactReference getParentReference() {
+        return parentReference;
     }
 
     public Map<String, String> getProperties() {
@@ -109,102 +131,84 @@ public class MavenArtifactVersion
 
     private void loadPOM() throws IOException {
         String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
+        Document pomDocument;
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
-            SAXReader reader = new SAXReader(mdStream);
-            reader.parse(new SAXListener() {
-                private ParserState state = ParserState.ROOT;
-                private String lastTag, lastText;
-                private Map<String, String> attributes = new HashMap<String, String>();
-
-                @Override
-                public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
-                    lastTag = localName;
-                    if ("parent".equals(localName) && state == ParserState.ROOT) {
-                        state = ParserState.PARENT;
-                    } else if ("properties".equals(localName)) {
-                        state = ParserState.PROPERTIES;
-                    } else if ("license".equals(localName)) {
-                        state = ParserState.LICENSE;
-                    } else if ("dependencies".equals(localName)) {
-                        state = ParserState.DEPENDENCIES;
-                    } else if ("dependency".equals(localName) && state == ParserState.DEPENDENCIES) {
-                        state = ParserState.DEPENDENCY;
-                    }
-                }
-
-                @Override
-                public void saxText(SAXReader reader, String data) throws XMLException {
-                    lastText = data;
-                    switch (state) {
-                        case ROOT:
-                            if ("name".equals(lastTag)) {
-                                name = data;
-                            } else if ("version".equals(lastTag)) {
-                                version = data;
-                            } else if ("description".equals(lastTag)) {
-                                description = data;
-                            } else if ("url".equals(lastTag)) {
-                                url = data;
-                            }
-                            break;
-                        case PARENT:
-                        case LICENSE:
-                        case DEPENDENCY:
-                            attributes.put(lastTag, data);
-                            break;
-                    }
-                }
-
-                @Override
-                public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
-                    if ("license".equals(localName) && state == ParserState.LICENSE) {
-                        state = ParserState.ROOT;
-                        licenses.add(new MavenArtifactLicense(
-                            attributes.get("name"),
-                            attributes.get("url")
-                        ));
-                        attributes.clear();
-                    } else if ("dependencies".equals(localName) && state == ParserState.DEPENDENCIES) {
-                        state = ParserState.ROOT;
-                        attributes.clear();
-                    } else if ("dependency".equals(localName) && state == ParserState.DEPENDENCY) {
-                        dependencies.add(new MavenArtifactDependency(
-                            new MavenArtifactReference(
-                                attributes.get("groupId"),
-                                attributes.get("artifactId"),
-                                attributes.get("version")
-                            ),
-                            attributes.get("type"),
-                            Boolean.valueOf(attributes.get("optional"))
-                        ));
-                        state = ParserState.DEPENDENCIES;
-                        attributes.clear();
-                    } else if ("properties".equals(localName) && state == ParserState.PROPERTIES) {
-                        properties.putAll(attributes);
-                        attributes.clear();
-                        state = ParserState.ROOT;
-                    } else if ("parent".equals(localName) && state == ParserState.PARENT) {
-                        parent = new MavenArtifactReference(
-                            attributes.get("groupId"),
-                            attributes.get("artifactId"),
-                            attributes.get("version")
-                        );
-                        attributes.clear();
-                        state = ParserState.ROOT;
-                    } else if (state == ParserState.PROPERTIES) {
-                        attributes.put(lastTag, lastText);
-                    }
-                    lastTag = null;
-                }
-            });
+            pomDocument = XMLUtils.parseDocument(mdStream);
         } catch (XMLException e) {
-            log.warn("Error parsing POM", e);
+            throw new IOException("Error parsing POM", e);
+        }
+        Element root = pomDocument.getDocumentElement();
+        name = XMLUtils.getChildElementBody(root, "name");
+        url = XMLUtils.getChildElementBody(root, "url");
+        version = XMLUtils.getChildElementBody(root, "version");
+        description = XMLUtils.getChildElementBody(root, "description");
+        {
+            // Parent
+            Element parentElement = XMLUtils.getChildElement(root, "parent");
+            if (parentElement != null) {
+                parentReference = new MavenArtifactReference(
+                    XMLUtils.getChildElementBody(parentElement, "groupId"),
+                    XMLUtils.getChildElementBody(parentElement, "artifactId"),
+                    XMLUtils.getChildElementBody(parentElement, "version")
+                );
+                if (version == null) {
+                    version = parentReference.getVersion();
+                }
+            }
         }
 
-        if (version == null) {
-            version = parent.getVersion();
+        {
+            // Properties
+            Element propsElement = XMLUtils.getChildElement(root, "properties");
+            if (propsElement != null) {
+                for (Element prop : XMLUtils.getChildElementList(propsElement)) {
+                    properties.put(prop.getTagName(), XMLUtils.getElementBody(prop));
+                }
+            }
         }
-        properties.put(PROP_PROJECT_VERSION, version);
+        {
+            // Licenses
+            Element licensesElement = XMLUtils.getChildElement(root, "licenses");
+            if (licensesElement != null) {
+                for (Element prop : XMLUtils.getChildElementList(licensesElement, "license")) {
+                    licenses.add(new MavenArtifactLicense(
+                        XMLUtils.getChildElementBody(prop, "name"),
+                        XMLUtils.getChildElementBody(prop, "url")
+                    ));
+                }
+            }
+        }
+        {
+            // Dependencies
+            Element dmElement = XMLUtils.getChildElement(root, "dependencyManagement");
+            if (dmElement != null) {
+                dependencyManagement = parseDependencies(dmElement);
+            }
+            dependencies = parseDependencies(root);
+        }
     }
 
+    private List<MavenArtifactDependency> parseDependencies(Element element) {
+        List<MavenArtifactDependency> result = new ArrayList<>();
+        Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
+        if (dependenciesElement != null) {
+            for (Element dep : XMLUtils.getChildElementList(dependenciesElement, "dependency")) {
+                MavenArtifactReference depRef = new MavenArtifactReference(
+                    XMLUtils.getChildElementBody(dep, "groupId"),
+                    XMLUtils.getChildElementBody(dep, "artifactId"),
+                    evaluateString(XMLUtils.getChildElementBody(dep, "version"))
+                );
+                result.add(new MavenArtifactDependency(
+                    depRef,
+                    XMLUtils.getChildElementBody(dep, "type"),
+                    CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false)
+                ));
+            }
+        }
+        return result;
+    }
+
+    private String evaluateString(String value) {
+        return GeneralUtils.replaceVariables(value, variableResolver);
+    }
 }

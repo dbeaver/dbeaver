@@ -233,16 +233,34 @@ public class GeneralUtils {
         }
     }
 
-    public static String replaceVariables(String string, Map<String, Object> variables) {
+    public interface IVariableResolver {
+        String get(String name);
+    }
+
+    public static class MapResolver implements IVariableResolver {
+        private final Map<String, Object> variables;
+
+        public MapResolver(Map<String, Object> variables) {
+            this.variables = variables;
+        }
+
+        @Override
+        public String get(String name) {
+            Object value = variables.get(name);
+            return value == null ? null : CommonUtils.toString(value);
+        }
+    }
+
+    public static String replaceVariables(String string, IVariableResolver resolver) {
         Matcher matcher = VAR_PATTERN.matcher(string);
         int pos = 0;
         while (matcher.find(pos)) {
             pos = matcher.end();
             String varName = matcher.group(2);
-            Object varValue = variables.get(varName);
+            String varValue = resolver.get(varName);
             if (varValue != null) {
                 matcher = VAR_PATTERN.matcher(
-                        string = matcher.replaceFirst(CommonUtils.toString(varValue)));
+                        string = matcher.replaceFirst(varValue));
                 pos = 0;
             }
         }
