@@ -46,7 +46,7 @@ public class DBRProcessDescriptor
         this.command = command;
         String commandLine = variables == null ?
             command.getCommand() :
-            GeneralUtils.replaceVariables(command.getCommand(), variables);
+            GeneralUtils.replaceVariables(command.getCommand(), new GeneralUtils.MapResolver(variables));
 
         processBuilder = new ProcessBuilder(GeneralUtils.parseCommandLine(commandLine));
         //processBuilder.redirectErrorStream(true);
