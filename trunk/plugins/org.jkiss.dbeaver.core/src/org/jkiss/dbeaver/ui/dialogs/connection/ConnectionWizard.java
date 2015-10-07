@@ -215,9 +215,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 if (dataSource == null) {
                     throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
                 }
-                monitor.subTask("Initialize connection");
-                dataSource.initialize(monitor);
-                monitor.worked(1);
+//                monitor.subTask("Initialize connection");
+//                dataSource.initialize(monitor);
+//                monitor.worked(1);
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_subtask_test);
 
                 DBPDataSourceInfo info = dataSource.getInfo();
