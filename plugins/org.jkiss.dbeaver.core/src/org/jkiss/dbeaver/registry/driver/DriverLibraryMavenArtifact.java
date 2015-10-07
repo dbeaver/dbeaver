@@ -128,7 +128,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         if (localVersion == null) {
             return null;
         }
-        MavenArtifactVersion metaData = localVersion.getMetaData();
+        MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
         if (metaData == null) {
             return null;
         }

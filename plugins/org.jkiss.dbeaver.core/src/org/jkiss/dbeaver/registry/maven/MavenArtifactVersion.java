@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -46,7 +48,7 @@ public class MavenArtifactVersion {
     private String version;
     private String description;
     private String url;
-    private MavenArtifactVersion parent;
+    private MavenLocalVersion parent;
     private MavenArtifactReference parentReference;
     private Map<String, String> properties = new LinkedHashMap<>();
     private List<MavenArtifactLicense> licenses = new ArrayList<>();
@@ -59,7 +61,7 @@ public class MavenArtifactVersion {
             String value = properties.get(name);
             if (value == null) {
                 if (parent != null) {
-                    return parent.variableResolver.get(name);
+                    return parent.getMetaData(VoidProgressMonitor.INSTANCE).variableResolver.get(name);
                 }
                 if (name.equals(PROP_PROJECT_VERSION)) {
                     value = version;
@@ -69,9 +71,9 @@ public class MavenArtifactVersion {
         }
     };
 
-    MavenArtifactVersion(MavenLocalVersion localVersion) throws IOException {
+    MavenArtifactVersion(DBRProgressMonitor monitor, MavenLocalVersion localVersion) throws IOException {
         this.localVersion = localVersion;
-        loadPOM();
+        loadPOM(monitor);
     }
 
     MavenArtifactVersion(String name, String version) {
@@ -129,7 +131,7 @@ public class MavenArtifactVersion {
         DEPENDENCY
     }
 
-    private void loadPOM() throws IOException {
+    private void loadPOM(DBRProgressMonitor monitor) throws IOException {
         String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
         Document pomDocument;
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
@@ -153,6 +155,12 @@ public class MavenArtifactVersion {
                 );
                 if (version == null) {
                     version = parentReference.getVersion();
+                }
+                MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentReference);
+                if (parentArtifact == null) {
+                    log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");
+                } else {
+                    parent = parentArtifact.resolveVersion(monitor, parentReference.getVersion());
                 }
             }
         }

@@ -185,11 +185,7 @@ public class MavenArtifact
         return null;
     }
 
-    public MavenArtifactVersion getVersion(MavenLocalVersion localVersion) {
-        return localVersion.getMetaData();
-    }
-
-    public MavenLocalVersion makeLocalVersion(String versionStr, boolean setActive) throws IllegalArgumentException {
+    public MavenLocalVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException {
         MavenLocalVersion version = getLocalVersion(versionStr);
         if (version == null) {
             if (!versions.contains(versionStr)) {
@@ -197,7 +193,7 @@ public class MavenArtifact
                 log.debug("Artifact '" + artifactId + "' do not have version '" + versionStr + "' info in metadata");
             }
             version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr, FILE_JAR), new Date());
-            version.getMetaData();
+            version.getMetaData(monitor);
             localVersions.add(version);
         }
         if (setActive) {
@@ -263,7 +259,7 @@ public class MavenArtifact
                 localVersion = null;
             }
             if (localVersion == null) {
-                localVersion = makeLocalVersion(versionInfo, true);
+                localVersion = makeLocalVersion(monitor, versionInfo, true);
             }
             monitor.worked(1);
             monitor.subTask("Save repository cache");
