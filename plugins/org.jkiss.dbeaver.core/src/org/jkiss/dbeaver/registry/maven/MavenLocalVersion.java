@@ -18,11 +18,10 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Date;
 
@@ -81,10 +80,10 @@ public class MavenLocalVersion
         return artifact.getFileURL(version, fileType);
     }
 
-    public MavenArtifactVersion getMetaData() {
+    public MavenArtifactVersion getMetaData(DBRProgressMonitor monitor) {
         if (metaData == null) {
             try {
-                metaData = new MavenArtifactVersion(this);
+                metaData = new MavenArtifactVersion(monitor, this);
             } catch (IOException e) {
                 log.warn("Error fetching POM file", e);
                 metaData = new MavenArtifactVersion(artifact.getArtifactId(), version);
