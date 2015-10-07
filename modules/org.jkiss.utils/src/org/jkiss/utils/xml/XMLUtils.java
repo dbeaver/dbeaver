@@ -276,4 +276,13 @@ public class XMLUtils
         }
     }
 
+	public static Collection<Element> getChildElementList(Element element) {
+		List<Element> children = new ArrayList<>();
+		for (org.w3c.dom.Node node = element.getFirstChild(); node != null; node = node.getNextSibling()) {
+			if (node.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+				children.add((Element)node);
+			}
+		}
+		return children;
+	}
 }
