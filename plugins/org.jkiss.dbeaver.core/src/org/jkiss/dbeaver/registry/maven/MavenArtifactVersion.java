@@ -130,18 +130,13 @@ public class MavenArtifactVersion {
         return this.dependencies;
     }
 
+    List<MavenArtifactDependency> getDependencies() {
+        return dependencies;
+    }
+
     @Override
     public String toString() {
         return localVersion.toString();
-    }
-
-    private enum ParserState {
-        ROOT,
-        PARENT,
-        PROPERTIES,
-        LICENSE,
-        DEPENDENCIES,
-        DEPENDENCY
     }
 
     private void loadPOM(DBRProgressMonitor monitor) throws IOException {
@@ -272,4 +267,5 @@ public class MavenArtifactVersion {
     private String evaluateString(String value) {
         return GeneralUtils.replaceVariables(value, variableResolver);
     }
+
 }
