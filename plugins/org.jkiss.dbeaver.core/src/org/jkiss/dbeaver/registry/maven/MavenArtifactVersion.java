@@ -226,7 +226,7 @@ public class MavenArtifactVersion {
         monitor.worked(1);
     }
 
-    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean all) {
+    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean depManagement) {
         List<MavenArtifactDependency> result = new ArrayList<>();
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
@@ -253,27 +253,28 @@ public class MavenArtifactVersion {
                 boolean optional = CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false);
 
                 // TODO: maybe we should include some of them
-                if (!all && !optional && scope != MavenArtifactDependency.Scope.COMPILE && scope == MavenArtifactDependency.Scope.RUNTIME) {
-                    continue;
-                }
-                MavenArtifactDependency dependency = new MavenArtifactDependency(
-                    evaluateString(groupId),
-                    evaluateString(artifactId),
-                    evaluateString(version),
-                    scope,
-                    optional
-                );
-                result.add(dependency);
+                if (depManagement || (!optional && (scope == MavenArtifactDependency.Scope.COMPILE || scope == MavenArtifactDependency.Scope.RUNTIME))) {
+                    MavenArtifactDependency dependency = new MavenArtifactDependency(
+                        evaluateString(groupId),
+                        evaluateString(artifactId),
+                        evaluateString(version),
+                        scope,
+                        optional
+                    );
+                    result.add(dependency);
 
-                // Exclusions
-                Element exclusionsElement = XMLUtils.getChildElement(dep, "exclusions");
-                if (exclusionsElement != null) {
-                    for (Element exclusion : XMLUtils.getChildElementList(exclusionsElement, "exclusion")) {
-                        dependency.addExclusion(
-                            new MavenArtifactReference(
-                                CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
-                                CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
-                                ""));
+                    if (!depManagement) {
+                        // Exclusions
+                        Element exclusionsElement = XMLUtils.getChildElement(dep, "exclusions");
+                        if (exclusionsElement != null) {
+                            for (Element exclusion : XMLUtils.getChildElementList(exclusionsElement, "exclusion")) {
+                                dependency.addExclusion(
+                                    new MavenArtifactReference(
+                                        CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
+                                        CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
+                                        ""));
+                            }
+                        }
                     }
                 }
             }
