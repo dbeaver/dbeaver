@@ -253,14 +253,28 @@ public class MavenArtifactVersion {
                 boolean optional = CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false);
 
                 // TODO: maybe we should include some of them
-                if (all || (!optional && (scope == MavenArtifactDependency.Scope.COMPILE || scope == MavenArtifactDependency.Scope.RUNTIME))) {
-                    result.add(new MavenArtifactDependency(
-                        evaluateString(groupId),
-                        evaluateString(artifactId),
-                        evaluateString(version),
-                        scope,
-                        optional
-                    ));
+                if (!all && !optional && scope != MavenArtifactDependency.Scope.COMPILE && scope == MavenArtifactDependency.Scope.RUNTIME) {
+                    continue;
+                }
+                MavenArtifactDependency dependency = new MavenArtifactDependency(
+                    evaluateString(groupId),
+                    evaluateString(artifactId),
+                    evaluateString(version),
+                    scope,
+                    optional
+                );
+                result.add(dependency);
+
+                // Exclusions
+                Element exclusionsElement = XMLUtils.getChildElement(dep, "exclusions");
+                if (exclusionsElement != null) {
+                    for (Element exclusion : XMLUtils.getChildElementList(exclusionsElement, "exclusion")) {
+                        dependency.addExclusion(
+                            new MavenArtifactReference(
+                                CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
+                                CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
+                                ""));
+                    }
                 }
             }
         }
