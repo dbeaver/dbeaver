@@ -27,10 +27,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DriverLibraryDescriptor
@@ -40,6 +43,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     static final Log log = Log.getLog(DriverLibraryMavenArtifact.class);
 
     public static final String PATH_PREFIX = "maven:/";
+
+    private List<DriverLibraryMavenDependency> dependencies;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
@@ -123,19 +128,33 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
-        MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
-        if (localVersion == null) {
-            return null;
+    public Collection<? extends DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
+        if (dependencies == null) {
+            dependencies = new ArrayList<>();
+            MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
+            if (localVersion != null) {
+                collectDependencies(monitor, localVersion);
+            }
         }
+        return dependencies;
+    }
+
+    private void collectDependencies(DBRProgressMonitor monitor, MavenLocalVersion localVersion) throws IOException {
         MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
-        if (metaData == null) {
-            return null;
+        if (metaData != null) {
+            List<MavenArtifactDependency> dependencies = metaData.getDependencies();
+            if (!CommonUtils.isEmpty(dependencies)) {
+                for (MavenArtifactDependency dependency : dependencies) {
+                    MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(dependency.getArtifactReference());
+                    if (depArtifact != null) {
+                        MavenLocalVersion depLocalVersion = depArtifact.resolveVersion(monitor, dependency.getArtifactReference().getVersion());
+                        if (depLocalVersion != null) {
+                            this.dependencies.add(new DriverLibraryMavenDependency(this.getDriver(), depLocalVersion));
+                        }
+                    }
+                }
+            }
         }
-        for (MavenArtifactDependency dependency : metaData.getDependencies()) {
-            System.out.println(dependency);
-        }
-        return null;
     }
 
     @NotNull
@@ -165,7 +184,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         super.downloadLibraryFile(monitor, forceUpdate);
     }
 
-    private MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
+    protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
         MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
         if (forceUpdate) {
             MavenRegistry.getInstance().resetArtifactInfo(artifactInfo);

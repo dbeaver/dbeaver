@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -41,6 +42,8 @@ import java.util.Collection;
 import java.util.List;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
+
+    private Tree filesTree;
 
     DriverDownloadAutoPage() {
         super("Automatic download", "Download driver files", null);
@@ -67,18 +70,11 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         {
             Group filesGroup = UIUtils.createControlGroup(composite, "Files required by driver", 1, -1, -1);
             filesGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Tree filesTree = new Tree(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
+            filesTree = new Tree(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
             filesTree.setHeaderVisible(true);
             filesTree.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
             UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
-            for (DBPDriverLibrary file : wizard.getFiles()) {
-                TreeItem item = new TreeItem(filesTree, SWT.NONE);
-                item.setImage(DBeaverIcons.getImage(file.getIcon()));
-                item.setText(0, file.getDisplayName());
-                item.setText(1, "");
-            }
-            UIUtils.packColumns(filesTree);
         }
 
         if (!wizard.isForceDownload()) {
@@ -112,13 +108,35 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
         }
+
+        for (DBPDriverLibrary file : getWizard().getFiles()) {
+            TreeItem item = new TreeItem(filesTree, SWT.NONE);
+            item.setImage(DBeaverIcons.getImage(file.getIcon()));
+            item.setText(0, file.getDisplayName());
+            item.setText(1, "");
+        }
+        UIUtils.packColumns(filesTree);
     }
 
     private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library) throws IOException {
-        Collection<DBPDriverLibrary> dependencies = library.getDependencies(monitor);
+        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
                 resolveDependencies(monitor, dep);
+            }
+        }
+    }
+
+    private void addDependencies(TreeItem parent, DBPDriverLibrary library) throws IOException {
+        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(VoidProgressMonitor.INSTANCE);
+        if (dependencies != null && !dependencies.isEmpty()) {
+            for (DBPDriverLibrary dep : dependencies) {
+                TreeItem item = new TreeItem(parent, SWT.NONE);
+                item.setImage(DBeaverIcons.getImage(dep.getIcon()));
+                item.setText(0, dep.getDisplayName());
+                item.setText(1, "");
+
+                addDependencies(item, dep);
             }
         }
     }
