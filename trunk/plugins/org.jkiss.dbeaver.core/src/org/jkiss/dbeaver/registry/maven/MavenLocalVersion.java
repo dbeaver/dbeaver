@@ -41,10 +41,10 @@ public class MavenLocalVersion
     private Date updateTime;
     private MavenArtifactVersion metaData;
 
-    public MavenLocalVersion(MavenArtifact artifact, String version, String fileName, Date updateTime) {
+    public MavenLocalVersion(MavenArtifact artifact, String version, Date updateTime) {
         this.artifact = artifact;
         this.version = version;
-        this.fileName = fileName;
+        this.fileName = artifact.getVersionFileName(version, MavenArtifact.FILE_JAR);
         this.updateTime = updateTime;
     }
 
@@ -91,6 +91,10 @@ public class MavenLocalVersion
                 metaData = new MavenArtifactVersion(artifact.getArtifactId(), version);
             }
         }
+        return metaData;
+    }
+
+    MavenArtifactVersion getMetaData() {
         return metaData;
     }
 
