@@ -17,11 +17,9 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -29,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -38,7 +35,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
+import java.util.*;
 import java.util.List;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
@@ -69,10 +66,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         {
             Group filesGroup = UIUtils.createControlGroup(composite, "Files required by driver", 1, -1, -1);
-            filesGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            filesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             filesTree = new Tree(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
             filesTree.setHeaderVisible(true);
-            filesTree.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            filesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
             UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
         }
@@ -90,16 +87,20 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     void resolveLibraries() {
+        final Map<String, List<DBPDriverLibrary>> depMap = new LinkedHashMap<>();
         try {
             new RunnableContextDelegate(getContainer()).run(true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    monitor.beginTask("Resolve dependencies", 100);
                     try {
                         for (DBPDriverLibrary library : getWizard().getFiles()) {
-                            resolveDependencies(monitor, library);
+                            resolveDependencies(monitor, library, depMap);
                         }
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
                     }
                 }
             });
@@ -109,26 +110,47 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
         }
 
+        int totalItems = 0;
         for (DBPDriverLibrary file : getWizard().getFiles()) {
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(file.getIcon()));
             item.setText(0, file.getDisplayName());
             item.setText(1, "");
+            totalItems++;
+            if (addDependencies(item, file, depMap)) {
+                item.setExpanded(true);
+                totalItems += item.getItemCount();
+            }
         }
         UIUtils.packColumns(filesTree);
+//        GridData gd = (GridData)filesTree.getLayoutData();
+//        gd.heightHint = filesTree.getItemCount() * 20 + 20;
+        Shell shell = getContainer().getShell();
+        shell.setSize(shell.getSize().x, shell.getSize().y + filesTree.getItemHeight() * totalItems);
+        shell.layout();
     }
 
-    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library) throws IOException {
+    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library, Map<String, List<DBPDriverLibrary>> depMap) throws IOException {
+        String libraryPath = library.getPath();
+        List<DBPDriverLibrary> deps = depMap.get(libraryPath);
+        if (deps != null) {
+            return;
+        }
+System.out.println("Resolve dependencies of [" + libraryPath + "]");
+        deps = new ArrayList<>();
+        depMap.put(libraryPath, deps);
+
         Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
-                resolveDependencies(monitor, dep);
+                deps.add(dep);
+                resolveDependencies(monitor, dep, depMap);
             }
         }
     }
 
-    private void addDependencies(TreeItem parent, DBPDriverLibrary library) throws IOException {
-        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(VoidProgressMonitor.INSTANCE);
+    private boolean addDependencies(TreeItem parent, DBPDriverLibrary library, Map<String, List<DBPDriverLibrary>> depMap) {
+        Collection<? extends DBPDriverLibrary> dependencies = depMap.get(library.getPath());
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
                 TreeItem item = new TreeItem(parent, SWT.NONE);
@@ -136,9 +158,13 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 item.setText(0, dep.getDisplayName());
                 item.setText(1, "");
 
-                addDependencies(item, dep);
+                if (addDependencies(item, dep, depMap)) {
+                    //item.setExpanded(true);
+                }
             }
+            return true;
         }
+        return false;
     }
 
     @Override

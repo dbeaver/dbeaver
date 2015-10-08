@@ -17,22 +17,14 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.registry.maven.*;
-import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.registry.maven.MavenArtifact;
+import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * DriverLibraryDescriptor
@@ -42,7 +34,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     private MavenLocalVersion localVersion;
 
     public DriverLibraryMavenDependency(DriverDescriptor driverDescriptor, MavenLocalVersion localVersion) {
-        super(driverDescriptor, FileType.jar, localVersion.getArtifact().toString());
+        super(driverDescriptor, FileType.jar, PATH_PREFIX + localVersion.toString());
         this.localVersion = localVersion;
     }
 

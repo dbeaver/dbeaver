@@ -31,9 +31,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * DriverLibraryDescriptor
@@ -43,8 +41,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     static final Log log = Log.getLog(DriverLibraryMavenArtifact.class);
 
     public static final String PATH_PREFIX = "maven:/";
-
-    private List<DriverLibraryMavenDependency> dependencies;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
@@ -114,7 +110,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
                 // In case of local artifact make version resolve
                 MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
                 try {
-                    localVersion = artifact.resolveVersion(VoidProgressMonitor.INSTANCE, artifactInfo.getVersion());
+                    localVersion = artifact.resolveVersion(VoidProgressMonitor.INSTANCE, artifactInfo.getVersion(), true);
                 } catch (IOException e) {
                     log.warn("Error resolving local artifact [" + artifact + "] version", e);
                 }
@@ -129,32 +125,40 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Nullable
     @Override
     public Collection<? extends DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
-        if (dependencies == null) {
-            dependencies = new ArrayList<>();
-            MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
-            if (localVersion != null) {
-                collectDependencies(monitor, localVersion);
-            }
-        }
-        return dependencies;
-    }
+        List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
 
-    private void collectDependencies(DBRProgressMonitor monitor, MavenLocalVersion localVersion) throws IOException {
-        MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
-        if (metaData != null) {
-            List<MavenArtifactDependency> dependencies = metaData.getDependencies();
-            if (!CommonUtils.isEmpty(dependencies)) {
-                for (MavenArtifactDependency dependency : dependencies) {
-                    MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(dependency.getArtifactReference());
-                    if (depArtifact != null) {
-                        MavenLocalVersion depLocalVersion = depArtifact.resolveVersion(monitor, dependency.getArtifactReference().getVersion());
-                        if (depLocalVersion != null) {
-                            this.dependencies.add(new DriverLibraryMavenDependency(this.getDriver(), depLocalVersion));
+        MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
+        if (localVersion != null) {
+            MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
+            if (metaData != null) {
+                List<MavenArtifactDependency> artifactDeps = metaData.getDependencies();
+                if (!CommonUtils.isEmpty(artifactDeps)) {
+                    for (MavenArtifactDependency artifactDep : artifactDeps) {
+                        if (artifactDep.isOptional()) {
+                            continue;
+                        }
+                        switch (artifactDep.getScope()) {
+                            case COMPILE:
+                            case RUNTIME:
+                            {
+                                MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
+                                if (depLocalVersion != null) {
+                                    dependencies.add(
+                                        new DriverLibraryMavenDependency(
+                                            this.getDriver(),
+                                            depLocalVersion));
+                                }
+                                break;
+                            }
+                            default:
+                                // We don't need it
+                                break;
                         }
                     }
                 }
             }
         }
+        return dependencies;
     }
 
     @NotNull
@@ -200,7 +204,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
                 return localVersion;
             }
         }
-        return artifact.resolveVersion(monitor, artifactInfo.getVersion());
+        return artifact.resolveVersion(monitor, artifactInfo.getVersion(), true);
     }
 
 }

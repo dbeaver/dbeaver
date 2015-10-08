@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Maven artifact reference
  */
@@ -27,11 +29,14 @@ public class MavenArtifactReference
 
     private static final String DEFAULT_MAVEN_VERSION = VERSION_PATTERN_RELEASE;
 
+    @NotNull
     private String groupId;
+    @NotNull
     private String artifactId;
+    @NotNull
     private String version;
 
-    public MavenArtifactReference(String groupId, String artifactId, String version) {
+    public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
@@ -61,27 +66,30 @@ public class MavenArtifactReference
         }
     }
 
+    @NotNull
     public String getGroupId() {
         return groupId;
     }
 
-    public void setGroupId(String groupId) {
+    public void setGroupId(@NotNull String groupId) {
         this.groupId = groupId;
     }
 
+    @NotNull
     public String getArtifactId() {
         return artifactId;
     }
 
-    public void setArtifactId(String artifactId) {
+    public void setArtifactId(@NotNull String artifactId) {
         this.artifactId = artifactId;
     }
 
+    @NotNull
     public String getVersion() {
         return version;
     }
 
-    public void setVersion(String version) {
+    public void setVersion(@NotNull String version) {
         this.version = version;
     }
 
@@ -93,5 +101,10 @@ public class MavenArtifactReference
     @Override
     public String toString() {
         return getPath();
+    }
+
+    @Override
+    public int hashCode() {
+        return groupId.hashCode() + artifactId.hashCode() + version.hashCode();
     }
 }

@@ -94,7 +94,7 @@ public class MavenLocalVersion
 
     @Override
     public String toString() {
-        return artifact.toString() + ":" + version + ":" + fileName;
+        return artifact.toString() + ":" + version;
     }
 
 }
