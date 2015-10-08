@@ -68,6 +68,8 @@ public class MavenRepository
     private boolean local;
     private boolean predefined = false;
 
+    private transient volatile boolean needsToSave = false;
+
     private List<MavenArtifact> cachedArtifacts = new ArrayList<MavenArtifact>();
 
     public MavenRepository(IConfigurationElement config)
@@ -90,7 +92,7 @@ public class MavenRepository
     }
 
     public void flushCache() {
-        saveCache();
+        needsToSave = true;
     }
 
     public String getId() {
