@@ -88,19 +88,27 @@ public class MavenLocalVersion
                 metaData = new MavenArtifactVersion(monitor, this);
             } catch (IOException e) {
                 log.warn("Error fetching POM file", e);
-                metaData = new MavenArtifactVersion(artifact.getArtifactId(), version);
+                metaData = new MavenArtifactVersion(this, artifact.getArtifactId(), version);
             }
         }
         return metaData;
+    }
+
+    public String getPath() {
+        return artifact.toString() + ":" + version;
     }
 
     MavenArtifactVersion getMetaData() {
         return metaData;
     }
 
+    void setMetaData(MavenArtifactVersion metaData) {
+        this.metaData = metaData;
+    }
+
     @Override
     public String toString() {
-        return artifact.toString() + ":" + version;
+        return getPath();
     }
 
 }

@@ -44,18 +44,29 @@ public class MavenRegistry
     {
         if (instance == null) {
             instance = new MavenRegistry();
-            instance.loadCustomRepositories();
+            instance.init();
         }
         return instance;
     }
 
     private final List<MavenRepository> repositories = new ArrayList<MavenRepository>();
-    private final MavenRepository localRepository;
+    private MavenRepository localRepository;
     // Cache for not found artifact ids. Avoid multiple remote metadata reading
     private final Set<String> notFoundArtifacts = new HashSet<String>();
 
     private MavenRegistry()
     {
+    }
+
+    private void init() {
+        loadStandardRepositories();
+        loadCustomRepositories();
+        loadCache();
+        // Start config saver
+        new ConfigSaver().schedule(ConfigSaver.SAVE_PERIOD);
+    }
+
+    private void loadStandardRepositories() {
         // Load repositories info
         {
             IConfigurationElement[] extElements = Platform.getExtensionRegistry().getConfigurationElementsFor(MavenRepository.EXTENSION_ID);
@@ -76,9 +87,13 @@ public class MavenRegistry
             MAVEN_LOCAL_REPO_NAME,
             localRepoURL,
             true);
+    }
 
-        // Start config saver
-        new ConfigSaver().schedule(ConfigSaver.SAVE_PERIOD);
+    private void loadCache() {
+        localRepository.loadCache();
+        for (MavenRepository repository : repositories) {
+            repository.loadCache();
+        }
     }
 
     public void loadCustomRepositories() {
