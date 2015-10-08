@@ -60,11 +60,10 @@ public class MavenArtifactVersion {
         public String get(String name) {
             String value = properties.get(name);
             if (value == null) {
-                if (parent != null) {
-                    return parent.getMetaData(VoidProgressMonitor.INSTANCE).variableResolver.get(name);
-                }
                 if (name.equals(PROP_PROJECT_VERSION)) {
                     value = version;
+                } else if (parent != null) {
+                    return parent.getMetaData(VoidProgressMonitor.INSTANCE).variableResolver.get(name);
                 }
             }
             return value;
@@ -133,6 +132,8 @@ public class MavenArtifactVersion {
 
     private void loadPOM(DBRProgressMonitor monitor) throws IOException {
         String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
+        monitor.subTask("Load POM [" + pomURL + "]");
+System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + version);
         Document pomDocument;
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
             pomDocument = XMLUtils.parseDocument(mdStream);
@@ -190,21 +191,31 @@ public class MavenArtifactVersion {
             // Dependencies
             Element dmElement = XMLUtils.getChildElement(root, "dependencyManagement");
             if (dmElement != null) {
-                dependencyManagement = parseDependencies(dmElement);
+                dependencyManagement = parseDependencies(monitor, dmElement);
             }
-            dependencies = parseDependencies(root);
+            dependencies = parseDependencies(monitor, root);
         }
     }
 
-    private List<MavenArtifactDependency> parseDependencies(Element element) {
+    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element) {
         List<MavenArtifactDependency> result = new ArrayList<>();
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
             for (Element dep : XMLUtils.getChildElementList(dependenciesElement, "dependency")) {
+                String groupId = XMLUtils.getChildElementBody(dep, "groupId");
+                String artifactId = XMLUtils.getChildElementBody(dep, "artifactId");
+                String version = XMLUtils.getChildElementBody(dep, "version");
+                if (CommonUtils.isEmpty(version)) {
+                    version = findDependencyVersion(monitor, groupId, artifactId);
+                }
+                if (version == null) {
+                    log.error("Can't resolve artifact [" + groupId + ":" + artifactId + "] version. Skip.");
+                    continue;
+                }
                 MavenArtifactReference depRef = new MavenArtifactReference(
-                    XMLUtils.getChildElementBody(dep, "groupId"),
-                    XMLUtils.getChildElementBody(dep, "artifactId"),
-                    evaluateString(XMLUtils.getChildElementBody(dep, "version"))
+                    groupId,
+                    artifactId,
+                    evaluateString(version)
                 );
                 result.add(new MavenArtifactDependency(
                     depRef,
@@ -214,6 +225,19 @@ public class MavenArtifactVersion {
             }
         }
         return result;
+    }
+
+    private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {
+        if (dependencyManagement != null) {
+            for (MavenArtifactDependency dmArtifact : dependencyManagement) {
+                if (dmArtifact.getArtifactReference().getGroupId().equals(groupId) &&
+                    dmArtifact.getArtifactReference().getArtifactId().equals(artifactId))
+                {
+                    return dmArtifact.getArtifactReference().getVersion();
+                }
+            }
+        }
+        return parent == null ? null : parent.getMetaData(monitor).findDependencyVersion(monitor, groupId, artifactId);
     }
 
     private String evaluateString(String value) {

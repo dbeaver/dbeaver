@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -123,7 +124,7 @@ public class MavenRepository
             // Not cached - look in remote repository
             MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
             try {
-                artifact.loadMetadata();
+                artifact.loadMetadata(VoidProgressMonitor.INSTANCE);
             } catch (IOException e) {
                 log.debug("Artifact [" + artifact + "] not found in repository [" + getUrl() + "]");
                 return null;

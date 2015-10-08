@@ -63,13 +63,15 @@ public class MavenArtifact
         this.artifactId = artifactId;
     }
 
-    public void loadMetadata() throws IOException {
+    public void loadMetadata(DBRProgressMonitor monitor) throws IOException {
         latestVersion = null;
         releaseVersion = null;
         versions.clear();
         lastUpdate = null;
 
         String metadataPath = getArtifactDir() + MAVEN_METADATA_XML;
+        monitor.subTask("Load artifact metadata [" + metadataPath + "]");
+System.out.println("Load metadata " + this);
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {
@@ -185,7 +187,7 @@ public class MavenArtifact
         return null;
     }
 
-    public MavenLocalVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException {
+    private MavenLocalVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException {
         MavenLocalVersion version = getLocalVersion(versionStr);
         if (version == null) {
             if (!versions.contains(versionStr)) {
@@ -214,7 +216,9 @@ public class MavenArtifact
         monitor.beginTask("Download Maven artifact '" + this + "'", 3);
         try {
             monitor.subTask("Download metadata from " + repository.getUrl());
-            loadMetadata();
+            if (versions.isEmpty()) {
+                loadMetadata(monitor);
+            }
             monitor.worked(1);
 
             String versionInfo = versionRef;
@@ -253,11 +257,6 @@ public class MavenArtifact
             }
             monitor.subTask("Download binaries for version " + versionInfo);
             MavenLocalVersion localVersion = getActiveLocalVersion();
-            if (localVersion != null && !localVersion.getCacheFile().exists()) {
-                log.debug("Drop previous local version '" + localVersion + "' - jar seems to be dropped");
-                removeLocalVersion(localVersion);
-                localVersion = null;
-            }
             if (localVersion == null) {
                 localVersion = makeLocalVersion(monitor, versionInfo, true);
             }
