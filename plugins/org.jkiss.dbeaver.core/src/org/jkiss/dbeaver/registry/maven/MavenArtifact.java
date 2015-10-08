@@ -165,7 +165,7 @@ public class MavenArtifact
     }
 
     @NotNull
-    private String getVersionFileName(String version, String fileType) {
+    String getVersionFileName(String version, String fileType) {
         return artifactId + "-" + version + "." + fileType;
     }
 
@@ -199,7 +199,7 @@ public class MavenArtifact
                 // No version info. Some artifacts do not have older versions in metadata.xml so just warn
                 log.debug("Artifact '" + artifactId + "' do not have version '" + versionStr + "' info in metadata");
             }
-            version = new MavenLocalVersion(this, versionStr, getVersionFileName(versionStr, FILE_JAR), new Date());
+            version = new MavenLocalVersion(this, versionStr, new Date());
             version.getMetaData(monitor);
             localVersions.add(version);
         }

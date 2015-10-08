@@ -18,11 +18,15 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -72,6 +76,9 @@ public class MavenRegistry
             MAVEN_LOCAL_REPO_NAME,
             localRepoURL,
             true);
+
+        // Start config saver
+        new ConfigSaver().schedule(ConfigSaver.SAVE_PERIOD);
     }
 
     public void loadCustomRepositories() {
@@ -186,6 +193,25 @@ public class MavenRegistry
             }
         }
         return null;
+    }
+
+    private class ConfigSaver extends AbstractJob {
+
+        public static final int SAVE_PERIOD = 1000;
+
+        protected ConfigSaver() {
+            super("Maven local cache persister");
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            for (MavenRepository repository : repositories) {
+                repository.saveCacheIfNeeded();
+            }
+
+            schedule(SAVE_PERIOD);
+            return Status.OK_STATUS;
+        }
     }
 
 }
