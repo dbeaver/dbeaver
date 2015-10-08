@@ -47,7 +47,7 @@ abstract class DriverDownloadPage extends WizardPage {
     protected void createLinksPanel(Composite composite) {
         final DriverDescriptor driver = getWizard().getDriver();
 
-        UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
+        //UIUtils.createPlaceholder(composite, 1).setLayoutData(new GridData(GridData.FILL_BOTH));
 
         Composite linksGroup = UIUtils.createPlaceholder(composite, 2);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);

@@ -131,6 +131,27 @@ public class MavenRegistry
         return null;
     }
 
+/*
+    @Nullable
+    public MavenLocalVersion findArtifactVersion(@NotNull MavenArtifactReference ref) {
+        String fullId = ref.getGroupId() + ":" + ref.getArtifactId();
+        if (notFoundArtifacts.contains(fullId)) {
+            return null;
+        }
+        MavenLocalVersion version = findInRepositories(groupId, artifactId, false);
+        if (version == null) {
+            version = findInRepositories(groupId, artifactId, true);
+        }
+        if (version != null) {
+            return version;
+        }
+
+        // Not found
+        notFoundArtifacts.add(fullId);
+        return null;
+    }
+*/
+
     public void resetArtifactInfo(MavenArtifactReference artifactReference) {
         String groupId = artifactReference.getGroupId();
         String artifactId = artifactReference.getArtifactId();

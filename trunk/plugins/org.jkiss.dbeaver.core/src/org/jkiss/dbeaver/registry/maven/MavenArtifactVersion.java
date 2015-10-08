@@ -30,10 +30,7 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Maven artifact version descriptor (POM).
@@ -133,7 +130,7 @@ public class MavenArtifactVersion {
     private void loadPOM(DBRProgressMonitor monitor) throws IOException {
         String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
         monitor.subTask("Load POM [" + pomURL + "]");
-System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + version);
+System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + localVersion.getVersion());
         Document pomDocument;
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
             pomDocument = XMLUtils.parseDocument(mdStream);
@@ -149,19 +146,27 @@ System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + v
             // Parent
             Element parentElement = XMLUtils.getChildElement(root, "parent");
             if (parentElement != null) {
-                parentReference = new MavenArtifactReference(
-                    XMLUtils.getChildElementBody(parentElement, "groupId"),
-                    XMLUtils.getChildElementBody(parentElement, "artifactId"),
-                    XMLUtils.getChildElementBody(parentElement, "version")
-                );
-                if (version == null) {
-                    version = parentReference.getVersion();
-                }
-                MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentReference);
-                if (parentArtifact == null) {
-                    log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");
+                String parentGroupId = XMLUtils.getChildElementBody(parentElement, "groupId");
+                String parentArtifactId = XMLUtils.getChildElementBody(parentElement, "artifactId");
+                String parentVersion = XMLUtils.getChildElementBody(parentElement, "version");
+                if (parentGroupId == null || parentArtifactId == null || parentVersion == null) {
+                    log.error("Broken parent reference: " + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
                 } else {
-                    parent = parentArtifact.resolveVersion(monitor, parentReference.getVersion());
+                    parentReference = new MavenArtifactReference(
+                        parentGroupId,
+                        parentArtifactId,
+                        parentVersion
+                    );
+                    if (this.version == null) {
+                        this.version = parentReference.getVersion();
+                    }
+//                    parent = MavenRegistry.getInstance().findArtifactVersion(parentReference);
+                    MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentReference);
+                    if (parentArtifact == null) {
+                        log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");
+                    } else {
+                        parent = parentArtifact.resolveVersion(monitor, parentReference.getVersion(), false);
+                    }
                 }
             }
         }
@@ -195,6 +200,7 @@ System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + v
             }
             dependencies = parseDependencies(monitor, root);
         }
+        monitor.worked(1);
     }
 
     private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element) {
@@ -204,22 +210,28 @@ System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + v
             for (Element dep : XMLUtils.getChildElementList(dependenciesElement, "dependency")) {
                 String groupId = XMLUtils.getChildElementBody(dep, "groupId");
                 String artifactId = XMLUtils.getChildElementBody(dep, "artifactId");
+                if (groupId == null || artifactId == null) {
+                    log.warn("Broken dependency reference: " + groupId + ":" + artifactId);
+                    continue;
+                }
                 String version = XMLUtils.getChildElementBody(dep, "version");
-                if (CommonUtils.isEmpty(version)) {
+                if (version == null) {
                     version = findDependencyVersion(monitor, groupId, artifactId);
                 }
                 if (version == null) {
                     log.error("Can't resolve artifact [" + groupId + ":" + artifactId + "] version. Skip.");
                     continue;
                 }
-                MavenArtifactReference depRef = new MavenArtifactReference(
+                MavenArtifactDependency.Scope scope = MavenArtifactDependency.Scope.COMPILE;
+                String scopeName = XMLUtils.getChildElementBody(dep, "scope");
+                if (!CommonUtils.isEmpty(scopeName)) {
+                    scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
+                }
+                result.add(new MavenArtifactDependency(
                     groupId,
                     artifactId,
-                    evaluateString(version)
-                );
-                result.add(new MavenArtifactDependency(
-                    depRef,
-                    XMLUtils.getChildElementBody(dep, "type"),
+                    evaluateString(version),
+                    scope,
                     CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false)
                 ));
             }
@@ -230,10 +242,10 @@ System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + v
     private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {
         if (dependencyManagement != null) {
             for (MavenArtifactDependency dmArtifact : dependencyManagement) {
-                if (dmArtifact.getArtifactReference().getGroupId().equals(groupId) &&
-                    dmArtifact.getArtifactReference().getArtifactId().equals(artifactId))
+                if (dmArtifact.getGroupId().equals(groupId) &&
+                    dmArtifact.getArtifactId().equals(artifactId))
                 {
-                    return dmArtifact.getArtifactReference().getVersion();
+                    return dmArtifact.getVersion();
                 }
             }
         }

@@ -49,8 +49,13 @@ public class DriverDownloadDialog extends WizardDialog
         getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
         addPageChangedListener(new IPageChangedListener() {
             @Override
-            public void pageChanged(PageChangedEvent event) {
-                getWizard().pageActivated(event.getSelectedPage());
+            public void pageChanged(final PageChangedEvent event) {
+                UIUtils.runInDetachedUI(getShell(), new Runnable() {
+                    @Override
+                    public void run() {
+                        getWizard().pageActivated(event.getSelectedPage());
+                    }
+                });
             }
         });
     }

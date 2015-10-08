@@ -17,36 +17,48 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.io.IOException;
+
 /**
  * Maven artifact license references
  */
-public class MavenArtifactDependency
-{
-    private MavenArtifactReference artifactReference;
-    private String type;
+public class MavenArtifactDependency extends MavenArtifactReference {
+
+    public enum Scope {
+        COMPILE,
+        PROVIDED,
+        RUNTIME,
+        TEST,
+        SYSTEM,
+        IMPORT
+    }
+
+    private Scope scope;
     private boolean optional;
 
-    public MavenArtifactDependency(MavenArtifactReference artifactReference, String type, boolean optional) {
-        this.artifactReference = artifactReference;
-        this.type = type;
+    public MavenArtifactDependency(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, Scope scope, boolean optional) {
+        super(groupId, artifactId, version);
+        this.scope = scope;
         this.optional = optional;
     }
 
-    public MavenArtifactReference getArtifactReference() {
-        return artifactReference;
-    }
-
-    public String getType() {
-        return type;
+    public Scope getScope() {
+        return scope;
     }
 
     public boolean isOptional() {
         return optional;
     }
 
-    @Override
-    public String toString() {
-        return artifactReference.toString() + ";type=" + type + "; optional=" + optional;
+    public MavenLocalVersion resolveDependency(DBRProgressMonitor monitor) throws IOException {
+        MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(this);
+        if (depArtifact != null) {
+            return depArtifact.resolveVersion(monitor, getVersion(), false);
+        }
+        return null;
     }
 
 }

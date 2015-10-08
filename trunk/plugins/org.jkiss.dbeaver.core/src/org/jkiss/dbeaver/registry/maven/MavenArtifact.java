@@ -53,6 +53,8 @@ public class MavenArtifact
     private String releaseVersion;
     private Date lastUpdate;
 
+    private transient boolean metadataLoaded = false;
+
     private List<MavenLocalVersion> localVersions = new ArrayList<MavenLocalVersion>();
     private String activeVersion;
 
@@ -69,7 +71,7 @@ public class MavenArtifact
         versions.clear();
         lastUpdate = null;
 
-        String metadataPath = getArtifactDir() + MAVEN_METADATA_XML;
+        String metadataPath = getArtifactURL() + MAVEN_METADATA_XML;
         monitor.subTask("Load artifact metadata [" + metadataPath + "]");
 System.out.println("Load metadata " + this);
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
@@ -107,7 +109,10 @@ System.out.println("Load metadata " + this);
             });
         } catch (XMLException e) {
             log.warn("Error parsing artifact metadata", e);
+        } finally {
+            monitor.worked(1);
         }
+        metadataLoaded = true;
     }
 
     public MavenRepository getRepository() {
@@ -150,13 +155,13 @@ System.out.println("Load metadata " + this);
         this.activeVersion = activeVersion;
     }
 
-    private String getArtifactDir() {
-        String dir = (groupId + "/" + artifactId).replace('.', '/');
+    private String getArtifactURL() {
+        String dir = groupId.replace('.', '/') + "/" + artifactId;
         return repository.getUrl() + dir + "/";
     }
 
     public String getFileURL(String version, String fileType) {
-        return getArtifactDir() + version + "/" + getVersionFileName(version, fileType);
+        return getArtifactURL() + version + "/" + getVersionFileName(version, fileType);
     }
 
     @NotNull
@@ -212,16 +217,13 @@ System.out.println("Load metadata " + this);
         localVersions.remove(version);
     }
 
-    public MavenLocalVersion resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
-        monitor.beginTask("Download Maven artifact '" + this + "'", 3);
-        try {
-            monitor.subTask("Download metadata from " + repository.getUrl());
-            if (versions.isEmpty()) {
-                loadMetadata(monitor);
-            }
-            monitor.worked(1);
+    public MavenLocalVersion resolveVersion(DBRProgressMonitor monitor, String versionRef, boolean lookupVersion) throws IOException {
+        if (lookupVersion && !metadataLoaded) {
+            loadMetadata(monitor);
+        }
 
-            String versionInfo = versionRef;
+        String versionInfo = versionRef;
+        if (lookupVersion) {
             List<String> allVersions = versions;
             if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE)) {
                 versionInfo = releaseVersion;
@@ -255,27 +257,23 @@ System.out.println("Load metadata " + this);
                 // Use latest version
                 versionInfo = findLatestVersion(allVersions);
             }
-            monitor.subTask("Download binaries for version " + versionInfo);
-            MavenLocalVersion localVersion = getActiveLocalVersion();
-            if (localVersion == null) {
-                localVersion = makeLocalVersion(monitor, versionInfo, true);
-            }
-            monitor.worked(1);
-            monitor.subTask("Save repository cache");
-            repository.flushCache();
-            monitor.worked(1);
-
-            return localVersion;
-        } finally {
-            monitor.done();
         }
+
+        MavenLocalVersion localVersion = getActiveLocalVersion();
+        if (localVersion == null) {
+            localVersion = makeLocalVersion(monitor, versionInfo, true);
+        }
+
+        repository.flushCache();
+
+        return localVersion;
     }
 
     private static boolean isBetaVersion(String versionInfo) {
         return versionInfo.contains("beta") || versionInfo.contains("alpha");
     }
 
-    private String findLatestVersion(List<String> allVersions) {
+    private static String findLatestVersion(List<String> allVersions) {
         String latest = null;
         for (String version : allVersions) {
             if (isBetaVersion(version)) {
@@ -288,7 +286,7 @@ System.out.println("Load metadata " + this);
         return latest;
     }
 
-    private int compareVersions(String v1, String v2) {
+    private static int compareVersions(String v1, String v2) {
         StringTokenizer st1 = new StringTokenizer(v1, ".-_");
         StringTokenizer st2 = new StringTokenizer(v2, ".-_");
         while (st1.hasMoreTokens() && st2.hasMoreTokens()) {
