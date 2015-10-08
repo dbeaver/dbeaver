@@ -33,6 +33,9 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -46,10 +49,10 @@ public class MavenRepository
 
     public static final String METADATA_CACHE_FILE = "metadata-cache.xml";
 
-    private static final String TAG_CACHE = "cache";
-    private static final String TAG_ARTIFACT = "artifact";
-    private static final String TAG_VERSION = "version";
-    private static final String TAG_DEPENDENCY = "dependency";
+    public static final String TAG_CACHE = "cache";
+    public static final String TAG_ARTIFACT = "artifact";
+    public static final String TAG_VERSION = "version";
+    public static final String TAG_DEPENDENCY = "dependency";
 
     public static final String ATTR_NAME = "name";
     public static final String ATTR_URL = "url";
@@ -59,8 +62,11 @@ public class MavenRepository
     public static final String ATTR_VERSION = "version";
     public static final String ATTR_PATH = "path";
     public static final String ATTR_SCOPE = "scope";
-    private static final String ATTR_PARENT = "parent";
+    public static final String ATTR_OPTIONAL = "optional";
+    public static final String ATTR_PARENT = "parent";
     public static final String ATTR_UPDATE_TIME = "updateTime";
+
+    private static final DateFormat UPDATE_TIME_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
 
     private String id;
     private String name;
@@ -88,7 +94,6 @@ public class MavenRepository
         if (!url.endsWith("/")) url += "/";
         this.url = url;
         this.local = local;
-        loadCache();
     }
 
     public void flushCache() {
@@ -158,17 +163,52 @@ public class MavenRepository
         return homeFolder;
     }
 
-    synchronized private void loadCache() {
+    private static class DependencyResolveInfo {
+        String path;
+        MavenArtifactDependency.Scope scope;
+        boolean optional;
+
+        DependencyResolveInfo(String path, MavenArtifactDependency.Scope scope, boolean optional) {
+            this.path = path;
+            this.scope = scope;
+            this.optional = optional;
+        }
+
+        @Override
+        public String toString() {
+            return path;
+        }
+    }
+
+    private static class VersionResolveInfo {
+        MavenLocalVersion localVersion;
+        String parentPath;
+        List<DependencyResolveInfo> dependencies = new ArrayList<>();
+
+        public VersionResolveInfo(MavenLocalVersion localVersion, String parentPath) {
+            this.localVersion = localVersion;
+            this.parentPath = parentPath;
+        }
+
+        @Override
+        public String toString() {
+            return localVersion.toString();
+        }
+    }
+
+    synchronized void loadCache() {
         File cacheFile = new File(getLocalCacheDir(), METADATA_CACHE_FILE);
         if (!cacheFile.exists()) {
             return;
         }
+        final List<VersionResolveInfo> lateResolutions = new ArrayList<>();
         try {
             InputStream mdStream = new FileInputStream(cacheFile);
             try {
                 SAXReader reader = new SAXReader(mdStream);
                 reader.parse(new SAXListener() {
-                    public MavenArtifact lastArtifact;
+                    MavenArtifact lastArtifact;
+                    VersionResolveInfo lastVersionResolveInfo;
                     @Override
                     public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
                         if (TAG_ARTIFACT.equals(localName)) {
@@ -179,11 +219,38 @@ public class MavenRepository
                             lastArtifact.setActiveVersion(atts.getValue(ATTR_ACTIVE_VERSION));
                             cachedArtifacts.add(lastArtifact);
                         } else if (TAG_VERSION.equals(localName) && lastArtifact != null) {
+                            Date updateTime = new Date();
+                            try {
+                                updateTime = UPDATE_TIME_FORMAT.parse(atts.getValue(ATTR_UPDATE_TIME));
+                            } catch (ParseException e) {
+                                // ignore
+                            }
+                            String versionNumber = atts.getValue(ATTR_VERSION);
                             MavenLocalVersion version = new MavenLocalVersion(
                                 lastArtifact,
-                                atts.getValue(ATTR_VERSION),
-                                new Date(Long.parseLong(atts.getValue(ATTR_UPDATE_TIME))));
+                                versionNumber,
+                                updateTime);
                             lastArtifact.addLocalVersion(version);
+
+                            MavenArtifactVersion lastVersion = new MavenArtifactVersion(version, lastArtifact.getArtifactId(), versionNumber);
+                            version.setMetaData(lastVersion);
+                            lastVersionResolveInfo = new VersionResolveInfo(version, atts.getValue(ATTR_PARENT));
+                            lateResolutions.add(lastVersionResolveInfo);
+                        } else if (TAG_DEPENDENCY.equals(localName) && lastVersionResolveInfo != null) {
+                            MavenArtifactDependency.Scope scope = MavenArtifactDependency.Scope.COMPILE;
+                            String scopeString = atts.getValue(ATTR_SCOPE);
+                            if (scopeString != null) {
+                                try {
+                                    scope = MavenArtifactDependency.Scope.valueOf(scopeString.toUpperCase(Locale.ENGLISH));
+                                } catch (IllegalArgumentException e) {
+                                    log.debug(e);
+                                }
+                            }
+                            lastVersionResolveInfo.dependencies.add(new DependencyResolveInfo(
+                                atts.getValue(ATTR_PATH),
+                                scope,
+                                CommonUtils.getBoolean(atts.getValue(ATTR_OPTIONAL), false)
+                            ));
                         }
                     }
                     @Override
@@ -194,6 +261,8 @@ public class MavenRepository
                     public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
                         if (TAG_ARTIFACT.equals(localName)) {
                             lastArtifact = null;
+                        } else if (TAG_VERSION.equals(localName)) {
+                            lastVersionResolveInfo = null;
                         }
                     }
                 });
@@ -204,6 +273,43 @@ public class MavenRepository
             }
         } catch (IOException e) {
             log.warn("IO error while reading cached Maven repository '" + id + "'", e);
+        }
+
+        // Perform late resolution
+        for (VersionResolveInfo vri : lateResolutions) {
+            if (vri.parentPath != null) {
+                MavenLocalVersion parentVersion = resolveLocalVersion(vri.parentPath);
+                if (parentVersion != null) {
+                    vri.localVersion.getMetaData().setParent(parentVersion);
+                }
+            }
+            for (DependencyResolveInfo dri : vri.dependencies) {
+                MavenLocalVersion depVersion = resolveLocalVersion(dri.path);
+                if (depVersion != null) {
+                    vri.localVersion.getMetaData().addDependency(
+                        new MavenArtifactDependency(
+                            depVersion.getArtifact().getGroupId(),
+                            depVersion.getArtifact().getArtifactId(),
+                            depVersion.getVersion(),
+                            dri.scope,
+                            dri.optional));
+                }
+            }
+        }
+    }
+
+    private MavenLocalVersion resolveLocalVersion(String path) {
+        MavenArtifactReference parentRef = new MavenArtifactReference(path);
+        MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentRef);
+        if (parentArtifact == null) {
+            log.warn("Can't resolve artifact " + parentRef);
+            return null;
+        } else {
+            MavenLocalVersion localVersion = parentArtifact.getLocalVersion(parentRef.getVersion());
+            if (localVersion == null) {
+                log.warn("Can't resolve artifact version " + parentRef);
+            }
+            return localVersion;
         }
     }
 
@@ -242,11 +348,11 @@ public class MavenRepository
                             for (MavenLocalVersion version : artifact.getLocalVersions()) {
                                 try (XMLBuilder.Element e2 = xml.startElement(TAG_VERSION)) {
                                     xml.addAttribute(ATTR_VERSION, version.getVersion());
-                                    xml.addAttribute(ATTR_UPDATE_TIME, version.getUpdateTime().getTime());
+                                    xml.addAttribute(ATTR_UPDATE_TIME, UPDATE_TIME_FORMAT.format(version.getUpdateTime()));
 
                                     MavenArtifactVersion metaData = version.getMetaData();
                                     if (metaData != null) {
-                                        MavenArtifactReference parentReference = metaData.getParentReference();
+                                        MavenLocalVersion parentReference = metaData.getParent();
                                         if (parentReference != null) {
                                             xml.addAttribute(ATTR_PARENT, parentReference.getPath());
                                         }
@@ -257,6 +363,9 @@ public class MavenRepository
                                                     xml.addAttribute(ATTR_PATH, dependency.getPath());
                                                     if (dependency.getScope() != MavenArtifactDependency.Scope.COMPILE) {
                                                         xml.addAttribute(ATTR_SCOPE, dependency.getScope().name().toLowerCase(Locale.ENGLISH));
+                                                    }
+                                                    if (dependency.isOptional()) {
+                                                        xml.addAttribute(ATTR_OPTIONAL, true);
                                                     }
                                                 }
                                             }

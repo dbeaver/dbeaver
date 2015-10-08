@@ -252,19 +252,28 @@ public class GeneralUtils {
     }
 
     public static String replaceVariables(String string, IVariableResolver resolver) {
-        Matcher matcher = VAR_PATTERN.matcher(string);
-        int pos = 0;
-        while (matcher.find(pos)) {
-            pos = matcher.end();
-            String varName = matcher.group(2);
-            String varValue = resolver.get(varName);
-            if (varValue != null) {
-                matcher = VAR_PATTERN.matcher(
-                        string = matcher.replaceFirst(varValue));
-                pos = 0;
+        try {
+            Matcher matcher = VAR_PATTERN.matcher(string);
+            int pos = 0;
+            while (matcher.find(pos)) {
+                pos = matcher.end();
+                String varName = matcher.group(2);
+                String varValue = resolver.get(varName);
+                if (varValue != null) {
+                    if (matcher.start() == 0 && matcher.end() == string.length() - 1) {
+                        string = varValue;
+                    } else {
+                        string = string.substring(0, matcher.start()) + varValue + string.substring(matcher.end());
+                    }
+                    matcher = VAR_PATTERN.matcher(string);
+                    pos = 0;
+                }
             }
+            return string;
+        } catch (Exception e) {
+            log.warn("Error matching regex", e);
+            return string;
         }
-        return string;
     }
 
     public static String[] parseCommandLine(String commandLine) {

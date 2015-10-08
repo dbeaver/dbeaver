@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenDependency;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -48,7 +48,6 @@ public class MavenArtifactVersion {
     private String description;
     private String url;
     private MavenLocalVersion parent;
-    private MavenArtifactReference parentReference;
     private Map<String, String> properties = new LinkedHashMap<>();
     private List<MavenArtifactLicense> licenses = new ArrayList<>();
     private List<MavenArtifactDependency> dependencies;
@@ -66,7 +65,7 @@ public class MavenArtifactVersion {
                 } else if (name.equals(PROP_PROJECT_ARTIFACT_ID)) {
                     value = localVersion.getArtifact().getArtifactId();
                 } else if (parent != null) {
-                    return parent.getMetaData(VoidProgressMonitor.INSTANCE).variableResolver.get(name);
+                    return parent.getMetaData().variableResolver.get(name);
                 }
             }
             return value;
@@ -78,7 +77,8 @@ public class MavenArtifactVersion {
         loadPOM(monitor);
     }
 
-    MavenArtifactVersion(String name, String version) {
+    MavenArtifactVersion(MavenLocalVersion localVersion, String name, String version) {
+        this.localVersion = localVersion;
         this.name = name;
         this.version = version;
     }
@@ -103,8 +103,19 @@ public class MavenArtifactVersion {
         return url;
     }
 
-    public MavenArtifactReference getParentReference() {
-        return parentReference;
+    public MavenLocalVersion getParent() {
+        return parent;
+    }
+
+    void setParent(MavenLocalVersion parent) {
+        this.parent = parent;
+    }
+
+    void addDependency(MavenArtifactDependency dependency) {
+        if (dependencies == null) {
+            dependencies = new ArrayList<>();
+        }
+        dependencies.add(dependency);
     }
 
     public Map<String, String> getProperties() {
@@ -164,7 +175,7 @@ public class MavenArtifactVersion {
                 if (parentGroupId == null || parentArtifactId == null || parentVersion == null) {
                     log.error("Broken parent reference: " + parentGroupId + ":" + parentArtifactId + ":" + parentVersion);
                 } else {
-                    parentReference = new MavenArtifactReference(
+                    MavenArtifactReference parentReference = new MavenArtifactReference(
                         parentGroupId,
                         parentArtifactId,
                         parentVersion
@@ -208,14 +219,14 @@ public class MavenArtifactVersion {
             // Dependencies
             Element dmElement = XMLUtils.getChildElement(root, "dependencyManagement");
             if (dmElement != null) {
-                dependencyManagement = parseDependencies(monitor, dmElement);
+                dependencyManagement = parseDependencies(monitor, dmElement, true);
             }
-            dependencies = parseDependencies(monitor, root);
+            dependencies = parseDependencies(monitor, root, false);
         }
         monitor.worked(1);
     }
 
-    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element) {
+    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean all) {
         List<MavenArtifactDependency> result = new ArrayList<>();
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
@@ -239,13 +250,18 @@ public class MavenArtifactVersion {
                 if (!CommonUtils.isEmpty(scopeName)) {
                     scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
                 }
-                result.add(new MavenArtifactDependency(
-                    evaluateString(groupId),
-                    evaluateString(artifactId),
-                    evaluateString(version),
-                    scope,
-                    CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false)
-                ));
+                boolean optional = CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false);
+
+                // TODO: maybe we should include some of them
+                if (all || (!optional && (scope == MavenArtifactDependency.Scope.COMPILE || scope == MavenArtifactDependency.Scope.RUNTIME))) {
+                    result.add(new MavenArtifactDependency(
+                        evaluateString(groupId),
+                        evaluateString(artifactId),
+                        evaluateString(version),
+                        scope,
+                        optional
+                    ));
+                }
             }
         }
         return result;

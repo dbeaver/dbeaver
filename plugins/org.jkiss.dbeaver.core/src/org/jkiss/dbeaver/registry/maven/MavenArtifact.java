@@ -259,7 +259,10 @@ public class MavenArtifact
             }
         }
 
-        MavenLocalVersion localVersion = getActiveLocalVersion();
+        MavenLocalVersion localVersion = getLocalVersion(versionInfo);
+        if (localVersion == null && lookupVersion) {
+            localVersion = getActiveLocalVersion();
+        }
         if (localVersion == null) {
             localVersion = makeLocalVersion(monitor, versionInfo, true);
         }
