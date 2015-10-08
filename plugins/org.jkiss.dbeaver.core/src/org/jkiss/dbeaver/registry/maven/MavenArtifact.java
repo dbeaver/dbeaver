@@ -72,8 +72,8 @@ public class MavenArtifact
         lastUpdate = null;
 
         String metadataPath = getArtifactURL() + MAVEN_METADATA_XML;
-        monitor.subTask("Load artifact metadata [" + metadataPath + "]");
-System.out.println("Load metadata " + this);
+        monitor.subTask("Load metadata " + this + "");
+
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
             SAXReader reader = new SAXReader(mdStream);
             reader.parse(new SAXListener() {

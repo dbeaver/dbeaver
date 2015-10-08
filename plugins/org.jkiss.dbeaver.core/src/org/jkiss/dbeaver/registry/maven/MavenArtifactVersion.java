@@ -39,6 +39,8 @@ public class MavenArtifactVersion {
     static final Log log = Log.getLog(MavenArtifactVersion.class);
 
     public static final String PROP_PROJECT_VERSION = "project.version";
+    public static final String PROP_PROJECT_GROUP_ID = "project.groupId";
+    public static final String PROP_PROJECT_ARTIFACT_ID = "project.artifactId";
 
     private MavenLocalVersion localVersion;
     private String name;
@@ -59,6 +61,10 @@ public class MavenArtifactVersion {
             if (value == null) {
                 if (name.equals(PROP_PROJECT_VERSION)) {
                     value = version;
+                } else if (name.equals(PROP_PROJECT_GROUP_ID)) {
+                    value = localVersion.getArtifact().getGroupId();
+                } else if (name.equals(PROP_PROJECT_ARTIFACT_ID)) {
+                    value = localVersion.getArtifact().getArtifactId();
                 } else if (parent != null) {
                     return parent.getMetaData(VoidProgressMonitor.INSTANCE).variableResolver.get(name);
                 }
@@ -109,8 +115,19 @@ public class MavenArtifactVersion {
         return licenses;
     }
 
-    public List<MavenArtifactDependency> getDependencies() {
-        return dependencies;
+    public List<MavenArtifactDependency> getDependencies(DBRProgressMonitor monitor) {
+        if (parent != null) {
+            List<MavenArtifactDependency> parentDependencies = parent.getMetaData(monitor).getDependencies(monitor);
+            if (!CommonUtils.isEmpty(parentDependencies)) {
+                if (CommonUtils.isEmpty(dependencies)) {
+                    return parentDependencies;
+                }
+                parentDependencies = new ArrayList<>(parentDependencies);
+                parentDependencies.addAll(dependencies);
+                return parentDependencies;
+            }
+        }
+        return this.dependencies;
     }
 
     @Override
@@ -129,8 +146,8 @@ public class MavenArtifactVersion {
 
     private void loadPOM(DBRProgressMonitor monitor) throws IOException {
         String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
-        monitor.subTask("Load POM [" + pomURL + "]");
-System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + localVersion.getVersion());
+        monitor.subTask("Load POM " + localVersion);
+
         Document pomDocument;
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
             pomDocument = XMLUtils.parseDocument(mdStream);
@@ -228,8 +245,8 @@ System.out.println("Load POM " + localVersion.getArtifact().toString() + ":" + l
                     scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
                 }
                 result.add(new MavenArtifactDependency(
-                    groupId,
-                    artifactId,
+                    evaluateString(groupId),
+                    evaluateString(artifactId),
                     evaluateString(version),
                     scope,
                     CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false)

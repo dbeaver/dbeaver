@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -110,21 +111,24 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
         }
 
+        final Set<String> addedDeps = new HashSet<>();
         int totalItems = 0;
         for (DBPDriverLibrary file : getWizard().getFiles()) {
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(file.getIcon()));
             item.setText(0, file.getDisplayName());
-            item.setText(1, "");
+            item.setText(1, CommonUtils.notEmpty(file.getVersion()));
             totalItems++;
-            if (addDependencies(item, file, depMap)) {
+            if (addDependencies(item, file, depMap, addedDeps)) {
                 item.setExpanded(true);
                 totalItems += item.getItemCount();
             }
         }
         UIUtils.packColumns(filesTree);
-//        GridData gd = (GridData)filesTree.getLayoutData();
-//        gd.heightHint = filesTree.getItemCount() * 20 + 20;
+        if (totalItems > 20) {
+            totalItems = 20;
+        }
+
         Shell shell = getContainer().getShell();
         shell.setSize(shell.getSize().x, shell.getSize().y + filesTree.getItemHeight() * totalItems);
         shell.layout();
@@ -136,7 +140,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         if (deps != null) {
             return;
         }
-System.out.println("Resolve dependencies of [" + libraryPath + "]");
+
         deps = new ArrayList<>();
         depMap.put(libraryPath, deps);
 
@@ -149,19 +153,31 @@ System.out.println("Resolve dependencies of [" + libraryPath + "]");
         }
     }
 
-    private boolean addDependencies(TreeItem parent, DBPDriverLibrary library, Map<String, List<DBPDriverLibrary>> depMap) {
+    private boolean addDependencies(TreeItem parent, DBPDriverLibrary library, Map<String, List<DBPDriverLibrary>> depMap, Set<String> addedDeps) {
         Collection<? extends DBPDriverLibrary> dependencies = depMap.get(library.getPath());
         if (dependencies != null && !dependencies.isEmpty()) {
+            Map<DBPDriverLibrary, TreeItem> itemMap = new HashMap<>();
             for (DBPDriverLibrary dep : dependencies) {
                 TreeItem item = new TreeItem(parent, SWT.NONE);
                 item.setImage(DBeaverIcons.getImage(dep.getIcon()));
                 item.setText(0, dep.getDisplayName());
-                item.setText(1, "");
+                item.setText(1, CommonUtils.notEmpty(dep.getVersion()));
 
-                if (addDependencies(item, dep, depMap)) {
-                    //item.setExpanded(true);
+                if (addedDeps.contains(dep.getPath())) {
+                    item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
+                }
+                itemMap.put(dep, item);
+            }
+            for (DBPDriverLibrary dep : dependencies) {
+                TreeItem item = itemMap.get(dep);
+                if (!addedDeps.contains(dep.getPath())) {
+                    addedDeps.add(dep.getPath());
+                    if (addDependencies(item, dep, depMap, addedDeps)) {
+                        //item.setExpanded(true);
+                    }
                 }
             }
+
             return true;
         }
         return false;

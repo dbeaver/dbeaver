@@ -34,7 +34,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     private MavenLocalVersion localVersion;
 
     public DriverLibraryMavenDependency(DriverDescriptor driverDescriptor, MavenLocalVersion localVersion) {
-        super(driverDescriptor, FileType.jar, PATH_PREFIX + localVersion.toString());
+        super(driverDescriptor, FileType.jar, PATH_PREFIX + localVersion.getArtifact().toString());
         this.localVersion = localVersion;
     }
 
