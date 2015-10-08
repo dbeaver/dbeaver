@@ -23,14 +23,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -75,44 +78,77 @@ public class MavenArtifact
         monitor.subTask("Load metadata " + this + "");
 
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
-            SAXReader reader = new SAXReader(mdStream);
-            reader.parse(new SAXListener() {
-                public String lastTag;
-
-                @Override
-                public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
-                    lastTag = localName;
-
-                }
-
-                @Override
-                public void saxText(SAXReader reader, String data) throws XMLException {
-                    if ("version".equals(lastTag)) {
-                        versions.add(data);
-                    } else if ("latest".equals(lastTag)) {
-                        latestVersion = data;
-                    } else if ("release".equals(lastTag)) {
-                        releaseVersion = data;
-                    } else if ("lastUpdate".equals(lastTag)) {
-                        try {
-                            lastUpdate = new Date(Long.parseLong(data));
-                        } catch (NumberFormatException e) {
-                            log.warn(e);
-                        }
-                    }
-                }
-
-                @Override
-                public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
-                    lastTag = null;
-                }
-            });
+            parseMetadata(mdStream);
         } catch (XMLException e) {
             log.warn("Error parsing artifact metadata", e);
+        } catch (IOException e) {
+            // Metadata xml not found. It happens in rare cases. Let's try to get directory listing
+            try (InputStream dirStream = RuntimeUtils.openConnectionStream(getArtifactURL())) {
+                parseDirectory(dirStream);
+            } catch (XMLException e1) {
+                log.warn("Error parsing artifact directory", e);
+            }
         } finally {
             monitor.worked(1);
         }
         metadataLoaded = true;
+    }
+
+    private void parseDirectory(InputStream dirStream) throws IOException, XMLException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        IOUtils.copyStream(dirStream, baos, 10000);
+        String dir = baos.toString();
+        Pattern hrefPattern = Pattern.compile("a href=\"(.+)/?\"");
+        Matcher matcher = hrefPattern.matcher(dir);
+        while (matcher.find()) {
+            String href = matcher.group(1);
+            while (href.endsWith("/")) {
+                href = href.substring(0, href.length() - 1);
+            }
+            int divPos = href.lastIndexOf('/');
+            if (divPos != -1) {
+                href = href.substring(divPos + 1);
+            }
+            if (href.equals("..")) {
+                continue;
+            }
+            versions.add(href);
+        }
+    }
+
+    private void parseMetadata(InputStream mdStream) throws IOException, XMLException {
+        SAXReader reader = new SAXReader(mdStream);
+        reader.parse(new SAXListener() {
+            public String lastTag;
+
+            @Override
+            public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
+                lastTag = localName;
+
+            }
+
+            @Override
+            public void saxText(SAXReader reader, String data) throws XMLException {
+                if ("version".equals(lastTag)) {
+                    versions.add(data);
+                } else if ("latest".equals(lastTag)) {
+                    latestVersion = data;
+                } else if ("release".equals(lastTag)) {
+                    releaseVersion = data;
+                } else if ("lastUpdate".equals(lastTag)) {
+                    try {
+                        lastUpdate = new Date(Long.parseLong(data));
+                    } catch (NumberFormatException e) {
+                        log.warn(e);
+                    }
+                }
+            }
+
+            @Override
+            public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
+                lastTag = null;
+            }
+        });
     }
 
     public MavenRepository getRepository() {
