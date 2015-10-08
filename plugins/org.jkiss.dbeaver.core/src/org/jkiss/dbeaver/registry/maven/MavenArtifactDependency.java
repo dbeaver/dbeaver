@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Maven artifact license references
@@ -38,6 +39,7 @@ public class MavenArtifactDependency extends MavenArtifactReference {
 
     private Scope scope;
     private boolean optional;
+    private List<MavenArtifactReference> exclusions;
 
     public MavenArtifactDependency(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, Scope scope, boolean optional) {
         super(groupId, artifactId, version);
@@ -53,12 +55,20 @@ public class MavenArtifactDependency extends MavenArtifactReference {
         return optional;
     }
 
+    public List<MavenArtifactReference> getExclusions() {
+        return exclusions;
+    }
+
     public MavenLocalVersion resolveDependency(DBRProgressMonitor monitor) throws IOException {
         MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(this);
         if (depArtifact != null) {
             return depArtifact.resolveVersion(monitor, getVersion(), false);
         }
         return null;
+    }
+
+    void addExclusion(MavenArtifactReference ref) {
+        exclusions.add(ref);
     }
 
 }
