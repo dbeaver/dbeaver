@@ -46,6 +46,9 @@ public interface DBPDriverLibrary
     @NotNull
     String getDisplayName();
 
+    @Nullable
+    String getVersion();
+
     @NotNull
     DBIcon getIcon();
 
