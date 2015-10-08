@@ -99,6 +99,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return driver;
     }
 
+    @Override
+    public String getVersion() {
+        return null;
+    }
+
     @NotNull
     @Override
     public FileType getType()

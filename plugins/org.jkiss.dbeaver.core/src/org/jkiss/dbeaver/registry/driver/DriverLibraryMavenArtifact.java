@@ -130,30 +130,28 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
         if (localVersion != null) {
             MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
-            if (metaData != null) {
-                List<MavenArtifactDependency> artifactDeps = metaData.getDependencies();
-                if (!CommonUtils.isEmpty(artifactDeps)) {
-                    for (MavenArtifactDependency artifactDep : artifactDeps) {
-                        if (artifactDep.isOptional()) {
-                            continue;
-                        }
-                        switch (artifactDep.getScope()) {
-                            case COMPILE:
-                            case RUNTIME:
-                            {
-                                MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
-                                if (depLocalVersion != null) {
-                                    dependencies.add(
-                                        new DriverLibraryMavenDependency(
-                                            this.getDriver(),
-                                            depLocalVersion));
-                                }
-                                break;
+            List<MavenArtifactDependency> artifactDeps = metaData.getDependencies(monitor);
+            if (!CommonUtils.isEmpty(artifactDeps)) {
+                for (MavenArtifactDependency artifactDep : artifactDeps) {
+                    if (artifactDep.isOptional()) {
+                        continue;
+                    }
+                    switch (artifactDep.getScope()) {
+                        case COMPILE:
+                        case RUNTIME:
+                        {
+                            MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
+                            if (depLocalVersion != null) {
+                                dependencies.add(
+                                    new DriverLibraryMavenDependency(
+                                        this.getDriver(),
+                                        depLocalVersion));
                             }
-                            default:
-                                // We don't need it
-                                break;
+                            break;
                         }
+                        default:
+                            // We don't need it
+                            break;
                     }
                 }
             }
@@ -165,9 +163,18 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public String getDisplayName() {
         MavenArtifact artifact = getMavenArtifact();
         if (artifact != null) {
+            return artifact.getGroupId() + ":" + artifact.getArtifactId();
+        }
+        return path;
+    }
+
+    @Override
+    public String getVersion() {
+        MavenArtifact artifact = getMavenArtifact();
+        if (artifact != null) {
             MavenLocalVersion version = artifact.getActiveLocalVersion();
             if (version != null) {
-                return artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + version.getVersion();
+                return version.getVersion();
             }
         }
         return path;

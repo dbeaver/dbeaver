@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -80,6 +81,7 @@ public class MavenLocalVersion
         return artifact.getFileURL(version, fileType);
     }
 
+    @NotNull
     public MavenArtifactVersion getMetaData(DBRProgressMonitor monitor) {
         if (metaData == null) {
             try {
