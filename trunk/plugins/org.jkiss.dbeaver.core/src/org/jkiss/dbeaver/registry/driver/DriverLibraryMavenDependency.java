@@ -34,7 +34,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     private MavenLocalVersion localVersion;
 
     public DriverLibraryMavenDependency(DriverDescriptor driverDescriptor, MavenLocalVersion localVersion) {
-        super(driverDescriptor, FileType.jar, PATH_PREFIX + localVersion.getArtifact().toString());
+        super(driverDescriptor, FileType.jar, PATH_PREFIX + localVersion.toString());
         this.localVersion = localVersion;
     }
 
@@ -64,7 +64,11 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
 
     @NotNull
     public String getDisplayName() {
-        return localVersion.getArtifact().getGroupId() + ":" + localVersion.getArtifact().getArtifactId() + ":" + localVersion.getVersion();
+        return localVersion.getArtifact().getGroupId() + ":" + localVersion.getArtifact().getArtifactId();
+    }
+
+    public String getVersion() {
+        return localVersion.getVersion();
     }
 
     protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {

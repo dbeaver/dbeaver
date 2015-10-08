@@ -133,25 +133,12 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             List<MavenArtifactDependency> artifactDeps = metaData.getDependencies(monitor);
             if (!CommonUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency artifactDep : artifactDeps) {
-                    if (artifactDep.isOptional()) {
-                        continue;
-                    }
-                    switch (artifactDep.getScope()) {
-                        case COMPILE:
-                        case RUNTIME:
-                        {
-                            MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
-                            if (depLocalVersion != null) {
-                                dependencies.add(
-                                    new DriverLibraryMavenDependency(
-                                        this.getDriver(),
-                                        depLocalVersion));
-                            }
-                            break;
-                        }
-                        default:
-                            // We don't need it
-                            break;
+                    MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
+                    if (depLocalVersion != null) {
+                        dependencies.add(
+                            new DriverLibraryMavenDependency(
+                                this.getDriver(),
+                                depLocalVersion));
                     }
                 }
             }
