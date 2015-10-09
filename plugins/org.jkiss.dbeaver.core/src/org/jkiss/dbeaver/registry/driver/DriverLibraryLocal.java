@@ -130,7 +130,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
+    public Collection<DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, DBPDriverLibrary ownerLibrary) throws IOException {
         return null;
     }
 
