@@ -581,9 +581,6 @@
                     description="Microsoft Access driver">
 
                     <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:release"/>
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
-                    <file type="jar" path="maven:/com.healthmarketscience.jackcess:jackcess:release"/>
-                    <file type="jar" path="maven:/commons-lang:commons-lang:release"/>
                 </driver>
                 <driver
                     id="netezza"
