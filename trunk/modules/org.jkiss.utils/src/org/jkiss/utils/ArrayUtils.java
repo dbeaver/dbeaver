@@ -146,6 +146,15 @@ public class ArrayUtils {
         return -1;
     }
 
+    public static int indexOf(byte[] array, int offset, byte element) {
+        for (int i = offset; i < array.length; i++) {
+            if (array[i] == element) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     public static <T> T[] deleteArea(Class<T> type, T[] elements, int from, int to) {
         int delCount = to - from + 1;
         T[] newArray = (T[]) Array.newInstance(type, elements.length - delCount);
