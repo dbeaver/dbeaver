@@ -53,6 +53,7 @@ public class MavenRepository
     public static final String TAG_ARTIFACT = "artifact";
     public static final String TAG_VERSION = "version";
     public static final String TAG_DEPENDENCY = "dependency";
+    public static final String TAG_EXCLUDE = "exclude";
 
     public static final String ATTR_NAME = "name";
     public static final String ATTR_URL = "url";
@@ -366,6 +367,14 @@ public class MavenRepository
                                                     }
                                                     if (dependency.isOptional()) {
                                                         xml.addAttribute(ATTR_OPTIONAL, true);
+                                                    }
+                                                    List<MavenArtifactReference> exclusions = dependency.getExclusions();
+                                                    if (exclusions != null) {
+                                                        for (MavenArtifactReference ex : exclusions) {
+                                                            try (XMLBuilder.Element e4 = xml.startElement(TAG_EXCLUDE)) {
+                                                                xml.addAttribute(ATTR_PATH, ex.getPath());
+                                                            }
+                                                        }
                                                     }
                                                 }
                                             }

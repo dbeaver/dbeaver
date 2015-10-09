@@ -74,14 +74,20 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Nullable
-    @Override
-    public String getExternalURL() {
+    protected MavenLocalVersion getMavenLocalVersion() {
         MavenArtifact artifact = getMavenArtifact();
         if (artifact != null) {
-            MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
-            if (localVersion != null) {
-                return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
-            }
+            return artifact.getActiveLocalVersion();
+        }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String getExternalURL() {
+        MavenLocalVersion localVersion = getMavenLocalVersion();
+        if (localVersion != null) {
+            return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
         }
         return null;
     }
@@ -124,15 +130,38 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<? extends DBPDriverLibrary> getDependencies(DBRProgressMonitor monitor) throws IOException {
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, DBPDriverLibrary ownerLibrary) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
 
+        List<MavenArtifactReference> exclusions = null;
         MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
         if (localVersion != null) {
+            // Find owner's exclusions
+            if (ownerLibrary instanceof DriverLibraryMavenArtifact) {
+                MavenLocalVersion ownerVersion = ((DriverLibraryMavenArtifact) ownerLibrary).getMavenLocalVersion();
+                if (ownerVersion != null) {
+                    exclusions = ownerVersion.getMetaData(monitor)
+                        .findExclusionsFor(localVersion.getArtifact().getGroupId(), localVersion.getArtifact().getArtifactId());
+                }
+            }
+
             MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
             List<MavenArtifactDependency> artifactDeps = metaData.getDependencies(monitor);
             if (!CommonUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency artifactDep : artifactDeps) {
+                    boolean excluded = false;
+                    if (exclusions != null) {
+                        for (MavenArtifactReference ex : exclusions) {
+                            if (ex.getGroupId().equals(artifactDep.getGroupId()) && ex.getArtifactId().equals(artifactDep.getArtifactId())) {
+                                excluded = true;
+                                break;
+                            }
+                        }
+                        if (excluded) {
+                            // Excluded
+                            continue;
+                        }
+                    }
                     MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
                     if (depLocalVersion != null) {
                         dependencies.add(
@@ -157,13 +186,11 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public String getVersion() {
-        MavenArtifact artifact = getMavenArtifact();
-        if (artifact != null) {
-            MavenLocalVersion version = artifact.getActiveLocalVersion();
-            if (version != null) {
-                return version.getVersion();
-            }
+        MavenLocalVersion version = getMavenLocalVersion();
+        if (version != null) {
+            return version.getVersion();
         }
+
         return path;
     }
 
@@ -173,7 +200,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return UIIcon.APACHE;
     }
 
-    public void downloadLibraryFile(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException, InterruptedException {
+    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate) throws IOException, InterruptedException {
         MavenLocalVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
         if (localVersion.getArtifact().getRepository().isLocal()) {
             // No need to download local artifacts
