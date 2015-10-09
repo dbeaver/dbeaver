@@ -18,7 +18,10 @@
 
 package org.jkiss.utils.xml;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -62,6 +65,18 @@ public class XMLUtils
 		}
 	}
 
+	public static org.w3c.dom.Document parseDocument(java.io.Reader is)
+		throws XMLException
+	{
+		try {
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+			DocumentBuilder xmlBuilder = dbf.newDocumentBuilder();
+			return xmlBuilder.parse(new InputSource(is));
+		} catch (Exception er) {
+			throw new XMLException("Error parsing XML document", er);
+		}
+	}
+
 	public static org.w3c.dom.Document createDocument()
 		throws XMLException
 	{
@@ -86,6 +101,7 @@ public class XMLUtils
 		return null;
 	}
 
+	@Nullable
 	public static String getChildElementBody(Element element,
 		String childName)
 	{
@@ -98,6 +114,7 @@ public class XMLUtils
 		return null;
 	}
 
+	@Nullable
 	public static String getElementBody(Element element)
 	{
 		org.w3c.dom.Node valueNode = element.getFirstChild();
@@ -112,6 +129,7 @@ public class XMLUtils
 	}
 
 	// Get list of all child elements of specified node
+	@NotNull
 	public static Collection<Element> getChildElementList(
         Element parent,
         String nodeName)
@@ -128,6 +146,7 @@ public class XMLUtils
 	}
 
 	// Get list of all child elements of specified node
+	@NotNull
 	public static Collection<Element> getChildElementListNS(
 		Element parent,
 		String nsURI)
@@ -162,6 +181,7 @@ public class XMLUtils
 	}
 
 	// Get list of all child elements of specified node
+	@NotNull
 	public static Collection<Element> getChildElementList(
 		Element parent,
 		String[] nodeNameList)
@@ -180,6 +200,7 @@ public class XMLUtils
 	}
 
 	// Find one child element with specified name
+	@Nullable
 	public static Element findChildElement(
 		Element parent)
 	{
