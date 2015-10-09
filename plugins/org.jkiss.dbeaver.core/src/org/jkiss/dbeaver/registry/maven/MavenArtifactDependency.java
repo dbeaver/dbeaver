@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -68,6 +69,9 @@ public class MavenArtifactDependency extends MavenArtifactReference {
     }
 
     void addExclusion(MavenArtifactReference ref) {
+        if (exclusions == null) {
+            exclusions = new ArrayList<>();
+        }
         exclusions.add(ref);
     }
 

@@ -44,31 +44,16 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     }
 
     @Nullable
-    private MavenArtifact getMavenArtifact() {
-        return localVersion.getArtifact();
-    }
-
-    @Nullable
     @Override
-    public String getExternalURL() {
-        return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
+    protected MavenLocalVersion getMavenLocalVersion() {
+        return localVersion;
     }
-
 
     @Nullable
     @Override
     public File getLocalFile()
     {
         return localVersion.getCacheFile();
-    }
-
-    @NotNull
-    public String getDisplayName() {
-        return localVersion.getArtifact().getGroupId() + ":" + localVersion.getArtifact().getArtifactId();
-    }
-
-    public String getVersion() {
-        return localVersion.getVersion();
     }
 
     protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {

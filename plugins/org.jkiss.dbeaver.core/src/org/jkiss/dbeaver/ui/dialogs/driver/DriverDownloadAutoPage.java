@@ -96,7 +96,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     monitor.beginTask("Resolve dependencies", 100);
                     try {
                         for (DBPDriverLibrary library : getWizard().getFiles()) {
-                            resolveDependencies(monitor, library, depMap);
+                            resolveDependencies(monitor, library, null, depMap);
                         }
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
@@ -134,7 +134,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         shell.layout();
     }
 
-    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library, Map<String, List<DBPDriverLibrary>> depMap) throws IOException {
+    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library, DBPDriverLibrary ownerLibrary, Map<String, List<DBPDriverLibrary>> depMap) throws IOException {
         String libraryPath = library.getPath();
         List<DBPDriverLibrary> deps = depMap.get(libraryPath);
         if (deps != null) {
@@ -144,11 +144,11 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         deps = new ArrayList<>();
         depMap.put(libraryPath, deps);
 
-        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor);
+        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor, ownerLibrary);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
                 deps.add(dep);
-                resolveDependencies(monitor, dep, depMap);
+                resolveDependencies(monitor, dep, library, depMap);
             }
         }
     }
