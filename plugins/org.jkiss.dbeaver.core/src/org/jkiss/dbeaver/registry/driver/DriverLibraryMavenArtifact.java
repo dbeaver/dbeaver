@@ -212,10 +212,15 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate) throws IOException, InterruptedException {
-        MavenLocalVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
-        if (localVersion.getArtifact().getRepository().isLocal()) {
-            // No need to download local artifacts
-            return;
+        monitor.beginTask("Update version information", 1);
+        try {
+            MavenLocalVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
+            if (localVersion.getArtifact().getRepository().isLocal()) {
+                // No need to download local artifacts
+                return;
+            }
+        } finally {
+            monitor.done();
         }
         super.downloadLibraryFile(monitor, forceUpdate);
     }
