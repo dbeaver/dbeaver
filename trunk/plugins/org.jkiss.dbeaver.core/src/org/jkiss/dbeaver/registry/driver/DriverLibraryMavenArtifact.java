@@ -42,12 +42,16 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public static final String PATH_PREFIX = "maven:/";
 
+    private final MavenArtifactReference reference;
+
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
+        reference = new MavenArtifactReference(path);
     }
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, IConfigurationElement config) {
         super(driver, config);
+        reference = new MavenArtifactReference(path);
     }
 
     @Override
@@ -70,7 +74,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     private MavenArtifact getMavenArtifact() {
-        return MavenRegistry.getInstance().findArtifact(new MavenArtifactReference(path));
+        return MavenRegistry.getInstance().findArtifact(reference);
     }
 
     @Nullable
@@ -114,9 +118,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
             if (localVersion == null && artifact.getRepository().isLocal()) {
                 // In case of local artifact make version resolve
-                MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
                 try {
-                    localVersion = artifact.resolveVersion(VoidProgressMonitor.INSTANCE, artifactInfo.getVersion(), true);
+                    localVersion = artifact.resolveVersion(VoidProgressMonitor.INSTANCE, reference.getVersion(), true);
                 } catch (IOException e) {
                     log.warn("Error resolving local artifact [" + artifact + "] version", e);
                 }
@@ -185,6 +188,11 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
+    public String getId() {
+        return reference.getGroupId() + ":" + reference.getArtifactId();
+    }
+
+    @Override
     public String getVersion() {
         MavenLocalVersion version = getMavenLocalVersion();
         if (version != null) {
@@ -210,11 +218,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
-        MavenArtifactReference artifactInfo = new MavenArtifactReference(path);
         if (forceUpdate) {
-            MavenRegistry.getInstance().resetArtifactInfo(artifactInfo);
+            MavenRegistry.getInstance().resetArtifactInfo(reference);
         }
-        MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(artifactInfo);
+        MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(reference);
         if (artifact == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }
@@ -225,7 +232,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
                 return localVersion;
             }
         }
-        return artifact.resolveVersion(monitor, artifactInfo.getVersion(), true);
+        return artifact.resolveVersion(monitor, reference.getVersion(), true);
     }
 
 }

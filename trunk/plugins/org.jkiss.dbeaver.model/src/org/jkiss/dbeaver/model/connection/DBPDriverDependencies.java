@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,14 +27,14 @@ import java.util.List;
 public interface DBPDriverDependencies
 {
     class DependencyNode {
+        public final DependencyNode owner;
         public final DBPDriverLibrary library;
-        public final boolean duplicate;
-        public final List<DependencyNode> dependencies;
+        public final List<DependencyNode> dependencies = new ArrayList<>();
+        public boolean duplicate;
 
-        public DependencyNode(DBPDriverLibrary library, boolean duplicate, List<DependencyNode> dependencies) {
+        public DependencyNode(DependencyNode owner, DBPDriverLibrary library) {
+            this.owner = owner;
             this.library = library;
-            this.duplicate = duplicate;
-            this.dependencies = dependencies;
         }
     }
 

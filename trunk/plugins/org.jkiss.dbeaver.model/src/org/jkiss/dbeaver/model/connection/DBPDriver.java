@@ -94,7 +94,7 @@ public interface DBPDriver extends DBPObject
     Collection<? extends DBPDriverLibrary> getDriverLibraries();
 
     @NotNull
-    DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor);
+    DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     Object getDriverInstance(DBRRunnableContext runnableContext) throws DBException;
 

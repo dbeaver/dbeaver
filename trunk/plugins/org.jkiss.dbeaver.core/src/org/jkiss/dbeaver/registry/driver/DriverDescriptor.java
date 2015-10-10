@@ -623,8 +623,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     @NotNull
     @Override
-    public DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) {
-        return new DriverDependencies(getDriverLibraries());
+    public DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DriverDependencies dependencies = new DriverDependencies();
+        dependencies.resolveDependencies(monitor, getDriverLibraries());
+        return dependencies;
     }
 
     public DBPDriverLibrary getDriverLibrary(String path)
