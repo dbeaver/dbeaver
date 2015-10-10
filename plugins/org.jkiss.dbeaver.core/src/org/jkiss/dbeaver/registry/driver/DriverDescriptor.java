@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -48,6 +49,7 @@ import org.jkiss.utils.xml.XMLBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -125,6 +127,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         File driversHome = DriverDescriptor.getCustomDriversHome();
         System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
     }
+
+    private DriverDependencies dependencies;
 
     public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
@@ -471,6 +475,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private void resetDriverInstance() {
+        this.dependencies = null;
         this.driverInstance = null;
         this.driverClass = null;
         this.isLoaded = false;
@@ -580,23 +585,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             driverClassName.contains("sun.jdbc"); //$NON-NLS-1$
     }
 
-/*
-    public boolean isLoaded()
-    {
-        return isLoaded;
-    }
-
-    public Class getDriverClass()
-    {
-        return driverClass;
-    }
-
-    public DriverClassLoader getClassLoader()
-    {
-        return classLoader;
-    }
-*/
-
     @Override
     public Collection<String> getClientHomeIds()
     {
@@ -624,9 +612,30 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @NotNull
     @Override
     public DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
-        DriverDependencies dependencies = new DriverDependencies();
-        dependencies.resolveDependencies(monitor, getDriverLibraries());
+        if (dependencies == null) {
+            dependencies = new DriverDependencies();
+            dependencies.resolveDependencies(monitor, getDriverLibraries());
+        }
         return dependencies;
+    }
+
+    private void resolveDependencies(DBRRunnableContext runnableContext) throws DBException {
+        try {
+            runnableContext.run(true, true, new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        resolveDependencies(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            throw new DBException("Error resolving libraries", e.getTargetException());
+        } catch (InterruptedException e) {
+            throw new DBException("Resolve interrupted", e);
+        }
     }
 
     public DBPDriverLibrary getDriverLibrary(String path)
@@ -784,7 +793,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.loadDriver(runnableContext, false, false);
     }
 
-    public void loadDriver(DBRRunnableContext runnableContext, boolean forceReload, boolean omitDownload)
+    private void loadDriver(DBRRunnableContext runnableContext, boolean forceReload, boolean omitDownload)
         throws DBException
     {
         if (isLoaded && !forceReload) {
@@ -837,9 +846,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             validateFilesPresence(runnableContext);
         }
 
+        resolveDependencies(runnableContext);
+
         List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
-        for (DBPDriverLibrary file : libraries) {
+        for (DBPDriverLibrary file : dependencies.getLibraryList()) {
             if (file.isDisabled() || file.getType() != DBPDriverLibrary.FileType.jar) {
                 continue;
             }
