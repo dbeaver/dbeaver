@@ -133,9 +133,10 @@ public class MavenArtifactVersion {
                 if (CommonUtils.isEmpty(dependencies)) {
                     return parentDependencies;
                 }
-                parentDependencies = new ArrayList<>(parentDependencies);
-                parentDependencies.addAll(dependencies);
-                return parentDependencies;
+                List<MavenArtifactDependency> result = new ArrayList<>(dependencies.size() + parentDependencies.size());
+                result.addAll(dependencies);
+                result.addAll(parentDependencies);
+                return result;
             }
         }
         return this.dependencies;
