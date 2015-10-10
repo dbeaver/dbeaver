@@ -469,7 +469,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         updateVersionButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_update_version, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                DriverDownloadDialog.updateDriverFiles(getShell(), driver, libList, true);
+                DriverDownloadDialog.updateDriverFiles(getShell(), driver, libList, false);
                 changeLibContent();
             }
         });
