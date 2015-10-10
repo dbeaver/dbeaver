@@ -168,6 +168,7 @@ public class MavenRepository
         String path;
         MavenArtifactDependency.Scope scope;
         boolean optional;
+        List<String> exclusions;
 
         DependencyResolveInfo(String path, MavenArtifactDependency.Scope scope, boolean optional) {
             this.path = path;
@@ -210,6 +211,7 @@ public class MavenRepository
                 reader.parse(new SAXListener() {
                     MavenArtifact lastArtifact;
                     VersionResolveInfo lastVersionResolveInfo;
+                    DependencyResolveInfo lastDependencyInfo;
                     @Override
                     public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
                         if (TAG_ARTIFACT.equals(localName)) {
@@ -247,11 +249,17 @@ public class MavenRepository
                                     log.debug(e);
                                 }
                             }
-                            lastVersionResolveInfo.dependencies.add(new DependencyResolveInfo(
+                            lastDependencyInfo = new DependencyResolveInfo(
                                 atts.getValue(ATTR_PATH),
                                 scope,
                                 CommonUtils.getBoolean(atts.getValue(ATTR_OPTIONAL), false)
-                            ));
+                            );
+                            lastVersionResolveInfo.dependencies.add(lastDependencyInfo);
+                        } else if (TAG_EXCLUDE.equals(localName) && lastDependencyInfo != null) {
+                            if (lastDependencyInfo.exclusions == null) {
+                                lastDependencyInfo.exclusions = new ArrayList<>();
+                            }
+                            lastDependencyInfo.exclusions.add(atts.getValue(ATTR_PATH));
                         }
                     }
                     @Override
@@ -264,6 +272,8 @@ public class MavenRepository
                             lastArtifact = null;
                         } else if (TAG_VERSION.equals(localName)) {
                             lastVersionResolveInfo = null;
+                        } else if (TAG_DEPENDENCY.equals(localName)) {
+                            lastDependencyInfo = null;
                         }
                     }
                 });
@@ -279,29 +289,33 @@ public class MavenRepository
         // Perform late resolution
         for (VersionResolveInfo vri : lateResolutions) {
             if (vri.parentPath != null) {
-                MavenLocalVersion parentVersion = resolveLocalVersion(vri.parentPath);
+                MavenLocalVersion parentVersion = resolveCachedVersion(vri.parentPath);
                 if (parentVersion != null) {
                     vri.localVersion.getMetaData().setParent(parentVersion);
                 }
             }
             for (DependencyResolveInfo dri : vri.dependencies) {
-                MavenLocalVersion depVersion = resolveLocalVersion(dri.path);
-                if (depVersion != null) {
-                    vri.localVersion.getMetaData().addDependency(
-                        new MavenArtifactDependency(
-                            depVersion.getArtifact().getGroupId(),
-                            depVersion.getArtifact().getArtifactId(),
-                            depVersion.getVersion(),
-                            dri.scope,
-                            dri.optional));
+                //MavenLocalVersion cachedVersion = resolveCachedVersion(dri.path);
+                MavenArtifactReference reference = new MavenArtifactReference(dri.path);
+                MavenArtifactDependency dependency = new MavenArtifactDependency(
+                    reference.getGroupId(),
+                    reference.getArtifactId(),
+                    reference.getVersion(),
+                    dri.scope,
+                    dri.optional);
+                if (!CommonUtils.isEmpty(dri.exclusions)) {
+                    for (String path : dri.exclusions) {
+                        dependency.addExclusion(new MavenArtifactReference(path));
+                    }
                 }
+                vri.localVersion.getMetaData().addDependency(dependency);
             }
         }
     }
 
-    private MavenLocalVersion resolveLocalVersion(String path) {
+    private MavenLocalVersion resolveCachedVersion(String path) {
         MavenArtifactReference parentRef = new MavenArtifactReference(path);
-        MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentRef);
+        MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentRef, false);
         if (parentArtifact == null) {
             log.warn("Can't resolve artifact " + parentRef);
             return null;

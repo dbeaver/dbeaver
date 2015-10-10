@@ -131,17 +131,22 @@ public class MavenRegistry
 
     @Nullable
     public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref) {
-        return findArtifact(ref.getGroupId(), ref.getArtifactId());
+        return findArtifact(ref.getGroupId(), ref.getArtifactId(), true);
     }
 
     @Nullable
-    private MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId) {
+    public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref, boolean resolve) {
+        return findArtifact(ref.getGroupId(), ref.getArtifactId(), resolve);
+    }
+
+    @Nullable
+    private MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
         String fullId = groupId + ":" + artifactId;
         if (notFoundArtifacts.contains(fullId)) {
             return null;
         }
         MavenArtifact artifact = findInRepositories(groupId, artifactId, false);
-        if (artifact == null) {
+        if (artifact == null && resolve) {
             artifact = findInRepositories(groupId, artifactId, true);
         }
         if (artifact != null) {
@@ -152,27 +157,6 @@ public class MavenRegistry
         notFoundArtifacts.add(fullId);
         return null;
     }
-
-/*
-    @Nullable
-    public MavenLocalVersion findArtifactVersion(@NotNull MavenArtifactReference ref) {
-        String fullId = ref.getGroupId() + ":" + ref.getArtifactId();
-        if (notFoundArtifacts.contains(fullId)) {
-            return null;
-        }
-        MavenLocalVersion version = findInRepositories(groupId, artifactId, false);
-        if (version == null) {
-            version = findInRepositories(groupId, artifactId, true);
-        }
-        if (version != null) {
-            return version;
-        }
-
-        // Not found
-        notFoundArtifacts.add(fullId);
-        return null;
-    }
-*/
 
     public void resetArtifactInfo(MavenArtifactReference artifactReference) {
         String groupId = artifactReference.getGroupId();

@@ -254,6 +254,13 @@ public class MavenArtifact
     }
 
     public MavenLocalVersion resolveVersion(DBRProgressMonitor monitor, String versionRef, boolean lookupVersion) throws IOException {
+/*
+        MavenLocalVersion localVersion = getActiveLocalVersion();
+        if (localVersion != null && versionRef.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE) || versionRef.equals(MavenArtifactReference.VERSION_PATTERN_LATEST)) {
+            // No need to lookup - we already have it
+            return localVersion;
+        }
+*/
         if (lookupVersion && !metadataLoaded) {
             loadMetadata(monitor);
         }
@@ -261,30 +268,34 @@ public class MavenArtifact
         String versionInfo = versionRef;
         if (lookupVersion) {
             List<String> allVersions = versions;
-            if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE)) {
-                versionInfo = releaseVersion;
-                if (!CommonUtils.isEmpty(versionInfo) && isBetaVersion(versionInfo)) {
-                    versionInfo = null;
-                }
-            } else if (versionInfo.equals(MavenArtifactReference.VERSION_PATTERN_LATEST)) {
-                versionInfo = latestVersion;
-            } else {
-                if (versionInfo.startsWith("[") && versionInfo.endsWith("]")) {
-                    // Regex - find most recent version matching this pattern
-                    String regex = versionInfo.substring(1, versionInfo.length() - 1);
-                    try {
-                        Pattern versionPattern = Pattern.compile(regex);
-                        List<String> versions = new ArrayList<String>(allVersions);
-                        for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
-                            if (!versionPattern.matcher(iter.next()).matches()) {
-                                iter.remove();
-                            }
-                        }
-                        versionInfo = findLatestVersion(versions);
-                    } catch (Exception e) {
-                        throw new IOException("Bad version pattern: " + regex);
+            switch (versionInfo) {
+                case MavenArtifactReference.VERSION_PATTERN_RELEASE:
+                    versionInfo = releaseVersion;
+                    if (!CommonUtils.isEmpty(versionInfo) && isBetaVersion(versionInfo)) {
+                        versionInfo = null;
                     }
-                }
+                    break;
+                case MavenArtifactReference.VERSION_PATTERN_LATEST:
+                    versionInfo = latestVersion;
+                    break;
+                default:
+                    if (versionInfo.startsWith("[") && versionInfo.endsWith("]")) {
+                        // Regex - find most recent version matching this pattern
+                        String regex = versionInfo.substring(1, versionInfo.length() - 1);
+                        try {
+                            Pattern versionPattern = Pattern.compile(regex);
+                            List<String> versions = new ArrayList<String>(allVersions);
+                            for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
+                                if (!versionPattern.matcher(iter.next()).matches()) {
+                                    iter.remove();
+                                }
+                            }
+                            versionInfo = findLatestVersion(versions);
+                        } catch (Exception e) {
+                            throw new IOException("Bad version pattern: " + regex);
+                        }
+                    }
+                    break;
             }
             if (CommonUtils.isEmpty(versionInfo)) {
                 if (allVersions.isEmpty()) {
