@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;

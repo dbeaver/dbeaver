@@ -26,7 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.EventProcessorJob;

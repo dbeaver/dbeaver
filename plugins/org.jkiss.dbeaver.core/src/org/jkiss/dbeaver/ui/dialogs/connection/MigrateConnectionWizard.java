@@ -33,7 +33,7 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;

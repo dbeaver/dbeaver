@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;

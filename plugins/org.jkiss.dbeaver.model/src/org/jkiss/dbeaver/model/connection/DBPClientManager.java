@@ -16,27 +16,20 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.connection;
 
-import org.jkiss.dbeaver.DBException;
-
-import java.io.File;
+import java.util.Collection;
 
 /**
- * Native client home descriptor
+ * Native client manager.
+ * This interface can be implemented by data source provider to support native client functions.
  */
-public interface DBPClientHome {
+public interface DBPClientManager {
 
-    String getHomeId();
+    Collection<String> findClientHomeIds();
 
-    File getHomePath();
+    String getDefaultClientHomeId();
 
-    String getDisplayName();
-
-    String getProductName()
-        throws DBException;
-
-    String getProductVersion()
-        throws DBException;
+    DBPClientHome getClientHome(String homeId);
 
 }

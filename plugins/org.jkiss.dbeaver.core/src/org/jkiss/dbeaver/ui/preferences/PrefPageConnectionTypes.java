@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.model.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
