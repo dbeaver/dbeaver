@@ -196,7 +196,6 @@ public class MavenArtifactVersion {
                     if (this.version == null) {
                         this.version = parentReference.getVersion();
                     }
-//                    parent = MavenRegistry.getInstance().findArtifactVersion(parentReference);
                     MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentReference);
                     if (parentArtifact == null) {
                         log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");

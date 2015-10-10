@@ -43,6 +43,7 @@ import java.util.List;
 class DriverDownloadAutoPage extends DriverDownloadPage {
 
     private Tree filesTree;
+    private DBPDriverDependencies dependencies;
 
     DriverDownloadAutoPage() {
         super("Automatic download", "Download driver files", null);
@@ -89,14 +90,13 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     void resolveLibraries() {
-        final DBPDriverDependencies[] ref = new DBPDriverDependencies[1];
         try {
             new RunnableContextDelegate(getContainer()).run(true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Resolve dependencies", 100);
                     try {
-                        ref[0] = getWizard().getDriver().resolveDependencies(monitor);
+                        dependencies = getWizard().getDriver().resolveDependencies(monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -108,9 +108,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             // User just canceled download
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
+            return;
         }
 
-        DBPDriverDependencies dependencies = ref[0];
         int totalItems = 0;
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
             DBPDriverLibrary library = node.library;
@@ -133,6 +133,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         shell.setSize(shell.getSize().x, shell.getSize().y + filesTree.getItemHeight() * totalItems);
         shell.layout();
     }
+
     private boolean addDependencies(TreeItem parent, DBPDriverDependencies.DependencyNode node) {
         Collection<DBPDriverDependencies.DependencyNode> dependencies = node.dependencies;
         if (dependencies != null && !dependencies.isEmpty()) {
@@ -154,16 +155,22 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     @Override
-    void performFinish() {
-        downloadLibraryFiles(new RunnableContextDelegate(getContainer()), getWizard().getFiles());
+    public boolean isPageComplete() {
+        return dependencies != null;
     }
 
-    private void downloadLibraryFiles(DBRRunnableContext runnableContext, final List<? extends DBPDriverLibrary> files)
+    @Override
+    void performFinish() {
+        downloadLibraryFiles(new RunnableContextDelegate(getContainer()));
+    }
+
+    private void downloadLibraryFiles(DBRRunnableContext runnableContext)
     {
         if (!getWizard().getDriver().acceptDriverLicenses(runnableContext)) {
             return;
         }
 
+        List<DBPDriverLibrary> files = dependencies.getLibraryList();
         for (int i = 0, filesSize = files.size(); i < filesSize; ) {
             DBPDriverLibrary lib = files.get(i);
             int result = downloadLibraryFile(runnableContext, lib);

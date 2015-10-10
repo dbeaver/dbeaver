@@ -238,6 +238,8 @@ public class MavenArtifact
             version = new MavenLocalVersion(this, versionStr, new Date());
             version.getMetaData(monitor);
             localVersions.add(version);
+
+            repository.flushCache();
         }
         if (setActive) {
             activeVersion = versionStr;
@@ -313,8 +315,6 @@ public class MavenArtifact
         if (localVersion == null) {
             localVersion = makeLocalVersion(monitor, versionInfo, true);
         }
-
-        repository.flushCache();
 
         return localVersion;
     }
