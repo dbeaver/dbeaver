@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.registry.driver;
 
-import org.jkiss.dbeaver.model.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 
 import java.io.File;
 import java.net.URL;

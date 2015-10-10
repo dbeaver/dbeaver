@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.connection;
 
 /**
  * Connection type

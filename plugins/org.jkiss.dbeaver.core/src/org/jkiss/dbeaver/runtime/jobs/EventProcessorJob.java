@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.runtime.jobs;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.DBPConnectionEventType;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;

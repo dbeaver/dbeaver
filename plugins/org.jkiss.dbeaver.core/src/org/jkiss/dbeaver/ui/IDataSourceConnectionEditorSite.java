@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 

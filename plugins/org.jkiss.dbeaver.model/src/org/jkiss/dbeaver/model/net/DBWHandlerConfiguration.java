@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.model.net;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 import java.util.HashMap;
 import java.util.Map;

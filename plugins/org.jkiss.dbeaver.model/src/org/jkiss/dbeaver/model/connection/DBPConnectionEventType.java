@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model;
+package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 
