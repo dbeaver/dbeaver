@@ -23,6 +23,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -95,10 +96,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Resolve dependencies", 100);
                     try {
+                        DBPDriverDependencies dependencies = getWizard().getDriver().resolveDependencies(monitor);
+
                         for (DBPDriverLibrary library : getWizard().getFiles()) {
                             resolveDependencies(monitor, library, null, depMap);
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
                         monitor.done();
