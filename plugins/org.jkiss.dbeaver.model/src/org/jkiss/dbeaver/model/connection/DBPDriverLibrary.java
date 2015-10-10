@@ -47,6 +47,15 @@ public interface DBPDriverLibrary
     @NotNull
     String getDisplayName();
 
+    /**
+     * Library native id.
+     * Id doesn't include version information so the same libraries with different versions have the same id.
+     */
+    String getId();
+
+    /**
+     * Library version. If library doesn;t support versions returns null.
+     */
     @Nullable
     String getVersion();
 
@@ -58,6 +67,7 @@ public interface DBPDriverLibrary
 
     /**
      * Native library URI.
+     * Could be a file path or maven artifact references or anything else.
      */
     @NotNull
     String getPath();

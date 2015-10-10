@@ -43,7 +43,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     protected final DriverDescriptor driver;
     protected final FileType type;
     protected final OSDescriptor system;
-    protected String path;
+    protected final String path;
     protected boolean custom;
     protected boolean disabled;
 
@@ -76,7 +76,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     {
         this.driver = driver;
         this.type = type;
-        this.system = DBeaverCore.getInstance().getLocalSystem();
+        this.system = null;
         this.path = path;
         this.custom = true;
     }

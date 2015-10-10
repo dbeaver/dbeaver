@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -122,12 +121,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         return file;
     }
 
-    @Override
-    public boolean matchesCurrentPlatform()
-    {
-        return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
-    }
-
     @Nullable
     @Override
     public Collection<DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, DBPDriverLibrary ownerLibrary) throws IOException {
@@ -136,6 +129,11 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @NotNull
     public String getDisplayName() {
+        return path;
+    }
+
+    @Override
+    public String getId() {
         return path;
     }
 
