@@ -142,6 +142,9 @@ public class MavenArtifactVersion {
     }
 
     public List<MavenArtifactReference> findExclusionsFor(String groupId, String artifactId) {
+        if (dependencies == null) {
+            return null;
+        }
         for (MavenArtifactDependency dependency : dependencies) {
             if (dependency.getGroupId().equals(groupId) && dependency.getArtifactId().equals(artifactId)) {
                 return dependency.getExclusions();
