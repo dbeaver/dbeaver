@@ -220,7 +220,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         }
         if (!forceUpdate) {
             MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
-            if (localVersion != null && localVersion.getCacheFile().exists()) {
+            if (localVersion != null) {
                 // Already cached
                 return localVersion;
             }
