@@ -30,59 +30,89 @@ import java.util.*;
  */
 public class DriverDependencies implements DBPDriverDependencies
 {
+    final List<DependencyNode> rootNodes = new ArrayList<>();
+    final List<DBPDriverLibrary> libraryList = new ArrayList<>();
+
     public DriverDependencies() {
     }
 
     void resolveDependencies(DBRProgressMonitor monitor, Collection<? extends DBPDriverLibrary> rootLibraries) throws DBException {
         try {
-            // Dependency map. Key is artifact version (exact)
-            final Map<String, List<DBPDriverLibrary>> depMap = new LinkedHashMap<>();
-            for (DBPDriverLibrary library : rootLibraries) {
-                resolveDependencies(monitor, library, null, depMap);
+            {
+                rootNodes.clear();
+
+                final Map<String, DBPDriverLibrary> libMap = new LinkedHashMap<>();
+                for (DBPDriverLibrary library : rootLibraries) {
+                    DependencyNode node = new DependencyNode(null, library);
+                    resolveDependencies(monitor, node, libMap);
+                    rootNodes.add(node);
+                }
+                libraryList.clear();
+                libraryList.addAll(libMap.values());
+
+                {
+                    StringBuilder sb = new StringBuilder();
+                    Set<String> ns = new TreeSet<>();
+                    for (String lib : libMap.keySet()) {
+                        String newName = lib.replaceAll(".+\\:", "");
+                        if (ns.contains(newName)) {
+                            System.out.println(123);
+                        }
+                        ns.add(newName);
+                    }
+                    for (String lib : ns) {
+                        sb.append(lib).append("\n");
+                    }
+                    System.out.println(sb.toString());
+
+                    System.out.println("---------------------------");
+                    for (DependencyNode node : rootNodes) {
+                        dumpNode(node, 0);
+                    }
+                }
             }
-
-/*
-            // Replace multiple versions of the same artifact with the first found one
-            Map<String, DBPDriverLibrary> flatDependencies = new LinkedHashMap<>();
-            List<DependencyNode> nodes = new ArrayList<>();
-            for (Map.Entry<String, List<DBPDriverLibrary>> entry : depMap.entrySet()) {
-
-            }
-*/
-
         } catch (IOException e) {
             throw new DBException("IO error while resolving dependencies", e);
         }
     }
 
-    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library, DBPDriverLibrary ownerLibrary, Map<String, List<DBPDriverLibrary>> depMap) throws IOException {
-        String libraryPath = library.getPath();
-        List<DBPDriverLibrary> deps = depMap.get(libraryPath);
-        if (deps != null) {
+    private void dumpNode(DependencyNode node, int level) {
+        if (node.duplicate) {
             return;
         }
+        for (int i = 0; i < level; i++) System.out.print("\t");
+        System.out.println(node.library.getId() + ":" + node.library.getVersion());
+        for (DependencyNode child : node.dependencies) {
+            dumpNode(child, level + 1);
+        }
+    }
 
-        deps = new ArrayList<>();
-        depMap.put(libraryPath, deps);
-
-        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor, ownerLibrary);
+    private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DBPDriverLibrary> libMap) throws IOException {
+        Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor, ownerNode.owner == null? null : ownerNode.owner.library);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
-                deps.add(dep);
-                resolveDependencies(monitor, dep, library, depMap);
+                DependencyNode node = new DependencyNode(ownerNode, dep);
+
+                node.duplicate = libMap.containsKey(node.library.getId());
+                if (!node.duplicate) {
+                    libMap.put(node.library.getId(), node.library);
+                }
+                ownerNode.dependencies.add(node);
+            }
+            for (DependencyNode node : ownerNode.dependencies) {
+                resolveDependencies(monitor, node, libMap);
             }
         }
     }
 
-
     @Override
     public List<DBPDriverLibrary> getLibraryList() {
-        return null;
+        return libraryList;
     }
 
     @Override
     public List<DependencyNode> getLibraryMap() {
-        return null;
+        return rootNodes;
     }
 
 }
