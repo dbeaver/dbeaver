@@ -27,14 +27,12 @@ import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -100,21 +98,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private boolean custom;
     private boolean modified;
     private boolean disabled;
-    private final List<String> clientHomeIds = new ArrayList<String>();
-    private final List<DriverFileSource> fileSources = new ArrayList<DriverFileSource>();
-    private final List<DBPDriverLibrary> libraries = new ArrayList<DBPDriverLibrary>();
-    private final List<DBPDriverLibrary> origFiles = new ArrayList<DBPDriverLibrary>();
-    private final List<DBPPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<DBPPropertyDescriptor>();
-    private final List<OSDescriptor> supportedSystems = new ArrayList<OSDescriptor>();
+    private final List<String> clientHomeIds = new ArrayList<>();
+    private final List<DriverFileSource> fileSources = new ArrayList<>();
+    private final List<DBPDriverLibrary> libraries = new ArrayList<>();
+    private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
+    private final List<DBPPropertyDescriptor> connectionPropertyDescriptors = new ArrayList<>();
+    private final List<OSDescriptor> supportedSystems = new ArrayList<>();
 
-    private final List<ReplaceInfo> driverReplacements = new ArrayList<ReplaceInfo>();
+    private final List<ReplaceInfo> driverReplacements = new ArrayList<>();
     private DriverDescriptor replacedBy;
 
-    private final Map<Object, Object> defaultParameters = new HashMap<Object, Object>();
-    private final Map<Object, Object> customParameters = new HashMap<Object, Object>();
+    private final Map<Object, Object> defaultParameters = new HashMap<>();
+    private final Map<Object, Object> customParameters = new HashMap<>();
 
-    private final Map<Object, Object> defaultConnectionProperties = new HashMap<Object, Object>();
-    private final Map<Object, Object> customConnectionProperties = new HashMap<Object, Object>();
+    private final Map<Object, Object> defaultConnectionProperties = new HashMap<>();
+    private final Map<Object, Object> customConnectionProperties = new HashMap<>();
 
     private Class driverClass;
     private boolean isLoaded;
@@ -296,7 +294,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public List<DataSourceDescriptor> getUsedBy()
     {
-        List<DataSourceDescriptor> usedBy = new ArrayList<DataSourceDescriptor>();
+        List<DataSourceDescriptor> usedBy = new ArrayList<>();
         for (DataSourceDescriptor ds : DataSourceDescriptor.getAllDataSources()) {
             if (ds.getDriver() == this) {
                 usedBy.add(ds);
@@ -623,6 +621,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return libraries;
     }
 
+    @NotNull
+    @Override
+    public DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) {
+        return new DriverDependencies(getDriverLibraries());
+    }
+
     public DBPDriverLibrary getDriverLibrary(String path)
     {
         for (DBPDriverLibrary lib : libraries) {
@@ -831,7 +835,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             validateFilesPresence(runnableContext);
         }
 
-        List<URL> libraryURLs = new ArrayList<URL>();
+        List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
         for (DBPDriverLibrary file : libraries) {
             if (file.isDisabled() || file.getType() != DBPDriverLibrary.FileType.jar) {
@@ -870,7 +874,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
-        final List<DBPDriverLibrary> downloadCandidates = new ArrayList<DBPDriverLibrary>();
+        final List<DBPDriverLibrary> downloadCandidates = new ArrayList<>();
         for (DBPDriverLibrary file : libraries) {
             if (file.isDisabled() || !file.isDownloadable()) {
                 // Nothing we can do about it
@@ -1126,9 +1130,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public static class MetaURL {
 
-        private List<String> urlComponents = new ArrayList<String>();
-        private Set<String> availableProperties = new HashSet<String>();
-        private Set<String> requiredProperties = new HashSet<String>();
+        private List<String> urlComponents = new ArrayList<>();
+        private Set<String> availableProperties = new HashSet<>();
+        private Set<String> requiredProperties = new HashSet<>();
 
         public List<String> getUrlComponents()
         {
