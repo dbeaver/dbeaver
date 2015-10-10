@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
-import org.jkiss.dbeaver.model.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;

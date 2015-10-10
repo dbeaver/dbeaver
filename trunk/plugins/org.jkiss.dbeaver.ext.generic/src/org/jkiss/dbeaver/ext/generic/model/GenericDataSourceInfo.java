@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
-import org.jkiss.dbeaver.model.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.utils.CommonUtils;

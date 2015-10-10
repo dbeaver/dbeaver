@@ -1922,7 +1922,7 @@
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.main.connectionTypes" name="Connection Types">
             <enabledWhen>
                 <or>
-                    <instanceof value="org.jkiss.dbeaver.model.DBPConnectionType"/>
+                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
                 </or>
             </enabledWhen>
         </page>

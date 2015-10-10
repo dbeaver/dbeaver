@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.model.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPClientHome;
 
 import java.io.File;
 
