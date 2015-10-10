@@ -97,9 +97,6 @@ public interface DBPDriverLibrary
     @Nullable
     Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverDependencies.DependencyNode ownerNode) throws IOException;
 
-    @Nullable
-    Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverLibrary ownerLibrary) throws IOException;
-
     void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate)
         throws IOException, InterruptedException;
 }
