@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Driver library
@@ -92,6 +93,9 @@ public interface DBPDriverLibrary
     File getLocalFile();
 
     boolean matchesCurrentPlatform();
+
+    @Nullable
+    Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverDependencies.DependencyNode ownerNode) throws IOException;
 
     @Nullable
     Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverLibrary ownerLibrary) throws IOException;

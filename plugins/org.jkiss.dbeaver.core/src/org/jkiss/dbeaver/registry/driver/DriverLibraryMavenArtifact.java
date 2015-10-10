@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -129,6 +130,55 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             }
         }
         return null;
+    }
+
+    @Nullable
+    @Override
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverDependencies.DependencyNode ownerNode) throws IOException {
+        List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
+        MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
+        if (localVersion != null) {
+            MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
+            List<MavenArtifactDependency> artifactDeps = metaData.getDependencies(monitor);
+            if (!CommonUtils.isEmpty(artifactDeps)) {
+                for (MavenArtifactDependency artifactDep : artifactDeps) {
+                    if (isDependencyExcluded(monitor, artifactDep, ownerNode)) {
+                        continue;
+                    }
+                    MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
+                    if (depLocalVersion != null) {
+                        dependencies.add(
+                            new DriverLibraryMavenDependency(
+                                this.getDriver(),
+                                depLocalVersion));
+                    }
+                }
+            }
+        }
+
+        return dependencies;
+    }
+
+    private boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency, DBPDriverDependencies.DependencyNode ownerNode) {
+        for (DBPDriverDependencies.DependencyNode node = ownerNode; node != null; node = node.owner) {
+            DBPDriverLibrary library = node.library;
+            if (library instanceof DriverLibraryMavenArtifact) {
+                MavenLocalVersion ownerVersion = ((DriverLibraryMavenArtifact) library).getMavenLocalVersion();
+                if (ownerVersion != null) {
+                    for (MavenArtifactDependency ownerDependency : ownerVersion.getMetaData(monitor).getDependencies(monitor)) {
+                        List<MavenArtifactReference> ownerDependencyExclusions = ownerDependency.getExclusions();
+                        if (ownerDependencyExclusions != null) {
+                            for (MavenArtifactReference exReference : ownerDependencyExclusions) {
+                                if (exReference.getGroupId().equals(dependency.getGroupId()) && exReference.getArtifactId().equals(dependency.getArtifactId())) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     @Nullable

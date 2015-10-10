@@ -44,6 +44,8 @@ public class DriverDependencies implements DBPDriverDependencies
                 final Map<String, DBPDriverLibrary> libMap = new LinkedHashMap<>();
                 for (DBPDriverLibrary library : rootLibraries) {
                     DependencyNode node = new DependencyNode(null, library);
+                    libMap.put(node.library.getId(), node.library);
+
                     resolveDependencies(monitor, node, libMap);
                     rootNodes.add(node);
                 }
@@ -88,7 +90,7 @@ public class DriverDependencies implements DBPDriverDependencies
     }
 
     private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DBPDriverLibrary> libMap) throws IOException {
-        Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor, ownerNode.owner == null? null : ownerNode.owner.library);
+        Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor, ownerNode.owner);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
                 DependencyNode node = new DependencyNode(ownerNode, dep);

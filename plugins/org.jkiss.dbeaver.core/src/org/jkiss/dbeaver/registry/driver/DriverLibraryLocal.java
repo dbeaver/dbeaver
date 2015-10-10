@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -108,6 +109,18 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         return platformFile;
     }
 
+    @Nullable
+    @Override
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverDependencies.DependencyNode ownerNode) throws IOException {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Collection<DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, DBPDriverLibrary ownerLibrary) throws IOException {
+        return null;
+    }
+
     protected File detectLocalFile()
     {
         String localPath = getLocalFilePath();
@@ -119,12 +132,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
             file = new File(DriverDescriptor.getCustomDriversHome(), localPath);
         }
         return file;
-    }
-
-    @Nullable
-    @Override
-    public Collection<DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, DBPDriverLibrary ownerLibrary) throws IOException {
-        return null;
     }
 
     @NotNull
