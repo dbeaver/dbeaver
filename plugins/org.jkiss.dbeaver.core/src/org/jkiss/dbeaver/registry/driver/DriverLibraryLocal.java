@@ -115,12 +115,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         return null;
     }
 
-    @Nullable
-    @Override
-    public Collection<DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, DBPDriverLibrary ownerLibrary) throws IOException {
-        return null;
-    }
-
     protected File detectLocalFile()
     {
         String localPath = getLocalFilePath();

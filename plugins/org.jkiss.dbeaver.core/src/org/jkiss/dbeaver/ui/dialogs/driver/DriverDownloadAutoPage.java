@@ -89,18 +89,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     void resolveLibraries() {
-        final Map<String, List<DBPDriverLibrary>> depMap = new LinkedHashMap<>();
+        final DBPDriverDependencies[] ref = new DBPDriverDependencies[1];
         try {
             new RunnableContextDelegate(getContainer()).run(true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Resolve dependencies", 100);
                     try {
-                        DBPDriverDependencies dependencies = getWizard().getDriver().resolveDependencies(monitor);
-
-                        for (DBPDriverLibrary library : getWizard().getFiles()) {
-                            resolveDependencies(monitor, library, null, depMap);
-                        }
+                        ref[0] = getWizard().getDriver().resolveDependencies(monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -114,15 +110,16 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
         }
 
-        final Set<String> addedDeps = new HashSet<>();
+        DBPDriverDependencies dependencies = ref[0];
         int totalItems = 0;
-        for (DBPDriverLibrary file : getWizard().getFiles()) {
+        for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
+            DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
-            item.setImage(DBeaverIcons.getImage(file.getIcon()));
-            item.setText(0, file.getDisplayName());
-            item.setText(1, CommonUtils.notEmpty(file.getVersion()));
+            item.setImage(DBeaverIcons.getImage(library.getIcon()));
+            item.setText(0, library.getDisplayName());
+            item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             totalItems++;
-            if (addDependencies(item, file, depMap, addedDeps)) {
+            if (addDependencies(item, node)) {
                 item.setExpanded(true);
                 totalItems += item.getItemCount();
             }
@@ -136,51 +133,21 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         shell.setSize(shell.getSize().x, shell.getSize().y + filesTree.getItemHeight() * totalItems);
         shell.layout();
     }
-
-    private void resolveDependencies(DBRProgressMonitor monitor, DBPDriverLibrary library, DBPDriverLibrary ownerLibrary, Map<String, List<DBPDriverLibrary>> depMap) throws IOException {
-        String libraryPath = library.getPath();
-        List<DBPDriverLibrary> deps = depMap.get(libraryPath);
-        if (deps != null) {
-            return;
-        }
-
-        deps = new ArrayList<>();
-        depMap.put(libraryPath, deps);
-
-        Collection<? extends DBPDriverLibrary> dependencies = library.getDependencies(monitor, ownerLibrary);
+    private boolean addDependencies(TreeItem parent, DBPDriverDependencies.DependencyNode node) {
+        Collection<DBPDriverDependencies.DependencyNode> dependencies = node.dependencies;
         if (dependencies != null && !dependencies.isEmpty()) {
-            for (DBPDriverLibrary dep : dependencies) {
-                deps.add(dep);
-                resolveDependencies(monitor, dep, library, depMap);
-            }
-        }
-    }
-
-    private boolean addDependencies(TreeItem parent, DBPDriverLibrary library, Map<String, List<DBPDriverLibrary>> depMap, Set<String> addedDeps) {
-        Collection<? extends DBPDriverLibrary> dependencies = depMap.get(library.getPath());
-        if (dependencies != null && !dependencies.isEmpty()) {
-            Map<DBPDriverLibrary, TreeItem> itemMap = new HashMap<>();
-            for (DBPDriverLibrary dep : dependencies) {
+            for (DBPDriverDependencies.DependencyNode dep : dependencies) {
                 TreeItem item = new TreeItem(parent, SWT.NONE);
-                item.setImage(DBeaverIcons.getImage(dep.getIcon()));
-                item.setText(0, dep.getDisplayName());
-                item.setText(1, CommonUtils.notEmpty(dep.getVersion()));
+                item.setImage(DBeaverIcons.getImage(dep.library.getIcon()));
+                item.setText(0, dep.library.getDisplayName());
+                item.setText(1, CommonUtils.notEmpty(dep.library.getVersion()));
 
-                if (addedDeps.contains(dep.getPath())) {
+                if (dep.duplicate) {
                     item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));
-                }
-                itemMap.put(dep, item);
-            }
-            for (DBPDriverLibrary dep : dependencies) {
-                TreeItem item = itemMap.get(dep);
-                if (!addedDeps.contains(dep.getPath())) {
-                    addedDeps.add(dep.getPath());
-                    if (addDependencies(item, dep, depMap, addedDeps)) {
-                        //item.setExpanded(true);
-                    }
+                } else {
+                    addDependencies(item, dep);
                 }
             }
-
             return true;
         }
         return false;
