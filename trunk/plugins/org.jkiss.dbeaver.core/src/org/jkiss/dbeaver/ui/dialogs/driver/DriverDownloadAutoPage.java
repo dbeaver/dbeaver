@@ -173,7 +173,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         List<DBPDriverLibrary> files = dependencies.getLibraryList();
         for (int i = 0, filesSize = files.size(); i < filesSize; ) {
             DBPDriverLibrary lib = files.get(i);
-            int result = downloadLibraryFile(runnableContext, lib);
+            int result = downloadLibraryFile(runnableContext, lib, "Download " + (i + 1) + "/" + filesSize);
             switch (result) {
                 case IDialogConstants.CANCEL_ID:
                 case IDialogConstants.ABORT_ID:
@@ -188,14 +188,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
     }
 
-    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DBPDriverLibrary file)
+    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DBPDriverLibrary file, final String taskName)
     {
         try {
             runnableContext.run(true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        file.downloadLibraryFile(monitor, getWizard().isUpdateVersion());
+                        file.downloadLibraryFile(monitor, false, taskName);
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }

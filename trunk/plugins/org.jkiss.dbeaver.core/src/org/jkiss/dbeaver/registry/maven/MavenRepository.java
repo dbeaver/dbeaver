@@ -77,7 +77,7 @@ public class MavenRepository
 
     private transient volatile boolean needsToSave = false;
 
-    private List<MavenArtifact> cachedArtifacts = new ArrayList<>();
+    private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
     public MavenRepository(IConfigurationElement config)
     {
@@ -122,34 +122,24 @@ public class MavenRepository
     }
 
     @Nullable
-    public synchronized MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
-        for (MavenArtifact artifact : cachedArtifacts) {
-            if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
-                return artifact;
-            }
-        }
-        if (resolve) {
+    public synchronized MavenArtifact findArtifact(@NotNull MavenArtifactReference ref, boolean resolve) {
+        MavenArtifact artifact = cachedArtifacts.get(ref.getId());
+        if (artifact == null && resolve) {
             // Not cached - look in remote repository
-            MavenArtifact artifact = new MavenArtifact(this, groupId, artifactId);
+            artifact = new MavenArtifact(this, ref.getGroupId(), ref.getArtifactId());
             try {
                 artifact.loadMetadata(VoidProgressMonitor.INSTANCE);
             } catch (IOException e) {
                 log.debug("Artifact [" + artifact + "] not found in repository [" + getUrl() + "]");
                 return null;
             }
-            cachedArtifacts.add(artifact);
-            return artifact;
+            cachedArtifacts.put(ref.getId(), artifact);
         }
-        return null;
+        return artifact;
     }
 
-    synchronized void resetArtifactCache(@NotNull String groupId, @NotNull String artifactId) {
-        for (Iterator<MavenArtifact> iterator = cachedArtifacts.iterator(); iterator.hasNext(); ) {
-            MavenArtifact artifact = iterator.next();
-            if (artifact.getGroupId().equals(groupId) && artifact.getArtifactId().equals(artifactId)) {
-                iterator.remove();
-            }
-        }
+    synchronized void resetArtifactCache(@NotNull MavenArtifactReference artifactReference) {
+        cachedArtifacts.remove(artifactReference.getId());
     }
 
     File getLocalCacheDir()
@@ -220,7 +210,9 @@ public class MavenRepository
                                 atts.getValue(ATTR_GROUP_ID),
                                 atts.getValue(ATTR_ARTIFACT_ID));
                             lastArtifact.setActiveVersion(atts.getValue(ATTR_ACTIVE_VERSION));
-                            cachedArtifacts.add(lastArtifact);
+                            cachedArtifacts.put(
+                                MavenArtifactReference.makeId(lastArtifact.getGroupId(), lastArtifact.getArtifactId()),
+                                lastArtifact);
                         } else if (TAG_VERSION.equals(localName) && lastArtifact != null) {
                             Date updateTime = new Date();
                             try {
@@ -352,7 +344,7 @@ public class MavenRepository
                     xml.addAttribute(ATTR_NAME, name);
                     xml.addAttribute(ATTR_URL, url);
 
-                    for (MavenArtifact artifact : cachedArtifacts) {
+                    for (MavenArtifact artifact : cachedArtifacts.values()) {
                         if (CommonUtils.isEmpty(artifact.getLocalVersions())) {
                             continue;
                         }

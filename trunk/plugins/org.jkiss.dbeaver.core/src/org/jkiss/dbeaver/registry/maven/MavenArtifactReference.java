@@ -30,16 +30,19 @@ public class MavenArtifactReference
     private static final String DEFAULT_MAVEN_VERSION = VERSION_PATTERN_RELEASE;
 
     @NotNull
-    private String groupId;
+    private final String groupId;
     @NotNull
-    private String artifactId;
+    private final String artifactId;
     @NotNull
-    private String version;
+    private final String version;
+    @NotNull
+    private final String id;
 
     public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
+        this.id = makeId(groupId, artifactId);
     }
 
     public MavenArtifactReference(String ref) {
@@ -53,6 +56,7 @@ public class MavenArtifactReference
             groupId = mavenUri;
             artifactId = mavenUri;
             version = DEFAULT_MAVEN_VERSION;
+            id = makeId(groupId, artifactId);
             return;
         }
         groupId = mavenUri.substring(0, divPos);
@@ -64,6 +68,7 @@ public class MavenArtifactReference
             artifactId = mavenUri.substring(divPos + 1, divPos2);
             version = mavenUri.substring(divPos2 + 1);
         }
+        id = makeId(groupId, artifactId);
     }
 
     @NotNull
@@ -71,17 +76,9 @@ public class MavenArtifactReference
         return groupId;
     }
 
-    public void setGroupId(@NotNull String groupId) {
-        this.groupId = groupId;
-    }
-
     @NotNull
     public String getArtifactId() {
         return artifactId;
-    }
-
-    public void setArtifactId(@NotNull String artifactId) {
-        this.artifactId = artifactId;
     }
 
     @NotNull
@@ -89,10 +86,10 @@ public class MavenArtifactReference
         return version;
     }
 
-    public void setVersion(@NotNull String version) {
-        this.version = version;
+    @NotNull
+    public String getId() {
+        return id;
     }
-
 
     public String getPath() {
         return groupId + ":" + artifactId + ":" + version;
@@ -107,4 +104,9 @@ public class MavenArtifactReference
     public int hashCode() {
         return groupId.hashCode() + artifactId.hashCode() + version.hashCode();
     }
+
+    static String makeId(String groupId, String artifactId) {
+        return groupId + ":" + artifactId;
+    }
+
 }

@@ -19,23 +19,32 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifact;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactDependency;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * DriverLibraryDescriptor
  */
 public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
 {
+    private DriverLibraryMavenArtifact parent;
     private MavenLocalVersion localVersion;
+    private MavenArtifactDependency source;
 
-    public DriverLibraryMavenDependency(DriverDescriptor driverDescriptor, MavenLocalVersion localVersion) {
-        super(driverDescriptor, FileType.jar, PATH_PREFIX + localVersion.toString());
+    public DriverLibraryMavenDependency(DriverLibraryMavenArtifact parent, MavenLocalVersion localVersion, MavenArtifactDependency source) {
+        super(parent.getDriver(), FileType.jar, PATH_PREFIX + localVersion.toString());
+        this.parent = parent;
         this.localVersion = localVersion;
+        this.source = source;
     }
 
     @Override
@@ -58,6 +67,19 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
 
     protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
         return localVersion;
+    }
+
+    protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {
+        List<MavenArtifactReference> exclusions = source.getExclusions();
+        if (exclusions != null) {
+            for (MavenArtifactReference exReference : exclusions) {
+                if (exReference.getGroupId().equals(dependency.getGroupId()) && exReference.getArtifactId().equals(dependency.getArtifactId())) {
+                    return true;
+                }
+            }
+        }
+
+        return parent.isDependencyExcluded(monitor, dependency);
     }
 
 }
