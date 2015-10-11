@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenDependency;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -142,16 +141,10 @@ public class MavenArtifactVersion {
         return this.dependencies;
     }
 
-    public List<MavenArtifactReference> findExclusionsFor(String groupId, String artifactId) {
-        if (dependencies == null) {
-            return null;
+    public void removeDependency(MavenArtifactDependency dependency) {
+        if (this.dependencies != null) {
+            this.dependencies.remove(dependency);
         }
-        for (MavenArtifactDependency dependency : dependencies) {
-            if (dependency.getGroupId().equals(groupId) && dependency.getArtifactId().equals(artifactId)) {
-                return dependency.getExclusions();
-            }
-        }
-        return null;
     }
 
     List<MavenArtifactDependency> getDependencies() {

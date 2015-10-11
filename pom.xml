@@ -111,7 +111,7 @@
 						<environment>
 							<os>solaris</os>
 							<ws>gtk</ws>
-							<arch>sparc</arch>
+							<arch>x86</arch>
 						</environment>
 					</environments>
 				</configuration>

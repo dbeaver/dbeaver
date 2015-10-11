@@ -52,14 +52,13 @@ public class DriverDependencies implements DBPDriverDependencies
                 libraryList.clear();
                 libraryList.addAll(libMap.values());
 
-/*
                 {
                     StringBuilder sb = new StringBuilder();
                     Set<String> ns = new TreeSet<>();
                     for (String lib : libMap.keySet()) {
                         String newName = lib.replaceAll(".+\\:", "");
                         if (ns.contains(newName)) {
-                            System.out.println(123);
+                            //System.out.println(123);
                         }
                         ns.add(newName);
                     }
@@ -73,14 +72,12 @@ public class DriverDependencies implements DBPDriverDependencies
                         dumpNode(node, 0);
                     }
                 }
-*/
             }
         } catch (IOException e) {
             throw new DBException("IO error while resolving dependencies", e);
         }
     }
 
-/*
     private void dumpNode(DependencyNode node, int level) {
         if (node.duplicate) {
             return;
@@ -91,7 +88,6 @@ public class DriverDependencies implements DBPDriverDependencies
             dumpNode(child, level + 1);
         }
     }
-*/
 
     private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DBPDriverLibrary> libMap) throws IOException {
         Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor);
@@ -106,7 +102,9 @@ public class DriverDependencies implements DBPDriverDependencies
                 ownerNode.dependencies.add(node);
             }
             for (DependencyNode node : ownerNode.dependencies) {
-                resolveDependencies(monitor, node, libMap);
+                if (!node.duplicate) {
+                    resolveDependencies(monitor, node, libMap);
+                }
             }
         }
     }

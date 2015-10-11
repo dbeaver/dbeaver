@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,14 +56,6 @@ public class MavenArtifactDependency extends MavenArtifactReference {
 
     public List<MavenArtifactReference> getExclusions() {
         return exclusions;
-    }
-
-    public MavenLocalVersion resolveDependency(DBRProgressMonitor monitor) throws IOException {
-        MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(this);
-        if (depArtifact != null) {
-            return depArtifact.resolveVersion(monitor, getVersion(), false);
-        }
-        return null;
     }
 
     void addExclusion(MavenArtifactReference ref) {
