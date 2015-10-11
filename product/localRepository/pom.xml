@@ -42,6 +42,7 @@
 								<artifact><id>com.datastax.cassandra:cassandra-driver-dse:2.1.7.1</id></artifact>
 								<artifact><id>org.slf4j:slf4j-jcl:1.7.5</id></artifact>
 								<artifact><id>org.glassfish.jersey.core:jersey-client:2.22</id></artifact>
+								<artifact><id>org.apache.maven:maven-artifact:3.3.3</id></artifact>
 <!--
 								<artifact><id>org.apache.hbase:hbase-client:1.1.1</id></artifact>
 								<artifact><id>org.apache.hbase:hbase-rest:1.1.1</id></artifact>

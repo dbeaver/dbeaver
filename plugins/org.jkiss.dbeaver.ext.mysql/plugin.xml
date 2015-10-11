@@ -143,7 +143,7 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:release"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
                 </driver>
                 <driver
                     id="mariaDB"
@@ -154,8 +154,8 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
-                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:release"/>
-                    <file type="jar" path="maven:/org.slf4j:slf4j-api:release"/>
+                    <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE"/>
+                    <file type="jar" path="maven:/org.slf4j:slf4j-api:RELEASE"/>
                 </driver>
             </drivers>
             <views>
