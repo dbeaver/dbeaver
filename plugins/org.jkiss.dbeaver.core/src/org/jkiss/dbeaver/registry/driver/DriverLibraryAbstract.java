@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
@@ -152,7 +151,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
     }
 
-    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate) throws IOException, InterruptedException
+    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException
     {
         String externalURL = getExternalURL();
         if (externalURL == null) {
@@ -160,11 +159,19 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         }
 
         final URLConnection connection = RuntimeUtils.openConnection(externalURL);
-        monitor.worked(1);
-        monitor.done();
 
-        final int contentLength = connection.getContentLength();
-        monitor.beginTask("Download " + externalURL, contentLength);
+        int contentLength = connection.getContentLength();
+        if (contentLength < 0) {
+            contentLength = 0;
+        }
+        int bufferLength = contentLength / 10;
+        if (bufferLength > 1000000) {
+            bufferLength = 1000000;
+        }
+        if (bufferLength < 50000) {
+            bufferLength = 50000;
+        }
+        monitor.beginTask(taskName + " - " + externalURL, contentLength);
         boolean success = false;
         final File localFile = getLocalFile();
         if (localFile == null) {
@@ -176,12 +183,10 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
                 log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
             }
         }
-        final OutputStream outputStream = new FileOutputStream(localFile);
-        try {
-            final InputStream inputStream = connection.getInputStream();
-            try {
+        try (final OutputStream outputStream = new FileOutputStream(localFile)) {
+            try (final InputStream inputStream = connection.getInputStream()) {
                 final NumberFormat numberFormat = NumberFormat.getNumberInstance();
-                byte[] buffer = new byte[10000];
+                byte[] buffer = new byte[bufferLength];
                 int totalRead = 0;
                 for (;;) {
                     if (monitor.isCanceled()) {
@@ -198,18 +203,14 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
                     totalRead += count;
                 }
             }
-            finally {
-                ContentUtils.close(inputStream);
-            }
         } finally {
-            ContentUtils.close(outputStream);
             if (!success) {
                 if (!localFile.delete()) {
                     log.warn("Can't delete local driver file '" + localFile.getAbsolutePath() + "'");
                 }
             }
+            monitor.done();
         }
-        monitor.done();
     }
 
     @Override

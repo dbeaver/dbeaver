@@ -23,7 +23,6 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -111,7 +110,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor, @Nullable DBPDriverDependencies.DependencyNode ownerNode) throws IOException {
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         return null;
     }
 

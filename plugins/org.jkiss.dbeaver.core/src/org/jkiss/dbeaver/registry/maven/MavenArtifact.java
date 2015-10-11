@@ -207,7 +207,7 @@ public class MavenArtifact
 
     @Override
     public String toString() {
-        return groupId + ":" + artifactId;
+        return MavenArtifactReference.makeId(groupId, artifactId);
     }
 
     @Nullable
