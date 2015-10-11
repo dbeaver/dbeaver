@@ -236,13 +236,13 @@ public class MavenArtifactVersion {
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
             for (Element dep : XMLUtils.getChildElementList(dependenciesElement, "dependency")) {
-                String groupId = XMLUtils.getChildElementBody(dep, "groupId");
-                String artifactId = XMLUtils.getChildElementBody(dep, "artifactId");
+                String groupId = evaluateString(XMLUtils.getChildElementBody(dep, "groupId"));
+                String artifactId = evaluateString(XMLUtils.getChildElementBody(dep, "artifactId"));
                 if (groupId == null || artifactId == null) {
                     log.warn("Broken dependency reference: " + groupId + ":" + artifactId);
                     continue;
                 }
-                String version = XMLUtils.getChildElementBody(dep, "version");
+                String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
                 if (version == null) {
                     version = findDependencyVersion(monitor, groupId, artifactId);
                 }
@@ -308,6 +308,9 @@ public class MavenArtifactVersion {
     }
 
     private String evaluateString(String value) {
+        if (value == null) {
+            return null;
+        }
         return GeneralUtils.replaceVariables(value, variableResolver);
     }
 
