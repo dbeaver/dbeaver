@@ -21,6 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
+import org.jkiss.dbeaver.registry.maven.versioning.InvalidVersionSpecificationException;
+import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -51,14 +54,14 @@ public class MavenArtifact
     private final MavenRepository repository;
     private final String groupId;
     private final String artifactId;
-    private List<String> versions = new ArrayList<String>();
+    private List<String> versions = new ArrayList<>();
     private String latestVersion;
     private String releaseVersion;
     private Date lastUpdate;
 
     private transient boolean metadataLoaded = false;
 
-    private List<MavenLocalVersion> localVersions = new ArrayList<MavenLocalVersion>();
+    private List<MavenLocalVersion> localVersions = new ArrayList<>();
     private String activeVersion;
 
     public MavenArtifact(MavenRepository repository, String groupId, String artifactId)
@@ -163,7 +166,8 @@ public class MavenArtifact
         return artifactId;
     }
 
-    public List<String> getVersions() {
+/*
+    public List<ArtifactVersion> getVersions() {
         return versions;
     }
 
@@ -174,6 +178,7 @@ public class MavenArtifact
     public String getReleaseVersion() {
         return releaseVersion;
     }
+*/
 
     public Date getLastUpdate() {
         return lastUpdate;
@@ -231,10 +236,6 @@ public class MavenArtifact
     private MavenLocalVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException {
         MavenLocalVersion version = getLocalVersion(versionStr);
         if (version == null) {
-            if (!versions.contains(versionStr)) {
-                // No version info. Some artifacts do not have older versions in metadata.xml so just warn
-                log.debug("Artifact '" + artifactId + "' do not have version '" + versionStr + "' info in metadata");
-            }
             version = new MavenLocalVersion(this, versionStr, new Date());
             version.getMetaData(monitor);
             localVersions.add(version);
@@ -256,24 +257,20 @@ public class MavenArtifact
     }
 
     public MavenLocalVersion resolveVersion(DBRProgressMonitor monitor, String versionRef, boolean lookupVersion) throws IOException {
-/*
-        MavenLocalVersion localVersion = getActiveLocalVersion();
-        if (localVersion != null && versionRef.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE) || versionRef.equals(MavenArtifactReference.VERSION_PATTERN_LATEST)) {
-            // No need to lookup - we already have it
-            return localVersion;
-        }
-*/
+//        if (versionRef.startsWith("[") || versionRef.startsWith("(") || versionRef.endsWith("]") || versionRef.endsWith(")")) {
+//            lookupVersion = true;
+//        }
         if (lookupVersion && !metadataLoaded) {
             loadMetadata(monitor);
         }
 
-        String versionInfo = versionRef;
+        String versionInfo;
         if (lookupVersion) {
             List<String> allVersions = versions;
-            switch (versionInfo) {
+            switch (versionRef) {
                 case MavenArtifactReference.VERSION_PATTERN_RELEASE:
                     versionInfo = releaseVersion;
-                    if (!CommonUtils.isEmpty(versionInfo) && isBetaVersion(versionInfo)) {
+                    if (!CommonUtils.isEmpty(versionRef) && isBetaVersion(versionRef)) {
                         versionInfo = null;
                     }
                     break;
@@ -281,12 +278,12 @@ public class MavenArtifact
                     versionInfo = latestVersion;
                     break;
                 default:
-                    if (versionInfo.startsWith("[") && versionInfo.endsWith("]")) {
+                    if (versionRef.startsWith("{") && versionRef.endsWith("}")) {
                         // Regex - find most recent version matching this pattern
-                        String regex = versionInfo.substring(1, versionInfo.length() - 1);
+                        String regex = versionRef.substring(1, versionRef.length() - 1);
                         try {
                             Pattern versionPattern = Pattern.compile(regex);
-                            List<String> versions = new ArrayList<String>(allVersions);
+                            List<String> versions = new ArrayList<>(allVersions);
                             for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
                                 if (!versionPattern.matcher(iter.next()).matches()) {
                                     iter.remove();
@@ -296,15 +293,23 @@ public class MavenArtifact
                         } catch (Exception e) {
                             throw new IOException("Bad version pattern: " + regex);
                         }
+                    } else {
+                        versionInfo = getVersionFromSpec(versionRef);
                     }
                     break;
             }
-            if (CommonUtils.isEmpty(versionInfo)) {
+            if (versionInfo == null) {
                 if (allVersions.isEmpty()) {
                     throw new IOException("Artifact '" + this + "' has empty version list");
                 }
                 // Use latest version
                 versionInfo = findLatestVersion(allVersions);
+            }
+        } else {
+            if (versionRef.startsWith("[") || versionRef.startsWith("(")) {
+                versionInfo = getVersionFromSpec(versionRef);
+            } else {
+                versionInfo = versionRef;
             }
         }
 
@@ -317,6 +322,24 @@ public class MavenArtifact
         }
 
         return localVersion;
+    }
+
+    @Nullable
+    private String getVersionFromSpec(String versionRef) throws IOException {
+        String versionInfo;
+        try {
+            VersionRange range = VersionRange.createFromVersionSpec(versionRef);
+            if (range.getRecommendedVersion() != null) {
+                versionInfo = range.getRecommendedVersion().toString();
+            } else if (!range.getRestrictions().isEmpty()) {
+                versionInfo = range.getRestrictions().get(0).getLowerBound().toString();
+            } else {
+                versionInfo = null;
+            }
+        } catch (InvalidVersionSpecificationException e) {
+            throw new IOException("Bad version pattern: " + versionRef, e);
+        }
+        return versionInfo;
     }
 
     private static boolean isBetaVersion(String versionInfo) {
@@ -336,7 +359,7 @@ public class MavenArtifact
         return latest;
     }
 
-    private static int compareVersions(String v1, String v2) {
+    public static int compareVersions(String v1, String v2) {
         StringTokenizer st1 = new StringTokenizer(v1, ".-_");
         StringTokenizer st2 = new StringTokenizer(v2, ".-_");
         while (st1.hasMoreTokens() && st2.hasMoreTokens()) {

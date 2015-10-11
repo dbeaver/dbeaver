@@ -59,11 +59,12 @@ public class MavenRegistry
     }
 
     private void init() {
+        long st = System.currentTimeMillis();
+        System.out.print("Loading Maven cache...");
         loadStandardRepositories();
         loadCustomRepositories();
-        long st = System.currentTimeMillis();
         loadCache();
-        System.out.println("Cache load: " + (System.currentTimeMillis() - st) + "ms");
+        System.out.println("Done (" + (System.currentTimeMillis() - st) + "ms)");
         // Start config saver
         new ConfigSaver().schedule(ConfigSaver.SAVE_PERIOD);
     }

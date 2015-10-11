@@ -140,18 +140,37 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
             List<MavenArtifactDependency> artifactDeps = metaData.getDependencies(monitor);
             if (!CommonUtils.isEmpty(artifactDeps)) {
-                for (MavenArtifactDependency artifactDep : artifactDeps) {
-                    if (isDependencyExcluded(monitor, artifactDep)) {
+                List<MavenArtifactDependency> brokenDependencies = null;
+                for (MavenArtifactDependency dependency : artifactDeps) {
+                    if (isDependencyExcluded(monitor, dependency)) {
                         continue;
                     }
-                    MavenLocalVersion depLocalVersion = artifactDep.resolveDependency(monitor);
-                    if (depLocalVersion != null) {
-                        dependencies.add(
-                            new DriverLibraryMavenDependency(
-                                this,
-                                depLocalVersion,
-                                artifactDep));
+
+                    MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(dependency);
+                    if (depArtifact != null) {
+                        MavenLocalVersion depLocalVersion = depArtifact.resolveVersion(monitor, dependency.getVersion(), false);
+                        if (depLocalVersion != null) {
+                            dependencies.add(
+                                new DriverLibraryMavenDependency(
+                                    this,
+                                    depLocalVersion,
+                                    dependency));
+                        }
+                    } else {
+                        // Artifact not found - broken dependency
+                        if (brokenDependencies == null) {
+                            brokenDependencies = new ArrayList<>();
+                        }
+                        brokenDependencies.add(dependency);
                     }
+                }
+
+                if (brokenDependencies != null) {
+                    for (MavenArtifactDependency dependency : brokenDependencies) {
+                        log.warn("Artifact [" + dependency + "] not found. Remove from [" + reference + "] dependency list.");
+                        metaData.removeDependency(dependency);
+                    }
+                    localVersion.getArtifact().getRepository().flushCache();
                 }
             }
         }

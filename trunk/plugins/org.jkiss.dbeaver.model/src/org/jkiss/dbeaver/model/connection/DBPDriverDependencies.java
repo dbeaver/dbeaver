@@ -36,6 +36,11 @@ public interface DBPDriverDependencies
             this.owner = owner;
             this.library = library;
         }
+
+        @Override
+        public String toString() {
+            return library.getPath();
+        }
     }
 
     List<DBPDriverLibrary> getLibraryList();

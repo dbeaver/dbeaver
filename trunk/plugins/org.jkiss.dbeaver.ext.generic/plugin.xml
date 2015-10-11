@@ -137,7 +137,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
 
-                    <file type="jar" path="maven:/org.postgresql:postgresql:[.*jdbc4]"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
 
                     <property name="loginTimeout" value="10"/>
 
@@ -248,7 +248,7 @@
                     sampleURL="jdbc:as400://{host};[libraries={database};]"
                     defaultPort=""
                     description="DB2 iSeries/AS 400 driver">
-                    <file type="jar" path="maven:/dk.kewill.thirdpartymavencentral:jt400-full:release"/>
+                    <file type="jar" path="maven:/dk.kewill.thirdpartymavencentral:jt400-full:RELEASE"/>
 
                     <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
@@ -270,7 +270,7 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:release"/>
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll"/>
                 </driver>
@@ -318,7 +318,7 @@
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:release"/>
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
                 </driver>
                 <driver
                     id="sap_maxdb"
@@ -358,7 +358,7 @@
                     defaultPort="9092"
                     webURL="http://www.h2database.com/"
                     description="H2 Server">
-                    <file type="jar" path="maven:/com.h2database:h2:release"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -369,7 +369,7 @@
                     webURL="http://www.h2database.com/"
                     embedded="true"
                     description="H2 Embedded">
-                    <file type="jar" path="maven:/com.h2database:h2:release"/>
+                    <file type="jar" path="maven:/com.h2database:h2:RELEASE"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -394,7 +394,7 @@
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
-                    <file type="jar" path="maven:/org.apache.derby:derby:release"/>
+                    <file type="jar" path="maven:/org.apache.derby:derby:RELEASE"/>
                 </driver>
                 <driver
                     id="derby_server"
@@ -405,7 +405,7 @@
                     defaultPort="1527"
                     webURL="http://db.apache.org/"
                     description="Derby (Java DB) server driver">
-                    <file type="jar" path="maven:/org.apache.derby:derbyclient:release"/>
+                    <file type="jar" path="maven:/org.apache.derby:derbyclient:RELEASE"/>
                     <parameter name="query-get-active-db" value="select CURRENT SCHEMA from sysibm.sysdummy1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
@@ -429,7 +429,7 @@
                     defaultPort="9001"
                     webURL="http://hsqldb.org/"
                     description="HyperSQL DataBase - Server Mode">
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                     <parameter name="active-entity-type" value="schema"/>
@@ -443,7 +443,7 @@
                     webURL="http://hsqldb.org/"
                     embedded="true"
                     description="HyperSQL DataBase - Embedded Mode">
-                    <file type="jar" path="maven:/org.hsqldb:hsqldb:release"/>
+                    <file type="jar" path="maven:/org.hsqldb:hsqldb:RELEASE"/>
                     <parameter name="create-url-param" value=";create=true"/>
                     <parameter name="shutdown-url-param" value=";shutdown=true"/>
                     <parameter name="query-get-active-db" value="SELECT * FROM (VALUES (current_schema))"/>
@@ -469,7 +469,7 @@
                     defaultPort="II7"
                     webURL="http://www.ingres.com/products/ingres-database/"
                     description="Ingres Database">
-                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:release"/>
+                    <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
                 </driver>
                 <driver
                     id="linter"
@@ -489,7 +489,7 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk16:release"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk16:RELEASE"/>
                     <file type="jar" path="maven:/javax.resource:connector-api:1.5"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
@@ -507,7 +507,7 @@
                     <replace provider="generic" driver="sqlite_xerial"/>
                     <replace provider="generic" driver="sqlite_ch_werner"/>
 
-                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:release"/>
+                    <file type="jar" path="maven:/org.xerial:sqlite-jdbc:RELEASE"/>
 
                     <parameter name="supports-references" value="true"/>
                     <parameter name="supports-struct-cache" value="false"/>
@@ -535,7 +535,7 @@
                     defaultPort="3306"
                     webURL="http://www.mysql.com/products/connector/"
                     description="Driver for MySQL 3.x and earlier">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:release"/>
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
                 </driver>
                 <driver
                     id="vertica"
@@ -580,7 +580,7 @@
                     embedded="true"
                     description="Microsoft Access driver">
 
-                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:release"/>
+                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE"/>
                 </driver>
                 <driver
                     id="netezza"
@@ -601,7 +601,7 @@
                     defaultPort=""
                     description="NuoDB"
                     webURL="http://www.nuodb.com/">
-                    <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:release"/>
+                    <file type="jar" path="maven:/com.nuodb.jdbc:nuodb-jdbc:RELEASE"/>
                 </driver>
                 <driver
                     id="exasol"
@@ -644,7 +644,7 @@
                     defaultPort="10000"
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home">
-                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:release"/>
+                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Cloudera -->

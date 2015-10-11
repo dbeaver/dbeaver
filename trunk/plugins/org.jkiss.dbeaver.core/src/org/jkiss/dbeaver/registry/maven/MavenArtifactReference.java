@@ -24,8 +24,8 @@ import org.jkiss.code.NotNull;
  */
 public class MavenArtifactReference
 {
-    public static final String VERSION_PATTERN_RELEASE = "release";
-    public static final String VERSION_PATTERN_LATEST = "latest";
+    public static final String VERSION_PATTERN_RELEASE = "RELEASE";
+    public static final String VERSION_PATTERN_LATEST = "LATEST";
 
     private static final String DEFAULT_MAVEN_VERSION = VERSION_PATTERN_RELEASE;
 
