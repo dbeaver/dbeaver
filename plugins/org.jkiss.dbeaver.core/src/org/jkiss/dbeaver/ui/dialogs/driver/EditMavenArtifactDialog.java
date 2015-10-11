@@ -107,9 +107,10 @@ class EditMavenArtifactDialog extends Dialog
 
     @Override
     protected void okPressed() {
-        artifact.setGroupId(groupText.getText());
-        artifact.setArtifactId(artifactText.getText());
-        artifact.setVersion(versionText.getText());
+        artifact = new MavenArtifactReference(
+            groupText.getText(),
+            artifactText.getText(),
+            versionText.getText());
         super.okPressed();
     }
 }

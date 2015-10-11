@@ -265,7 +265,7 @@ public class MavenArtifactVersion {
                 boolean optional = CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false);
 
                 // TODO: maybe we should include some of them
-                if (depManagement || (!optional && (scope == MavenArtifactDependency.Scope.COMPILE || scope == MavenArtifactDependency.Scope.RUNTIME))) {
+                if (depManagement || (!optional && includesScope(scope))) {
                     MavenArtifactDependency dependency = new MavenArtifactDependency(
                         evaluateString(groupId),
                         evaluateString(artifactId),
@@ -292,6 +292,13 @@ public class MavenArtifactVersion {
             }
         }
         return result;
+    }
+
+    private boolean includesScope(MavenArtifactDependency.Scope scope) {
+        return
+            scope == MavenArtifactDependency.Scope.COMPILE ||
+            scope == MavenArtifactDependency.Scope.RUNTIME ||
+            scope == MavenArtifactDependency.Scope.PROVIDED;
     }
 
     private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {

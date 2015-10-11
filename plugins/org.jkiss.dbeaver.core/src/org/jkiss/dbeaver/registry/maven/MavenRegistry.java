@@ -61,7 +61,9 @@ public class MavenRegistry
     private void init() {
         loadStandardRepositories();
         loadCustomRepositories();
+        long st = System.currentTimeMillis();
         loadCache();
+        System.out.println("Cache load: " + (System.currentTimeMillis() - st) + "ms");
         // Start config saver
         new ConfigSaver().schedule(ConfigSaver.SAVE_PERIOD);
     }
@@ -131,23 +133,18 @@ public class MavenRegistry
 
     @Nullable
     public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref) {
-        return findArtifact(ref.getGroupId(), ref.getArtifactId(), true);
+        return findArtifact(ref, true);
     }
 
     @Nullable
     public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref, boolean resolve) {
-        return findArtifact(ref.getGroupId(), ref.getArtifactId(), resolve);
-    }
-
-    @Nullable
-    private MavenArtifact findArtifact(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
-        String fullId = groupId + ":" + artifactId;
+        String fullId = ref.getId();
         if (notFoundArtifacts.contains(fullId)) {
             return null;
         }
-        MavenArtifact artifact = findInRepositories(groupId, artifactId, false);
+        MavenArtifact artifact = findInRepositories(ref, false);
         if (artifact == null && resolve) {
-            artifact = findInRepositories(groupId, artifactId, true);
+            artifact = findInRepositories(ref, true);
         }
         if (artifact != null) {
             return artifact;
@@ -159,26 +156,24 @@ public class MavenRegistry
     }
 
     public void resetArtifactInfo(MavenArtifactReference artifactReference) {
-        String groupId = artifactReference.getGroupId();
-        String artifactId = artifactReference.getArtifactId();
-        String fullId = groupId + ":" + artifactId;
-        notFoundArtifacts.remove(fullId);
+        notFoundArtifacts.remove(artifactReference.getId());
+
         for (MavenRepository repository : repositories) {
-            repository.resetArtifactCache(groupId, artifactId);
+            repository.resetArtifactCache(artifactReference);
         }
-        localRepository.resetArtifactCache(groupId, artifactId);
+        localRepository.resetArtifactCache(artifactReference);
     }
 
     @Nullable
-    private MavenArtifact findInRepositories(@NotNull String groupId, @NotNull String artifactId, boolean resolve) {
+    private MavenArtifact findInRepositories(@NotNull MavenArtifactReference ref, boolean resolve) {
         // Try all available repositories (without resolve)
         for (MavenRepository repository : repositories) {
-            MavenArtifact artifact = repository.findArtifact(groupId, artifactId, resolve);
+            MavenArtifact artifact = repository.findArtifact(ref, resolve);
             if (artifact != null) {
                 return artifact;
             }
         }
-        MavenArtifact artifact = localRepository.findArtifact(groupId, artifactId, resolve);
+        MavenArtifact artifact = localRepository.findArtifact(ref, resolve);
         if (artifact != null) {
             return artifact;
         }
