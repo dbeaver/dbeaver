@@ -54,14 +54,14 @@ public class MavenArtifact
     private final MavenRepository repository;
     private final String groupId;
     private final String artifactId;
+
     private List<String> versions = new ArrayList<>();
     private String latestVersion;
     private String releaseVersion;
     private Date lastUpdate;
-
     private transient boolean metadataLoaded = false;
 
-    private List<MavenLocalVersion> localVersions = new ArrayList<>();
+    private List<MavenArtifactVersion> localVersions = new ArrayList<>();
     private String activeVersion;
 
     public MavenArtifact(MavenRepository repository, String groupId, String artifactId)
@@ -166,30 +166,12 @@ public class MavenArtifact
         return artifactId;
     }
 
-/*
-    public List<ArtifactVersion> getVersions() {
-        return versions;
-    }
-
-    public String getLatestVersion() {
-        return latestVersion;
-    }
-
-    public String getReleaseVersion() {
-        return releaseVersion;
-    }
-*/
-
     public Date getLastUpdate() {
         return lastUpdate;
     }
 
-    public List<MavenLocalVersion> getLocalVersions() {
+    public List<MavenArtifactVersion> getLocalVersions() {
         return localVersions;
-    }
-
-    public String getActiveVersion() {
-        return activeVersion;
     }
 
     public void setActiveVersion(String activeVersion) {
@@ -216,16 +198,16 @@ public class MavenArtifact
     }
 
     @Nullable
-    public MavenLocalVersion getActiveLocalVersion() {
-        return getLocalVersion(activeVersion);
+    public MavenArtifactVersion getActiveVersion() {
+        return getVersion(activeVersion);
     }
 
     @Nullable
-    public MavenLocalVersion getLocalVersion(String versionStr) {
+    public MavenArtifactVersion getVersion(String versionStr) {
         if (CommonUtils.isEmpty(activeVersion)) {
             return null;
         }
-        for (MavenLocalVersion version : localVersions) {
+        for (MavenArtifactVersion version : localVersions) {
             if (version.getVersion().equals(versionStr)) {
                 return version;
             }
@@ -233,33 +215,47 @@ public class MavenArtifact
         return null;
     }
 
-    private MavenLocalVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException {
-        MavenLocalVersion version = getLocalVersion(versionStr);
-        if (version == null) {
-            version = new MavenLocalVersion(this, versionStr, new Date());
-            version.getMetaData(monitor);
-            localVersions.add(version);
+    public void addVersion(MavenArtifactVersion version) {
+        localVersions.add(version);
+    }
 
+    private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
+        MavenArtifactVersion version = getVersion(versionStr);
+        if (version == null) {
+            version = new MavenArtifactVersion(monitor, this, versionStr);
+            localVersions.add(version);
             repository.flushCache();
         }
         if (setActive) {
             activeVersion = versionStr;
+            repository.flushCache();
         }
         return version;
     }
 
-    void addLocalVersion(MavenLocalVersion version) {
-        localVersions.add(version);
-    }
+    public MavenArtifactVersion resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
+        if (CommonUtils.isEmpty(versionRef)) {
+            throw new IOException("Empty artifact " + this + " version");
+        }
+        char firstChar = versionRef.charAt(0), lastChar = versionRef.charAt(versionRef.length() - 1);
+        boolean predefinedVersion =
+            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE) ||
+            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_LATEST) ||
+            versionRef.equals(MavenArtifactReference.VERSION_PATTERN_SNAPSHOT);
+        boolean lookupVersion =
+            firstChar == '[' || firstChar == '(' || firstChar == '{' ||
+            lastChar == ']' || lastChar == ')' || lastChar == '}' ||
+            versionRef.contains(",") ||
+            predefinedVersion;
 
-    private void removeLocalVersion(MavenLocalVersion version) {
-        localVersions.remove(version);
-    }
-
-    public MavenLocalVersion resolveVersion(DBRProgressMonitor monitor, String versionRef, boolean lookupVersion) throws IOException {
-//        if (versionRef.startsWith("[") || versionRef.startsWith("(") || versionRef.endsWith("]") || versionRef.endsWith(")")) {
-//            lookupVersion = true;
-//        }
+        if (lookupVersion && !CommonUtils.isEmpty(activeVersion)) {
+            // We already have some active version
+            // Let's use it if it matches pattern
+            lookupVersion = !(predefinedVersion || versionMatches(activeVersion, versionRef));
+            if (!lookupVersion) {
+                versionRef = activeVersion;
+            }
+        }
         if (lookupVersion && !metadataLoaded) {
             loadMetadata(monitor);
         }
@@ -313,15 +309,26 @@ public class MavenArtifact
             }
         }
 
-        MavenLocalVersion localVersion = getLocalVersion(versionInfo);
-        if (localVersion == null && lookupVersion) {
-            localVersion = getActiveLocalVersion();
-        }
+        MavenArtifactVersion localVersion = getVersion(versionInfo);
         if (localVersion == null) {
-            localVersion = makeLocalVersion(monitor, versionInfo, true);
+            localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion);
         }
 
         return localVersion;
+    }
+
+    private boolean versionMatches(String version, String versionSpec) {
+        try {
+            if (versionSpec.startsWith("{") && versionSpec.endsWith("}")) {
+                Pattern versionPattern = Pattern.compile(versionSpec.substring(1, versionSpec.length() - 1));
+                return versionPattern.matcher(version).matches();
+            } else {
+                return VersionRange.createFromVersionSpec(versionSpec).containsVersion(new DefaultArtifactVersion(version));
+            }
+        } catch (Exception e) {
+            log.debug(e);
+            return false;
+        }
     }
 
     @Nullable
@@ -336,7 +343,7 @@ public class MavenArtifact
             } else {
                 versionInfo = null;
             }
-        } catch (InvalidVersionSpecificationException e) {
+        } catch (Exception e) {
             throw new IOException("Bad version pattern: " + versionRef, e);
         }
         return versionInfo;

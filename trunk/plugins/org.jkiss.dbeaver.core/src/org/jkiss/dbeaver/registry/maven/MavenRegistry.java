@@ -49,10 +49,10 @@ public class MavenRegistry
         return instance;
     }
 
-    private final List<MavenRepository> repositories = new ArrayList<MavenRepository>();
+    private final List<MavenRepository> repositories = new ArrayList<>();
     private MavenRepository localRepository;
     // Cache for not found artifact ids. Avoid multiple remote metadata reading
-    private final Set<String> notFoundArtifacts = new HashSet<String>();
+    private final Set<String> notFoundArtifacts = new HashSet<>();
 
     private MavenRegistry()
     {
@@ -133,20 +133,12 @@ public class MavenRegistry
     }
 
     @Nullable
-    public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref) {
-        return findArtifact(ref, true);
-    }
-
-    @Nullable
-    public MavenArtifact findArtifact(@NotNull MavenArtifactReference ref, boolean resolve) {
+    public MavenArtifactVersion findArtifact(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
         String fullId = ref.getId();
         if (notFoundArtifacts.contains(fullId)) {
             return null;
         }
-        MavenArtifact artifact = findInRepositories(ref, false);
-        if (artifact == null && resolve) {
-            artifact = findInRepositories(ref, true);
-        }
+        MavenArtifactVersion artifact = findInRepositories(monitor, ref);
         if (artifact != null) {
             return artifact;
         }
@@ -166,15 +158,15 @@ public class MavenRegistry
     }
 
     @Nullable
-    private MavenArtifact findInRepositories(@NotNull MavenArtifactReference ref, boolean resolve) {
+    private MavenArtifactVersion findInRepositories(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
         // Try all available repositories (without resolve)
         for (MavenRepository repository : repositories) {
-            MavenArtifact artifact = repository.findArtifact(ref, resolve);
+            MavenArtifactVersion artifact = repository.findArtifact(monitor, ref);
             if (artifact != null) {
                 return artifact;
             }
         }
-        MavenArtifact artifact = localRepository.findArtifact(ref, resolve);
+        MavenArtifactVersion artifact = localRepository.findArtifact(monitor, ref);
         if (artifact != null) {
             return artifact;
         }
