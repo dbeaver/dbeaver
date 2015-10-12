@@ -45,13 +45,13 @@ public final class IOUtils {
     }
 
     public static void fastCopy(final InputStream src, final OutputStream dest) throws IOException {
-
+        fastCopy(src, dest, DEFAULT_BUFFER_SIZE);
     }
 
     public static void fastCopy(final InputStream src, final OutputStream dest, int bufferSize) throws IOException {
         final ReadableByteChannel inputChannel = Channels.newChannel(src);
         final WritableByteChannel outputChannel = Channels.newChannel(dest);
-        fastCopy(inputChannel, outputChannel, DEFAULT_BUFFER_SIZE);
+        fastCopy(inputChannel, outputChannel, bufferSize);
     }
 
     public static void fastCopy(final ReadableByteChannel src, final WritableByteChannel dest, int bufferSize) throws IOException {
