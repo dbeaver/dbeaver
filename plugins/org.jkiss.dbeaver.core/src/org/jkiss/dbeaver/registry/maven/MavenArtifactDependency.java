@@ -39,6 +39,7 @@ public class MavenArtifactDependency extends MavenArtifactReference {
     private Scope scope;
     private boolean optional;
     private List<MavenArtifactReference> exclusions;
+    private boolean broken;
 
     public MavenArtifactDependency(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, Scope scope, boolean optional) {
         super(groupId, artifactId, version);
@@ -65,4 +66,11 @@ public class MavenArtifactDependency extends MavenArtifactReference {
         exclusions.add(ref);
     }
 
+    public boolean isBroken() {
+        return broken;
+    }
+
+    public void setBroken(boolean broken) {
+        this.broken = broken;
+    }
 }

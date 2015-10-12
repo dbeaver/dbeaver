@@ -17,15 +17,11 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
-import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.maven.MavenArtifact;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactDependency;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
-import org.jkiss.dbeaver.registry.maven.MavenLocalVersion;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactVersion;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +33,10 @@ import java.util.List;
 public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
 {
     private DriverLibraryMavenArtifact parent;
-    private MavenLocalVersion localVersion;
+    private MavenArtifactVersion localVersion;
     private MavenArtifactDependency source;
 
-    public DriverLibraryMavenDependency(DriverLibraryMavenArtifact parent, MavenLocalVersion localVersion, MavenArtifactDependency source) {
+    public DriverLibraryMavenDependency(DriverLibraryMavenArtifact parent, MavenArtifactVersion localVersion, MavenArtifactDependency source) {
         super(parent.getDriver(), FileType.jar, PATH_PREFIX + localVersion.toString());
         this.parent = parent;
         this.localVersion = localVersion;
@@ -54,7 +50,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
 
     @Nullable
     @Override
-    protected MavenLocalVersion getMavenLocalVersion() {
+    protected MavenArtifactVersion getMavenVersion() {
         return localVersion;
     }
 
@@ -65,7 +61,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
         return localVersion.getCacheFile();
     }
 
-    protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
+    protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
         return localVersion;
     }
 

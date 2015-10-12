@@ -68,28 +68,18 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public boolean isResolved() {
-        MavenArtifact artifact = getMavenArtifact();
-        return artifact != null && artifact.getActiveLocalVersion() != null;
+        return getMavenVersion() != null;
     }
 
     @Nullable
-    private MavenArtifact getMavenArtifact() {
-        return MavenRegistry.getInstance().findArtifact(reference);
-    }
-
-    @Nullable
-    protected MavenLocalVersion getMavenLocalVersion() {
-        MavenArtifact artifact = getMavenArtifact();
-        if (artifact != null) {
-            return artifact.getActiveLocalVersion();
-        }
-        return null;
+    protected MavenArtifactVersion getMavenVersion() {
+        return MavenRegistry.getInstance().findArtifact(VoidProgressMonitor.INSTANCE, reference);
     }
 
     @Nullable
     @Override
     public String getExternalURL() {
-        MavenLocalVersion localVersion = getMavenLocalVersion();
+        MavenArtifactVersion localVersion = getMavenVersion();
         if (localVersion != null) {
             return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
         }
@@ -113,20 +103,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     private File detectLocalFile()
     {
-        MavenArtifact artifact = getMavenArtifact();
-        if (artifact != null) {
-            MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
-            if (localVersion == null && artifact.getRepository().isLocal()) {
-                // In case of local artifact make version resolve
-                try {
-                    localVersion = artifact.resolveVersion(VoidProgressMonitor.INSTANCE, reference.getVersion(), true);
-                } catch (IOException e) {
-                    log.warn("Error resolving local artifact [" + artifact + "] version", e);
-                }
-            }
-            if (localVersion != null) {
-                return localVersion.getCacheFile();
-            }
+        MavenArtifactVersion localVersion = getMavenVersion();
+        if (localVersion != null) {
+            return localVersion.getCacheFile();
         }
         return null;
     }
@@ -135,42 +114,25 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Override
     public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
-        MavenLocalVersion localVersion = resolveLocalVersion(monitor, false);
+        MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
         if (localVersion != null) {
-            MavenArtifactVersion metaData = localVersion.getMetaData(monitor);
-            List<MavenArtifactDependency> artifactDeps = metaData.getDependencies(monitor);
+            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(monitor);
             if (!CommonUtils.isEmpty(artifactDeps)) {
-                List<MavenArtifactDependency> brokenDependencies = null;
                 for (MavenArtifactDependency dependency : artifactDeps) {
                     if (isDependencyExcluded(monitor, dependency)) {
                         continue;
                     }
 
-                    MavenArtifact depArtifact = MavenRegistry.getInstance().findArtifact(dependency);
+                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(monitor, dependency);
                     if (depArtifact != null) {
-                        MavenLocalVersion depLocalVersion = depArtifact.resolveVersion(monitor, dependency.getVersion(), false);
-                        if (depLocalVersion != null) {
-                            dependencies.add(
-                                new DriverLibraryMavenDependency(
-                                    this,
-                                    depLocalVersion,
-                                    dependency));
-                        }
+                        dependencies.add(
+                            new DriverLibraryMavenDependency(
+                                this,
+                                depArtifact,
+                                dependency));
                     } else {
-                        // Artifact not found - broken dependency
-                        if (brokenDependencies == null) {
-                            brokenDependencies = new ArrayList<>();
-                        }
-                        brokenDependencies.add(dependency);
+                        dependency.setBroken(true);
                     }
-                }
-
-                if (brokenDependencies != null) {
-                    for (MavenArtifactDependency dependency : brokenDependencies) {
-                        log.warn("Artifact [" + dependency + "] not found. Remove from [" + reference + "] dependency list.");
-                        metaData.removeDependency(dependency);
-                    }
-                    localVersion.getArtifact().getRepository().flushCache();
                 }
             }
         }
@@ -184,11 +146,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @NotNull
     public String getDisplayName() {
-        MavenArtifact artifact = getMavenArtifact();
-        if (artifact != null) {
-            return artifact.getGroupId() + ":" + artifact.getArtifactId();
-        }
-        return path;
+        return getId();
     }
 
     @Override
@@ -198,7 +156,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public String getVersion() {
-        MavenLocalVersion version = getMavenLocalVersion();
+        MavenArtifactVersion version = getMavenVersion();
         if (version != null) {
             return version.getVersion();
         }
@@ -215,7 +173,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
         //monitor.beginTask(taskName + " - update version information", 1);
         try {
-            MavenLocalVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
+            MavenArtifactVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
             if (localVersion.getArtifact().getRepository().isLocal()) {
                 // No need to download local artifacts
                 return;
@@ -226,22 +184,15 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         super.downloadLibraryFile(monitor, forceUpdate, taskName);
     }
 
-    protected MavenLocalVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
+    protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
         if (forceUpdate) {
             MavenRegistry.getInstance().resetArtifactInfo(reference);
         }
-        MavenArtifact artifact = MavenRegistry.getInstance().findArtifact(reference);
-        if (artifact == null) {
+        MavenArtifactVersion version = MavenRegistry.getInstance().findArtifact(monitor, reference);
+        if (version == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }
-        if (!forceUpdate) {
-            MavenLocalVersion localVersion = artifact.getActiveLocalVersion();
-            if (localVersion != null) {
-                // Already cached
-                return localVersion;
-            }
-        }
-        return artifact.resolveVersion(monitor, reference.getVersion(), true);
+        return version;
     }
 
 }
