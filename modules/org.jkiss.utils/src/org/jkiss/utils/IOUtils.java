@@ -38,23 +38,13 @@ public final class IOUtils {
         }
     }
 
-	public static void writeStream(
+	public static void copyStream(
 		java.io.InputStream inputStream,
 		java.io.OutputStream outputStream)
 		throws IOException
 	{
-		writeStream(inputStream, outputStream, DEFAULT_BUFFER_SIZE);
+		copyStream(inputStream, outputStream, DEFAULT_BUFFER_SIZE);
 	}
-
-	public static void writeStream(
-		java.io.InputStream inputStream,
-		java.io.OutputStream outputStream,
-		int bufferSize)
-		throws IOException
-	{
-		copyStream(inputStream, outputStream, bufferSize);
-	}
-
 	/**
 		Read entire input stream and writes all data to output stream
 		then closes input and flushed output
