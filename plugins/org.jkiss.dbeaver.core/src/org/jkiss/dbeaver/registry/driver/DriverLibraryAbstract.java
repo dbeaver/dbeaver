@@ -153,6 +153,20 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException
     {
+        final File localFile = getLocalFile();
+        if (localFile == null) {
+            throw new IOException("No target file for '" + getPath() + "'");
+        }
+        if (!forceUpdate && localFile.exists()) {
+            return;
+        }
+        final File localDir = localFile.getParentFile();
+        if (!localDir.exists()) {
+            if (!localDir.mkdirs()) {
+                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
+            }
+        }
+
         String externalURL = getExternalURL();
         if (externalURL == null) {
             throw new IOException("Unresolved file reference: " + getPath());
@@ -173,16 +187,6 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         }
         monitor.beginTask(taskName + " - " + externalURL, contentLength);
         boolean success = false;
-        final File localFile = getLocalFile();
-        if (localFile == null) {
-            throw new IOException("No target file for '" + getPath() + "'");
-        }
-        final File localDir = localFile.getParentFile();
-        if (!localDir.exists()) {
-            if (!localDir.mkdirs()) {
-                log.warn("Can't create directory for local driver file '" + localDir.getAbsolutePath() + "'");
-            }
-        }
         try (final OutputStream outputStream = new FileOutputStream(localFile)) {
             try (final InputStream inputStream = connection.getInputStream()) {
                 final NumberFormat numberFormat = NumberFormat.getNumberInstance();

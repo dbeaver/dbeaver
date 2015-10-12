@@ -280,6 +280,8 @@ public class RuntimeUtils {
 
     public static URLConnection openConnection(String urlString) throws IOException {
 System.out.println("Open [" + urlString + "]");
+        log.debug("Open [" + urlString + "]");
+
         DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
         String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
         Proxy proxy = null;

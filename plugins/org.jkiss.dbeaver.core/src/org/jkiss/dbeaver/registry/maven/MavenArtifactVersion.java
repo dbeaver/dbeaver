@@ -22,13 +22,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.*;
 
 /**
@@ -41,49 +44,44 @@ public class MavenArtifactVersion {
     public static final String PROP_PROJECT_GROUP_ID = "project.groupId";
     public static final String PROP_PROJECT_ARTIFACT_ID = "project.artifactId";
 
-    private MavenLocalVersion localVersion;
+    private MavenArtifact artifact;
     private String name;
     private String version;
     private String description;
     private String url;
-    private MavenLocalVersion parent;
+    private MavenArtifactVersion parent;
     private Map<String, String> properties = new LinkedHashMap<>();
     private List<MavenArtifactLicense> licenses = new ArrayList<>();
     private List<MavenArtifactDependency> dependencies;
     private List<MavenArtifactDependency> dependencyManagement;
 
-    private final GeneralUtils.IVariableResolver variableResolver = new GeneralUtils.IVariableResolver() {
+    private GeneralUtils.IVariableResolver propertyResolver = new GeneralUtils.IVariableResolver() {
         @Override
         public String get(String name) {
-            String value = properties.get(name);
-            if (value == null) {
-                if (name.equals(PROP_PROJECT_VERSION)) {
-                    value = version;
+            for (MavenArtifactVersion v = MavenArtifactVersion.this; v != null; v = v.parent) {
+                String value = v.properties.get(name);
+                if (value != null) {
+                    return value;
+                } else if (name.equals(PROP_PROJECT_VERSION)) {
+                    return v.version;
                 } else if (name.equals(PROP_PROJECT_GROUP_ID)) {
-                    value = localVersion.getArtifact().getGroupId();
+                    return v.artifact.getGroupId();
                 } else if (name.equals(PROP_PROJECT_ARTIFACT_ID)) {
-                    value = localVersion.getArtifact().getArtifactId();
-                } else if (parent != null) {
-                    return parent.getMetaData().variableResolver.get(name);
+                    return v.artifact.getArtifactId();
                 }
             }
-            return value;
+            return null;
         }
     };
 
-    MavenArtifactVersion(DBRProgressMonitor monitor, MavenLocalVersion localVersion) throws IOException {
-        this.localVersion = localVersion;
+    MavenArtifactVersion(DBRProgressMonitor monitor, MavenArtifact artifact, String version) throws IOException {
+        this.artifact = artifact;
+        this.version = version;
         loadPOM(monitor);
     }
 
-    MavenArtifactVersion(MavenLocalVersion localVersion, String name, String version) {
-        this.localVersion = localVersion;
-        this.name = name;
-        this.version = version;
-    }
-
-    public MavenLocalVersion getLocalVersion() {
-        return localVersion;
+    public MavenArtifact getArtifact() {
+        return artifact;
     }
 
     public String getName() {
@@ -102,19 +100,8 @@ public class MavenArtifactVersion {
         return url;
     }
 
-    public MavenLocalVersion getParent() {
+    public MavenArtifactVersion getParent() {
         return parent;
-    }
-
-    void setParent(MavenLocalVersion parent) {
-        this.parent = parent;
-    }
-
-    void addDependency(MavenArtifactDependency dependency) {
-        if (dependencies == null) {
-            dependencies = new ArrayList<>();
-        }
-        dependencies.add(dependency);
     }
 
     public Map<String, String> getProperties() {
@@ -127,7 +114,7 @@ public class MavenArtifactVersion {
 
     public List<MavenArtifactDependency> getDependencies(DBRProgressMonitor monitor) {
         if (parent != null) {
-            List<MavenArtifactDependency> parentDependencies = parent.getMetaData(monitor).getDependencies(monitor);
+            List<MavenArtifactDependency> parentDependencies = parent.getDependencies(monitor);
             if (!CommonUtils.isEmpty(parentDependencies)) {
                 if (CommonUtils.isEmpty(dependencies)) {
                     return parentDependencies;
@@ -141,27 +128,64 @@ public class MavenArtifactVersion {
         return this.dependencies;
     }
 
-    public void removeDependency(MavenArtifactDependency dependency) {
-        if (this.dependencies != null) {
-            this.dependencies.remove(dependency);
-        }
-    }
-
     List<MavenArtifactDependency> getDependencies() {
         return dependencies;
     }
 
+
+    public File getCacheFile() {
+        if (artifact.getRepository().isLocal()) {
+            String externalURL = getExternalURL(MavenArtifact.FILE_JAR);
+            try {
+                return new File(new URL(externalURL).toURI());
+            } catch (Exception e) {
+                log.warn("Bad repository URL", e);
+                return new File(externalURL);
+            }
+        }
+        return new File(artifact.getRepository().getLocalCacheDir(), artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_JAR));
+    }
+
+    public String getExternalURL(String fileType) {
+        return artifact.getFileURL(version, fileType);
+    }
+
+    public String getPath() {
+        return artifact.toString() + ":" + version;
+    }
+
     @Override
     public String toString() {
-        return localVersion.toString();
+        return getPath();
+    }
+
+    private File getLocalPOM() {
+        if (artifact.getRepository().isLocal()) {
+            try {
+                return new File(new URI(getRemotePOMLocation()));
+            } catch (URISyntaxException e) {
+                log.warn(e);
+            }
+        }
+        return new File(
+            artifact.getRepository().getLocalCacheDir(),
+            artifact.getGroupId() + "/" + artifact.getVersionFileName(version, MavenArtifact.FILE_POM));
+    }
+
+    private String getRemotePOMLocation() {
+        return artifact.getFileURL(version, MavenArtifact.FILE_POM);
     }
 
     private void loadPOM(DBRProgressMonitor monitor) throws IOException {
-        String pomURL = localVersion.getArtifact().getFileURL(localVersion.getVersion(), MavenArtifact.FILE_POM);
-        monitor.subTask("Load POM " + localVersion);
+        File localPOM = getLocalPOM();
+        if (!localPOM.exists()) {
+            cachePOM(localPOM);
+        }
+
+        monitor.subTask("Load POM " + this);
 
         Document pomDocument;
-        try (InputStream mdStream = RuntimeUtils.openConnectionStream(pomURL)) {
+        try (InputStream mdStream = new FileInputStream(localPOM)) {
             pomDocument = XMLUtils.parseDocument(mdStream);
         } catch (XMLException e) {
             throw new IOException("Error parsing POM", e);
@@ -189,11 +213,9 @@ public class MavenArtifactVersion {
                     if (this.version == null) {
                         this.version = parentReference.getVersion();
                     }
-                    MavenArtifact parentArtifact = MavenRegistry.getInstance().findArtifact(parentReference);
-                    if (parentArtifact == null) {
+                    parent = MavenRegistry.getInstance().findArtifact(monitor, parentReference);
+                    if (parent == null) {
                         log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");
-                    } else {
-                        parent = parentArtifact.resolveVersion(monitor, parentReference.getVersion(), false);
                     }
                 }
             }
@@ -229,6 +251,23 @@ public class MavenArtifactVersion {
             dependencies = parseDependencies(monitor, root, false);
         }
         monitor.worked(1);
+    }
+
+    private void cachePOM(File localPOM) throws IOException {
+        if (artifact.getRepository().isLocal()) {
+            return;
+        }
+        String pomURL = getRemotePOMLocation();
+        try (InputStream is = RuntimeUtils.openConnectionStream(pomURL)) {
+            File folder = localPOM.getParentFile();
+            if (!folder.exists() && !folder.mkdirs()) {
+                throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");
+            }
+
+            try (OutputStream os = new FileOutputStream(localPOM)) {
+                IOUtils.fastCopy(is, os);
+            }
+        }
     }
 
     private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean depManagement) {
@@ -305,14 +344,14 @@ public class MavenArtifactVersion {
                 }
             }
         }
-        return parent == null ? null : parent.getMetaData(monitor).findDependencyVersion(monitor, groupId, artifactId);
+        return parent == null ? null : parent.findDependencyVersion(monitor, groupId, artifactId);
     }
 
     private String evaluateString(String value) {
         if (value == null) {
             return null;
         }
-        return GeneralUtils.replaceVariables(value, variableResolver);
+        return GeneralUtils.replaceVariables(value, propertyResolver);
     }
 
 }

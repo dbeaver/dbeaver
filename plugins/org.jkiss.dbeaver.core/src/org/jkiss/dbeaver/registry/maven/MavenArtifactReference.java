@@ -26,6 +26,7 @@ public class MavenArtifactReference
 {
     public static final String VERSION_PATTERN_RELEASE = "RELEASE";
     public static final String VERSION_PATTERN_LATEST = "LATEST";
+    public static final String VERSION_PATTERN_SNAPSHOT = "SNAPSHOT";
 
     private static final String DEFAULT_MAVEN_VERSION = VERSION_PATTERN_RELEASE;
 
