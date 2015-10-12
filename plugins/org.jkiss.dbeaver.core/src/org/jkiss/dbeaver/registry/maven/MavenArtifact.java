@@ -174,7 +174,11 @@ public class MavenArtifact
         return localVersions;
     }
 
-    public void setActiveVersion(String activeVersion) {
+    public String getActiveVersionName() {
+        return activeVersion;
+    }
+
+    public void setActiveVersionName(String activeVersion) {
         this.activeVersion = activeVersion;
     }
 
@@ -224,7 +228,6 @@ public class MavenArtifact
         if (version == null) {
             version = new MavenArtifactVersion(monitor, this, versionStr);
             localVersions.add(version);
-            repository.flushCache();
         }
         if (setActive) {
             activeVersion = versionStr;

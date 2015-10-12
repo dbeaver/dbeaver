@@ -846,9 +846,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             validateFilesPresence(runnableContext);
         }
 
-        long st = System.currentTimeMillis();
+//        long st = System.currentTimeMillis();
         resolveDependencies(runnableContext);
-        System.out.println("Resolve: " + (System.currentTimeMillis() - st) + "ms");
+//        System.out.println("Resolve: " + (System.currentTimeMillis() - st) + "ms");
 
         List<URL> libraryURLs = new ArrayList<>();
         // Load libraries
