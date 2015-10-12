@@ -166,7 +166,7 @@ public class MavenRepository
                                 MavenRepository.this,
                                 atts.getValue(ATTR_GROUP_ID),
                                 atts.getValue(ATTR_ARTIFACT_ID));
-                            lastArtifact.setActiveVersion(atts.getValue(ATTR_ACTIVE_VERSION));
+                            lastArtifact.setActiveVersionName(atts.getValue(ATTR_ACTIVE_VERSION));
                             cachedArtifacts.put(
                                 MavenArtifactReference.makeId(lastArtifact.getGroupId(), lastArtifact.getArtifactId()),
                                 lastArtifact);
@@ -229,16 +229,13 @@ public class MavenRepository
                     xml.addAttribute(ATTR_URL, url);
 
                     for (MavenArtifact artifact : cachedArtifacts.values()) {
-                        if (CommonUtils.isEmpty(artifact.getLocalVersions())) {
+                        if (CommonUtils.isEmpty(artifact.getActiveVersionName())) {
                             continue;
                         }
-                        MavenArtifactVersion activeVersion = artifact.getActiveVersion();
-                        if (activeVersion != null) {
-                            try (XMLBuilder.Element e1 = xml.startElement(TAG_ARTIFACT)) {
-                                xml.addAttribute(ATTR_GROUP_ID, artifact.getGroupId());
-                                xml.addAttribute(ATTR_ARTIFACT_ID, artifact.getArtifactId());
-                                xml.addAttribute(ATTR_ACTIVE_VERSION, activeVersion.getVersion());
-                            }
+                        try (XMLBuilder.Element e1 = xml.startElement(TAG_ARTIFACT)) {
+                            xml.addAttribute(ATTR_GROUP_ID, artifact.getGroupId());
+                            xml.addAttribute(ATTR_ARTIFACT_ID, artifact.getArtifactId());
+                            xml.addAttribute(ATTR_ACTIVE_VERSION, artifact.getActiveVersionName());
                         }
                     }
                 }
