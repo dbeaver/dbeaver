@@ -242,14 +242,6 @@ public class MavenArtifactVersion {
                     log.warn("Broken dependency reference: " + groupId + ":" + artifactId);
                     continue;
                 }
-                String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
-                if (version == null) {
-                    version = findDependencyVersion(monitor, groupId, artifactId);
-                }
-                if (version == null) {
-                    log.error("Can't resolve artifact [" + groupId + ":" + artifactId + "] version. Skip.");
-                    continue;
-                }
                 MavenArtifactDependency.Scope scope = MavenArtifactDependency.Scope.COMPILE;
                 String scopeName = XMLUtils.getChildElementBody(dep, "scope");
                 if (!CommonUtils.isEmpty(scopeName)) {
@@ -259,6 +251,15 @@ public class MavenArtifactVersion {
 
                 // TODO: maybe we should include some of them
                 if (depManagement || (!optional && includesScope(scope))) {
+                    String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
+                    if (version == null) {
+                        version = findDependencyVersion(monitor, groupId, artifactId);
+                    }
+                    if (version == null) {
+                        log.error("Can't resolve artifact [" + groupId + ":" + artifactId + "] version. Skip.");
+                        continue;
+                    }
+
                     MavenArtifactDependency dependency = new MavenArtifactDependency(
                         evaluateString(groupId),
                         evaluateString(artifactId),
