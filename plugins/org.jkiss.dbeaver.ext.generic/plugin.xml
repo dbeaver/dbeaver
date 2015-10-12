@@ -628,7 +628,8 @@
                 <!-- Hadoop -->
                 <driver
                     id="gemfire_xd"
-                    label="GemfireXD"
+                    category="Hadoop"
+                    label="Gemfire XD"
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
                     defaultPort="1527"
@@ -638,13 +639,25 @@
                 </driver>
                 <driver
                     id="apache_hive2"
-                    label="Hive"
+                    category="Hadoop"
+                    label="Apache Hive"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}]/{database}"
                     defaultPort="10000"
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home">
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE"/>
+                </driver>
+                <driver
+                    id="apache_drill"
+                    category="Hadoop"
+                    label="Apache Drill"
+                    class="org.apache.drill.jdbc.Driver"
+                    sampleURL="jdbc:drill:zk={host}[;{database}]:{port}"
+                    defaultPort="5181"
+                    description="Apache Drill JDBC"
+                    webURL="https://drill.apache.org/">
+                    <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Cloudera -->
