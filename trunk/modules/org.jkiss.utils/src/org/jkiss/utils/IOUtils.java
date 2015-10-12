@@ -20,6 +20,12 @@ package org.jkiss.utils;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 
 /**
  * Some IO helper functions
@@ -35,6 +41,32 @@ public final class IOUtils {
         }
         catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public static void fastCopy(final InputStream src, final OutputStream dest) throws IOException {
+
+    }
+
+    public static void fastCopy(final InputStream src, final OutputStream dest, int bufferSize) throws IOException {
+        final ReadableByteChannel inputChannel = Channels.newChannel(src);
+        final WritableByteChannel outputChannel = Channels.newChannel(dest);
+        fastCopy(inputChannel, outputChannel, DEFAULT_BUFFER_SIZE);
+    }
+
+    public static void fastCopy(final ReadableByteChannel src, final WritableByteChannel dest, int bufferSize) throws IOException {
+        final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
+
+        while(src.read(buffer) != -1) {
+            buffer.flip();
+            dest.write(buffer);
+            buffer.compact();
+        }
+
+        buffer.flip();
+
+        while(buffer.hasRemaining()) {
+            dest.write(buffer);
         }
     }
 
