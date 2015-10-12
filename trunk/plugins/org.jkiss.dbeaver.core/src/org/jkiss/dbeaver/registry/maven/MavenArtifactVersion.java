@@ -290,8 +290,8 @@ public class MavenArtifactVersion {
     private boolean includesScope(MavenArtifactDependency.Scope scope) {
         return
             scope == MavenArtifactDependency.Scope.COMPILE ||
-            scope == MavenArtifactDependency.Scope.RUNTIME ||
-            scope == MavenArtifactDependency.Scope.PROVIDED;
+            scope == MavenArtifactDependency.Scope.RUNTIME/* ||
+            scope == MavenArtifactDependency.Scope.PROVIDED*/;
     }
 
     private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {
