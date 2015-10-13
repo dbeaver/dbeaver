@@ -45,6 +45,7 @@ public class MavenArtifactVersion {
     public static final String PROP_PROJECT_VERSION = "project.version";
     public static final String PROP_PROJECT_GROUP_ID = "project.groupId";
     public static final String PROP_PROJECT_ARTIFACT_ID = "project.artifactId";
+    private static final String DEFAULT_PROFILE_ID = "#root";
 
     private MavenArtifact artifact;
     private String name;
@@ -58,20 +59,22 @@ public class MavenArtifactVersion {
     private GeneralUtils.IVariableResolver propertyResolver = new GeneralUtils.IVariableResolver() {
         @Override
         public String get(String name) {
+            switch (name) {
+                case PROP_PROJECT_VERSION:
+                    return version;
+                case PROP_PROJECT_GROUP_ID:
+                    return artifact.getGroupId();
+                case PROP_PROJECT_ARTIFACT_ID:
+                    return artifact.getArtifactId();
+            }
             for (MavenArtifactVersion v = MavenArtifactVersion.this; v != null; v = v.parent) {
-                for (MavenProfile profile : profiles) {
+                for (MavenProfile profile : v.profiles) {
                     if (!profile.isActive()) {
                         continue;
                     }
                     String value = profile.properties.get(name);
                     if (value != null) {
                         return value;
-                    } else if (name.equals(PROP_PROJECT_VERSION)) {
-                        return v.version;
-                    } else if (name.equals(PROP_PROJECT_GROUP_ID)) {
-                        return v.artifact.getGroupId();
-                    } else if (name.equals(PROP_PROJECT_ARTIFACT_ID)) {
-                        return v.artifact.getArtifactId();
                     }
                 }
             }
@@ -231,9 +234,10 @@ public class MavenArtifactVersion {
         }
 
         // Default profile
-        MavenProfile defaultProfile = new MavenProfile(null);
-        parseProfile(monitor, defaultProfile, root);
+        MavenProfile defaultProfile = new MavenProfile(DEFAULT_PROFILE_ID);
+        defaultProfile.active = true;
         profiles.add(defaultProfile);
+        parseProfile(monitor, defaultProfile, root);
 
         {
             // Profiles
@@ -241,6 +245,7 @@ public class MavenArtifactVersion {
             if (licensesElement != null) {
                 for (Element profElement : XMLUtils.getChildElementList(licensesElement, "profile")) {
                     MavenProfile profile = new MavenProfile(XMLUtils.getChildElementBody(profElement, "id"));
+                    profiles.add(profile);
                     parseProfile(monitor, profile, profElement);
                 }
             }
