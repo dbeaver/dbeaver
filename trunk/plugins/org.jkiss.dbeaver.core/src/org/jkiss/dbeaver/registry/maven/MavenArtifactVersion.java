@@ -53,6 +53,7 @@ public class MavenArtifactVersion {
     private String description;
     private String url;
     private MavenArtifactVersion parent;
+    private List<MavenArtifactVersion> imports;
     private final List<MavenArtifactLicense> licenses = new ArrayList<>();
     private final List<MavenProfile> profiles = new ArrayList<>();
 
@@ -259,15 +260,32 @@ public class MavenArtifactVersion {
             // Activation
             Element activationElement = XMLUtils.getChildElement(element, "activation");
             if (activationElement != null) {
-                String activeByDefault = XMLUtils.getChildElementBody(element, "activeByDefault");
+                String activeByDefault = XMLUtils.getChildElementBody(activationElement, "activeByDefault");
                 if (!CommonUtils.isEmpty(activeByDefault)) {
                     profile.active = CommonUtils.getBoolean(activeByDefault);
                 }
-                String jdk = XMLUtils.getChildElementBody(element, "jdk");
+                String jdk = XMLUtils.getChildElementBody(activationElement, "jdk");
                 if (!CommonUtils.isEmpty(jdk)) {
                     profile.active = MavenArtifact.versionMatches(System.getProperty("java.version"), jdk);
                 }
+                Element osElement = XMLUtils.getChildElement(activationElement, "os");
+                if (osElement != null) {
+
+                }
+                Element propElement = XMLUtils.getChildElement(activationElement, "property");
+                if (propElement != null) {
+                    String propName = XMLUtils.getChildElementBody(propElement, "name");
+                    String propValue = XMLUtils.getChildElementBody(propElement, "value");
+                    // TODO: implement real properties checks. Now enable all profiles with !prop
+                    if (propName != null && propName.startsWith("!")) {
+                        profile.active = true;
+                    }
+                }
             }
+        }
+        if (!profile.active) {
+            // Do not parse dependencies of non-active profiles (most likely they will fail).
+            return;
         }
         {
             // Properties
@@ -323,9 +341,29 @@ public class MavenArtifactVersion {
                 }
                 boolean optional = CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false);
 
-                // TODO: maybe we should include some of them
-                if (depManagement || (!optional && includesScope(scope))) {
-                    String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
+                String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
+
+                if (depManagement && scope == MavenArtifactDependency.Scope.IMPORT) {
+                    // Import another pom
+                    if (version == null) {
+                        log.error("Missing imported artifact [" + groupId + ":" + artifactId + "] version. Skip.");
+                        continue;
+                    }
+                    MavenArtifactReference importReference = new MavenArtifactReference(
+                        groupId,
+                        artifactId,
+                        version);
+                    MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(monitor, importReference);
+                    if (importedVersion == null) {
+                        log.error("Imported artifact [" + importReference + "] not found. Skip.");
+                    }
+                    if (imports == null) {
+                        imports = new ArrayList<>();
+                    }
+                    imports.add(importedVersion);
+                } else if (depManagement || (!optional && includesScope(scope))) {
+                    // TODO: maybe we should include optional or PROVIDED
+
                     if (version == null) {
                         version = findDependencyVersion(monitor, groupId, artifactId);
                     }
@@ -377,6 +415,15 @@ public class MavenArtifactVersion {
                         dmArtifact.getArtifactId().equals(artifactId)) {
                         return dmArtifact.getVersion();
                     }
+                }
+            }
+        }
+        // Check in imported BOMs
+        if (imports != null) {
+            for (MavenArtifactVersion i : imports) {
+                String dependencyVersion = i.findDependencyVersion(monitor, groupId, artifactId);
+                if (dependencyVersion != null) {
+                    return dependencyVersion;
                 }
             }
         }
