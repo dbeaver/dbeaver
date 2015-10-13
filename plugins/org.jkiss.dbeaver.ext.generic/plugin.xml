@@ -647,6 +647,7 @@
                     description="Apache Hive JDBC"
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home">
                     <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE"/>
+                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
                 </driver>
                 <driver
                     id="apache_drill"
