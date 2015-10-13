@@ -320,7 +320,7 @@ public class MavenArtifact
         return localVersion;
     }
 
-    private boolean versionMatches(String version, String versionSpec) {
+    public static boolean versionMatches(String version, String versionSpec) {
         try {
             if (versionSpec.startsWith("{") && versionSpec.endsWith("}")) {
                 Pattern versionPattern = Pattern.compile(versionSpec.substring(1, versionSpec.length() - 1));

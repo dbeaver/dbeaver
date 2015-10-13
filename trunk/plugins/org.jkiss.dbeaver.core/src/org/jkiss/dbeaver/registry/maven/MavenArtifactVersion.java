@@ -32,7 +32,9 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * Maven artifact version descriptor (POM).
@@ -50,24 +52,27 @@ public class MavenArtifactVersion {
     private String description;
     private String url;
     private MavenArtifactVersion parent;
-    private Map<String, String> properties = new LinkedHashMap<>();
-    private List<MavenArtifactLicense> licenses = new ArrayList<>();
-    private List<MavenArtifactDependency> dependencies;
-    private List<MavenArtifactDependency> dependencyManagement;
+    private final List<MavenArtifactLicense> licenses = new ArrayList<>();
+    private final List<MavenProfile> profiles = new ArrayList<>();
 
     private GeneralUtils.IVariableResolver propertyResolver = new GeneralUtils.IVariableResolver() {
         @Override
         public String get(String name) {
             for (MavenArtifactVersion v = MavenArtifactVersion.this; v != null; v = v.parent) {
-                String value = v.properties.get(name);
-                if (value != null) {
-                    return value;
-                } else if (name.equals(PROP_PROJECT_VERSION)) {
-                    return v.version;
-                } else if (name.equals(PROP_PROJECT_GROUP_ID)) {
-                    return v.artifact.getGroupId();
-                } else if (name.equals(PROP_PROJECT_ARTIFACT_ID)) {
-                    return v.artifact.getArtifactId();
+                for (MavenProfile profile : profiles) {
+                    if (!profile.isActive()) {
+                        continue;
+                    }
+                    String value = profile.properties.get(name);
+                    if (value != null) {
+                        return value;
+                    } else if (name.equals(PROP_PROJECT_VERSION)) {
+                        return v.version;
+                    } else if (name.equals(PROP_PROJECT_GROUP_ID)) {
+                        return v.artifact.getGroupId();
+                    } else if (name.equals(PROP_PROJECT_ARTIFACT_ID)) {
+                        return v.artifact.getArtifactId();
+                    }
                 }
             }
             return null;
@@ -104,34 +109,25 @@ public class MavenArtifactVersion {
         return parent;
     }
 
-    public Map<String, String> getProperties() {
-        return properties;
-    }
-
     public List<MavenArtifactLicense> getLicenses() {
         return licenses;
     }
 
     public List<MavenArtifactDependency> getDependencies(DBRProgressMonitor monitor) {
+        List<MavenArtifactDependency> dependencies = new ArrayList<>();
+        for (MavenProfile profile : profiles) {
+            if (profile.isActive() && !CommonUtils.isEmpty(profile.dependencies)) {
+                dependencies.addAll(profile.dependencies);
+            }
+        }
         if (parent != null) {
             List<MavenArtifactDependency> parentDependencies = parent.getDependencies(monitor);
             if (!CommonUtils.isEmpty(parentDependencies)) {
-                if (CommonUtils.isEmpty(dependencies)) {
-                    return parentDependencies;
-                }
-                List<MavenArtifactDependency> result = new ArrayList<>(dependencies.size() + parentDependencies.size());
-                result.addAll(dependencies);
-                result.addAll(parentDependencies);
-                return result;
+                dependencies.addAll(parentDependencies);
             }
         }
-        return this.dependencies;
-    }
-
-    List<MavenArtifactDependency> getDependencies() {
         return dependencies;
     }
-
 
     public File getCacheFile() {
         if (artifact.getRepository().isLocal()) {
@@ -222,15 +218,6 @@ public class MavenArtifactVersion {
         }
 
         {
-            // Properties
-            Element propsElement = XMLUtils.getChildElement(root, "properties");
-            if (propsElement != null) {
-                for (Element prop : XMLUtils.getChildElementList(propsElement)) {
-                    properties.put(prop.getTagName(), XMLUtils.getElementBody(prop));
-                }
-            }
-        }
-        {
             // Licenses
             Element licensesElement = XMLUtils.getChildElement(root, "licenses");
             if (licensesElement != null) {
@@ -242,15 +229,58 @@ public class MavenArtifactVersion {
                 }
             }
         }
+
+        // Default profile
+        MavenProfile defaultProfile = new MavenProfile(null);
+        parseProfile(monitor, defaultProfile, root);
+        profiles.add(defaultProfile);
+
+        {
+            // Profiles
+            Element licensesElement = XMLUtils.getChildElement(root, "profiles");
+            if (licensesElement != null) {
+                for (Element profElement : XMLUtils.getChildElementList(licensesElement, "profile")) {
+                    MavenProfile profile = new MavenProfile(XMLUtils.getChildElementBody(profElement, "id"));
+                    parseProfile(monitor, profile, profElement);
+                }
+            }
+        }
+
+        monitor.worked(1);
+    }
+
+    private void parseProfile(DBRProgressMonitor monitor, MavenProfile profile, Element element) {
+        {
+            // Activation
+            Element activationElement = XMLUtils.getChildElement(element, "activation");
+            if (activationElement != null) {
+                String activeByDefault = XMLUtils.getChildElementBody(element, "activeByDefault");
+                if (!CommonUtils.isEmpty(activeByDefault)) {
+                    profile.active = CommonUtils.getBoolean(activeByDefault);
+                }
+                String jdk = XMLUtils.getChildElementBody(element, "jdk");
+                if (!CommonUtils.isEmpty(jdk)) {
+                    profile.active = MavenArtifact.versionMatches(System.getProperty("java.version"), jdk);
+                }
+            }
+        }
+        {
+            // Properties
+            Element propsElement = XMLUtils.getChildElement(element, "properties");
+            if (propsElement != null) {
+                for (Element prop : XMLUtils.getChildElementList(propsElement)) {
+                    profile.properties.put(prop.getTagName(), XMLUtils.getElementBody(prop));
+                }
+            }
+        }
         {
             // Dependencies
-            Element dmElement = XMLUtils.getChildElement(root, "dependencyManagement");
+            Element dmElement = XMLUtils.getChildElement(element, "dependencyManagement");
             if (dmElement != null) {
-                dependencyManagement = parseDependencies(monitor, dmElement, true);
+                profile.dependencyManagement = parseDependencies(monitor, dmElement, true);
             }
-            dependencies = parseDependencies(monitor, root, false);
+            profile.dependencies = parseDependencies(monitor, element, false);
         }
-        monitor.worked(1);
     }
 
     private void cachePOM(File localPOM) throws IOException {
@@ -335,12 +365,13 @@ public class MavenArtifactVersion {
     }
 
     private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {
-        if (dependencyManagement != null) {
-            for (MavenArtifactDependency dmArtifact : dependencyManagement) {
-                if (dmArtifact.getGroupId().equals(groupId) &&
-                    dmArtifact.getArtifactId().equals(artifactId))
-                {
-                    return dmArtifact.getVersion();
+        for (MavenProfile profile : profiles) {
+            if (profile.isActive() && profile.dependencyManagement != null) {
+                for (MavenArtifactDependency dmArtifact : profile.dependencyManagement) {
+                    if (dmArtifact.getGroupId().equals(groupId) &&
+                        dmArtifact.getArtifactId().equals(artifactId)) {
+                        return dmArtifact.getVersion();
+                    }
                 }
             }
         }
