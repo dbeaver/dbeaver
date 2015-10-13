@@ -59,5 +59,8 @@ public class MavenProfile {
         return active;
     }
 
-
+    @Override
+    public String toString() {
+        return id;
+    }
 }
