@@ -127,7 +127,7 @@ public class MavenRepository
             }
             return version;
         } catch (IOException e) {
-            log.debug("Artifact version " + ref + " not found", e);
+            log.debug("Artifact version " + ref + " not found: " + e.getMessage());
             return null;
         }
     }
