@@ -196,7 +196,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
                     if (monitor.isCanceled()) {
                         throw new InterruptedException();
                     }
-                    monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
+                    //monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
                     final int count = inputStream.read(buffer);
                     if (count <= 0) {
                         success = true;
