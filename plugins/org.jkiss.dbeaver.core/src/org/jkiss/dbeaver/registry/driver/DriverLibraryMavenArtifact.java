@@ -24,14 +24,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * DriverLibraryDescriptor
@@ -43,7 +44,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public static final String PATH_PREFIX = "maven:/";
 
     private final MavenArtifactReference reference;
-    private MavenArtifactVersion version;
+    protected MavenArtifactVersion localVersion;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
@@ -69,21 +70,36 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public boolean isResolved() {
-        return getMavenVersion() != null;
+        return getCachedArtifactVersion() != null;
+    }
+
+    @Override
+    public void resolve(DBRProgressMonitor monitor) throws IOException {
+        if (getArtifactVersion(monitor) == null) {
+            throw new IOException("Can't resolve artifact " + this + " version");
+        }
     }
 
     @Nullable
-    protected MavenArtifactVersion getMavenVersion() {
-        if (version == null) {
-            version = MavenRegistry.getInstance().findArtifact(VoidProgressMonitor.INSTANCE, reference);
+    protected MavenArtifactVersion getCachedArtifactVersion() {
+        if (localVersion == null) {
+            localVersion = MavenRegistry.getInstance().findCachedArtifact(reference);
         }
-        return version;
+        return localVersion;
+    }
+
+    @Nullable
+    protected MavenArtifactVersion getArtifactVersion(DBRProgressMonitor monitor) {
+        if (localVersion == null) {
+            localVersion = MavenRegistry.getInstance().findArtifact(monitor, reference);
+        }
+        return localVersion;
     }
 
     @Nullable
     @Override
-    public String getExternalURL() {
-        MavenArtifactVersion localVersion = getMavenVersion();
+    public String getExternalURL(DBRProgressMonitor monitor) {
+        MavenArtifactVersion localVersion = getArtifactVersion(monitor);
         if (localVersion != null) {
             return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
         }
@@ -107,7 +123,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     private File detectLocalFile()
     {
-        MavenArtifactVersion localVersion = getMavenVersion();
+        MavenArtifactVersion localVersion = getCachedArtifactVersion();
         if (localVersion != null) {
             return localVersion.getCacheFile();
         }
@@ -160,7 +176,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public String getVersion() {
-        MavenArtifactVersion version = getMavenVersion();
+        MavenArtifactVersion version = getCachedArtifactVersion();
         if (version != null) {
             return version.getVersion();
         }
@@ -175,7 +191,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
-        //monitor.beginTask(taskName + " - update version information", 1);
+        //monitor.beginTask(taskName + " - update localVersion information", 1);
         try {
             MavenArtifactVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
             if (localVersion.getArtifact().getRepository().isLocal()) {
@@ -192,7 +208,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         if (forceUpdate) {
             MavenRegistry.getInstance().resetArtifactInfo(reference);
         }
-        MavenArtifactVersion version = MavenRegistry.getInstance().findArtifact(monitor, reference);
+        MavenArtifactVersion version = getArtifactVersion(monitor);
         if (version == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }
