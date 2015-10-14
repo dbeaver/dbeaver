@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.maven.MavenContext;
 
 import java.io.IOException;
 import java.util.*;
@@ -33,10 +34,7 @@ public class DriverDependencies implements DBPDriverDependencies
     final List<DependencyNode> rootNodes = new ArrayList<>();
     final List<DBPDriverLibrary> libraryList = new ArrayList<>();
 
-    public DriverDependencies() {
-    }
-
-    void resolveDependencies(DBRProgressMonitor monitor, Collection<? extends DBPDriverLibrary> rootLibraries) throws DBException {
+    void resolveDependencies(MavenContext context, Collection<? extends DBPDriverLibrary> rootLibraries) throws DBException {
         try {
             {
                 rootNodes.clear();
@@ -46,7 +44,7 @@ public class DriverDependencies implements DBPDriverDependencies
                     DependencyNode node = new DependencyNode(null, library);
                     libMap.put(node.library.getId(), node.library);
 
-                    resolveDependencies(monitor, node, libMap);
+                    resolveDependencies(context.getMonitor(), node, libMap);
                     rootNodes.add(node);
                 }
                 libraryList.clear();
