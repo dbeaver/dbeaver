@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.registry.maven;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
@@ -71,14 +71,14 @@ public class MavenArtifact
         this.artifactId = artifactId;
     }
 
-    public void loadMetadata(DBRProgressMonitor monitor) throws IOException {
+    public void loadMetadata(DBPDriverContext context) throws IOException {
         latestVersion = null;
         releaseVersion = null;
         versions.clear();
         lastUpdate = null;
 
         String metadataPath = getArtifactURL() + MAVEN_METADATA_XML;
-        monitor.subTask("Load metadata " + this + "");
+        context.getMonitor().subTask("Load metadata " + this + "");
 
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
             parseMetadata(mdStream);
@@ -92,7 +92,7 @@ public class MavenArtifact
                 log.warn("Error parsing artifact directory", e);
             }
         } finally {
-            monitor.worked(1);
+            context.getMonitor().worked(1);
         }
         metadataLoaded = true;
     }
@@ -220,10 +220,10 @@ public class MavenArtifact
         localVersions.add(version);
     }
 
-    private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
+    private MavenArtifactVersion makeLocalVersion(DBPDriverContext context, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
-            version = new MavenArtifactVersion(monitor, this, versionStr, true);
+            version = new MavenArtifactVersion(context, this, versionStr, true);
             localVersions.add(version);
         }
         if (setActive) {
@@ -233,19 +233,19 @@ public class MavenArtifact
         return version;
     }
 
-    public MavenArtifactVersion resolveActiveVersion() throws IOException {
+    public MavenArtifactVersion resolveActiveVersion(DBPDriverContext context) throws IOException {
         if (CommonUtils.isEmpty(activeVersion)) {
             return null;
         }
         MavenArtifactVersion version = getVersion(activeVersion);
         if (version == null) {
-            version = new MavenArtifactVersion(VoidProgressMonitor.INSTANCE, this, activeVersion, false);
+            version = new MavenArtifactVersion(context, this, activeVersion, false);
             localVersions.add(version);
         }
         return version;
     }
 
-    public MavenArtifactVersion resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
+    public MavenArtifactVersion resolveVersion(DBPDriverContext context, String versionRef) throws IOException {
         if (CommonUtils.isEmpty(versionRef)) {
             throw new IOException("Empty artifact " + this + " version");
         }
@@ -269,7 +269,7 @@ public class MavenArtifact
             }
         }
         if (lookupVersion && !metadataLoaded) {
-            loadMetadata(monitor);
+            loadMetadata(context);
         }
 
         String versionInfo;
@@ -323,7 +323,7 @@ public class MavenArtifact
 
         MavenArtifactVersion localVersion = getVersion(versionInfo);
         if (localVersion == null) {
-            localVersion = makeLocalVersion(monitor, versionInfo, lookupVersion);
+            localVersion = makeLocalVersion(context, versionInfo, lookupVersion);
         }
 
         return localVersion;

@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.registry.maven.MavenContext;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
@@ -60,10 +60,10 @@ import java.util.*;
  */
 public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
-    public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
     static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
+    public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";
 
     public static final char URL_GROUP_START = '{'; //$NON-NLS-1$
     public static final char URL_GROUP_END = '}'; //$NON-NLS-1$
@@ -614,7 +614,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @Override
     public DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (dependencies == null) {
-            try (MavenContext mavenContext = new MavenContext(monitor)) {
+            try (DBPDriverContext mavenContext = new DBPDriverContext(monitor)) {
                 DriverDependencies depsResolver = new DriverDependencies();
                 depsResolver.resolveDependencies(mavenContext, getDriverLibraries());
                 this.dependencies = depsResolver;

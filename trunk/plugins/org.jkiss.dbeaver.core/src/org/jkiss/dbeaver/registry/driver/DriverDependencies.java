@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.registry.driver;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.maven.MavenContext;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 
 import java.io.IOException;
 import java.util.*;
@@ -34,7 +33,7 @@ public class DriverDependencies implements DBPDriverDependencies
     final List<DependencyNode> rootNodes = new ArrayList<>();
     final List<DBPDriverLibrary> libraryList = new ArrayList<>();
 
-    void resolveDependencies(MavenContext context, Collection<? extends DBPDriverLibrary> rootLibraries) throws DBException {
+    void resolveDependencies(DBPDriverContext context, Collection<? extends DBPDriverLibrary> rootLibraries) throws DBException {
         try {
             {
                 rootNodes.clear();
@@ -44,7 +43,7 @@ public class DriverDependencies implements DBPDriverDependencies
                     DependencyNode node = new DependencyNode(null, library);
                     libMap.put(node.library.getId(), node.library);
 
-                    resolveDependencies(context.getMonitor(), node, libMap);
+                    resolveDependencies(context, node, libMap);
                     rootNodes.add(node);
                 }
                 libraryList.clear();
@@ -86,9 +85,9 @@ public class DriverDependencies implements DBPDriverDependencies
         }
     }
 
-    private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DBPDriverLibrary> libMap) throws IOException {
-        ownerNode.library.resolve(monitor);
-        Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor);
+    private void resolveDependencies(DBPDriverContext context, DependencyNode ownerNode, Map<String, DBPDriverLibrary> libMap) throws IOException {
+        ownerNode.library.resolve(context);
+        Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(context);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
                 DependencyNode node = new DependencyNode(ownerNode, dep);
@@ -101,7 +100,7 @@ public class DriverDependencies implements DBPDriverDependencies
             }
             for (DependencyNode node : ownerNode.dependencies) {
                 if (!node.duplicate) {
-                    resolveDependencies(monitor, node, libMap);
+                    resolveDependencies(context, node, libMap);
                 }
             }
         }

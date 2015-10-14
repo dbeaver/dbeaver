@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactDependency;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactVersion;
@@ -44,7 +44,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
         return true;
     }
 
-    protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {
+    protected boolean isDependencyExcluded(DBPDriverContext context, MavenArtifactDependency dependency) {
         List<MavenArtifactReference> exclusions = source.getExclusions();
         if (exclusions != null) {
             for (MavenArtifactReference exReference : exclusions) {
@@ -54,7 +54,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
             }
         }
 
-        return parent.isDependencyExcluded(monitor, dependency);
+        return parent.isDependencyExcluded(context, dependency);
     }
 
 }

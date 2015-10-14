@@ -23,6 +23,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -170,48 +171,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             return;
         }
 
-        List<DBPDriverLibrary> files = dependencies.getLibraryList();
-        for (int i = 0, filesSize = files.size(); i < filesSize; ) {
-            DBPDriverLibrary lib = files.get(i);
-            int result = downloadLibraryFile(runnableContext, lib, "Download " + (i + 1) + "/" + filesSize);
-            switch (result) {
-                case IDialogConstants.CANCEL_ID:
-                case IDialogConstants.ABORT_ID:
-                    return;
-                case IDialogConstants.RETRY_ID:
-                    continue;
-                case IDialogConstants.OK_ID:
-                case IDialogConstants.IGNORE_ID:
-                    i++;
-                    break;
-            }
-        }
-    }
-
-    private int downloadLibraryFile(DBRRunnableContext runnableContext, final DBPDriverLibrary file, final String taskName)
-    {
         try {
-            runnableContext.run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        file.downloadLibraryFile(monitor, false, taskName);
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-            return IDialogConstants.OK_ID;
-        } catch (InterruptedException e) {
-            // User just canceled download
-            return IDialogConstants.CANCEL_ID;
+            runnableContext.run(true, true, new LibraryDownloader());
         } catch (InvocationTargetException e) {
-            if (file.getType() == DBPDriverLibrary.FileType.license) {
-                return IDialogConstants.OK_ID;
-            }
-            DownloadRetry retryConfirm = new DownloadRetry(file, e.getTargetException());
-            UIUtils.runInUI(null, retryConfirm);
-            return retryConfirm.result;
+            UIUtils.showErrorDialog(getShell(), "Driver download", "Error downloading driver files", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
@@ -282,4 +247,38 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
     }
 
+    private class LibraryDownloader implements DBRRunnableWithProgress {
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            DBPDriverContext context = new DBPDriverContext(monitor);
+
+            List<DBPDriverLibrary> files = dependencies.getLibraryList();
+            for (int i = 0, filesSize = files.size(); i < filesSize; ) {
+                DBPDriverLibrary lib = files.get(i);
+                int result = IDialogConstants.OK_ID;
+                try {
+                    lib.downloadLibraryFile(context, false, "Download " + (i + 1) + "/" + filesSize);
+                } catch (IOException e) {
+                    if (lib.getType() == DBPDriverLibrary.FileType.license) {
+                        result = IDialogConstants.OK_ID;
+                    } else {
+                        DownloadRetry retryConfirm = new DownloadRetry(lib, e);
+                        UIUtils.runInUI(null, retryConfirm);
+                        result = retryConfirm.result;
+                    }
+                }
+                switch (result) {
+                    case IDialogConstants.CANCEL_ID:
+                    case IDialogConstants.ABORT_ID:
+                        return;
+                    case IDialogConstants.RETRY_ID:
+                        continue;
+                    case IDialogConstants.OK_ID:
+                    case IDialogConstants.IGNORE_ID:
+                        i++;
+                        break;
+                }
+            }
+        }
+    }
 }
