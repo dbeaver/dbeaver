@@ -167,7 +167,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             }
         }
 
-        String externalURL = getExternalURL();
+        String externalURL = getExternalURL(monitor);
         if (externalURL == null) {
             throw new IOException("Unresolved file reference: " + getPath());
         }

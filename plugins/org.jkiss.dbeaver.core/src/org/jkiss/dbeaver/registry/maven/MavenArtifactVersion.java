@@ -17,8 +17,11 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -83,10 +86,16 @@ public class MavenArtifactVersion {
         }
     };
 
-    MavenArtifactVersion(DBRProgressMonitor monitor, MavenArtifact artifact, String version) throws IOException {
+    /**
+     * Makes new version
+     * @param monitor     if null then do not try to get remote POM
+     * @param readRemote
+     * @throws IOException
+     */
+    MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version, boolean readRemote) throws IOException {
         this.artifact = artifact;
         this.version = version;
-        loadPOM(monitor);
+        loadPOM(monitor, readRemote);
     }
 
     public MavenArtifact getArtifact() {
@@ -176,10 +185,15 @@ public class MavenArtifactVersion {
         return artifact.getFileURL(version, MavenArtifact.FILE_POM);
     }
 
-    private void loadPOM(DBRProgressMonitor monitor) throws IOException {
+    private void loadPOM(DBRProgressMonitor monitor, boolean readRemote) throws IOException {
         File localPOM = getLocalPOM();
         if (!localPOM.exists()) {
-            cachePOM(localPOM);
+            if (readRemote) {
+                cachePOM(localPOM);
+            } else {
+                log.warn("Local POM missing for " + this);
+                return;
+            }
         }
 
         monitor.subTask("Load POM " + this);

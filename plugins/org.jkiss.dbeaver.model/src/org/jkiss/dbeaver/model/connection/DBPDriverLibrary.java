@@ -85,8 +85,10 @@ public interface DBPDriverLibrary
 
     boolean isResolved();
 
+    void resolve(DBRProgressMonitor monitor) throws IOException;
+
     @Nullable
-    String getExternalURL();
+    String getExternalURL(DBRProgressMonitor monitor);
 
     @Nullable
     File getLocalFile();

@@ -132,6 +132,23 @@ public class MavenRepository
         }
     }
 
+    public MavenArtifactVersion findCachedArtifact(MavenArtifactReference ref) {
+        MavenArtifact artifact = cachedArtifacts.get(ref.getId());
+        if (artifact == null) {
+            return null;
+        }
+        MavenArtifactVersion version = artifact.getVersion(ref.getVersion());
+        if (version == null && !CommonUtils.isEmpty(artifact.getActiveVersionName())) {
+            // Resolve active version
+            try {
+                version = artifact.resolveActiveVersion();
+            } catch (IOException e) {
+                log.warn("Can't resolve cached active version " + ref);
+            }
+        }
+        return version;
+    }
+
     synchronized void resetArtifactCache(@NotNull MavenArtifactReference artifactReference) {
         cachedArtifacts.remove(artifactReference.getId());
     }
@@ -176,10 +193,11 @@ public class MavenRepository
                                 MavenArtifactVersion version = new MavenArtifactVersion(
                                     VoidProgressMonitor.INSTANCE,
                                     lastArtifact,
-                                    versionNumber);
+                                    versionNumber,
+                                    false);
                                 lastArtifact.addVersion(version);
                             } catch (IOException e) {
-                                log.warn("Error loading artifact version", e);
+                                log.warn("Error loading cached artifact version " + lastArtifact + ":" + versionNumber, e);
                             }
                         }
                     }
@@ -232,7 +250,7 @@ public class MavenRepository
                         try (XMLBuilder.Element e1 = xml.startElement(TAG_ARTIFACT)) {
                             xml.addAttribute(ATTR_GROUP_ID, artifact.getGroupId());
                             xml.addAttribute(ATTR_ARTIFACT_ID, artifact.getArtifactId());
-                            if (CommonUtils.isEmpty(artifact.getActiveVersionName())) {
+                            if (!CommonUtils.isEmpty(artifact.getActiveVersionName())) {
                                 xml.addAttribute(ATTR_ACTIVE_VERSION, artifact.getActiveVersionName());
                             }
                         }
@@ -252,4 +270,5 @@ public class MavenRepository
     public String toString() {
         return url;
     }
+
 }
