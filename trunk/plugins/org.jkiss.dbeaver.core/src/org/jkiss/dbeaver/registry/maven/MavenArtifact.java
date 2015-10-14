@@ -21,8 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
-import org.jkiss.dbeaver.registry.maven.versioning.InvalidVersionSpecificationException;
 import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -208,9 +208,6 @@ public class MavenArtifact
 
     @Nullable
     public MavenArtifactVersion getVersion(String versionStr) {
-        if (CommonUtils.isEmpty(activeVersion)) {
-            return null;
-        }
         for (MavenArtifactVersion version : localVersions) {
             if (version.getVersion().equals(versionStr)) {
                 return version;
@@ -226,12 +223,24 @@ public class MavenArtifact
     private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
-            version = new MavenArtifactVersion(monitor, this, versionStr);
+            version = new MavenArtifactVersion(monitor, this, versionStr, true);
             localVersions.add(version);
         }
         if (setActive) {
             activeVersion = versionStr;
             repository.flushCache();
+        }
+        return version;
+    }
+
+    public MavenArtifactVersion resolveActiveVersion() throws IOException {
+        if (CommonUtils.isEmpty(activeVersion)) {
+            return null;
+        }
+        MavenArtifactVersion version = getVersion(activeVersion);
+        if (version == null) {
+            version = new MavenArtifactVersion(VoidProgressMonitor.INSTANCE, this, activeVersion, false);
+            localVersions.add(version);
         }
         return version;
     }

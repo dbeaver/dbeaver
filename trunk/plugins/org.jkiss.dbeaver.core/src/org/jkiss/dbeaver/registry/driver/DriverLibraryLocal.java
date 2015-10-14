@@ -57,13 +57,18 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         return true;
     }
 
+    @Override
+    public void resolve(DBRProgressMonitor monitor) throws IOException {
+        // do nothing
+    }
+
     protected String getLocalFilePath() {
         return path;
     }
 
     @Nullable
     @Override
-    public String getExternalURL() {
+    public String getExternalURL(DBRProgressMonitor monitor) {
         return null;
     }
 

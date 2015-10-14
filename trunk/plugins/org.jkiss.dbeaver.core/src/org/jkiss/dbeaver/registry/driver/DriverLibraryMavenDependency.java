@@ -17,14 +17,11 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactDependency;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactVersion;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -33,7 +30,6 @@ import java.util.List;
 public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
 {
     private DriverLibraryMavenArtifact parent;
-    private MavenArtifactVersion localVersion;
     private MavenArtifactDependency source;
 
     public DriverLibraryMavenDependency(DriverLibraryMavenArtifact parent, MavenArtifactVersion localVersion, MavenArtifactDependency source) {
@@ -46,23 +42,6 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     @Override
     public boolean isResolved() {
         return true;
-    }
-
-    @Nullable
-    @Override
-    protected MavenArtifactVersion getMavenVersion() {
-        return localVersion;
-    }
-
-    @Nullable
-    @Override
-    public File getLocalFile()
-    {
-        return localVersion.getCacheFile();
-    }
-
-    protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
-        return localVersion;
     }
 
     protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {

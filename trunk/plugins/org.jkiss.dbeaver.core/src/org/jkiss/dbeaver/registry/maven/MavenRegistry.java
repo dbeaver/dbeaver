@@ -148,6 +148,26 @@ public class MavenRegistry
         return null;
     }
 
+    @Nullable
+    public MavenArtifactVersion findCachedArtifact(@NotNull MavenArtifactReference ref) {
+        String fullId = ref.getId();
+        if (notFoundArtifacts.contains(fullId)) {
+            return null;
+        }
+        // Try all available repositories (without resolve)
+        for (MavenRepository repository : repositories) {
+            MavenArtifactVersion artifact = repository.findCachedArtifact(ref);
+            if (artifact != null) {
+                return artifact;
+            }
+        }
+        MavenArtifactVersion artifact = localRepository.findCachedArtifact(ref);
+        if (artifact != null) {
+            return artifact;
+        }
+        return null;
+    }
+
     public void resetArtifactInfo(MavenArtifactReference artifactReference) {
         notFoundArtifacts.remove(artifactReference.getId());
 
