@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
@@ -112,7 +112,7 @@ public class MavenRepository
     }
 
     @Nullable
-    public synchronized MavenArtifactVersion findArtifact(DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
+    public synchronized MavenArtifactVersion findArtifact(DBPDriverContext context, @NotNull MavenArtifactReference ref) {
         boolean newArtifact = false;
         MavenArtifact artifact = cachedArtifacts.get(ref.getId());
         if (artifact == null) {
@@ -120,7 +120,7 @@ public class MavenRepository
             newArtifact = true;
         }
         try {
-            MavenArtifactVersion version = artifact.resolveVersion(monitor, ref.getVersion());
+            MavenArtifactVersion version = artifact.resolveVersion(context, ref.getVersion());
             if (newArtifact) {
                 cachedArtifacts.put(ref.getId(), artifact);
                 flushCache();
@@ -132,7 +132,7 @@ public class MavenRepository
         }
     }
 
-    public MavenArtifactVersion findCachedArtifact(MavenArtifactReference ref) {
+    public MavenArtifactVersion findCachedArtifact(DBPDriverContext context, MavenArtifactReference ref) {
         MavenArtifact artifact = cachedArtifacts.get(ref.getId());
         if (artifact == null) {
             return null;
@@ -141,7 +141,7 @@ public class MavenRepository
         if (version == null && !CommonUtils.isEmpty(artifact.getActiveVersionName())) {
             // Resolve active version
             try {
-                version = artifact.resolveActiveVersion();
+                version = artifact.resolveActiveVersion(context);
             } catch (IOException e) {
                 log.warn("Can't resolve cached active version " + ref);
             }
@@ -170,6 +170,7 @@ public class MavenRepository
         if (!cacheFile.exists()) {
             return;
         }
+        final DBPDriverContext context = new DBPDriverContext(VoidProgressMonitor.INSTANCE);
         try {
             InputStream mdStream = new FileInputStream(cacheFile);
             try {
@@ -191,7 +192,7 @@ public class MavenRepository
                             String versionNumber = atts.getValue(ATTR_VERSION);
                             try {
                                 MavenArtifactVersion version = new MavenArtifactVersion(
-                                    VoidProgressMonitor.INSTANCE,
+                                    context,
                                     lastArtifact,
                                     versionNumber,
                                     false);

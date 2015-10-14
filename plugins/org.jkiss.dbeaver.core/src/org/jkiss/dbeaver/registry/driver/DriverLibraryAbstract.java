@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -151,7 +151,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return system == null || system.matches(DBeaverCore.getInstance().getLocalSystem());
     }
 
-    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException
+    public void downloadLibraryFile(@NotNull DBPDriverContext context, boolean forceUpdate, String taskName) throws IOException, InterruptedException
     {
         final File localFile = getLocalFile();
         if (localFile == null) {
@@ -167,7 +167,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             }
         }
 
-        String externalURL = getExternalURL(monitor);
+        String externalURL = getExternalURL(context);
         if (externalURL == null) {
             throw new IOException("Unresolved file reference: " + getPath());
         }
@@ -185,7 +185,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         if (bufferLength < 50000) {
             bufferLength = 50000;
         }
-        monitor.beginTask(taskName + " - " + externalURL, contentLength);
+        context.getMonitor().beginTask(taskName + " - " + externalURL, contentLength);
         boolean success = false;
         try (final OutputStream outputStream = new FileOutputStream(localFile)) {
             try (final InputStream inputStream = connection.getInputStream()) {
@@ -193,7 +193,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
                 byte[] buffer = new byte[bufferLength];
                 int totalRead = 0;
                 for (;;) {
-                    if (monitor.isCanceled()) {
+                    if (context.getMonitor().isCanceled()) {
                         throw new InterruptedException();
                     }
                     //monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
@@ -203,7 +203,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
                         break;
                     }
                     outputStream.write(buffer, 0, count);
-                    monitor.worked(count);
+                    context.getMonitor().worked(count);
                     totalRead += count;
                 }
             }
@@ -213,7 +213,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
                     log.warn("Can't delete local driver file '" + localFile.getAbsolutePath() + "'");
                 }
             }
-            monitor.done();
+            context.getMonitor().done();
         }
     }
 

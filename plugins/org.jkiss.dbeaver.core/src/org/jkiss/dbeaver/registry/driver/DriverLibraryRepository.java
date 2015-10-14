@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 
 /**
  * DriverLibraryDescriptor
@@ -49,7 +49,7 @@ public class DriverLibraryRepository extends DriverLibraryLocal
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
+    public String getExternalURL(DBPDriverContext context) {
         String localPath = getLocalFilePath();
         String primarySource = DriverDescriptor.getDriversPrimarySource();
         if (!primarySource.endsWith("/") && !localPath.startsWith("/")) {

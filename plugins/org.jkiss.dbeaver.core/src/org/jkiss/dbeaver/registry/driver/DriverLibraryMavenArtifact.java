@@ -22,8 +22,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
@@ -74,8 +75,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
-    public void resolve(DBRProgressMonitor monitor) throws IOException {
-        if (getArtifactVersion(monitor) == null) {
+    public void resolve(DBPDriverContext context) throws IOException {
+        if (getArtifactVersion(context) == null) {
             throw new IOException("Can't resolve artifact " + this + " version");
         }
     }
@@ -83,23 +84,25 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Nullable
     protected MavenArtifactVersion getCachedArtifactVersion() {
         if (localVersion == null) {
-            localVersion = MavenRegistry.getInstance().findCachedArtifact(reference);
+            try (DBPDriverContext context = new DBPDriverContext(VoidProgressMonitor.INSTANCE)) {
+                localVersion = MavenRegistry.getInstance().findCachedArtifact(context, reference);
+            }
         }
         return localVersion;
     }
 
     @Nullable
-    protected MavenArtifactVersion getArtifactVersion(DBRProgressMonitor monitor) {
+    protected MavenArtifactVersion getArtifactVersion(DBPDriverContext context) {
         if (localVersion == null) {
-            localVersion = MavenRegistry.getInstance().findArtifact(monitor, reference);
+            localVersion = MavenRegistry.getInstance().findArtifact(context, reference);
         }
         return localVersion;
     }
 
     @Nullable
     @Override
-    public String getExternalURL(DBRProgressMonitor monitor) {
-        MavenArtifactVersion localVersion = getArtifactVersion(monitor);
+    public String getExternalURL(DBPDriverContext context) {
+        MavenArtifactVersion localVersion = getArtifactVersion(context);
         if (localVersion != null) {
             return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
         }
@@ -132,18 +135,18 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBPDriverContext context) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
-        MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
+        MavenArtifactVersion localVersion = resolveLocalVersion(context, false);
         if (localVersion != null) {
-            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(monitor);
+            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(context);
             if (!CommonUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency dependency : artifactDeps) {
-                    if (isDependencyExcluded(monitor, dependency)) {
+                    if (isDependencyExcluded(context, dependency)) {
                         continue;
                     }
 
-                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(monitor, dependency);
+                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(context, dependency);
                     if (depArtifact != null) {
                         dependencies.add(
                             new DriverLibraryMavenDependency(
@@ -160,7 +163,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return dependencies;
     }
 
-    protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {
+    protected boolean isDependencyExcluded(DBPDriverContext context, MavenArtifactDependency dependency) {
         return false;
     }
 
@@ -190,10 +193,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return UIIcon.APACHE;
     }
 
-    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
+    public void downloadLibraryFile(@NotNull DBPDriverContext context, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
         //monitor.beginTask(taskName + " - update localVersion information", 1);
         try {
-            MavenArtifactVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
+            MavenArtifactVersion localVersion = resolveLocalVersion(context, forceUpdate);
             if (localVersion.getArtifact().getRepository().isLocal()) {
                 // No need to download local artifacts
                 return;
@@ -201,14 +204,14 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         } finally {
             //monitor.done();
         }
-        super.downloadLibraryFile(monitor, forceUpdate, taskName);
+        super.downloadLibraryFile(context, forceUpdate, taskName);
     }
 
-    protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
+    protected MavenArtifactVersion resolveLocalVersion(DBPDriverContext context, boolean forceUpdate) throws IOException {
         if (forceUpdate) {
             MavenRegistry.getInstance().resetArtifactInfo(reference);
         }
-        MavenArtifactVersion version = getArtifactVersion(monitor);
+        MavenArtifactVersion version = getArtifactVersion(context);
         if (version == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }

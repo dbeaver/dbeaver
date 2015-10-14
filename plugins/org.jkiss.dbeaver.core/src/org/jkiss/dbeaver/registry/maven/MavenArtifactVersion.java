@@ -18,10 +18,8 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -86,16 +84,10 @@ public class MavenArtifactVersion {
         }
     };
 
-    /**
-     * Makes new version
-     * @param monitor     if null then do not try to get remote POM
-     * @param readRemote
-     * @throws IOException
-     */
-    MavenArtifactVersion(@NotNull DBRProgressMonitor monitor, @NotNull MavenArtifact artifact, @NotNull String version, boolean readRemote) throws IOException {
+    MavenArtifactVersion(@NotNull DBPDriverContext context, @NotNull MavenArtifact artifact, @NotNull String version, boolean readRemote) throws IOException {
         this.artifact = artifact;
         this.version = version;
-        loadPOM(monitor, readRemote);
+        loadPOM(context, readRemote);
     }
 
     public MavenArtifact getArtifact() {
@@ -126,7 +118,7 @@ public class MavenArtifactVersion {
         return licenses;
     }
 
-    public List<MavenArtifactDependency> getDependencies(DBRProgressMonitor monitor) {
+    public List<MavenArtifactDependency> getDependencies(DBPDriverContext context) {
         List<MavenArtifactDependency> dependencies = new ArrayList<>();
         for (MavenProfile profile : profiles) {
             if (profile.isActive() && !CommonUtils.isEmpty(profile.dependencies)) {
@@ -134,7 +126,7 @@ public class MavenArtifactVersion {
             }
         }
         if (parent != null) {
-            List<MavenArtifactDependency> parentDependencies = parent.getDependencies(monitor);
+            List<MavenArtifactDependency> parentDependencies = parent.getDependencies(context);
             if (!CommonUtils.isEmpty(parentDependencies)) {
                 dependencies.addAll(parentDependencies);
             }
@@ -185,7 +177,7 @@ public class MavenArtifactVersion {
         return artifact.getFileURL(version, MavenArtifact.FILE_POM);
     }
 
-    private void loadPOM(DBRProgressMonitor monitor, boolean readRemote) throws IOException {
+    private void loadPOM(DBPDriverContext context, boolean readRemote) throws IOException {
         File localPOM = getLocalPOM();
         if (!localPOM.exists()) {
             if (readRemote) {
@@ -196,7 +188,7 @@ public class MavenArtifactVersion {
             }
         }
 
-        monitor.subTask("Load POM " + this);
+        context.getMonitor().subTask("Load POM " + this);
 
         Document pomDocument;
         try (InputStream mdStream = new FileInputStream(localPOM)) {
@@ -227,7 +219,7 @@ public class MavenArtifactVersion {
                     if (this.version == null) {
                         this.version = parentReference.getVersion();
                     }
-                    parent = MavenRegistry.getInstance().findArtifact(monitor, parentReference);
+                    parent = MavenRegistry.getInstance().findArtifact(context, parentReference);
                     if (parent == null) {
                         log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");
                     }
@@ -252,7 +244,7 @@ public class MavenArtifactVersion {
         MavenProfile defaultProfile = new MavenProfile(DEFAULT_PROFILE_ID);
         defaultProfile.active = true;
         profiles.add(defaultProfile);
-        parseProfile(monitor, defaultProfile, root);
+        parseProfile(context, defaultProfile, root);
 
         {
             // Profiles
@@ -261,15 +253,15 @@ public class MavenArtifactVersion {
                 for (Element profElement : XMLUtils.getChildElementList(licensesElement, "profile")) {
                     MavenProfile profile = new MavenProfile(XMLUtils.getChildElementBody(profElement, "id"));
                     profiles.add(profile);
-                    parseProfile(monitor, profile, profElement);
+                    parseProfile(context, profile, profElement);
                 }
             }
         }
 
-        monitor.worked(1);
+        context.getMonitor().worked(1);
     }
 
-    private void parseProfile(DBRProgressMonitor monitor, MavenProfile profile, Element element) {
+    private void parseProfile(DBPDriverContext context, MavenProfile profile, Element element) {
         {
             // Activation
             Element activationElement = XMLUtils.getChildElement(element, "activation");
@@ -314,9 +306,9 @@ public class MavenArtifactVersion {
             // Dependencies
             Element dmElement = XMLUtils.getChildElement(element, "dependencyManagement");
             if (dmElement != null) {
-                profile.dependencyManagement = parseDependencies(monitor, dmElement, true);
+                profile.dependencyManagement = parseDependencies(context, dmElement, true);
             }
-            profile.dependencies = parseDependencies(monitor, element, false);
+            profile.dependencies = parseDependencies(context, element, false);
         }
     }
 
@@ -337,7 +329,7 @@ public class MavenArtifactVersion {
         }
     }
 
-    private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean depManagement) {
+    private List<MavenArtifactDependency> parseDependencies(DBPDriverContext context, Element element, boolean depManagement) {
         List<MavenArtifactDependency> result = new ArrayList<>();
         Element dependenciesElement = XMLUtils.getChildElement(element, "dependencies");
         if (dependenciesElement != null) {
@@ -367,7 +359,7 @@ public class MavenArtifactVersion {
                         groupId,
                         artifactId,
                         version);
-                    MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(monitor, importReference);
+                    MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(context, importReference);
                     if (importedVersion == null) {
                         log.error("Imported artifact [" + importReference + "] not found. Skip.");
                     }
@@ -379,7 +371,7 @@ public class MavenArtifactVersion {
                     // TODO: maybe we should include optional or PROVIDED
 
                     if (version == null) {
-                        version = findDependencyVersion(monitor, groupId, artifactId);
+                        version = findDependencyVersion(context, groupId, artifactId);
                     }
                     if (version == null) {
                         log.error("Can't resolve artifact [" + groupId + ":" + artifactId + "] version. Skip.");
@@ -421,7 +413,7 @@ public class MavenArtifactVersion {
             scope == MavenArtifactDependency.Scope.PROVIDED*/;
     }
 
-    private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {
+    private String findDependencyVersion(DBPDriverContext context, String groupId, String artifactId) {
         for (MavenProfile profile : profiles) {
             if (profile.isActive() && profile.dependencyManagement != null) {
                 for (MavenArtifactDependency dmArtifact : profile.dependencyManagement) {
@@ -435,13 +427,13 @@ public class MavenArtifactVersion {
         // Check in imported BOMs
         if (imports != null) {
             for (MavenArtifactVersion i : imports) {
-                String dependencyVersion = i.findDependencyVersion(monitor, groupId, artifactId);
+                String dependencyVersion = i.findDependencyVersion(context, groupId, artifactId);
                 if (dependencyVersion != null) {
                     return dependencyVersion;
                 }
             }
         }
-        return parent == null ? null : parent.findDependencyVersion(monitor, groupId, artifactId);
+        return parent == null ? null : parent.findDependencyVersion(context, groupId, artifactId);
     }
 
     private String evaluateString(String value) {
