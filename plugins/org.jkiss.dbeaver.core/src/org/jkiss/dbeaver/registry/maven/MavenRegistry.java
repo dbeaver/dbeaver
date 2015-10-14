@@ -209,6 +209,7 @@ public class MavenRegistry
 
         protected ConfigSaver() {
             super("Maven local cache persister");
+            setSystem(true);
         }
 
         @Override
