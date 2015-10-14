@@ -266,7 +266,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
         public void run()
         {
             Shell shell = getEditor().getSite().getShell();
-            final File saveFile = DialogUtils.selectFileForSave(shell);
+            final File saveFile = DialogUtils.selectFileForSave(shell, getEditor().getPartName());
             if (saveFile == null) {
                 return;
             }
