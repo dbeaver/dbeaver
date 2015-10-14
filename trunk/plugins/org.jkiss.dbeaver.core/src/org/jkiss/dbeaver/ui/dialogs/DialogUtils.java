@@ -50,9 +50,9 @@ public class DialogUtils {
 
     public static String curDialogFolder = System.getProperty("user.dir");
 
-    public static File selectFileForSave(Shell parentShell)
+    public static File selectFileForSave(Shell parentShell, String valueName)
     {
-        return selectFileForSave(parentShell, "Save Content As", null, null);
+        return selectFileForSave(parentShell, "Save Content As", null, valueName);
     }
 
     public static File selectFileForSave(Shell parentShell, String title, String[] filterExt, @Nullable String fileName)
@@ -159,7 +159,7 @@ public class DialogUtils {
         }
 
         Shell shell = UIUtils.getShell(controller.getValueSite());
-        final File saveFile = selectFileForSave(shell);
+        final File saveFile = selectFileForSave(shell, controller.getValueName());
         if (saveFile == null) {
             return;
         }
