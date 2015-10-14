@@ -423,6 +423,7 @@
                 <driver
                     id="hsqldb_server"
                     label="Server"
+                    icon="icons/hsqldb_icon.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbcDriver"
                     sampleURL="jdbc:hsqldb:hsql://{host}[:{port}]/[{database}]"
@@ -437,6 +438,7 @@
                 <driver
                     id="hsqldb_embedded"
                     label="Embedded"
+                    icon="icons/hsqldb_icon.png"
                     category="HSQLDB"
                     class="org.hsqldb.jdbc.JDBCDriver"
                     sampleURL="jdbc:hsqldb:file:{folder}"
@@ -573,6 +575,7 @@
                 <driver
                     id="msaccess_ucanaccess"
                     label="UCanAccess"
+                    icon="icons/msaccess_icon.png"
                     category="MS Access"
                     class="net.ucanaccess.jdbc.UcanaccessDriver"
                     sampleURL="jdbc:ucanaccess://{file}"
