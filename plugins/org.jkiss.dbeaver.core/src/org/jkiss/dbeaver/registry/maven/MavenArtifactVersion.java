@@ -303,6 +303,33 @@ public class MavenArtifactVersion {
             }
         }
         {
+            // Repositories
+            Element repsElement = XMLUtils.getChildElement(element, "repositories");
+            if (repsElement != null) {
+                for (Element repElement : XMLUtils.getChildElementList(repsElement, "repository")) {
+                    MavenRepository repository = new MavenRepository(
+                        XMLUtils.getChildElementBody(repElement, "id"),
+                        XMLUtils.getChildElementBody(repElement, "name"),
+                        XMLUtils.getChildElementBody(repElement, "url"),
+                        false);
+                    String layout = XMLUtils.getChildElementBody(repElement, "layout");
+                    if ("legacy".equals(layout)) {
+                        log.debug("Skip legacy repository [" + repository + "]");
+                        continue;
+                    }
+                    Element releasesElement = XMLUtils.getChildElement(repElement, "releases");
+                    if (releasesElement == null) {
+                        continue;
+                    }
+                    boolean enabled = CommonUtils.toBoolean(XMLUtils.getChildElementBody(releasesElement, "enabled"));
+                    if (enabled) {
+                        MavenContextInfo mci = context.getInfo(MavenContextInfo.class);
+                        //mci.addRepositories();
+                    }
+                }
+            }
+        }
+        {
             // Dependencies
             Element dmElement = XMLUtils.getChildElement(element, "dependencyManagement");
             if (dmElement != null) {
