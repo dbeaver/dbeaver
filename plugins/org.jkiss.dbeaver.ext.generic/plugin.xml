@@ -352,6 +352,7 @@
                 <driver
                     id="h2_server"
                     label="Server"
+                    icon="icons/h2_icon.png"
                     category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:tcp://{host}[:{port}]/{database}"
@@ -363,6 +364,7 @@
                 <driver
                     id="h2_embedded"
                     label="Embedded"
+                    icon="icons/h2_icon.png"
                     category="H2"
                     class="org.h2.Driver"
                     sampleURL="jdbc:h2:{database}"
