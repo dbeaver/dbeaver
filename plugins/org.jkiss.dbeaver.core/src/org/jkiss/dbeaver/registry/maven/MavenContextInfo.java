@@ -17,36 +17,18 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Maven resolve context
+ * Driver resolve context
  */
-public class MavenContext implements AutoCloseable {
+public class MavenContextInfo {
 
-    private final DBRProgressMonitor monitor;
-    private final Date initTime = new Date();
-    private final Map<String, String> properties = new HashMap<>();
     private final Map<MavenArtifactVersion, List<MavenRepository>> artifactRepositories = new LinkedHashMap<>();
     private final List<MavenRepository> activeRepositories = new ArrayList<>();
-
-    public MavenContext(DBRProgressMonitor monitor) {
-        this.monitor = monitor;
-    }
-
-    public DBRProgressMonitor getMonitor() {
-        return monitor;
-    }
-
-    public Date getInitTime() {
-        return initTime;
-    }
-
-    public Map<String, String> getProperties() {
-        return properties;
-    }
 
     public List<MavenRepository> getActiveRepositories() {
         return activeRepositories;
@@ -60,8 +42,4 @@ public class MavenContext implements AutoCloseable {
         artifactRepositories.remove(artifactVersion);
     }
 
-    @Override
-    public void close() {
-
-    }
 }

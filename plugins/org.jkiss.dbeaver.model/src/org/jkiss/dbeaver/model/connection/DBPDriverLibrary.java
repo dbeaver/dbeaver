@@ -79,16 +79,16 @@ public interface DBPDriverLibrary
 
     boolean isDisabled();
 
-    void setDisabled(boolean diabled);
+    void setDisabled(boolean disabled);
 
     boolean isDownloadable();
 
     boolean isResolved();
 
-    void resolve(DBRProgressMonitor monitor) throws IOException;
+    void resolve(DBPDriverContext context) throws IOException;
 
     @Nullable
-    String getExternalURL(DBRProgressMonitor monitor);
+    String getExternalURL(DBPDriverContext context);
 
     @Nullable
     File getLocalFile();
@@ -96,8 +96,8 @@ public interface DBPDriverLibrary
     boolean matchesCurrentPlatform();
 
     @Nullable
-    Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException;
+    Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBPDriverContext context) throws IOException;
 
-    void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName)
+    void downloadLibraryFile(@NotNull DBPDriverContext context, boolean forceUpdate, String taskName)
         throws IOException, InterruptedException;
 }
