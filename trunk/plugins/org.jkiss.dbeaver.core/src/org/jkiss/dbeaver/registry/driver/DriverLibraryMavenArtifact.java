@@ -43,6 +43,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public static final String PATH_PREFIX = "maven:/";
 
     private final MavenArtifactReference reference;
+    private MavenArtifactVersion version;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);
@@ -73,7 +74,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     protected MavenArtifactVersion getMavenVersion() {
-        return MavenRegistry.getInstance().findArtifact(VoidProgressMonitor.INSTANCE, reference);
+        if (version == null) {
+            version = MavenRegistry.getInstance().findArtifact(VoidProgressMonitor.INSTANCE, reference);
+        }
+        return version;
     }
 
     @Nullable

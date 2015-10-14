@@ -79,7 +79,7 @@ public class MavenRepository
         this.predefined = true;
     }
 
-    MavenRepository(String id, String name, String url, boolean local) {
+    public MavenRepository(String id, String name, String url, boolean local) {
         this.id = id;
         this.name = name;
         if (!url.endsWith("/")) url += "/";
@@ -229,13 +229,12 @@ public class MavenRepository
                     xml.addAttribute(ATTR_URL, url);
 
                     for (MavenArtifact artifact : cachedArtifacts.values()) {
-                        if (CommonUtils.isEmpty(artifact.getActiveVersionName())) {
-                            continue;
-                        }
                         try (XMLBuilder.Element e1 = xml.startElement(TAG_ARTIFACT)) {
                             xml.addAttribute(ATTR_GROUP_ID, artifact.getGroupId());
                             xml.addAttribute(ATTR_ARTIFACT_ID, artifact.getArtifactId());
-                            xml.addAttribute(ATTR_ACTIVE_VERSION, artifact.getActiveVersionName());
+                            if (CommonUtils.isEmpty(artifact.getActiveVersionName())) {
+                                xml.addAttribute(ATTR_ACTIVE_VERSION, artifact.getActiveVersionName());
+                            }
                         }
                     }
                 }
