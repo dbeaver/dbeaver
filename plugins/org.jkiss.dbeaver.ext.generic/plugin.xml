@@ -659,7 +659,7 @@
                     category="Hadoop"
                     label="Apache Drill"
                     class="org.apache.drill.jdbc.Driver"
-                    sampleURL="jdbc:drill:zk={host}[;{database}]:{port}"
+                    sampleURL="jdbc:drill:zk={host}[;schema={database}]:{port}"
                     defaultPort="5181"
                     description="Apache Drill JDBC"
                     webURL="https://drill.apache.org/">
