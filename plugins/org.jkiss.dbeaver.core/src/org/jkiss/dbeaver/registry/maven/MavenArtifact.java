@@ -169,10 +169,6 @@ public class MavenArtifact
         return lastUpdate;
     }
 
-    public List<MavenArtifactVersion> getLocalVersions() {
-        return localVersions;
-    }
-
     private String getArtifactURL() {
         String dir = groupId.replace('.', '/') + "/" + artifactId;
         return repository.getUrl() + dir + "/";
@@ -207,36 +203,14 @@ public class MavenArtifact
         return null;
     }
 
-    public void addVersion(MavenArtifactVersion version) {
-        localVersions.add(version);
-    }
-
     private MavenArtifactVersion makeLocalVersion(DBRProgressMonitor monitor, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
             version = new MavenArtifactVersion(monitor, this, versionStr);
             localVersions.add(version);
         }
-//        if (setActive) {
-//            activeVersion = versionStr;
-//            repository.flushCache();
-//        }
         return version;
     }
-
-/*
-    public MavenArtifactVersion resolveActiveVersion(DBRProgressMonitor monitor) throws IOException {
-        if (CommonUtils.isEmpty(activeVersion)) {
-            return null;
-        }
-        MavenArtifactVersion version = getVersion(activeVersion);
-        if (version == null) {
-            version = new MavenArtifactVersion(context, this, activeVersion);
-            localVersions.add(version);
-        }
-        return version;
-    }
-*/
 
     public MavenArtifactVersion resolveVersion(DBRProgressMonitor monitor, String versionRef) throws IOException {
         if (CommonUtils.isEmpty(versionRef)) {

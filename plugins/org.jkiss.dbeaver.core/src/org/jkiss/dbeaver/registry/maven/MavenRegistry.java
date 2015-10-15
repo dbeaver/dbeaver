@@ -196,26 +196,4 @@ public class MavenRegistry
         return null;
     }
 
-/*
-    private class ConfigSaver extends AbstractJob {
-
-        public static final int SAVE_PERIOD = 1000;
-
-        protected ConfigSaver() {
-            super("Maven local cache persister");
-            setSystem(true);
-        }
-
-        @Override
-        protected IStatus run(DBRProgressMonitor monitor) {
-            for (MavenRepository repository : repositories) {
-                repository.saveCacheIfNeeded();
-            }
-
-            schedule(SAVE_PERIOD);
-            return Status.OK_STATUS;
-        }
-    }
-*/
-
 }
