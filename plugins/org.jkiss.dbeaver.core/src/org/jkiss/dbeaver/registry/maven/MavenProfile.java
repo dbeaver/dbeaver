@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.maven;
 
 import org.w3c.dom.Element;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,7 @@ public class MavenProfile {
     Map<String, String> properties = new LinkedHashMap<>();
     List<MavenArtifactDependency> dependencies;
     List<MavenArtifactDependency> dependencyManagement;
+    List<MavenRepository> repositories;
 
     boolean active;
 
@@ -59,8 +61,20 @@ public class MavenProfile {
         return active;
     }
 
+    public List<MavenRepository> getRepositories() {
+        return repositories;
+    }
+
+    void addRepository(MavenRepository repository) {
+        if (repositories == null) {
+            repositories = new ArrayList<>();
+        }
+        repositories.add(repository);
+    }
+
     @Override
     public String toString() {
         return id;
     }
+
 }

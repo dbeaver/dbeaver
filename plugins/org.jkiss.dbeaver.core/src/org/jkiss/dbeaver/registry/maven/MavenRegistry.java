@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,6 +36,8 @@ import java.util.*;
 
 public class MavenRegistry
 {
+    static final Log log = Log.getLog(MavenRegistry.class);
+
     public static final String MAVEN_LOCAL_REPO_ID = "local";
     public static final String MAVEN_LOCAL_REPO_NAME = "Local Repository";
     public static final String MAVEN_LOCAL_REPO_FOLDER = "maven-local";
@@ -90,7 +93,7 @@ public class MavenRegistry
             MAVEN_LOCAL_REPO_ID,
             MAVEN_LOCAL_REPO_NAME,
             localRepoURL,
-            true);
+            MavenRepository.RepositoryType.LOCAL);
     }
 
     private void loadCache() {
@@ -107,7 +110,7 @@ public class MavenRegistry
         // Remove all custom repositories
         for (Iterator<MavenRepository> iterator = repositories.iterator(); iterator.hasNext(); ) {
             MavenRepository repository = iterator.next();
-            if (!repository.isPredefined()) {
+            if (repository.getType() == MavenRepository.RepositoryType.CUSTOM) {
                 iterator.remove();
             }
         }
@@ -123,7 +126,7 @@ public class MavenRegistry
             }
             String repoID = repoInfo.substring(0, divPos);
             String repoURL = repoInfo.substring(divPos + 1);
-            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL, false);
+            MavenRepository repo = new MavenRepository(repoID, repoID, repoURL, MavenRepository.RepositoryType.CUSTOM);
             repositories.add(repo);
         }
     }
@@ -134,12 +137,12 @@ public class MavenRegistry
     }
 
     @Nullable
-    public MavenArtifactVersion findArtifact(@NotNull DBPDriverContext context, @NotNull MavenArtifactReference ref) {
+    public MavenArtifactVersion findArtifact(@NotNull DBPDriverContext context, @Nullable MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
         String fullId = ref.getId();
         if (notFoundArtifacts.contains(fullId)) {
             return null;
         }
-        MavenArtifactVersion artifact = findInRepositories(context, ref);
+        MavenArtifactVersion artifact = findInRepositories(context, owner, ref);
         if (artifact != null) {
             return artifact;
         }
@@ -179,19 +182,57 @@ public class MavenRegistry
     }
 
     @Nullable
-    private MavenArtifactVersion findInRepositories(@NotNull DBPDriverContext context, @NotNull MavenArtifactReference ref) {
-        // Try all available repositories (without resolve)
-        for (MavenRepository repository : repositories) {
-            MavenArtifactVersion artifact = repository.findArtifact(context, ref);
+    private MavenArtifactVersion findInRepositories(@NotNull DBPDriverContext context, MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
+        //MavenContextInfo info = context.getInfo(MavenContextInfo.class);
+        MavenRepository currentRepository = owner == null ? null : owner.getArtifact().getRepository();
+        if (currentRepository != null) {
+            MavenArtifactVersion artifact = currentRepository.findArtifact(context, ref);
             if (artifact != null) {
                 return artifact;
             }
         }
-        MavenArtifactVersion artifact = localRepository.findArtifact(context, ref);
-        if (artifact != null) {
-            return artifact;
+
+        // Try all available repositories (without resolve)
+        for (MavenRepository repository : repositories) {
+            if (repository != currentRepository) {
+                MavenArtifactVersion artifact = repository.findArtifact(context, ref);
+                if (artifact != null) {
+                    return artifact;
+                }
+            }
         }
+        if (owner != null) {
+            // Try context repositories
+            for (MavenRepository repository : owner.getActiveRepositories()) {
+                if (repository != currentRepository) {
+                    MavenArtifactVersion artifact = repository.findArtifact(context, ref);
+                    if (artifact != null) {
+                        return artifact;
+                    }
+                }
+            }
+        }
+
+        if (localRepository != currentRepository) {
+            MavenArtifactVersion artifact = localRepository.findArtifact(context, ref);
+            if (artifact != null) {
+                return artifact;
+            }
+        }
+
+        log.warn("Maven artifact '" + ref + "' not found in any available repository.");
+
         return null;
+    }
+
+    @Nullable
+    private MavenArtifactVersion findInRepository(@NotNull DBPDriverContext context, @NotNull MavenArtifactReference ref, MavenRepository repository) {
+        //info.startRepositoryBrowse(repository);
+        try {
+            return repository.findArtifact(context, ref);
+        } finally {
+            //info.endRepositoryBrowse(repository);
+        }
     }
 
     public MavenRepository findRepository(String id) {

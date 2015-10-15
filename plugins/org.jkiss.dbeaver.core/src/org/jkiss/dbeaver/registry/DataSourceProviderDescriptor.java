@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.navigator.meta.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -81,6 +82,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         if (this.icon == null) {
             this.icon = UIIcon.GEN_DATABASE_TYPE;
         }
+
+        // Init maven registry.
+        // We have to init it before any maven library will be initiated.
+        // Otherwise artifact loading sequence can be broken.
+        MavenRegistry.getInstance();
 
         // Load tree structure
         IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);

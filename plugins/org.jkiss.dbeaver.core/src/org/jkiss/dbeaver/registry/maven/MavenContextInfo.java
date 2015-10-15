@@ -17,29 +17,90 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
+import org.jkiss.dbeaver.Log;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Driver resolve context
+ * MavenContextInfo
  */
-public class MavenContextInfo {
+public class MavenContextInfo implements AutoCloseable {
+    static final Log log = Log.getLog(MavenContextInfo.class);
 
-    private final Map<MavenArtifactVersion, List<MavenRepository>> artifactRepositories = new LinkedHashMap<>();
-    private final List<MavenRepository> activeRepositories = new ArrayList<>();
+    private List<MavenRepository> repositoryStack = new ArrayList<>();
+    private Map<String, MavenRepository> externalRepositories = new LinkedHashMap<>();
 
-    public List<MavenRepository> getActiveRepositories() {
-        return activeRepositories;
+    public MavenRepository getCurrentRepository() {
+        return repositoryStack.isEmpty() ? null : repositoryStack.get(repositoryStack.size() - 1);
     }
 
-    public void addRepositories(MavenArtifactVersion artifactVersion, List<MavenRepository> repositories) {
-        artifactRepositories.put(artifactVersion, repositories);
+    public void startRepositoryBrowse(MavenRepository repository) {
+        repositoryStack.add(repository);
     }
 
-    public void removeRepositories(MavenArtifactVersion artifactVersion) {
-        artifactRepositories.remove(artifactVersion);
+    public void endRepositoryBrowse(MavenRepository repository) {
+        MavenRepository removed = repositoryStack.remove(repositoryStack.size() - 1);
+        if (removed == null || removed != repository) {
+            log.error("Wrong artifact: " + repository);
+        }
     }
+
+    public void trackRepository(MavenRepository repository) {
+        externalRepositories.put(repository.getUrl(), repository);
+    }
+
+    @Override
+    public void close() {
+        for (MavenRepository repository : externalRepositories.values()) {
+            repository.saveCache();
+        }
+    }
+
+    /*
+    private final List<MavenArtifactVersion> artifactStack = new ArrayList<>();
+
+    public Collection<MavenRepository> getActiveRepositories() {
+        Map<String, MavenRepository> repositories = new LinkedHashMap<>();
+        for (int i = artifactStack.size(); i > 0; i--) {
+            for (MavenProfile profile : artifactStack.get(i - 1).getProfiles()) {
+                if (profile.isActive()) {
+                    List<MavenRepository> profileRepositories = profile.getRepositories();
+                    if (profileRepositories != null) {
+                        for (MavenRepository repository : profileRepositories) {
+                            repositories.put(repository.getId(), repository);
+                        }
+                    }
+                }
+            }
+        }
+        return repositories.values();
+    }
+
+    void beginArtifactProcessing(MavenArtifactVersion artifactVersion) {
+        artifactStack.add(artifactVersion);
+    }
+
+    void endArtifactProcessing(MavenArtifactVersion artifactVersion) {
+        MavenArtifactVersion removed = artifactStack.remove(artifactStack.size() - 1);
+        if (removed == null || removed != artifactVersion) {
+            log.error("Wrong artifact: " + artifactVersion);
+        } else {
+            // Save repository cache immediately
+            for (MavenProfile profile : artifactVersion.getProfiles()) {
+                if (profile.isActive()) {
+                    List<MavenRepository> profileRepositories = profile.getRepositories();
+                    if (profileRepositories != null) {
+                        for (MavenRepository repository : profileRepositories) {
+                            repository.saveCache();
+                        }
+                    }
+                }
+            }
+        }
+    }
+*/
 
 }
