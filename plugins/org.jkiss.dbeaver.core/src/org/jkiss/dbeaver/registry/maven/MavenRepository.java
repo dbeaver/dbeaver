@@ -23,17 +23,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.connection.DBPDriverContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
-import org.jkiss.utils.xml.SAXListener;
-import org.jkiss.utils.xml.SAXReader;
-import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
-import org.xml.sax.Attributes;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedHashMap;
@@ -59,7 +53,6 @@ public class MavenRepository
     public static final String ATTR_URL = "url";
     public static final String ATTR_GROUP_ID = "groupId";
     public static final String ATTR_ARTIFACT_ID = "artifactId";
-    public static final String ATTR_ACTIVE_VERSION = "activeVersion";
     public static final String ATTR_VERSION = "version";
 
     public enum RepositoryType {
@@ -136,23 +129,6 @@ public class MavenRepository
         }
     }
 
-    public MavenArtifactVersion findCachedArtifact(DBPDriverContext context, MavenArtifactReference ref) {
-        MavenArtifact artifact = cachedArtifacts.get(ref.getId());
-        if (artifact == null) {
-            return null;
-        }
-        MavenArtifactVersion version = artifact.getVersion(ref.getVersion());
-        if (version == null && !CommonUtils.isEmpty(artifact.getActiveVersionName())) {
-            // Resolve active version
-            try {
-                version = artifact.resolveActiveVersion(context);
-            } catch (IOException e) {
-                log.warn("Can't resolve cached active version " + ref);
-            }
-        }
-        return version;
-    }
-
     synchronized void resetArtifactCache(@NotNull MavenArtifactReference artifactReference) {
         cachedArtifacts.remove(artifactReference.getId());
     }
@@ -183,6 +159,7 @@ public class MavenRepository
         return homeFolder;
     }
 
+/*
     synchronized void loadCache() {
         File cacheFile = new File(getLocalCacheDir(), METADATA_CACHE_FILE);
         if (!cacheFile.exists()) {
@@ -201,7 +178,6 @@ public class MavenRepository
                                 MavenRepository.this,
                                 atts.getValue(ATTR_GROUP_ID),
                                 atts.getValue(ATTR_ARTIFACT_ID));
-                            lastArtifact.setActiveVersionName(atts.getValue(ATTR_ACTIVE_VERSION));
                             cachedArtifacts.put(
                                 MavenArtifactReference.makeId(lastArtifact.getGroupId(), lastArtifact.getArtifactId()),
                                 lastArtifact);
@@ -211,8 +187,8 @@ public class MavenRepository
                                 MavenArtifactVersion version = new MavenArtifactVersion(
                                     context,
                                     lastArtifact,
-                                    versionNumber,
-                                    false);
+                                    versionNumber
+                                );
                                 lastArtifact.addVersion(version);
                             } catch (IOException e) {
                                 log.warn("Error loading cached artifact version " + lastArtifact + ":" + versionNumber, e);
@@ -269,9 +245,6 @@ public class MavenRepository
                         try (XMLBuilder.Element e1 = xml.startElement(TAG_ARTIFACT)) {
                             xml.addAttribute(ATTR_GROUP_ID, artifact.getGroupId());
                             xml.addAttribute(ATTR_ARTIFACT_ID, artifact.getArtifactId());
-                            if (!CommonUtils.isEmpty(artifact.getActiveVersionName())) {
-                                xml.addAttribute(ATTR_ACTIVE_VERSION, artifact.getActiveVersionName());
-                            }
                         }
                     }
                 }
@@ -284,6 +257,7 @@ public class MavenRepository
             log.warn("Error saving local Maven cache", e);
         }
     }
+*/
 
     @Override
     public String toString() {

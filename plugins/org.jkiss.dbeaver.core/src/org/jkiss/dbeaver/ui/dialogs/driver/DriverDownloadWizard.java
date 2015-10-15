@@ -23,26 +23,24 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
 
 public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     private static final String DRIVER_DOWNLOAD_DIALOG_SETTINGS = "DriverDownload";//$NON-NLS-1$
 
     private DriverDescriptor driver;
-    private List<? extends DBPDriverLibrary> files;
+    private DriverDependencies dependencies;
     private boolean updateVersion;
     private boolean forceDownload;
     private DriverDownloadPage downloadPage;
 
-    public DriverDownloadWizard(@NotNull DriverDescriptor driver, List<? extends DBPDriverLibrary> files, boolean updateVersion, boolean forceDownload) {
+    public DriverDownloadWizard(@NotNull DriverDescriptor driver, DriverDependencies dependencies, boolean updateVersion, boolean forceDownload) {
         this.driver = driver;
-        this.files = files;
+        this.dependencies = dependencies;
         this.updateVersion = updateVersion;
         this.forceDownload = forceDownload;
         setWindowTitle(updateVersion ? "Update driver files" : "Setup driver files");
@@ -54,8 +52,8 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return driver;
     }
 
-    List<? extends DBPDriverLibrary> getFiles() {
-        return files;
+    public DriverDependencies getDependencies() {
+        return dependencies;
     }
 
     public boolean isForceDownload() {

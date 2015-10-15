@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;

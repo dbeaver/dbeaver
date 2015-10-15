@@ -30,10 +30,16 @@ import java.util.*;
  */
 public class DriverDependencies implements DBPDriverDependencies
 {
+    final List<? extends DBPDriverLibrary> rootLibraries;
     final List<DependencyNode> rootNodes = new ArrayList<>();
     final List<DBPDriverLibrary> libraryList = new ArrayList<>();
 
-    void resolveDependencies(DBPDriverContext context, Collection<? extends DBPDriverLibrary> rootLibraries) throws DBException {
+    public DriverDependencies(List<? extends DBPDriverLibrary> rootLibraries) {
+        this.rootLibraries = rootLibraries;
+    }
+
+    @Override
+    public void resolveDependencies(DBPDriverContext context) throws DBException {
         try {
             {
                 rootNodes.clear();

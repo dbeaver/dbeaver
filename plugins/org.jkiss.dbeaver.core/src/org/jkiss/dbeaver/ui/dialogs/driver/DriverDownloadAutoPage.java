@@ -44,7 +44,6 @@ import java.util.List;
 class DriverDownloadAutoPage extends DriverDownloadPage {
 
     private Tree filesTree;
-    private DBPDriverDependencies dependencies;
 
     DriverDownloadAutoPage() {
         super("Automatic download", "Download driver files", null);
@@ -96,8 +95,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Resolve dependencies", 100);
-                    try {
-                        dependencies = getWizard().getDriver().resolveDependencies(monitor);
+                    try (DBPDriverContext context = new DBPDriverContext(monitor)) {
+                        getWizard().getDependencies().resolveDependencies(context);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -113,7 +112,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         int totalItems = 0;
-        for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
+        for (DBPDriverDependencies.DependencyNode node : getWizard().getDependencies().getLibraryMap()) {
             DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(library.getIcon()));
@@ -157,7 +156,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     public boolean isPageComplete() {
-        return dependencies != null;
+        return true;
     }
 
     @Override
@@ -252,7 +251,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             DBPDriverContext context = new DBPDriverContext(monitor);
 
-            List<DBPDriverLibrary> files = dependencies.getLibraryList();
+            List<DBPDriverLibrary> files = getWizard().getDependencies().getLibraryList();
             for (int i = 0, filesSize = files.size(); i < filesSize; ) {
                 DBPDriverLibrary lib = files.get(i);
                 int result = IDialogConstants.OK_ID;

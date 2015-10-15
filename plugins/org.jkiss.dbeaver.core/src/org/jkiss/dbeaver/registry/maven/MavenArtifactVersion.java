@@ -82,11 +82,11 @@ public class MavenArtifactVersion {
         }
     };
 
-    MavenArtifactVersion(@NotNull DBPDriverContext context, @NotNull MavenArtifact artifact, @NotNull String version, boolean readRemote) throws IOException {
+    MavenArtifactVersion(@NotNull DBPDriverContext context, @NotNull MavenArtifact artifact, @NotNull String version) throws IOException {
         this.artifact = artifact;
         this.version = version;
 
-        loadPOM(context, readRemote);
+        loadPOM(context);
     }
 
     public MavenArtifact getArtifact() {
@@ -197,15 +197,10 @@ public class MavenArtifactVersion {
         }
     }
 
-    private void loadPOM(DBPDriverContext context, boolean readRemote) throws IOException {
+    private void loadPOM(DBPDriverContext context) throws IOException {
         File localPOM = getLocalPOM();
         if (!localPOM.exists()) {
-            if (readRemote) {
-                cachePOM(localPOM);
-            } else {
-                log.warn("Local POM missing for " + this);
-                return;
-            }
+            cachePOM(localPOM);
         }
 
         context.getMonitor().subTask("Load POM " + this);
@@ -343,9 +338,7 @@ public class MavenArtifactVersion {
                     }
                     boolean enabled = CommonUtils.toBoolean(XMLUtils.getChildElementBody(releasesElement, "enabled"));
                     if (enabled) {
-                        repository.loadCache();
                         profile.addRepository(repository);
-                        context.getInfo(MavenContextInfo.class).trackRepository(repository);
                     }
                 }
             }
