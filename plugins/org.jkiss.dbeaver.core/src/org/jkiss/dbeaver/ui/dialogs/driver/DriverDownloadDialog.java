@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -43,9 +44,9 @@ public class DriverDownloadDialog extends WizardDialog
 
     private boolean doDownload = false;
 
-    DriverDownloadDialog(Shell shell, DriverDescriptor driver, List<? extends DBPDriverLibrary> files, boolean updateVersion, boolean forceDownload)
+    DriverDownloadDialog(Shell shell, DriverDescriptor driver, DriverDependencies dependencies, boolean updateVersion, boolean forceDownload)
     {
-        super(shell, new DriverDownloadWizard(driver, files, updateVersion, forceDownload));
+        super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload));
         getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
         addPageChangedListener(new IPageChangedListener() {
             @Override
@@ -123,19 +124,19 @@ public class DriverDownloadDialog extends WizardDialog
         super.finishPressed();
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DBPDriverLibrary> files) {
-        return downloadDriverFiles(shell, driver, files, false);
+    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, DriverDependencies dependencies) {
+        return downloadDriverFiles(shell, driver, dependencies, false);
     }
 
-    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, List<DBPDriverLibrary> files, boolean forceDownload) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, false, forceDownload);
+    public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, DriverDependencies dependencies, boolean forceDownload) {
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, false, forceDownload);
         dialog.setMinimumPageSize(100, 100);
         dialog.open();
         return dialog.doDownload;
     }
 
-    public static boolean updateDriverFiles(Shell shell, DriverDescriptor driver, List<? extends DBPDriverLibrary> files, boolean forceDownload) {
-        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, files, true, forceDownload);
+    public static boolean updateDriverFiles(Shell shell, DriverDescriptor driver, DriverDependencies dependencies, boolean forceDownload) {
+        DriverDownloadDialog dialog = new DriverDownloadDialog(shell, driver, dependencies, true, forceDownload);
         dialog.setMinimumPageSize(100, 100);
         dialog.open();
         return dialog.doDownload;

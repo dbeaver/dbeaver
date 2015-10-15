@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
@@ -71,7 +70,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public boolean isResolved() {
-        return getCachedArtifactVersion() != null;
+        return localVersion != null;
     }
 
     @Override
@@ -79,16 +78,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         if (getArtifactVersion(context) == null) {
             throw new IOException("Can't resolve artifact " + this + " version");
         }
-    }
-
-    @Nullable
-    protected MavenArtifactVersion getCachedArtifactVersion() {
-        if (localVersion == null) {
-            try (DBPDriverContext context = new DBPDriverContext(VoidProgressMonitor.INSTANCE)) {
-                localVersion = MavenRegistry.getInstance().findCachedArtifact(context, reference);
-            }
-        }
-        return localVersion;
     }
 
     @Nullable
@@ -126,7 +115,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     private File detectLocalFile()
     {
-        MavenArtifactVersion localVersion = getCachedArtifactVersion();
         if (localVersion != null) {
             return localVersion.getCacheFile();
         }
@@ -180,12 +168,11 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public String getVersion() {
-        MavenArtifactVersion version = getCachedArtifactVersion();
-        if (version != null) {
-            return version.getVersion();
+        if (localVersion != null) {
+            return localVersion.getVersion();
         }
 
-        return path;
+        return reference.getVersion();
     }
 
     @NotNull

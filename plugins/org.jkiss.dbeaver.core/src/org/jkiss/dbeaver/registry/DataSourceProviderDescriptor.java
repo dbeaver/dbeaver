@@ -83,11 +83,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             this.icon = UIIcon.GEN_DATABASE_TYPE;
         }
 
-        // Init maven registry.
-        // We have to init it before any maven library will be initiated.
-        // Otherwise artifact loading sequence can be broken.
-        MavenRegistry.getInstance();
-
         // Load tree structure
         IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
         if (!ArrayUtils.isEmpty(trees)) {

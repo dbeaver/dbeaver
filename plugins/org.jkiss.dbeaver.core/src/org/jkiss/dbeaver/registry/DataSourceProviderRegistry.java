@@ -24,7 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -166,7 +165,7 @@ public class DataSourceProviderRegistry
         if (driversConfig.exists()) {
             try {
                 try (InputStream is = new FileInputStream(driversConfig)) {
-                    new SAXReader(is).parse(new DriversParser());
+                    new SAXReader(is).parse(new DriverDescriptor.DriversParser());
                 } catch (XMLException ex) {
                     log.warn("Drivers config parse error", ex);
                 }
@@ -327,120 +326,6 @@ public class DataSourceProviderRegistry
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)),
                     CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CONFIRM_EXECUTE)));
                 connectionTypes.put(connectionType.getId(), connectionType);
-            }
-        }
-
-        @Override
-        public void saxText(SAXReader reader, String data) {}
-
-        @Override
-        public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {}
-    }
-
-    static class DriversParser implements SAXListener
-    {
-        DataSourceProviderDescriptor curProvider;
-        DriverDescriptor curDriver;
-
-        @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
-            if (localName.equals(RegistryConstants.TAG_PROVIDER)) {
-                curProvider = null;
-                curDriver = null;
-                String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
-                if (CommonUtils.isEmpty(idAttr)) {
-                    log.warn("No id for driver provider");
-                    return;
-                }
-                curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(idAttr);
-                if (curProvider == null) {
-                    log.warn("Datasource provider '" + idAttr + "' not found. Bad provider description.");
-                }
-            } else if (localName.equals(RegistryConstants.TAG_DRIVER)) {
-                curDriver = null;
-                if (curProvider == null) {
-                    String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
-                    if (!CommonUtils.isEmpty(providerId)) {
-                        curProvider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
-                        if (curProvider == null) {
-                            log.warn("Datasource provider '" + providerId + "' not found. Bad driver description.");
-                        }
-                    }
-                    if (curProvider == null) {
-                        log.warn("Driver outside of datasource provider");
-                        return;
-                    }
-                }
-                String idAttr = atts.getValue(RegistryConstants.ATTR_ID);
-                curDriver = curProvider.getDriver(idAttr);
-                if (curDriver == null) {
-                    curDriver = new DriverDescriptor(curProvider, idAttr);
-                    curProvider.addDriver(curDriver);
-                }
-                if (curProvider.isDriversManagable()) {
-                    curDriver.setCategory(atts.getValue(RegistryConstants.ATTR_CATEGORY));
-                    curDriver.setName(atts.getValue(RegistryConstants.ATTR_NAME));
-                    curDriver.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                    curDriver.setDriverClassName(atts.getValue(RegistryConstants.ATTR_CLASS));
-                    curDriver.setSampleURL(atts.getValue(RegistryConstants.ATTR_URL));
-                    curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                    curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
-                }
-                curDriver.setCustomDriverLoader(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
-                curDriver.setModified(true);
-                String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
-                if (CommonUtils.getBoolean(disabledAttr)) {
-                    curDriver.setDisabled(true);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_FILE) || localName.equals(RegistryConstants.TAG_LIBRARY)) {
-                if (curDriver == null) {
-                    log.warn("File outside of driver");
-                    return;
-                }
-                DBPDriverLibrary.FileType type;
-                String typeStr = atts.getValue(RegistryConstants.ATTR_TYPE);
-                if (CommonUtils.isEmpty(typeStr)) {
-                    type = DBPDriverLibrary.FileType.jar;
-                } else {
-                    try {
-                        type = DBPDriverLibrary.FileType.valueOf(typeStr);
-                    } catch (IllegalArgumentException e) {
-                        log.warn(e);
-                        type = DBPDriverLibrary.FileType.jar;
-                    }
-                }
-                String path = atts.getValue(RegistryConstants.ATTR_PATH);
-                DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
-                String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
-                if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
-                    lib.setDisabled(true);
-                } else if (lib == null) {
-                    curDriver.addDriverLibrary(path, type);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_CLIENT_HOME)) {
-                curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
-            } else if (localName.equals(RegistryConstants.TAG_PARAMETER)) {
-                if (curDriver == null) {
-                    log.warn("Parameter outside of driver");
-                    return;
-                }
-                final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setDriverParameter(paramName, paramValue, false);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
-                if (curDriver == null) {
-                    log.warn("Property outside of driver");
-                    return;
-                }
-                final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                    curDriver.setConnectionProperty(paramName, paramValue);
-                }
             }
         }
 
