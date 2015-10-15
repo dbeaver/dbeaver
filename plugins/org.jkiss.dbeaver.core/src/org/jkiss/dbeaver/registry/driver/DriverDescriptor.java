@@ -961,6 +961,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     private void collectLibraryFiles(DBPDriverDependencies.DependencyNode node, List<DriverFileInfo> files) {
+        if (node.duplicate) {
+            return;
+        }
         files.add(new DriverFileInfo(node.library));
         for (DBPDriverDependencies.DependencyNode sub : node.dependencies) {
             collectLibraryFiles(sub, files);
