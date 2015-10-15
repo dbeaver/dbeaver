@@ -23,7 +23,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
+import java.util.Collection;
 import java.util.List;
 
 class DriverDownloadAutoPage extends DriverDownloadPage {
@@ -95,8 +94,8 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Resolve dependencies", 100);
-                    try (DBPDriverContext context = new DBPDriverContext(monitor)) {
-                        getWizard().getDependencies().resolveDependencies(context);
+                    try {
+                        getWizard().getDependencies().resolveDependencies(monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -249,14 +248,13 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     private class LibraryDownloader implements DBRRunnableWithProgress {
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            DBPDriverContext context = new DBPDriverContext(monitor);
 
             List<DBPDriverLibrary> files = getWizard().getDependencies().getLibraryList();
             for (int i = 0, filesSize = files.size(); i < filesSize; ) {
                 DBPDriverLibrary lib = files.get(i);
                 int result = IDialogConstants.OK_ID;
                 try {
-                    lib.downloadLibraryFile(context, false, "Download " + (i + 1) + "/" + filesSize);
+                    lib.downloadLibraryFile(monitor, false, "Download " + (i + 1) + "/" + filesSize);
                 } catch (IOException e) {
                     if (lib.getType() == DBPDriverLibrary.FileType.license) {
                         result = IDialogConstants.OK_ID;
