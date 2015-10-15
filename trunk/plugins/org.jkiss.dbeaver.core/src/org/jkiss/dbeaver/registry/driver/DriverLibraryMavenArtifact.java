@@ -22,8 +22,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
@@ -74,24 +74,24 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
-    public void resolve(DBPDriverContext context) throws IOException {
-        if (getArtifactVersion(context) == null) {
+    public void resolve(DBRProgressMonitor monitor) throws IOException {
+        if (getArtifactVersion(monitor) == null) {
             throw new IOException("Can't resolve artifact " + this + " version");
         }
     }
 
     @Nullable
-    protected MavenArtifactVersion getArtifactVersion(DBPDriverContext context) {
+    protected MavenArtifactVersion getArtifactVersion(DBRProgressMonitor monitor) {
         if (localVersion == null) {
-            localVersion = MavenRegistry.getInstance().findArtifact(context, null, reference);
+            localVersion = MavenRegistry.getInstance().findArtifact(monitor, null, reference);
         }
         return localVersion;
     }
 
     @Nullable
     @Override
-    public String getExternalURL(DBPDriverContext context) {
-        MavenArtifactVersion localVersion = getArtifactVersion(context);
+    public String getExternalURL(DBRProgressMonitor monitor) {
+        MavenArtifactVersion localVersion = getArtifactVersion(monitor);
         if (localVersion != null) {
             return localVersion.getExternalURL(MavenArtifact.FILE_JAR);
         }
@@ -123,19 +123,19 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBPDriverContext context) throws IOException {
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
-        MavenArtifactVersion localVersion = resolveLocalVersion(context, false);
+        MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
         if (localVersion != null) {
 
-            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(context);
+            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(monitor);
             if (!CommonUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency dependency : artifactDeps) {
-                    if (isDependencyExcluded(context, dependency)) {
+                    if (isDependencyExcluded(monitor, dependency)) {
                         continue;
                     }
 
-                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(context, localVersion, dependency);
+                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(monitor, localVersion, dependency);
                     if (depArtifact != null) {
                         dependencies.add(
                             new DriverLibraryMavenDependency(
@@ -152,7 +152,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return dependencies;
     }
 
-    protected boolean isDependencyExcluded(DBPDriverContext context, MavenArtifactDependency dependency) {
+    protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {
         return false;
     }
 
@@ -181,10 +181,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return UIIcon.APACHE;
     }
 
-    public void downloadLibraryFile(@NotNull DBPDriverContext context, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
+    public void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName) throws IOException, InterruptedException {
         //monitor.beginTask(taskName + " - update localVersion information", 1);
         try {
-            MavenArtifactVersion localVersion = resolveLocalVersion(context, forceUpdate);
+            MavenArtifactVersion localVersion = resolveLocalVersion(monitor, forceUpdate);
             if (localVersion.getArtifact().getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
                 // No need to download local artifacts
                 return;
@@ -192,14 +192,14 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         } finally {
             //monitor.done();
         }
-        super.downloadLibraryFile(context, forceUpdate, taskName);
+        super.downloadLibraryFile(monitor, forceUpdate, taskName);
     }
 
-    protected MavenArtifactVersion resolveLocalVersion(DBPDriverContext context, boolean forceUpdate) throws IOException {
+    protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {
         if (forceUpdate) {
             MavenRegistry.getInstance().resetArtifactInfo(reference);
         }
-        MavenArtifactVersion version = getArtifactVersion(context);
+        MavenArtifactVersion version = getArtifactVersion(monitor);
         if (version == null) {
             throw new IOException("Maven artifact '" + path + "' not found");
         }

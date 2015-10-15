@@ -24,7 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.connection.DBPDriverContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -120,12 +120,12 @@ public class MavenRegistry
     }
 
     @Nullable
-    public MavenArtifactVersion findArtifact(@NotNull DBPDriverContext context, @Nullable MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
+    public MavenArtifactVersion findArtifact(@NotNull DBRProgressMonitor monitor, @Nullable MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
         String fullId = ref.getId();
         if (notFoundArtifacts.contains(fullId)) {
             return null;
         }
-        MavenArtifactVersion artifact = findInRepositories(context, owner, ref);
+        MavenArtifactVersion artifact = findInRepositories(monitor, owner, ref);
         if (artifact != null) {
             return artifact;
         }
@@ -145,10 +145,10 @@ public class MavenRegistry
     }
 
     @Nullable
-    private MavenArtifactVersion findInRepositories(@NotNull DBPDriverContext context, MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
+    private MavenArtifactVersion findInRepositories(@NotNull DBRProgressMonitor monitor, MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
         MavenRepository currentRepository = owner == null ? null : owner.getArtifact().getRepository();
         if (currentRepository != null) {
-            MavenArtifactVersion artifact = currentRepository.findArtifact(context, ref);
+            MavenArtifactVersion artifact = currentRepository.findArtifact(monitor, ref);
             if (artifact != null) {
                 return artifact;
             }
@@ -157,7 +157,7 @@ public class MavenRegistry
         // Try all available repositories (without resolve)
         for (MavenRepository repository : repositories) {
             if (repository != currentRepository) {
-                MavenArtifactVersion artifact = repository.findArtifact(context, ref);
+                MavenArtifactVersion artifact = repository.findArtifact(monitor, ref);
                 if (artifact != null) {
                     return artifact;
                 }
@@ -167,7 +167,7 @@ public class MavenRegistry
             // Try context repositories
             for (MavenRepository repository : owner.getActiveRepositories()) {
                 if (repository != currentRepository) {
-                    MavenArtifactVersion artifact = repository.findArtifact(context, ref);
+                    MavenArtifactVersion artifact = repository.findArtifact(monitor, ref);
                     if (artifact != null) {
                         return artifact;
                     }
@@ -176,7 +176,7 @@ public class MavenRegistry
         }
 
         if (localRepository != currentRepository) {
-            MavenArtifactVersion artifact = localRepository.findArtifact(context, ref);
+            MavenArtifactVersion artifact = localRepository.findArtifact(monitor, ref);
             if (artifact != null) {
                 return artifact;
             }
