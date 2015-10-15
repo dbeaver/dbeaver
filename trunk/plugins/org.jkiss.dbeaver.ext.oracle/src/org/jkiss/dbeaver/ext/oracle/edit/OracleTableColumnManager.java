@@ -52,7 +52,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
 
     protected ColumnModifier[] getSupportedModifiers()
     {
-        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NullNotNullModifier};
+        return new ColumnModifier[] {DataTypeModifier, DefaultModifier, NullNotNullModifierConditional};
     }
 
     @Override
