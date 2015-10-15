@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.connection;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;
 import java.io.IOException;
@@ -84,10 +85,10 @@ public interface DBPDriverLibrary
 
     boolean isResolved();
 
-    void resolve(DBPDriverContext context) throws IOException;
+    void resolve(DBRProgressMonitor monitor) throws IOException;
 
     @Nullable
-    String getExternalURL(DBPDriverContext context);
+    String getExternalURL(DBRProgressMonitor monitor);
 
     @Nullable
     File getLocalFile();
@@ -95,8 +96,8 @@ public interface DBPDriverLibrary
     boolean matchesCurrentPlatform();
 
     @Nullable
-    Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBPDriverContext context) throws IOException;
+    Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException;
 
-    void downloadLibraryFile(@NotNull DBPDriverContext context, boolean forceUpdate, String taskName)
+    void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName)
         throws IOException, InterruptedException;
 }

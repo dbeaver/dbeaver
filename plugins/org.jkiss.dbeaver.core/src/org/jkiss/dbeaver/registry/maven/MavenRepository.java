@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.model.connection.DBPDriverContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,18 +42,8 @@ public class MavenRepository
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.mavenRepository";
 
-    public static final String METADATA_CACHE_FILE = "metadata-cache.xml";
-
-    public static final String TAG_CACHE = "cache";
-    public static final String TAG_ARTIFACT = "artifact";
-    public static final String TAG_VERSION = "version";
-
     public static final String ATTR_ID = "id";
     public static final String ATTR_NAME = "name";
-    public static final String ATTR_URL = "url";
-    public static final String ATTR_GROUP_ID = "groupId";
-    public static final String ATTR_ARTIFACT_ID = "artifactId";
-    public static final String ATTR_VERSION = "version";
 
     public enum RepositoryType {
         GLOBAL,     // Globally defined repositories (came from plugin.xml)
@@ -66,8 +56,6 @@ public class MavenRepository
     private final String name;
     private final String url;
     private final RepositoryType type;
-
-    private transient volatile boolean needsToSave = false;
 
     private Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
 
@@ -88,10 +76,6 @@ public class MavenRepository
         this.type = type;
     }
 
-    public void flushCache() {
-        needsToSave = true;
-    }
-
     public String getId() {
         return id;
     }
@@ -109,7 +93,7 @@ public class MavenRepository
     }
 
     @Nullable
-    public synchronized MavenArtifactVersion findArtifact(DBPDriverContext context, @NotNull MavenArtifactReference ref) {
+    public synchronized MavenArtifactVersion findArtifact(DBRProgressMonitor monitor, @NotNull MavenArtifactReference ref) {
         boolean newArtifact = false;
         MavenArtifact artifact = cachedArtifacts.get(ref.getId());
         if (artifact == null) {
@@ -117,10 +101,9 @@ public class MavenRepository
             newArtifact = true;
         }
         try {
-            MavenArtifactVersion version = artifact.resolveVersion(context, ref.getVersion());
+            MavenArtifactVersion version = artifact.resolveVersion(monitor, ref.getVersion());
             if (newArtifact) {
                 cachedArtifacts.put(ref.getId(), artifact);
-                flushCache();
             }
             return version;
         } catch (IOException e) {
@@ -165,7 +148,7 @@ public class MavenRepository
         if (!cacheFile.exists()) {
             return;
         }
-        try (final DBPDriverContext context = new DBPDriverContext(VoidProgressMonitor.INSTANCE)) {
+        try (final DBRProgressMonitor monitor = new DBPDriverContext(VoidProgressMonitor.INSTANCE)) {
             InputStream mdStream = new FileInputStream(cacheFile);
             try {
                 SAXReader reader = new SAXReader(mdStream);

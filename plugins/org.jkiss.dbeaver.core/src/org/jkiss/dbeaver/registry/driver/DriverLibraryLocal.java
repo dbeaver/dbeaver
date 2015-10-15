@@ -23,8 +23,8 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.connection.DBPDriverContext;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.io.File;
@@ -58,7 +58,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
     }
 
     @Override
-    public void resolve(DBPDriverContext context) throws IOException {
+    public void resolve(DBRProgressMonitor monitor) throws IOException {
         // do nothing
     }
 
@@ -68,7 +68,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public String getExternalURL(DBPDriverContext context) {
+    public String getExternalURL(DBRProgressMonitor monitor) {
         return null;
     }
 
@@ -115,7 +115,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
 
     @Nullable
     @Override
-    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBPDriverContext context) throws IOException {
+    public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         return null;
     }
 
