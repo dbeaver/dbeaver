@@ -121,7 +121,7 @@ public class MavenArtifactVersion {
         return profiles;
     }
 
-    public List<MavenArtifactDependency> getDependencies(DBRProgressMonitor monitor) {
+    public List<MavenArtifactDependency> getDependencies() {
         List<MavenArtifactDependency> dependencies = new ArrayList<>();
         for (MavenProfile profile : profiles) {
             if (profile.isActive() && !CommonUtils.isEmpty(profile.dependencies)) {
@@ -129,7 +129,7 @@ public class MavenArtifactVersion {
             }
         }
         if (parent != null) {
-            List<MavenArtifactDependency> parentDependencies = parent.getDependencies(monitor);
+            List<MavenArtifactDependency> parentDependencies = parent.getDependencies();
             if (!CommonUtils.isEmpty(parentDependencies)) {
                 dependencies.addAll(parentDependencies);
             }
@@ -296,7 +296,7 @@ public class MavenArtifactVersion {
                 Element propElement = XMLUtils.getChildElement(activationElement, "property");
                 if (propElement != null) {
                     String propName = XMLUtils.getChildElementBody(propElement, "name");
-                    String propValue = XMLUtils.getChildElementBody(propElement, "value");
+                    //String propValue = XMLUtils.getChildElementBody(propElement, "value");
                     // TODO: implement real properties checks. Now enable all profiles with !prop
                     if (propName != null && propName.startsWith("!")) {
                         profile.active = true;
@@ -364,13 +364,28 @@ public class MavenArtifactVersion {
                     log.warn("Broken dependency reference: " + groupId + ":" + artifactId);
                     continue;
                 }
-                MavenArtifactDependency.Scope scope = MavenArtifactDependency.Scope.COMPILE;
+
+                MavenArtifactDependency dmInfo = findDependencyManagement(groupId, artifactId);
+
+                // Resolve scope
+                MavenArtifactDependency.Scope scope = null;
                 String scopeName = XMLUtils.getChildElementBody(dep, "scope");
                 if (!CommonUtils.isEmpty(scopeName)) {
                     scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
                 }
-                boolean optional = CommonUtils.getBoolean(XMLUtils.getChildElementBody(dep, "optional"), false);
+                if (scope == null && dmInfo != null) {
+                    scope = dmInfo.getScope();
+                }
+                if (scope == null) {
+                    scope = MavenArtifactDependency.Scope.COMPILE;
+                }
 
+                String optionalString = XMLUtils.getChildElementBody(dep, "optional");
+                boolean optional = optionalString == null ?
+                    (dmInfo != null && dmInfo.isOptional()) :
+                    CommonUtils.getBoolean(optionalString);
+
+                // Resolve version
                 String version = evaluateString(XMLUtils.getChildElementBody(dep, "version"));
 
                 if (depManagement && scope == MavenArtifactDependency.Scope.IMPORT) {
@@ -394,8 +409,8 @@ public class MavenArtifactVersion {
                 } else if (depManagement || (!optional && includesScope(scope))) {
                     // TODO: maybe we should include optional or PROVIDED
 
-                    if (version == null) {
-                        version = findDependencyVersion(monitor, groupId, artifactId);
+                    if (version == null && dmInfo != null) {
+                        version = dmInfo.getVersion();
                     }
                     if (version == null) {
                         log.error("Can't resolve artifact [" + groupId + ":" + artifactId + "] version. Skip.");
@@ -437,13 +452,13 @@ public class MavenArtifactVersion {
             scope == MavenArtifactDependency.Scope.PROVIDED*/;
     }
 
-    private String findDependencyVersion(DBRProgressMonitor monitor, String groupId, String artifactId) {
+    private MavenArtifactDependency findDependencyManagement(String groupId, String artifactId) {
         for (MavenProfile profile : profiles) {
             if (profile.isActive() && profile.dependencyManagement != null) {
                 for (MavenArtifactDependency dmArtifact : profile.dependencyManagement) {
                     if (dmArtifact.getGroupId().equals(groupId) &&
                         dmArtifact.getArtifactId().equals(artifactId)) {
-                        return dmArtifact.getVersion();
+                        return dmArtifact;
                     }
                 }
             }
@@ -451,13 +466,13 @@ public class MavenArtifactVersion {
         // Check in imported BOMs
         if (imports != null) {
             for (MavenArtifactVersion i : imports) {
-                String dependencyVersion = i.findDependencyVersion(monitor, groupId, artifactId);
-                if (dependencyVersion != null) {
-                    return dependencyVersion;
+                MavenArtifactDependency dependencyManagement = i.findDependencyManagement(groupId, artifactId);
+                if (dependencyManagement != null) {
+                    return dependencyManagement;
                 }
             }
         }
-        return parent == null ? null : parent.findDependencyVersion(monitor, groupId, artifactId);
+        return parent == null ? null : parent.findDependencyManagement(groupId, artifactId);
     }
 
     private String evaluateString(String value) {

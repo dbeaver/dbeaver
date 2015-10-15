@@ -32,7 +32,7 @@ public class DriverDependencies implements DBPDriverDependencies
 {
     final List<? extends DBPDriverLibrary> rootLibraries;
     final List<DependencyNode> rootNodes = new ArrayList<>();
-    final List<DBPDriverLibrary> libraryList = new ArrayList<>();
+    final List<DependencyNode> libraryList = new ArrayList<>();
 
     public DriverDependencies(List<? extends DBPDriverLibrary> rootLibraries) {
         this.rootLibraries = rootLibraries;
@@ -44,10 +44,10 @@ public class DriverDependencies implements DBPDriverDependencies
             {
                 rootNodes.clear();
 
-                final Map<String, DBPDriverLibrary> libMap = new LinkedHashMap<>();
+                final Map<String, DependencyNode> libMap = new LinkedHashMap<>();
                 for (DBPDriverLibrary library : rootLibraries) {
                     DependencyNode node = new DependencyNode(null, library);
-                    libMap.put(node.library.getId(), node.library);
+                    libMap.put(node.library.getId(), node);
 
                     resolveDependencies(monitor, node, libMap);
                     rootNodes.add(node);
@@ -91,16 +91,21 @@ public class DriverDependencies implements DBPDriverDependencies
         }
     }
 
-    private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DBPDriverLibrary> libMap) throws IOException {
+    private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DependencyNode> libMap) throws IOException {
         ownerNode.library.resolve(monitor);
         Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
                 DependencyNode node = new DependencyNode(ownerNode, dep);
 
-                node.duplicate = libMap.containsKey(node.library.getId());
-                if (!node.duplicate) {
-                    libMap.put(node.library.getId(), node.library);
+                DependencyNode prevNode = libMap.get(node.library.getId());
+                if (prevNode == null || prevNode.depth > node.depth) {
+                    libMap.put(node.library.getId(), node);
+                    if (prevNode != null) {
+                        prevNode.duplicate = true;
+                    }
+                } else {
+                    node.duplicate = true;
                 }
                 ownerNode.dependencies.add(node);
             }
@@ -113,7 +118,7 @@ public class DriverDependencies implements DBPDriverDependencies
     }
 
     @Override
-    public List<DBPDriverLibrary> getLibraryList() {
+    public List<DependencyNode> getLibraryList() {
         return libraryList;
     }
 

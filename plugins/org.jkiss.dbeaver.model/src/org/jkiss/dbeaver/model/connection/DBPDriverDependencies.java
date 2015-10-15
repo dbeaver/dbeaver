@@ -33,11 +33,13 @@ public interface DBPDriverDependencies
         public final DependencyNode owner;
         public final DBPDriverLibrary library;
         public final List<DependencyNode> dependencies = new ArrayList<>();
+        public final int depth;
         public boolean duplicate;
 
         public DependencyNode(DependencyNode owner, DBPDriverLibrary library) {
             this.owner = owner;
             this.library = library;
+            this.depth = owner == null ? 0 : owner.depth + 1;
         }
 
         @Override
@@ -46,7 +48,7 @@ public interface DBPDriverDependencies
         }
     }
 
-    List<DBPDriverLibrary> getLibraryList();
+    List<DependencyNode> getLibraryList();
 
     List<DependencyNode> getLibraryMap();
 
