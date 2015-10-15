@@ -81,6 +81,7 @@ public class ConnectJob extends EventProcessorJob
             connectStatus = Status.OK_STATUS;
         }
         catch (Throwable ex) {
+            log.debug(ex);
             connectError = ex;
             connectStatus = GeneralUtils.makeExceptionStatus(ex);
         }

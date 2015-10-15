@@ -198,12 +198,13 @@ public class MavenArtifactVersion {
     }
 
     private void loadPOM(DBRProgressMonitor monitor) throws IOException {
+        monitor.subTask("Load POM " + this);
+
         File localPOM = getLocalPOM();
         if (!localPOM.exists()) {
             cachePOM(localPOM);
         }
 
-        monitor.subTask("Load POM " + this);
 
         Document pomDocument;
         try (InputStream mdStream = new FileInputStream(localPOM)) {
