@@ -34,6 +34,8 @@ import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -52,6 +54,7 @@ public class MavenRepository
     public static final String TAG_ARTIFACT = "artifact";
     public static final String TAG_VERSION = "version";
 
+    public static final String ATTR_ID = "id";
     public static final String ATTR_NAME = "name";
     public static final String ATTR_URL = "url";
     public static final String ATTR_GROUP_ID = "groupId";
@@ -59,11 +62,17 @@ public class MavenRepository
     public static final String ATTR_ACTIVE_VERSION = "activeVersion";
     public static final String ATTR_VERSION = "version";
 
-    private String id;
-    private String name;
-    private String url;
-    private boolean local;
-    private boolean predefined = false;
+    public enum RepositoryType {
+        GLOBAL,     // Globally defined repositories (came from plugin.xml)
+        LOCAL,      // Local (deployed locally) repository. It is singleton
+        CUSTOM,     // User-defined repository
+        EXTERNAL    // POM-defined repository
+    }
+
+    private final String id;
+    private final String name;
+    private final String url;
+    private final RepositoryType type;
 
     private transient volatile boolean needsToSave = false;
 
@@ -75,16 +84,15 @@ public class MavenRepository
             config.getAttribute(RegistryConstants.ATTR_ID),
             config.getAttribute(RegistryConstants.ATTR_NAME),
             config.getAttribute(RegistryConstants.ATTR_URL),
-            false);
-        this.predefined = true;
+            RepositoryType.GLOBAL);
     }
 
-    public MavenRepository(String id, String name, String url, boolean local) {
+    public MavenRepository(String id, String name, String url, RepositoryType type) {
         this.id = id;
-        this.name = name;
+        this.name = CommonUtils.isEmpty(name) ? id : name;
         if (!url.endsWith("/")) url += "/";
         this.url = url;
-        this.local = local;
+        this.type = type;
     }
 
     public void flushCache() {
@@ -103,12 +111,8 @@ public class MavenRepository
         return url;
     }
 
-    public boolean isPredefined() {
-        return predefined;
-    }
-
-    public boolean isLocal() {
-        return local;
+    public RepositoryType getType() {
+        return type;
     }
 
     @Nullable
@@ -127,7 +131,7 @@ public class MavenRepository
             }
             return version;
         } catch (IOException e) {
-            log.debug("Artifact version " + ref + " not found: " + e.getMessage());
+            // Generally it is ok. Artifact not present in this repository
             return null;
         }
     }
@@ -155,7 +159,21 @@ public class MavenRepository
 
     File getLocalCacheDir()
     {
-        File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + id + "/");
+        String extPath;
+        switch (type) {
+            case EXTERNAL:
+                try {
+                    URL repoUrl = new URL(this.url);
+                    extPath = ".external/" + repoUrl.getHost() + "/" + repoUrl.getPath();
+                } catch (MalformedURLException e) {
+                    extPath = ".external/" + id;
+                }
+                break;
+            default:
+                extPath = id;
+                break;
+        }
+        File homeFolder = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "maven/" + extPath);
         if (!homeFolder.exists()) {
             if (!homeFolder.mkdirs()) {
                 log.warn("Can't create maven repository '" + name + "' cache folder '" + homeFolder + "'");
@@ -170,8 +188,7 @@ public class MavenRepository
         if (!cacheFile.exists()) {
             return;
         }
-        final DBPDriverContext context = new DBPDriverContext(VoidProgressMonitor.INSTANCE);
-        try {
+        try (final DBPDriverContext context = new DBPDriverContext(VoidProgressMonitor.INSTANCE)) {
             InputStream mdStream = new FileInputStream(cacheFile);
             try {
                 SAXReader reader = new SAXReader(mdStream);
@@ -230,7 +247,7 @@ public class MavenRepository
         }
     }
 
-    synchronized private void saveCache() {
+    synchronized void saveCache() {
         try {
             File cacheDir = getLocalCacheDir();
             if (!cacheDir.exists()) {
@@ -244,6 +261,7 @@ public class MavenRepository
                 XMLBuilder xml = new XMLBuilder(out, "utf-8");
                 xml.setButify(true);
                 try (XMLBuilder.Element e = xml.startElement(TAG_CACHE)) {
+                    xml.addAttribute(ATTR_ID, id);
                     xml.addAttribute(ATTR_NAME, name);
                     xml.addAttribute(ATTR_URL, url);
 

@@ -33,9 +33,7 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Maven artifact version descriptor (POM).
@@ -87,6 +85,7 @@ public class MavenArtifactVersion {
     MavenArtifactVersion(@NotNull DBPDriverContext context, @NotNull MavenArtifact artifact, @NotNull String version, boolean readRemote) throws IOException {
         this.artifact = artifact;
         this.version = version;
+
         loadPOM(context, readRemote);
     }
 
@@ -118,6 +117,10 @@ public class MavenArtifactVersion {
         return licenses;
     }
 
+    public List<MavenProfile> getProfiles() {
+        return profiles;
+    }
+
     public List<MavenArtifactDependency> getDependencies(DBPDriverContext context) {
         List<MavenArtifactDependency> dependencies = new ArrayList<>();
         for (MavenProfile profile : profiles) {
@@ -135,7 +138,7 @@ public class MavenArtifactVersion {
     }
 
     public File getCacheFile() {
-        if (artifact.getRepository().isLocal()) {
+        if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             String externalURL = getExternalURL(MavenArtifact.FILE_JAR);
             try {
                 return new File(new URL(externalURL).toURI());
@@ -161,7 +164,7 @@ public class MavenArtifactVersion {
     }
 
     private File getLocalPOM() {
-        if (artifact.getRepository().isLocal()) {
+        if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             try {
                 return new File(new URI(getRemotePOMLocation()));
             } catch (URISyntaxException e) {
@@ -175,6 +178,23 @@ public class MavenArtifactVersion {
 
     private String getRemotePOMLocation() {
         return artifact.getFileURL(version, MavenArtifact.FILE_POM);
+    }
+
+    private void cachePOM(File localPOM) throws IOException {
+        if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
+            return;
+        }
+        String pomURL = getRemotePOMLocation();
+        try (InputStream is = RuntimeUtils.openConnectionStream(pomURL)) {
+            File folder = localPOM.getParentFile();
+            if (!folder.exists() && !folder.mkdirs()) {
+                throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");
+            }
+
+            try (OutputStream os = new FileOutputStream(localPOM)) {
+                IOUtils.fastCopy(is, os);
+            }
+        }
     }
 
     private void loadPOM(DBPDriverContext context, boolean readRemote) throws IOException {
@@ -219,7 +239,7 @@ public class MavenArtifactVersion {
                     if (this.version == null) {
                         this.version = parentReference.getVersion();
                     }
-                    parent = MavenRegistry.getInstance().findArtifact(context, parentReference);
+                    parent = MavenRegistry.getInstance().findArtifact(context, this, parentReference);
                     if (parent == null) {
                         log.error("Artifact [" + this + "] parent [" + parentReference + "] not found");
                     }
@@ -311,7 +331,7 @@ public class MavenArtifactVersion {
                         XMLUtils.getChildElementBody(repElement, "id"),
                         XMLUtils.getChildElementBody(repElement, "name"),
                         XMLUtils.getChildElementBody(repElement, "url"),
-                        false);
+                        MavenRepository.RepositoryType.EXTERNAL);
                     String layout = XMLUtils.getChildElementBody(repElement, "layout");
                     if ("legacy".equals(layout)) {
                         log.debug("Skip legacy repository [" + repository + "]");
@@ -323,8 +343,9 @@ public class MavenArtifactVersion {
                     }
                     boolean enabled = CommonUtils.toBoolean(XMLUtils.getChildElementBody(releasesElement, "enabled"));
                     if (enabled) {
-                        MavenContextInfo mci = context.getInfo(MavenContextInfo.class);
-                        //mci.addRepositories();
+                        repository.loadCache();
+                        profile.addRepository(repository);
+                        context.getInfo(MavenContextInfo.class).trackRepository(repository);
                     }
                 }
             }
@@ -336,23 +357,6 @@ public class MavenArtifactVersion {
                 profile.dependencyManagement = parseDependencies(context, dmElement, true);
             }
             profile.dependencies = parseDependencies(context, element, false);
-        }
-    }
-
-    private void cachePOM(File localPOM) throws IOException {
-        if (artifact.getRepository().isLocal()) {
-            return;
-        }
-        String pomURL = getRemotePOMLocation();
-        try (InputStream is = RuntimeUtils.openConnectionStream(pomURL)) {
-            File folder = localPOM.getParentFile();
-            if (!folder.exists() && !folder.mkdirs()) {
-                throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");
-            }
-
-            try (OutputStream os = new FileOutputStream(localPOM)) {
-                IOUtils.fastCopy(is, os);
-            }
         }
     }
 
@@ -386,7 +390,7 @@ public class MavenArtifactVersion {
                         groupId,
                         artifactId,
                         version);
-                    MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(context, importReference);
+                    MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(context, this, importReference);
                     if (importedVersion == null) {
                         log.error("Imported artifact [" + importReference + "] not found. Skip.");
                     }
@@ -470,4 +474,21 @@ public class MavenArtifactVersion {
         return GeneralUtils.replaceVariables(value, propertyResolver);
     }
 
+    @NotNull
+    public Collection<MavenRepository> getActiveRepositories() {
+        Map<String, MavenRepository> repositories = new LinkedHashMap<>();
+        for (MavenArtifactVersion v = MavenArtifactVersion.this; v != null; v = v.parent) {
+            for (MavenProfile profile : v.profiles) {
+                if (profile.isActive()) {
+                    List<MavenRepository> pr = profile.getRepositories();
+                    if (pr != null) {
+                        for (MavenRepository repository : pr) {
+                            repositories.put(repository.getId(), repository);
+                        }
+                    }
+                }
+            }
+        }
+        return repositories.values();
+    }
 }

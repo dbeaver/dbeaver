@@ -64,10 +64,12 @@ public class DriverDependencies implements DBPDriverDependencies
                     }
                     System.out.println(sb.toString());
 */
+/*
                     System.out.println("---------------------------");
                     for (DependencyNode node : rootNodes) {
                         dumpNode(node, 0);
                     }
+*/
             }
         } catch (IOException e) {
             throw new DBException("IO error while resolving dependencies", e);

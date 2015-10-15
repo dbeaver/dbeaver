@@ -94,7 +94,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Nullable
     protected MavenArtifactVersion getArtifactVersion(DBPDriverContext context) {
         if (localVersion == null) {
-            localVersion = MavenRegistry.getInstance().findArtifact(context, reference);
+            localVersion = MavenRegistry.getInstance().findArtifact(context, null, reference);
         }
         return localVersion;
     }
@@ -139,6 +139,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
         MavenArtifactVersion localVersion = resolveLocalVersion(context, false);
         if (localVersion != null) {
+
             List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(context);
             if (!CommonUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency dependency : artifactDeps) {
@@ -146,7 +147,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
                         continue;
                     }
 
-                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(context, dependency);
+                    MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(context, localVersion, dependency);
                     if (depArtifact != null) {
                         dependencies.add(
                             new DriverLibraryMavenDependency(
@@ -197,7 +198,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         //monitor.beginTask(taskName + " - update localVersion information", 1);
         try {
             MavenArtifactVersion localVersion = resolveLocalVersion(context, forceUpdate);
-            if (localVersion.getArtifact().getRepository().isLocal()) {
+            if (localVersion.getArtifact().getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
                 // No need to download local artifacts
                 return;
             }
