@@ -365,7 +365,7 @@ public class MavenArtifactVersion {
                     continue;
                 }
 
-                MavenArtifactDependency dmInfo = findDependencyManagement(groupId, artifactId);
+                MavenArtifactDependency dmInfo = depManagement ? null : findDependencyManagement(groupId, artifactId);
 
                 // Resolve scope
                 MavenArtifactDependency.Scope scope = null;
@@ -426,16 +426,22 @@ public class MavenArtifactVersion {
                     );
                     result.add(dependency);
 
-                    if (!depManagement) {
-                        // Exclusions
-                        Element exclusionsElement = XMLUtils.getChildElement(dep, "exclusions");
-                        if (exclusionsElement != null) {
-                            for (Element exclusion : XMLUtils.getChildElementList(exclusionsElement, "exclusion")) {
-                                dependency.addExclusion(
-                                    new MavenArtifactReference(
-                                        CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
-                                        CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
-                                        ""));
+                    // Exclusions
+                    Element exclusionsElement = XMLUtils.getChildElement(dep, "exclusions");
+                    if (exclusionsElement != null) {
+                        for (Element exclusion : XMLUtils.getChildElementList(exclusionsElement, "exclusion")) {
+                            dependency.addExclusion(
+                                new MavenArtifactReference(
+                                    CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
+                                    CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
+                                    ""));
+                        }
+                    }
+                    if (dmInfo != null) {
+                        List<MavenArtifactReference> dmExclusions = dmInfo.getExclusions();
+                        if (dmExclusions != null) {
+                            for (MavenArtifactReference dmEx : dmExclusions) {
+                                dependency.addExclusion(dmEx);
                             }
                         }
                     }
