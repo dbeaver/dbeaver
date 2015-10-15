@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -32,7 +33,7 @@ public class DBPDriverContext implements AutoCloseable {
     private final DBRProgressMonitor monitor;
     private final Date initTime = new Date();
     private final Map<String, String> properties = new HashMap<>();
-    private final Map<Class, Object> infoMap = new HashMap<>();
+    private final Map<Class, AutoCloseable> infoMap = new HashMap<>();
 
     public DBPDriverContext(DBRProgressMonitor monitor) {
         this.monitor = monitor;
@@ -50,13 +51,14 @@ public class DBPDriverContext implements AutoCloseable {
         return properties;
     }
 
-    public <T> T getInfo(Class<T> type) {
-        Object o = infoMap.get(type);
+    @NotNull
+    public <T extends AutoCloseable> T getInfo(Class<T> type) {
+        AutoCloseable o = infoMap.get(type);
         if (o == null) {
             try {
                 o = type.newInstance();
             } catch (Exception e) {
-                log.error("Can't create context info " + type.getName(), e);
+                throw new IllegalArgumentException("Can't create context info " + type.getName(), e);
             }
             infoMap.put(type, o);
         }
@@ -65,6 +67,12 @@ public class DBPDriverContext implements AutoCloseable {
 
     @Override
     public void close() {
-
+        for (AutoCloseable info : infoMap.values()) {
+            try {
+                info.close();
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
     }
 }

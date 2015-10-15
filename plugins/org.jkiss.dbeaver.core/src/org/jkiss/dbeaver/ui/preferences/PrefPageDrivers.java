@@ -124,10 +124,8 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                     boolean enabled = false;
                     TableItem[] selection = mavenRepoTable.getSelection();
                     if (selection.length == 1) {
-                        enabled = true;
-                        if (selection[0].getData() instanceof MavenRepository && ((MavenRepository)selection[0].getData()).isPredefined()) {
-                            enabled = false;
-                        }
+                        enabled = selection[0].getData() instanceof MavenRepository &&
+                            ((MavenRepository) selection[0].getData()).getType() == MavenRepository.RepositoryType.CUSTOM;
                     }
                     removeButton.setEnabled(enabled);
                 }
@@ -289,7 +287,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                 String repoId = item.getText(0);
                 String repoURL = item.getText(1);
                 MavenRepository repository = MavenRegistry.getInstance().findRepository(repoId);
-                if (repository != null && repository.isPredefined()) {
+                if (repository != null && repository.getType() != MavenRepository.RepositoryType.CUSTOM) {
                     continue;
                 }
                 if (mavenRepos.length() > 0) mavenRepos.append('|');
