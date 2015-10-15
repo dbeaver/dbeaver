@@ -279,39 +279,47 @@ public class RuntimeUtils {
     }
 
     public static URLConnection openConnection(String urlString) throws IOException {
-System.out.println("Open [" + urlString + "]");
+System.out.print("Open [" + urlString + "]...");
         log.debug("Open [" + urlString + "]");
 
-        DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
-        String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
-        Proxy proxy = null;
-        if (!CommonUtils.isEmpty(proxyHost)) {
-            int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
-            if (proxyPort <= 0) {
-                log.warn("Invalid proxy port: " + proxyPort);
+        final URLConnection connection;
+        try {
+            DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+            String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
+            Proxy proxy = null;
+            if (!CommonUtils.isEmpty(proxyHost)) {
+                int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
+                if (proxyPort <= 0) {
+                    log.warn("Invalid proxy port: " + proxyPort);
+                }
+                proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
             }
-            proxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+
+            URL url = new URL(urlString);
+            connection = (proxy == null ? url.openConnection() : url.openConnection(proxy));
+            connection.setReadTimeout(10000);
+            connection.setConnectTimeout(10000);
+            if (connection instanceof HttpURLConnection) {
+                final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                httpConnection.setRequestMethod("GET"); //$NON-NLS-1$
+                httpConnection.setInstanceFollowRedirects(true);
+                connection.setRequestProperty(
+                    "User-Agent",  //$NON-NLS-1$
+                    DBeaverCore.getProductTitle());
+            }
+            connection.connect();
+            if (connection instanceof HttpURLConnection) {
+                final HttpURLConnection httpConnection = (HttpURLConnection) connection;
+                if (httpConnection.getResponseCode() != 200) {
+                    throw new IOException("File not found '" + urlString + "': " + httpConnection.getResponseMessage());
+                }
+            }
+        } catch (IOException e) {
+            System.out.println("Failed.");
+            throw e;
         }
 
-        URL url = new URL(urlString);
-        final URLConnection connection = (proxy == null ? url.openConnection() : url.openConnection(proxy));
-        connection.setReadTimeout(10000);
-        connection.setConnectTimeout(10000);
-        if (connection instanceof HttpURLConnection) {
-            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
-            httpConnection.setRequestMethod("GET"); //$NON-NLS-1$
-            httpConnection.setInstanceFollowRedirects(true);
-            connection.setRequestProperty(
-                "User-Agent",  //$NON-NLS-1$
-                DBeaverCore.getProductTitle());
-        }
-        connection.connect();
-        if (connection instanceof HttpURLConnection) {
-            final HttpURLConnection httpConnection = (HttpURLConnection) connection;
-            if (httpConnection.getResponseCode() != 200) {
-                throw new IOException("File not found '" + urlString + "': " + httpConnection.getResponseMessage());
-            }
-        }
+        System.out.println("Ok.");
         return connection;
     }
 
