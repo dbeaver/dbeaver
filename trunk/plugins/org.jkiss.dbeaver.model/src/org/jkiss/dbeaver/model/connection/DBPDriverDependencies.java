@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.DBException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,4 +49,5 @@ public interface DBPDriverDependencies
 
     List<DependencyNode> getLibraryMap();
 
+    void resolveDependencies(DBPDriverContext context) throws DBException;
 }

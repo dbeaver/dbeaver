@@ -54,7 +54,6 @@ public class WMIDataSourceProvider implements DBPDataSourceProvider {
         DBPDriver driver,
         DBPConnectionConfiguration connectionInfo) throws DBException
     {
-        driver.validateFilesPresence(runnableContext);
         return null;
     }
 

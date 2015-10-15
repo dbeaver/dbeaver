@@ -18,17 +18,13 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPDriverContext;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -63,14 +59,8 @@ public class MavenRegistry
     }
 
     private void init() {
-        long st = System.currentTimeMillis();
-        System.out.print("Loading Maven cache...");
         loadStandardRepositories();
         loadCustomRepositories();
-        loadCache();
-        System.out.println("Done (" + (System.currentTimeMillis() - st) + "ms)");
-        // Start config saver
-        new ConfigSaver().schedule(ConfigSaver.SAVE_PERIOD);
     }
 
     private void loadStandardRepositories() {
@@ -94,13 +84,6 @@ public class MavenRegistry
             MAVEN_LOCAL_REPO_NAME,
             localRepoURL,
             MavenRepository.RepositoryType.LOCAL);
-    }
-
-    private void loadCache() {
-        localRepository.loadCache();
-        for (MavenRepository repository : repositories) {
-            repository.loadCache();
-        }
     }
 
     public void loadCustomRepositories() {
@@ -152,26 +135,6 @@ public class MavenRegistry
         return null;
     }
 
-    @Nullable
-    public MavenArtifactVersion findCachedArtifact(DBPDriverContext context, @NotNull MavenArtifactReference ref) {
-        String fullId = ref.getId();
-        if (notFoundArtifacts.contains(fullId)) {
-            return null;
-        }
-        // Try all available repositories (without resolve)
-        for (MavenRepository repository : repositories) {
-            MavenArtifactVersion artifact = repository.findCachedArtifact(context, ref);
-            if (artifact != null) {
-                return artifact;
-            }
-        }
-        MavenArtifactVersion artifact = localRepository.findCachedArtifact(context, ref);
-        if (artifact != null) {
-            return artifact;
-        }
-        return null;
-    }
-
     public void resetArtifactInfo(MavenArtifactReference artifactReference) {
         notFoundArtifacts.remove(artifactReference.getId());
 
@@ -183,7 +146,6 @@ public class MavenRegistry
 
     @Nullable
     private MavenArtifactVersion findInRepositories(@NotNull DBPDriverContext context, MavenArtifactVersion owner, @NotNull MavenArtifactReference ref) {
-        //MavenContextInfo info = context.getInfo(MavenContextInfo.class);
         MavenRepository currentRepository = owner == null ? null : owner.getArtifact().getRepository();
         if (currentRepository != null) {
             MavenArtifactVersion artifact = currentRepository.findArtifact(context, ref);
@@ -225,16 +187,6 @@ public class MavenRegistry
         return null;
     }
 
-    @Nullable
-    private MavenArtifactVersion findInRepository(@NotNull DBPDriverContext context, @NotNull MavenArtifactReference ref, MavenRepository repository) {
-        //info.startRepositoryBrowse(repository);
-        try {
-            return repository.findArtifact(context, ref);
-        } finally {
-            //info.endRepositoryBrowse(repository);
-        }
-    }
-
     public MavenRepository findRepository(String id) {
         for (MavenRepository repository : repositories) {
             if (repository.getId().equals(id)) {
@@ -244,6 +196,7 @@ public class MavenRegistry
         return null;
     }
 
+/*
     private class ConfigSaver extends AbstractJob {
 
         public static final int SAVE_PERIOD = 1000;
@@ -263,5 +216,6 @@ public class MavenRegistry
             return Status.OK_STATUS;
         }
     }
+*/
 
 }

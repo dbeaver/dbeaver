@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.maven.versioning.DefaultArtifactVersion;
 import org.jkiss.dbeaver.registry.maven.versioning.VersionRange;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -62,7 +61,7 @@ public class MavenArtifact
     private transient boolean metadataLoaded = false;
 
     private List<MavenArtifactVersion> localVersions = new ArrayList<>();
-    private String activeVersion;
+    //private String activeVersion;
 
     public MavenArtifact(MavenRepository repository, String groupId, String artifactId)
     {
@@ -174,13 +173,13 @@ public class MavenArtifact
         return localVersions;
     }
 
-    public String getActiveVersionName() {
-        return activeVersion;
-    }
-
-    public void setActiveVersionName(String activeVersion) {
-        this.activeVersion = activeVersion;
-    }
+//    public String getActiveVersionName() {
+//        return activeVersion;
+//    }
+//
+//    public void setActiveVersionName(String activeVersion) {
+//        this.activeVersion = activeVersion;
+//    }
 
     private String getArtifactURL() {
         String dir = groupId.replace('.', '/') + "/" + artifactId;
@@ -201,10 +200,10 @@ public class MavenArtifact
         return MavenArtifactReference.makeId(groupId, artifactId);
     }
 
-    @Nullable
-    public MavenArtifactVersion getActiveVersion() {
-        return getVersion(activeVersion);
-    }
+//    @Nullable
+//    public MavenArtifactVersion getActiveVersion() {
+//        return getVersion(activeVersion);
+//    }
 
     @Nullable
     public MavenArtifactVersion getVersion(String versionStr) {
@@ -223,27 +222,29 @@ public class MavenArtifact
     private MavenArtifactVersion makeLocalVersion(DBPDriverContext context, String versionStr, boolean setActive) throws IllegalArgumentException, IOException {
         MavenArtifactVersion version = getVersion(versionStr);
         if (version == null) {
-            version = new MavenArtifactVersion(context, this, versionStr, true);
+            version = new MavenArtifactVersion(context, this, versionStr);
             localVersions.add(version);
         }
-        if (setActive) {
-            activeVersion = versionStr;
-            repository.flushCache();
-        }
+//        if (setActive) {
+//            activeVersion = versionStr;
+//            repository.flushCache();
+//        }
         return version;
     }
 
+/*
     public MavenArtifactVersion resolveActiveVersion(DBPDriverContext context) throws IOException {
         if (CommonUtils.isEmpty(activeVersion)) {
             return null;
         }
         MavenArtifactVersion version = getVersion(activeVersion);
         if (version == null) {
-            version = new MavenArtifactVersion(context, this, activeVersion, false);
+            version = new MavenArtifactVersion(context, this, activeVersion);
             localVersions.add(version);
         }
         return version;
     }
+*/
 
     public MavenArtifactVersion resolveVersion(DBPDriverContext context, String versionRef) throws IOException {
         if (CommonUtils.isEmpty(versionRef)) {
@@ -260,14 +261,6 @@ public class MavenArtifact
             versionRef.contains(",") ||
             predefinedVersion;
 
-        if (lookupVersion && !CommonUtils.isEmpty(activeVersion)) {
-            // We already have some active version
-            // Let's use it if it matches pattern
-            lookupVersion = !(predefinedVersion || versionMatches(activeVersion, versionRef));
-            if (!lookupVersion) {
-                versionRef = activeVersion;
-            }
-        }
         if (lookupVersion && !metadataLoaded) {
             loadMetadata(context);
         }
