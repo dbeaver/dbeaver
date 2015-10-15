@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -41,13 +42,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     public static final long DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP = 1;
     public static final String QUOTE = "'";
 
-    protected interface ColumnModifier<OBJECT_TYPE> {
-        void appendModifier(OBJECT_TYPE column, StringBuilder sql);
+    protected interface ColumnModifier<OBJECT_TYPE extends DBPObject> {
+        void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command);
     }
 
     protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = new ColumnModifier<OBJECT_TYPE>() {
         @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
             final String typeName = column.getTypeName();
             final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
             sql.append(' ').append(typeName);
@@ -72,7 +73,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
 
     protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = new ColumnModifier<OBJECT_TYPE>() {
         @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
             if (column.isRequired()) {
                 sql.append(" NOT NULL"); //$NON-NLS-1$
             }
@@ -81,19 +82,41 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
 
     protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = new ColumnModifier<OBJECT_TYPE>() {
         @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
             sql.append(column.isRequired() ? " NOT NULL" : " NULL");
+        }
+    };
+
+    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = new ColumnModifier<OBJECT_TYPE>() {
+        @Override
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
+            if (command instanceof DBECommandComposite) {
+                if (((DBECommandComposite) command).getProperty("required") == null) {
+                    // Do not set NULL/NOT NULL if it wasn't chaged
+                    return;
+                }
+            }
+            NullNotNullModifier.appendModifier(column, sql, command);
         }
     };
 
     protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = new ColumnModifier<OBJECT_TYPE>() {
         @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql) {
+        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
             String defaultValue = CommonUtils.toString(column.getDefaultValue());
             if (!CommonUtils.isEmpty(defaultValue)) {
-                boolean useQuotes = false;
+                boolean useQuotes =
+                    column.getDataKind() == DBPDataKind.STRING ||
+                    column.getDataKind() == DBPDataKind.DATETIME;
+
+                if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
+                    useQuotes = false;
+                }
+
                 sql.append(" DEFAULT "); //$NON-NLS-1$
+                if (useQuotes) sql.append(QUOTE);
                 sql.append(defaultValue);
+                if (useQuotes) sql.append(QUOTE);
             }
         }
     };
@@ -201,7 +224,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         StringBuilder decl = new StringBuilder(40);
         decl.append(columnName);
         for (ColumnModifier modifier : getSupportedModifiers()) {
-            modifier.appendModifier(column, decl);
+            modifier.appendModifier(column, decl, command);
         }
 
         return decl;
