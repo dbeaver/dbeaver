@@ -249,9 +249,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
 
-            List<DBPDriverLibrary> files = getWizard().getDependencies().getLibraryList();
-            for (int i = 0, filesSize = files.size(); i < filesSize; ) {
-                DBPDriverLibrary lib = files.get(i);
+            List<DBPDriverDependencies.DependencyNode> nodes = getWizard().getDependencies().getLibraryList();
+            for (int i = 0, filesSize = nodes.size(); i < filesSize; ) {
+                DBPDriverLibrary lib = nodes.get(i).library;
                 int result = IDialogConstants.OK_ID;
                 try {
                     lib.downloadLibraryFile(monitor, false, "Download " + (i + 1) + "/" + filesSize);

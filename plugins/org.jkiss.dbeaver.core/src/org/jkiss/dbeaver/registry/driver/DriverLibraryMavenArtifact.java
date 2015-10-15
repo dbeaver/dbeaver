@@ -128,7 +128,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
         if (localVersion != null) {
 
-            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies(monitor);
+            List<MavenArtifactDependency> artifactDeps = localVersion.getDependencies();
             if (!CommonUtils.isEmpty(artifactDeps)) {
                 for (MavenArtifactDependency dependency : artifactDeps) {
                     if (isDependencyExcluded(monitor, dependency)) {
