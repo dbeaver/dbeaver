@@ -29,9 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.utils.CommonUtils;
@@ -384,6 +382,26 @@ public final class SQLUtils {
             default:
                 return strValue;
         }
+    }
+
+    public static String getColumnTypeModifiers(DBSAttributeBase column, String typeName, DBPDataKind dataKind) {
+        if (dataKind == DBPDataKind.STRING) {
+            if (typeName.indexOf('(') == -1) {
+                final long maxLength = column.getMaxLength();
+                if (maxLength > 0) {
+                    return "(" + maxLength + ")";
+                }
+            }
+        } else if (dataKind == DBPDataKind.NUMERIC) {
+            if (typeName.equalsIgnoreCase("DECIMAL") || typeName.equalsIgnoreCase("NUMERIC") || typeName.equalsIgnoreCase("NUMBER")) {
+                int scale = column.getScale();
+                int precision = column.getPrecision();
+                if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
+                    return "(" + precision + ',' + scale + ')';
+                }
+            }
+        }
+        return null;
     }
 
 }
