@@ -75,7 +75,7 @@ class ResultSetPersister {
      * @param monitor progress monitor
      * @param listener value listener
      */
-    void applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable DataUpdateListener listener)
+    boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable DataUpdateListener listener)
         throws DBException
     {
         collectChanges();
@@ -83,7 +83,7 @@ class ResultSetPersister {
         prepareDeleteStatements();
         prepareInsertStatements();
         prepareUpdateStatements();
-        execute(monitor, listener);
+        return execute(monitor, listener);
     }
 
     private void collectChanges() {
@@ -187,7 +187,7 @@ class ResultSetPersister {
         }
     }
 
-    private void execute(@Nullable DBRProgressMonitor monitor, @Nullable final DataUpdateListener listener)
+    private boolean execute(@Nullable DBRProgressMonitor monitor, @Nullable final DataUpdateListener listener)
         throws DBException
     {
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
@@ -197,8 +197,10 @@ class ResultSetPersister {
         DataUpdaterJob job = new DataUpdaterJob(listener, executionContext);
         if (monitor == null) {
             job.schedule();
+            return true;
         } else {
             job.run(monitor);
+            return job.getError() == null;
         }
     }
 
@@ -304,6 +306,7 @@ class ResultSetPersister {
         private boolean autocommit;
         private DBCStatistics updateStats, insertStats, deleteStats;
         private DBCSavepoint savepoint;
+        private Throwable error;
 
         protected DataUpdaterJob(@Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
         {
@@ -311,10 +314,13 @@ class ResultSetPersister {
             this.listener = listener;
         }
 
+        public Throwable getError() {
+            return error;
+        }
+
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
-            final Throwable error;
             model.setUpdateInProgress(true);
             updateStats = new DBCStatistics();
             insertStats = new DBCStatistics();

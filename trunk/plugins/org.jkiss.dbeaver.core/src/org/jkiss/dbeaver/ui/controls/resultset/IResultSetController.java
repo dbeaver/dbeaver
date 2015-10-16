@@ -66,7 +66,7 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     DBPPreferenceStore getPreferenceStore();
 
-    void applyChanges(@Nullable DBRProgressMonitor monitor);
+    boolean applyChanges(@Nullable DBRProgressMonitor monitor);
 
     void rejectChanges();
 
