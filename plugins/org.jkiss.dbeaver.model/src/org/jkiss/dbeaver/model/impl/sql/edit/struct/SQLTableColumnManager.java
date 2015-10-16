@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -50,23 +51,17 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         @Override
         public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
             final String typeName = column.getTypeName();
+            DBPDataKind dataKind = column.getDataKind();
             final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
             sql.append(' ').append(typeName);
             if (dataType == null) {
                 log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
-            } else if (dataType.getDataKind() == DBPDataKind.STRING) {
-                if (typeName.indexOf('(') == -1) {
-                    final long maxLength = column.getMaxLength();
-                    if (maxLength > 0) {
-                        sql.append('(').append(maxLength).append(')');
-                    }
-                }
-            } else if (typeName.equalsIgnoreCase("DECIMAL")) {
-                int scale = column.getScale();
-                int precision = column.getPrecision();
-                if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
-                    sql.append('(').append(precision).append(',').append(scale).append(')');
-                }
+            } else {
+                dataKind = dataType.getDataKind();
+            }
+            String modifiers = SQLUtils.getColumnTypeModifiers(column, typeName, dataKind);
+            if (modifiers != null) {
+                sql.append(modifiers);
             }
         }
     };
