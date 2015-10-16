@@ -54,7 +54,7 @@ public interface DBPDriverLibrary
     String getId();
 
     /**
-     * Library version. If library doesn;t support versions returns null.
+     * Library version. If library doesn't support versions returns null.
      */
     @Nullable
     String getVersion();
@@ -82,8 +82,6 @@ public interface DBPDriverLibrary
     void setDisabled(boolean disabled);
 
     boolean isDownloadable();
-
-    boolean isResolved();
 
     @Nullable
     String getExternalURL(DBRProgressMonitor monitor);
