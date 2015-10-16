@@ -58,7 +58,7 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
     }
 
     @Override
-    public void resolve(DBRProgressMonitor monitor) throws IOException {
+    public void resetVersion() {
         // do nothing
     }
 

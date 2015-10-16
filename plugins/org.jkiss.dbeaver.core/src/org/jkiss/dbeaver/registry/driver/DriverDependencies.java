@@ -92,7 +92,6 @@ public class DriverDependencies implements DBPDriverDependencies
     }
 
     private void resolveDependencies(DBRProgressMonitor monitor, DependencyNode ownerNode, Map<String, DependencyNode> libMap) throws IOException {
-        ownerNode.library.resolve(monitor);
         Collection<? extends DBPDriverLibrary> dependencies = ownerNode.library.getDependencies(monitor);
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverLibrary dep : dependencies) {
