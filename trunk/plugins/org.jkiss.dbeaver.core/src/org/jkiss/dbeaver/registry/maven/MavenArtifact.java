@@ -237,7 +237,7 @@ public class MavenArtifact
             switch (versionRef) {
                 case MavenArtifactReference.VERSION_PATTERN_RELEASE:
                     versionInfo = releaseVersion;
-                    if (!CommonUtils.isEmpty(versionRef) && isBetaVersion(versionRef)) {
+                    if (!CommonUtils.isEmpty(versionInfo) && isBetaVersion(versionInfo)) {
                         versionInfo = null;
                     }
                     break;

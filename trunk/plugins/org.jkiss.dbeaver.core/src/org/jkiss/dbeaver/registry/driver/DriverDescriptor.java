@@ -886,6 +886,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void updateFiles()
     {
         resetDriverInstance();
+        for (DBPDriverLibrary library : libraries) {
+            if (!library.isDisabled()) {
+                library.resetVersion();
+            }
+        }
         validateFilesPresence();
     }
 

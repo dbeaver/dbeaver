@@ -85,8 +85,6 @@ public interface DBPDriverLibrary
 
     boolean isResolved();
 
-    void resolve(DBRProgressMonitor monitor) throws IOException;
-
     @Nullable
     String getExternalURL(DBRProgressMonitor monitor);
 
@@ -100,4 +98,7 @@ public interface DBPDriverLibrary
 
     void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName)
         throws IOException, InterruptedException;
+
+    void resetVersion();
+
 }
