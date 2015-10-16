@@ -74,10 +74,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     }
 
     @Override
-    public void resolve(DBRProgressMonitor monitor) throws IOException {
-        if (getArtifactVersion(monitor) == null) {
-            throw new IOException("Can't resolve artifact " + this + " version");
-        }
+    public void resetVersion() {
+        this.localVersion = null;
+        MavenRegistry.getInstance().resetArtifactInfo(reference);
     }
 
     @Nullable
