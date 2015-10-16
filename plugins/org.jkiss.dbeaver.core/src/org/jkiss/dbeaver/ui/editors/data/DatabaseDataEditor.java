@@ -147,7 +147,9 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void doSave(IProgressMonitor monitor)
     {
         if (resultSetView != null && resultSetView.isDirty()) {
-            resultSetView.applyChanges(RuntimeUtils.makeMonitor(monitor));
+            if (!resultSetView.applyChanges(RuntimeUtils.makeMonitor(monitor))) {
+                monitor.setCanceled(true);
+            }
         }
     }
 

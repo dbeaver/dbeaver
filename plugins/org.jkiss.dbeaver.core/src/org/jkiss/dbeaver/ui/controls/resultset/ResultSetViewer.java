@@ -1710,9 +1710,9 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void applyChanges(@Nullable DBRProgressMonitor monitor)
+    public boolean applyChanges(@Nullable DBRProgressMonitor monitor)
     {
-        applyChanges(monitor, null);
+        return applyChanges(monitor, null);
     }
 
     /**
@@ -1720,11 +1720,11 @@ public class ResultSetViewer extends Viewer
      * @param monitor monitor. If null then save will be executed in async job
      * @param listener finish listener (may be null)
      */
-    public void applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
+    public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
     {
         if (!model.isSingleSource()) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Can't save data for result set from multiple sources");
-            return;
+            return false;
         }
         try {
             boolean needPK = false;
@@ -1738,12 +1738,13 @@ public class ResultSetViewer extends Viewer
                 // If we have deleted or updated rows then check for unique identifier
                 if (!checkEntityIdentifier()) {
                     //UIUtils.showErrorDialog(getControl().getShell(), "Can't apply changes", "Can't apply data changes - not unique identifier defined");
-                    return;
+                    return false;
                 }
             }
-            new ResultSetPersister(this).applyChanges(monitor, listener);
+            return new ResultSetPersister(this).applyChanges(monitor, listener);
         } catch (DBException e) {
             UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Error saving changes in database", e);
+            return false;
         }
     }
 
