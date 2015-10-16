@@ -53,11 +53,6 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
     }
 
     @Override
-    public boolean isResolved() {
-        return true;
-    }
-
-    @Override
     public void resetVersion() {
         // do nothing
     }

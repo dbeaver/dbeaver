@@ -59,6 +59,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Override
     public String getDescription()
     {
+        if (localVersion != null) {
+            return localVersion.getDescription();
+        }
         return null;
     }
 
@@ -66,11 +69,6 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public boolean isDownloadable()
     {
         return true;
-    }
-
-    @Override
-    public boolean isResolved() {
-        return localVersion != null;
     }
 
     @Override
