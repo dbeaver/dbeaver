@@ -212,17 +212,29 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         for (IEditorPart editor : editorMap.values()) {
             editor.doSave(monitor);
+            if (monitor.isCanceled()) {
+                return;
+            }
+        }
+        if (monitor.isCanceled()) {
+            return;
         }
 
         final DBECommandContext commandContext = getCommandContext();
         if (commandContext != null && commandContext.isDirty()) {
-            saveCommandContext(monitor);
+            if (!saveCommandContext(monitor)) {
+                monitor.setCanceled(true);
+                return;
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
         }
 
         firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 
-    private void saveCommandContext(IProgressMonitor monitor)
+    private boolean saveCommandContext(IProgressMonitor monitor)
     {
         monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
         int previewResult = showChanges(true);
@@ -270,10 +282,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     // ok
                 }
             }
-            if (error != null) {
+            if (error == null) {
+                return true;
+            } else {
                 UIUtils.showErrorDialog(getSite().getShell(), "Can't save '" + getDatabaseObject().getName() + "'", null, error);
+                return false;
             }
         }
+        return true;
     }
 
     public void revertChanges()
