@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -207,12 +208,9 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
             }
         }
 
-        if (dataKind == DBPDataKind.STRING) {
-            typeName += "(" + source.getMaxLength() + ")";
-        } else if (dataKind == DBPDataKind.NUMERIC) {
-            if (typeName.equals("DECIMAL") && source.getMaxLength() > 0 && source.getScale() > 0) {
-                typeName += "(" + source.getMaxLength() + "," + source.getScale() + ")";
-            }
+        String modifiers = SQLUtils.getColumnTypeModifiers(source, typeName, dataKind);
+        if (modifiers != null) {
+            typeName += modifiers;
         }
         return typeName;
     }
