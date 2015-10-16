@@ -39,11 +39,6 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
         this.source = source;
     }
 
-    @Override
-    public boolean isResolved() {
-        return true;
-    }
-
     protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {
         List<MavenArtifactReference> exclusions = source.getExclusions();
         if (exclusions != null) {

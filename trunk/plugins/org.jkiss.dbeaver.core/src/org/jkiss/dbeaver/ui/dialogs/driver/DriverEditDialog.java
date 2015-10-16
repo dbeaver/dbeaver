@@ -333,7 +333,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     File localFile = lib.getLocalFile();
                     if (localFile != null && localFile.exists()) {
                         cell.setForeground(null);
-                    } else if (!lib.isResolved()) {
+                    } else if (!driver.isLibraryResolved(lib)) {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
                     } else {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));

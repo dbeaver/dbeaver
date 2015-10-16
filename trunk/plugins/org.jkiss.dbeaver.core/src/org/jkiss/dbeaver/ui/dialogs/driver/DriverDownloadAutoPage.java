@@ -74,6 +74,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             filesTree.setLayoutData(new GridData(GridData.FILL_BOTH));
             UIUtils.createTreeColumn(filesTree, SWT.LEFT, "File");
             UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Version");
+            UIUtils.createTreeColumn(filesTree, SWT.LEFT, "Description");
         }
 
         if (!wizard.isForceDownload()) {
@@ -110,13 +111,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             return;
         }
 
-        int totalItems = 0;
+        int totalItems = 1;
         for (DBPDriverDependencies.DependencyNode node : getWizard().getDependencies().getLibraryMap()) {
             DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(library.getIcon()));
             item.setText(0, library.getDisplayName());
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
+            item.setText(2, CommonUtils.notEmpty(library.getDescription()));
             totalItems++;
             if (addDependencies(item, node)) {
                 item.setExpanded(true);
@@ -141,6 +143,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 item.setImage(DBeaverIcons.getImage(dep.library.getIcon()));
                 item.setText(0, dep.library.getDisplayName());
                 item.setText(1, CommonUtils.notEmpty(dep.library.getVersion()));
+                item.setText(2, CommonUtils.notEmpty(dep.library.getDescription()));
 
                 if (dep.duplicate) {
                     item.setForeground(getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW));

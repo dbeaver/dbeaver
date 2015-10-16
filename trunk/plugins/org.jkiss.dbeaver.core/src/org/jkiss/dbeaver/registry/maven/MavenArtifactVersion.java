@@ -217,6 +217,9 @@ public class MavenArtifactVersion {
         url = XMLUtils.getChildElementBody(root, "url");
         version = XMLUtils.getChildElementBody(root, "version");
         description = XMLUtils.getChildElementBody(root, "description");
+        if (description != null) {
+            description = description.trim().replaceAll("\\s+", " ");
+        }
         {
             // Parent
             Element parentElement = XMLUtils.getChildElement(root, "parent");

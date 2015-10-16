@@ -965,6 +965,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return result;
     }
 
+    public boolean isLibraryResolved(DBPDriverLibrary library) {
+        return !library.isDownloadable() || !CommonUtils.isEmpty(resolvedFiles.get(library));
+    }
+
     private void collectLibraryFiles(DBPDriverDependencies.DependencyNode node, List<DriverFileInfo> files) {
         if (node.duplicate) {
             return;
