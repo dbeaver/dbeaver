@@ -44,7 +44,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public static final String PATH_PREFIX = "maven:/";
 
-    private MavenArtifactReference reference;
+    private final MavenArtifactReference reference;
     protected MavenArtifactVersion localVersion;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
@@ -85,8 +85,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
-    public void setVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
+    public DBPDriverLibrary createVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
         MavenArtifactReference newReference = new MavenArtifactReference(
             this.reference.getGroupId(),
             this.reference.getArtifactId(),
@@ -96,9 +97,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         if (newVersion == null) {
             throw new IOException("Can't resolve artifact version " + newReference);
         }
-        this.reference = newReference;
-        this.localVersion = newVersion;
-        this.path = PATH_PREFIX + this.localVersion.toString();
+        return new DriverLibraryMavenArtifact(getDriver(), getType(), PATH_PREFIX + newVersion.toString());
     }
 
     @Override
