@@ -32,6 +32,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -43,7 +44,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public static final String PATH_PREFIX = "maven:/";
 
-    private final MavenArtifactReference reference;
+    private MavenArtifactReference reference;
     protected MavenArtifactVersion localVersion;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path) {
@@ -71,6 +72,35 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         return true;
     }
 
+    @NotNull
+    @Override
+    public Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException {
+        MavenArtifactVersion artifactVersion = getArtifactVersion(monitor);
+        if (artifactVersion != null) {
+            Collection<String> availableVersion = artifactVersion.getArtifact().getAvailableVersion(monitor);
+            if (availableVersion != null) {
+                return availableVersion;
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void setVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
+        MavenArtifactReference newReference = new MavenArtifactReference(
+            this.reference.getGroupId(),
+            this.reference.getArtifactId(),
+            this.reference.getClassifier(),
+            version);
+        MavenArtifactVersion newVersion = MavenRegistry.getInstance().findArtifact(monitor, null, newReference);
+        if (newVersion == null) {
+            throw new IOException("Can't resolve artifact version " + newReference);
+        }
+        this.reference = newReference;
+        this.localVersion = newVersion;
+        this.path = PATH_PREFIX + this.localVersion.toString();
+    }
+
     @Override
     public void resetVersion() {
         this.localVersion = null;
@@ -79,10 +109,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Nullable
     protected MavenArtifactVersion getArtifactVersion(DBRProgressMonitor monitor) {
-        if (localVersion == null) {
-            localVersion = MavenRegistry.getInstance().findArtifact(monitor, null, reference);
+        if (this.localVersion == null) {
+            this.localVersion = MavenRegistry.getInstance().findArtifact(monitor, null, reference);
         }
-        return localVersion;
+        return this.localVersion;
     }
 
     @Nullable
@@ -155,7 +185,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @NotNull
     public String getDisplayName() {
-        return getId();
+        return path;
     }
 
     @Override

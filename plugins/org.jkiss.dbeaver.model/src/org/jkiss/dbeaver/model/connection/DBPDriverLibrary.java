@@ -97,6 +97,12 @@ public interface DBPDriverLibrary
     void downloadLibraryFile(@NotNull DBRProgressMonitor monitor, boolean forceUpdate, String taskName)
         throws IOException, InterruptedException;
 
+    @NotNull
+    Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException;
+
+    void setVersion(DBRProgressMonitor monitor, @NotNull String version)
+        throws IOException;
+
     void resetVersion();
 
 }
