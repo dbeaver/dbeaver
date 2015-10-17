@@ -100,7 +100,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 public void mouseUp(MouseEvent e)
                 {
                     TreeItem item = filesTree.getItem(new Point(e.x, e.y));
-                    if (item != null) {
+                    if (item != null && item.getData() instanceof DBPDriverDependencies.DependencyNode) {
                         if (UIUtils.getColumnAtPos(item, e.x, e.y) == 1) {
                             showVersionEditor(item);
                             return;
@@ -269,9 +269,10 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         Shell shell = getContainer().getShell();
         Point curSize = shell.getSize();
+        int itemHeight = filesTree.getItemHeight();
         shell.setSize(curSize.x, Math.min(
             (int)(DBeaverUI.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
-            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y));
+            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight);
         shell.layout();
 
         // Check missing files
@@ -293,7 +294,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         if (dependencies != null && !dependencies.isEmpty()) {
             for (DBPDriverDependencies.DependencyNode dep : dependencies) {
                 TreeItem item = new TreeItem(parent, SWT.NONE);
-                item.setData(dep);
+                //item.setData(dep);
                 item.setImage(DBeaverIcons.getImage(dep.library.getIcon()));
                 item.setText(0, dep.library.getDisplayName());
                 item.setText(1, CommonUtils.notEmpty(dep.library.getVersion()));
