@@ -1363,7 +1363,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                         lib.setDisabled(true);
                     } else if (lib == null) {
-                        lib = curDriver.addDriverLibrary(path, type);
+                        lib = DriverLibraryAbstract.createFromPath(curDriver, type, path);
+                        curDriver.libraries.add(lib);
                     }
                     curLibrary = lib;
                     break;
