@@ -493,8 +493,7 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk16:RELEASE"/>
-                    <file type="jar" path="maven:/javax.resource:connector-api:1.5"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
