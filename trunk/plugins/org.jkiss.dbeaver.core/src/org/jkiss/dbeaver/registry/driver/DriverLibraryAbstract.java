@@ -44,7 +44,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     protected final DriverDescriptor driver;
     protected final FileType type;
     protected final OSDescriptor system;
-    protected String path;
+    protected final String path;
     protected boolean custom;
     protected boolean disabled;
 
@@ -111,9 +111,10 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return Collections.emptyList();
     }
 
+    @NotNull
     @Override
-    public void setVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
-        throw new IOException("Vaersions are not supported");
+    public DBPDriverLibrary createVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
+        throw new IOException("Versions are not supported");
     }
 
     @NotNull
