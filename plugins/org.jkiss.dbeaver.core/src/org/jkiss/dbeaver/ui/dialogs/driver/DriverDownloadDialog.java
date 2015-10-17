@@ -124,6 +124,15 @@ public class DriverDownloadDialog extends WizardDialog
         super.finishPressed();
     }
 
+    void closeWizard() {
+        UIUtils.runInDetachedUI(getShell(), new Runnable() {
+            @Override
+            public void run() {
+                buttonPressed(IDialogConstants.CANCEL_ID);
+            }
+        });
+    }
+
     public static boolean downloadDriverFiles(Shell shell, DriverDescriptor driver, DriverDependencies dependencies) {
         return downloadDriverFiles(shell, driver, dependencies, false);
     }
