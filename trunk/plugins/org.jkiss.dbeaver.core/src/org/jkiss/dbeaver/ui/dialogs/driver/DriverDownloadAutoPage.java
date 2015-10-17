@@ -21,6 +21,9 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
@@ -43,6 +46,7 @@ import java.util.List;
 class DriverDownloadAutoPage extends DriverDownloadPage {
 
     private Tree filesTree;
+    private Font boldFont;
 
     DriverDownloadAutoPage() {
         super("Automatic download", "Download driver files", null);
@@ -85,6 +89,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         createLinksPanel(composite);
 
+        boldFont = UIUtils.makeBoldFont(filesTree.getFont());
+        filesTree.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                UIUtils.dispose(boldFont);
+            }
+        });
+
         setControl(composite);
     }
 
@@ -119,6 +131,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             item.setText(0, library.getDisplayName());
             item.setText(1, CommonUtils.notEmpty(library.getVersion()));
             item.setText(2, CommonUtils.notEmpty(library.getDescription()));
+            item.setFont(1, boldFont);
             totalItems++;
             if (addDependencies(item, node)) {
                 item.setExpanded(true);
