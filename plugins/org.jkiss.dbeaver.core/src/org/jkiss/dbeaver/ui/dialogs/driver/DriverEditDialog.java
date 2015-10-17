@@ -85,9 +85,11 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private static final String DIALOG_ID = "DBeaver.DriverEditDialog";//$NON-NLS-1$
 
+    private final boolean newDriver;
     private DataSourceProviderDescriptor provider;
-    private String defaultCategory;
     private DriverDescriptor driver;
+
+    private String defaultCategory;
     private String curFolder = null;
     private TableViewer libTable;
     private Button deleteButton;
@@ -109,20 +111,23 @@ public class DriverEditDialog extends HelpEnabledDialog
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
     private Button embeddedDriverCheck;
-    //private Button anonymousCheck;
 
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.driver = driver;
         this.provider = driver.getProviderDescriptor();
+        this.defaultCategory = driver.getCategory();
+        this.newDriver = false;
     }
 
     public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, String category)
     {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
+        this.driver = provider.createDriver();
         this.defaultCategory = category;
+        this.newDriver = true;
     }
 
     @Override
@@ -142,10 +147,8 @@ public class DriverEditDialog extends HelpEnabledDialog
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        boolean newDriver = driver == null;
         if (newDriver) {
             getShell().setText(CoreMessages.dialog_edit_driver_title_create_driver);
-            driver = provider.createDriver();
         } else {
             getShell().setText(CoreMessages.dialog_edit_driver_title_edit_driver + driver.getName() + "'"); //$NON-NLS-2$
             getShell().setImage(DBeaverIcons.getImage(driver.getPlainIcon()));
@@ -311,18 +314,14 @@ public class DriverEditDialog extends HelpEnabledDialog
         {
             Composite libsListGroup = new Composite(libsGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);
-            //gd.heightHint = 200;
             libsListGroup.setLayoutData(gd);
             GridLayout layout = new GridLayout(1, false);
             layout.marginHeight = 0;
             layout.marginWidth = 0;
             libsListGroup.setLayout(layout);
-            //gd = new GridData(GridData.FILL_HORIZONTAL);
 
             // Additional libraries list
             libTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
-            //libsTable.setLinesVisible (true);
-            //libsTable.setHeaderVisible (true);
             libTable.setContentProvider(new ListContentProvider());
             libTable.setLabelProvider(new CellLabelProvider() {
                 @Override

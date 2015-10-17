@@ -101,11 +101,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private final DataSourceProviderDescriptor providerDescriptor;
     private final String id;
     private String category;
-    private String name, origName;
-    private String description, origDescription;
-    private String driverClassName, origClassName;
-    private String driverDefaultPort, origDefaultPort;
-    private String sampleURL, origSampleURL;
+    private final String origName;
+    private final String origDescription;
+    private final String origClassName;
+    private final String origDefaultPort;
+    private final String origSampleURL;
+    private String name;
+    private String description;
+    private String driverClassName;
+    private String driverDefaultPort;
+    private String sampleURL;
+
     private String note;
     private String webURL;
     private DBPImage iconPlain;
@@ -149,6 +155,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         System.setProperty(PROP_DRIVERS_LOCATION, driversHome.getAbsolutePath());
     }
 
+    // New driver constructor
     public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, String id)
     {
         super(providerDescriptor.getPluginId());
@@ -157,8 +164,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.custom = true;
         this.iconPlain = providerDescriptor.getIcon();
         makeIconExtensions();
+        this.origName = null;
+        this.origDescription = null;
+        this.origClassName = null;
+        this.origDefaultPort = null;
+        this.origSampleURL = null;
     }
 
+    // Predefined driver constructor
     public DriverDescriptor(DataSourceProviderDescriptor providerDescriptor, IConfigurationElement config)
     {
         super(providerDescriptor.getPluginId());
@@ -170,12 +183,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.note = config.getAttribute(RegistryConstants.ATTR_NOTE);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         if (!CommonUtils.isEmpty(config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT))) {
-            try {
-                this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
-            }
-            catch (NumberFormatException ex) {
-                log.warn("Bad default port for driver '" + name + "' specified: " + ex.getMessage());
-            }
+            this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
+        } else {
+            this.origDefaultPort = this.driverDefaultPort = null;
         }
         this.origSampleURL = this.sampleURL = config.getAttribute(RegistryConstants.ATTR_SAMPLE_URL);
         this.webURL = config.getAttribute(RegistryConstants.ATTR_WEB_URL);
@@ -224,9 +234,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
-        // Connection default properties
-        //connectionProperties
-
         {
             // Driver parameters
             IConfigurationElement[] paramElements = config.getChildren(RegistryConstants.TAG_PARAMETER);
@@ -269,12 +276,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
             }
         }
-        // Create class loader
-        this.classLoader = new DriverClassLoader(
-            this,
-            new URL[0],
-            //getClass().getClassLoader());
-            getClass().getClassLoader());
     }
 
     public DriverDescriptor getReplacedBy()
@@ -617,38 +618,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return libraries;
     }
 
-/*
-    @NotNull
-    private DBPDriverDependencies resolveDependencies(@NotNull DBRProgressMonitor monitor) throws DBException {
-        try (DBPDriverContext driverContext = new DBPDriverContext(monitor)) {
-            DriverDependencies depsResolver = new DriverDependencies();
-            depsResolver.resolveDependencies(driverContext, getDriverLibraries());
-            return depsResolver;
-        }
-    }
-
-    private DBPDriverDependencies resolveDependencies(DBRRunnableContext runnableContext) throws DBException {
-        try {
-            final DBPDriverDependencies[] deps = new DBPDriverDependencies[1];
-            runnableContext.run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        deps[0] = resolveDependencies(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-            return deps[0];
-        } catch (InvocationTargetException e) {
-            throw new DBException("Error resolving libraries", e.getTargetException());
-        } catch (InterruptedException e) {
-            throw new DBException("Resolve interrupted", e);
-        }
-    }
-*/
-
     public DBPDriverLibrary getDriverLibrary(String path)
     {
         for (DBPDriverLibrary lib : libraries) {
@@ -768,11 +737,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         customParameters.putAll(parameters);
     }
 
-//    public List<OSDescriptor> getSupportedSystems()
-//    {
-//        return supportedSystems;
-//    }
-
     @Override
     public boolean isSupportedByLocalSystem()
     {
@@ -810,10 +774,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     public void loadDriver(DBRRunnableContext runnableContext)
         throws DBException
     {
-        this.loadDriver(runnableContext, false, false);
+        this.loadDriver(runnableContext, false);
     }
 
-    private void loadDriver(DBRRunnableContext runnableContext, boolean forceReload, boolean omitDownload)
+    private void loadDriver(DBRRunnableContext runnableContext, boolean forceReload)
         throws DBException
     {
         if (isLoaded && !forceReload) {
@@ -821,7 +785,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
         isLoaded = false;
 
-        loadLibraries(runnableContext);
+        loadLibraries();
 
         if (!acceptDriverLicenses(runnableContext)) {
             throw new DBException("You have to accept driver '" + getFullName() + "' license to be able to connect");
@@ -857,7 +821,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
-    private void loadLibraries(DBRRunnableContext runnableContext)
+    private void loadLibraries()
         throws DBException
     {
         this.classLoader = null;
