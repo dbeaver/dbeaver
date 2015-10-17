@@ -97,7 +97,7 @@ public class MavenRepository
         boolean newArtifact = false;
         MavenArtifact artifact = cachedArtifacts.get(ref.getId());
         if (artifact == null) {
-            artifact = new MavenArtifact(this, ref.getGroupId(), ref.getArtifactId());
+            artifact = new MavenArtifact(this, ref.getGroupId(), ref.getArtifactId(), ref.getClassifier());
             newArtifact = true;
         }
         try {

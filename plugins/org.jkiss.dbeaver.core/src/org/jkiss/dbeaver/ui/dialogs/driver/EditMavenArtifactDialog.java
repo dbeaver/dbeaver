@@ -38,12 +38,13 @@ class EditMavenArtifactDialog extends Dialog
     private MavenArtifactReference artifact;
     private Text groupText;
     private Text artifactText;
+    private Text classifierText;
     private Combo versionText;
 
     public EditMavenArtifactDialog(Shell shell, MavenArtifactReference artifact)
     {
         super(shell);
-        this.artifact = artifact == null ? new MavenArtifactReference("", "", MavenArtifactReference.VERSION_PATTERN_RELEASE) : artifact;
+        this.artifact = artifact == null ? new MavenArtifactReference("", "", null, MavenArtifactReference.VERSION_PATTERN_RELEASE) : artifact;
     }
 
     public MavenArtifactReference getArtifact() {
@@ -71,6 +72,9 @@ class EditMavenArtifactDialog extends Dialog
         groupText.setLayoutData(gd);
         artifactText = UIUtils.createLabelText(composite, "Artifact Id", artifact.getArtifactId());
         artifactText.setLayoutData(gd);
+        classifierText = UIUtils.createLabelText(composite, "Classifier", CommonUtils.notEmpty(artifact.getClassifier()));
+        classifierText.setLayoutData(gd);
+
         versionText = UIUtils.createLabelCombo(composite, "Version", SWT.DROP_DOWN | SWT.BORDER);
         versionText.setLayoutData(gd);
 
@@ -86,6 +90,7 @@ class EditMavenArtifactDialog extends Dialog
         };
         groupText.addModifyListener(ml);
         artifactText.addModifyListener(ml);
+        classifierText.addModifyListener(ml);
         versionText.addModifyListener(ml);
 
         return composite;
@@ -107,10 +112,13 @@ class EditMavenArtifactDialog extends Dialog
 
     @Override
     protected void okPressed() {
+        String classifier = classifierText.getText();
         artifact = new MavenArtifactReference(
             groupText.getText(),
             artifactText.getText(),
+            CommonUtils.isEmpty(classifier) ? null : classifier,
             versionText.getText());
         super.okPressed();
     }
+
 }

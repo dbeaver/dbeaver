@@ -160,7 +160,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @Override
     public String getId() {
-        return reference.getGroupId() + ":" + reference.getArtifactId();
+        return reference.getId();
     }
 
     @Override
