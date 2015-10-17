@@ -614,10 +614,17 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void changeLibContent()
     {
-        libTable.setInput(new ArrayList<>(driver.getDriverLibraries()));
-        int itemCount = libTable.getTable().getItemCount();
-        findClassButton.setEnabled(provider.isDriversManagable() && itemCount > 0);
-        updateVersionButton.setEnabled(itemCount > 0);
+        libTable.setInput(driver.getEnabledDriverLibraries());
+        boolean hasFiles = false, hasDownloads = false;
+        for (DBPDriverLibrary library : driver.getDriverLibraries()) {
+            if (library.isDownloadable()) {
+                hasDownloads = true;
+                break;
+            }
+            hasFiles = true;
+        }
+        findClassButton.setEnabled(provider.isDriversManagable() && hasFiles);
+        updateVersionButton.setEnabled(hasDownloads);
     }
 
     private void changeLibSelection()
@@ -656,7 +663,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             resetLibraries();
         }
         if (libTable != null) {
-            libTable.setInput(new ArrayList<>(driver.getDriverLibraries()));
+            libTable.setInput(driver.getEnabledDriverLibraries());
             changeLibContent();
             changeLibSelection();
         }
@@ -688,6 +695,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private void resetLibraries() {
         // Set libraries
         for (DBPDriverLibrary lib : CommonUtils.safeCollection(origLibList)) {
+            lib.setDisabled(false);
             driver.addDriverLibrary(lib);
         }
         for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
