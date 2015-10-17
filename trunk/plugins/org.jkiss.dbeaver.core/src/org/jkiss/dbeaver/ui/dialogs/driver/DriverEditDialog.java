@@ -93,8 +93,6 @@ public class DriverEditDialog extends HelpEnabledDialog
     private String curFolder = null;
     private TableViewer libTable;
     private Button deleteButton;
-    private Button upButton;
-    private Button downButton;
     private Button updateVersionButton;
     private Combo classListCombo;
     private Button findClassButton;
@@ -106,7 +104,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private Text driverPortText;
     private PropertyTreeViewer parametersEditor;
     private ConnectionPropertiesControl connectionPropertiesEditor;
-    private List<DBPDriverLibrary> libList = new ArrayList<>();
+    private final List<DBPDriverLibrary> origLibList;
     private PropertySourceCustom driverPropertySource;
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
@@ -119,6 +117,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         this.provider = driver.getProviderDescriptor();
         this.defaultCategory = driver.getCategory();
         this.newDriver = false;
+        this.origLibList = new ArrayList<>(driver.getDriverLibraries());
     }
 
     public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, String category)
@@ -128,6 +127,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         this.driver = provider.createDriver();
         this.defaultCategory = category;
         this.newDriver = true;
+        this.origLibList = new ArrayList<>();
     }
 
     @Override
@@ -300,7 +300,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             tabFolder.setSelection(0);
         }
 
-        resetSettings(false);
+        loadSettings(false);
 
         return group;
     }
@@ -419,7 +419,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                     if (!ArrayUtils.isEmpty(fileNames)) {
                         File folderFile = new File(curFolder);
                         for (String fileName : fileNames) {
-                            libList.add(
+                            driver.addDriverLibrary(
                                 DriverLibraryAbstract.createFromPath(
                                     driver,
                                     fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
@@ -441,7 +441,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 String selected = fd.open();
                 if (selected != null) {
                     curFolder = fd.getFilterPath();
-                    libList.add(DriverLibraryAbstract.createFromPath(
+                    driver.addDriverLibrary(DriverLibraryAbstract.createFromPath(
                         driver,
                         DBPDriverLibrary.FileType.jar,
                         selected));
@@ -456,7 +456,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             {
                 EditMavenArtifactDialog fd = new EditMavenArtifactDialog(getShell(), null);
                 if (fd.open() == IDialogConstants.OK_ID) {
-                    libList.add(DriverLibraryAbstract.createFromPath(
+                    driver.addDriverLibrary(DriverLibraryAbstract.createFromPath(
                         driver,
                         DBPDriverLibrary.FileType.jar,
                         DriverLibraryMavenArtifact.PATH_PREFIX + fd.getArtifact().getPath()));
@@ -477,12 +477,13 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                libList.remove(getSelectedLibrary());
+                driver.removeDriverLibrary(getSelectedLibrary());
                 changeLibContent();
             }
         });
         deleteButton.setEnabled(false);
 
+/*
         upButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_up, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -508,6 +509,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
         });
         downButton.setEnabled(false);
+*/
 
         UIUtils.createHorizontalLine(libsControlGroup);
 
@@ -612,17 +614,20 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private void changeLibContent()
     {
-        libTable.refresh();
-        findClassButton.setEnabled(provider.isDriversManagable() && !libList.isEmpty());
-        updateVersionButton.setEnabled(!libList.isEmpty());
+        libTable.setInput(new ArrayList<>(driver.getDriverLibraries()));
+        int itemCount = libTable.getTable().getItemCount();
+        findClassButton.setEnabled(provider.isDriversManagable() && itemCount > 0);
+        updateVersionButton.setEnabled(itemCount > 0);
     }
 
     private void changeLibSelection()
     {
         DriverLibraryAbstract selectedLib = getSelectedLibrary();
         deleteButton.setEnabled(selectedLib != null);
+/*
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
         downButton.setEnabled(libList.indexOf(selectedLib) < libList.size() - 1);
+*/
     }
 
     private void onChangeProperty()
@@ -635,10 +640,8 @@ public class DriverEditDialog extends HelpEnabledDialog
         }
     }
 
-    private void resetSettings(boolean original)
+    private void loadSettings(boolean original)
     {
-        boolean isReadOnly = !provider.isDriversManagable();
-
         driverNameText.setText(original ? CommonUtils.notEmpty(driver.getOrigName()) : CommonUtils.notEmpty(driver.getName()));
         driverDescText.setText(original ? CommonUtils.notEmpty(driver.getOrigDescription()) : CommonUtils.notEmpty(driver.getDescription()));
         driverClassText.setText(original ? CommonUtils.notEmpty(driver.getOrigClassName()) : CommonUtils.notEmpty(driver.getDriverClassName()));
@@ -648,17 +651,12 @@ public class DriverEditDialog extends HelpEnabledDialog
             (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
 
         embeddedDriverCheck.setSelection(driver.isEmbedded());
-//        anonymousCheck.setSelection(driver.isAnonymousAccess());
 
+        if (original) {
+            resetLibraries();
+        }
         if (libTable != null) {
-            libList = new ArrayList<>();
-            for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
-                if (lib.isDisabled() || (lib.getType() != DBPDriverLibrary.FileType.jar && lib.getType() != DBPDriverLibrary.FileType.lib) || !lib.matchesCurrentPlatform()) {
-                    continue;
-                }
-                libList.add(lib);
-            }
-            libTable.setInput(libList);
+            libTable.setInput(new ArrayList<>(driver.getDriverLibraries()));
             changeLibContent();
             changeLibSelection();
         }
@@ -674,9 +672,28 @@ public class DriverEditDialog extends HelpEnabledDialog
     protected void buttonPressed(int buttonId)
     {
         if (buttonId == IDialogConstants.RETRY_ID) {
-            resetSettings(true);
+            loadSettings(true);
         } else {
             super.buttonPressed(buttonId);
+        }
+    }
+
+    @Override
+    protected void cancelPressed() {
+        resetLibraries();
+
+        super.cancelPressed();
+    }
+
+    private void resetLibraries() {
+        // Set libraries
+        for (DBPDriverLibrary lib : CommonUtils.safeCollection(origLibList)) {
+            driver.addDriverLibrary(lib);
+        }
+        for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
+            if (!origLibList.contains(lib)) {
+                driver.removeDriverLibrary(lib);
+            }
         }
     }
 
@@ -694,16 +711,6 @@ public class DriverEditDialog extends HelpEnabledDialog
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
-        // Set libraries
-        for (DBPDriverLibrary lib : CommonUtils.safeCollection(libList)) {
-            driver.addDriverLibrary(lib);
-        }
-        for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
-            if (!libList.contains(lib)) {
-                driver.removeDriverLibrary(lib);
-            }
-        }
-
         driver.setDriverParameters(driverPropertySource.getProperties());
         driver.setConnectionProperties(connectionPropertySource.getProperties());
 
@@ -717,16 +724,6 @@ public class DriverEditDialog extends HelpEnabledDialog
             provider.addDriver(driver);
         }
         provider.getRegistry().saveDrivers();
-
-/*      // DO NOT validate driver on close. Otherwise it can cause cyclis errors -> new driver editor dialog, etcv
-        {
-            try {
-                driver.loadDriver(DBeaverUI.getDefaultRunnableContext(), true);
-            } catch (Throwable ex) {
-                UIUtils.showErrorDialog(getShell(), CoreMessages.dialog_edit_driver_dialog_driver_error_title, CoreMessages.dialog_edit_driver_dialog_driver_error_message, ex);
-            }
-        }
-*/
 
         super.okPressed();
     }
@@ -770,7 +767,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         {
             java.util.List<File> libFiles = new ArrayList<>();
             java.util.List<URL> libURLs = new ArrayList<>();
-            for (DBPDriverLibrary lib : libList) {
+            for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
                 File libFile = lib.getLocalFile();
                 if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverLibrary.FileType.jar) {
                     libFiles.add(libFile);

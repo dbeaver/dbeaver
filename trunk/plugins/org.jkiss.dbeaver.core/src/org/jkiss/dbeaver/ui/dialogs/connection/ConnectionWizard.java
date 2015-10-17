@@ -187,7 +187,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         {
             super(testDataSource);
             setSystem(true);
-            super.initialize = CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
+            super.initialize = true;//CommonUtils.toBoolean(testDataSource.getDriver().getDriverParameter(DBConstants.PARAM_INIT_ON_TEST));
             productName = null;
             productVersion = null;
         }
