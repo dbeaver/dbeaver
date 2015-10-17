@@ -331,12 +331,12 @@ public class DriverEditDialog extends HelpEnabledDialog
                     DBPDriverLibrary lib = (DBPDriverLibrary) cell.getElement();
                     cell.setText(lib.getDisplayName());
                     File localFile = lib.getLocalFile();
-                    if (localFile != null && localFile.exists()) {
-                        cell.setForeground(null);
+                    if (localFile != null && !localFile.exists()) {
+                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
                     } else if (!driver.isLibraryResolved(lib)) {
                         cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
                     } else {
-                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+                        cell.setForeground(null);
                     }
                     cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                 }

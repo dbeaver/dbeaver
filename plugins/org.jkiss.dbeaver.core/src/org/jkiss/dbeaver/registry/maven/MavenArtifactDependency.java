@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,8 +42,8 @@ public class MavenArtifactDependency extends MavenArtifactReference {
     private List<MavenArtifactReference> exclusions;
     private boolean broken;
 
-    public MavenArtifactDependency(@NotNull String groupId, @NotNull String artifactId, @NotNull String version, Scope scope, boolean optional) {
-        super(groupId, artifactId, version);
+    public MavenArtifactDependency(@NotNull String groupId, @NotNull String artifactId, @Nullable String classifier, @NotNull String version, Scope scope, boolean optional) {
+        super(groupId, artifactId, classifier, version);
         this.scope = scope;
         this.optional = optional;
     }

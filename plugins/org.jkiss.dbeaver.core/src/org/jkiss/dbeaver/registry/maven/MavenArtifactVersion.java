@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -38,7 +39,7 @@ import java.util.*;
 /**
  * Maven artifact version descriptor (POM).
  */
-public class MavenArtifactVersion {
+public class MavenArtifactVersion implements IMavenIdentifier {
     static final Log log = Log.getLog(MavenArtifactVersion.class);
 
     public static final String PROP_PROJECT_VERSION = "project.version";
@@ -97,8 +98,34 @@ public class MavenArtifactVersion {
         return name;
     }
 
+    @NotNull
+    @Override
+    public String getGroupId() {
+        return artifact.getGroupId();
+    }
+
+    @NotNull
+    @Override
+    public String getArtifactId() {
+        return artifact.getArtifactId();
+    }
+
+    @Nullable
+    @Override
+    public String getClassifier() {
+        return artifact.getClassifier();
+    }
+
+    @NotNull
+    @Override
     public String getVersion() {
         return version;
+    }
+
+    @NotNull
+    @Override
+    public String getId() {
+        return MavenArtifactReference.makeId(this);
     }
 
     public String getDescription() {
@@ -233,8 +260,8 @@ public class MavenArtifactVersion {
                     MavenArtifactReference parentReference = new MavenArtifactReference(
                         parentGroupId,
                         parentArtifactId,
-                        parentVersion
-                    );
+                        null,
+                        parentVersion);
                     if (this.version == null) {
                         this.version = parentReference.getVersion();
                     }
@@ -368,6 +395,7 @@ public class MavenArtifactVersion {
                     log.warn("Broken dependency reference: " + groupId + ":" + artifactId);
                     continue;
                 }
+                String classifier = evaluateString(XMLUtils.getChildElementBody(dep, "classifier"));
 
                 MavenArtifactDependency dmInfo = depManagement ? null : findDependencyManagement(groupId, artifactId);
 
@@ -401,6 +429,7 @@ public class MavenArtifactVersion {
                     MavenArtifactReference importReference = new MavenArtifactReference(
                         groupId,
                         artifactId,
+                        classifier,
                         version);
                     MavenArtifactVersion importedVersion = MavenRegistry.getInstance().findArtifact(monitor, this, importReference);
                     if (importedVersion == null) {
@@ -422,12 +451,12 @@ public class MavenArtifactVersion {
                     }
 
                     MavenArtifactDependency dependency = new MavenArtifactDependency(
-                        evaluateString(groupId),
-                        evaluateString(artifactId),
-                        evaluateString(version),
+                        groupId,
+                        artifactId,
+                        classifier,
+                        version,
                         scope,
-                        optional
-                    );
+                        optional);
                     result.add(dependency);
 
                     // Exclusions
@@ -438,6 +467,7 @@ public class MavenArtifactVersion {
                                 new MavenArtifactReference(
                                     CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "groupId")),
                                     CommonUtils.notEmpty(XMLUtils.getChildElementBody(exclusion, "artifactId")),
+                                    null,
                                     ""));
                         }
                     }

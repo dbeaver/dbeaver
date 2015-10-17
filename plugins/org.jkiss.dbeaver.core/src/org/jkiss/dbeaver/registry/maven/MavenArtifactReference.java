@@ -18,11 +18,12 @@
 package org.jkiss.dbeaver.registry.maven;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * Maven artifact reference
  */
-public class MavenArtifactReference
+public class MavenArtifactReference implements IMavenIdentifier
 {
     public static final String VERSION_PATTERN_RELEASE = "RELEASE";
     public static final String VERSION_PATTERN_LATEST = "LATEST";
@@ -38,12 +39,15 @@ public class MavenArtifactReference
     private final String version;
     @NotNull
     private final String id;
+    @Nullable
+    private final String classifier;
 
-    public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @NotNull String version) {
+    public MavenArtifactReference(@NotNull String groupId, @NotNull String artifactId, @Nullable String classifier, @NotNull String version) {
         this.groupId = groupId;
         this.artifactId = artifactId;
         this.version = version;
-        this.id = makeId(groupId, artifactId);
+        this.classifier = classifier;
+        this.id = makeId(this);
     }
 
     public MavenArtifactReference(String ref) {
@@ -54,46 +58,68 @@ public class MavenArtifactReference
         }
         divPos = mavenUri.indexOf(':');
         if (divPos < 0) {
+            // No artifact ID
             groupId = mavenUri;
             artifactId = mavenUri;
-            version = DEFAULT_MAVEN_VERSION;
-            id = makeId(groupId, artifactId);
-            return;
-        }
-        groupId = mavenUri.substring(0, divPos);
-        int divPos2 = mavenUri.indexOf(':', divPos + 1);
-        if (divPos2 < 0) {
-            artifactId = mavenUri.substring(divPos + 1);
+            classifier = null;
             version = DEFAULT_MAVEN_VERSION;
         } else {
-            artifactId = mavenUri.substring(divPos + 1, divPos2);
-            version = mavenUri.substring(divPos2 + 1);
+            groupId = mavenUri.substring(0, divPos);
+            int divPos2 = mavenUri.indexOf(':', divPos + 1);
+            if (divPos2 < 0) {
+                // No version
+                artifactId = mavenUri.substring(divPos + 1);
+                classifier = null;
+                version = DEFAULT_MAVEN_VERSION;
+            } else {
+                int divPos3 = mavenUri.indexOf(':', divPos2 + 1);
+                if (divPos3 < 0) {
+                    // No classifier
+                    artifactId = mavenUri.substring(divPos + 1, divPos2);
+                    classifier = null;
+                    version = mavenUri.substring(divPos2 + 1);
+                } else {
+                    artifactId = mavenUri.substring(divPos + 1, divPos2);
+                    classifier = mavenUri.substring(divPos2 + 1, divPos3);
+                    version = mavenUri.substring(divPos3 + 1);
+                }
+            }
         }
-        id = makeId(groupId, artifactId);
+        id = makeId(this);
     }
 
+    @Override
     @NotNull
     public String getGroupId() {
         return groupId;
     }
 
+    @Override
     @NotNull
     public String getArtifactId() {
         return artifactId;
     }
 
+    @Override
+    @Nullable
+    public String getClassifier() {
+        return classifier;
+    }
+
+    @Override
     @NotNull
     public String getVersion() {
         return version;
     }
 
+    @Override
     @NotNull
     public String getId() {
         return id;
     }
 
     public String getPath() {
-        return groupId + ":" + artifactId + ":" + version;
+        return id + ":" + version;
     }
 
     @Override
@@ -106,8 +132,12 @@ public class MavenArtifactReference
         return groupId.hashCode() + artifactId.hashCode() + version.hashCode();
     }
 
-    static String makeId(String groupId, String artifactId) {
-        return groupId + ":" + artifactId;
+    static String makeId(IMavenIdentifier identifier) {
+        if (identifier.getClassifier() != null) {
+            return identifier.getGroupId() + ":" + identifier.getArtifactId() + ":" + identifier.getClassifier();
+        } else {
+            return identifier.getGroupId() + ":" + identifier.getArtifactId();
+        }
     }
 
 }
