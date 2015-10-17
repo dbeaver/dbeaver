@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
@@ -102,13 +104,14 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     void resolveLibraries() {
+        final DriverDependencies dependencies = getWizard().getDependencies();
         try {
             new RunnableContextDelegate(getContainer()).run(true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Resolve dependencies", 100);
                     try {
-                        getWizard().getDependencies().resolveDependencies(monitor);
+                        dependencies.resolveDependencies(monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     } finally {
@@ -124,7 +127,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         }
 
         int totalItems = 1;
-        for (DBPDriverDependencies.DependencyNode node : getWizard().getDependencies().getLibraryMap()) {
+        for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
             DBPDriverLibrary library = node.library;
             TreeItem item = new TreeItem(filesTree, SWT.NONE);
             item.setImage(DBeaverIcons.getImage(library.getIcon()));
@@ -146,6 +149,19 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         Shell shell = getContainer().getShell();
         shell.setSize(shell.getSize().x, shell.getSize().y + filesTree.getItemHeight() * totalItems);
         shell.layout();
+
+        // Check missing files
+        int missingFiles = 0;
+        for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryList()) {
+            File localFile = node.library.getLocalFile();
+            if (localFile == null || !localFile.exists()) {
+                missingFiles++;
+            }
+        }
+        if (missingFiles == 0) {
+//            UIUtils.showMessageBox(getShell(), "Driver Download", "All driver files are present", SWT.ICON_INFORMATION);
+//            ((DriverDownloadDialog)getWizard().getContainer()).closeWizard();
+        }
     }
 
     private boolean addDependencies(TreeItem parent, DBPDriverDependencies.DependencyNode node) {
