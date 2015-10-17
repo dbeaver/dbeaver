@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -265,12 +266,12 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             }
         }
         UIUtils.packColumns(filesTree);
-        if (totalItems > 20) {
-            totalItems = 20;
-        }
 
         Shell shell = getContainer().getShell();
-        shell.setSize(shell.getSize().x, shell.getSize().y + filesTree.getItemHeight() * totalItems);
+        Point curSize = shell.getSize();
+        shell.setSize(curSize.x, Math.min(
+            (int)(DBeaverUI.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
+            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y));
         shell.layout();
 
         // Check missing files
