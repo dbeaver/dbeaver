@@ -203,7 +203,11 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        library.setVersion(new DefaultProgressMonitor(monitor), version);
+                        DBPDriverLibrary newVersion = library.createVersion(new DefaultProgressMonitor(monitor), version);
+                        DriverDescriptor driver = getWizard().getDriver();
+                        driver.removeDriverLibrary(library);
+                        driver.addDriverLibrary(newVersion);
+                        getWizard().getDependencies().changeLibrary(library, newVersion);
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }

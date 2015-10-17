@@ -30,12 +30,12 @@ import java.util.*;
  */
 public class DriverDependencies implements DBPDriverDependencies
 {
-    final List<? extends DBPDriverLibrary> rootLibraries;
+    final List<DBPDriverLibrary> rootLibraries;
     final List<DependencyNode> rootNodes = new ArrayList<>();
     final List<DependencyNode> libraryList = new ArrayList<>();
 
     public DriverDependencies(List<? extends DBPDriverLibrary> rootLibraries) {
-        this.rootLibraries = rootLibraries;
+        this.rootLibraries = new ArrayList<>(rootLibraries);
     }
 
     @Override
@@ -69,11 +69,12 @@ public class DriverDependencies implements DBPDriverDependencies
                         sb.append(lib).append("\n");
                     }
                     System.out.println(sb.toString());
-*/
+
                     System.out.println("---------------------------");
                     for (DependencyNode node : rootNodes) {
                         dumpNode(node, 0);
                     }
+*/
             }
         } catch (IOException e) {
             throw new DBException("IO error while resolving dependencies", e);
@@ -126,4 +127,13 @@ public class DriverDependencies implements DBPDriverDependencies
         return rootNodes;
     }
 
+    public void changeLibrary(DBPDriverLibrary oldLibrary, DBPDriverLibrary newLibrary) {
+        int index = rootLibraries.indexOf(oldLibrary);
+        if (index == -1) {
+            rootLibraries.add(newLibrary);
+        } else {
+            rootLibraries.add(index, newLibrary);
+            rootLibraries.remove(oldLibrary);
+        }
+    }
 }
