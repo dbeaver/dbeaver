@@ -632,7 +632,6 @@
                 <!-- Hadoop -->
                 <driver
                     id="gemfire_xd"
-                    category="Hadoop"
                     label="Gemfire XD"
                     class="com.pivotal.gemfirexd.jdbc.ClientDriver"
                     sampleURL="jdbc:gemfirexd://{host}[:{port}]/"
@@ -643,7 +642,6 @@
                 </driver>
                 <driver
                     id="apache_hive2"
-                    category="Hadoop"
                     label="Apache Hive"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}]/{database}"
@@ -655,7 +653,6 @@
                 </driver>
                 <driver
                     id="apache_drill"
-                    category="Hadoop"
                     label="Apache Drill"
                     class="org.apache.drill.jdbc.Driver"
                     sampleURL="jdbc:drill:zk={host}[;schema={database}]:{port}"

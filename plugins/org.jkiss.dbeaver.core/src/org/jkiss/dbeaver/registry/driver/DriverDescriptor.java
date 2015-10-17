@@ -1112,8 +1112,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     if (files != null) {
                         for (DriverFileInfo file : files) {
                             try (XMLBuilder.Element e2 = xml.startElement(RegistryConstants.TAG_FILE)) {
+                                if (file.file == null) {
+                                    log.warn("File missing in " + file.id);
+                                    continue;
+                                }
                                 xml.addAttribute(RegistryConstants.ATTR_ID, file.id);
-                                xml.addAttribute(RegistryConstants.ATTR_VERSION, file.version);
+                                if (!CommonUtils.isEmpty(file.version)) {
+                                    xml.addAttribute(RegistryConstants.ATTR_VERSION, file.version);
+                                }
                                 xml.addAttribute(RegistryConstants.ATTR_PATH, file.file.getAbsolutePath());
                             }
                         }
