@@ -660,7 +660,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         embeddedDriverCheck.setSelection(driver.isEmbedded());
 
         if (original) {
-            resetLibraries();
+            resetLibraries(true);
         }
         if (libTable != null) {
             libTable.setInput(driver.getEnabledDriverLibraries());
@@ -687,19 +687,20 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     @Override
     protected void cancelPressed() {
-        resetLibraries();
+        resetLibraries(false);
 
         super.cancelPressed();
     }
 
-    private void resetLibraries() {
+    private void resetLibraries(boolean original) {
         // Set libraries
-        for (DBPDriverLibrary lib : CommonUtils.safeCollection(origLibList)) {
+        Collection<DBPDriverLibrary> newLibList = CommonUtils.copyList(original ? driver.getOrigFiles() : origLibList);
+        for (DBPDriverLibrary lib : newLibList) {
             lib.setDisabled(false);
             driver.addDriverLibrary(lib);
         }
         for (DBPDriverLibrary lib : CommonUtils.copyList(driver.getDriverLibraries())) {
-            if (!origLibList.contains(lib)) {
+            if (!newLibList.contains(lib)) {
                 driver.removeDriverLibrary(lib);
             }
         }
