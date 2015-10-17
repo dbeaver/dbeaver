@@ -190,6 +190,14 @@ public class MavenArtifact implements IMavenIdentifier
         return MavenArtifactReference.makeId(this);
     }
 
+    @Nullable
+    public Collection<String> getAvailableVersion(DBRProgressMonitor monitor) throws IOException {
+        if (CommonUtils.isEmpty(versions) && !metadataLoaded) {
+            loadMetadata(monitor);
+        }
+        return versions;
+    }
+
     public Date getLastUpdate() {
         return lastUpdate;
     }
@@ -395,6 +403,5 @@ public class MavenArtifact implements IMavenIdentifier
             return 0;
         }
     }
-
 
 }

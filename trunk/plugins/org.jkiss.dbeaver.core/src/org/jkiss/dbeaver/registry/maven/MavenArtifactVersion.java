@@ -90,6 +90,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         loadPOM(monitor);
     }
 
+    @NotNull
     public MavenArtifact getArtifact() {
         return artifact;
     }

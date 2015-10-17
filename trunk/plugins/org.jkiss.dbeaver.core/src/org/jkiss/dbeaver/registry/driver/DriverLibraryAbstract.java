@@ -31,6 +31,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.*;
 import java.net.URLConnection;
 import java.text.NumberFormat;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * DriverLibraryAbstract
@@ -42,7 +44,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     protected final DriverDescriptor driver;
     protected final FileType type;
     protected final OSDescriptor system;
-    protected final String path;
+    protected String path;
     protected boolean custom;
     protected boolean disabled;
 
@@ -101,6 +103,17 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     @Override
     public String getVersion() {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public void setVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
+        throw new IOException("Vaersions are not supported");
     }
 
     @NotNull
