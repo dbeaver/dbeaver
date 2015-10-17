@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
 /**
  * Maven artifact descriptor
  */
-public class MavenArtifact
+public class MavenArtifact implements IMavenIdentifier
 {
     static final Log log = Log.getLog(MavenArtifact.class);
 
@@ -50,24 +50,29 @@ public class MavenArtifact
     public static final String FILE_JAR = "jar";
     public static final String FILE_POM = "pom";
 
+    @NotNull
     private final MavenRepository repository;
+    @NotNull
     private final String groupId;
+    @NotNull
     private final String artifactId;
+    @Nullable
+    private final String classifier;
 
-    private List<String> versions = new ArrayList<>();
+    private final List<String> versions = new ArrayList<>();
     private String latestVersion;
     private String releaseVersion;
     private Date lastUpdate;
+    private final List<MavenArtifactVersion> localVersions = new ArrayList<>();
+
     private transient boolean metadataLoaded = false;
 
-    private List<MavenArtifactVersion> localVersions = new ArrayList<>();
-    //private String activeVersion;
-
-    public MavenArtifact(MavenRepository repository, String groupId, String artifactId)
+    public MavenArtifact(@NotNull MavenRepository repository, @NotNull String groupId, @NotNull String artifactId, @Nullable String classifier)
     {
         this.repository = repository;
         this.groupId = groupId;
         this.artifactId = artifactId;
+        this.classifier = classifier;
     }
 
     public void loadMetadata(DBRProgressMonitor monitor) throws IOException {
@@ -76,7 +81,7 @@ public class MavenArtifact
         versions.clear();
         lastUpdate = null;
 
-        String metadataPath = getArtifactURL() + MAVEN_METADATA_XML;
+        String metadataPath = getBaseArtifactURL() + MAVEN_METADATA_XML;
         monitor.subTask("Load metadata " + this + "");
 
         try (InputStream mdStream = RuntimeUtils.openConnectionStream(metadataPath)) {
@@ -85,7 +90,7 @@ public class MavenArtifact
             log.warn("Error parsing artifact metadata", e);
         } catch (IOException e) {
             // Metadata xml not found. It happens in rare cases. Let's try to get directory listing
-            try (InputStream dirStream = RuntimeUtils.openConnectionStream(getArtifactURL())) {
+            try (InputStream dirStream = RuntimeUtils.openConnectionStream(getBaseArtifactURL())) {
                 parseDirectory(dirStream);
             } catch (XMLException e1) {
                 log.warn("Error parsing artifact directory", e);
@@ -153,39 +158,65 @@ public class MavenArtifact
         });
     }
 
+    @NotNull
     public MavenRepository getRepository() {
         return repository;
     }
 
+    @NotNull
     public String getGroupId() {
         return groupId;
     }
 
+    @NotNull
     public String getArtifactId() {
         return artifactId;
+    }
+
+    @Nullable
+    public String getClassifier() {
+        return classifier;
+    }
+
+    @NotNull
+    @Override
+    public String getVersion() {
+        return "";
+    }
+
+    @NotNull
+    @Override
+    public String getId() {
+        return MavenArtifactReference.makeId(this);
     }
 
     public Date getLastUpdate() {
         return lastUpdate;
     }
 
-    private String getArtifactURL() {
+    private String getBaseArtifactURL() {
         String dir = groupId.replace('.', '/') + "/" + artifactId;
         return repository.getUrl() + dir + "/";
     }
 
     public String getFileURL(String version, String fileType) {
-        return getArtifactURL() + version + "/" + getVersionFileName(version, fileType);
+        return getBaseArtifactURL() + version + "/" + getVersionFileName(version, fileType);
     }
 
     @NotNull
-    String getVersionFileName(String version, String fileType) {
-        return artifactId + "-" + version + "." + fileType;
+    String getVersionFileName(@NotNull String version, @NotNull String fileType) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(artifactId).append("-").append(version);
+        if (FILE_JAR.equals(fileType) && !CommonUtils.isEmpty(classifier)) {
+            sb.append('-').append(classifier);
+        }
+        sb.append(".").append(fileType);
+        return sb.toString();
     }
 
     @Override
     public String toString() {
-        return MavenArtifactReference.makeId(groupId, artifactId);
+        return getId();
     }
 
 //    @Nullable
