@@ -184,7 +184,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @NotNull
     public String getDisplayName() {
-        return path;
+        return reference.toString();
     }
 
     @Override
