@@ -110,11 +110,6 @@ public class ResultSetPropertyTester extends PropertyTester
     public static void firePropertyChange(String propName)
     {
         ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
-//        ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
-//        if (commandService != null) {
-//            commandService.refreshElements(NAMESPACE + "." + propName, null);
-//            System.out.println("REFRESH " + NAMESPACE + "." + propName);
-//        }
     }
 
 }

@@ -120,7 +120,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                             }
                         } else {
                             for (DBECommand command : commandTarget.getContext().getFinalCommands()) {
-                                System.out.println(command);
+                                //System.out.println(command);
                             }
                         }
                         return true;

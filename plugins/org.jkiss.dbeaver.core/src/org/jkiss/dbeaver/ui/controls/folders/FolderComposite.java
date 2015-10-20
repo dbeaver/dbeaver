@@ -108,7 +108,6 @@ public class FolderComposite extends Composite implements IFolderContainer {
                             e.doit = false;
                             return;
                         }
-                        //System.out.println(shift + " " + e.detail);
                         if (Math.abs(shift) > 0) {
                             FolderComposite.this.setRedraw(false);
                             try {

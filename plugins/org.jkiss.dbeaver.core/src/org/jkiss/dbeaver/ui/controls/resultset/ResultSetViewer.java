@@ -39,10 +39,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
@@ -427,10 +424,17 @@ public class ResultSetViewer extends Viewer
             } else {
                 historyForwardButton.setEnabled(false);
             }
+            updateBreadcrumbs();
         } else if (filtersEnableState == null) {
             filtersEnableState = ControlEnableState.disable(filtersPanel);
         }
         presentationSwitchCombo.combo.setEnabled(enableFilters);
+    }
+
+    private void updateBreadcrumbs() {
+        IWorkbenchPart ownerPart = getSite().getPart();
+
+        System.out.println(1);
     }
 
     private void addFiltersHistory(String whereCondition)

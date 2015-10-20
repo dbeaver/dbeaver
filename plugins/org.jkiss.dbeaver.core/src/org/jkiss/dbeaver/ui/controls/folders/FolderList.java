@@ -713,28 +713,6 @@ public class FolderList extends Composite {
 
         ColorRegistry colorRegistry = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
-/*
-        Map<String, Color> colors = new TreeMap<String, Color>();
-        for (String id : colorRegistry.getKeySet()) {
-            colors.put(id, colorRegistry.get(id));
-        }
-        System.out.println("==============================");
-        for (Map.Entry<String,Color> e : colors.entrySet()) {
-            System.out.println(e.getKey() + "=" + e.getValue());
-        }
-*/
-
-/*
-        listBackground = JFaceResources.getColorRegistry().get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR);
-        widgetBackground = getBackground();
-        widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-        widgetForeground = getForeground();
-        widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-
-        RGB infoBackground = display.getSystemColor(SWT.COLOR_INFO_BACKGROUND).getRGB();
-        RGB white = JFaceResources.getColorRegistry().get(JFacePreferences.CONTENT_ASSIST_BACKGROUND_COLOR).getRGB();
-        RGB black = colorRegistry.get(IWorkbenchThemeConstants.ACTIVE_TAB_TEXT_COLOR).getRGB();
-*/
         listBackground = display.getSystemColor(SWT.COLOR_LIST_BACKGROUND);
         widgetBackground = display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
@@ -912,7 +890,6 @@ public class FolderList extends Composite {
             Canvas nextElement = topNavigationElement;
 
             for (int i = 0; i < elements.length; i++) {
-                //System.out.print(i + " [" + elements[i].getText() + "]");
                 if (i < topVisibleIndex || i > bottomVisibleIndex) {
 					/*
 					 * this tab is not visible
@@ -923,7 +900,6 @@ public class FolderList extends Composite {
 					/*
 					 * this tab is visible.
 					 */
-                    //System.out.print(" visible");
                     formData = new FormData();
                     formData.height = getTabHeight();
                     formData.left = new FormAttachment(0, 0);
@@ -933,11 +909,6 @@ public class FolderList extends Composite {
                     elements[i].setLayoutData(formData);
                     elements[i].setVisible(true);
                 }
-
-                //if (i == selectedElementIndex) {
-                //	System.out.print(" selected");
-                //}
-                //System.out.println("");
             }
             formData = new FormData();
             formData.left = new FormAttachment(0, 0);
@@ -947,7 +918,6 @@ public class FolderList extends Composite {
             formData.height = 10;
             bottomNavigationElement.setLayoutData(formData);
         }
-        //System.out.println("");
 
         // layout so that we have enough space for the new labels
         Composite grandparent = getParent().getParent();
