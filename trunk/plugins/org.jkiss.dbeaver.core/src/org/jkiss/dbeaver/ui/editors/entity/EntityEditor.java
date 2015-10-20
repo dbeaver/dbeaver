@@ -74,7 +74,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, IBreadcrumbsNavigator, ISaveablePart2, IFolderContainer
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
 {
     static final Log log = Log.getLog(EntityEditor.class);
     private Composite breadcrumbsPanel;
@@ -823,12 +823,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         breadcrumbsPanel.setLayout(new RowLayout());
 
-        updateBreadcrumbsPanel(null);
-
-        return breadcrumbsPanel;
-    }
-
-    private void updateBreadcrumbsPanel(Collection<? extends IAction> breadcrumbs) {
         // Cleanup previous
         for (Control child : breadcrumbsPanel.getChildren()) {
             child.dispose();
@@ -849,7 +843,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 databaseNode.getNodeIconDefault(),
                 databaseNode.getNodeType(),
                 databaseNode.getNodeName(),
-                databaseNode == node && CommonUtils.isEmpty(breadcrumbs) ? null : new SelectionAdapter() {
+                databaseNode == node ? null : new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
@@ -857,6 +851,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     }
                 });
         }
+
+
+        return breadcrumbsPanel;
     }
 
     private void createPathRow(Composite infoGroup, DBPImage image, String label, String value, @Nullable SelectionListener selectionListener)
@@ -872,11 +869,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
             objectLink.addSelectionListener(selectionListener);
             objectLink.setToolTipText("Open " + label + " Editor");
         }
-    }
-
-    @Override
-    public void updateBreadcrumbs(Collection<? extends IAction> actions) {
-        updateBreadcrumbsPanel(actions);
     }
 
     private class ChangesPreviewer implements Runnable {
