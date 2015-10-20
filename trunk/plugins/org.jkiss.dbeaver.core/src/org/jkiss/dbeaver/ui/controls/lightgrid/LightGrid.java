@@ -1879,7 +1879,6 @@ public abstract class LightGrid extends Canvas {
             }
         } else if (x <= rowHeaderWidth) {
             // Hover in row header
-            //System.out.println("HEY " + x + " " + y);
         }
         if (overSorter != hoveringOnColumnSorter) {
             if (overSorter) {

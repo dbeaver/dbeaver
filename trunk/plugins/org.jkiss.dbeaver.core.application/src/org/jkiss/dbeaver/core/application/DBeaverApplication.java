@@ -93,20 +93,11 @@ public class DBeaverApplication implements IApplication
             // Error may occur if -data parameter was specified at startup
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
-/*
-        try {
-            if (instanceLoc.isLocked()) {
-                System.out.println("LOCKED!");
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-*/
+
         DBeaverCore.setStandalone(true);
         System.out.println(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         System.out.println("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-//        System.out.println("Workspace path: '" + DBeaverCore.getInstance().getWorkspace().getRoot().getLocation() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,

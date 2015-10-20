@@ -538,7 +538,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (objectColumns == null) {
             objectColumns = new ArrayList<>();
             lazyObjects.put(object, objectColumns);
-            //System.out.println("LAZY: " + object);
         }
         if (!objectColumns.contains(column)) {
             objectColumns.add(column);

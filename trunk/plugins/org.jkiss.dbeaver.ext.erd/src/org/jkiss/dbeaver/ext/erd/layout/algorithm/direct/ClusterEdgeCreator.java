@@ -72,25 +72,20 @@ public class ClusterEdgeCreator {
                     encountered.add(node);
                     currentCluster.set.add(node);
 
-                    //System.out.println("Adding to NEW cluster: " + node + ", cluster: " + currentCluster);
                     // recursively add any other nodes reachable from it
                     int depth = INITIAL_RECURSION_DEPTH;
                     recursivelyAddToCluster(node, depth);
-                } else {
-                    //System.out.println("Already encountered: " + node);
                 }
             }
 
-            //System.out.println("Clusters: ");
+/*
             for (Iterator<Cluster> iter = clusters.iterator(); iter.hasNext();) {
                 Cluster cluster = iter.next();
-                //System.out.println(cluster);
-
             }
+*/
 
             coalesceRemainingClusters();
 
-            //System.out.println("");
             joinClusters();
 
         }
@@ -148,10 +143,7 @@ public class ClusterEdgeCreator {
                 if (!encountered.contains(incomingNode)) {
                     encountered.add(incomingNode);
                     currentCluster.set.add(incomingNode);
-                    //System.out.println("Adding to current cluster: " + incomingNode + ", cluster: " + currentCluster);
                     recursivelyAddToCluster(incomingNode, depth);
-                } else {
-                    //System.out.println("Already encountered: " + incomingNode);
                 }
             }
 
@@ -163,10 +155,7 @@ public class ClusterEdgeCreator {
                 if (!encountered.contains(outgoingNode)) {
                     encountered.add(outgoingNode);
                     currentCluster.set.add(outgoingNode);
-                    //System.out.println("Adding to current cluster: " + outgoingNode + ", cluster: " + currentCluster);
                     recursivelyAddToCluster(outgoingNode, depth);
-                } else {
-                    //System.out.println("Already encountered: " + outgoingNode);
                 }
             }
         }
