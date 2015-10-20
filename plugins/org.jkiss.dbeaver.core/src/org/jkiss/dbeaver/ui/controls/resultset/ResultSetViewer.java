@@ -432,9 +432,7 @@ public class ResultSetViewer extends Viewer
     }
 
     private void updateBreadcrumbs() {
-        IWorkbenchPart ownerPart = getSite().getPart();
 
-        System.out.println(1);
     }
 
     private void addFiltersHistory(String whereCondition)
