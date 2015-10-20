@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -32,9 +33,9 @@ import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -64,7 +65,6 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -74,9 +74,10 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
+    implements IPropertyChangeReflector, IProgressControlProvider, IBreadcrumbsNavigator, ISaveablePart2, IFolderContainer
 {
     static final Log log = Log.getLog(EntityEditor.class);
+    private Composite breadcrumbsPanel;
 
     private static class EditorDefaults {
         String pageId;
@@ -818,10 +819,22 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected Control createTopRightControl(Composite composite) {
         // Path
-        Composite infoGroup = new Composite(composite, SWT.NONE);//createControlGroup(container, "Path", 3, GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-        infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        infoGroup.setLayout(new RowLayout());
+        breadcrumbsPanel = new Composite(composite, SWT.NONE);
+        breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        breadcrumbsPanel.setLayout(new RowLayout());
 
+        updateBreadcrumbsPanel(null);
+
+        return breadcrumbsPanel;
+    }
+
+    private void updateBreadcrumbsPanel(Collection<? extends IAction> breadcrumbs) {
+        // Cleanup previous
+        for (Control child : breadcrumbsPanel.getChildren()) {
+            child.dispose();
+        }
+
+        // Make base node path
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
 
         List<DBNDatabaseNode> nodeList = new ArrayList<>();
@@ -832,11 +845,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         for (final DBNDatabaseNode databaseNode : nodeList) {
             createPathRow(
-                infoGroup,
+                breadcrumbsPanel,
                 databaseNode.getNodeIconDefault(),
                 databaseNode.getNodeType(),
                 databaseNode.getNodeName(),
-                databaseNode == node ? null : new SelectionAdapter() {
+                databaseNode == node && CommonUtils.isEmpty(breadcrumbs) ? null : new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
@@ -844,16 +857,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     }
                 });
         }
-        return infoGroup;
     }
 
     private void createPathRow(Composite infoGroup, DBPImage image, String label, String value, @Nullable SelectionListener selectionListener)
     {
         UIUtils.createImageLabel(infoGroup, image);
-        //UIUtils.createControlLabel(infoGroup, label);
 
         Link objectLink = new Link(infoGroup, SWT.NONE);
-        //objectLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         if (selectionListener == null) {
             objectLink.setText(value);
             objectLink.setToolTipText(label);
@@ -864,25 +874,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-/*
     @Override
-    public DBNNode getRootNode() {
-        return getEditorInput().getNavigatorNode();
+    public void updateBreadcrumbs(Collection<? extends IAction> actions) {
+        updateBreadcrumbsPanel(actions);
     }
-
-    @Nullable
-    @Override
-    public Viewer getNavigatorViewer()
-    {
-        IWorkbenchPart activePart = getActiveEditor();
-        if (activePart instanceof INavigatorModelView) {
-            return ((INavigatorModelView)activePart).getNavigatorViewer();
-        } else if (getActiveFolder() instanceof INavigatorModelView) {
-            return ((INavigatorModelView)getActiveFolder()).getNavigatorViewer();
-        }
-        return null;
-    }
-*/
 
     private class ChangesPreviewer implements Runnable {
 
