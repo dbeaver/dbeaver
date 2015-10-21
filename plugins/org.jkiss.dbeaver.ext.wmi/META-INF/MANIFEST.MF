@@ -10,6 +10,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface,
  org.eclipse.jface.text,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
  org.eclipse.ui.workbench.texteditor,
  org.jkiss.wmi;visibility:=reexport
 Bundle-ActivationPolicy: lazy
