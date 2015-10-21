@@ -6,6 +6,7 @@ Bundle-Version: 1.0.20
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.model,
  org.eclipse.core.resources
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
