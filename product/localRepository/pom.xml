@@ -9,6 +9,7 @@
 
 	<properties>
 		<tycho-version>0.23.1</tycho-version>
+		<p2-maven-version>1.2.0-SNAPSHOT</p2-maven-version>
 	</properties>
 
 	<pluginRepositories>
@@ -25,7 +26,7 @@
 			<plugin>
 				<groupId>org.reficio</groupId>
 				<artifactId>p2-maven-plugin</artifactId>
-				<version>1.2.0</version>
+				<version>${p2-maven-version}</version>
 				<executions>
 					<execution>
 						<id>default-cli</id>
