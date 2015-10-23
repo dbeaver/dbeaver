@@ -2,6 +2,10 @@
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
 Supports all popular databases: MySQL, PostgreSQL, SQLite, Oracle, DB2, SQL Server, Sybase, MongoDB, etc.
 
+## Download
+
+You can download prebuilt binaries from http://dbeaver.jkiss.org/download/
+
 ## Building
 
 #### Prerequisites:
@@ -15,7 +19,7 @@ git clone https://github.com/serge-rider/dbeaver.git dbeaver
 cd dbeaver
 mvn install
 ```
-You can find binaries in product/standalone/target/products
+Binaries are in product/standalone/target/products
 
 ## Notes
 
