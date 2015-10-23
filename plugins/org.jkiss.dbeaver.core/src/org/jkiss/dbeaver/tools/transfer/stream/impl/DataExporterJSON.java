@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -42,18 +43,25 @@ import java.util.TimeZone;
  */
 public class DataExporterJSON extends StreamExporterAbstract {
 
+    public static final String PROP_FORMAT_DATE_ISO = "formatDateISO";
+    public static final String PROP_PRINT_TABLE_NAME = "printTableName";
+
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private int rowNum = 0;
-    private boolean printTableName = true;
     private DateFormat dateFormat;
+
+    private boolean printTableName = true;
+    private boolean formatDateISO = true;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
         out = site.getWriter();
+        formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
+        printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
 
         TimeZone tz = TimeZone.getTimeZone("UTC");
         dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
@@ -117,7 +125,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
             } else {
                 if (cellValue instanceof Number || cellValue instanceof Boolean) {
                     out.write(cellValue.toString());
-                } else if (cellValue instanceof Date) {
+                } else if (cellValue instanceof Date && formatDateISO) {
                     writeTextCell(dateFormat.format(cellValue));
                 } else {
                     writeTextCell(super.getValueDisplayString(column, cellValue));
