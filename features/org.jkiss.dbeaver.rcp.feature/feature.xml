@@ -571,18 +571,7 @@
             fragment="true"
             unpack="false"/>
 
-<!--
-        <plugin
-            id="org.eclipse.core.filesystem.solaris.x86"
-            os="solaris"
-            arch="x86"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            fragment="true"
-            unpack="false"/>
-
-        <plugin
+    <plugin
             id="org.eclipse.swt.gtk.solaris.x86"
             os="solaris"
             ws="gtk"
@@ -592,7 +581,6 @@
             version="0.0.0"
             fragment="true"
             unpack="false"/>
--->
 
     <plugin
             id="org.eclipse.swt.win32.win32.x86"
