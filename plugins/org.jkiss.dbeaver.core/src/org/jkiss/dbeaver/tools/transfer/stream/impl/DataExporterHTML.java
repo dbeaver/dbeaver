@@ -38,7 +38,7 @@ import java.io.Reader;
 import java.util.List;
 
 /**
- * CSV Exporter
+ * HTML Exporter
  */
 public class DataExporterHTML extends StreamExporterAbstract {
 

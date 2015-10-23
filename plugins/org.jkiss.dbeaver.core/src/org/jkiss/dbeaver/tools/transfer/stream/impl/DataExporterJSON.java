@@ -27,30 +27,37 @@ import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 /**
- * XML Exporter
+ * JSON Exporter
  */
-public class DataExporterXML extends StreamExporterAbstract {
+public class DataExporterJSON extends StreamExporterAbstract {
 
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
+    private int rowNum = 0;
+    private boolean printTableName = true;
+    private DateFormat dateFormat;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
         out = site.getWriter();
+
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+        dateFormat.setTimeZone(tz);
     }
 
     @Override
@@ -64,49 +71,38 @@ public class DataExporterXML extends StreamExporterAbstract {
     public void exportHeader(DBRProgressMonitor monitor) throws DBException, IOException
     {
         columns = getSite().getAttributes();
+        tableName = getSite().getSource().getName();
         printHeader();
     }
 
     private void printHeader()
     {
-        out.write("<?xml version=\"1.0\" ?>\n");
-        tableName = escapeXmlElementName(getSite().getSource().getName());
-        out.write("<!DOCTYPE " + tableName + " [\n");
-        out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
-        out.write("  <!ELEMENT DATA_RECORD (");
-        int columnsSize = columns.size();
-        for (int i = 0; i < columnsSize; i++) {
-            String colName = columns.get(i).getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getName();
-            }
-            out.write(escapeXmlElementName(colName) + "?");
-            if (i < columnsSize - 1) {
-                out.write(",");
-            }
+        if (printTableName) {
+            out.write("{\n");
+            out.write("\"" + tableName + "\": ");
         }
-        out.write(")+>\n");
-        for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getName()) + " (#PCDATA)>\n");
-        }
-        out.write("]>\n");
-        out.write("<" + tableName + ">\n");
+        out.write("[\n");
     }
 
     @Override
     public void exportRow(DBRProgressMonitor monitor, Object[] row) throws DBException, IOException
     {
-        out.write("  <DATA_RECORD>\n");
+        if (rowNum > 0) {
+            out.write(",\n");
+        }
+        rowNum++;
+        out.write("\t{\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
-            String columnName = escapeXmlElementName(column.getName());
-            out.write("    <" + columnName + ">");
-            if (DBUtils.isNullValue(row[i])) {
+            String columnName = column.getName();
+            out.write("\t\t\"" + columnName + "\" : ");
+            Object cellValue = row[i];
+            if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
-            } else if (row[i] instanceof DBDContent) {
+            } else if (cellValue instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
-                DBDContent content = (DBDContent)row[i];
+                DBDContent content = (DBDContent) cellValue;
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
                     if (ContentUtils.isTextContent(content)) {
@@ -119,42 +115,38 @@ public class DataExporterXML extends StreamExporterAbstract {
                     content.release();
                 }
             } else {
-                writeTextCell(super.getValueDisplayString(column, row[i]));
+                if (cellValue instanceof Number || cellValue instanceof Boolean) {
+                    out.write(cellValue.toString());
+                } else if (cellValue instanceof Date) {
+                    writeTextCell(dateFormat.format(cellValue));
+                } else {
+                    writeTextCell(super.getValueDisplayString(column, cellValue));
+                }
             }
-            out.write("</" + columnName + ">\n");
+            if (i < row.length - 1) {
+                out.write(",");
+            }
+            out.write("\n");
         }
-        out.write("  </DATA_RECORD>\n");
+        out.write("\t}");
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</" + tableName + ">\n");
+        out.write("\n]");
+        if (printTableName) {
+            out.write("}");
+        }
+        out.write("\n");
     }
 
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
-            out.write(value);
-        }
-    }
-
-    private void writeImageCell(File file) throws DBException
-    {
-        if (file != null && file.exists()) {
-            Image image = null;
-            try {
-                image = ImageIO.read(file);
-            } catch (IOException e) {
-                throw new DBException("Can't read an exported image " + image, e);
-            }
-
-            if (image != null) {
-                String imagePath = file.getAbsolutePath();
-                imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-                out.write(imagePath);
-            }
+            out.write("\"" + value + "\"");
+        } else {
+            out.write("null");
         }
     }
 
@@ -168,25 +160,11 @@ public class DataExporterXML extends StreamExporterAbstract {
                 if (count <= 0) {
                     break;
                 }
-                for (int i = 0; i < count; i++) {
-                    if (buffer[i] == '<') {
-                        out.write("&lt;");
-                    }
-                    else if (buffer[i] == '>') {
-                        out.write("&gt;");
-                    }
-                    if (buffer[i] == '&') {
-                        out.write("&amp;");
-                    }
-                    out.write(buffer[i]);
-                }
+                out.write(buffer, 0, count);
             }
         } finally {
             ContentUtils.close(reader);
         }
     }
 
-    private String escapeXmlElementName(String name) {
-        return name.replaceAll("[^\\p{Alpha}\\p{Digit}]+","_");
-    }
 }
