@@ -2372,6 +2372,16 @@
                 </propertyGroup>
             </processor>
             <processor
+                id="stream.json"
+                class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterJSON"
+                description="%dataTransfer.processor.json.description"
+                icon="icons/misc/json.png"
+                label="%dataTransfer.processor.json.name">
+                <propertyGroup label="General">
+                    <property id="extension" label="File extension" defaultValue="json"/>
+                </propertyGroup>
+            </processor>
+            <processor
                     id="stream.html"
                     class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
