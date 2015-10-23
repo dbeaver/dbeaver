@@ -44,7 +44,18 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         IFolder scriptFolder = getCurrentFolder(event);
-        openRecentScript(workbenchWindow, dataSourceContainer, scriptFolder);
+        if (scriptFolder != null) {
+            IProject project = dataSourceContainer.getRegistry().getProject();
+            try {
+                IFile scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
+                NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
+            }
+            catch (CoreException e) {
+                log.error(e);
+            }
+        } else {
+            openRecentScript(workbenchWindow, dataSourceContainer, null);
+        }
 
         return null;
     }
