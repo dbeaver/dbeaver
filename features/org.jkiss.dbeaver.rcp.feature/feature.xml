@@ -161,8 +161,9 @@
             unpack="false"/>
 
     <plugin
-            id="org.eclipse.core.filesystem.solaris.sparc"
+            id="org.eclipse.core.filesystem.solaris.x86"
             os="solaris"
+            arch="x86"
             download-size="0"
             install-size="0"
             version="0.0.0"
