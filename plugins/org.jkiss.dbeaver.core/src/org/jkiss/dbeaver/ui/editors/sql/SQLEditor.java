@@ -18,11 +18,9 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFileState;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -90,8 +88,11 @@ import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -862,7 +863,9 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void dispose()
     {
-        // Acquire ds container
+        IFile sqlFile = EditorUtils.getFileFromEditorInput(getEditorInput());
+
+        // Release ds container
         releaseContainer();
         closeAllJobs();
 
@@ -879,6 +882,42 @@ public class SQLEditor extends SQLEditorBase implements
         curQueryProcessor = null;
 
         super.dispose();
+
+        if (sqlFile != null) {
+            deleteFileIfEmpty(sqlFile);
+        }
+    }
+
+    private void deleteFileIfEmpty(IFile sqlFile) {
+        if (sqlFile == null || !sqlFile.exists()) {
+            return;
+        }
+        File osFile = sqlFile.getLocation().toFile();
+        if (!osFile.exists() || osFile.length() != 0) {
+            // Not empty
+            return;
+        }
+        try {
+            IProgressMonitor monitor = new NullProgressMonitor();
+            IFileState[] fileHistory = sqlFile.getHistory(monitor);
+            if (!ArrayUtils.isEmpty(fileHistory)) {
+                for (IFileState historyItem : fileHistory) {
+                    try (InputStream contents = historyItem.getContents()) {
+                        int cValue = contents.read();
+                        if (cValue != -1) {
+                            // At least once there was some content saved
+                            return;
+                        }
+                    }
+                }
+            }
+            // This file is empty and never (at least during this session) had any contents.
+            // Drop it.
+            log.debug("Delete empty SQL script '" + sqlFile.getFullPath().toOSString() + "'");
+            sqlFile.delete(true, monitor);
+        } catch (Exception e) {
+            log.error("Can't delete empty script file", e); //$NON-NLS-1$
+        }
     }
 
     private void closeAllJobs()
