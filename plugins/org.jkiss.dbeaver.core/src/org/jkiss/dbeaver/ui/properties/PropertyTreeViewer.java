@@ -32,9 +32,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.IPropertySourceEditable;
@@ -220,7 +218,7 @@ public class PropertyTreeViewer extends TreeViewer {
             }
             TreeNode category = (parent != null ? parent : categories.get(categoryName));
             if (category == null) {
-                category = new TreeNode(parent, propertySource, categoryName);
+                category = new TreeNode(null, propertySource, categoryName);
                 categories.put(categoryName, category);
             }
             TreeNode propNode = new TreeNode(category, propertySource, prop);
@@ -247,7 +245,7 @@ public class PropertyTreeViewer extends TreeViewer {
                             }
                             PropertySourceCollection psc = new PropertySourceCollection(collection);
                             for (DBPPropertyDescriptor pd : psc.getPropertyDescriptors2()) {
-                                TreeNode itemNode = new TreeNode(propNode, psc, pd);
+                                new TreeNode(propNode, psc, pd);
                             }
                         }
                     }
@@ -278,10 +276,8 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         if (node instanceof TreeNode) {
             TreeNode treeNode = (TreeNode) node;
-            if (treeNode.propertySource instanceof DBPPropertySource) {
-                ((DBPPropertySource) treeNode.propertySource).resetPropertyValueToDefault(treeNode.property.getId());
-            } else {
-                treeNode.propertySource.resetPropertyValue(treeNode.property.getId());
+            if (treeNode.propertySource != null) {
+                treeNode.propertySource.resetPropertyValueToDefault(treeNode.property.getId());
             }
             treeNode.parent.children.remove(treeNode);
             handlePropertyRemove(treeNode);
@@ -293,11 +289,6 @@ public class PropertyTreeViewer extends TreeViewer {
     {
         //disposeOldEditor();
         super.refresh();
-    }
-
-    public DBPPropertyDescriptor getSelectedProperty()
-    {
-        return selectedProperty;
     }
 
     private void disposeOldEditor()
@@ -486,19 +477,19 @@ public class PropertyTreeViewer extends TreeViewer {
                                 });
                             }
                             if (isPropertyChanged(prop) && prop.isEditable()) {
-                                if (prop.propertySource instanceof IPropertySource2 && !((IPropertySource2) prop.propertySource).isPropertyResettable(prop.property.getId())) {
+                                if (prop.propertySource instanceof IPropertySource2 && !prop.propertySource.isPropertyResettable(prop.property.getId())) {
                                     // it is not resettable
                                 } else {
                                     manager.add(new ActionResetProperty(prop, false));
-                                    if (!isCustomProperty(prop.property) &&
-                                        prop.propertySource instanceof DBPPropertySource) {
+                                    if (!isCustomProperty(prop.property)) {
                                         manager.add(new ActionResetProperty(prop, true));
                                     }
                                 }
                             }
                             manager.add(new Separator());
+
+                            contributeContextMenu(manager, object, prop.category != null ? prop.category : prop.property.getCategory(), prop.property);
                         }
-                        contributeContextMenu(manager, object, prop.category != null ? prop.category : prop.property.getCategory(), prop.property);
                     }
                 }
             });
@@ -612,10 +603,10 @@ public class PropertyTreeViewer extends TreeViewer {
 
         boolean isEditable()
         {
-            if (property instanceof DBPPropertyDescriptor) {
-                return ((DBPPropertyDescriptor) property).isEditable(propertySource.getEditableValue());
+            if (property != null) {
+                return property.isEditable(propertySource.getEditableValue());
             } else {
-                return property != null;
+                return false;
             }
         }
     }
@@ -690,10 +681,11 @@ public class PropertyTreeViewer extends TreeViewer {
             } else {
                 if (node.property != null) {
                     final Object propertyValue = getPropertyValue(node);
-                    if (propertyValue == null || propertyValue instanceof Boolean || renderer.isHyperlink(propertyValue)) {
+                    if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
-                    }
-                    if (BeanUtils.isCollectionType(propertyValue.getClass())) {
+                    } else if (propertyValue instanceof Boolean) {
+                        return DBUtils.getBooleanString((Boolean) propertyValue);
+                    } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
                         return "";
                     }
                     return CommonUtils.toString(propertyValue);
@@ -735,11 +727,6 @@ public class PropertyTreeViewer extends TreeViewer {
             boolean changed = false;
             if (node.property != null) {
                 changed = node.isEditable() && isPropertyChanged(node);
-/*
-                if (((DBPProperty)element).isRequired() && cell.getColumnIndex() == 0) {
-                    cell.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_WARN_TSK));
-                }
-*/
             }
             if (extraLabelProvider instanceof IFontProvider) {
                 cell.setFont(((IFontProvider) extraLabelProvider).getFont(node.property));
@@ -807,10 +794,12 @@ public class PropertyTreeViewer extends TreeViewer {
         @Override
         public void run()
         {
-            if (toDefault && prop.propertySource instanceof DBPPropertySource) {
-                ((DBPPropertySource) prop.propertySource).resetPropertyValueToDefault(prop.property.getId());
-            } else {
-                prop.propertySource.resetPropertyValue(prop.property.getId());
+            if (prop.propertySource != null) {
+                if (toDefault) {
+                    prop.propertySource.resetPropertyValueToDefault(prop.property.getId());
+                } else {
+                    prop.propertySource.resetPropertyValue(prop.property.getId());
+                }
             }
             handlePropertyChange(prop);
             PropertyTreeViewer.this.update(prop, null);
@@ -839,4 +828,5 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
     }
+
 }

@@ -20,20 +20,23 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Checkbox cell editor
  */
 public class CustomCheckboxCellEditor extends CellEditor {
 
-    private Button checkbox;
+    private CCombo combo;
 
     public CustomCheckboxCellEditor(Composite parent) {
         this(parent, SWT.NONE);
@@ -54,21 +57,22 @@ public class CustomCheckboxCellEditor extends CellEditor {
         gl.marginWidth = 0;
         placeholder.setLayout(gl);
 
-        checkbox = new Button(placeholder, SWT.CHECK);
-        final GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER);
-        gd.verticalIndent = 2;
-        gd.horizontalIndent = 4;
+        combo = new CCombo(placeholder, SWT.DROP_DOWN | SWT.READ_ONLY);
+        final GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
+//        gd.verticalIndent = 2;
+//        gd.horizontalIndent = 4;
         gd.grabExcessHorizontalSpace = true;
-        checkbox.setLayoutData(gd);
-        checkbox.setFont(parent.getFont());
-        checkbox.addFocusListener(new FocusAdapter() {
+        combo.add(DBConstants.BOOLEAN_PROP_NO);
+        combo.add(DBConstants.BOOLEAN_PROP_YES);
+        combo.setLayoutData(gd);
+        combo.setFont(parent.getFont());
+        combo.addFocusListener(new FocusAdapter() {
             @Override
-            public void focusLost(FocusEvent e)
-            {
+            public void focusLost(FocusEvent e) {
                 applyEditorValue();
             }
         });
-//        checkbox.addSelectionListener(new SelectionAdapter() {
+//        combo.addSelectionListener(new SelectionAdapter() {
 //            public void widgetDefaultSelected(SelectionEvent event) {
 //                applyEditorValue();
 //            }
@@ -82,15 +86,15 @@ public class CustomCheckboxCellEditor extends CellEditor {
     }
 
     @Override
-    protected Object doGetValue() {
-        return checkbox.getSelection();
+    protected Boolean doGetValue() {
+        return combo.getSelectionIndex() > 0;
     }
 
     @Override
     protected void doSetFocus() {
-        checkbox.setFocus();
-        //checkbox.setSelection(!checkbox.getSelection());
-//        checkbox.getDisplay().asyncExec(new Runnable() {
+        combo.setFocus();
+        //combo.setSelection(!combo.getSelection());
+//        combo.getDisplay().asyncExec(new Runnable() {
 //            public void run()
 //            {
 //                applyEditorValue();
@@ -100,8 +104,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     protected void doSetValue(Object value) {
-        Assert.isTrue(checkbox != null && (value instanceof Boolean));
-        checkbox.setSelection((Boolean)value);
+        Assert.isTrue(combo != null && (value instanceof Boolean));
+        combo.select(CommonUtils.toBoolean(value) ? 1 : 0);
     }
 
     @Override

@@ -49,4 +49,6 @@ public class DBConstants {
         "number" //NON-NLS-1
     };
 
+    public static final String BOOLEAN_PROP_YES = "yes";
+    public static final String BOOLEAN_PROP_NO = "no";
 }
