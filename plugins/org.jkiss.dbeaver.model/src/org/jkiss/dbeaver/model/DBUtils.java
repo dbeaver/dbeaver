@@ -1400,4 +1400,7 @@ public final class DBUtils {
         return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getClassLoader());
     }
 
+    public static String getBooleanString(boolean propertyValue) {
+        return propertyValue ? DBConstants.BOOLEAN_PROP_YES : DBConstants.BOOLEAN_PROP_NO;
+    }
 }

@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -170,17 +171,17 @@ public abstract class ObjectViewerRenderer {
         Object cellValue = getCellValue(element, columnIndex);
         if (cellValue != null ) {
             GC gc = event.gc;
-            if (cellValue instanceof Boolean) {
+            /*if (cellValue instanceof Boolean) {
                 //int columnWidth = UIUtils.getColumnWidth(item);
                 int columnHeight = isTree ? getTree().getItemHeight() : getTable().getItemHeight();
                 Image image = (Boolean)cellValue ?
                     (editable ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
                     (editable ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
-                gc.drawImage(image, event.x + 4/*(columnWidth - imageBounds.width) / 2*/, event.y + (columnHeight - imageBounds.height) / 2);
+                gc.drawImage(image, event.x + 4*//*(columnWidth - imageBounds.width) / 2*//*, event.y + (columnHeight - imageBounds.height) / 2);
                 event.doit = false;
 //                            System.out.println("PAINT " + cellValue + " " + System.currentTimeMillis());
-            } else if (isHyperlink(cellValue)) {
+            } else */if (isHyperlink(cellValue)) {
                 // Print link
                 boolean isSelected = gc.getBackground().equals(selectionBackgroundColor);
                 prepareLinkStyle(cellValue, isSelected ? gc.getForeground() : null);
@@ -318,11 +319,12 @@ public abstract class ObjectViewerRenderer {
 
     public static String getCellString(@Nullable Object value)
     {
-        if (value == null || value instanceof Boolean) {
+        if (value == null) {
             return "";
-        }
-        if (value instanceof DBPNamedObject) {
+        } else if (value instanceof DBPNamedObject) {
             value = ((DBPNamedObject)value).getName();
+        } else if (value instanceof Boolean) {
+            value = DBUtils.getBooleanString((Boolean) value);
         }
         return GeneralUtils.makeDisplayString(value).toString();
     }
