@@ -8,10 +8,9 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<dbeaver-version>3.5.1</dbeaver-version>
+		<dbeaver-version>3.5.2</dbeaver-version>
 		<tycho-version>0.23.1</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<!--eclipse-repository-url>http://download.eclipse.org/eclipse/updates/3.6</eclipse-repository-url-->
 		<eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
 		<local-p2-repo.url>http://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
 	</properties>
@@ -75,13 +74,6 @@
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
-					<!--target>
-						<artifact>
-							<groupId>org.jkiss.dbeaver</groupId>
-							<artifactId>mars</artifactId>
-							<version>1.0.0</version>
-						</artifact>
-					</target-->
 					<environments>
 						<environment>
 							<os>win32</os>
