@@ -169,7 +169,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             String externalURL = getExternalURL(MavenArtifact.FILE_JAR);
             try {
-                return new File(new URL(externalURL).toURI());
+                return RuntimeUtils.getLocalFileFromURL(new URL(externalURL));
+//                return new File(new URL(externalURL).toURI());
             } catch (Exception e) {
                 log.warn("Bad repository URL", e);
                 return new File(externalURL);
