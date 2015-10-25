@@ -1,9 +1,0 @@
-<project default="p2.mirror">
-    <target name="p2.mirror">
-        <p2.mirror source="${repo}">
-            <destination kind="metadata" location="file:/${destDir}" name="svn.pde.build_0.7.8 Repo" format="${repo}" />
-            <destination kind="artifact" location="file:/${destDir}" name="svn.pde.build_0.7.8 Repo" format="${repo}" />
-            <slicingOptions includeOptional="false" includeNonGreedy="false" followStrict="true" followOnlyFilteredRequirements="false" />
-        </p2.mirror>
-    </target>
-</project>

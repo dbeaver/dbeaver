@@ -1,9 +1,0 @@
-<project default="p2.mirror">
-    <target name="p2.mirror">
-        <p2.mirror source="file:/${source}">
-            <destination kind="metadata" location="file:/${dest}" name="${component}" />
-            <destination kind="artifact" location="file:/${dest}" name="${component}"/>
-            <slicingOptions includeOptional="false" includeNonGreedy="false" followStrict="true" followOnlyFilteredRequirements="false" />
-        </p2.mirror>
-    </target>
-</project>
