@@ -1,9 +1,0 @@
-<project default="p2.mirror">
-    <target name="p2.mirror">
-        <p2.mirror source="${repo}">
-            <destination location="file:/${destDir}" name="org.eclipse.equinox.executable ${version} Repo" format="${format}" />
-            <iu id="org.eclipse.equinox.executable" version="" />
-            <slicingOptions platformFilter="true" includeOptional="false" includeNonGreedy="false" followStrict="false" />
-        </p2.mirror>
-    </target>
-</project>
