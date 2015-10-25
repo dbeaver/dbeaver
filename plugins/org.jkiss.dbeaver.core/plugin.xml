@@ -2378,8 +2378,8 @@
                 icon="icons/misc/json.png"
                 label="%dataTransfer.processor.json.name">
                 <propertyGroup label="General">
-                    <property id="printTableName" label="Print table name" defaultValue="true"/>
-                    <property id="formatDateISO" label="Format dates in ISO 8601" defaultValue="true"/>
+                    <property id="printTableName" label="Print table name" type="boolean" defaultValue="true"/>
+                    <property id="formatDateISO" label="Format dates in ISO 8601" type="boolean" defaultValue="true"/>
                     <property id="extension" label="File extension" defaultValue="json"/>
                 </propertyGroup>
             </processor>
