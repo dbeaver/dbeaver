@@ -486,11 +486,12 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (document == null || document.getLength() == 0) {
             return null;
         }
+        int docLength = document.getLength();
         IDocumentPartitioner partitioner = document.getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING);
         if (partitioner != null) {
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
-            while (currentPos > 0 && !IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos))) {
-                currentPos--;
+            while (currentPos < docLength && !isDefaultPartition(partitioner, currentPos)) {
+                currentPos++;
             }
         }
 
@@ -504,13 +505,15 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             int firstLine = currentLine, lastLine = currentLine;
             while (firstLine > 0) {
                 if (TextUtils.isEmptyLine(document, firstLine)) {
-                    break;
+                    if (isDefaultPartition(partitioner, document.getLineOffset(firstLine))) {
+                        break;
+                    }
                 }
                 firstLine--;
             }
             while (lastLine < linesCount) {
                 if (TextUtils.isEmptyLine(document, lastLine)) {
-                    if (partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(document.getLineOffset(lastLine)))) {
+                    if (isDefaultPartition(partitioner, document.getLineOffset(lastLine))) {
                         break;
                     }
                 }
@@ -528,6 +531,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             log.warn(e);
         }
         return parseQuery(document, startPos, endPos, currentPos);
+    }
+
+    private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
+        return partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos));
     }
 
     protected SQLQuery parseQuery(IDocument document, int startPos, int endPos, int currentPos) {
@@ -621,7 +628,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             if (token.isEOF()) {
                 return null;
             }
-            if (!token.isWhitespace() && !(token instanceof SQLCommentToken)) {
+            if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLCommentToken)) {
                 hasValuableTokens = true;
             }
         }
