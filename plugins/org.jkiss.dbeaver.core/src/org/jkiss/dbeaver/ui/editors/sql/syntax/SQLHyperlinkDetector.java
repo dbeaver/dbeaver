@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.*;
@@ -173,7 +174,9 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
         {
             super("Find table names for '" + word + "'", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), editor.getExecutionContext());
             this.structureAssistant = structureAssistant;
-            this.containerName = containerName;
+            // Transform container name case
+            this.containerName = containerName == null ?
+                null : DBObjectNameCaseTransformer.transformName(getExecutionContext().getDataSource(), containerName);
             this.word = word;
             this.caseSensitive = caseSensitive;
             this.cache = cache;
