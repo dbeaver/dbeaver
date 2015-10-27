@@ -244,29 +244,36 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         // Create all necessary database objects
         monitor.beginTask("Create necessary database objects", 1);
         try {
+            DBSObjectContainer container = settings.getContainer();
+            if (container == null) {
+                throw new DBException("No target datasource");
+            }
+
             boolean hasNewObjects = false;
-            for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
-                switch (containerMapping.getMappingType()) {
-                    case create:
-                        createTargetTable(monitor, containerMapping);
-                        hasNewObjects = true;
-                        break;
-                    case existing:
-                        for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                            if (attr.getMappingType() == DatabaseMappingType.create) {
-                                createTargetAttribute(monitor, attr);
-                                hasNewObjects = true;
+            DBPDataSource dataSource = container.getDataSource();
+            try (DBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Create target metadata")) {
+
+                for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                    switch (containerMapping.getMappingType()) {
+                        case create:
+                            createTargetTable(session, containerMapping);
+                            hasNewObjects = true;
+                            break;
+                        case existing:
+                            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                                if (attr.getMappingType() == DatabaseMappingType.create) {
+                                    createTargetAttribute(session, attr);
+                                    hasNewObjects = true;
+                                }
                             }
-                        }
-                        break;
+                            break;
+                    }
                 }
             }
             if (hasNewObjects) {
                 // Refresh node
                 monitor.subTask("Refresh navigator model");
                 settings.getContainerNode().refreshNode(monitor, this);
-
-                DBSObjectContainer container = settings.getContainer();
 
                 // Reflect database changes in mappings
                 for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
@@ -301,18 +308,19 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
-    private void createTargetTable(DBRProgressMonitor monitor, DatabaseMappingContainer containerMapping) throws DBException
+    private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException
     {
+        DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.subTask("Create table " + containerMapping.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         DBSObjectContainer schema = settings.getContainer();
         if (schema == null) {
             throw new DBException("No target container selected");
         }
-        if (!(schema.getDataSource() instanceof SQLDataSource)) {
+        if (!(session.getDataSource() instanceof SQLDataSource)) {
             throw new DBException("Data source doesn't support SQL");
         }
-        SQLDataSource targetDataSource = (SQLDataSource)schema.getDataSource();
+        SQLDataSource targetDataSource = (SQLDataSource)session.getDataSource();
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
@@ -328,7 +336,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 continue;
             }
             if (!mappedAttrs.isEmpty()) sql.append(",\n");
-            appendAttributeClause(sql, attr);
+            appendAttributeClause(session, sql, attr);
             mappedAttrs.put(attr.getSource(), attr);
         }
         if (containerMapping.getSource() instanceof DBSEntity) {
@@ -357,49 +365,46 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
         sql.append(")");
         try {
-            executeDDL(monitor, targetDataSource, sql.toString());
+            executeDDL(session, sql.toString());
         } catch (DBCException e) {
             throw new DBCException("Can't create target table:\n" + sql, e);
         }
     }
 
-    private void appendAttributeClause(StringBuilder sql, DatabaseMappingAttribute attr)
+    private void appendAttributeClause(DBCSession session, StringBuilder sql, DatabaseMappingAttribute attr)
     {
-        DBPDataSource dataSource = settings.getContainer().getDataSource();
+        DBPDataSource dataSource = session.getDataSource();
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource));
         if (attr.source.isRequired()) sql.append(" NOT NULL");
     }
 
-    private void createTargetAttribute(DBRProgressMonitor monitor, DatabaseMappingAttribute attribute) throws DBCException
+    private void createTargetAttribute(DBCSession session, DatabaseMappingAttribute attribute) throws DBCException
     {
-        monitor.subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget()) + "." + attribute.getTargetName());
+        session.getProgressMonitor().subTask("Create column " + DBUtils.getObjectFullName(attribute.getParent().getTarget()) + "." + attribute.getTargetName());
         StringBuilder sql = new StringBuilder(500);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget()))
             .append(" ADD ");
-        appendAttributeClause(sql, attribute);
+        appendAttributeClause(session, sql, attribute);
         try {
-            executeDDL(monitor, attribute.getParent().getTarget().getDataSource(), sql.toString());
+            executeDDL(session, sql.toString());
         } catch (DBCException e) {
             throw new DBCException("Can't create target column:\n" + sql, e);
         }
     }
 
-    private void executeDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, String sql)
+    private void executeDDL(DBCSession  session, String sql)
         throws DBCException
     {
-        DBCExecutionContext context = dataSource.getDefaultContext(true);
-        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.META_DDL, "Create target metadata")) {
-            DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
-            try {
-                dbStat.executeStatement();
-            } finally {
-                dbStat.close();
-            }
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-            if (txnManager != null && !txnManager.isAutoCommit()) {
-                // Commit DDL changes
-                txnManager.commit(session);
-            }
+        DBCStatement dbStat = DBUtils.prepareStatement(session, sql, false);
+        try {
+            dbStat.executeStatement();
+        } finally {
+            dbStat.close();
+        }
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+        if (txnManager != null && !txnManager.isAutoCommit()) {
+            // Commit DDL changes
+            txnManager.commit(session);
         }
     }
 
