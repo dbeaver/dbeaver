@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -40,8 +41,10 @@ import java.util.List;
 
 public class EditConnectionWizard extends ConnectionWizard
 {
+    @NotNull
     private DataSourceDescriptor dataSource;
     private DBPConnectionConfiguration oldData;
+    @Nullable
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
@@ -97,10 +100,12 @@ public class EditConnectionWizard extends ConnectionWizard
         pageEvents = new EditShellCommandsDialogPage(dataSource);
 
         addPage(pageGeneral);
-        if (!embedded) {
-            pageSettings.addSubPage(pageNetwork);
+        if (pageSettings != null) {
+            if (!embedded) {
+                pageSettings.addSubPage(pageNetwork);
+            }
+            pageSettings.addSubPage(pageEvents);
         }
-        pageSettings.addSubPage(pageEvents);
 
         addPreferencePage(new PrefPageMetaData(), "Metadata", "Metadata reading preferences");
         WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), "Result Sets", "Result Set preferences");

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
@@ -1357,7 +1358,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                             type = DBPDriverLibrary.FileType.jar;
                         }
                     }
-                    String path = atts.getValue(RegistryConstants.ATTR_PATH);
+                    String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
@@ -1410,6 +1411,18 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     break;
                 }
             }
+        }
+
+        // TODO: support of 3.5.1 -> 3.5.2 maven dependencies migration
+        private static final String PATH_VERSION_OBSOLETE_RELEASE = ":release";
+
+        private static String normalizeLibraryPath(String value) {
+            if (value.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
+                if (value.endsWith(PATH_VERSION_OBSOLETE_RELEASE)) {
+                    value = value.substring(0, value.length() - PATH_VERSION_OBSOLETE_RELEASE.length()) + ":" + MavenArtifactReference.VERSION_PATTERN_RELEASE;
+                }
+            }
+            return value;
         }
 
         @Override
