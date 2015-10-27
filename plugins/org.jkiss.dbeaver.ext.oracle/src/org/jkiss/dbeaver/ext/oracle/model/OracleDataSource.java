@@ -229,7 +229,7 @@ public class OracleDataSource extends JDBCDataSource
 
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
-            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
                 // Set session settings
                 DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
                 Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);

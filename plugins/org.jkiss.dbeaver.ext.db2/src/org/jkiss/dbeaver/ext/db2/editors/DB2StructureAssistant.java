@@ -18,15 +18,15 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2View;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -43,7 +43,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * DB2 Structure Assistant
@@ -115,7 +114,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         DB2Schema schema = parentObject instanceof DB2Schema ? (DB2Schema) parentObject : null;
 
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Find objects by name")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
             return searchAllObjects(session, schema, objectNameMask, db2ObjectTypes, caseSensitive, maxResults);
         } catch (SQLException ex) {
             throw new DBException(ex, dataSource);

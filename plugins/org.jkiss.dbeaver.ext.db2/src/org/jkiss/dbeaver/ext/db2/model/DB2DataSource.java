@@ -157,7 +157,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         super.initialize(monitor);
 
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load data source meta info")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
 
             // First try to get active schema from special register 'CURRENT SCHEMA'
             this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
@@ -633,7 +633,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBParameters == null) {
-            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Database Parameters")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Database Parameters")) {
                 listDBParameters = DB2Utils.readDBCfg(monitor, session);
             } catch (SQLException e) {
                 LOG.warn(e);
@@ -645,7 +645,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2Parameter> getDbmParameters(DBRProgressMonitor monitor) throws DBException
     {
         if (listDBMParameters == null) {
-            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Instance Parameters")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Instance Parameters")) {
                 listDBMParameters = DB2Utils.readDBMCfg(monitor, session);
             } catch (SQLException e) {
                 LOG.warn(e);
@@ -657,7 +657,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public List<DB2XMLString> getXmlStrings(DBRProgressMonitor monitor) throws DBException
     {
         if (listXMLStrings == null) {
-            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load Global XMLStrings")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load Global XMLStrings")) {
                 listXMLStrings = DB2Utils.readXMLStrings(monitor, session);
             } catch (SQLException e) {
                 LOG.warn(e);

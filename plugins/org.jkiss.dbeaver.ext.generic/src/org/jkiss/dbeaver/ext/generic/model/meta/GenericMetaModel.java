@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -99,7 +98,7 @@ public class GenericMetaModel {
 
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedures")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load procedures")) {
             // Read procedures
             JDBCResultSet dbResult = session.getMetaData().getProcedures(
                 container.getCatalog() == null ? null : container.getCatalog().getName(),

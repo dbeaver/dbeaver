@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -41,13 +42,12 @@ import java.util.List;
 public class InformixUtils {
 
 	static final Log log = Log.getLog(InformixUtils.class);
+
 	private static List<String> getSource(DBRProgressMonitor monitor,
 			String sqlStatement, String dbObjectName,
 			GenericDataSource datasource) throws DBException {
-		JDBCSession session = datasource.getDefaultContext(true).openSession(monitor,
-				DBCExecutionPurpose.META, "Load source code");
 		List<String> result = new ArrayList<>();
-		try {
+		try (JDBCSession session = DBUtils.openMetaSession(monitor, datasource, "Load source code")) {
 			try (JDBCPreparedStatement dbStat = session
 				.prepareStatement(sqlStatement)) {
 				JDBCResultSet dbResult = dbStat.executeQuery();
@@ -57,8 +57,7 @@ public class InformixUtils {
 			}
 
 		} catch (SQLException e) {
-			throw new DBException("Can't read source code of '" + dbObjectName
-					+ "'", e);
+			throw new DBException("Can't read source code of '" + dbObjectName + "'", e);
 		} catch (Exception e) {
 			log.debug(e);
 			return null;
@@ -75,8 +74,7 @@ public class InformixUtils {
 		return sbResult.toString();
 	}
 
-	public static String getProcedureSource(DBRProgressMonitor monitor,
-			GenericProcedure procedure) throws DBException {
+	public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure) throws DBException {
 		String sqlProcedure = String.format("select b.data "
 				+ "from sysprocbody b "
 				+ "join sysprocedures p on b.procid=p.procid "

@@ -66,83 +66,82 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         DBRProgressMonitor monitor,
         IDataTransferConsumer consumer,
         DatabaseProducerSettings settings)
-        throws DBException
-    {
+        throws DBException {
         String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
         DBPDataSource dataSource = getSourceObject().getDataSource();
         assert (dataSource != null);
         boolean newConnection = settings.isOpenNewConnections();
         DBCExecutionContext context = newConnection ?
             dataSource.openIsolatedContext(monitor, "Data transfer producer") : dataSource.getDefaultContext(false);
-        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask);
-        try {
-            session.enableLogging(false);
-            if (newConnection) {
-                // Turn off auto-commit in source DB
-                // Auto-commit has to be turned off because some drivers allows to read LOBs and
-                // other complex structures only in transactional mode
-                try {
-                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                    if (txnManager != null) {
-                        txnManager.setAutoCommit(monitor, false);
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
+            try {
+                session.enableLogging(false);
+                if (newConnection) {
+                    // Turn off auto-commit in source DB
+                    // Auto-commit has to be turned off because some drivers allows to read LOBs and
+                    // other complex structures only in transactional mode
+                    try {
+                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                        if (txnManager != null) {
+                            txnManager.setAutoCommit(monitor, false);
+                        }
+                    } catch (DBCException e) {
+                        log.warn("Can't change auto-commit", e);
                     }
-                } catch (DBCException e) {
-                    log.warn("Can't change auto-commit", e);
+
+                }
+                long totalRows = 0;
+                if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
+                    monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
+                    try {
+                        totalRows = dataContainer.countData(session, dataFilter);
+                    } catch (Throwable e) {
+                        log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
+                    } finally {
+                        monitor.done();
+                    }
                 }
 
-            }
-            long totalRows = 0;
-            if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
-                monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
+                monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_export_table_data, (int) totalRows);
+
                 try {
-                    totalRows = dataContainer.countData(session, dataFilter);
-                } catch (Throwable e) {
-                    log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
+                    // Perform export
+                    if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
+                        // Just do it in single query
+                        dataContainer.readData(session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE);
+                    } else {
+                        // Read all data by segments
+                        long offset = 0;
+                        int segmentSize = settings.getSegmentSize();
+                        for (; ; ) {
+                            DBCStatistics statistics = dataContainer.readData(
+                                session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE);
+                            if (statistics == null || statistics.getRowsFetched() < segmentSize) {
+                                // Done
+                                break;
+                            }
+                            offset += statistics.getRowsFetched();
+                        }
+                    }
                 } finally {
                     monitor.done();
                 }
-            }
 
-            monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_export_table_data, (int)totalRows);
-
-            try {
-                // Perform export
-                if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
-                    // Just do it in single query
-                    dataContainer.readData(session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE);
-                } else {
-                    // Read all data by segments
-                    long offset = 0;
-                    int segmentSize = settings.getSegmentSize();
-                    for (;;) {
-                        DBCStatistics statistics = dataContainer.readData(
-                            session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE);
-                        if (statistics == null || statistics.getRowsFetched() < segmentSize) {
-                            // Done
-                            break;
-                        }
-                        offset += statistics.getRowsFetched();
-                    }
-                }
+                //dataContainer.readData(context, consumer, dataFilter, -1, -1);
             } finally {
-                monitor.done();
-            }
-
-            //dataContainer.readData(context, consumer, dataFilter, -1, -1);
-        } finally {
-            if (newConnection) {
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                if (txnManager != null) {
-                    try {
-                        txnManager.commit(session);
-                    } catch (DBCException e) {
-                        log.error("Can't finish transaction in data producer connection", e);
+                if (newConnection) {
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                    if (txnManager != null) {
+                        try {
+                            txnManager.commit(session);
+                        } catch (DBCException e) {
+                            log.error("Can't finish transaction in data producer connection", e);
+                        }
                     }
                 }
-            }
-            session.close();
-            if (newConnection) {
-                context.close();
+                if (newConnection) {
+                    context.close();
+                }
             }
         }
     }

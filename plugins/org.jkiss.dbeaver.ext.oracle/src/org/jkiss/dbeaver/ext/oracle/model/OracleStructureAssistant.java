@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -96,9 +96,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         OracleSchema schema = parentObject instanceof OracleSchema ? (OracleSchema) parentObject : null;
-        JDBCSession session = dataSource.getDefaultContext(true).openSession(
-            monitor, DBCExecutionPurpose.META, "Find objects by name");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Find objects by name")) {
             List<DBSObjectReference> objects = new ArrayList<>();
 
             // Search all objects
@@ -112,10 +110,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             return objects;
         }
         catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBException(ex, dataSource);
         }
     }
 

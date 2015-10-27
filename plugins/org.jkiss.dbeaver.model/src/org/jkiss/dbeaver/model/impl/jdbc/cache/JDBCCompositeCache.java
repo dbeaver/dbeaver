@@ -18,13 +18,12 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -213,8 +212,7 @@ public abstract class JDBCCompositeCache<
         // Load index columns
         DBPDataSource dataSource = owner.getDataSource();
         assert (dataSource != null);
-        JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load composite objects");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load composite objects")) {
 
             JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -298,10 +296,7 @@ public abstract class JDBCCompositeCache<
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBException(ex, dataSource);
         }
 
         if (monitor.isCanceled()) {

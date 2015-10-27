@@ -18,11 +18,11 @@
 
 package org.jkiss.dbeaver.ext.firebird;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -39,8 +39,7 @@ public class FireBirdUtils {
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException
     {
-        JDBCSession session = procedure.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load procedure source code");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure.getDataSource(), "Load procedure source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             return (String)fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
         } catch (SQLException e) {
@@ -54,8 +53,7 @@ public class FireBirdUtils {
     public static String getViewSource(DBRProgressMonitor monitor, GenericTable view)
         throws DBException
     {
-        JDBCSession session = view.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load view source code");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, view.getDataSource(), "Load view source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             return (String)fbMetaData.getClass().getMethod("getViewSourceCode", String.class).invoke(fbMetaData, view.getName());
         } catch (SQLException e) {

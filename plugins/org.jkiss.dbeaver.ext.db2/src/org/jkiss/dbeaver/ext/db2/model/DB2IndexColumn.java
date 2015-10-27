@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColOrder;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexColVirtual;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -119,7 +119,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     private DB2View getDependentView(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String indexSchema, String indexName)
         throws DBException
     {
-        try (JDBCSession session = db2DataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.UTIL, "Read Index view dependency")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, db2DataSource, "Read Index view dependency")) {
             try (JDBCPreparedStatement stmtSel = session.prepareStatement(I_DEP)) {
                 stmtSel.setString(1, indexSchema);
                 stmtSel.setString(2, indexName);

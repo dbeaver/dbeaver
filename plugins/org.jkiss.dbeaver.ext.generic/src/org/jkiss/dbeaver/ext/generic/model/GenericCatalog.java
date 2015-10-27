@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -72,7 +71,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            try (JDBCSession session = this.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load catalog schemas")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load catalog schemas")) {
                 this.schemas = this.getDataSource().loadSchemas(session, this);
                 this.isInitialized = true;
             }

@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
@@ -72,8 +72,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         throws DBException
     {
         List<DBSObjectReference> references = new ArrayList<>();
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_find_objects_by_name);
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : objectTypes) {
                 findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, maxResults - references.size(), references);
                 if (references.size() >= maxResults) {
@@ -82,10 +81,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBException(ex, getDataSource());
         }
         return references;
     }

@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -85,8 +85,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load objects from " + owner.getName());
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load objects from " + owner.getName())) {
             try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
                 monitor.subTask("Execute query");
                 dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
@@ -114,10 +113,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             }
         }
         catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBException(ex, dataSource);
         }
 
         Comparator<OBJECT> comparator = getListOrderComparator();

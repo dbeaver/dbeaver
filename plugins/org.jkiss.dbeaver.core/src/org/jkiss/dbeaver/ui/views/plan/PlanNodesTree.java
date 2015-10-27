@@ -21,8 +21,7 @@ import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
@@ -137,8 +136,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             throws InvocationTargetException, InterruptedException
         {
             try {
-                DBCExecutionContext context = planner.getDataSource().getDefaultContext(false);
-                try (DBCSession session = context.openSession(getProgressMonitor(), DBCExecutionPurpose.UTIL, "Explain '" + query + "'")) {
+                try (DBCSession session = DBUtils.openUtilSession(getProgressMonitor(), planner.getDataSource(), "Explain '" + query + "'")) {
                     DBCPlan plan = planner.planQueryExecution(session, query);
                     return (Collection<DBCPlanNode>) plan.getPlanNodes();
                 }

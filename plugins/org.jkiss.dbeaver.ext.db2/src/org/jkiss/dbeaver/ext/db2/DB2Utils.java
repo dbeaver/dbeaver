@@ -22,24 +22,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
-import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
-import org.jkiss.dbeaver.ext.db2.model.DB2Package;
-import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
-import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
-import org.jkiss.dbeaver.ext.db2.model.DB2View;
-import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
@@ -121,7 +109,7 @@ public class DB2Utils {
 
         monitor.beginTask("Executing command " + command, 1);
 
-        try (JDBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "ADMIN_CMD")) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, dataSource, "ADMIN_CMD")) {
             JDBCUtils.executeProcedure(session, sql);
         } finally {
             monitor.done();
@@ -167,7 +155,7 @@ public class DB2Utils {
         StringBuilder sb = new StringBuilder(2048);
         String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullQualifiedName());
 
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Generate DDL")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Generate DDL")) {
             LOG.debug("Calling DB2LK_GENERATE_DDL with command : " + command);
 
             try (JDBCCallableStatement stmtSP = session.prepareCall(CALL_DB2LK_GEN)) {
@@ -223,9 +211,9 @@ public class DB2Utils {
 
     public static String getMessageFromCode(DB2DataSource db2DataSource, Integer sqlErrorCode) throws SQLException
     {
-        JDBCSession session = db2DataSource.getDefaultContext(false).openSession(VoidProgressMonitor.INSTANCE,
-            DBCExecutionPurpose.UTIL, "Get Error Code");
-        return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
+        try (JDBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, db2DataSource, "Get Error Code")) {
+            return JDBCUtils.queryString(session, GET_MSG, sqlErrorCode);
+        }
     }
 
     // ------------------------
@@ -255,8 +243,7 @@ public class DB2Utils {
 
         monitor.beginTask("Check EXPLAIN tables", 1);
 
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
-            "Verify EXPLAIN tables")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Verify EXPLAIN tables")) {
             // First Check with given schema
             try (JDBCCallableStatement stmtSP = session.prepareCall(CALL_INST_OBJ)) {
                 stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
@@ -287,8 +274,7 @@ public class DB2Utils {
 
         monitor.beginTask("Create EXPLAIN Tables", 1);
 
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
-            "Create EXPLAIN tables")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Create EXPLAIN tables")) {
             try (JDBCCallableStatement stmtSP = session.prepareCall(CALL_INST_OBJ)) {
                 stmtSP.setString(1, "EXPLAIN"); // EXPLAIN
                 stmtSP.setString(2, "C"); // Create
