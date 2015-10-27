@@ -1396,6 +1396,7 @@ public final class DBUtils {
         return Double.valueOf(text);
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> Class<T> getDriverClass(DBPDataSource dataSource, String className) throws ClassNotFoundException {
         return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getClassLoader());
     }
@@ -1403,4 +1404,10 @@ public final class DBUtils {
     public static String getBooleanString(boolean propertyValue) {
         return propertyValue ? DBConstants.BOOLEAN_PROP_YES : DBConstants.BOOLEAN_PROP_NO;
     }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends DBCSession> T openMetaSession(DBRProgressMonitor monitor, DBPDataSource dataSource, String task) {
+        return (T) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
+    }
+
 }
