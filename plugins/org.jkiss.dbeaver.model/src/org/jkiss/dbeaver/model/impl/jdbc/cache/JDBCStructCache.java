@@ -18,12 +18,12 @@
 package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -84,9 +84,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        JDBCSession session = (JDBCSession) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META,
-            "Load child objects");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load child objects")) {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<>();
 
             // Load columns
@@ -166,9 +164,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                 }
             }
         } catch (SQLException ex) {
-            throw new DBException(ex, session.getDataSource());
-        } finally {
-            session.close();
+            throw new DBException(ex, dataSource);
         }
     }
 

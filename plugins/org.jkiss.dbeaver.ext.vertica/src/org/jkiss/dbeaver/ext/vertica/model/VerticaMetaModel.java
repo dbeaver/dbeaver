@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
@@ -51,7 +51,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read Vertica object definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica object definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT EXPORT_OBJECTS('','" + sourceObject.getFullQualifiedName() + "');")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();

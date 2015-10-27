@@ -30,9 +30,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -232,7 +234,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         log.error("Can't obtain connection metadata", e);
                     }
                 } else {
-                    try (DBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Test connection")) {
+                    try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Test connection")) {
                         if (session instanceof Connection) {
                             try {
                                 Connection connection = (Connection) session;

@@ -17,20 +17,19 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObjectEx;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -67,11 +66,7 @@ public class OracleUtils {
         final OracleDataSource dataSource = (OracleDataSource) object.getDataSource();
         assert(dataSource != null);
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
-        final JDBCSession session = dataSource.getDefaultContext(true).openSession(
-            monitor,
-            DBCExecutionPurpose.META,
-            "Load source code for " + objectType + " '" + objectFullName + "'");
-        try {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load source code for " + objectType + " '" + objectFullName + "'")) {
             JDBCUtils.executeProcedure(
                 session,
                 "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
@@ -101,9 +96,8 @@ public class OracleUtils {
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, dataSource);
         } finally {
-            session.close();
             monitor.done();
         }
     }
@@ -164,11 +158,7 @@ public class OracleUtils {
             return null;
         }
         monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
-        final JDBCSession session = sourceOwner.getDataSource().getDefaultContext(true).openSession(
-            monitor,
-            DBCExecutionPurpose.META,
-            "Load source code for " + sourceType + " '" + sourceObject.getName() + "'");
-        try {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner.getDataSource(), "Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT FROM SYS.ALL_SOURCE " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
@@ -196,9 +186,8 @@ public class OracleUtils {
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
+            throw new DBCException(e, sourceOwner.getDataSource());
         } finally {
-            session.close();
             monitor.done();
         }
     }
@@ -244,11 +233,7 @@ public class OracleUtils {
         OracleObjectType objectType)
         throws DBCException
     {
-        final JDBCSession session = object.getDataSource().getDefaultContext(true).openSession(
-            monitor,
-            DBCExecutionPurpose.META,
-            "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, object.getDataSource(), "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
                 dbStat.setString(1, objectType.getTypeName());
@@ -264,9 +249,7 @@ public class OracleUtils {
                 }
             }
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        } finally {
-            session.close();
+            throw new DBCException(e, object.getDataSource());
         }
     }
 

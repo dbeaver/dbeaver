@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
@@ -58,7 +58,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read view definition")) {
             String activeCatalog = dataSource.getSelectedEntityName();
             boolean switchDatabase = !catalog.equals(activeCatalog);
             if (switchDatabase) {

@@ -20,10 +20,13 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -85,7 +88,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
 
         if (realRowCount == null) {
             // Query row count
-            try (DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.META, "Read row count")) {
+            try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
                 realRowCount = countData(session, null);
             } catch (DBException e) {
                 log.debug("Can't fetch row count", e);
@@ -131,8 +134,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public PartitionInfo getPartitionInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (partitionInfo == null && partitioned) {
-            final JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load partitioning info");
-            try {
+            try (final JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load partitioning info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?")) {
                     dbStat.setString(1, getContainer().getName());
                     dbStat.setString(2, getName());
@@ -143,9 +145,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
                     }
                 }
             } catch (SQLException e) {
-                throw new DBException(e, session.getDataSource());
-            } finally {
-                session.close();
+                throw new DBException(e, getDataSource());
             }
         }
         return partitionInfo;

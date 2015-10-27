@@ -1410,4 +1410,9 @@ public final class DBUtils {
         return (T) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
+    @SuppressWarnings("unchecked")
+    public static <T extends DBCSession> T openUtilSession(DBRProgressMonitor monitor, DBPDataSource dataSource, String task) {
+        return (T) dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+    }
+
 }

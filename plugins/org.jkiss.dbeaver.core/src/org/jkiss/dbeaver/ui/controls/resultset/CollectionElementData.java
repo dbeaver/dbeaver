@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingElement;
 import org.jkiss.dbeaver.model.data.DBDCollection;
@@ -49,8 +50,7 @@ public class CollectionElementData {
         for (int i = 0; i < count; i++) {
             elements[i] = new DBDAttributeBindingElement(collectionBinding, collection, i);
         }
-        DBCExecutionContext context = collectionBinding.getDataSource().getDefaultContext(true);
-        try (DBCSession session = context.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.META, "Collection types read")) {
+        try (DBCSession session = DBUtils.openMetaSession(VoidProgressMonitor.INSTANCE, collectionBinding.getDataSource(), "Collection types read")) {
             Object[] row = new Object[1];
             List<Object[]> rows = Collections.singletonList(row);
             for (int i = 0; i < count; i++) {

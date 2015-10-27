@@ -328,7 +328,7 @@ public class GenericDataSource extends JDBCDataSource
             // Use basic data types
             dataTypeCache.fillStandardTypes(this);
         }
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read generic metadata")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read generic metadata")) {
             // Read metadata
             JDBCDatabaseMetaData metaData = session.getMetaData();
             boolean catalogsFiltered = false;

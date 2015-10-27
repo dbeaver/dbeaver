@@ -18,19 +18,18 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -229,7 +228,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
         if (rowCount == null) {
             // Query row count
-            try (DBCSession session = getDataSource().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Read row count")) {
+            try (DBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read row count")) {
                 rowCount = countData(session, null);
             } catch (DBException e) {
                 // do not throw this error - row count is optional info and some providers may fail
@@ -289,7 +288,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<>();
         }
-        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table relations")) {
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it

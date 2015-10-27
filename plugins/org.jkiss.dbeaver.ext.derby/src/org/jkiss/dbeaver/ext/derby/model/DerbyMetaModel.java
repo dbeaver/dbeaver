@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ext.derby.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericObjectContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -48,7 +51,7 @@ public class DerbyMetaModel extends GenericMetaModel
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        try (JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT v.VIEWDEFINITION from SYS.SYSVIEWS v,SYS.SYSTABLES t,SYS.SYSSCHEMAS s\n" +
                 "WHERE v.TABLEID=t.TABLEID AND t.SCHEMAID=s.SCHEMAID AND s.SCHEMANAME=? AND t.TABLENAME=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
@@ -78,7 +81,7 @@ public class DerbyMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        try (JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read procedure definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT seq.SEQUENCENAME,seq.CURRENTVALUE,seq.MINIMUMVALUE,seq.MAXIMUMVALUE,seq.INCREMENT\n" +
                     "FROM sys.SYSSEQUENCES seq,sys.SYSSCHEMAS s\n" +

@@ -281,7 +281,7 @@ public abstract class JDBCDataSource
                 this.metaContext.connect(monitor, true, null, false);
             }
         }
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, ModelMessages.model_jdbc_read_database_meta_data)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
             try {
                 sqlDialect = createSQLDialect(metaData);

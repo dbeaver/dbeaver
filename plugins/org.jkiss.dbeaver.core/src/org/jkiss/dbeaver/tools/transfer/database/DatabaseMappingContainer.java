@@ -191,7 +191,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             // Seems to be a dynamic query. Execute it to get metadata
             DBPDataSource dataSource = source.getDataSource();
             assert (dataSource != null);
-            try (DBCSession session = dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Read query meta data")) {
+            try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
                 source.readData(session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
                 for (DBCAttributeMetaData attr : receiver.attributes) {

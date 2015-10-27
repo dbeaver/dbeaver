@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
@@ -34,7 +33,6 @@ import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.UnsupportedEncodingException;
@@ -207,7 +205,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return "";
         }
-        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Retrieve table DDL")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Retrieve table DDL")) {
             try (PreparedStatement dbStat = session.prepareStatement(
                 "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
                 try (ResultSet dbResult = dbStat.executeQuery()) {
@@ -259,7 +257,7 @@ public class MySQLTable extends MySQLTableBase
             return;
         }
         MySQLDataSource dataSource = getDataSource();
-        try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -303,7 +301,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        try (JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table relations")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();

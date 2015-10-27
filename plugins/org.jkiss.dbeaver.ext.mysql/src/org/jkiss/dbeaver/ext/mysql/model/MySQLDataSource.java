@@ -124,7 +124,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         super.initialize(monitor);
 
         dataTypeCache.getAllObjects(monitor, this);
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load basic datasource metadata")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load basic datasource metadata")) {
             // Read engines
             {
                 engines = new ArrayList<>();
@@ -341,7 +341,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLUser> loadUsers(DBRProgressMonitor monitor)
         throws DBException
     {
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load users")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load users")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM mysql.user ORDER BY user")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLUser> userList = new ArrayList<>();
@@ -427,7 +427,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLPrivilege> loadPrivileges(DBRProgressMonitor monitor)
         throws DBException
     {
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load privileges")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW PRIVILEGES")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLPrivilege> privileges = new ArrayList<>();
@@ -474,7 +474,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     private List<MySQLParameter> loadParameters(DBRProgressMonitor monitor, boolean status, boolean global) throws DBException
     {
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load status")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW " +
                     (global ? "GLOBAL " : "") +

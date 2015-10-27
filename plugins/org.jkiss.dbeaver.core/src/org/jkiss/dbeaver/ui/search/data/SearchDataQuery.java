@@ -95,7 +95,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         continue;
                     }
                     SearchTableMonitor searchMonitor = new SearchTableMonitor();
-                    try (DBCSession session = dataSource.getDefaultContext(false).openSession(searchMonitor, DBCExecutionPurpose.UTIL, "Search rows in " + objectName)) {
+                    try (DBCSession session = DBUtils.openUtilSession(searchMonitor, dataSource, "Search rows in " + objectName)) {
                         TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
                         findRows(session, dataContainer, dataReceiver);
 

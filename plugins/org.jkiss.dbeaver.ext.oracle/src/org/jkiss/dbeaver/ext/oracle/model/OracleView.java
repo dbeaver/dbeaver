@@ -19,13 +19,13 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.LazyProperty;
@@ -180,8 +180,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             additionalInfo.loaded = true;
             return;
         }
-        JDBCSession session = getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load table status");
-        try {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE,SUPERVIEW_NAME\n" +
                     "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
@@ -205,10 +204,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             }
         }
         catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBCException(e, getDataSource());
         }
     }
 

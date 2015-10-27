@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
@@ -57,7 +57,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
-        try (JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read view definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read view definition")) {
             return JDBCUtils.queryString(session, "SELECT definition FROM PG_CATALOG.PG_VIEWS WHERE SchemaName=? and ViewName=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
             throw new DBException(e, sourceObject.getDataSource());
@@ -66,7 +66,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        try (JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read procedure definition")) {
             return JDBCUtils.queryString(session, "SELECT pg_get_functiondef(p.oid) FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
                 "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
         } catch (SQLException e) {
@@ -82,7 +82,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        try (JDBCSession session = container.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read procedure definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?")) {
                 dbStat.setString(1, container.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
