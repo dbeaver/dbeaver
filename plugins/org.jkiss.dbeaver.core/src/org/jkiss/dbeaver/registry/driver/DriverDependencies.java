@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -30,6 +31,8 @@ import java.util.*;
  */
 public class DriverDependencies implements DBPDriverDependencies
 {
+    static final Log log = Log.getLog(DriverDependencies.class);
+
     final List<DBPDriverLibrary> rootLibraries;
     final List<DependencyNode> rootNodes = new ArrayList<>();
     final List<DependencyNode> libraryList = new ArrayList<>();
@@ -40,44 +43,53 @@ public class DriverDependencies implements DBPDriverDependencies
 
     @Override
     public void resolveDependencies(DBRProgressMonitor monitor) throws DBException {
-        try {
-            {
-                rootNodes.clear();
+        IOException lastError = null;
+        {
+            rootNodes.clear();
 
-                final Map<String, DependencyNode> libMap = new LinkedHashMap<>();
-                for (DBPDriverLibrary library : rootLibraries) {
-                    DependencyNode node = new DependencyNode(null, library);
-                    libMap.put(node.library.getId(), node);
+            final Map<String, DependencyNode> libMap = new LinkedHashMap<>();
+            for (DBPDriverLibrary library : rootLibraries) {
+                DependencyNode node = new DependencyNode(null, library);
 
-                    resolveDependencies(monitor, node, libMap);
+                try {
+                    final Map<String, DependencyNode> localLibMap = new LinkedHashMap<>();
+                    localLibMap.put(node.library.getId(), node);
+
+                    resolveDependencies(monitor, node, localLibMap);
+
                     rootNodes.add(node);
+                    libMap.putAll(localLibMap);
+                } catch (IOException e) {
+                    lastError = e;
+                    log.error("Error resolving library '" + library.getDisplayName() + "' dependencies", e);
                 }
-                libraryList.clear();
-                libraryList.addAll(libMap.values());
+            }
+            libraryList.clear();
+            libraryList.addAll(libMap.values());
 
 /*
-                    StringBuilder sb = new StringBuilder();
-                    Set<String> ns = new TreeSet<>();
-                    for (String lib : libMap.keySet()) {
-                        String newName = lib.replaceAll(".+\\:", "");
-                        if (ns.contains(newName)) {
-                            //System.out.println(123);
-                        }
-                        ns.add(newName);
+                StringBuilder sb = new StringBuilder();
+                Set<String> ns = new TreeSet<>();
+                for (String lib : libMap.keySet()) {
+                    String newName = lib.replaceAll(".+\\:", "");
+                    if (ns.contains(newName)) {
+                        //System.out.println(123);
                     }
-                    for (String lib : ns) {
-                        sb.append(lib).append("\n");
-                    }
-                    System.out.println(sb.toString());
+                    ns.add(newName);
+                }
+                for (String lib : ns) {
+                    sb.append(lib).append("\n");
+                }
+                System.out.println(sb.toString());
 
-                    System.out.println("---------------------------");
-                    for (DependencyNode node : rootNodes) {
-                        dumpNode(node, 0);
-                    }
+                System.out.println("---------------------------");
+                for (DependencyNode node : rootNodes) {
+                    dumpNode(node, 0);
+                }
 */
-            }
-        } catch (IOException e) {
-            throw new DBException("IO error while resolving dependencies", e);
+        }
+        if (lastError != null) {
+            throw new DBException("Error resolving dependencies", lastError);
         }
     }
 

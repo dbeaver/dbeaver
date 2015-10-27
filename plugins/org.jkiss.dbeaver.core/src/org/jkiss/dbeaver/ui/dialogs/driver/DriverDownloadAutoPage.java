@@ -245,7 +245,6 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             // User just canceled download
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(null, "Resolve libraries", "Error resolving driver libraries", e.getTargetException());
-            return;
         }
 
         filesTree.removeAll();
