@@ -70,7 +70,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 bindProcedureFromJDBC(paramsMeta);
             }
         } catch (Exception e) {
-            log.debug(e);
+            log.debug(e.getMessage());
             // Try to bind parameters from procedure meta info
             try {
                 if (procedure != null) {
@@ -104,7 +104,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
                 }
             }
         } catch (SQLException e) {
-            throw new DBException("Error binding callable statement parameters from metadata", e);
+            throw new DBException("Error binding callable statement parameters from metadata: " + e.getMessage(), e);
         }
     }
 
