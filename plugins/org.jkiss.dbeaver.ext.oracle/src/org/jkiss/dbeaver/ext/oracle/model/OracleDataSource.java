@@ -596,7 +596,7 @@ public class OracleDataSource extends JDBCDataSource
         {
             StringBuilder schemasQuery = new StringBuilder();
             boolean manyObjects = "false".equals(owner.getContainer().getConnectionConfiguration().getProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
-            schemasQuery.append("SELECT U.USERNAME FROM SYS.ALL_USERS U\n");
+            schemasQuery.append("SELECT U.USER_ID,U.USERNAME FROM SYS.ALL_USERS U\n");
 
 //                if (owner.isAdmin() && false) {
 //                    schemasQuery.append(
