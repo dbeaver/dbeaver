@@ -9,7 +9,7 @@
         <version>1.0.0</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>1.0.0</version>
+    <version>3.5.2</version>
     <artifactId>ce-product</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE Standalone</name>
@@ -33,6 +33,8 @@
                             <rootFolders>
                                 <!-- for MacOSX, make sure you use a folder ending with .app , see bug 463670 -->
                                 <macosx>DBeaver.app</macosx>
+                                <win32>dbeaver</win32>
+                                <!--<linux>dbeaver</linux>-->
                             </rootFolders>
                         </product>
                     </products>
@@ -52,6 +54,27 @@
                     </execution>
                 </executions>
             </plugin>
+
+
+<!--
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-packaging-plugin</artifactId>
+                <version>${tycho-version}</version>
+            </plugin>
+-->
+
+<!--
+            <plugin>
+                <groupId>org.eclipse.tycho</groupId>
+                <artifactId>tycho-p2-publisher-plugin</artifactId>
+                <version>${tycho-version}</version>
+                <configuration>
+                    <publishArtifacts>true</publishArtifacts>
+                </configuration>
+            </plugin>
+-->
+
         </plugins>
     </build>
 </project>

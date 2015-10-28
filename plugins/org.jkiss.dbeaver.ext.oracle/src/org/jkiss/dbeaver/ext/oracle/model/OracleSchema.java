@@ -42,10 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * OracleSchema
@@ -71,6 +68,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
     private long id;
     private String name;
+    private Date createTime;
     private transient OracleUser user;
 
     OracleSchema(OracleDataSource dataSource, long id, String name)
@@ -90,6 +88,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 log.warn("Empty schema name fetched");
                 this.name = "? " + super.hashCode();
             }
+            this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
         }
     }
 
@@ -102,6 +101,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     public long getId()
     {
         return id;
+    }
+
+    @Property(viewable = false, order = 190)
+    public Date getCreateTime() {
+        return createTime;
     }
 
     @NotNull
