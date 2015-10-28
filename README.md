@@ -1,6 +1,9 @@
 # DBeaver
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
-Supports all popular databases: MySQL, PostgreSQL, SQLite, Oracle, DB2, SQL Server, Sybase, MongoDB, etc.
+Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra).
+* Written on pure Java. 
+* Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
+* Uses plugins architecture and provides additional functionality for the most popular databases (MySQL, Oracle, DB2 in version 3.5.x).
 
 ## Download
 
@@ -23,5 +26,8 @@ Binaries are in product/standalone/target/products
 
 ## Notes
 
-Just moved to GitHub.
-Visit http://dbeaver.jkiss.org for more information.
+- Pull requests are welcome.
+- DBeavert is a free non-profitable hobbie project. Please don't expect immediate reaction on issues.
+- If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
+- Visit http://dbeaver.jkiss.org for more information.
+- Thanks for using DBeaver ;)
