@@ -42,7 +42,7 @@ public class PostgreQueryPlaner implements DBCQueryPlanner
 
     @Override
     public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException {
-        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(dataSource, query);
+        PostgrePlanAnalyser plan = new PostgrePlanAnalyser(query);
         plan.explain(session);
         return plan;
     }

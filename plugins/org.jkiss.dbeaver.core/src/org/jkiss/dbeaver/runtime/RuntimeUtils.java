@@ -189,11 +189,11 @@ public class RuntimeUtils {
     {
         URL url = new URL(platformURL);
         URL fileURL = FileLocator.toFileURL(url);
-        return getFixedPlatformFile(fileURL);
+        return getLocalFileFromURL(fileURL);
 
     }
 
-    public static File getFixedPlatformFile(URL fileURL) throws IOException {
+    public static File getLocalFileFromURL(URL fileURL) throws IOException {
         // Escape spaces to avoid URI syntax error
         String filePath = fileURL.toString().replace(" ", "%20");
         try {

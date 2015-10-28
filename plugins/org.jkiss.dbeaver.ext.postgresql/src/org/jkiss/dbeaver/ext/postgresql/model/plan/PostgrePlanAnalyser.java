@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -44,13 +43,11 @@ public class PostgrePlanAnalyser implements DBCPlan {
 
     static final Log log = Log.getLog(PostgrePlanAnalyser.class);
 
-    private GenericDataSource dataSource;
     private String query;
     private List<DBCPlanNode> rootNodes;
 
-    public PostgrePlanAnalyser(GenericDataSource dataSource, String query)
+    public PostgrePlanAnalyser(String query)
     {
-        this.dataSource = dataSource;
         this.query = query;
     }
 
