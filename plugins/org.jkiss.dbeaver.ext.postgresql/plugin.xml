@@ -3,8 +3,9 @@
 
 <plugin>
 
+    <!-- Model for Generic extension (obsolete but still working) -->
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.PostgreMetaModel" driverClass="org.postgresql.Driver"/>
+        <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver"/>
     </extension>
 
 </plugin>
