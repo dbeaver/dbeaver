@@ -27,7 +27,7 @@ Binaries are in product/standalone/target/products
 ## Notes
 
 - Pull requests are welcome.
-- DBeavert is a free non-profitable hobbie project. Please don't expect immediate reaction on issues.
+- DBeaver is a free non-profitable hobbie project. Please don't expect immediate reaction on issues.
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
 - Visit http://dbeaver.jkiss.org for more information.
 - Thanks for using DBeaver ;)
