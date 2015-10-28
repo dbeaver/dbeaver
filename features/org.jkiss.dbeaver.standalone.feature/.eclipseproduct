@@ -1,0 +1,3 @@
+name=DBeaver
+id=org.jkiss.dbeaver.product
+version=${dbeaver-version}
