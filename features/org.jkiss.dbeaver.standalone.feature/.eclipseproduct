@@ -1,3 +1,3 @@
-name=DBeaver
+name=${dbeaver-product}
 id=org.jkiss.dbeaver.product
 version=${dbeaver-version}
