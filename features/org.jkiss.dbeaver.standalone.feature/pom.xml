@@ -32,6 +32,7 @@
                                     <directory>.</directory>
                                     <includes>
                                         <include>.eclipseproduct</include>
+                                        <include>readme.txt</include>
                                     </includes>
                                     <filtering>true</filtering>
                                 </resource>
