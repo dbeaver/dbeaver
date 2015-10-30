@@ -120,7 +120,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 if (i > 0) {
                     sqlBuffer.append(',');
                 }
-                sqlBuffer.append(column.getName());
+                sqlBuffer.append(DBUtils.getQuotedIdentifier(column));
             }
             sqlBuffer.append(") VALUES ");
             if (insertMode != SQLDialect.MultiValueInsertMode.GROUP_ROWS) {
