@@ -92,14 +92,14 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private final List<DatabaseListReader> dbListReads = new ArrayList<>();
 
     private static class DatabaseListReader extends DataSourceJob {
-        private final CurrentDatabasesInfo databasesInfo;
+        private final List<DBNDatabaseNode> nodeList = new ArrayList<>();
+        private DBSObject active;
         private boolean enabled;
 
         public DatabaseListReader(@NotNull DBCExecutionContext context)
         {
             super(CoreMessages.toolbar_datasource_selector_action_read_databases, null, context);
             setSystem(true);
-            this.databasesInfo = new CurrentDatabasesInfo();
             this.enabled = false;
         }
 
@@ -119,14 +119,19 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 } else {
                     enabled = true;
                     Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
-                    databasesInfo.list = CommonUtils.isEmpty(children) ?
-                        Collections.<DBSObject>emptyList() :
-                        new ArrayList<>(children);
-                    databasesInfo.active = objectSelector.getSelectedObject();
+                    active = objectSelector.getSelectedObject();
                     // Cache navigator nodes
                     if (children != null) {
+                        DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                         for (DBSObject child : children) {
-                            DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, child, false);
+                            if (DBUtils.getAdapter(DBSObjectContainer.class, child) != null) {
+                                DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, child, false);
+                                if (node != null) {
+                                    nodeList.add(node);
+                                } else {
+                                    log.debug("Can't find node for object " + child);
+                                }
+                            }
                         }
                     }
                 }
@@ -137,24 +142,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             finally {
                 monitor.done();
             }
-            if (enabled) {
-                // Cache navigator tree
-                if (databasesInfo.list != null && !databasesInfo.list.isEmpty()) {
-                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                    for (DBSObject database : databasesInfo.list) {
-                        if (DBUtils.getAdapter(DBSObjectContainer.class, database) != null) {
-                            navigatorModel.getNodeByObject(monitor, database, false);
-                        }
-                    }
-                }
-            }
             return Status.OK_STATUS;
         }
-    }
-
-    private static class CurrentDatabasesInfo {
-        Collection<? extends DBSObject> list;
-        DBSObject active;
     }
 
     public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow)
@@ -374,7 +363,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (event.getAction() == DBPEvent.Action.OBJECT_ADD ||
             event.getAction() == DBPEvent.Action.OBJECT_REMOVE ||
             (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getObject() == getDataSourceContainer()) ||
-            (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) && event.getObject().getDataSource() != null && event.getObject().getDataSource().getContainer() == getDataSourceContainer())
+            (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) &&
+                event.getObject().getDataSource() != null &&
+                event.getObject().getDataSource().getContainer() == getDataSourceContainer())
             )
         {
             Display.getDefault().asyncExec(
@@ -512,46 +503,34 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private synchronized void fillDatabaseList(DatabaseListReader reader, DBSDataSourceContainer dsContainer)
     {
+        synchronized (dbListReads) {
+            dbListReads.remove(reader);
+        }
         if (databaseCombo.isDisposed()) {
             return;
         }
         databaseCombo.setRedraw(false);
         try {
-            // Remove all but first item (which is constant)
             databaseCombo.removeAll();
-            synchronized (dbListReads) {
-                dbListReads.remove(reader);
-            }
-            if (!reader.enabled || dsContainer.getDataSource() != reader.getExecutionContext().getDataSource()) {
-                databaseCombo.setEnabled(reader.enabled);
+            if (!reader.enabled) {
+                databaseCombo.setEnabled(false);
                 return;
             }
-            if (databaseCombo.isDisposed()) {
-                return;
-            }
-            if (reader.databasesInfo.list != null && !reader.databasesInfo.list.isEmpty()) {
-                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-                for (DBSObject database : reader.databasesInfo.list) {
-                    if (database instanceof DBSObjectContainer) {
-                        DBNDatabaseNode dbNode = navigatorModel.getNodeByObject(database);
-                        if (dbNode != null) {
-                            DBPDataSource dataSource = database.getDataSource();
-                            if (dataSource != null) {
-                                databaseCombo.add(
-                                    DBeaverIcons.getImage(dbNode.getNodeIconDefault()),
-                                    database.getName(),
-                                    UIUtils.getConnectionColor(dataSource.getContainer().getConnectionConfiguration()),
-                                    database);
-                            }
-                        }
-                    }
+            Collection<DBNDatabaseNode> dbList = reader.nodeList;
+            if (dbList != null && !dbList.isEmpty()) {
+                for (DBNDatabaseNode node : dbList) {
+                    databaseCombo.add(
+                        DBeaverIcons.getImage(node.getNodeIconDefault()),
+                        node.getName(),
+                        UIUtils.getConnectionColor(node.getObject().getDataSource().getContainer().getConnectionConfiguration()),
+                        node);
                 }
             }
-            if (reader.databasesInfo.active != null) {
+            if (reader.active != null) {
                 int dbCount = databaseCombo.getItemCount();
                 for (int i = 0; i < dbCount; i++) {
                     String dbName = databaseCombo.getItemText(i);
-                    if (dbName.equals(reader.databasesInfo.active.getName())) {
+                    if (dbName.equals(reader.active.getName())) {
                         databaseCombo.select(i);
                         break;
                     }
@@ -560,7 +539,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             databaseCombo.setEnabled(reader.enabled);
         }
         finally {
-            databaseCombo.setRedraw(true);
+            if (!databaseCombo.isDisposed()) {
+                databaseCombo.setRedraw(true);
+            }
         }
     }
 
