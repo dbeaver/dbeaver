@@ -21,15 +21,15 @@ package org.jkiss.dbeaver.ext.db2.editors;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * DB2StatefulObject
  * 
  * @author Denis Forveille
  */
-public interface DB2StatefulObject extends DBSObjectStateful {
-
+public interface DB2StatefulObject extends DBSObject, DBPStatefulObject {
     @NotNull
     @Override
     DB2DataSource getDataSource();

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -49,7 +48,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -251,9 +250,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             } catch (DBException e) {
                 error = e;
             }
-            if (getDatabaseObject() instanceof DBSObjectStateful) {
+            if (getDatabaseObject() instanceof DBPStatefulObject) {
                 try {
-                    ((DBSObjectStateful) getDatabaseObject()).refreshObjectState(monitorWrapper);
+                    ((DBPStatefulObject) getDatabaseObject()).refreshObjectState(monitorWrapper);
                 } catch (DBCException e) {
                     // Just report an error
                     log.error(e);
