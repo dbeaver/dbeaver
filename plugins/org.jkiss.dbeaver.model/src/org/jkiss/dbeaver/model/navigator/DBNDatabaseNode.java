@@ -138,8 +138,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 image = meta.getIcon(this);
             }
         }
-        if (image != null && object instanceof DBSObjectStateful) {
-            image = DBNModel.getStateOverlayImage(image, ((DBSObjectStateful) object).getObjectState());
+        if (image != null && object instanceof DBPStatefulObject) {
+            image = DBNModel.getStateOverlayImage(image, ((DBPStatefulObject) object).getObjectState());
         }
         return image;
     }

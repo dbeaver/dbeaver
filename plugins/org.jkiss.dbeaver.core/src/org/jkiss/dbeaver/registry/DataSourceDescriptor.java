@@ -65,7 +65,7 @@ public class DataSourceDescriptor
         DBSDataSourceContainer,
         DBPImageProvider,
         IAdaptable,
-        DBSObjectStateful,
+        DBPStatefulObject,
         DBPRefreshableObject
 {
     static final Log log = Log.getLog(DataSourceDescriptor.class);

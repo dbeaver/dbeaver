@@ -174,9 +174,9 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 /*
             // Refresh object states
             for (CommandQueue queue : commandQueues) {
-                if (queue.getObject() instanceof DBSObjectStateful) {
+                if (queue.getObject() instanceof DBPStatefulObject) {
                     try {
-                        ((DBSObjectStateful) queue.getObject()).refreshObjectState(monitor);
+                        ((DBPStatefulObject) queue.getObject()).refreshObjectState(monitor);
                     } catch (DBCException e) {
                         // Just report an error
                         log.error(e);

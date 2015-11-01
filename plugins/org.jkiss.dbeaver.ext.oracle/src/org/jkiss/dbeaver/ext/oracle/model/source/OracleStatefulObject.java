@@ -21,12 +21,13 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
-import org.jkiss.dbeaver.model.struct.DBSObjectStateful;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * OracleStatefulObject
  */
-public interface OracleStatefulObject extends DBSObjectStateful
+public interface OracleStatefulObject extends DBSObject, DBPStatefulObject
 {
     @NotNull
     @Override
@@ -34,5 +35,4 @@ public interface OracleStatefulObject extends DBSObjectStateful
 
     @Nullable
     OracleSchema getSchema();
-
 }
