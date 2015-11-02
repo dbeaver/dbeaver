@@ -22,15 +22,12 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBIconComposite;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,10 +38,10 @@ import java.util.Collection;
  */
 public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 {
-    private final DBSDataSourceContainer dataSource;
+    private final DBPDataSourceContainer dataSource;
     private DBXTreeNode treeRoot;
 
-    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBSDataSourceContainer dataSource)
+    public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource)
     {
         super(parentNode);
         this.dataSource = dataSource;
@@ -74,7 +71,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     }
 
     @Override
-    public DBSDataSourceContainer getObject()
+    public DBPDataSourceContainer getObject()
     {
         return dataSource;
     }
@@ -170,7 +167,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     public Object getAdapter(Class adapter) {
         if (adapter == DBNDataSource.class) {
             return this;
-        } else if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
+        } else if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
             return dataSource;
         }
         return null;
@@ -178,7 +175,7 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
 
     @Override
     @NotNull
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         return dataSource;
     }

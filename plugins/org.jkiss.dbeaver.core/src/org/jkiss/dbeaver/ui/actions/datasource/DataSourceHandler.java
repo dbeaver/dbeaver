@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceUser;
-import org.jkiss.dbeaver.model.DBPEvent;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -48,7 +45,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
@@ -75,7 +72,7 @@ public class DataSourceHandler
      */
     public static void connectToDataSource(
         @Nullable DBRProgressMonitor monitor,
-        @NotNull DBSDataSourceContainer dataSourceContainer,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
         @Nullable final DBRProgressListener onFinish)
     {
         if (dataSourceContainer instanceof DataSourceDescriptor && !dataSourceContainer.isConnected()) {
@@ -204,7 +201,7 @@ public class DataSourceHandler
         return true;
     }
 
-    public static void disconnectDataSource(DBSDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
+    public static void disconnectDataSource(DBPDataSourceContainer dataSourceContainer, @Nullable final Runnable onFinish) {
 
         // Save users
         for (DBPDataSourceUser user : dataSourceContainer.getUsers()) {
@@ -245,7 +242,7 @@ public class DataSourceHandler
         }
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBSDataSourceContainer container) {
+    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container) {
         DBPDataSource dataSource = container.getDataSource();
         if (dataSource == null) {
             return true;
@@ -254,7 +251,7 @@ public class DataSourceHandler
         return checkAndCloseActiveTransaction(container, dataSource.getAllContexts());
     }
 
-    public static boolean checkAndCloseActiveTransaction(DBSDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
+    public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container, Collection<? extends DBCExecutionContext> contexts)
     {
         if (container.getDataSource() == null) {
             return true;

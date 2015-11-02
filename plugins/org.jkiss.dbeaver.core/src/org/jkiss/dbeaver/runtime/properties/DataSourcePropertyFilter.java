@@ -20,9 +20,9 @@ package org.jkiss.dbeaver.runtime.properties;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * Datasource property filter
@@ -33,14 +33,14 @@ public class DataSourcePropertyFilter implements IPropertyFilter {
 
     public DataSourcePropertyFilter()
     {
-        this((DBSDataSourceContainer)null);
+        this((DBPDataSourceContainer)null);
     }
     public DataSourcePropertyFilter(DBPDataSource dataSource)
     {
         this(dataSource == null ? null : dataSource.getContainer());
     }
 
-    public DataSourcePropertyFilter(DBSDataSourceContainer container)
+    public DataSourcePropertyFilter(DBPDataSourceContainer container)
     {
         DBPPreferenceStore store = container != null ?
             container.getPreferenceStore() :

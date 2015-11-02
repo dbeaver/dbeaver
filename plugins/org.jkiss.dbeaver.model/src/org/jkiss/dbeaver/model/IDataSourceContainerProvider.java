@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * DataSource provider editor.
@@ -32,6 +31,6 @@ public interface IDataSourceContainerProvider {
      * @return data source object.
      */
     @Nullable
-    DBSDataSourceContainer getDataSourceContainer();
+    DBPDataSourceContainer getDataSourceContainer();
 
 }

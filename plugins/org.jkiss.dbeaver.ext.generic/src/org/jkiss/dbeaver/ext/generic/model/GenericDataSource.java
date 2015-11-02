@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -76,7 +77,7 @@ public class GenericDataSource extends JDBCDataSource
     private boolean supportsStructCache;
     private DBCQueryPlanner queryPlanner;
 
-    public GenericDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container, GenericMetaModel metaModel)
+    public GenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
         super(monitor, container);

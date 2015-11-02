@@ -20,11 +20,11 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
@@ -33,16 +33,16 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
  */
 public class DatabaseEditorAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBSDataSourceContainer.class };
+    private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBPDataSourceContainer.class };
 
     @Override
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
-        if (adapterType == DBSDataSourceContainer.class) {
+        if (adapterType == DBPDataSourceContainer.class) {
             if (adaptableObject instanceof IEditorPart) {
                 adaptableObject = ((IEditorPart) adaptableObject) .getEditorInput();
             }
-            if (adaptableObject instanceof DBSDataSourceContainer) {
+            if (adaptableObject instanceof DBPDataSourceContainer) {
                 return adaptableObject;
             }
             if (adaptableObject instanceof IDataSourceContainerProvider) {

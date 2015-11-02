@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -100,7 +101,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         if (object == null) {
             return null;
         }
-        if (object instanceof DBSDataSourceContainer && object.getDataSource() instanceof DBSObject) {
+        if (object instanceof DBPDataSourceContainer && object.getDataSource() instanceof DBSObject) {
             object = (DBSObject) object.getDataSource();
         }
         return object;

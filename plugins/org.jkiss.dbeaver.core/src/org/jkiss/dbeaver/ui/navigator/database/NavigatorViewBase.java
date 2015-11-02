@@ -28,9 +28,9 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -138,7 +138,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                             ((DBNResource) node).getResource(),
                             getSite().getWorkbenchWindow());
                     } else if (node instanceof DBNDataSource) {
-                        DBSDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
+                        DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
                         NavigatorViewBase.DoubleClickBehavior doubleClickBehavior =
                             NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                         switch (doubleClickBehavior) {
@@ -210,7 +210,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
     }
 
     @Override
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         if (lastSelection instanceof DBNDatabaseNode) {
             if (lastSelection instanceof DBNDataSource) {

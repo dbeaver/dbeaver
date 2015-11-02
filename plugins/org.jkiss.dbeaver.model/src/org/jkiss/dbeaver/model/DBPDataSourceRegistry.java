@@ -21,8 +21,6 @@ package org.jkiss.dbeaver.model;
 import org.eclipse.core.resources.IProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.List;
 
@@ -39,25 +37,25 @@ public interface DBPDataSourceRegistry {
     IProject getProject();
 
     @Nullable
-    DBSDataSourceContainer getDataSource(String id);
+    DBPDataSourceContainer getDataSource(String id);
 
     @Nullable
-    DBSDataSourceContainer getDataSource(DBPDataSource dataSource);
+    DBPDataSourceContainer getDataSource(DBPDataSource dataSource);
 
     @Nullable
-    DBSDataSourceContainer findDataSourceByName(String name);
+    DBPDataSourceContainer findDataSourceByName(String name);
 
-    List<? extends DBSDataSourceContainer> getDataSources();
+    List<? extends DBPDataSourceContainer> getDataSources();
 
     void addDataSourceListener(DBPEventListener listener);
 
     boolean removeDataSourceListener(DBPEventListener listener);
 
-    void addDataSource(DBSDataSourceContainer dataSource);
+    void addDataSource(DBPDataSourceContainer dataSource);
 
-    void removeDataSource(DBSDataSourceContainer dataSource);
+    void removeDataSource(DBPDataSourceContainer dataSource);
 
-    void updateDataSource(DBSDataSourceContainer dataSource);
+    void updateDataSource(DBPDataSourceContainer dataSource);
 
     void flushConfig();
 

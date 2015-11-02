@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.compare;
 
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,7 +36,7 @@ public class CompareUtils {
                 if (curValue1.getClass() != curValue2.getClass()) {
                     return false;
                 }
-                if (curValue1 instanceof DBSDataSourceContainer) {
+                if (curValue1 instanceof DBPDataSourceContainer) {
                     return true;
                 }
                 if (!CommonUtils.equalObjects(curValue1.getName(), curValue2.getName())) {

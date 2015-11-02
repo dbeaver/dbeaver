@@ -24,7 +24,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.dbeaver.ui.preferences.TargetPrefPage;
@@ -48,7 +48,7 @@ public class PrefPageOracle extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return

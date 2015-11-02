@@ -38,11 +38,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -70,7 +70,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         return containerNode != null;
     }
 
-    protected abstract boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dsContainer);
+    protected abstract boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dsContainer);
 
     protected abstract boolean supportsDataSourceSpecificOptions();
 
@@ -86,7 +86,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     protected abstract String getPropertyPageID();
 
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         return containerNode.getObject();
     }
@@ -121,8 +121,8 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 if (context != null) {
                     containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(context.getDataSource().getContainer());
                 }
-            } else if (element instanceof DBSDataSourceContainer) {
-                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBSDataSourceContainer) element);
+            } else if (element instanceof DBPDataSourceContainer) {
+                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
             }
         }
     }
@@ -276,7 +276,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
                 null);
         } else if (supportsDataSourceSpecificOptions()) {
             // Select datasource
-            DBSDataSourceContainer dataSource = SelectDataSourceDialog.selectDataSource(getShell());
+            DBPDataSourceContainer dataSource = SelectDataSourceDialog.selectDataSource(getShell());
             if (dataSource != null) {
                 DBNNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSource);
                 if (dsNode instanceof DBNDataSource) {

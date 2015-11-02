@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.tools.scripts;
 
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.io.File;
 
@@ -32,9 +32,9 @@ class ScriptsImportData {
     private final String fileMasks;
     private final boolean overwriteFiles;
     private final DBNResource importDir;
-    private final DBSDataSourceContainer dataSourceContainer;
+    private final DBPDataSourceContainer dataSourceContainer;
 
-    ScriptsImportData(File inputDir, String fileMasks, boolean overwriteFiles, DBNResource importDir, DBSDataSourceContainer dataSourceContainer)
+    ScriptsImportData(File inputDir, String fileMasks, boolean overwriteFiles, DBNResource importDir, DBPDataSourceContainer dataSourceContainer)
     {
         this.inputDir = inputDir;
         this.fileMasks = fileMasks;
@@ -63,7 +63,7 @@ class ScriptsImportData {
         return importDir;
     }
 
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         return dataSourceContainer;
     }

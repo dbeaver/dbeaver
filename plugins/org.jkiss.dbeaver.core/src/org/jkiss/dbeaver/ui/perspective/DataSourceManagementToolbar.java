@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
@@ -86,7 +86,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private CImageCombo connectionCombo;
     private CImageCombo databaseCombo;
 
-    private SoftReference<DBSDataSourceContainer> curDataSourceContainer = null;
+    private SoftReference<DBPDataSourceContainer> curDataSourceContainer = null;
 
     private final List<DBPDataSourceRegistry> handledRegistries = new ArrayList<>();
     private final List<DatabaseListReader> dbListReads = new ArrayList<>();
@@ -195,13 +195,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     @Nullable
-    private DBSDataSourceContainer getDataSourceContainer()
+    private DBPDataSourceContainer getDataSourceContainer()
     {
         return getDataSourceContainer(activePart);
     }
 
     @Nullable
-    private static DBSDataSourceContainer getDataSourceContainer(IWorkbenchPart part)
+    private static DBPDataSourceContainer getDataSourceContainer(IWorkbenchPart part)
     {
         if (part instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider)part).getDataSourceContainer();
@@ -236,9 +236,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    private List<? extends DBSDataSourceContainer> getAvailableDataSources()
+    private List<? extends DBPDataSourceContainer> getAvailableDataSources()
     {
-        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getDataSources();
         } else {
@@ -259,7 +259,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
         if (activePart != part || activePart == null) {
             // Update previous statuses
-            DBSDataSourceContainer container = getDataSourceContainer(activePart);
+            DBPDataSourceContainer container = getDataSourceContainer(activePart);
             if (container == getDataSourceContainer(part)) {
                 // The same container
                 return;
@@ -286,15 +286,15 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (connectionCombo.isDisposed()) {
             return;
         }
-        final List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
+        final List<? extends DBPDataSourceContainer> dataSources = getAvailableDataSources();
 
         boolean update = force;
         if (!update) {
             // Check if there are any changes
-            final List<DBSDataSourceContainer> oldDataSources = new ArrayList<>();
+            final List<DBPDataSourceContainer> oldDataSources = new ArrayList<>();
             for (TableItem item : connectionCombo.getItems()) {
-                if (item.getData() instanceof DBSDataSourceContainer) {
-                    oldDataSources.add((DBSDataSourceContainer) item.getData());
+                if (item.getData() instanceof DBPDataSourceContainer) {
+                    oldDataSources.add((DBPDataSourceContainer) item.getData());
                 }
             }
             if (oldDataSources.size() == dataSources.size()) {
@@ -320,11 +320,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
             int selectionIndex = 0;
             if (activePart != null) {
-                final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+                final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
                 if (!CommonUtils.isEmpty(dataSources)) {
                     DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                     for (int i = 0; i < dataSources.size(); i++) {
-                        DBSDataSourceContainer ds = dataSources.get(i);
+                        DBPDataSourceContainer ds = dataSources.get(i);
                         if (ds == null) {
                             continue;
                         }
@@ -402,7 +402,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private void updateControls(boolean force)
     {
-        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
 
         // Update resultset max size
         if (resultSetSize != null && !resultSetSize.isDisposed()) {
@@ -422,7 +422,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private void changeResultSetSize()
     {
-        DBSDataSourceContainer dsContainer = getDataSourceContainer();
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
         if (dsContainer != null) {
             String rsSize = resultSetSize.getText();
             if (rsSize.length() == 0) {
@@ -451,7 +451,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private void updateDatabaseList(boolean force)
     {
         if (!force) {
-            DBSDataSourceContainer dsContainer = getDataSourceContainer();
+            DBPDataSourceContainer dsContainer = getDataSourceContainer();
             if (curDataSourceContainer != null && dsContainer == curDataSourceContainer.get()) {
                 // The same DS container - nothing to change in DB list
                 return;
@@ -465,7 +465,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private void fillDatabaseCombo()
     {
         if (databaseCombo != null && !databaseCombo.isDisposed()) {
-            final DBSDataSourceContainer dsContainer = getDataSourceContainer();
+            final DBPDataSourceContainer dsContainer = getDataSourceContainer();
             databaseCombo.setEnabled(dsContainer != null);
             if (dsContainer != null && dsContainer.isConnected()) {
                 final DBPDataSource dataSource = dsContainer.getDataSource();
@@ -501,7 +501,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
     }
 
-    private synchronized void fillDatabaseList(DatabaseListReader reader, DBSDataSourceContainer dsContainer)
+    private synchronized void fillDatabaseList(DatabaseListReader reader, DBPDataSourceContainer dsContainer)
     {
         synchronized (dbListReads) {
             dbListReads.remove(reader);
@@ -555,8 +555,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             return;
         }
 
-        DBSDataSourceContainer curDataSource = dataSourceUpdater.getDataSourceContainer();
-        List<? extends DBSDataSourceContainer> dataSources = getAvailableDataSources();
+        DBPDataSourceContainer curDataSource = dataSourceUpdater.getDataSourceContainer();
+        List<? extends DBPDataSourceContainer> dataSources = getAvailableDataSources();
         if (!CommonUtils.isEmpty(dataSources)) {
             int curIndex = connectionCombo.getSelectionIndex();
             if (curIndex == 0) {
@@ -570,7 +570,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 return;
             } else {
                 // Change data source
-                DBSDataSourceContainer selectedDataSource = dataSources.get(curIndex - 1);
+                DBPDataSourceContainer selectedDataSource = dataSources.get(curIndex - 1);
                 if (selectedDataSource == curDataSource) {
                     return;
                 } else {
@@ -586,7 +586,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (databaseCombo == null || databaseCombo.isDisposed() || databaseCombo.getSelectionIndex() < 0) {
             return;
         }
-        DBSDataSourceContainer dsContainer = getDataSourceContainer();
+        DBPDataSourceContainer dsContainer = getDataSourceContainer();
         final String newName = databaseCombo.getItemText(databaseCombo.getSelectionIndex());
         if (dsContainer != null && dsContainer.isConnected()) {
             final DBPDataSource dataSource = dsContainer.getDataSource();
@@ -793,7 +793,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         resultSetSize.setLayoutData(gd);
 
         resultSetSize.setToolTipText(CoreMessages.toolbar_datasource_selector_resultset_segment_size);
-        final DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             resultSetSize.setText(String.valueOf(dataSourceContainer.getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS)));
         }

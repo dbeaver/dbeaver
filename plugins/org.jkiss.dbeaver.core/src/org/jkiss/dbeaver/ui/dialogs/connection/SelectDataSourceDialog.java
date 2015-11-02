@@ -28,10 +28,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class SelectDataSourceDialog extends Dialog {
 
-    private DBSDataSourceContainer dataSource = null;
+    private DBPDataSourceContainer dataSource = null;
 
     private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
 
@@ -125,12 +125,12 @@ public class SelectDataSourceDialog extends Dialog {
         return ctl;
     }
 
-    public DBSDataSourceContainer getDataSource()
+    public DBPDataSourceContainer getDataSource()
     {
         return dataSource;
     }
 
-    public static DBSDataSourceContainer selectDataSource(Shell parentShell)
+    public static DBPDataSourceContainer selectDataSource(Shell parentShell)
     {
         List<DataSourceDescriptor> datasources = DataSourceDescriptor.getActiveDataSources();
         if (datasources.isEmpty()) {

@@ -1935,7 +1935,7 @@
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
             <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
             <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
             <adapter type="org.eclipse.core.resources.IResource"/>
@@ -1947,7 +1947,7 @@
         <factory adaptableType="org.eclipse.ui.IWorkbenchPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         </factory>
     </extension>
 
@@ -2196,7 +2196,7 @@
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
                 class="org.jkiss.dbeaver.registry.DataSourceDescriptorManager"
-                objectType="org.jkiss.dbeaver.model.struct.DBSDataSourceContainer">
+                objectType="org.jkiss.dbeaver.model.DBPDataSourceContainer">
         </manager>
         <editor
                 id="org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor"

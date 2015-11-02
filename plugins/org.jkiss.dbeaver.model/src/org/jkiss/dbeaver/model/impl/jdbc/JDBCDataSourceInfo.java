@@ -18,11 +18,11 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -60,7 +60,7 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
     private boolean supportsBatchUpdates = false;
     private boolean supportsScroll;
 
-    public JDBCDataSourceInfo(DBSDataSourceContainer container)
+    public JDBCDataSourceInfo(DBPDataSourceContainer container)
     {
         this.readOnly = false;
         this.databaseProductName = "?"; //$NON-NLS-1$

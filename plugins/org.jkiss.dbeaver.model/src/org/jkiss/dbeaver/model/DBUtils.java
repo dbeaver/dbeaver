@@ -391,10 +391,10 @@ public final class DBUtils {
     @Nullable
     public static <T> T getAdapter(Class<T> adapterType, @Nullable DBPObject object)
     {
-        if (object instanceof DBSDataSourceContainer) {
+        if (object instanceof DBPDataSourceContainer) {
             // Root object's parent is data source container (not datasource)
             // So try to get adapter from real datasource object
-            object = ((DBSDataSourceContainer)object).getDataSource();
+            object = ((DBPDataSourceContainer)object).getDataSource();
         }
         if (object == null) {
             return null;
@@ -880,7 +880,7 @@ public final class DBUtils {
 
     public static void fireObjectUpdate(DBSObject object, @Nullable Object data)
     {
-        final DBSDataSourceContainer container = getContainer(object);
+        final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, data));
         }
@@ -888,7 +888,7 @@ public final class DBUtils {
 
     public static void fireObjectAdd(DBSObject object)
     {
-        final DBSDataSourceContainer container = getContainer(object);
+        final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_ADD, object));
         }
@@ -896,7 +896,7 @@ public final class DBUtils {
 
     public static void fireObjectRemove(DBSObject object)
     {
-        final DBSDataSourceContainer container = getContainer(object);
+        final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_REMOVE, object));
         }
@@ -904,14 +904,14 @@ public final class DBUtils {
 
     public static void fireObjectSelect(DBSObject object, boolean select)
     {
-        final DBSDataSourceContainer container = getContainer(object);
+        final DBPDataSourceContainer container = getContainer(object);
         if (container != null) {
             container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_SELECT, object, select));
         }
     }
 
     @Nullable
-    public static DBSDataSourceContainer getContainer(DBSObject object)
+    public static DBPDataSourceContainer getContainer(DBSObject object)
     {
         if (object == null) {
             log.warn("Null object passed");
@@ -1015,8 +1015,8 @@ public final class DBUtils {
 
     public static DBPObject getPublicObject(DBPObject object)
     {
-        if (object instanceof DBSDataSourceContainer) {
-            return ((DBSDataSourceContainer) object).getDataSource();
+        if (object instanceof DBPDataSourceContainer) {
+            return ((DBPDataSourceContainer) object).getDataSource();
         } else {
             return object;
         }
@@ -1025,9 +1025,9 @@ public final class DBUtils {
     @NotNull
     public static DBPDataSourceRegistry getRegistry(@NotNull DBSObject object)
     {
-        DBSDataSourceContainer container;
-        if (object instanceof DBSDataSourceContainer) {
-            container = (DBSDataSourceContainer) object;
+        DBPDataSourceContainer container;
+        if (object instanceof DBPDataSourceContainer) {
+            container = (DBPDataSourceContainer) object;
         } else {
             DBPDataSource dataSource = object.getDataSource();
             container = dataSource.getContainer();

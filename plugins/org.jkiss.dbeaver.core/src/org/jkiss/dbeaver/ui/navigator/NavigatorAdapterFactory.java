@@ -49,7 +49,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
         DBSObject.class,
         DBSDataContainer.class,
         DBSDataManipulator.class,
-        DBSDataSourceContainer.class,
+        DBPDataSourceContainer.class,
 //        DBPContextProvider.class,
         IPropertySource.class,
         IProject.class,
@@ -62,7 +62,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
     @Override
     public Object getAdapter(Object adaptableObject, Class adapterType)
     {
-        if (adapterType == DBSDataSourceContainer.class) {
+        if (adapterType == DBPDataSourceContainer.class) {
             if (adaptableObject instanceof DBNDataSource) {
                 return ((DBNDataSource)adaptableObject).getDataSourceContainer();
             }
@@ -75,7 +75,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             if (object == null) {
                 return null;
             }
-            if (object instanceof DBSDataSourceContainer) {
+            if (object instanceof DBPDataSourceContainer) {
                 return object;
             }
             DBPDataSource dataSource = object.getDataSource();

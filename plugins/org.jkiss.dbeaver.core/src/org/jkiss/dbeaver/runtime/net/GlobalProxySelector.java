@@ -18,11 +18,11 @@
 package org.jkiss.dbeaver.runtime.net;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -60,7 +60,7 @@ public class GlobalProxySelector extends ProxySelector {
             DBCExecutionContext activeContext = DBCExecutionContext.ACTIVE_CONTEXT.get();
             if (activeContext != null) {
                 List<Proxy> proxies = null;
-                DBSDataSourceContainer container = activeContext.getDataSource().getContainer();
+                DBPDataSourceContainer container = activeContext.getDataSource().getContainer();
                 for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
                     if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                         Map<String,String> proxyProps = networkHandler.getProperties();

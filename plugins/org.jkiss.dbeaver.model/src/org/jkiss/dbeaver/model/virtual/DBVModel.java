@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -49,9 +50,9 @@ public class DBVModel extends DBVContainer {
     private static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     private static final String ATTR_TYPE = "type"; //$NON-NLS-1$
 
-    private DBSDataSourceContainer dataSourceContainer;
+    private DBPDataSourceContainer dataSourceContainer;
 
-    public DBVModel(DBSDataSourceContainer dataSourceContainer)
+    public DBVModel(DBPDataSourceContainer dataSourceContainer)
     {
         super(null, "model");
         this.dataSourceContainer = dataSourceContainer;

@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -102,10 +102,10 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 if (node instanceof DBNDatabaseNode) {
                     return ((DBNDatabaseNode) node).getDataSourceContainer().getName();
                 } else if (node instanceof DBNResource) {
-                    Collection<DBSDataSourceContainer> containers = ((DBNResource) node).getAssociatedDataSources();
+                    Collection<DBPDataSourceContainer> containers = ((DBNResource) node).getAssociatedDataSources();
                     if (!CommonUtils.isEmpty(containers)) {
                         StringBuilder text = new StringBuilder();
-                        for (DBSDataSourceContainer container : containers) {
+                        for (DBPDataSourceContainer container : containers) {
                             if (text.length() > 0) {
                                 text.append(", ");
                             }

@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterDescriptor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -72,7 +72,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     }
 
     @Override
-    protected boolean hasDataSourceSpecificOptions(DBSDataSourceContainer dataSourceDescriptor)
+    protected boolean hasDataSourceSpecificOptions(DBPDataSourceContainer dataSourceDescriptor)
     {
         return dataSourceDescriptor.getDataFormatterProfile().isOverridesParent();
     }

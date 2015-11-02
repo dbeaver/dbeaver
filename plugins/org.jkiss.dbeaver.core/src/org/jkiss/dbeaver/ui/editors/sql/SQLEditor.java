@@ -63,7 +63,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.AbstractJob;
@@ -130,7 +130,7 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile QueryProcessor curQueryProcessor;
     private final List<QueryProcessor> queryProcessors = new ArrayList<>();
 
-    private DBSDataSourceContainer dataSourceContainer;
+    private DBPDataSourceContainer dataSourceContainer;
     private DBPDataSource curDataSource;
     private volatile DBCExecutionContext executionContext;
     private volatile boolean ownContext = false;
@@ -188,13 +188,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     @Override
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         return dataSourceContainer;
     }
 
     @Override
-    public boolean setDataSourceContainer(@Nullable DBSDataSourceContainer container)
+    public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container)
     {
         if (container == dataSourceContainer) {
             return true;
@@ -389,7 +389,7 @@ public class SQLEditor extends SQLEditorBase implements
     private boolean checkConnected()
     {
         // Connect to datasource
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             if (!dataSourceContainer.isConnected()) {
                 DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
@@ -689,7 +689,7 @@ public class SQLEditor extends SQLEditorBase implements
             // Nothing to process
             return;
         }
-        DBSDataSourceContainer container = getDataSourceContainer();
+        DBPDataSourceContainer container = getDataSourceContainer();
         if (container != null && container.isConnectionReadOnly()) {
 /*
             // Allow only selects

@@ -54,7 +54,7 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
 
     /**
      * Checks this context is really connected to remote database.
-     * Usually DBSDataSourceContainer.getDataSource() returns datasource only if datasource is connected.
+     * Usually DBPDataSourceContainer.getDataSource() returns datasource only if datasource is connected.
      * But in some cases (e.g. connection invalidation) datasource remains disconnected for some period of time.
      * @return true if underlying connection is alive.
      */

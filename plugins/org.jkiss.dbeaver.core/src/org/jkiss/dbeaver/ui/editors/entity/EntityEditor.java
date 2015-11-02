@@ -35,9 +35,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -46,9 +44,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -708,7 +705,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
         final DBSObject databaseObject = getEditorInput().getDatabaseObject();
         DBPObject object;
-        if (databaseObject instanceof DBSDataSourceContainer && databaseObject.getDataSource() != null) {
+        if (databaseObject instanceof DBPDataSourceContainer && databaseObject.getDataSource() != null) {
             object = databaseObject.getDataSource();
         } else {
             object = databaseObject;

@@ -34,9 +34,9 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -186,10 +186,10 @@ class ScriptsImportWizardPage extends WizardPage {
 
     public ScriptsImportData getImportData()
     {
-        DBSDataSourceContainer dataSourceContainer = null;
+        DBPDataSourceContainer dataSourceContainer = null;
         final int dsIndex = scriptsDataSources.getSelectionIndex();
         if (dsIndex >= 0) {
-            dataSourceContainer = (DBSDataSourceContainer) scriptsDataSources.getData(dsIndex);
+            dataSourceContainer = (DBPDataSourceContainer) scriptsDataSources.getData(dsIndex);
         }
         final String outputDir = directoryText.getText();
         DBeaverCore.getGlobalPreferenceStore().setValue(ScriptsExportWizardPage.PREF_SCRIPTS_EXPORT_OUT_DIR, outputDir);

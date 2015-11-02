@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -53,7 +53,7 @@ import java.util.*;
 public class MigrateConnectionWizard extends Wizard
 {
     private final DataSourceRegistry registry;
-    private final Set<DBSDataSourceContainer> selectedConnections = new HashSet<>();
+    private final Set<DBPDataSourceContainer> selectedConnections = new HashSet<>();
     private PageConnections pageConnections;
     private PageDriver pageDriver;
 
@@ -65,8 +65,8 @@ public class MigrateConnectionWizard extends Wizard
                 Object item = iter.next();
                 if (item instanceof IDataSourceContainerProvider) {
                     selectedConnections.add(((IDataSourceContainerProvider) item).getDataSourceContainer());
-                } else if (item instanceof DBSDataSourceContainer) {
-                    selectedConnections.add((DBSDataSourceContainer) item);
+                } else if (item instanceof DBPDataSourceContainer) {
+                    selectedConnections.add((DBPDataSourceContainer) item);
                 } else if (item instanceof DBSObject) {
                     selectedConnections.add(((DBSObject) item).getDataSource().getContainer());
                 } else if (item instanceof DBSWrapper) {

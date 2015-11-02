@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
@@ -138,7 +138,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // Constructors
     // -----------------------
 
-    public DB2DataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container) throws DBException
+    public DB2DataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException
     {
         super(monitor, container);
     }

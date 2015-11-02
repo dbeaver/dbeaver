@@ -23,9 +23,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.AbstractJob;
 
 /**
@@ -39,7 +39,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
     {
         super(name);
         this.executionContext = executionContext;
-        final DBSDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
+        final DBPDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
 
         setUser(true);
 
@@ -57,7 +57,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
     }
 
     @NotNull
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         return executionContext.getDataSource().getContainer();
     }

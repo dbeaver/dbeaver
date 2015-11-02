@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -340,7 +340,7 @@ public class DBNResource extends DBNNode
         }
     }
 
-    public Collection<DBSDataSourceContainer> getAssociatedDataSources()
+    public Collection<DBPDataSourceContainer> getAssociatedDataSources()
     {
         return handler == null ? null : handler.getAssociatedDataSources(resource);
     }

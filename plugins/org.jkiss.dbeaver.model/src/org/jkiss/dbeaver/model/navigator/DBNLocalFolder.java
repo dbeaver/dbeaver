@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -117,7 +117,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     @Override
     public Class<? extends DBSObject> getChildrenClass()
     {
-        return DBSDataSourceContainer.class;
+        return DBPDataSourceContainer.class;
     }
 
     @Override

@@ -19,11 +19,8 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
-
-import java.util.Collection;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 
 /**
  * Data Source.
@@ -32,14 +29,14 @@ import java.util.Collection;
  * datasource instance could be refreshed at any time. Obtain references on datasource only
  * from DBSObject or DBPContextProvider interfaces.
  */
-public interface DBPDataSource extends DBPObject, DBPCloseableObject
+public interface DBPDataSource extends DBSInstance, DBPCloseableObject
 {
     /**
      * Datasource container
      * @return container implementation
      */
     @NotNull
-    DBSDataSourceContainer getContainer();
+    DBPDataSourceContainer getContainer();
 
     /**
      * Datasource information/options
@@ -49,31 +46,6 @@ public interface DBPDataSource extends DBPObject, DBPCloseableObject
      */
     @NotNull
     DBPDataSourceInfo getInfo();
-
-    /**
-     * Default execution context
-     * @param meta request for metadata operations context
-     * @return default data source execution context.
-     */
-    @NotNull
-    DBCExecutionContext getDefaultContext(boolean meta);
-
-    /**
-     * All opened execution contexts
-     * @return collection of contexts
-     */
-    @NotNull
-    Collection<? extends DBCExecutionContext> getAllContexts();
-
-    /**
-     * Opens new isolated execution context.
-     *
-     * @param monitor progress monitor
-     * @param purpose context purpose (just a descriptive string)
-     * @return execution context
-     */
-    @NotNull
-    DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException;
 
     /**
      * Reads base metadata from remote database or do any necessarily initialization routines.
