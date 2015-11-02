@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * DBSEntitySelector
+ * Active object (schema selector)
  */
 public interface DBSObjectSelector
 {
