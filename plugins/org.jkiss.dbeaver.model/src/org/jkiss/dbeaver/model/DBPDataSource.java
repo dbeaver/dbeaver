@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
 /**
  * Data Source.
  * Root object of all database structure and data objects.
+ * Usually represents a database server.
  *
  * Note: do not store direct references on datasource objects in any GUI components -
  * datasource instance may be refreshed at any moment. Obtain references on datasource only
