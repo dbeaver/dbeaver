@@ -27,6 +27,10 @@ import java.util.Collection;
 
 /**
  * Data Source instance.
+ * Instance wraps physical connection to database server.
+ * Instance manages execution contexts.
+ *
+ * Single datasource may implement DBSInstance or DBSInstanceContainer
  */
 public interface DBSInstance extends DBSObject, DBPCloseableObject
 {
