@@ -1079,6 +1079,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_LIBRARY)) {
                     xml.addAttribute(RegistryConstants.ATTR_TYPE, lib.getType().name());
                     xml.addAttribute(RegistryConstants.ATTR_PATH, lib.getPath());
+                    xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
                     if (lib.isDisabled()) {
                         xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                     }
@@ -1343,7 +1344,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 }
                 case RegistryConstants.TAG_LIBRARY: {
                     if (curDriver == null) {
-                        log.warn("File outside of driver");
+                        log.warn("Library outside of driver");
                         return;
                     }
                     DBPDriverLibrary.FileType type;
@@ -1359,7 +1360,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                         }
                     }
                     String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
+                    boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
+                    if (!custom && lib == null) {
+                        // This is predefined library from some previous version - as it wasn't defined in plugin.xml
+                        // so let's just skip it
+                        log.debug("Skip obsolete custom library '" + path + "'");
+                        return;
+                    }
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                         lib.setDisabled(true);
@@ -1371,42 +1379,42 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     break;
                 }
                 case RegistryConstants.TAG_FILE: {
-                    String path = atts.getValue(RegistryConstants.ATTR_PATH);
-                    if (CommonUtils.isEmpty(path)) {
-                        log.warn("Empty path for library file");
-                    } else {
-                        DriverFileInfo info = new DriverFileInfo(
-                            atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
-                            atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
-                            new File(path));
-                        curDriver.addLibraryFile(curLibrary, info);
+                    if (curDriver != null && curLibrary != null) {
+                        String path = atts.getValue(RegistryConstants.ATTR_PATH);
+                        if (CommonUtils.isEmpty(path)) {
+                            log.warn("Empty path for library file");
+                        } else {
+                            DriverFileInfo info = new DriverFileInfo(
+                                atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_ID)),
+                                atts.getValue(CommonUtils.notEmpty(RegistryConstants.ATTR_VERSION)),
+                                new File(path));
+                            curDriver.addLibraryFile(curLibrary, info);
+                        }
                     }
                     break;
                 }
                 case RegistryConstants.TAG_CLIENT_HOME:
-                    curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
+                    if (curDriver != null) {
+                        curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
+                    }
                     break;
                 case RegistryConstants.TAG_PARAMETER: {
-                    if (curDriver == null) {
-                        log.warn("Parameter outside of driver");
-                        return;
-                    }
-                    final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                    final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                    if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                        curDriver.setDriverParameter(paramName, paramValue, false);
+                    if (curDriver != null) {
+                        final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
+                        final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                            curDriver.setDriverParameter(paramName, paramValue, false);
+                        }
                     }
                     break;
                 }
                 case RegistryConstants.TAG_PROPERTY: {
-                    if (curDriver == null) {
-                        log.warn("Property outside of driver");
-                        return;
-                    }
-                    final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
-                    final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                    if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
-                        curDriver.setConnectionProperty(paramName, paramValue);
+                    if (curDriver != null) {
+                        final String paramName = atts.getValue(RegistryConstants.ATTR_NAME);
+                        final String paramValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        if (!CommonUtils.isEmpty(paramName) && !CommonUtils.isEmpty(paramValue)) {
+                            curDriver.setConnectionProperty(paramName, paramValue);
+                        }
                     }
                     break;
                 }
