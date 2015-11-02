@@ -27,10 +27,10 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
@@ -66,12 +66,12 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
-    protected DBSDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
+    protected DBPDataSourceContainer getDataSourceContainer(ExecutionEvent event, boolean useEditor)
     {
         if (useEditor) {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);
             if (editor != null) {
-                DBSDataSourceContainer container = getDataSourceContainer(editor);
+                DBPDataSourceContainer container = getDataSourceContainer(editor);
                 if (container != null) {
                     return container;
                 }
@@ -79,15 +79,15 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
             return null;
         }
         IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        DBSDataSourceContainer container = getDataSourceContainer(activePart);
+        DBPDataSourceContainer container = getDataSourceContainer(activePart);
         if (container != null) {
             return container;
         }
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
             DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
-            if (selectedObject instanceof DBSDataSourceContainer) {
-                return (DBSDataSourceContainer)selectedObject;
+            if (selectedObject instanceof DBPDataSourceContainer) {
+                return (DBPDataSourceContainer)selectedObject;
             } else if (selectedObject != null) {
                 DBPDataSource dataSource = selectedObject.getDataSource();
                 return dataSource == null ? null : dataSource.getContainer();
@@ -104,7 +104,7 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         return null;
     }
 
-    public static DBSDataSourceContainer getDataSourceContainer(IWorkbenchPart activePart)
+    public static DBPDataSourceContainer getDataSourceContainer(IWorkbenchPart activePart)
     {
         if (activePart instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider) activePart).getDataSourceContainer();

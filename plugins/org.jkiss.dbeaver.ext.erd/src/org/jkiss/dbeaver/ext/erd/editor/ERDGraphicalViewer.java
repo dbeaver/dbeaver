@@ -50,7 +50,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -74,7 +74,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         int tableCount = 0;
     }
 
-    private final Map<DBSDataSourceContainer, DataSourceInfo> usedDataSources = new IdentityHashMap<>();
+    private final Map<DBPDataSourceContainer, DataSourceInfo> usedDataSources = new IdentityHashMap<>();
 
 	/**
 	 * ValidationMessageHandler to receive messages
@@ -188,7 +188,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 Collections.sort(tables, DBUtils.<DBSEntity>nameComparator());
                 Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<>();
                 for (DBSEntity table : tables) {
-                    DBSDataSourceContainer container = table.getDataSource().getContainer();
+                    DBPDataSourceContainer container = table.getDataSource().getContainer();
                     PaletteDrawer drawer = getContainerPaletteDrawer(container);
                     if (drawer != null) {
                         List<ToolEntryTable> tools = toolMap.get(drawer);
@@ -213,7 +213,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     public void handleTableActivate(DBSEntity table)
     {
         if (table.getDataSource() != null) {
-            DBSDataSourceContainer container = table.getDataSource().getContainer();
+            DBPDataSourceContainer container = table.getDataSource().getContainer();
             if (container != null) {
                 synchronized (usedDataSources) {
                     DataSourceInfo dataSourceInfo = usedDataSources.get(container);
@@ -259,7 +259,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             }
         }
         if (table.getDataSource() != null) {
-            DBSDataSourceContainer container = table.getDataSource().getContainer();
+            DBPDataSourceContainer container = table.getDataSource().getContainer();
             if (container != null) {
                 synchronized (usedDataSources) {
                     DataSourceInfo dataSourceInfo = usedDataSources.get(container);
@@ -277,7 +277,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         }
     }
 
-    private void acquireContainer(DBSDataSourceContainer container)
+    private void acquireContainer(DBPDataSourceContainer container)
     {
         container.acquire(editor);
         container.getRegistry().addDataSourceListener(this);
@@ -293,7 +293,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         paletteRoot.add(dsDrawer);
     }
 
-    private void releaseContainer(DBSDataSourceContainer container)
+    private void releaseContainer(DBPDataSourceContainer container)
     {
         PaletteDrawer drawer = getContainerPaletteDrawer(container);
         if (drawer != null) {
@@ -304,7 +304,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         container.release(editor);
     }
 
-    PaletteDrawer getContainerPaletteDrawer(DBSDataSourceContainer container)
+    PaletteDrawer getContainerPaletteDrawer(DBPDataSourceContainer container)
     {
         for (Object child : editor.getPaletteRoot().getChildren()) {
             if (child instanceof PaletteDrawer && container.getId().equals(((PaletteDrawer) child).getId())) {
@@ -317,10 +317,10 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     @Override
     public void handleDataSourceEvent(DBPEvent event)
     {
-        if (!(event.getObject() instanceof DBSDataSourceContainer)) {
+        if (!(event.getObject() instanceof DBPDataSourceContainer)) {
             return;
         }
-        DBSDataSourceContainer container = (DBSDataSourceContainer)event.getObject();
+        DBPDataSourceContainer container = (DBPDataSourceContainer)event.getObject();
         if (usedDataSources.containsKey(container) &&
             event.getAction() == DBPEvent.Action.OBJECT_UPDATE &&
             Boolean.FALSE.equals(event.getEnabled()) &&

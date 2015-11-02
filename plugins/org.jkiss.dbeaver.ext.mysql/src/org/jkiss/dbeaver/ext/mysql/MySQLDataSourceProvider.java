@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
@@ -111,7 +111,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     @NotNull
     @Override
     public DBPDataSource openDataSource(
-        @NotNull DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
+        @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
         return new MySQLDataSource(monitor, container);

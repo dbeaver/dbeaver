@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -37,7 +37,7 @@ import java.sql.SQLException;
  */
 public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
 {
-    public PostgreDataTypeCache(DBSDataSourceContainer owner) {
+    public PostgreDataTypeCache(DBPDataSourceContainer owner) {
         super(owner);
     }
 

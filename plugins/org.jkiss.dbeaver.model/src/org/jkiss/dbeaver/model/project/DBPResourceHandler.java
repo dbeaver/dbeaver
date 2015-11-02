@@ -21,8 +21,8 @@ package org.jkiss.dbeaver.model.project;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.util.Collection;
 
@@ -47,5 +47,5 @@ public interface DBPResourceHandler {
 
     String getResourceDescription(IResource resource);
 
-    Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource);
+    Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource);
 }

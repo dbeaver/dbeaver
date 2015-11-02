@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 /**
  * Data source provider
@@ -78,7 +77,7 @@ public interface DBPDataSourceProvider
     @NotNull
     DBPDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSDataSourceContainer container)
+        @NotNull DBPDataSourceContainer container)
         throws DBException;
 
 }

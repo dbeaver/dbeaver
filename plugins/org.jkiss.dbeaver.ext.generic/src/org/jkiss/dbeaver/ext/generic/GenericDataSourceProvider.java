@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -129,7 +129,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public DBPDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull DBSDataSourceContainer container)
+        @NotNull DBPDataSourceContainer container)
         throws DBException
     {
         GenericMetaModel metaModel = null;

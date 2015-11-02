@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
@@ -116,7 +116,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     }
 
     @Override
-    public DBSDataSourceContainer getDataSourceContainer() {
+    public DBPDataSourceContainer getDataSourceContainer() {
         if (rootNode instanceof DBNDatabaseNode) {
             DBPDataSource dataSource = ((DBNDatabaseNode) rootNode).getObject().getDataSource();
             if (dataSource != null) {

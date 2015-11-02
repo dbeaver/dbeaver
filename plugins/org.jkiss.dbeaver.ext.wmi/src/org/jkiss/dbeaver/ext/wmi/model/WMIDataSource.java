@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -30,7 +31,8 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.wmi.service.WMIService;
 
@@ -42,11 +44,11 @@ import java.util.Collections;
  */
 public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
 {
-    private DBSDataSourceContainer container;
+    private DBPDataSourceContainer container;
     private WMINamespace rootNamespace;
     private SQLDialect dialect;
 
-    public WMIDataSource(DBSDataSourceContainer container)
+    public WMIDataSource(DBPDataSourceContainer container)
         throws DBException
     {
         this.container = container;
@@ -55,7 +57,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
 
     @NotNull
     @Override
-    public DBSDataSourceContainer getContainer()
+    public DBPDataSourceContainer getContainer()
     {
         return container;
     }
@@ -82,6 +84,18 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     @Override
     public String getContextName() {
         return "WMI Data Source";
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject getParentObject() {
+        return container;
     }
 
     @NotNull
@@ -171,5 +185,16 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
     @Override
     public SQLDialect getSQLDialect() {
         return dialect;
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return container.getName();
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return true;
     }
 }

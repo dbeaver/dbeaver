@@ -76,7 +76,7 @@ public class OracleDataSource extends JDBCDataSource
     private boolean isAdminVisible;
     private String planTableName;
 
-    public OracleDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public OracleDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container);

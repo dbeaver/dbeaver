@@ -28,9 +28,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
@@ -66,7 +66,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Nullable
-    public static IFile findRecentScript(IProject project, @Nullable DBSDataSourceContainer container) throws CoreException
+    public static IFile findRecentScript(IProject project, @Nullable DBPDataSourceContainer container) throws CoreException
     {
         List<IFile> scripts = new ArrayList<>();
         findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
@@ -81,7 +81,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return recentFile;
     }
 
-    public static void findRecentScripts(IFolder folder, @Nullable DBSDataSourceContainer container, List<IFile> result)
+    public static void findRecentScripts(IFolder folder, @Nullable DBPDataSourceContainer container, List<IFile> result)
     {
         try {
             for (IResource resource : folder.members()) {
@@ -99,7 +99,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         }
     }
 
-    public static IFile createNewScript(IProject project, @Nullable IFolder folder, @Nullable DBSDataSourceContainer dataSourceContainer) throws CoreException
+    public static IFile createNewScript(IProject project, @Nullable IFolder folder, @Nullable DBPDataSourceContainer dataSourceContainer) throws CoreException
     {
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
 
@@ -187,10 +187,10 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     @Nullable
     @Override
-    public Collection<DBSDataSourceContainer> getAssociatedDataSources(IResource resource)
+    public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
     {
         if (resource instanceof IFile) {
-            DBSDataSourceContainer dataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+            DBPDataSourceContainer dataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
             return dataSource == null ? null : Collections.singleton(dataSource);
         }
         return null;

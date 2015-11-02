@@ -17,11 +17,11 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 
 import java.lang.ref.SoftReference;
 
@@ -32,7 +32,7 @@ public class QMMSessionInfo extends QMMObject {
 
     private final String containerId;
     private SoftReference<DBCExecutionContext> reference;
-    private SoftReference<DBSDataSourceContainer> container;
+    private SoftReference<DBPDataSourceContainer> container;
     private boolean transactional;
 
     private QMMSessionInfo previous;
@@ -212,7 +212,7 @@ public class QMMSessionInfo extends QMMObject {
         return containerId;
     }
 
-    public DBSDataSourceContainer getContainer()
+    public DBPDataSourceContainer getContainer()
     {
         return container.get();
     }

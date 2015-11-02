@@ -29,7 +29,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
 public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
@@ -38,7 +38,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBSDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
         if (dataSourceContainer == null) {
             return null;
         }
@@ -60,7 +60,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         return null;
     }
 
-    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBSDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) {
+    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         IFile scriptFile;
         try {

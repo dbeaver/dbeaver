@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.INavigatorListener;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 
 /**
@@ -33,7 +33,7 @@ public class DatabaseEditorListener implements INavigatorListener
 {
 
     private final IDatabaseEditor databaseEditor;
-    private DBSDataSourceContainer dataSourceContainer;
+    private DBPDataSourceContainer dataSourceContainer;
 
     DatabaseEditorListener(IDatabaseEditor databaseEditor) {
         this.databaseEditor = databaseEditor;

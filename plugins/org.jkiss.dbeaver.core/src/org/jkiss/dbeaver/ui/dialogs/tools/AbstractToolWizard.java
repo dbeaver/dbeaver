@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -111,7 +111,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     @Override
     public void createPageControls(Composite pageContainer)
     {
-        DBSDataSourceContainer container = getDatabaseObject().getDataSource().getContainer();
+        DBPDataSourceContainer container = getDatabaseObject().getDataSource().getContainer();
         connectionInfo = container.getActualConnectionConfiguration();
 
         super.createPageControls(pageContainer);

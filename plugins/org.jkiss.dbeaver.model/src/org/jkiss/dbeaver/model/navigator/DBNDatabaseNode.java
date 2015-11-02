@@ -445,7 +445,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
 
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         boolean showSystem = dataSourceContainer == null || dataSourceContainer.isShowSystemObjects();
         for (Object childItem : itemList) {
             if (childItem == null) {
@@ -524,7 +524,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return dataSource == null ? null : dataSource.getDefaultContext(true);
     }
 
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? null : dataSource.getContainer();
@@ -537,7 +537,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch)
     {
-        DBSDataSourceContainer dataSource = getDataSourceContainer();
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {
@@ -554,7 +554,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     public void setNodeFilter(DBXTreeItem meta, DBSObjectFilter filter)
     {
-        DBSDataSourceContainer dataSource = getDataSourceContainer();
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
             Class<?> childrenClass = this.getChildrenClass(meta);
             if (childrenClass != null) {

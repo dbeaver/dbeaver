@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -222,7 +222,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return dsCopy;
     }
 
-    public void addDataSource(DBSDataSourceContainer dataSource)
+    public void addDataSource(DBPDataSourceContainer dataSource)
     {
         synchronized (dataSources) {
             this.dataSources.add((DataSourceDescriptor) dataSource);
@@ -231,7 +231,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, dataSource);
     }
 
-    public void removeDataSource(DBSDataSourceContainer dataSource)
+    public void removeDataSource(DBPDataSourceContainer dataSource)
     {
         synchronized (dataSources) {
             this.dataSources.remove((DataSourceDescriptor)dataSource);
@@ -244,7 +244,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    public void updateDataSource(DBSDataSourceContainer dataSource)
+    public void updateDataSource(DBPDataSourceContainer dataSource)
     {
         this.saveDataSources();
         this.fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource);

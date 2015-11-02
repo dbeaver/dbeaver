@@ -24,7 +24,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -48,7 +48,7 @@ public class DatabaseEditorUtils {
 
         Color bgColor = null;
         if (editor instanceof IDataSourceContainerProvider) {
-            DBSDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
+            DBPDataSourceContainer container = ((IDataSourceContainerProvider) editor).getDataSourceContainer();
             if (container != null) {
                 bgColor = UIUtils.getConnectionColor(container.getConnectionConfiguration());
             }

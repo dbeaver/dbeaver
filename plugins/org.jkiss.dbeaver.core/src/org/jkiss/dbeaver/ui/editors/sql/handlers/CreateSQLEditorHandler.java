@@ -25,8 +25,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
 public class CreateSQLEditorHandler extends BaseSQLEditorHandler {
@@ -34,7 +34,7 @@ public class CreateSQLEditorHandler extends BaseSQLEditorHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        DBSDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         IFolder scriptFolder = getCurrentFolder(event);
         IFile scriptFile;

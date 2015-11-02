@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
@@ -30,7 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -50,7 +49,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
             if (txnManager != null) {
                 try {
-                    final DBSDataSourceContainer container = context.getDataSource().getContainer();
+                    final DBPDataSourceContainer container = context.getDataSource().getContainer();
                     boolean newAutocommit = !container.isDefaultAutoCommit();
                     if (context.isConnected()) {
                         // Get flag from connection

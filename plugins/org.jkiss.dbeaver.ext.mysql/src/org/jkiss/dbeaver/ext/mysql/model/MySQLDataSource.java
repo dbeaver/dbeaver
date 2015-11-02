@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
@@ -70,7 +71,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private Map<String, MySQLCollation> collations;
     private String activeCatalogName;
 
-    public MySQLDataSource(DBRProgressMonitor monitor, DBSDataSourceContainer container)
+    public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container);

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -66,7 +66,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
     private List<ObjectSearchProvider> providers;
 
 
-    private DatabaseSearchDialog(Shell shell, DBSDataSourceContainer currentDataSource)
+    private DatabaseSearchDialog(Shell shell, DBPDataSourceContainer currentDataSource)
     {
         super(shell, IHelpContextIds.CTX_SQL_EDITOR);
         setShellStyle(SWT.DIALOG_TRIM | SWT.MAX | SWT.RESIZE | getDefaultOrientation());
@@ -244,7 +244,7 @@ public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSe
         job.schedule();
     }
 
-    public static void open(Shell shell, DBSDataSourceContainer currentDataSource)
+    public static void open(Shell shell, DBPDataSourceContainer currentDataSource)
     {
         if (ObjectSearchRegistry.getInstance().getProviders().isEmpty()) {
             UIUtils.showMessageBox(shell, "Search error", "No search providers found", SWT.ICON_ERROR);

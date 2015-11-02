@@ -27,8 +27,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -39,9 +39,9 @@ public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
     static final Log log = Log.getLog(BaseSQLEditorHandler.class);
 
     @Nullable
-    protected DBSDataSourceContainer getCurrentConnection(ExecutionEvent event)
+    protected DBPDataSourceContainer getCurrentConnection(ExecutionEvent event)
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
         final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
         if (dataSourceContainer == null) {

@@ -36,7 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
@@ -96,7 +96,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
         }
-        final DBSDataSourceContainer dsObject = dataSourceContainer;
+        final DBPDataSourceContainer dsObject = dataSourceContainer;
         if (lookupEditor && !dsObject.isConnected()) {
             // Do not instantiate editor input if we are just looking for opened editor
             //. for some object. Connection must be instantiated.

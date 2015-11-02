@@ -28,12 +28,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -67,7 +64,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     }
 
     @Override
-    public DBSDataSourceContainer getDataSourceContainer()
+    public DBPDataSourceContainer getDataSourceContainer()
     {
         return getScriptDataSource(getFile());
     }
@@ -75,7 +72,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     @Override
     public String getName()
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         DBPPreferenceStore preferenceStore;
         if (dataSourceContainer != null) {
             preferenceStore = dataSourceContainer.getPreferenceStore();
@@ -94,7 +91,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     @Override
     public String getToolTipText()
     {
-        DBSDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer == null) {
             return super.getName();
         }
@@ -133,7 +130,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     @Override
     public DBCExecutionContext getExecutionContext()
     {
-        DBSDataSourceContainer container = getDataSourceContainer();
+        DBPDataSourceContainer container = getDataSourceContainer();
         if (container != null) {
             DBPDataSource dataSource = container.getDataSource();
             if (dataSource != null) {
@@ -144,7 +141,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
     }
 
     @Nullable
-    public static DBSDataSourceContainer getScriptDataSource(IFile file)
+    public static DBPDataSourceContainer getScriptDataSource(IFile file)
     {
         try {
             if (!file.exists()) {
@@ -163,12 +160,12 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         }
     }
 
-    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBSDataSourceContainer dataSourceContainer)
+    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer)
     {
         setScriptDataSource(file, dataSourceContainer, false);
     }
 
-    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBSDataSourceContainer dataSourceContainer, boolean notify)
+    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
     {
         try {
             file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());

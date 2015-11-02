@@ -49,12 +49,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.runtime.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
@@ -144,7 +144,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     return CoreMessages.controls_querylog_rollback;
                 }
             } else if (object instanceof QMMSessionInfo) {
-                DBSDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
+                DBPDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
                 switch (event.getAction()) {
                     case BEGIN: return CoreMessages.controls_querylog_connected_to + (container == null ? "?" : container.getName()) + "\"";
                     case END:   return CoreMessages.controls_querylog_disconnected_from + (container == null ? "?" : container.getName()) + "\"";
@@ -238,7 +238,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMMetaEvent event)
         {
             QMMObject object = event.getObject();
-            DBSDataSourceContainer container = null;
+            DBPDataSourceContainer container = null;
             if (object instanceof QMMSessionInfo) {
                 container = ((QMMSessionInfo) object).getContainer();
             } else if (object instanceof QMMTransactionInfo) {

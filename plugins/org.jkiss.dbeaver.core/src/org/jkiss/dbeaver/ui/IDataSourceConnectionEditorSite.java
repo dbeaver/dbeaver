@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /**
  * IDataSourceConnectionEditorSite
@@ -38,7 +38,7 @@ public interface IDataSourceConnectionEditorSite
     DBPDriver getDriver();
 
     @NotNull
-    DBSDataSourceContainer getActiveDataSource();
+    DBPDataSourceContainer getActiveDataSource();
 
     void updateButtons();
 

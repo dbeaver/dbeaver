@@ -62,7 +62,7 @@ import java.util.*;
  */
 public class DataSourceDescriptor
     implements
-        DBSDataSourceContainer,
+    DBPDataSourceContainer,
         DBPImageProvider,
         IAdaptable,
         DBPStatefulObject,
@@ -887,7 +887,7 @@ public class DataSourceDescriptor
     @Override
     public Object getAdapter(Class adapter)
     {
-        if (DBSDataSourceContainer.class.isAssignableFrom(adapter)) {
+        if (DBPDataSourceContainer.class.isAssignableFrom(adapter)) {
             return this;
         } else if (adapter == DBPPropertySource.class) {
             PropertyCollector coll = new PropertyCollector(this, true);

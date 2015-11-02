@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -70,7 +70,7 @@ public abstract class JDBCDataSource
     private static final Log log = Log.getLog(JDBCDataSource.class);
 
     @NotNull
-    private final DBSDataSourceContainer container;
+    private final DBPDataSourceContainer container;
     @NotNull
     protected final JDBCExecutionContext executionContext;
     @Nullable
@@ -81,7 +81,7 @@ public abstract class JDBCDataSource
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;
 
-    public JDBCDataSource(DBRProgressMonitor monitor, @NotNull DBSDataSourceContainer container)
+    public JDBCDataSource(DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
@@ -239,7 +239,7 @@ public abstract class JDBCDataSource
 
     @NotNull
     @Override
-    public DBSDataSourceContainer getContainer()
+    public DBPDataSourceContainer getContainer()
     {
         return container;
     }

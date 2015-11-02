@@ -22,12 +22,12 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.utils.CommonUtils;
 
@@ -65,9 +65,9 @@ public class DBNBookmark extends DBNResource
     public String getNodeDescription()
     {
         String dsInfo = "";
-        Collection<DBSDataSourceContainer> dataSources = getAssociatedDataSources();
+        Collection<DBPDataSourceContainer> dataSources = getAssociatedDataSources();
         if (!CommonUtils.isEmpty(dataSources)) {
-            DBSDataSourceContainer dataSource = dataSources.iterator().next();
+            DBPDataSourceContainer dataSource = dataSources.iterator().next();
             dsInfo = " ('" + dataSource.getName() + "' - " + dataSource.getDriver().getName() + ")";
         }
         return storage.getDescription() + dsInfo;
@@ -95,13 +95,13 @@ public class DBNBookmark extends DBNResource
     }
 
     @Override
-    public Collection<DBSDataSourceContainer> getAssociatedDataSources()
+    public Collection<DBPDataSourceContainer> getAssociatedDataSources()
     {
         IResource resource = getResource();
         if (resource != null) {
             DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(resource.getProject());
             if (dataSourceRegistry != null) {
-                DBSDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
+                DBPDataSourceContainer dataSource = dataSourceRegistry.getDataSource(storage.getDataSourceId());
                 if (dataSource != null) {
                     return Collections.singleton(dataSource);
                 }

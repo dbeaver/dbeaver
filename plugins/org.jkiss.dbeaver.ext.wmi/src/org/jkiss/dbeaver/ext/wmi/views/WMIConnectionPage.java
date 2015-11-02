@@ -28,8 +28,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.wmi.Activator;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -155,7 +155,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     public void loadSettings()
     {
         // Load values from new connection info
-        DBSDataSourceContainer activeDataSource = site.getActiveDataSource();
+        DBPDataSourceContainer activeDataSource = site.getActiveDataSource();
         DBPConnectionConfiguration connectionInfo = activeDataSource.getConnectionConfiguration();
         if (connectionInfo.getHostName() == null) {
             connectionInfo.setHostName(DEFAULT_HOST);
@@ -181,7 +181,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(DBSDataSourceContainer dataSource)
+    public void saveSettings(DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {

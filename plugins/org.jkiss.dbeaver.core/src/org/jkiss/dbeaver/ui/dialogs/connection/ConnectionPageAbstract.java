@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.struct.DBSDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -76,7 +76,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     @Override
-    public void saveSettings(DBSDataSourceContainer dataSource)
+    public void saveSettings(DBPDataSourceContainer dataSource)
     {
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }

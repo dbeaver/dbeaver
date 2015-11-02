@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -375,10 +376,10 @@ public class DiagramLoader
         throws IOException
     {
         // Prepare DS objects map
-        Map<DBSDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
+        Map<DBPDataSourceContainer, DataSourceObjects> dsMap = new IdentityHashMap<>();
         if (diagram != null) {
             for (ERDEntity erdEntity : diagram.getEntities()) {
-                final DBSDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
+                final DBPDataSourceContainer dsContainer = erdEntity.getObject().getDataSource().getContainer();
                 DataSourceObjects desc = dsMap.get(dsContainer);
                 if (desc == null) {
                     desc = new DataSourceObjects();
@@ -425,7 +426,7 @@ public class DiagramLoader
 
         if (diagram != null) {
             xml.startElement(TAG_ENTITIES);
-            for (DBSDataSourceContainer dsContainer : dsMap.keySet()) {
+            for (DBPDataSourceContainer dsContainer : dsMap.keySet()) {
                 xml.startElement(TAG_DATA_SOURCE);
                 xml.addAttribute(ATTR_ID, dsContainer.getId());
 
