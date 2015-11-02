@@ -246,7 +246,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
     private void showCatalogTables()
     {
         RuntimeUtils.createService(
-            new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getDataSource()) {
+            new DatabaseLoadService<Collection<MySQLTableBase>>(MySQLMessages.editors_user_editor_privileges_service_load_tables, getExecutionContext()) {
                 @Override
                 public Collection<MySQLTableBase> evaluate()
                     throws InvocationTargetException, InterruptedException {
@@ -288,7 +288,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         RuntimeUtils.createService(
-            new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getDataSource()) {
+            new DatabaseLoadService<java.util.List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_privileges_service_load_privileges, getExecutionContext()) {
                 @Override
                 public java.util.List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {
                     try {

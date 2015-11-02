@@ -1415,4 +1415,22 @@ public final class DBUtils {
         return (T) dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
     }
 
+    @Nullable
+    public static DBSObject getDefaultObject(DBRProgressMonitor monitor, DBSInstance instance)
+    {
+        try {
+            DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, instance);
+            if (oc != null) {
+                for (DBSObject child : oc.getChildren(monitor)) {
+                    if (child instanceof DBPDefaultableObject && ((DBPDefaultableObject) child).isDefaultObject()) {
+                        return child;
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.warn("Can't read child object", e);
+        }
+        return null;
+    }
+
 }

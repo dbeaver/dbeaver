@@ -151,11 +151,6 @@ public class ItemListControl extends NodeListControl
                     if (getProgressMonitor().isCanceled()) {
                         break;
                     }
-/*
-                    if (item instanceof DBNDatabaseFolder) {
-                        continue;
-                    }
-*/
                     if (metaNode != null) {
                         if (!(item instanceof DBNDatabaseNode)) {
                             continue;
@@ -168,11 +163,7 @@ public class ItemListControl extends NodeListControl
                 }
                 return items;
             } catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException)ex;
-                } else {
-                    throw new InvocationTargetException(ex);
-                }
+                throw new InvocationTargetException(ex);
             }
         }
     }
