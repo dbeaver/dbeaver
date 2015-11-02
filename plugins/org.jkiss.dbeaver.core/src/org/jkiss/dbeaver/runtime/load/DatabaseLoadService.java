@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.runtime.load;
 
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
 /**
@@ -28,8 +29,9 @@ public abstract class DatabaseLoadService<RESULT> extends AbstractLoadService<RE
 
     private DBPDataSource dataSource;
 
-    protected DatabaseLoadService(DBPDataSource dataSource) {
-        this.dataSource = dataSource;
+    protected DatabaseLoadService(String serviceName, DBCExecutionContext context) {
+        super(serviceName);
+        this.dataSource = context.getDataSource();
     }
 
     protected DatabaseLoadService(String serviceName, DBPDataSource dataSource) {

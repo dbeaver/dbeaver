@@ -167,7 +167,7 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
         }
         isLoaded = true;
         RuntimeUtils.createService(
-            new DatabaseLoadService<List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_general_service_load_catalog_privileges, getDataSource()) {
+            new DatabaseLoadService<List<MySQLPrivilege>>(MySQLMessages.editors_user_editor_general_service_load_catalog_privileges, getExecutionContext()) {
                 @Override
                 public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {
                     try {

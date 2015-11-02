@@ -57,11 +57,7 @@ public class TreeLoadService extends DatabaseLoadService<Object[]> {
                 parentNode.getChildren(getProgressMonitor()));
             return CommonUtils.isEmpty(children) ? new Object[0] : children.toArray(); 
         } catch (Throwable ex) {
-            if (ex instanceof InvocationTargetException) {
-                throw (InvocationTargetException)ex;
-            } else {
-                throw new InvocationTargetException(ex);
-            }
+            throw new InvocationTargetException(ex);
         }
     }
 
