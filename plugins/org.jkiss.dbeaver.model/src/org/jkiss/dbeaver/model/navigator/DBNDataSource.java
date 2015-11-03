@@ -79,19 +79,19 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public Object getValueObject()
     {
-        return dataSource == null ? null : dataSource.getDataSource();
+        return dataSource.getDataSource();
     }
 
     @Override
     public String getNodeName()
     {
-        return dataSource == null ? "" : dataSource.getName();
+        return dataSource.getName();
     }
 
     @Override
     public String getNodeDescription()
     {
-        return dataSource == null ? "" : dataSource.getDescription();
+        return dataSource.getDescription();
     }
 
     @Override
@@ -120,9 +120,6 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public boolean initializeNode(@Nullable DBRProgressMonitor monitor, DBRProgressListener onFinish)
     {
-        if (dataSource == null) {
-            return false;
-        }
         if (!dataSource.isConnected()) {
             dataSource.initConnection(monitor, onFinish);
         } else {
@@ -189,10 +186,6 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     public void rename(DBRProgressMonitor monitor, String newName)
     {
-        if (dataSource == null) {
-            log.warn("Try to rename data source after dispose");
-            return;
-        }
         dataSource.setName(newName);
         dataSource.persistConfiguration();
         dataSource.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, dataSource, null));
@@ -201,10 +194,6 @@ public class DBNDataSource extends DBNDatabaseNode implements IAdaptable
     @Override
     protected void afterChildRead()
     {
-        if (dataSource == null) {
-            log.warn("Try to update data source after dispose");
-            return;
-        }
         // Notify datasource listeners about state change.
         // We make this action here because we can't update state in
         // initializeNode if this action caused by readChildren.

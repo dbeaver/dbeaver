@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -24,12 +25,14 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.controls.itemlist.ItemListControl;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -39,7 +42,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 /**
  * EntityNodeEditor
  */
-class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefreshablePart, INavigatorModelView
+class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefreshablePart, INavigatorModelView, IAdaptable
 {
 
     private IDatabaseEditor editor;
@@ -183,5 +186,10 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
     @Override
     public Viewer getNavigatorViewer() {
         return itemControl.getNavigatorViewer();
+    }
+
+    @Override
+    public Object getAdapter(Class adapter) {
+        return null;
     }
 }
