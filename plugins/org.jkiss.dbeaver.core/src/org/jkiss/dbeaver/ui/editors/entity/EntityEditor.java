@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
+import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -44,7 +45,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.IFolder;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderListener;
@@ -795,7 +796,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public Object getAdapter(Class adapter) {
         Object activeAdapter = getNestedAdapter(adapter);
-        return activeAdapter == null ? super.getAdapter(adapter) : activeAdapter;
+        if (activeAdapter != null) {
+            return activeAdapter;
+        }
+        if (adapter == IPropertySheetPage.class) {
+            return new PropertyPageStandard();
+        }
+        return super.getAdapter(adapter);
     }
 
     public <T> T getNestedAdapter(Class<T> adapter) {
