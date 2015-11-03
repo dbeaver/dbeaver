@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
@@ -67,8 +68,17 @@ class SQLLogFilter implements QMEventFilter {
     }
 
     private boolean belongsToEditor(DBCStatement statement) {
-        return statement != null && statement.getStatementSource() instanceof SQLQuery &&
-            ((SQLQuery) statement.getStatementSource()).getSource() == editor;
+        if (statement == null) {
+            return false;
+        }
+        Object source = statement.getStatementSource();
+        if (source instanceof SQLQuery) {
+            return ((SQLQuery) source).getSource() == editor;
+        }
+        if (source instanceof IResultSetController) {
+            return ((IResultSetController) source).getSite().getPart() == editor;
+        }
+        return false;
     }
 
 }

@@ -108,14 +108,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     // Perform export
                     if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        dataContainer.readData(session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE);
+                        dataContainer.readData(session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE, consumer);
                     } else {
                         // Read all data by segments
                         long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (; ; ) {
                             DBCStatistics statistics = dataContainer.readData(
-                                session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE);
+                                session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE, consumer);
                             if (statistics == null || statistics.getRowsFetched() < segmentSize) {
                                 // Done
                                 break;

@@ -107,7 +107,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         executeBatch = containerMapping.getTarget().insertData(
             targetSession,
             targetAttributes.toArray(new DBSAttributeBase[targetAttributes.size()]),
-            null);
+            null,
+            sourceObject);
     }
 
     @Override
