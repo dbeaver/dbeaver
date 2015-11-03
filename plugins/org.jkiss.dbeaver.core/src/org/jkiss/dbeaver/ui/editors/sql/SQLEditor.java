@@ -1376,7 +1376,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @NotNull
         @Override
-        public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, Object source) throws DBCException
         {
             final SQLQueryJob job = queryProcessor.curJob;
             if (job != null) {

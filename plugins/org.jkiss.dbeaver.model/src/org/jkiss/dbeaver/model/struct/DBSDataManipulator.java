@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
  */
 public interface DBSDataManipulator extends DBSDataContainer {
 
-    public static final int DATA_INSERT         = 1 << 16;
-    public static final int DATA_UPDATE         = 1 << 17;
-    public static final int DATA_DELETE         = 1 << 18;
+    int DATA_INSERT         = 1 << 16;
+    int DATA_UPDATE         = 1 << 17;
+    int DATA_DELETE         = 1 << 18;
 
     interface ExecuteBatch {
         void add(@NotNull Object[] attributeValues) throws DBCException;
@@ -48,7 +48,8 @@ public interface DBSDataManipulator extends DBSDataContainer {
     ExecuteBatch insertData(
         @NotNull DBCSession session,
         @NotNull DBSAttributeBase[] attributes,
-        @Nullable DBDDataReceiver keysReceiver)
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull Object source)
         throws DBCException;
 
     @NotNull
@@ -56,13 +57,15 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull DBCSession session,
         @NotNull DBSAttributeBase[] updateAttributes,
         @NotNull DBSAttributeBase[] keyAttributes,
-        @Nullable DBDDataReceiver keysReceiver)
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull Object source)
         throws DBCException;
 
     @NotNull
     ExecuteBatch deleteData(
         @NotNull DBCSession session,
-        @NotNull DBSAttributeBase[] keyAttributes)
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @NotNull Object source)
         throws DBCException;
 
 }

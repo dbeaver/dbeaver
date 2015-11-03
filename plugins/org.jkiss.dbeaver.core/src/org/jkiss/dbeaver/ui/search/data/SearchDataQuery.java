@@ -185,7 +185,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
             }
             dataReceiver.filter = new DBDDataFilter(constraints);
             dataReceiver.filter.setAnyConstraint(true);
-            return dataContainer.readData(session, dataReceiver, dataReceiver.filter, -1, -1, 0);
+            return dataContainer.readData(session, dataReceiver, dataReceiver.filter, -1, -1, 0, dataContainer);
         } catch (DBException e) {
             throw new DBCException("Error finding rows", e);
         }

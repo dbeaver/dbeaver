@@ -193,7 +193,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             assert (dataSource != null);
             try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
+                source.readData(session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, source);
                 for (DBCAttributeMetaData attr : receiver.attributes) {
                     addAttributeMapping(monitor, attr);
                 }

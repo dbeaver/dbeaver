@@ -402,7 +402,8 @@ class ResultSetPersister {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
                                 session,
-                                DBDAttributeValue.getAttributes(statement.keyAttributes));
+                                DBDAttributeValue.getAttributes(statement.keyAttributes),
+                                viewer);
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                                 deleteStats.accumulate(batch.execute(session));
@@ -423,7 +424,8 @@ class ResultSetPersister {
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
                                 session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                statement.needKeys() ? new KeyDataReceiver(statement) : null);
+                                statement.needKeys() ? new KeyDataReceiver(statement) : null,
+                                viewer);
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                                 insertStats.accumulate(batch.execute(session));
@@ -445,7 +447,8 @@ class ResultSetPersister {
                                 session,
                                 DBDAttributeValue.getAttributes(statement.updateAttributes),
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                null);
+                                null,
+                                viewer);
                             try {
                                 // Make single array of values
                                 Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];

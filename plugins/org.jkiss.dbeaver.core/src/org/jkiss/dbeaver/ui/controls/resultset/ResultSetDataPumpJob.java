@@ -135,7 +135,8 @@ class ResultSetDataPumpJob extends DataSourceJob {
                 dataFilter,
                 offset,
                 maxRows,
-                DBSDataContainer.FLAG_READ_PSEUDO);
+                DBSDataContainer.FLAG_READ_PSEUDO,
+                controller);
         } catch (DBException e) {
             error = e;
         } finally {
