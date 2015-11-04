@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import java.sql.SQLException;
 
 /**
- * PostgreTypeType
+ * PostgreJdbcFactory
  */
 public class PostgreJdbcFactory extends JDBCFactoryDefault
 {

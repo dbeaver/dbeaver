@@ -8,4 +8,122 @@
         <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver"/>
     </extension>
 
+<!--
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+                class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
+                description="PostgreSQL JDBC connector"
+                id="postgresql"
+                label="PostgreSQL"
+                icon="icons/postgresql_icon.png">
+            <tree path="postgresql" label="PostgreSQL data source">
+                <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
+                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericStoredCode" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
+                                </items>
+                            </items>
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                        </folder>
+                    </items>
+                </items>
+            </tree>
+
+            <drivers managable="true">
+
+                <driver
+                        id="postgresql"
+                        label="PostgreSQL"
+                        icon="icons/postgresql_icon.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="http://jdbc.postgresql.org/"
+                        description="PostgreSQL standard driver">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
+
+                    <property name="loginTimeout" value="10"/>
+
+                    <parameter name="query-get-active-db" value="SHOW search_path"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                    <parameter name="omit-type-cache" value="true"/>
+                    <parameter name="supports-scroll" value="true"/>
+                </driver>
+            </drivers>
+
+            <views>
+                <view
+                        id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
+                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                        label="%dialog.connection.header"
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/database.png">
+                </view>
+                <view
+                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                        icon="icons/database.png"
+                        id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
+                        label="%dialog.connection.header"
+                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+-->
+
+
 </plugin>

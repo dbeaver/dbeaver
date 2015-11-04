@@ -25,7 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 
 /**
- * JDBCResultSetMetaDataImpl
+ * PostgreResultSetMetaDataImpl
  */
 public class PostgreResultSetMetaDataImpl extends JDBCResultSetMetaDataImpl
 {
@@ -38,7 +38,7 @@ public class PostgreResultSetMetaDataImpl extends JDBCResultSetMetaDataImpl
     public String getSchemaName(int column) throws SQLException {
         String schemaName;
         try {
-            schemaName = (String)original.getClass().getMethod("getBaseSchemaName", Integer.TYPE).invoke(column);
+            schemaName = (String)original.getClass().getMethod("getBaseSchemaName", Integer.TYPE).invoke(original, column);
         } catch (InvocationTargetException e) {
             throw new SQLException("Error getting schema name", e.getTargetException());
         } catch (Exception e) {
