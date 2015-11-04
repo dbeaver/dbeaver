@@ -61,7 +61,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
     private String catalogName;
     private String schemaName;
 
-    public JDBCColumnMetaData(JDBCResultSetMetaData resultSetMeta, int ordinalPosition)
+    public JDBCColumnMetaData(JDBCResultSetMetaDataImpl resultSetMeta, int ordinalPosition)
         throws SQLException
     {
         this(resultSetMeta.getResultSet().getSession().getDataSource(), resultSetMeta, ordinalPosition);

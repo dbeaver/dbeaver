@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -65,6 +64,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         return context;
     }
 
+    @NotNull
     @Override
     public JDBCDataSource getDataSource()
     {
@@ -122,10 +122,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                             scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                             updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                     }
-                    catch (UnsupportedOperationException e) {
-                        statement = createStatement();
-                    }
-                    catch (LinkageError e) {
+                    catch (UnsupportedOperationException | LinkageError e) {
                         statement = createStatement();
                     }
                     if (statement instanceof JDBCStatementImpl) {
@@ -188,7 +185,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     }
 
     private JDBCStatement makeStatement(Statement statement)
-        throws SQLFeatureNotSupportedException
+        throws SQLException
     {
         if (statement instanceof CallableStatement) {
             return createCallableStatementImpl((CallableStatement)statement, null);
@@ -670,30 +667,30 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     }
 
     protected JDBCStatement createStatementImpl(Statement original)
-        throws SQLFeatureNotSupportedException,IllegalArgumentException
+        throws SQLException,IllegalArgumentException
     {
         if (original == null) {
             throw new IllegalArgumentException("Null statement");
         }
-        return new JDBCStatementImpl<>(this, original, !isLoggingEnabled());
+        return context.getDataSource().getJdbcFactory().createStatement(this, original, !isLoggingEnabled());
     }
 
     protected JDBCPreparedStatement createPreparedStatementImpl(PreparedStatement original, @Nullable String sql)
-        throws SQLFeatureNotSupportedException,IllegalArgumentException
+        throws SQLException,IllegalArgumentException
     {
         if (original == null) {
             throw new IllegalArgumentException("Null statement");
         }
-        return new JDBCPreparedStatementImpl(this, original, sql, !isLoggingEnabled());
+        return context.getDataSource().getJdbcFactory().createPreparedStatement(this, original, sql, !isLoggingEnabled());
     }
 
     protected JDBCCallableStatement createCallableStatementImpl(CallableStatement original, @Nullable String sql)
-        throws SQLFeatureNotSupportedException,IllegalArgumentException
+        throws SQLException,IllegalArgumentException
     {
         if (original == null) {
             throw new IllegalArgumentException("Null statement");
         }
-        return new JDBCCallableStatementImpl(this, original, sql, !isLoggingEnabled());
+        return context.getDataSource().getJdbcFactory().createCallableStatement(this, original, sql, !isLoggingEnabled());
     }
 
 

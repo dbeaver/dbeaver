@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -31,6 +32,9 @@ import java.util.concurrent.Executor;
  * JDBC session
  */
 public interface JDBCSession extends DBCSession, Connection {
+
+    @NotNull
+    JDBCDataSource getDataSource();
 
     Connection getOriginal()
         throws SQLException;

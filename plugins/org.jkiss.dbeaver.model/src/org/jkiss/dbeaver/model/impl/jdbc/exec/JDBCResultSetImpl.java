@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 
@@ -44,37 +46,48 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     static final Log log = Log.getLog(JDBCResultSetImpl.class);
 
     private JDBCSession session;
-    private JDBCStatementImpl statement;
+    private JDBCStatement statement;
     private ResultSet original;
     private JDBCResultSetMetaData metaData;
     private long rowsFetched;
     private long maxRows = -1;
     private boolean fake;
+    private boolean disableLogging;
 
-    public static JDBCResultSetImpl makeResultSet(JDBCSession session, ResultSet original, String description, boolean disableLogging)
+    public static JDBCResultSet makeResultSet(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
+        throws SQLException
     {
-        return new JDBCResultSetImpl(session, original, description, disableLogging);
+        return session.getDataSource().getJdbcFactory().createResultSet(session, statement, original, description, disableLogging);
     }
 
-    protected JDBCResultSetImpl(JDBCSession session, ResultSet original, String description, boolean disableLogging)
+    protected JDBCResultSetImpl(@NotNull JDBCSession session, @Nullable JDBCStatement statement, @NotNull ResultSet original, String description, boolean disableLogging)
     {
         this.session = session;
         this.original = original;
         if (this.original == null) {
             log.debug("Null result set passed. Possibly broken database metadata");
         }
-        // Make fake statement
-        this.statement = new JDBCFakeStatementImpl(session, this, description, disableLogging);
-        this.fake = true;
+        this.disableLogging = disableLogging;
+        if (statement == null) {
+            // Make fake statement
+            JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(session, this, description, disableLogging);
+            this.statement = fakeStatement;
+            this.fake = true;
 
-        // Simulate statement execution
-        this.statement.beforeExecute();
-        this.statement.afterExecute();
-        if (this.statement.isQMLoggingEnabled()) {
+            // Simulate statement execution
+            fakeStatement.beforeExecute();
+            fakeStatement.afterExecute();
+        } else {
+            this.statement = statement;
+            this.fake = false;
+        }
+
+        if (!disableLogging) {
             // Notify handler
             QMUtils.getDefaultHandler().handleResultSetOpen(this);
         }
     }
+/*
 
     protected JDBCResultSetImpl(JDBCStatementImpl statement, ResultSet original)
     {
@@ -88,6 +101,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             QMUtils.getDefaultHandler().handleResultSetOpen(this);
         }
     }
+*/
 
     protected void beforeFetch()
     {
@@ -113,13 +127,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     }
 
     @Override
-    public JDBCStatementImpl getSourceStatement()
+    public JDBCStatement getSourceStatement()
     {
         return statement;
     }
 
     @Override
-    public JDBCStatementImpl getStatement()
+    public JDBCStatement getStatement()
     {
         return statement;
     }
@@ -207,7 +221,11 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         throws DBCException
     {
         if (metaData == null) {
-            metaData = createMetaDataImpl();
+            try {
+                metaData = createMetaDataImpl();
+            } catch (SQLException e) {
+                throw new DBCException(e, session.getDataSource());
+            }
         }
         return metaData;
     }
@@ -284,7 +302,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
                 log.debug("Can't check for resultset warnings", e);
             }
 */
-            if (this.statement.isQMLoggingEnabled()) {
+            if (!disableLogging) {
                 // Handle close
                 QMUtils.getDefaultHandler().handleResultSetClose(this, rowsFetched);
             }
@@ -1658,9 +1676,9 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         return original.isWrapperFor(iface);
     }
 
-    protected JDBCResultSetMetaData createMetaDataImpl() throws DBCException
+    protected JDBCResultSetMetaData createMetaDataImpl() throws SQLException
     {
-        return new JDBCResultSetMetaData(this);
+        return session.getDataSource().getJdbcFactory().createResultSetMetaData(this);
     }
 
 }

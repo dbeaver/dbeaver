@@ -29,13 +29,13 @@ import java.util.List;
  */
 public class JDBCTableMetaData implements DBCEntityMetaData {
 
-    private final JDBCResultSetMetaData resultSetMetaData;
+    private final JDBCResultSetMetaDataImpl resultSetMetaData;
     private final String catalogName;
     private final String schemaName;
     private final String tableName;
     private final List<JDBCColumnMetaData> columns = new ArrayList<>();
 
-    JDBCTableMetaData(@NotNull JDBCResultSetMetaData resultSetMetaData, String catalogName, String schemaName, @NotNull String tableName)
+    JDBCTableMetaData(@NotNull JDBCResultSetMetaDataImpl resultSetMetaData, String catalogName, String schemaName, @NotNull String tableName)
     {
         this.resultSetMetaData = resultSetMetaData;
         this.catalogName = catalogName;
@@ -43,7 +43,7 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         this.tableName = tableName;
     }
 
-    public JDBCResultSetMetaData getResultSetMetaData()
+    public JDBCResultSetMetaDataImpl getResultSetMetaData()
     {
         return resultSetMetaData;
     }

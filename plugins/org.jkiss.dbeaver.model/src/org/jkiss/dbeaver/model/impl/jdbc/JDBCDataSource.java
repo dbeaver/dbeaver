@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
@@ -80,12 +82,14 @@ public abstract class JDBCDataSource
     @NotNull
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected volatile SQLDialect sqlDialect;
+    protected final JDBCFactory jdbcFactory;
 
     public JDBCDataSource(DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
         this.sqlDialect = new BasicSQLDialect();
+        this.jdbcFactory = createJdbcFactory();
         this.container = container;
         this.executionContext = new JDBCExecutionContext(this, "Main");
         this.executionContext.connect(monitor, null, null, false);
@@ -251,9 +255,15 @@ public abstract class JDBCDataSource
         return dataSourceInfo;
     }
 
+    @NotNull
     @Override
     public SQLDialect getSQLDialect() {
         return sqlDialect;
+    }
+
+    @NotNull
+    public JDBCFactory getJdbcFactory() {
+        return jdbcFactory;
     }
 
     @NotNull
@@ -517,6 +527,10 @@ public abstract class JDBCDataSource
     protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData)
     {
         return new JDBCSQLDialect(this, "JDBC", metaData);
+    }
+
+    protected JDBCFactory createJdbcFactory() {
+        return new JDBCFactoryDefault();
     }
 
     /////////////////////////////////////////////////

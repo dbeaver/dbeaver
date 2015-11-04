@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.SQLScriptProgressListener;
@@ -87,7 +87,7 @@ public abstract class DB2BaseTableToolDialog extends GenerateMultiSQLDialog<DB2T
             public void processObjectResults(DB2Table db2Table, DBCResultSet resultSet) throws DBCException
             {
                 // Retrive column names
-                JDBCResultSetMetaData rsMetaData = (JDBCResultSetMetaData) resultSet.getMeta();
+                JDBCResultSetMetaDataImpl rsMetaData = (JDBCResultSetMetaDataImpl) resultSet.getMeta();
 
                 try {
 
