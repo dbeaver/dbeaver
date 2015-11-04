@@ -70,11 +70,18 @@ public class ResultSetUtils
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
                 Object metaSource = attrMeta.getSource();
-                if (entityMeta == null && metaSource instanceof SQLQuery) {
-                    entityMeta = ((SQLQuery)metaSource).getSingleSource();
+                if (entityMeta == null) {
+                    if (metaSource instanceof SQLQuery) {
+                        entityMeta = ((SQLQuery) metaSource).getSingleSource();
+                    }
                 }
                 DBSEntity entity = null;
-                if (metaSource instanceof DBSEntity) {
+                if (metaSource instanceof IResultSetController) {
+                    DBSDataContainer dataContainer = ((IResultSetController) metaSource).getDataContainer();
+                    if (dataContainer instanceof DBSEntity) {
+                        entity = (DBSEntity)dataContainer;
+                    }
+                } else if (metaSource instanceof DBSEntity) {
                     entity = (DBSEntity)metaSource;
                 } else if (entityMeta != null) {
 
