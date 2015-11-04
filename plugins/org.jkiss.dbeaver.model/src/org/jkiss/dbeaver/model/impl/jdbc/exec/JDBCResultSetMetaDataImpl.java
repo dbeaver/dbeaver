@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -38,10 +37,10 @@ import java.util.Map;
  */
 public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
 {
-    private JDBCResultSet resultSet;
-    private ResultSetMetaData original;
-    private List<DBCAttributeMetaData> columns = new ArrayList<>();
-    private Map<String, JDBCTableMetaData> tables = new HashMap<>();
+    protected JDBCResultSet resultSet;
+    protected ResultSetMetaData original;
+    protected List<DBCAttributeMetaData> columns = new ArrayList<>();
+    protected Map<String, JDBCTableMetaData> tables = new HashMap<>();
 
     public JDBCResultSetMetaDataImpl(JDBCResultSet resultSet)
         throws SQLException
