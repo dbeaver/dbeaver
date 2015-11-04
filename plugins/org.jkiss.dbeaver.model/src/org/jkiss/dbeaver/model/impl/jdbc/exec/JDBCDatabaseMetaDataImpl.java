@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.DatabaseMetaData;
@@ -32,10 +33,10 @@ import java.sql.SQLException;
  */
 public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
 
-    private JDBCConnectionImpl connection;
+    private JDBCSession connection;
     private DatabaseMetaData original;
 
-    public JDBCDatabaseMetaDataImpl(JDBCConnectionImpl connection, DatabaseMetaData original)
+    public JDBCDatabaseMetaDataImpl(JDBCSession connection, DatabaseMetaData original)
     {
         this.connection = connection;
         this.original = original;
@@ -50,16 +51,17 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     }
 
     private JDBCResultSet makeResultSet(java.sql.ResultSet resultSet, String functionName, Object ... args)
+        throws SQLException
     {
         String description = functionName;
         if (args.length > 0) {
             description += " [" + DBUtils.getSimpleQualifiedName(args) + "]";
         }
-        return JDBCResultSetImpl.makeResultSet(connection, resultSet, description, false);
+        return JDBCResultSetImpl.makeResultSet(connection, null, resultSet, description, false);
     }
 
     @Override
-    public JDBCConnectionImpl getConnection()
+    public JDBCSession getConnection()
     {
         return connection;
     }

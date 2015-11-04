@@ -254,13 +254,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Nullable
-    protected JDBCResultSetImpl makeResultSet(@Nullable ResultSet resultSet)
+    protected JDBCResultSet makeResultSet(@Nullable ResultSet resultSet)
         throws SQLException
     {
         if (resultSet == null) {
             return null;
         }
-        JDBCResultSetImpl dbResult = createResultSetImpl(resultSet);
+        JDBCResultSet dbResult = createResultSetImpl(resultSet);
         // Scroll original result set if needed
         if (rsOffset > 0) {
             JDBCUtils.scrollResultSet(resultSet, rsOffset, !getConnection().getDataSource().getInfo().supportsResultSetScroll());
@@ -272,9 +272,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
         return dbResult;
     }
 
-    protected JDBCResultSetImpl createResultSetImpl(ResultSet resultSet)
+    protected JDBCResultSet createResultSetImpl(ResultSet resultSet)
+        throws SQLException
     {
-        return new JDBCResultSetImpl(this, resultSet);
+        return connection.getDataSource().getJdbcFactory().createResultSet(connection, this, resultSet, null, disableLogging);
     }
 
     ////////////////////////////////////////////////////////////////////

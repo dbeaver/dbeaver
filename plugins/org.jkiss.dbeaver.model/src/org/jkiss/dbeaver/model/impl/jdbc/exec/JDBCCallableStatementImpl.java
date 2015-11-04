@@ -142,7 +142,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
     public JDBCResultSet getResultSet()
         throws SQLException
     {
-        JDBCResultSetImpl resultSet = makeResultSet(getOriginal().getResultSet());
+        JDBCResultSet resultSet = makeResultSet(getOriginal().getResultSet());
         if (resultSet == null && procedure != null) {
             JDBCResultSetCallable procResults = new JDBCResultSetCallable(getConnection(), this);
             try {

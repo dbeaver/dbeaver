@@ -44,6 +44,7 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
      * Data source of this session
      * @return data source
      */
+    @NotNull
     DBPDataSource getDataSource();
 
     /**

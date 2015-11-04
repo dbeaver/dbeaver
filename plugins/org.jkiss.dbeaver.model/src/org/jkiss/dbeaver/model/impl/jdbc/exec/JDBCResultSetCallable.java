@@ -46,6 +46,11 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     @Override
+    public void setMaxRows(long rsMaxRows) {
+
+    }
+
+    @Override
     public boolean next() throws SQLException {
         return nextRow();
     }

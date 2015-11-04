@@ -33,4 +33,6 @@ public interface JDBCResultSet extends ResultSet, DBCResultSet {
 
     @Override
     void close();
+
+    void setMaxRows(long rsMaxRows);
 }

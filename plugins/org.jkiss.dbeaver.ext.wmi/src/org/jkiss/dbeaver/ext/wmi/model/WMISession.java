@@ -41,6 +41,7 @@ public class WMISession extends AbstractSession {
         return dataSource;
     }
 
+    @NotNull
     @Override
     public WMIDataSource getDataSource()
     {
