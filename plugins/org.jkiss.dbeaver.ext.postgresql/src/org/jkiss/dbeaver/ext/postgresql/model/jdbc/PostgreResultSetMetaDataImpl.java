@@ -47,4 +47,16 @@ public class PostgreResultSetMetaDataImpl extends JDBCResultSetMetaDataImpl
         return JDBCUtils.normalizeIdentifier(schemaName);
     }
 
+    @Override
+    public String getTableName(int column) throws SQLException {
+        String tableName;
+        try {
+            tableName = (String)original.getClass().getMethod("getBaseTableName", Integer.TYPE).invoke(original, column);
+        } catch (InvocationTargetException e) {
+            throw new SQLException("Error getting table name", e.getTargetException());
+        } catch (Exception e) {
+            throw new SQLException("Error getting table name", e);
+        }
+        return JDBCUtils.normalizeIdentifier(tableName);
+    }
 }
