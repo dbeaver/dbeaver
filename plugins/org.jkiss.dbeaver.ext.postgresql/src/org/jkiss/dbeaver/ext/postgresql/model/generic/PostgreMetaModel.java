@@ -23,7 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -52,8 +54,17 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 {
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*Position: ([0-9]+)");
 
+    public PostgreMetaModel() {
+        super("postgresql", new String[] {"org.postgresql.Driver"});
+    }
+
     public PostgreMetaModel(IConfigurationElement cfg) {
         super(cfg);
+    }
+
+    @Override
+    public GenericDataSource createDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new PostgreDataSource(monitor, container, this);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

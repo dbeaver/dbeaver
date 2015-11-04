@@ -147,7 +147,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         if (metaModel == null) {
             metaModel = getStandardMetaModel();
         }
-        return new GenericDataSource(monitor, container, metaModel);
+        return metaModel.createDataSource(monitor, container);
     }
 
     protected GenericMetaModel getStandardMetaModel() {
