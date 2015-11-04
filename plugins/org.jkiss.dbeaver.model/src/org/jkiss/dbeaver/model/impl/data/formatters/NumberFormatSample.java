@@ -41,7 +41,7 @@ public class NumberFormatSample implements DBDDataFormatterSample {
         props.put(PROP_USE_GROUPING, tmp.isGroupingUsed());
         props.put(PROP_MAX_INT_DIGITS, tmp.getMaximumIntegerDigits());
         props.put(PROP_MIN_INT_DIGITS, tmp.getMinimumIntegerDigits());
-        props.put(PROP_MAX_FRACT_DIGITS, tmp.getMaximumFractionDigits());
+        props.put(PROP_MAX_FRACT_DIGITS, Math.max(tmp.getMaximumFractionDigits(), 6));
         props.put(PROP_MIN_FRACT_DIGITS, tmp.getMinimumFractionDigits());
         props.put(PROP_ROUNDING_MODE, tmp.getRoundingMode().name());
         return props;
