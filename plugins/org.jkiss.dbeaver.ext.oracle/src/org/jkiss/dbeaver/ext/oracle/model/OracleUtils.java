@@ -211,7 +211,7 @@ public class OracleUtils {
         throws DBException
     {
         final Object reference = referrer.getLazyReference(propertyId);
-        if (reference instanceof String) {
+        if (reference instanceof String && monitor != null) {
             Object object = cache.getObject(
                 monitor,
                 parent,
