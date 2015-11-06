@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Oracle utils
@@ -146,10 +147,11 @@ public class OracleUtils {
         }
     }
 
-    public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body) throws DBCException
+    public static String getSource(DBRProgressMonitor monitor, OracleSourceObject sourceObject, boolean body, boolean insertCreateReplace) throws DBCException
     {
         if (sourceObject.getSourceType().isCustom()) {
-            return "???? CUSTOM";
+            log.warn("Can't read source for custom source objects");
+            return "-- ???? CUSTOM SOURCE";
         }
         final String sourceType = sourceObject.getSourceType().name();
         final OracleSchema sourceOwner = sourceObject.getSchema();
@@ -182,7 +184,14 @@ public class OracleUtils {
                         lineCount++;
                         monitor.subTask("Line " + lineCount);
                     }
-                    return source == null ? null : source.toString();
+                    if (source == null) {
+                        return null;
+                    }
+                    if (insertCreateReplace) {
+                        return insertCreateReplace(sourceObject, body, source.toString());
+                    } else {
+                        return source.toString();
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -253,4 +262,19 @@ public class OracleUtils {
         }
     }
 
+    public static String insertCreateReplace(OracleSourceObject object, boolean body, String source) {
+        String sourceType = object.getSourceType().name();
+        if (body) {
+            sourceType += " BODY";
+        }
+        Pattern srcPattern = Pattern.compile("(" + sourceType + ")\\s+(\\w+)", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = srcPattern.matcher(source);
+        if (matcher.find()) {
+            return
+                "CREATE OR REPLACE " + matcher.group(1) + " " +
+                DBUtils.getQuotedIdentifier(object.getSchema()) + "." + matcher.group(2) +
+                source.substring(matcher.end());
+        }
+        return source;
+    }
 }

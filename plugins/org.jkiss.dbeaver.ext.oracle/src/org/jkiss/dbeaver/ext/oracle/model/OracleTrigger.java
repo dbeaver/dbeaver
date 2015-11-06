@@ -208,7 +208,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
         }
         return sourceDeclaration;
     }
