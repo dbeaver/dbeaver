@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.model.impl.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
@@ -141,6 +143,13 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 if (error != null) {
                                     throw error;
                                 }
+
+                                // Commit metadata changes
+                                DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                                if (txnManager != null) {
+                                    txnManager.commit(session);
+                                }
+
                             } finally {
                                 closePersistContext(session);
                             }
