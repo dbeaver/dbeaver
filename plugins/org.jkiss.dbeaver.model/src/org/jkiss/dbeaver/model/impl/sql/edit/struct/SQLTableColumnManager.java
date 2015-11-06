@@ -180,7 +180,7 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     protected String getNewColumnName(DBECommandContext context, TABLE_TYPE table)
     {
         for (int i = 1; ; i++)  {
-            final String name = "Column" + i;
+            final String name = DBObjectNameCaseTransformer.transformName(table.getDataSource(), "Column" + i);
             try {
                 // check for existing columns
                 boolean exists = table.getAttribute(VoidProgressMonitor.INSTANCE, name) != null;
@@ -194,11 +194,11 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
                     }
                 }
                 if (!exists) {
-                    return DBObjectNameCaseTransformer.transformName(table.getDataSource(), name);
+                    return name;
                 }
             } catch (DBException e) {
                 log.warn(e);
-                return DBObjectNameCaseTransformer.transformName(table.getDataSource(), name);
+                return name;
             }
         }
 
