@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -54,15 +54,12 @@ import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.ICommandIds;
-import org.jkiss.dbeaver.ui.TableToolTip;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
@@ -369,7 +366,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private void showEventDetails(QMMetaEvent event)
     {
-        EventViewDialog dialog = new EventViewDialog(logTable.getShell(), event);
+        EventViewDialog dialog = new EventViewDialog(event);
         dialog.open();
 /*
         EventSelectionProvider eventSelectionProvider = new EventSelectionProvider();
@@ -821,15 +818,22 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
 
-    private class EventViewDialog extends TrayDialog {
+    private class EventViewDialog extends BaseSQLDialog {
+
+        private static final String DIALOG_ID = "DBeaver.QM.EventViewDialog";//$NON-NLS-1$
 
         private final QMMetaEvent object;
 
-        protected EventViewDialog(Shell shell, QMMetaEvent object)
+        protected EventViewDialog(QMMetaEvent object)
         {
-            super(shell);
+            super(QueryLogViewer.this.site, "Event", null);
             setShellStyle(SWT.SHELL_TRIM);
             this.object = object;
+        }
+
+        @Override
+        protected IDialogSettings getDialogBoundsSettings() {
+            return UIUtils.getDialogSettings(DIALOG_ID);
         }
 
         @Override
@@ -845,10 +849,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
             composite.setLayout(new GridLayout(1, false));
 
-//            SashForm sash = new SashForm(composite, SWT.VERTICAL);
-//            sash.setLayoutData(new GridData(GridData.FILL_BOTH));
-//            sash.setLayout(new GridLayout(1, false));
-
             final Composite topFrame = UIUtils.createPlaceholder(composite, 2, 5);
             topFrame.setLayoutData(new GridData(GridData.FILL_BOTH));
 
@@ -858,12 +858,18 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final Label messageLabel = UIUtils.createControlLabel(topFrame, CoreMessages.controls_querylog_label_text);
             messageLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-            final Text messageText = new Text(topFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
-            messageText.setText(COLUMN_TEXT.getText(object));
+            Control msg;
+            if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                msg = createSQLPanel(topFrame);
+            } else {
+                final Text messageText = new Text(topFrame, SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
+                messageText.setText(COLUMN_TEXT.getText(object));
+                msg = messageText;
+            }
             GridData gd = new GridData(GridData.FILL_BOTH);
             //gd.heightHint = 40;
             gd.widthHint = 500;
-            messageText.setLayoutData(gd);
+            msg.setLayoutData(gd);
 
             final Composite bottomFrame = UIUtils.createPlaceholder(composite, 1, 5);
             bottomFrame.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -885,6 +891,24 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         protected void createButtonsForButtonBar(Composite parent)
         {
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        }
+
+        @Override
+        protected DBCExecutionContext getExecutionContext() {
+            if (object.getObject() instanceof QMMStatementExecuteInfo) {
+                return ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getReference();
+            }
+            return null;
+        }
+
+        @Override
+        protected String getSQLText() {
+            return COLUMN_TEXT.getText(object);
+        }
+
+        @Override
+        protected boolean isLabelVisible() {
+            return false;
         }
     }
 
