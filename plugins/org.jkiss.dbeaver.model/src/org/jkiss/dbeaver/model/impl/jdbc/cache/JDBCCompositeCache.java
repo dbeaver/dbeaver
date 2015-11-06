@@ -207,7 +207,6 @@ public abstract class JDBCCompositeCache<
         }
 
         Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<>();
-        List<OBJECT> precachedObjects = new ArrayList<>();
 
         // Load index columns
         DBPDataSource dataSource = owner.getDataSource();
@@ -251,11 +250,8 @@ public abstract class JDBCCompositeCache<
                             }
                         }
                         synchronized (objectCache) {
-                            final Collection<OBJECT> objectsCache = objectCache.get(parent);
-                            if (objectsCache != null) {
-                                // Already read
-                                parentObjectMap.put(parent, null);
-                                precachedObjects.addAll(objectsCache);
+                            if (objectCache.containsKey(parent)) {
+                                // Already cached
                                 continue;
                             }
                         }
@@ -305,56 +301,59 @@ public abstract class JDBCCompositeCache<
 
         // Fill global cache
         synchronized (this) {
-            if (forParent != null || !parentObjectMap.isEmpty()) {
-                if (forParent == null) {
-                    // Cache global object list
-                    List<OBJECT> globalCache = new ArrayList<>();
-                    for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
-                        if (objMap != null) {
-                            for (ObjectInfo info : objMap.values()) {
-                                if (!info.broken) {
-                                    globalCache.add(info.object);
+            synchronized (objectCache) {
+                if (forParent != null || !parentObjectMap.isEmpty()) {
+                    if (forParent == null) {
+                        // Cache global object list
+                        List<OBJECT> globalCache = new ArrayList<>();
+                        for (Map<String, ObjectInfo> objMap : parentObjectMap.values()) {
+                            if (objMap != null) {
+                                for (ObjectInfo info : objMap.values()) {
+                                    if (!info.broken) {
+                                        globalCache.add(info.object);
+                                    }
                                 }
                             }
                         }
+                        // Save precached objects in global cache
+                        for (List<OBJECT> objects : objectCache.values()) {
+                            globalCache.addAll(objects);
+                        }
+                        // Add precached objects to global cache too
+                        this.setCache(globalCache);
+                        this.invalidateObjects(monitor, owner, new CacheIterator());
                     }
-                    // Add precached objects to global cache too
-                    globalCache.addAll(precachedObjects);
-                    this.setCache(globalCache);
-                    this.invalidateObjects(monitor, owner, new CacheIterator());
                 }
-            }
-        }
 
-        synchronized (objectCache) {
-            // Cache data in individual objects only if we have read something or have certain parent object
-            // Otherwise we assume that this function is not supported for mass data reading
+                // Cache data in individual objects only if we have read something or have certain parent object
+                // Otherwise we assume that this function is not supported for mass data reading
 
-            // All objects are read. Now assign them to parents
-            for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
-                if (colEntry.getValue() == null) {
-                    // Do not overwrite this object's cache
-                    continue;
-                }
-                Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
-                ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
-                for (ObjectInfo objectInfo : objectInfos) {
-                    if (!objectInfo.broken) {
-                        cacheChildren(objectInfo.object, objectInfo.rows);
-                        objects.add(objectInfo.object);
+                // All objects are read. Now assign them to parents
+                for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                    if (colEntry.getValue() == null || objectCache.containsKey(colEntry.getKey())) {
+                        // Do not overwrite this object's cache
+                        continue;
                     }
-                }
-                objectCache.put(colEntry.getKey(), objects);
-            }
-            // Now set empty object list for other parents
-            if (forParent == null) {
-                for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
-                    if (!parentObjectMap.containsKey(tmpParent)) {
-                        objectCache.put(tmpParent, new ArrayList<OBJECT>());
+                    Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
+                    ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
+                    for (ObjectInfo objectInfo : objectInfos) {
+                        if (!objectInfo.broken) {
+                            cacheChildren(objectInfo.object, objectInfo.rows);
+                            objects.add(objectInfo.object);
+                        }
                     }
+                    objectCache.put(colEntry.getKey(), objects);
                 }
-            } else if (!parentObjectMap.containsKey(forParent)) {
-                objectCache.put(forParent, new ArrayList<OBJECT>());
+                // Now set empty object list for other parents
+                if (forParent == null) {
+                    for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
+                        if (!parentObjectMap.containsKey(tmpParent) && !objectCache.containsKey(tmpParent)) {
+                            objectCache.put(tmpParent, new ArrayList<OBJECT>());
+                        }
+                    }
+                } else if (!parentObjectMap.containsKey(forParent) && !objectCache.containsKey(forParent)) {
+                    objectCache.put(forParent, new ArrayList<OBJECT>());
+                }
             }
         }
 

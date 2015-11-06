@@ -236,14 +236,14 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    private boolean isChildrenCached(OBJECT parent)
+    protected boolean isChildrenCached(OBJECT parent)
     {
         synchronized (childrenCache) {
             return childrenCache.containsKey(parent);
         }
     }
 
-    private void cacheChildren(OBJECT parent, List<CHILD> children)
+    protected void cacheChildren(OBJECT parent, List<CHILD> children)
     {
         synchronized (childrenCache) {
             SimpleObjectCache<OBJECT, CHILD> nestedCache = childrenCache.get(parent);

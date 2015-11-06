@@ -351,7 +351,14 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     public static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> {
-        
+
+        private static final Comparator<? super OracleTableColumn> ORDER_COMPARATOR = new Comparator<OracleTableColumn>() {
+            @Override
+            public int compare(OracleTableColumn o1, OracleTableColumn o2) {
+                return o1.getOrdinalPosition() - o2.getOrdinalPosition();
+            }
+        };
+
         protected TableCache()
         {
             super("TABLE_NAME");
@@ -394,19 +401,20 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT /*+USE_NL(cc)*/ c.*,cc.COMMENTS\n" +
+                .append("SELECT c.*\n" +
                     "FROM SYS.ALL_TAB_COLS c\n" +
-                    "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
+//                    "LEFT OUTER JOIN SYS.ALL_COL_COMMENTS cc ON CC.OWNER=c.OWNER AND cc.TABLE_NAME=c.TABLE_NAME AND cc.COLUMN_NAME=c.COLUMN_NAME\n" +
                     "WHERE c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
             }
+/*
             sql.append("\nORDER BY ");
             if (forTable != null) {
                 sql.append("c.TABLE_NAME,");
             }
             sql.append("c.COLUMN_ID");
-
+*/
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             dbStat.setString(1, owner.getName());
             if (forTable != null) {
@@ -420,6 +428,12 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException, DBException
         {
             return new OracleTableColumn(session.getProgressMonitor(), table, dbResult);
+        }
+
+        @Override
+        protected void cacheChildren(OracleTableBase parent, List<OracleTableColumn> oracleTableColumns) {
+            Collections.sort(oracleTableColumns, ORDER_COMPARATOR);
+            super.cacheChildren(parent, oracleTableColumns);
         }
     }
 
