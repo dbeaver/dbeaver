@@ -114,6 +114,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
 
+    @Nullable
     public abstract DBCExecutionContext getExecutionContext();
 
     public final DBPDataSource getDataSource()
