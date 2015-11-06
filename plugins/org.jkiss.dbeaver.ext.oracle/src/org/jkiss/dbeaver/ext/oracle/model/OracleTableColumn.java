@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -83,7 +85,6 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         setRequired(!"Y".equals(JDBCUtils.safeGetString(dbResult, "NULLABLE")));
         setScale(JDBCUtils.safeGetInt(dbResult, "DATA_SCALE"));
         setPrecision(JDBCUtils.safeGetInt(dbResult, "DATA_PRECISION"));
-        this.comment = JDBCUtils.safeGetString(dbResult, "COMMENTS");
         this.hidden = JDBCUtils.safeGetBoolean(dbResult, "HIDDEN_COLUMN", OracleConstants.YES);
     }
 
@@ -160,15 +161,34 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return false;
     }
 
+    public static class CommentLoadValidator implements IPropertyCacheValidator<OracleTableColumn> {
+        @Override
+        public boolean isPropertyCached(OracleTableColumn object, Object propertyId)
+        {
+            return object.comment != null;
+        }
+    }
+
     @Property(viewable = true, editable = true, updatable = true, order = 100)
-    public String getComment()
+    @LazyProperty(cacheValidator = CommentLoadValidator.class)
+    public String getComment(DBRProgressMonitor monitor)
     {
+        if (comment == null) {
+            // Load comments for all table columns
+            getTable().loadColumnComments(monitor);
+        }
         return comment;
     }
 
-    public void setComment(String comment)
+    void setComment(String comment)
     {
         this.comment = comment;
+    }
+
+    void cacheComment() {
+        if (this.comment == null) {
+            this.comment = "";
+        }
     }
 
     @Override
