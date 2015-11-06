@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
+import java.util.List;
+
 /**
  * GenericConstraintColumn
  */
@@ -39,8 +41,14 @@ public class OracleTableForeignKeyColumn extends OracleTableConstraintColumn imp
     @Property(id = "reference", viewable = true, order = 4)
     public OracleTableColumn getReferencedColumn()
     {
-        return ((OracleTableForeignKey)getParentObject()).getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE)
-            .get(getOrdinalPosition() - 1).getAttribute();
+        OracleTableConstraint referencedConstraint = ((OracleTableForeignKey) getParentObject()).getReferencedConstraint();
+        if (referencedConstraint != null) {
+            List<OracleTableConstraintColumn> ar = referencedConstraint.getAttributeReferences(VoidProgressMonitor.INSTANCE);
+            if (ar != null) {
+                return ar.get(getOrdinalPosition() - 1).getAttribute();
+            }
+        }
+        return null;
     }
 
 }

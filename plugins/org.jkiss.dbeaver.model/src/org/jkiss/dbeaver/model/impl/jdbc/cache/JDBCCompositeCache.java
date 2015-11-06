@@ -207,7 +207,6 @@ public abstract class JDBCCompositeCache<
         }
 
         Map<PARENT, Map<String, ObjectInfo>> parentObjectMap = new LinkedHashMap<>();
-        List<OBJECT> precachedObjects = new ArrayList<>();
 
         // Load index columns
         DBPDataSource dataSource = owner.getDataSource();
@@ -251,11 +250,8 @@ public abstract class JDBCCompositeCache<
                             }
                         }
                         synchronized (objectCache) {
-                            final Collection<OBJECT> objectsCache = objectCache.get(parent);
-                            if (objectsCache != null) {
+                            if (objectCache.containsKey(parent)) {
                                 // Already read
-                                parentObjectMap.put(parent, null);
-                                precachedObjects.addAll(objectsCache);
                                 continue;
                             }
                         }
@@ -318,8 +314,11 @@ public abstract class JDBCCompositeCache<
                             }
                         }
                     }
+                    // Save precached objects in global cache
+                    for (List<OBJECT> objects : objectCache.values()) {
+                        globalCache.addAll(objects);
+                    }
                     // Add precached objects to global cache too
-                    globalCache.addAll(precachedObjects);
                     this.setCache(globalCache);
                     this.invalidateObjects(monitor, owner, new CacheIterator());
                 }
@@ -332,7 +331,7 @@ public abstract class JDBCCompositeCache<
 
             // All objects are read. Now assign them to parents
             for (Map.Entry<PARENT,Map<String,ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
-                if (colEntry.getValue() == null) {
+                if (colEntry.getValue() == null || objectCache.containsKey(colEntry.getKey())) {
                     // Do not overwrite this object's cache
                     continue;
                 }
@@ -349,11 +348,11 @@ public abstract class JDBCCompositeCache<
             // Now set empty object list for other parents
             if (forParent == null) {
                 for (PARENT tmpParent : parentCache.getTypedObjects(monitor, owner, parentType)) {
-                    if (!parentObjectMap.containsKey(tmpParent)) {
+                    if (!parentObjectMap.containsKey(tmpParent) && !objectCache.containsKey(tmpParent)) {
                         objectCache.put(tmpParent, new ArrayList<OBJECT>());
                     }
                 }
-            } else if (!parentObjectMap.containsKey(forParent)) {
+            } else if (!parentObjectMap.containsKey(forParent) && !objectCache.containsKey(forParent)) {
                 objectCache.put(forParent, new ArrayList<OBJECT>());
             }
         }
