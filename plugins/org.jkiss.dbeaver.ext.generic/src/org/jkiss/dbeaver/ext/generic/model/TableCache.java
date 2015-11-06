@@ -176,7 +176,11 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
             autoIncrement = true;
             typeName = typeName.substring(0, typeName.length() - GenericConstants.TYPE_MODIFIER_IDENTITY.length());
         }
-
+/*
+        if (charLength > 0) {
+            typeName = typeName + "(" + charLength + ")";
+        }
+*/
         return new GenericTableColumn(
             table,
             columnName,

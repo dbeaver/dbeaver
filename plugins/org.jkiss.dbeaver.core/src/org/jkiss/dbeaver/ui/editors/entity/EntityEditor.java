@@ -771,9 +771,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // TODO: make smart content refresh
         // Lists and commands should be refreshed only if we make real refresh from remote storage
         // Otherwise just update object's properties
-/*
-        getEditorInput().getCommandContext().resetChanges();
-*/
+        DBECommandContext commandContext = getCommandContext();
+        if (commandContext != null) {
+            commandContext.resetChanges();
+        }
+
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
         if (databaseObject != null && databaseObject.isPersisted()) {
             // Refresh visual content in parts
