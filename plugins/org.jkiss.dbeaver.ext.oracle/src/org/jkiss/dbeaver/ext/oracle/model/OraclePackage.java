@@ -82,7 +82,7 @@ public class OraclePackage extends OracleSchemaObject
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false, true);
         }
         return sourceDeclaration;
     }
@@ -98,7 +98,7 @@ public class OraclePackage extends OracleSchemaObject
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
-            sourceDefinition = OracleUtils.getSource(monitor, this, true);
+            sourceDefinition = OracleUtils.getSource(monitor, this, true, true);
         }
         return sourceDefinition;
     }

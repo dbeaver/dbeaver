@@ -252,7 +252,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
         }
         return sourceDeclaration;
     }
@@ -279,7 +279,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
-            sourceDefinition = OracleUtils.getSource(monitor, this, true);
+            sourceDefinition = OracleUtils.getSource(monitor, this, true, false);
         }
         return sourceDefinition;
     }
