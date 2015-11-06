@@ -55,12 +55,18 @@ public abstract class BaseSQLDialog extends BaseDialog {
         return false;
     }
 
+    protected boolean isLabelVisible() {
+        return true;
+    }
+
     protected Composite createSQLPanel(Composite parent)
     {
         Composite panel = UIUtils.createPlaceholder(parent, 1);
         panel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createControlLabel(panel, "SQL Preview");
+        if (isLabelVisible()) {
+            UIUtils.createControlLabel(panel, "SQL Preview");
+        }
 //        new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL).setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Composite editorPH = new Composite(panel, SWT.BORDER);
