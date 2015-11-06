@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -86,7 +87,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
             actions.add(new SQLDatabasePersistAction(
                 "Comment column",
                 "COMMENT ON COLUMN " + column.getTable().getFullQualifiedName() + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS '" + column.getComment() + "'"));
+                    " IS '" + column.getComment(VoidProgressMonitor.INSTANCE) + "'"));
         }
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }

@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -151,6 +154,34 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
             }
         }
         return comment;
+    }
+
+    void loadColumnComments(DBRProgressMonitor monitor) {
+        try {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table column comments")) {
+                try (JDBCPreparedStatement stat = session.prepareStatement("SELECT COLUMN_NAME,COMMENTS FROM SYS.ALL_COL_COMMENTS cc WHERE CC.OWNER=? AND cc.TABLE_NAME=?")) {
+                    stat.setString(1, getSchema().getName());
+                    stat.setString(2, getName());
+                    try (JDBCResultSet resultSet = stat.executeQuery()) {
+                        while (resultSet.next()) {
+                            String colName = resultSet.getString(1);
+                            String colComment = resultSet.getString(2);
+                            OracleTableColumn col = getAttribute(monitor, colName);
+                            if (col == null) {
+                                log.warn("Column '" + colName + "' not found in table '" + getFullQualifiedName() + "'");
+                            } else {
+                                col.setComment(CommonUtils.notEmpty(colComment));
+                            }
+                        }
+                    }
+                }
+            }
+            for (OracleTableColumn col : getAttributes(monitor)) {
+                col.cacheComment();
+            }
+        } catch (Exception e) {
+            log.warn("Error fetching table '" + getName() + "' column comments", e);
+        }
     }
 
     public String getComment()
