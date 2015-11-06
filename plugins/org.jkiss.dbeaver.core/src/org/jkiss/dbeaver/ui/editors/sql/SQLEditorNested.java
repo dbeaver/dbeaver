@@ -230,7 +230,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
                     public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
                             sourceText = getSourceText(monitor);
-                            if (sourceText != null && !isDisposed()) {
+                            if (sourceText == null) {
+                                sourceText = "-- Empty source returned";
+                            }
+                            if (!isDisposed()) {
                                 UIUtils.runInUI(null, new Runnable() {
                                     @Override
                                     public void run() {
