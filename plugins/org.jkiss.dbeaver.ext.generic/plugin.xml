@@ -144,7 +144,6 @@
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
                     <parameter name="active-entity-type" value="schema"/>
-                    <parameter name="omit-type-cache" value="true"/>
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
