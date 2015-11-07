@@ -19,24 +19,27 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
- * PostgreMetaModel
+ * PostgreDataTypeCache
  */
 public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
 {
+    static final Log log = Log.getLog(PostgreDataTypeCache.class);
+
     public PostgreDataTypeCache(DBPDataSourceContainer owner) {
         super(owner);
     }
@@ -44,28 +47,105 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull JDBCDataSource owner) throws SQLException
     {
-        return session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type ORDER by t.oid");
+        return session.prepareStatement(
+            "SELECT t.oid as typid,tn.nspname typnsname,t.* \n" +
+            "FROM pg_catalog.pg_type t , pg_catalog.pg_namespace tn\n" +
+            "WHERE tn.oid=t.typnamespace \n" +
+            "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
+            "ORDER by t.oid");
     }
 
     @Override
     protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull ResultSet dbResult) throws SQLException, DBException
     {
         int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
+        String ownerSchema = JDBCUtils.safeGetString(dbResult, "typnsname");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
-        PostgreTypeType typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
-        return new JDBCDataType(
+        int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
+        PostgreTypeType typeType = PostgreTypeType.b;
+        try {
+            typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
+        } catch (IllegalArgumentException e) {
+            log.debug(e);
+        }
+        PostgreTypeCategory typeCategory = PostgreTypeCategory.X;
+        try {
+            typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
+        } catch (IllegalArgumentException e) {
+            log.debug(e);
+        }
+        int valueType;
+        switch (typeCategory) {
+            case A:
+            case P:
+                return null;
+            case B:
+                valueType = Types.BOOLEAN;
+                break;
+            case C:
+                valueType = Types.STRUCT;
+                break;
+            case D:
+                valueType = Types.TIMESTAMP;
+                break;
+            case N:
+                valueType = Types.NUMERIC;
+                if (name.startsWith("float")) {
+                    switch (typeLength) {
+                        case 4:
+                            valueType = Types.FLOAT;
+                            break;
+                        case 8:
+                            valueType = Types.DOUBLE;
+                            break;
+                    }
+                } else {
+                    switch (typeLength) {
+                        case 2:
+                            valueType = Types.SMALLINT;
+                            break;
+                        case 4:
+                            valueType = Types.INTEGER;
+                            break;
+                        case 8:
+                            valueType = Types.BIGINT;
+                            break;
+                    }
+                }
+                break;
+            case S:
+                valueType = Types.VARCHAR;
+                break;
+            case U:
+                switch (name) {
+                    case "bytea":
+                        valueType = Types.BINARY;
+                        break;
+                    case "xml":
+                        valueType = Types.SQLXML;
+                        break;
+                    default:
+                        valueType = Types.OTHER;
+                        break;
+                }
+                break;
+            default:
+                valueType = Types.OTHER;
+                break;
+        }
+
+        return new PostgreDataType(
             owner,
-            JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
+            valueType,
             name,
-            JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),
-            JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE),
-            JDBCUtils.safeGetInt(dbResult, JDBCConstants.SEARCHABLE) != 0,
-            JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION),
-            JDBCUtils.safeGetInt(dbResult, JDBCConstants.MINIMUM_SCALE),
-            JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE));
+            typeLength,
+            typeId,
+            ownerSchema,
+            typeType,
+            typeCategory);
     }
 
 
