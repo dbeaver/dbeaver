@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 /**
  * DB2 constants
  * 
- * @author Denis Forveille
+ * @author Denis Forveille fff
  */
 public class DB2Constants {
 
