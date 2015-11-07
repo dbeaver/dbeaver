@@ -89,7 +89,11 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
                 valueType = Types.STRUCT;
                 break;
             case D:
-                valueType = Types.TIMESTAMP;
+                if (name.startsWith("timestamp")) {
+                    valueType = Types.TIMESTAMP;
+                } else {
+                    valueType = Types.TIME;
+                }
                 break;
             case N:
                 valueType = Types.NUMERIC;

@@ -71,12 +71,12 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
         return table;
     }
 
+    @NotNull
     @Override
     public TABLE_TYPE getParentObject()
     {
         return getTable();
     }
-
 
     @NotNull
     @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 10)
