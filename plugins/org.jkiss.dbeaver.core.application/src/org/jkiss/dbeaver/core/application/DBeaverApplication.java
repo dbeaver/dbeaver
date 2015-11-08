@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 
 import java.io.File;
@@ -38,7 +39,7 @@ import java.net.URL;
  */
 public class DBeaverApplication implements IApplication
 {
-
+    static final Log log = Log.getLog(DBeaverApplication.class);
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
 
     /* (non-Javadoc)
@@ -95,9 +96,9 @@ public class DBeaverApplication implements IApplication
         }
 
         DBeaverCore.setStandalone(true);
-        System.out.println(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
-        System.out.println("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-        System.out.println("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        log.debug(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
+        log.debug("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
 
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,
@@ -133,7 +134,7 @@ public class DBeaverApplication implements IApplication
     @Override
     public void stop()
     {
-        System.out.println("DBeaver is stopping"); //$NON-NLS-1$
+        log.debug("DBeaver is stopping"); //$NON-NLS-1$
         final IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench == null)
             return;
