@@ -18,22 +18,22 @@
  */
 package org.jkiss.dbeaver.ext.db2;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
- * DB2 DataSource provider
+ * DB2 DataSource provider ddd
  */
 public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
@@ -80,15 +80,12 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
         Map<Object, Object> properties = connectionInfo.getProperties();
         boolean traceEnabled = CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_ENABLED), false);
         if (traceEnabled) {
-            url.append(":traceDirectory=").append(CommonUtils.toString(
-                properties.get(DB2Constants.PROP_TRACE_FOLDER)));
-            url.append(";traceFile=").append(CommonUtils.escapeFileName(CommonUtils.toString(
-                properties.get(DB2Constants.PROP_TRACE_FILE))));
-            url.append(";traceFileAppend=").append(
-                CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_APPEND), false));
-            url.append(";traceLevel=").append(
-                CommonUtils.toInt(
-                    properties.get(DB2Constants.PROP_TRACE_LEVEL), DB2Constants.TRACE_ALL));
+            url.append(":traceDirectory=").append(CommonUtils.toString(properties.get(DB2Constants.PROP_TRACE_FOLDER)));
+            url.append(";traceFile=")
+                .append(CommonUtils.escapeFileName(CommonUtils.toString(properties.get(DB2Constants.PROP_TRACE_FILE))));
+            url.append(";traceFileAppend=").append(CommonUtils.getBoolean(properties.get(DB2Constants.PROP_TRACE_APPEND), false));
+            url.append(";traceLevel=")
+                .append(CommonUtils.toInt(properties.get(DB2Constants.PROP_TRACE_LEVEL), DB2Constants.TRACE_ALL));
             url.append(";");
         }
         return url.toString();
@@ -96,7 +93,8 @@ public class DB2DataSourceProvider extends JDBCDataSourceProvider {
 
     @NotNull
     @Override
-    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException
+    public DBPDataSource openDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+        throws DBException
     {
         return new DB2DataSource(monitor, container);
     }

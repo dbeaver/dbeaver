@@ -26,8 +26,10 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -138,10 +140,25 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
         } catch (SQLException e) {
             this.displaySize = 0;
         }
-        this.typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
         this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
-        this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
+        {
+            int typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
+            DBPDataKind dataKind = null;
+            if (dataSource instanceof DBPDataTypeProvider) {
+                DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getDataType(typeName);
+                if (dataType != null) {
+                    typeID = dataType.getTypeID();
+                    dataKind = dataType.getDataKind();
+                }
+            }
+            if (dataKind == null) {
+                dataKind = JDBCUtils.resolveDataKind(dataSource, typeName, typeID);
+            }
+            this.typeID = typeID;
+            this.dataKind = dataKind;
+        }
 
+        this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
         try {
             this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);
         } catch (Exception e) {
@@ -155,8 +172,6 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
         }
 
         this.tableName = fetchedTableName;
-
-        this.dataKind = JDBCUtils.resolveDataKind(dataSource, typeName, typeID);
     }
 
     @Property(category = PROP_CATEGORY_COLUMN, order = 1)

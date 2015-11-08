@@ -405,16 +405,13 @@ public class OracleDataSource extends JDBCDataSource
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
-        if (typeName != null &&
-            (typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)))
+        if ((typeName.equals(OracleConstants.TYPE_NAME_XML) || typeName.equals(OracleConstants.TYPE_FQ_XML)))
         {
             return DBPDataKind.CONTENT;
         }
-        if (typeName != null) {
-            DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
-            if (dataKind != null) {
-                return dataKind;
-            }
+        DBPDataKind dataKind = OracleDataType.getDataKind(typeName);
+        if (dataKind != null) {
+            return dataKind;
         }
         return super.resolveDataKind(typeName, valueType);
     }

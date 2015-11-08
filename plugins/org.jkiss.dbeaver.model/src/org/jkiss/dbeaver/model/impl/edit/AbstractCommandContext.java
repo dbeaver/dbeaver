@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.model.impl.edit;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
@@ -114,8 +116,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                             }
                         //}
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBCSession session = openCommandPersistContext(monitor, cmd.command);
-                            try {
+                            try (DBCSession session = openCommandPersistContext(monitor, cmd.command)) {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
                                     DBEPersistAction.ActionType actionType = persistInfo.action.getType();
@@ -141,8 +142,12 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 if (error != null) {
                                     throw error;
                                 }
-                            } finally {
-                                closePersistContext(session);
+
+                                // Commit metadata changes
+                                DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+                                if (txnManager != null) {
+                                    txnManager.commit(session);
+                                }
                             }
                             cmd.executed = true;
                         }
@@ -646,11 +651,6 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             monitor,
             DBCExecutionPurpose.META_DDL,
             ModelMessages.model_edit_execute_ + command.getTitle());
-    }
-
-    protected void closePersistContext(DBCSession session)
-    {
-        session.close();
     }
 
     protected void refreshCommandState()
