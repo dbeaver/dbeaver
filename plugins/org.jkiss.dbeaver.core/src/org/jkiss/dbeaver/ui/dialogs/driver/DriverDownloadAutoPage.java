@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
@@ -328,6 +329,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         try {
             runnableContext.run(true, true, new LibraryDownloader());
+            DataSourceProviderRegistry.getInstance().saveDrivers();
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(getShell(), "Driver download", "Error downloading driver files", e.getTargetException());
         } catch (InterruptedException e) {
