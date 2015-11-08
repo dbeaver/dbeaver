@@ -329,6 +329,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
         try {
             runnableContext.run(true, true, new LibraryDownloader());
+            getWizard().getDriver().setModified(true);
             DataSourceProviderRegistry.getInstance().saveDrivers();
         } catch (InvocationTargetException e) {
             UIUtils.showErrorDialog(getShell(), "Driver download", "Error downloading driver files", e.getTargetException());
