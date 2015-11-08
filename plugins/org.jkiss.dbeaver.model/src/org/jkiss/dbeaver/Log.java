@@ -108,7 +108,7 @@ public class Log
         }
     }
 
-    private void debugMessage(Object message, Throwable t, PrintStream debugWriter) {
+    private static void debugMessage(Object message, Throwable t, PrintStream debugWriter) {
         synchronized (Log.class) {
             debugWriter.print(sdf.format(new Date()) + " - ");
             if (t == null) {
@@ -126,6 +126,7 @@ public class Log
             info(message.toString(), (Throwable)message);
             return;
         }
+        debugMessage(message, null, System.err);
         eclipseLog.log(new Status(
             Status.INFO,
             corePluginID,
@@ -143,6 +144,7 @@ public class Log
             warn(message.toString(), (Throwable)message);
             return;
         }
+        debugMessage(message, null, System.err);
         ModelActivator.getInstance().getLog().log(new Status(
             Status.WARNING,
             corePluginID,
@@ -160,6 +162,7 @@ public class Log
             error(message.toString(), (Throwable)message);
             return;
         }
+        debugMessage(message, null, System.err);
         ModelActivator.getInstance().getLog().log(new Status(
             Status.ERROR,
             corePluginID,
@@ -183,6 +186,7 @@ public class Log
 
     private static void writeExceptionStatus(int severity, Object message, Throwable t)
     {
+        debugMessage(message, t, System.err);
         ModelActivator activator = ModelActivator.getInstance();
         if (activator != null) {
             // Activator may be null in some unclear circumstances (like shutdown is in progress)
