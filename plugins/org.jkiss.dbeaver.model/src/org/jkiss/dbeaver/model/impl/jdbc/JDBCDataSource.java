@@ -449,7 +449,9 @@ public abstract class JDBCDataSource
                 return DBPDataKind.ROWID;
             case Types.REF:
                 return DBPDataKind.REFERENCE;
-
+            case Types.OTHER:
+                // TODO: really?
+                return DBPDataKind.OBJECT;
         }
         return DBPDataKind.UNKNOWN;
     }

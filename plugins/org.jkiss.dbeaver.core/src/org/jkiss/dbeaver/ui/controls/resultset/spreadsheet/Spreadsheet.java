@@ -240,18 +240,20 @@ public class Spreadsheet extends LightGrid implements Listener {
                         UIUtils.runInDetachedUI(getShell(), new Runnable() {
                             @Override
                             public void run() {
-                                // Forward the same key event to just created control
-                                final Event kdEvent = new Event();
-                                kdEvent.type = SWT.KeyDown;
-                                kdEvent.character = event.character;
-                                kdEvent.keyCode = event.keyCode;
-                                UIUtils.postEvent(editorControl, kdEvent);
+                                if (!editorControl.isDisposed()) {
+                                    // Forward the same key event to just created control
+                                    final Event kdEvent = new Event();
+                                    kdEvent.type = SWT.KeyDown;
+                                    kdEvent.character = event.character;
+                                    kdEvent.keyCode = event.keyCode;
+                                    UIUtils.postEvent(editorControl, kdEvent);
 
-                                final Event kuEvent = new Event();
-                                kuEvent.type = SWT.KeyUp;
-                                kuEvent.character = event.character;
-                                kuEvent.keyCode = event.keyCode;
-                                UIUtils.postEvent(editorControl, kuEvent);
+                                    final Event kuEvent = new Event();
+                                    kuEvent.type = SWT.KeyUp;
+                                    kuEvent.character = event.character;
+                                    kuEvent.keyCode = event.keyCode;
+                                    UIUtils.postEvent(editorControl, kuEvent);
+                                }
                             }
                         });
                     }

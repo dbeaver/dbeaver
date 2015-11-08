@@ -22,14 +22,11 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPTermProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
@@ -835,6 +832,15 @@ public class GenericDataSource extends JDBCDataSource
     public DBSDataType getDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
+    }
+
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
+    {
+        DBSDataType dataType = dataTypeCache.getCachedObject(typeName);
+        if (dataType != null) {
+            return super.resolveDataKind(dataType.getTypeName(), dataType.getTypeID());
+        }
+        return super.resolveDataKind(typeName, valueType);
     }
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
