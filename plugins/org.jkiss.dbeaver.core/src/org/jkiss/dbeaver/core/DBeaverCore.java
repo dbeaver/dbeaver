@@ -167,7 +167,7 @@ public class DBeaverCore implements DBPApplication {
     private void initialize()
     {
         long startTime = System.currentTimeMillis();
-        System.out.println("Initialize Core...");
+        log.debug("Initialize Core...");
         // Register properties adapter
         this.workspace = ResourcesPlugin.getWorkspace();
 
@@ -202,7 +202,7 @@ public class DBeaverCore implements DBPApplication {
                 log.error("Error activating plugin service", e);
             }
         }
-        System.out.println("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
+        log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
     private void initializeProjects()
@@ -242,7 +242,7 @@ public class DBeaverCore implements DBPApplication {
     public synchronized void dispose()
     {
         long startTime = System.currentTimeMillis();
-        System.out.println("Shutdown Core...");
+        log.debug("Shutdown Core...");
 
         DBeaverCore.setClosing(true);
 
@@ -304,7 +304,7 @@ public class DBeaverCore implements DBPApplication {
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;
 
-        System.out.println("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
+        log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
     @Override
