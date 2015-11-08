@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -32,8 +33,10 @@ public class Log
 {
     private static String corePluginID = ModelPreferences.PLUGIN_ID;
 
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-hh HH:mm:ss.SSS");
+    private static final ILog eclipseLog = ModelActivator.getInstance().getLog();
+
     private final String name;
-    private final ILog eclipseLog;
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
@@ -41,7 +44,6 @@ public class Log
 
     private Log(String name)
     {
-        eclipseLog = ModelActivator.getInstance().getLog();
         this.name = name;
     }
 
@@ -100,23 +102,21 @@ public class Log
     public void debug(Object message, Throwable t)
     {
         ModelActivator activator = ModelActivator.getInstance();
-        PrintStream debugWriter;
-        if (activator == null) {
-            debugWriter = System.err;
-        } else {
-            debugWriter = activator.getDebugWriter();
+        debugMessage(message, t, System.err);
+        if (activator != null) {
+            debugMessage(message, t, activator.getDebugWriter());
         }
-        if (debugWriter != null) {
-            synchronized (Log.class) {
-                debugWriter.print(new Date().toString());
-                debugWriter.print(" - "); //$NON-NLS-1$
-                if (t == null) {
-                    debugWriter.println(message);
-                } else {
-                    t.printStackTrace(debugWriter);
-                }
-                debugWriter.flush();
+    }
+
+    private void debugMessage(Object message, Throwable t, PrintStream debugWriter) {
+        synchronized (Log.class) {
+            debugWriter.print(sdf.format(new Date()) + " - ");
+            if (t == null) {
+                debugWriter.println(message);
+            } else {
+                t.printStackTrace(debugWriter);
             }
+            debugWriter.flush();
         }
     }
 
