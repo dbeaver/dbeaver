@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
@@ -92,25 +94,29 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     private DBEPersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
     {
         List<DBEPersistAction> actions = new ArrayList<>();
-        String header = OracleUtils.normalizeSourceName(pack, false);
-        if (!CommonUtils.isEmpty(header)) {
-            actions.add(
-                new SQLDatabasePersistAction(
-                    "Create package header",
-                    "CREATE OR REPLACE " + header)); //$NON-NLS-1$
-        }
-        String body = OracleUtils.normalizeSourceName(pack, true);
-        if (!CommonUtils.isEmpty(body)) {
-            actions.add(
-                new SQLDatabasePersistAction(
-                    "Create package body",
-                    "CREATE OR REPLACE " + body)); //$NON-NLS-1$
-        } else {
-            actions.add(
-                new SQLDatabasePersistAction(
-                    "Drop package header",
-                    "DROP PACKAGE BODY " + pack.getFullQualifiedName(), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
-                );
+        try {
+            String header = pack.getSourceDeclaration(VoidProgressMonitor.INSTANCE);
+            if (!CommonUtils.isEmpty(header)) {
+                actions.add(
+                    new SQLDatabasePersistAction(
+                        "Create package header",
+                        header)); //$NON-NLS-1$
+            }
+            String body = pack.getSourceDefinition(VoidProgressMonitor.INSTANCE);
+            if (!CommonUtils.isEmpty(body)) {
+                actions.add(
+                    new SQLDatabasePersistAction(
+                        "Create package body",
+                        body)); //$NON-NLS-1$
+            } else {
+                actions.add(
+                    new SQLDatabasePersistAction(
+                        "Drop package header",
+                        "DROP PACKAGE BODY " + pack.getFullQualifiedName(), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
+                    );
+            }
+        } catch (DBException e) {
+            log.warn(e);
         }
         OracleUtils.addSchemaChangeActions(actions, pack);
         return actions.toArray(new DBEPersistAction[actions.size()]);

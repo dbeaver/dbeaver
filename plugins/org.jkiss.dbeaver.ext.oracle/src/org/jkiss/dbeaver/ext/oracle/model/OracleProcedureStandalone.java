@@ -100,7 +100,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
-            sourceDeclaration = OracleUtils.getSource(monitor, this, false);
+            sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
         }
         return sourceDeclaration;
     }
