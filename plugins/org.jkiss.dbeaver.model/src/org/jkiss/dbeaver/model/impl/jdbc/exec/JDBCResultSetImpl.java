@@ -70,7 +70,11 @@ public class JDBCResultSetImpl implements JDBCResultSet {
         this.disableLogging = disableLogging;
         if (statement == null) {
             // Make fake statement
-            JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(session, this, description, disableLogging);
+            JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(
+                session,
+                this,
+                "-- " + description, // Set description as commented SQL
+                disableLogging);
             this.statement = fakeStatement;
             this.fake = true;
 

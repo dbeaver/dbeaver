@@ -42,7 +42,7 @@ public class EditorUtils {
                 return IFile.class.cast(getFileMethod.invoke(editorInput));
             }
         } catch (Exception e) {
-            log.debug("Error getting file from editor input with reflection", e);
+            //log.debug("Error getting file from editor input with reflection: " + e.getMessage());
             // Just ignore
         }
         if (editorInput instanceof IPathEditorInput && ((IPathEditorInput) editorInput).getPath() != null) {
