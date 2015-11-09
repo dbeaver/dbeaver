@@ -58,25 +58,6 @@
             </plugin>
 
 
-<!--
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-packaging-plugin</artifactId>
-                <version>${tycho-version}</version>
-            </plugin>
--->
-
-<!--
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-p2-publisher-plugin</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <publishArtifacts>true</publishArtifacts>
-                </configuration>
-            </plugin>
--->
-
         </plugins>
     </build>
 </project>
