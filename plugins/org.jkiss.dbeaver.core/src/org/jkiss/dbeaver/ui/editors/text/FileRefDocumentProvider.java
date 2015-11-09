@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.jface.text.Document;
@@ -30,19 +28,17 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IPersistentStorage;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
@@ -69,16 +65,16 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
     public static IStorage getStorageFromInput(Object element)
     {
+        if (element instanceof IAdaptable) {
+            IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
+            if (storage != null) {
+                return storage;
+            }
+        }
         if (element instanceof IEditorInput) {
             IFile file = EditorUtils.getFileFromEditorInput((IEditorInput) element);
             if (file != null) {
                 return file;
-            }
-        }
-        if (element instanceof IAdaptable) {
-            IStorage storage = (IStorage) ((IAdaptable) element).getAdapter(IStorage.class);
-            if (storage != null) {
-                return storage;
             }
         }
         return null;
