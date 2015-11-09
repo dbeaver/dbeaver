@@ -122,7 +122,7 @@ public class SQLQuery {
             }
         } catch (Throwable e) {
             this.type = SQLQueryType.UNKNOWN;
-            log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
+            //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
     }
 

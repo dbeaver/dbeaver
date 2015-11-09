@@ -27,6 +27,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.RowIdLifetime;
 import java.sql.SQLException;
+import java.util.Arrays;
 
 /**
  * JDBC database metadata managable
@@ -55,7 +56,7 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     {
         String description = functionName;
         if (args.length > 0) {
-            description += " [" + DBUtils.getSimpleQualifiedName(args) + "]";
+            description += " " + Arrays.toString(args);
         }
         return JDBCResultSetImpl.makeResultSet(connection, null, resultSet, description, false);
     }
