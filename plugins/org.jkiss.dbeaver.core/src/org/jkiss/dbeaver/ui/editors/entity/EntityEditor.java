@@ -773,7 +773,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Otherwise just update object's properties
         DBECommandContext commandContext = getCommandContext();
         if (commandContext != null) {
-            commandContext.resetChanges();
+            // FIXME: resetChanges refreshes editor one more time and eventually leads to node reload/close.
+            //commandContext.resetChanges();
         }
 
         DBSObject databaseObject = getEditorInput().getDatabaseObject();
