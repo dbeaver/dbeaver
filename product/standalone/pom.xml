@@ -9,7 +9,7 @@
         <version>1.0.0</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>3.5.2</version>
+    <version>3.5.3</version>
     <artifactId>ce-product</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE Standalone</name>
@@ -25,6 +25,7 @@
                         <win32>zip</win32>
                         <linux>tar.gz</linux>
                         <macosx>tar.gz</macosx>
+                        <solaris>tar.gz</solaris>
                     </formats>
                     <products>
                         <product>
@@ -56,25 +57,6 @@
                 </executions>
             </plugin>
 
-
-<!--
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-packaging-plugin</artifactId>
-                <version>${tycho-version}</version>
-            </plugin>
--->
-
-<!--
-            <plugin>
-                <groupId>org.eclipse.tycho</groupId>
-                <artifactId>tycho-p2-publisher-plugin</artifactId>
-                <version>${tycho-version}</version>
-                <configuration>
-                    <publishArtifacts>true</publishArtifacts>
-                </configuration>
-            </plugin>
--->
 
         </plugins>
     </build>

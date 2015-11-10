@@ -8,7 +8,7 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<tycho-version>0.23.1</tycho-version>
+		<tycho-version>0.24.0</tycho-version>
 		<p2-maven-version>1.2.0-SNAPSHOT</p2-maven-version>
 	</properties>
 
