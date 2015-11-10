@@ -26,7 +26,8 @@ public enum PostgreTypeType
     c("composite type (e.g., a table's row type"),
     d("domain"),
     e("enum type"),
-    p("pseudo-type");
+    p("pseudo-type"),
+    r("?");
 
     private final String desc;
 

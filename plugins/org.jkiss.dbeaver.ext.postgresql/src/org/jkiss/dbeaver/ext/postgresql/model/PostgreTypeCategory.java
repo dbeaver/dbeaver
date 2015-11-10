@@ -36,7 +36,8 @@ public enum PostgreTypeCategory
     T("Timespan types"),
     U("User-defined types"),
     V("Bit-string types"),
-    X("unknown type");
+    X("unknown type"),
+    R("?");
 
     private final String desc;
 
