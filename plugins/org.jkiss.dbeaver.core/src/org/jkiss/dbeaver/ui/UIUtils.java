@@ -1247,7 +1247,7 @@ public class UIUtils {
         return link;
     }
 
-    public static CellEditor createPropertyEditor(Composite parent, DBPPropertySource source, DBPPropertyDescriptor property)
+    public static CellEditor createPropertyEditor(final IServiceLocator serviceLocator, Composite parent, DBPPropertySource source, DBPPropertyDescriptor property)
     {
         if (source == null) {
             return null;
@@ -1256,7 +1256,18 @@ public class UIUtils {
         if (!property.isEditable(object)) {
             return null;
         }
-        return UIUtils.createCellEditor(parent, object, property);
+        CellEditor cellEditor = UIUtils.createCellEditor(parent, object, property);
+        if (cellEditor != null) {
+            final Control editorControl = cellEditor.getControl();
+            UIUtils.addFocusTracker(serviceLocator, UIUtils.INLINE_WIDGET_EDITOR_ID, editorControl);
+            editorControl.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    UIUtils.removeFocusTracker(serviceLocator, editorControl);
+                }
+            });
+        }
+        return cellEditor;
     }
 
     public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property)

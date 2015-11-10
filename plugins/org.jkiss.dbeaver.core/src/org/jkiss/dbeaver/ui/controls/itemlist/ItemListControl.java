@@ -186,7 +186,7 @@ public class ItemListControl extends NodeListControl
             setCurListObject(object);
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null && property.isEditable(getObjectValue(object))) {
-                return UIUtils.createPropertyEditor(getControl(), property.getSource(), property);
+                return UIUtils.createPropertyEditor(getWorkbenchSite(), getControl(), property.getSource(), property);
             }
             return null;
         }
