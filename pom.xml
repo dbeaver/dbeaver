@@ -8,9 +8,9 @@
 	<packaging>pom</packaging>
 	
 	<properties>
-		<dbeaver-version>3.5.2</dbeaver-version>
+		<dbeaver-version>3.5.3</dbeaver-version>
 		<dbeaver-product>DBeaver</dbeaver-product>
-		<tycho-version>0.23.1</tycho-version>
+		<tycho-version>0.24.0</tycho-version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<eclipse-p2-repo.url>http://download.eclipse.org/releases/mars/</eclipse-p2-repo.url>
 		<local-p2-repo.url>http://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
