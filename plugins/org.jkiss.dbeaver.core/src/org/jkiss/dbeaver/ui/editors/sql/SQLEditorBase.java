@@ -546,6 +546,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         ruleManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         int bracketDepth = 0;
+        boolean hasBlocks = false;
         boolean hasValuableTokens = false;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
@@ -566,13 +567,19 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
             if (token instanceof SQLBlockBeginToken) {
                 bracketDepth++;
+                hasBlocks = true;
             } else if (token instanceof SQLBlockEndToken) {
                 bracketDepth--;
+                hasBlocks = true;
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
             }
             if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
+                // FIXME: includes last dleimiter in query (Oracle?)
+                if (isDelimiter && hasBlocks) {
+                    tokenOffset += tokenLength;
+                }
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
