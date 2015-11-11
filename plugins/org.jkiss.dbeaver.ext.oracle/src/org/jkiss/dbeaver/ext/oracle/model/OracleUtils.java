@@ -77,6 +77,18 @@ public class OracleUtils {
             JDBCUtils.executeProcedure(
                 session,
                 "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+/*
+            String curSchema = null;
+            if (schema != null) {
+                curSchema = getCurrentSchema(session);
+                if (curSchema != null && !curSchema.equals(schema.getName())) {
+                    setCurrentSchema(session, schema.getName());
+                } else {
+                    curSchema = null;
+                }
+            }
+*/
+
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DBMS_METADATA.GET_DDL(?,?" +
                     (schema == null ? "" : ",?") +
@@ -92,15 +104,32 @@ public class OracleUtils {
                         return dbResult.getString(1);
                     } else {
                         log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
-                        return "EMPTY DDL";
+                        return "-- EMPTY DDL";
                     }
                 }
+            } finally {
+/*
+                if (curSchema != null) {
+                    setCurrentSchema(session, curSchema);
+                }
+*/
             }
         } catch (SQLException e) {
             throw new DBCException(e, dataSource);
         } finally {
             monitor.done();
         }
+    }
+
+    public static void setCurrentSchema(JDBCSession session, String schema) throws SQLException {
+        JDBCUtils.executeSQL(session,
+            "ALTER SESSION SET CURRENT_SCHEMA=" + DBUtils.getQuotedIdentifier(session.getDataSource(), schema));
+    }
+
+    public static String getCurrentSchema(JDBCSession session) throws SQLException {
+        return JDBCUtils.queryString(
+            session,
+            "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
     }
 
     public static String normalizeSourceName(OracleSourceObject object, boolean body)
