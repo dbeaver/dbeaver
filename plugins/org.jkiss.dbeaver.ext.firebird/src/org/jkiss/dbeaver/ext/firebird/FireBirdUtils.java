@@ -21,13 +21,21 @@ package org.jkiss.dbeaver.ext.firebird;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
+import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * FireBird utils
@@ -41,7 +49,12 @@ public class FireBirdUtils {
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure.getDataSource(), "Load procedure source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
-            return (String)fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
+            String source = (String) fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
+            if (CommonUtils.isEmpty(source)) {
+                return null;
+            }
+
+            return getProcedureSourceWithHeader(monitor, procedure, source);
         } catch (SQLException e) {
             throw new DBException("Can't read source code of procedure '" + procedure.getName() + "'", e);
         } catch (Exception e) {
@@ -63,4 +76,51 @@ public class FireBirdUtils {
             return null;
         }
     }
+
+    public static String getProcedureSourceWithHeader(DBRProgressMonitor monitor, GenericProcedure procedure, String source) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE OR ALTER PROCEDURE ").append(procedure.getName()).append("\n");
+        Collection<GenericProcedureParameter> parameters = procedure.getParameters(monitor);
+        if (parameters != null && !parameters.isEmpty()) {
+            List<GenericProcedureParameter> args = new ArrayList<>();
+            List<GenericProcedureParameter> results = new ArrayList<>();
+            for (GenericProcedureParameter param : parameters) {
+                if (param.getParameterKind() == DBSProcedureParameterKind.OUT || param.getParameterKind() == DBSProcedureParameterKind.RETURN) {
+                    results.add(param);
+                } else {
+                    args.add(param);
+                }
+            }
+            if (!args.isEmpty()) {
+                sql.append("(");
+                for (int i = 0; i < args.size(); i++) {
+                    GenericProcedureParameter param = args.get(i);
+                    if (i > 0) sql.append(", ");
+                    printParam(sql, param);
+                }
+                sql.append(")\n");
+            }
+            if (!results.isEmpty()) {
+                sql.append("RETURNS (");
+                for (int i = 0; i < results.size(); i++) {
+                    GenericProcedureParameter param = results.get(i);
+                    if (i > 0) sql.append(", ");
+                    printParam(sql, param);
+                }
+                sql.append(")\n");
+            }
+        }
+
+        sql.append("AS\n").append(source);
+
+        return sql.toString();
+    }
+
+    private static void printParam(StringBuilder sql, GenericProcedureParameter param) {
+        sql.append(param.getName()).append(" ").append(param.getTypeName());
+        if (param.getDataKind() == DBPDataKind.STRING) {
+            sql.append("(").append(param.getMaxLength()).append(")");
+        }
+    }
+
 }
