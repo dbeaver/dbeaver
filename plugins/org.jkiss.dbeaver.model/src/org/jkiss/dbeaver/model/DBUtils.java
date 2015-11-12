@@ -968,7 +968,11 @@ public final class DBUtils {
             @Override
             public int compare(T o1, T o2)
             {
-                return o1.getName().compareTo(o2.getName());
+                String name1 = o1.getName();
+                String name2 = o2.getName();
+                return name1 == name2 ? 0 :
+                    (name1== null ? -1 :
+                        (name2 == null ? 1 : name1.compareTo(name2)));
             }
         });
     }
