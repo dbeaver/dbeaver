@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.firebird;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
-import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
-import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericUtils;
+import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -68,7 +65,12 @@ public class FireBirdUtils {
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, view.getDataSource(), "Load view source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
-            return (String)fbMetaData.getClass().getMethod("getViewSourceCode", String.class).invoke(fbMetaData, view.getName());
+            String source = (String) fbMetaData.getClass().getMethod("getViewSourceCode", String.class).invoke(fbMetaData, view.getName());
+            if (CommonUtils.isEmpty(source)) {
+                return null;
+            }
+
+            return getViewSourceWithHeader(monitor, view, source);
         } catch (SQLException e) {
             throw new DBException("Can't read source code of view '" + view.getName() + "'", e);
         } catch (Exception e) {
@@ -121,6 +123,27 @@ public class FireBirdUtils {
         if (param.getDataKind() == DBPDataKind.STRING) {
             sql.append("(").append(param.getMaxLength()).append(")");
         }
+    }
+
+    public static String getViewSourceWithHeader(DBRProgressMonitor monitor, GenericTable view, String source) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE VIEW ").append(view.getName()).append(" ");
+        Collection<GenericTableColumn> columns = view.getAttributes(monitor);
+        if (columns != null) {
+            sql.append("(");
+            boolean first = true;
+            for (GenericTableColumn column : columns) {
+                if (!first) {
+                    sql.append(", ");
+                }
+                first = false;
+                sql.append(column.getName());
+            }
+            sql.append(")\n");
+        }
+        sql.append("AS\n").append(source);
+
+        return sql.toString();
     }
 
 }
