@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -113,7 +114,9 @@ public class DiagramObjectCollector {
     {
         Collection<DBSEntity> tables = collectTables(monitor, roots);
         for (DBSEntity table : tables) {
-            if (table instanceof DBPHiddenObject && ((DBPHiddenObject) table).isHidden()) {
+            if (table instanceof DBPHiddenObject && ((DBPHiddenObject) table).isHidden() ||
+                (table instanceof DBSTable && ((DBSTable) table).isView()))
+            {
                 // Skip hidden tables
                 continue;
             }
