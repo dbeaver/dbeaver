@@ -59,7 +59,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         // Find procedure definition
         try {
             procedure = DBUtils.findProcedure(connection, query);
-        } catch (DBException e) {
+        } catch (Throwable e) {
             log.debug(e);
         }
 
@@ -69,14 +69,14 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
             if (paramsMeta != null) {
                 bindProcedureFromJDBC(paramsMeta);
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             log.debug(e.getMessage());
             // Try to bind parameters from procedure meta info
             try {
                 if (procedure != null) {
                     bindProcedureFromMeta();
                 }
-            } catch (Exception e1) {
+            } catch (Throwable e1) {
                 log.debug(e1);
             }
         }
