@@ -1729,7 +1729,7 @@
               commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
               schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-              sequence="SHIFT+TAB"/>
+              sequence="CTRL+SHIFT+TAB"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"
               contextId="org.jkiss.dbeaver.ui.editors.sql"
