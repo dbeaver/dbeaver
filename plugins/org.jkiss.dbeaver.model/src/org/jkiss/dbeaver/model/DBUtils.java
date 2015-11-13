@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.SQLException;
+import java.sql.*;
 import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -1437,4 +1437,7 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isAtomicParameter(Object o) {
+        return o == null || o instanceof CharSequence || o instanceof Number || o instanceof java.sql.Date || o instanceof Boolean;
+    }
 }
