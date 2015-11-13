@@ -37,6 +37,7 @@ import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
@@ -94,6 +95,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             for (Map.Entry<Object, Object> param : paramMap.entrySet()) {
                 if (param.getKey() instanceof Number) {
                     maxParamIndex = Math.max(maxParamIndex, ((Number) param.getKey()).intValue());
+                    // FIXME: use right parameters order
                     formatted = formatted.replaceFirst("\\?", formatParameterValue(param.getValue()));
                 } else {
                     formatted = formatted.replace(":" + param.getKey(), formatParameterValue(param.getValue()));
@@ -132,9 +134,9 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                 o = new ContentParameter(o);
             }
             if (paramMap == null) {
-                paramMap = new HashMap<>();
-                paramMap.put(parameter, o);
+                paramMap = new LinkedHashMap<>();
             }
+            paramMap.put(parameter, o);
         }
         QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
     }
