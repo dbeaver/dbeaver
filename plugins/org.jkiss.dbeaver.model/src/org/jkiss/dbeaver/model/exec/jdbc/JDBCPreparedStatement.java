@@ -27,6 +27,8 @@ public interface JDBCPreparedStatement extends PreparedStatement, JDBCStatement 
 
     PreparedStatement getOriginal();
 
+    String getFormattedQuery();
+
     @Override
     JDBCResultSet executeQuery()
         throws SQLException;

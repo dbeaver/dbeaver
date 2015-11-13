@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 
 import java.lang.ref.SoftReference;
 
@@ -163,7 +164,8 @@ public class QMMSessionInfo extends QMMObject {
     {
         QMMStatementInfo stat = getStatement(statement);
         if (stat != null) {
-            String queryString = statement.getQueryString();
+            String queryString = statement instanceof JDBCPreparedStatement ?
+                ((JDBCPreparedStatement) statement).getFormattedQuery() : statement.getQueryString();
             final QMMTransactionSavepointInfo savepoint =
                 isTransactional() && getTransaction() != null ?
                     getTransaction().getCurrentSavepoint() : null;

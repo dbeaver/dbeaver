@@ -21,11 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -85,8 +88,38 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         if (paramMap == null) {
             return getQueryString();
         } else {
-            return "";
+            String formatted = getQueryString();
+            int maxParamIndex = -1;
+            //int[] indexedParams = new int[paramMap.size()];
+            for (Map.Entry<Object, Object> param : paramMap.entrySet()) {
+                if (param.getKey() instanceof Number) {
+                    maxParamIndex = Math.max(maxParamIndex, ((Number) param.getKey()).intValue());
+                } else {
+                    formatted = formatted.replace(":" + param.getKey(), formatParameterValue(param.getValue()));
+                }
+            }
+            return formatted;
         }
+    }
+
+    private CharSequence formatParameterValue(Object value) {
+        if (value instanceof CharSequence) {
+            return SQLUtils.quoteString(value.toString());
+        } else if (value instanceof java.util.Date) {
+            try {
+                DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();
+                if (value instanceof Date) {
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                } else if (value instanceof Time) {
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                } else {
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP).formatValue(value));
+                }
+            } catch (Exception e) {
+                log.debug("Error formatting date [" + value + "]", e);
+            }
+        }
+        return value.toString();
     }
 
     protected void handleStatementBind(Object parameter, @Nullable Object o)

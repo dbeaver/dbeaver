@@ -141,6 +141,11 @@ public final class SQLUtils {
         }
     }
 
+    public static String quoteString(String string)
+    {
+        return "'" + string.replaceAll("'", "''") + "'";
+    }
+
     public static String escapeString(String string)
     {
         return string.replaceAll("'", "\\'");
