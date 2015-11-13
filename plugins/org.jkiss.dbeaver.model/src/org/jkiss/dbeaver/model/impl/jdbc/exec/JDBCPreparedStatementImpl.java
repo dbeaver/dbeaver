@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,12 +33,28 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
- * Managable prepared statement.
+ * Manageable prepared statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
 public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
+
+    private Map<Object, Object> paramMap;
+
+    protected static class ContentParameter {
+        String displayString;
+        ContentParameter(Object value) {
+            displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
+        }
+
+        @Override
+        public String toString() {
+            return displayString;
+        }
+    }
 
     public JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
@@ -54,9 +72,37 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         return original;
     }
 
-    private void handleStatementBind(int parameterIndex, @Nullable Object o)
+    @Override
+    public void close() {
+        if (paramMap != null) {
+            paramMap.clear();
+            paramMap = null;
+        }
+        super.close();
+    }
+
+    public String getFormattedQuery() {
+        if (paramMap == null) {
+            return getQueryString();
+        } else {
+            return "";
+        }
+    }
+
+    protected void handleStatementBind(Object parameter, @Nullable Object o)
     {
-        QMUtils.getDefaultHandler().handleStatementBind(this, parameterIndex, o);
+        if (isQMLoggingEnabled()) {
+            // Save parameters
+            if (o != null && !DBUtils.isAtomicParameter(o)) {
+                // Wrap complex things
+                o = new ContentParameter(o);
+            }
+            if (paramMap == null) {
+                paramMap = new HashMap<>();
+                paramMap.put(parameter, o);
+            }
+        }
+        QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
     }
 
     ////////////////////////////////////////////////////////////////////

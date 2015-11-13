@@ -351,6 +351,9 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         return getOriginal().getTimestamp(parameterIndex, cal);
     }
 
+    ////////////////////////////////////////////////////////
+    // Output parameters mapping
+
     @Override
     public void registerOutParameter(int parameterIndex, int sqlType, String typeName)
         throws SQLException
@@ -379,7 +382,9 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         getOriginal().registerOutParameter(parameterName, sqlType, typeName);
     }
 
-    @Override
+    ////////////////////////////////////////////////////////
+    // Output parameters mapping
+
     public URL getURL(int parameterIndex)
         throws SQLException
     {
@@ -391,6 +396,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setURL(parameterName, val);
+        handleStatementBind(parameterName, val);
     }
 
     @Override
@@ -398,6 +404,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNull(parameterName, sqlType);
+        handleStatementBind(parameterName, null);
     }
 
     @Override
@@ -405,6 +412,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBoolean(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -412,6 +420,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setByte(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -419,6 +428,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setShort(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -426,6 +436,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setInt(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -433,6 +444,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setLong(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -440,6 +452,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setFloat(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -447,6 +460,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setDouble(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -454,6 +468,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBigDecimal(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -461,6 +476,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setString(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -468,6 +484,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBytes(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -475,6 +492,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setDate(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -482,6 +500,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setTime(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -489,6 +508,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setTimestamp(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -496,6 +516,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setAsciiStream(parameterName, x, length);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -503,6 +524,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBinaryStream(parameterName, x, length);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -510,6 +532,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setObject(parameterName, x, targetSqlType, scale);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -517,6 +540,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setObject(parameterName, x, targetSqlType);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -524,6 +548,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setObject(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -531,6 +556,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setCharacterStream(parameterName, reader, length);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
@@ -538,6 +564,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setDate(parameterName, x, cal);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -545,6 +572,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setTime(parameterName, x, cal);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -552,6 +580,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setTimestamp(parameterName, x, cal);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -559,6 +588,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNull(parameterName, sqlType, typeName);
+        handleStatementBind(parameterName, null);
     }
 
     @Override
@@ -741,6 +771,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setRowId(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -748,6 +779,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNString(parameterName, value);
+        handleStatementBind(parameterName, value);
     }
 
     @Override
@@ -755,6 +787,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNCharacterStream(parameterName, value, length);
+        handleStatementBind(parameterName, value);
     }
 
     @Override
@@ -762,6 +795,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNClob(parameterName, value);
+        handleStatementBind(parameterName, value);
     }
 
     @Override
@@ -769,6 +803,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setClob(parameterName, reader, length);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
@@ -776,6 +811,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBlob(parameterName, inputStream, length);
+        handleStatementBind(parameterName, inputStream);
     }
 
     @Override
@@ -783,6 +819,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNClob(parameterName, reader, length);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
@@ -804,6 +841,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setSQLXML(parameterName, xmlObject);
+        handleStatementBind(parameterName, xmlObject);
     }
 
     @Override
@@ -867,6 +905,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBlob(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -874,6 +913,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setClob(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -881,6 +921,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setAsciiStream(parameterName, x, length);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -888,6 +929,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBinaryStream(parameterName, x, length);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -895,6 +937,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setCharacterStream(parameterName, reader, length);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
@@ -902,6 +945,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setAsciiStream(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -909,6 +953,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBinaryStream(parameterName, x);
+        handleStatementBind(parameterName, x);
     }
 
     @Override
@@ -916,6 +961,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setCharacterStream(parameterName, reader);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
@@ -923,6 +969,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNCharacterStream(parameterName, value);
+        handleStatementBind(parameterName, value);
     }
 
     @Override
@@ -930,6 +977,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setClob(parameterName, reader);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
@@ -937,6 +985,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setBlob(parameterName, inputStream);
+        handleStatementBind(parameterName, inputStream);
     }
 
     @Override
@@ -944,6 +993,7 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
         throws SQLException
     {
         getOriginal().setNClob(parameterName, reader);
+        handleStatementBind(parameterName, reader);
     }
 
     @Override
