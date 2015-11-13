@@ -94,6 +94,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             for (Map.Entry<Object, Object> param : paramMap.entrySet()) {
                 if (param.getKey() instanceof Number) {
                     maxParamIndex = Math.max(maxParamIndex, ((Number) param.getKey()).intValue());
+                    formatted = formatted.replaceFirst("\\?", formatParameterValue(param.getValue()));
                 } else {
                     formatted = formatted.replace(":" + param.getKey(), formatParameterValue(param.getValue()));
                 }
@@ -102,7 +103,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         }
     }
 
-    private CharSequence formatParameterValue(Object value) {
+    private String formatParameterValue(Object value) {
         if (value instanceof CharSequence) {
             return SQLUtils.quoteString(value.toString());
         } else if (value instanceof java.util.Date) {
