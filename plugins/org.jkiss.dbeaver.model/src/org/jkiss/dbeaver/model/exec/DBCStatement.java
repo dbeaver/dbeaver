@@ -49,13 +49,13 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * @return data container or null
      */
     @Nullable
-    Object getStatementSource();
+    DBCExecutionSource getStatementSource();
 
     /**
      * Sets statement data source
      * @param source data source object
      */
-    void setStatementSource(@Nullable Object source);
+    void setStatementSource(@Nullable DBCExecutionSource source);
 
     /**
      * Executes statement

@@ -185,7 +185,8 @@ public class SearchDataQuery implements IObjectSearchQuery {
             }
             dataReceiver.filter = new DBDDataFilter(constraints);
             dataReceiver.filter.setAnyConstraint(true);
-            return dataContainer.readData(session, dataReceiver, dataReceiver.filter, -1, -1, 0, dataContainer);
+            SearchSource searchSource = new SearchSource(dataContainer, session.getExecutionContext(), this);
+            return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0);
         } catch (DBException e) {
             throw new DBCException("Error finding rows", e);
         }
@@ -241,6 +242,36 @@ public class SearchDataQuery implements IObjectSearchQuery {
         @Override
         public void close() {
 
+        }
+    }
+
+    class SearchSource implements DBCExecutionSource {
+
+        private final DBSDataContainer dataContainer;
+        private final DBCExecutionContext executionContext;
+        private final Object controller;
+
+        public SearchSource(DBSDataContainer dataContainer, DBCExecutionContext executionContext, Object controller) {
+            this.dataContainer = dataContainer;
+            this.executionContext = executionContext;
+            this.controller = controller;
+        }
+
+        @Override
+        public DBSDataContainer getDataContainer() {
+            return dataContainer;
+        }
+
+        @NotNull
+        @Override
+        public DBCExecutionContext getExecutionContext() {
+            return executionContext;
+        }
+
+        @NotNull
+        @Override
+        public Object getExecutionController() {
+            return controller;
         }
     }
 

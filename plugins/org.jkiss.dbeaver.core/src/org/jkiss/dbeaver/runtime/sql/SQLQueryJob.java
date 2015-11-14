@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -58,12 +59,13 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob
+public class SQLQueryJob extends DataSourceJob implements DBCExecutionSource
 {
     static final Log log = Log.getLog(SQLQueryJob.class);
 
     public static final Object STATS_RESULTS = new Object();
 
+    private final DBSDataContainer dataContainer;
     private final List<SQLQuery> queries;
     private final SQLResultsConsumer resultsConsumer;
     private final SQLQueryListener listener;
@@ -90,11 +92,13 @@ public class SQLQueryJob extends DataSourceJob
         @NotNull IWorkbenchPartSite partSite,
         @NotNull String name,
         @NotNull DBCExecutionContext executionContext,
+        @NotNull DBSDataContainer dataContainer,
         @NotNull List<SQLQuery> queries,
         @NotNull SQLResultsConsumer resultsConsumer,
         @Nullable SQLQueryListener listener)
     {
         super(name, DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT_EXECUTE), executionContext);
+        this.dataContainer = dataContainer;
         this.partSite = partSite;
         this.queries = queries;
         this.resultsConsumer = resultsConsumer;
@@ -295,12 +299,11 @@ public class SQLQueryJob extends DataSourceJob
 
             startTime = System.currentTimeMillis();
             curStatement = DBUtils.prepareStatement(
+                this,
                 session,
                 hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
                 sqlQuery,
-                rsOffset,
-                rsMaxRows);
-            curStatement.setStatementSource(sqlStatement);
+                rsOffset, rsMaxRows);
 
             if (hasParameters) {
                 bindStatementParameters(session, sqlStatement);
@@ -396,7 +399,7 @@ public class SQLQueryJob extends DataSourceJob
 
     private void showExecutionResult(DBCSession session) throws DBCException {
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
-            SQLQuery query = new SQLQuery(this, "", -1, -1);
+            SQLQuery query = new SQLQuery("", -1, -1);
             if (queries.size() == 1) {
                 query.setQuery(queries.get(0).getQuery());
             }
@@ -693,5 +696,16 @@ public class SQLQueryJob extends DataSourceJob
     public void setFetchResultSetNumber(int fetchResultSetNumber)
     {
         this.fetchResultSetNumber = fetchResultSetNumber;
+    }
+
+    @Override
+    public DBSDataContainer getDataContainer() {
+        return dataContainer;
+    }
+
+    @NotNull
+    @Override
+    public Object getExecutionController() {
+        return partSite.getPart();
     }
 }

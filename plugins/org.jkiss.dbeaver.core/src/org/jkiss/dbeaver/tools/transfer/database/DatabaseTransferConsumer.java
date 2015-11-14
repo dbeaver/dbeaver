@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -108,7 +109,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             targetSession,
             targetAttributes.toArray(new DBSAttributeBase[targetAttributes.size()]),
             null,
-            sourceObject);
+            new AbstractExecutionSource(sourceObject, targetContext, this));
     }
 
     @Override

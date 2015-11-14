@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.*;
@@ -86,13 +87,11 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
             return null;
         }
 
-        if (realRowCount == null) {
-            // Query row count
-            try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
-                realRowCount = countData(session, null);
-            } catch (DBException e) {
-                log.debug("Can't fetch row count", e);
-            }
+        // Query row count
+        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
+            realRowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
+        } catch (DBException e) {
+            log.debug("Can't fetch row count", e);
         }
         if (realRowCount == null) {
             realRowCount = -1L;

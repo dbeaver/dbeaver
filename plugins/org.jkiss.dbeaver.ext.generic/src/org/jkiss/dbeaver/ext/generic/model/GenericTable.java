@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -229,7 +230,8 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (rowCount == null) {
             // Query row count
             try (DBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read row count")) {
-                rowCount = countData(session, null);
+                rowCount = countData(
+                    new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
             } catch (DBException e) {
                 // do not throw this error - row count is optional info and some providers may fail
                 log.debug("Can't fetch row count: " + e.getMessage());

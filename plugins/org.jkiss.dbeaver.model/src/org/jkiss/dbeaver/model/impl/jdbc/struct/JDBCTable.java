@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -102,7 +101,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, Object source)
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -155,15 +154,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
+            source,
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            firstRow,
-            maxRows);
+            firstRow, maxRows);
         try {
-
-            dbStat.setStatementSource(source);
-
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
                 try {
                     ((JDBCStatement)dbStat).setFetchSize(
@@ -255,7 +251,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long countData(@NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
@@ -268,7 +264,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.toString(),
             false, false, false);
         try {
-            dbStat.setStatementSource(this);
+            dbStat.setStatementSource(source);
             if (!dbStat.executeStatement()) {
                 return 0;
             }
@@ -301,7 +297,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final Object source)
+    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -364,7 +360,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @NotNull DBCSession session,
         @NotNull final DBSAttributeBase[] updateAttributes,
         @NotNull final DBSAttributeBase[] keyAttributes,
-        @Nullable DBDDataReceiver keysReceiver, @NotNull final Object source)
+        @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -430,7 +426,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final Object source)
+    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());

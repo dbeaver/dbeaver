@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -47,6 +48,42 @@ import java.util.*;
 class ResultSetPersister {
 
     static final Log log = Log.getLog(ResultSetPersister.class);
+
+    /**
+     * Data update listener
+     */
+    interface DataUpdateListener {
+
+        void onUpdate(boolean success);
+
+    }
+
+    class ExecutionSource implements DBCExecutionSource {
+
+        private final DBSDataContainer dataContainer;
+
+        public ExecutionSource(DBSDataContainer dataContainer) {
+            this.dataContainer = dataContainer;
+        }
+
+        @Override
+        public DBSDataContainer getDataContainer() {
+            return dataContainer;
+        }
+
+        @NotNull
+        @Override
+        public DBCExecutionContext getExecutionContext() {
+            return viewer.getExecutionContext();
+        }
+
+        @NotNull
+        @Override
+        public Object getExecutionController() {
+            return viewer;
+        }
+    }
+
     @NotNull
     private final ResultSetViewer viewer;
     @NotNull
@@ -403,7 +440,7 @@ class ResultSetPersister {
                             DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
                                 session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                viewer);
+                                new ExecutionSource(dataContainer));
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                                 deleteStats.accumulate(batch.execute(session));
@@ -425,7 +462,7 @@ class ResultSetPersister {
                                 session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 statement.needKeys() ? new KeyDataReceiver(statement) : null,
-                                viewer);
+                                new ExecutionSource(dataContainer));
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                                 insertStats.accumulate(batch.execute(session));
@@ -448,7 +485,7 @@ class ResultSetPersister {
                                 DBDAttributeValue.getAttributes(statement.updateAttributes),
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 null,
-                                viewer);
+                                new ExecutionSource(dataContainer));
                             try {
                                 // Make single array of values
                                 Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];
@@ -620,12 +657,4 @@ class ResultSetPersister {
         }
     }
 
-    /**
-     * Data update listener
-     */
-    static interface DataUpdateListener {
-
-        void onUpdate(boolean success);
-
-    }
 }
