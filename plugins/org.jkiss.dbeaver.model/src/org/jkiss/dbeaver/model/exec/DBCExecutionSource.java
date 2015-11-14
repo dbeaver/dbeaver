@@ -31,9 +31,6 @@ public interface DBCExecutionSource
     @Nullable
     DBSDataContainer getDataContainer();
 
-    @NotNull
-    DBCExecutionContext getExecutionContext();
-
     /**
      * UI controller which initiated execution
      * @return execution controller
