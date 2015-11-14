@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -145,6 +146,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
         return Status.OK_STATUS;
     }
 
+    @Nullable
     @Override
     public DBSDataContainer getDataContainer() {
         return dataContainer;
@@ -154,6 +156,12 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
     @Override
     public Object getExecutionController() {
         return controller;
+    }
+
+    @Nullable
+    @Override
+    public Object getSourceDescriptor() {
+        return this;
     }
 
     private class PumpVisualizer extends UIJob {

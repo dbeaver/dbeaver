@@ -66,6 +66,7 @@ class ResultSetPersister {
             this.dataContainer = dataContainer;
         }
 
+        @Nullable
         @Override
         public DBSDataContainer getDataContainer() {
             return dataContainer;
@@ -81,6 +82,12 @@ class ResultSetPersister {
         @Override
         public Object getExecutionController() {
             return viewer;
+        }
+
+        @Nullable
+        @Override
+        public Object getSourceDescriptor() {
+            return ResultSetPersister.this;
         }
     }
 
