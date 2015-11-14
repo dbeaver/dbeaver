@@ -24,10 +24,9 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -47,9 +46,9 @@ import java.util.List;
  * @author Denis Forveille
  * 
  */
-public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2Table> {
+public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
 
-    private static final String CONS_IX_NAME = "%s_%s_IDX";
+    private static final String             CONS_IX_NAME = "%s_%s_IDX";
 
     private static final List<DBSIndexType> IX_TYPES;
 
@@ -76,8 +75,7 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2Table> {
     }
 
     @Override
-    protected DB2Index createDatabaseObject(DBECommandContext context, DB2Table db2Table,
-                                            Object from)
+    protected DB2Index createDatabaseObject(DBECommandContext context, DB2TableBase db2Table, Object from)
     {
         EditIndexDialog editDialog = new EditIndexDialog(DBeaverUI.getActiveWorkbenchShell(),
             DB2Messages.edit_db2_index_manager_dialog_title, db2Table, IX_TYPES);

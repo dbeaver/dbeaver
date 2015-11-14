@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.util.Collection;
 
 /**
  * DB2 View
@@ -40,7 +39,7 @@ import java.util.Collection;
 public class DB2View extends DB2ViewBase implements DB2SourceObject {
 
     private DB2ViewCheck viewCheck;
-    private Boolean readOnly;
+    private Boolean      readOnly;
 
     // -----------------
     // Constructors
@@ -67,8 +66,9 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getViewCache().clearChildrenCache(this);
         super.refreshObject(monitor);
+
+        getContainer().getViewCache().clearChildrenCache(this);
         return true;
     }
 
@@ -76,22 +76,6 @@ public class DB2View extends DB2ViewBase implements DB2SourceObject {
     public JDBCStructCache<DB2Schema, DB2View, DB2TableColumn> getCache()
     {
         return getContainer().getViewCache();
-    }
-
-    // -----------------
-    // Columns
-    // -----------------
-
-    @Override
-    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
-    {
-        return getContainer().getViewCache().getChildren(monitor, getContainer(), this);
-    }
-
-    @Override
-    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
-    {
-        return getContainer().getViewCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     // -----------------
