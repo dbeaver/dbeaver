@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TableTablespaceListProvider;
-import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableTriggerCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableAccessMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCompressionMode;
@@ -62,42 +61,41 @@ import java.util.Collection;
  * 
  * @author Denis Forveille
  */
-public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject,
-    DBDPseudoAttributeContainer {
+public class DB2Table extends DB2TableBase
+    implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
 
-    private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
+    private static final String                         LINE_SEPARATOR    = GeneralUtils.getDefaultLineSeparator();
 
-    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+    private static final String                         C_PT              = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
 
-    private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
-    private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
+    private DB2TableTriggerCache                        tableTriggerCache = new DB2TableTriggerCache();
 
     // Dependent of DB2 Version. OK because the folder is hidden in plugin.xml
     private DBSObjectCache<DB2Table, DB2TablePartition> partitionCache;
 
-    private DB2TableStatus status;
-    private DB2TableType type;
+    private DB2TableStatus                              status;
+    private DB2TableType                                type;
 
-    private Object tablespace;
-    private Object indexTablespace;
-    private Object longTablespace;
+    private Object                                      tablespace;
+    private Object                                      indexTablespace;
+    private Object                                      longTablespace;
 
-    private String dataCapture;
-    private String constChecked;
-    private DB2TablePartitionMode partitionMode;
-    private Boolean append;
-    private DB2TableLockSize lockSize;
-    private String volatileMode;
-    private DB2TableCompressionMode compression;
-    private DB2TableAccessMode accessMode;
-    private Boolean mdcClustered;
-    private DB2TableDropRule dropRule;
+    private String                                      dataCapture;
+    private String                                      constChecked;
+    private DB2TablePartitionMode                       partitionMode;
+    private Boolean                                     append;
+    private DB2TableLockSize                            lockSize;
+    private String                                      volatileMode;
+    private DB2TableCompressionMode                     compression;
+    private DB2TableAccessMode                          accessMode;
+    private Boolean                                     mdcClustered;
+    private DB2TableDropRule                            dropRule;
 
-    private Timestamp statsTime;
-    private Long card;
-    private Long nPages;
-    private Long fPages;
-    private Long overFLow;
+    private Timestamp                                   statsTime;
+    private Long                                        card;
+    private Long                                        nPages;
+    private Long                                        fPages;
+    private Long                                        overFLow;
 
     // -----------------
     // Constructors
@@ -134,8 +132,7 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
         this.indexTablespace = JDBCUtils.safeGetString(dbResult, "INDEX_TBSPACE");
         this.longTablespace = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
 
-        this.partitionCache = new JDBCObjectSimpleCache<>(DB2TablePartition.class, C_PT,
-            schema.getName(), getName());
+        this.partitionCache = new JDBCObjectSimpleCache<>(DB2TablePartition.class, C_PT, schema.getName(), getName());
 
     }
 
@@ -165,9 +162,10 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        super.refreshObject(monitor);
+
         getContainer().getTableCache().clearChildrenCache(this);
 
-        tableIndexCache.clearCache();
         tableTriggerCache.clearCache();
         if (partitionCache != null) {
             partitionCache.clearCache();
@@ -202,31 +200,8 @@ public class DB2Table extends DB2TableBase implements DBPNamedObject2, DBPRefres
     }
 
     // -----------------
-    // Columns
-    // -----------------
-
-    @Override
-    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
-    {
-        return getContainer().getTableCache().getChildren(monitor, getContainer(), this);
-    }
-
-    @Override
-    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
-    {
-        return getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
-    }
-
-    // -----------------
     // Associations
     // -----------------
-
-    @Override
-    @Association
-    public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
-        return tableIndexCache.getAllObjects(monitor, this);
-    }
 
     @Association
     public Collection<DB2Trigger> getTriggers(DBRProgressMonitor monitor) throws DBException

@@ -18,6 +18,9 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -25,15 +28,12 @@ import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
 import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Cache for DB2 Indexes at the Schema Level
@@ -48,7 +48,7 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
     public DB2IndexCache()
     {
         super("INDNAME");
-    }
+    } 
 
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema) throws SQLException
@@ -59,26 +59,30 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
     }
 
     @Override
-    protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet dbResult)
+        throws SQLException, DBException
     {
 
-        // Look for related table...or nickname
+        // Look for related table...or nickname...or MQT
         String tableOrNicknameSchemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABSCHEMA");
         String tableOrNicknameName = JDBCUtils.safeGetStringTrimmed(dbResult, "TABNAME");
-        DB2Table db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
+        DB2TableBase db2Table = DB2Utils.findTableBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
             tableOrNicknameSchemaName, tableOrNicknameName);
         if (db2Table == null) {
             db2Table = DB2Utils.findNicknameBySchemaNameAndName(session.getProgressMonitor(), db2Schema.getDataSource(),
                 tableOrNicknameSchemaName, tableOrNicknameName);
+        }
+        if (db2Table == null) {
+            db2Table = DB2Utils.findMaterializedQueryTableBySchemaNameAndName(session.getProgressMonitor(),
+                db2Schema.getDataSource(), tableOrNicknameSchemaName, tableOrNicknameName);
         }
 
         return new DB2Index(session.getProgressMonitor(), db2Schema, db2Table, dbResult);
     }
 
     @Override
-    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @Nullable DB2Index forIndex)
-        throws SQLException
+    protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema,
+        @Nullable DB2Index forIndex) throws SQLException
     {
         JDBCPreparedStatement dbStat = session.prepareStatement(SQL_COLS_IND);
         dbStat.setString(1, forIndex.getContainer().getName());
@@ -87,8 +91,8 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
     }
 
     @Override
-    protected DB2IndexColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Index db2Index, @NotNull ResultSet dbResult)
-        throws SQLException, DBException
+    protected DB2IndexColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Index db2Index,
+        @NotNull ResultSet dbResult) throws SQLException, DBException
     {
         return new DB2IndexColumn(session.getProgressMonitor(), db2Index, dbResult);
     }

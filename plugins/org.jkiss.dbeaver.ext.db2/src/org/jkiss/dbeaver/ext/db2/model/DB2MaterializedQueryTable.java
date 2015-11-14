@@ -30,7 +30,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.util.Collection;
 
 /**
  * DB2 MQT
@@ -40,7 +39,7 @@ import java.util.Collection;
 public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceObject {
 
     private DB2TableRefreshMode refreshMode;
-    private Timestamp refreshTime;
+    private Timestamp           refreshTime;
 
     // -----------------
     // Constructors
@@ -68,8 +67,9 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().getMaterializedQueryTableCache().clearChildrenCache(this);
         super.refreshObject(monitor);
+        
+        getContainer().getMaterializedQueryTableCache().clearChildrenCache(this);
         return true;
     }
 
@@ -77,22 +77,6 @@ public class DB2MaterializedQueryTable extends DB2ViewBase implements DB2SourceO
     public JDBCStructCache<DB2Schema, DB2MaterializedQueryTable, DB2TableColumn> getCache()
     {
         return getContainer().getMaterializedQueryTableCache();
-    }
-
-    // -----------------
-    // Columns
-    // -----------------
-
-    @Override
-    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
-    {
-        return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(), this);
-    }
-
-    @Override
-    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
-    {
-        return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(), this, attributeName);
     }
 
     // -----------------
