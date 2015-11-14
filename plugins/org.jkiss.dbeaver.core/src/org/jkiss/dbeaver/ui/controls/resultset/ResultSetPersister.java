@@ -74,12 +74,6 @@ class ResultSetPersister {
 
         @NotNull
         @Override
-        public DBCExecutionContext getExecutionContext() {
-            return viewer.getExecutionContext();
-        }
-
-        @NotNull
-        @Override
         public Object getExecutionController() {
             return viewer;
         }

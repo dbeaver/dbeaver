@@ -52,12 +52,6 @@ public class AbstractExecutionSource implements DBCExecutionSource {
 
     @NotNull
     @Override
-    public DBCExecutionContext getExecutionContext() {
-        return executionContext;
-    }
-
-    @NotNull
-    @Override
     public Object getExecutionController() {
         return controller;
     }
