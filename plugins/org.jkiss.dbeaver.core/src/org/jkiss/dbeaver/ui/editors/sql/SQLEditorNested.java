@@ -233,6 +233,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
                             if (sourceText == null) {
                                 sourceText = "-- Empty source returned";
                             }
+                        } catch (DBException e) {
+                            sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
+                            throw new InvocationTargetException(e);
+                        } finally {
                             if (!isDisposed()) {
                                 UIUtils.runInUI(null, new Runnable() {
                                     @Override
@@ -245,9 +249,6 @@ public abstract class SQLEditorNested<T extends DBSObject>
                                     }
                                 });
                             }
-                        } catch (DBException e) {
-                            sourceText = e.getMessage();
-                            throw new InvocationTargetException(e);
                         }
                     }
                 });
