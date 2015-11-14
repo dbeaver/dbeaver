@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
@@ -74,7 +75,11 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     {
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
         for (int i = 0; i < attributes.length; i++) {
-            handlers[i] = DBUtils.findValueHandler(session, attributes[i]);
+            if (attributes[i] instanceof DBDAttributeBinding) {
+                handlers[i] = ((DBDAttributeBinding)attributes[i]).getValueHandler();
+            } else {
+                handlers[i] = DBUtils.findValueHandler(session, attributes[i]);
+            }
         }
 
         boolean useBatch = session.getDataSource().getInfo().supportsBatchUpdates() && reuseStatement;
