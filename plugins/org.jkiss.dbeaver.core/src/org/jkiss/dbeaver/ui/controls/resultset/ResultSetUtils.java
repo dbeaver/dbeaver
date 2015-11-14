@@ -61,9 +61,11 @@ public class ResultSetUtils
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Discover resultset metadata", 3);
         try {
-            DBCExecutionSource executionSource = resultSet.getSourceStatement().getStatementSource();
             DBSEntity entity = null;
-            if (executionSource != null) {
+            DBCStatement sourceStatement = resultSet.getSourceStatement();
+            if (sourceStatement != null && sourceStatement.getStatementSource() != null) {
+                DBCExecutionSource executionSource = sourceStatement.getStatementSource();
+
                 monitor.subTask("Discover owner entity");
                 DBSDataContainer dataContainer = executionSource.getDataContainer();
                 if (dataContainer instanceof DBSEntity) {

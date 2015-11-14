@@ -1446,4 +1446,19 @@ public final class DBUtils {
     public static boolean isAtomicParameter(Object o) {
         return o == null || o instanceof CharSequence || o instanceof Number || o instanceof java.sql.Date || o instanceof Boolean;
     }
+
+    public static String formatBinaryString(DBPDataSource dataSource, byte[] data, DBDDisplayFormat format) {
+        DBDBinaryFormatter formatter = getBinaryPresentation(dataSource);
+        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
+        // Convert bytes to string
+        int length = data.length;
+        if (format == DBDDisplayFormat.UI && length > maxLength) {
+            length = maxLength;
+        }
+        String string = formatter.toString(data, 0, length);
+        if (length == data.length) {
+            return string;
+        }
+        return string + "..." + " [" + data.length + "]";
+    }
 }
