@@ -54,33 +54,27 @@ public class ResultSetUtils
 
     public static void findValueLocators(
         DBCSession session,
+        DBCResultSet resultSet,
         DBDAttributeBindingMeta[] bindings,
         List<Object[]> rows)
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Discover resultset metadata", 3);
-        Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<>();
         try {
-            monitor.subTask("Discover attributes");
-            for (DBDAttributeBindingMeta binding : bindings) {
-                monitor.subTask("Discover attribute '" + binding.getName() + "'");
-                DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
-                Object metaSource = attrMeta.getSource();
-                DBSEntity entity = null;
-                if (metaSource instanceof DBCExecutionSource) {
-                    DBSDataContainer dataContainer = ((DBCExecutionSource) metaSource).getDataContainer();
-                    if (dataContainer instanceof DBSEntity) {
-                        entity = (DBSEntity)dataContainer;
-                    }
+            DBCExecutionSource executionSource = resultSet.getSourceStatement().getStatementSource();
+            DBSEntity entity = null;
+            if (executionSource != null) {
+                monitor.subTask("Discover owner entity");
+                DBSDataContainer dataContainer = executionSource.getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    entity = (DBSEntity)dataContainer;
                 }
                 if (entity == null) {
                     // Discover from entity metadata
-                    DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
-                    if (entityMeta == null && metaSource instanceof DBCExecutionSource) {
-                        Object sourceDescriptor = ((DBCExecutionSource) metaSource).getSourceDescriptor();
-                        if (sourceDescriptor instanceof SQLQuery) {
-                            entityMeta = ((SQLQuery) sourceDescriptor).getSingleSource();
-                        }
+                    DBCEntityMetaData entityMeta = null;
+                    Object sourceDescriptor = executionSource.getSourceDescriptor();
+                    if (sourceDescriptor instanceof SQLQuery) {
+                        entityMeta = ((SQLQuery) sourceDescriptor).getSingleSource();
                     }
                     if (entityMeta != null) {
                         DBPDataSource dataSource = session.getDataSource();
@@ -109,6 +103,14 @@ public class ResultSetUtils
                         }
                     }
                 }
+            }
+
+            final Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
+
+            monitor.subTask("Discover attributes");
+            for (DBDAttributeBindingMeta binding : bindings) {
+                monitor.subTask("Discover attribute '" + binding.getName() + "'");
+                DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
@@ -119,32 +121,33 @@ public class ResultSetUtils
                     } else {
                         tableColumn = entity.getAttribute(monitor, attrMeta.getName());
                     }
-
                     binding.setEntityAttribute(tableColumn);
                 }
             }
             monitor.worked(1);
 
             // Init row identifiers
-            monitor.subTask("Early bindings");
+            monitor.subTask("Detect unique identifiers");
             for (DBDAttributeBindingMeta binding : bindings) {
-                monitor.subTask("Bind attribute '" + binding.getName() + "'");
+                monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                 DBSEntityAttribute attr = binding.getEntityAttribute();
                 if (attr == null) {
                     continue;
                 }
-                DBSEntity entity = attr.getParentObject();
-                DBDRowIdentifier rowIdentifier = locatorMap.get(entity);
-                if (rowIdentifier == null) {
-                    DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, entity, bindings);
-                    if (entityIdentifier != null) {
-                        rowIdentifier = new DBDRowIdentifier(
-                            entity,
-                            entityIdentifier);
-                        locatorMap.put(entity, rowIdentifier);
+                DBSEntity attrEntity = attr.getParentObject();
+                if (attrEntity != null) {
+                    DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
+                    if (rowIdentifier == null) {
+                        DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings);
+                        if (entityIdentifier != null) {
+                            rowIdentifier = new DBDRowIdentifier(
+                                attrEntity,
+                                entityIdentifier);
+                            locatorMap.put(attrEntity, rowIdentifier);
+                        }
                     }
+                    binding.setRowIdentifier(rowIdentifier);
                 }
-                binding.setRowIdentifier(rowIdentifier);
             }
             monitor.worked(1);
 
@@ -154,12 +157,13 @@ public class ResultSetUtils
                 monitor.subTask("Late bind attribute '" + binding.getName() + "'");
                 binding.lateBinding(session, rows);
             }
+            monitor.subTask("Complete metadata load");
             // Reload attributes in row identifiers
             for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
                 rowIdentifier.reloadAttributes(monitor, bindings);
             }
         }
-        catch (DBException e) {
+        catch (Throwable e) {
             log.error("Can't extract column identifier info", e);
         }
         finally {
