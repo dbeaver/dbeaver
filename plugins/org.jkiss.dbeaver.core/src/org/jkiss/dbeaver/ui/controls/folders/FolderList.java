@@ -46,6 +46,9 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 
 /**
  * Shows the list of tabs in the tabbed property sheet page.
@@ -92,6 +95,8 @@ public class FolderList extends Composite {
     private Color navigationElementShadowStroke;
     private Color bottomNavigationElementShadowStroke1;
     private Color bottomNavigationElementShadowStroke2;
+
+    private final Map<Image, Image> grayedImages = new IdentityHashMap<>();
 
     /**
      * One of the tabs in the tabbed property list.
@@ -222,15 +227,20 @@ public class FolderList extends Composite {
             int height = fm.getHeight();
             int textMiddle = (bounds.height - height) / 2;
 
-            if (selected && tab.getImage() != null) {
+            if (tab.getImage() != null) {
 				/* draw the icon for the selected tab */
                 if (tab.isIndented()) {
                     textIndent = textIndent + INDENT_LEFT;
                 } else {
                     textIndent = textIndent - 3;
                 }
-                e.gc.drawImage(DBeaverIcons.getImage(tab.getImage()), textIndent, textMiddle - 1);
-                textIndent = textIndent + 16 + 4;
+                Image image = DBeaverIcons.getImage(tab.getImage());
+                if (selected || hover) {
+                    e.gc.drawImage(image, textIndent, textMiddle - 1);
+                } else {
+                    e.gc.drawImage(getGrayedImage(image), textIndent, textMiddle - 1);
+                }
+                textIndent = textIndent + image.getBounds().width + 4;
             } else if (tab.isIndented()) {
                 textIndent = textIndent + INDENT_LEFT;
             }
@@ -267,6 +277,16 @@ public class FolderList extends Composite {
         public String toString() {
             return tab.getText();
         }
+    }
+
+    private Image getGrayedImage(Image image) {
+        Image disabledImage = grayedImages.get(image);
+        if (disabledImage == null) {
+            disabledImage = new Image(image.getDevice(), image, SWT.IMAGE_GRAY);
+            grayedImages.put(image, disabledImage);
+        }
+
+        return disabledImage;
     }
 
     /**
@@ -494,6 +514,15 @@ public class FolderList extends Composite {
                 } else {
                     e.doit = true;
                 }
+            }
+        });
+        addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                for (Image di : grayedImages.values()) {
+                    UIUtils.dispose(di);
+                }
+                grayedImages.clear();
             }
         });
     }
