@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
  */
 public interface DBCExecutionSource
 {
+    @Nullable
     DBSDataContainer getDataContainer();
 
     @NotNull
@@ -36,6 +38,13 @@ public interface DBCExecutionSource
      * UI controller which initiated execution
      * @return execution controller
      */
-    @NotNull
+    @Nullable
     Object getExecutionController();
+
+    /**
+     * Additional source descriptor
+     */
+    @Nullable
+    Object getSourceDescriptor();
+
 }

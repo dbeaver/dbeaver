@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -59,7 +60,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob implements DBCExecutionSource
+public class SQLQueryJob extends DataSourceJob
 {
     static final Log log = Log.getLog(SQLQueryJob.class);
 
@@ -298,8 +299,9 @@ public class SQLQueryJob extends DataSourceJob implements DBCExecutionSource
             statistics.setQueryText(sqlQuery);
 
             startTime = System.currentTimeMillis();
+            DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlStatement);
             curStatement = DBUtils.prepareStatement(
-                this,
+                source,
                 session,
                 hasParameters ? DBCStatementType.QUERY : DBCStatementType.SCRIPT,
                 sqlQuery,
@@ -698,14 +700,4 @@ public class SQLQueryJob extends DataSourceJob implements DBCExecutionSource
         this.fetchResultSetNumber = fetchResultSetNumber;
     }
 
-    @Override
-    public DBSDataContainer getDataContainer() {
-        return dataContainer;
-    }
-
-    @NotNull
-    @Override
-    public Object getExecutionController() {
-        return partSite.getPart();
-    }
 }

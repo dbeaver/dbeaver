@@ -17,23 +17,24 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 
@@ -185,7 +186,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
             }
             dataReceiver.filter = new DBDDataFilter(constraints);
             dataReceiver.filter.setAnyConstraint(true);
-            SearchSource searchSource = new SearchSource(dataContainer, session.getExecutionContext(), this);
+            DBCExecutionSource searchSource = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), this);
             return dataContainer.readData(searchSource, session, dataReceiver, dataReceiver.filter, -1, -1, 0);
         } catch (DBException e) {
             throw new DBCException("Error finding rows", e);
@@ -242,36 +243,6 @@ public class SearchDataQuery implements IObjectSearchQuery {
         @Override
         public void close() {
 
-        }
-    }
-
-    class SearchSource implements DBCExecutionSource {
-
-        private final DBSDataContainer dataContainer;
-        private final DBCExecutionContext executionContext;
-        private final Object controller;
-
-        public SearchSource(DBSDataContainer dataContainer, DBCExecutionContext executionContext, Object controller) {
-            this.dataContainer = dataContainer;
-            this.executionContext = executionContext;
-            this.controller = controller;
-        }
-
-        @Override
-        public DBSDataContainer getDataContainer() {
-            return dataContainer;
-        }
-
-        @NotNull
-        @Override
-        public DBCExecutionContext getExecutionContext() {
-            return executionContext;
-        }
-
-        @NotNull
-        @Override
-        public Object getExecutionController() {
-            return controller;
         }
     }
 
