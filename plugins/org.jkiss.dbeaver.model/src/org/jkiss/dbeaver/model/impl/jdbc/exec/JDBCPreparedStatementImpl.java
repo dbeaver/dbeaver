@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -46,12 +47,18 @@ import java.util.Map;
  */
 public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
 
+    private static final Object NULL_VALUE = new Object();
+
     private Map<Object, Object> paramMap;
 
     protected static class ContentParameter {
         String displayString;
-        ContentParameter(Object value) {
-            displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
+        ContentParameter(JDBCSession session, Object value) {
+            if (value instanceof RowId) {
+                displayString = SQLUtils.quoteString(new String(((RowId) value).getBytes()));
+            } else {
+                displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
+            }
         }
 
         @Override
@@ -89,22 +96,52 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         if (paramMap == null) {
             return getQueryString();
         } else {
-            String formatted = getQueryString();
-            int maxParamIndex = -1;
-            //int[] indexedParams = new int[paramMap.size()];
-            for (Map.Entry<Object, Object> param : paramMap.entrySet()) {
-                if (param.getKey() instanceof Number) {
-                    maxParamIndex = Math.max(maxParamIndex, ((Number) param.getKey()).intValue());
-                    // FIXME: use right parameters order
-                    formatted = formatted.replaceFirst("\\?", formatParameterValue(param.getValue()));
-                } else {
-                    formatted = formatted.replace(":" + param.getKey(), formatParameterValue(param.getValue()));
-                }
+            String q = getQueryString();
+            if (q == null) {
+                return "";
             }
-            return formatted;
+            int length = q.length();
+            StringBuilder formatted = new StringBuilder(length * 2);
+            int paramIndex = 0;
+            for (int i = 0; i < length; i++) {
+                char c = q.charAt(i);
+                switch (c) {
+                    case '?': {
+                        paramIndex++;
+                        Object paramValue = paramMap.get(paramIndex);
+                        if (paramValue != null) {
+                            formatted.append(formatParameterValue(paramValue));
+                            continue;
+                        }
+                        break;
+                    }
+                    case ':': {
+                        // FIXME: process named parameters
+                        break;
+                    }
+                    case '\'':
+                    case '"': {
+                        formatted.append(c);
+                        for (int k = i + 1; k < length; k++) {
+                            char c2 = q.charAt(k);
+                            if (c2 == c && q.charAt(k - 1) != '\\') {
+                                c = c2;
+                                break;
+                            } else {
+                                formatted.append(c2);
+                            }
+                        }
+                        break;
+                    }
+                }
+                formatted.append(c);
+            }
+
+            return formatted.toString();
         }
     }
 
+    @NotNull
     private String formatParameterValue(Object value) {
         if (value instanceof CharSequence) {
             return SQLUtils.quoteString(value.toString());
@@ -121,6 +158,8 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             } catch (Exception e) {
                 log.debug("Error formatting date [" + value + "]", e);
             }
+        } else if (value == NULL_VALUE) {
+            return "NULL";
         }
         return value.toString();
     }
@@ -129,9 +168,11 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     {
         if (isQMLoggingEnabled()) {
             // Save parameters
-            if (o != null && !DBUtils.isAtomicParameter(o)) {
+            if (o == null) {
+                o = NULL_VALUE;
+            } else if (!DBUtils.isAtomicParameter(o)) {
                 // Wrap complex things
-                o = new ContentParameter(o);
+                o = new ContentParameter(connection, o);
             }
             if (paramMap == null) {
                 paramMap = new LinkedHashMap<>();

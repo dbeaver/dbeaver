@@ -321,7 +321,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     hasKey = true;
                     query.append(getAttributeName(attribute));
                 }
-                query.append(") VALUES ("); //$NON-NLS-1$
+                query.append(")\nVALUES ("); //$NON-NLS-1$
                 hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
@@ -382,7 +382,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
+                query.append("\nSET "); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (DBSAttributeBase attribute : updateAttributes) {
@@ -393,7 +393,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                     query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
                 }
-                query.append(" WHERE "); //$NON-NLS-1$
+                query.append("\nWHERE "); //$NON-NLS-1$
                 hasKey = false;
                 for (int i = 0; i < keyAttributes.length; i++) {
                     DBSAttributeBase attribute = keyAttributes[i];
@@ -447,7 +447,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
+                query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (int i = 0; i < keyAttributes.length; i++) {
@@ -493,7 +493,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
     {
         if (dataFilter != null && dataFilter.hasConditions()) {
-            query.append(" WHERE "); //$NON-NLS-1$
+            query.append("\nWHERE "); //$NON-NLS-1$
             SQLUtils.appendConditionString(dataFilter, getDataSource(), tableAlias, query, true);
         }
     }
@@ -503,7 +503,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (dataFilter != null) {
             // Construct ORDER BY
             if (dataFilter.hasOrdering()) {
-                query.append(" ORDER BY "); //$NON-NLS-1$
+                query.append("\nORDER BY "); //$NON-NLS-1$
                 SQLUtils.appendOrderString(dataFilter, getDataSource(), tableAlias, query);
             }
         }
