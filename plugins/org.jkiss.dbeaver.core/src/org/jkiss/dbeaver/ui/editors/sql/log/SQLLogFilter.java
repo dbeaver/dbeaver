@@ -18,12 +18,11 @@
 package org.jkiss.dbeaver.ui.editors.sql.log;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
@@ -71,12 +70,9 @@ class SQLLogFilter implements QMEventFilter {
         if (statement == null) {
             return false;
         }
-        Object source = statement.getStatementSource();
-        if (source instanceof SQLQuery) {
-            return ((SQLQuery) source).getSource() == editor;
-        }
-        if (source instanceof IResultSetController) {
-            return ((IResultSetController) source).getSite().getPart() == editor;
+        DBCExecutionSource source = statement.getStatementSource();
+        if (source != null) {
+            return source.getExecutionController() == editor;
         }
         return false;
     }

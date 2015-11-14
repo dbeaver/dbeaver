@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -75,6 +76,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             dataSource.openIsolatedContext(monitor, "Data transfer producer") : dataSource.getDefaultContext(false);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
             try {
+                AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);
                 session.enableLogging(false);
                 if (newConnection) {
                     // Turn off auto-commit in source DB
@@ -94,7 +96,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 if (settings.isQueryRowCount() && (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                     monitor.beginTask(CoreMessages.data_transfer_wizard_job_task_retrieve, 1);
                     try {
-                        totalRows = dataContainer.countData(session, dataFilter);
+                        totalRows = dataContainer.countData(transferSource, session, dataFilter);
                     } catch (Throwable e) {
                         log.warn("Can't retrieve row count from '" + dataContainer.getName() + "'", e);
                     } finally {
@@ -108,14 +110,14 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     // Perform export
                     if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        dataContainer.readData(session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE, consumer);
+                        dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE);
                     } else {
                         // Read all data by segments
                         long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (; ; ) {
                             DBCStatistics statistics = dataContainer.readData(
-                                session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE, consumer);
+                                transferSource, session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE);
                             if (statistics == null || statistics.getRowsFetched() < segmentSize) {
                                 // Done
                                 break;

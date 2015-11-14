@@ -1188,6 +1188,7 @@ public class SQLEditor extends SQLEditorBase implements
                     getSite(),
                     isSingleQuery ? CoreMessages.editors_sql_job_execute_query : CoreMessages.editors_sql_job_execute_script,
                     executionContext,
+                    resultsContainer,
                     queries,
                     this,
                     listener);
@@ -1376,7 +1377,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @NotNull
         @Override
-        public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, Object source) throws DBCException
+        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
         {
             final SQLQueryJob job = queryProcessor.curJob;
             if (job != null) {
@@ -1403,7 +1404,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public long countData(@NotNull DBCSession session, DBDDataFilter dataFilter)
+        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
         {
             return -1;
         }

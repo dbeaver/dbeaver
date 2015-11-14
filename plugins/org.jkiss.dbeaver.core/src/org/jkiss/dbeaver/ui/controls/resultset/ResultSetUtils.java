@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -76,8 +73,8 @@ public class ResultSetUtils
                     }
                 }
                 DBSEntity entity = null;
-                if (metaSource instanceof IResultSetController) {
-                    DBSDataContainer dataContainer = ((IResultSetController) metaSource).getDataContainer();
+                if (metaSource instanceof DBCExecutionSource) {
+                    DBSDataContainer dataContainer = ((DBCExecutionSource) metaSource).getDataContainer();
                     if (dataContainer instanceof DBSEntity) {
                         entity = (DBSEntity)dataContainer;
                     }

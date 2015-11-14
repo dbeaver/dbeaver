@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -413,7 +414,7 @@ public class WMIClass extends WMIContainer
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, Object source) throws DBCException
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
         try {
@@ -455,7 +456,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public long countData(@NotNull DBCSession session, DBDDataFilter dataFilter)
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
     {
         return -1;
     }

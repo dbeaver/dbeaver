@@ -745,14 +745,17 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement prepareStatement(
+        DBCExecutionSource executionSource,
         DBCSession session,
         DBCStatementType statementType,
         String query,
         long offset,
         long maxRows) throws DBCException
     {
-        SQLQuery sqlQuery = new SQLQuery(session, query);
-        return prepareStatement(session, statementType, sqlQuery, offset, maxRows);
+        SQLQuery sqlQuery = new SQLQuery(query);
+        DBCStatement statement = prepareStatement(session, statementType, sqlQuery, offset, maxRows);
+        statement.setStatementSource(executionSource);
+        return statement;
     }
 
     @NotNull

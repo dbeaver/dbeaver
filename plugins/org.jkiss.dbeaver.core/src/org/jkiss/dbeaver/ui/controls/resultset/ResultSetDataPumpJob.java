@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -40,10 +41,7 @@ import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.ProxyProgressMonitor;
@@ -53,7 +51,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
 
-class ResultSetDataPumpJob extends DataSourceJob {
+class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
 
     private static final int PROGRESS_VISUALIZE_PERIOD = 100;
 
@@ -130,13 +128,14 @@ class ResultSetDataPumpJob extends DataSourceJob {
         {
             visualizer.schedule(PROGRESS_VISUALIZE_PERIOD * 2);
             statistics = dataContainer.readData(
+                this,
                 session,
                 controller.getDataReceiver(),
                 dataFilter,
                 offset,
                 maxRows,
-                DBSDataContainer.FLAG_READ_PSEUDO,
-                controller);
+                DBSDataContainer.FLAG_READ_PSEUDO
+            );
         } catch (DBException e) {
             error = e;
         } finally {
@@ -144,6 +143,17 @@ class ResultSetDataPumpJob extends DataSourceJob {
         }
 
         return Status.OK_STATUS;
+    }
+
+    @Override
+    public DBSDataContainer getDataContainer() {
+        return dataContainer;
+    }
+
+    @NotNull
+    @Override
+    public Object getExecutionController() {
+        return controller;
     }
 
     private class PumpVisualizer extends UIJob {
