@@ -17,6 +17,9 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -119,7 +122,14 @@ public class XMLPanelEditor extends ContentPanelEditor {
             return null;
         }
         editor.createPartControl(editPlaceholder);
-        return editor.getTextViewer().getTextWidget();
+        StyledText control = editor.getTextViewer().getTextWidget();
+        control.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                editor.dispose();
+            }
+        });
+        return control;
 
 //        Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
 //        text.setEditable(!valueController.isReadOnly());
