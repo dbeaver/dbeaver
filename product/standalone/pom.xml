@@ -9,7 +9,7 @@
         <version>1.0.0</version>
         <relativePath>../../</relativePath>
     </parent>
-    <version>3.5.3</version>
+    <version>3.5.4</version>
     <artifactId>ce-product</artifactId>
     <packaging>eclipse-repository</packaging>
     <name>DBeaver CE Standalone</name>
