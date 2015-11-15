@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Standalone
 Bundle-SymbolicName: org.jkiss.dbeaver.core.application;singleton:=true
-Bundle-Version: 3.5.3
+Bundle-Version: 3.5.4
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ClassPath: .
