@@ -152,7 +152,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     bracketIndent.add(indent);
                     indent++;
                     index += insertReturnAndIndent(argList, index + 1, indent);
-                } else if (tokenString.equals(")")) { //$NON-NLS-1$
+                } else if (tokenString.equals(")") && !bracketIndent.isEmpty() && !functionBracket.isEmpty()) { //$NON-NLS-1$
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
                     index += insertReturnAndIndent(argList, index, indent);
                     functionBracket.remove(functionBracket.size() - 1);
