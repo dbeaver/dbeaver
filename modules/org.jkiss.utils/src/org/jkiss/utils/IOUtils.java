@@ -18,10 +18,7 @@
 
 package org.jkiss.utils;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -127,6 +124,12 @@ public final class IOUtils {
 
 		// Close input stream
 		outputStream.flush();
+	}
+
+	public static String toString(Reader reader) throws IOException {
+		StringWriter writer = new StringWriter();
+		copyText(reader, writer, DEFAULT_BUFFER_SIZE);
+		return writer.toString();
 	}
 
 	/**

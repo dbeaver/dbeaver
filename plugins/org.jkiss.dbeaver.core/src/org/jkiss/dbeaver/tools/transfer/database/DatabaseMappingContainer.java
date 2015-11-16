@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -193,7 +194,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             assert (dataSource != null);
             try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, source);
+                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
                 for (DBCAttributeMetaData attr : receiver.attributes) {
                     addAttributeMapping(monitor, attr);
                 }

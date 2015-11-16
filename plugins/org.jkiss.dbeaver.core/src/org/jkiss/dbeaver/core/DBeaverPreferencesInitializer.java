@@ -72,7 +72,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_TYPE, SQLScriptCommitType.NO_COMMIT.name());
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_COMMIT_LINES, 1000);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_ERROR_HANDLING, SQLScriptErrorHandling.STOP_ROLLBACK.name());
-      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, false);
+      PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, true);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_AUTO_FOLDERS, false);
       PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SCRIPT_TITLE_PATTERN, SQLEditorInput.DEFAULT_PATTERN);
 

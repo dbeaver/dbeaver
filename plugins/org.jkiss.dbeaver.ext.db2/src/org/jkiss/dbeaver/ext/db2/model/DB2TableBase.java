@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StatefulObject;
+import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -45,20 +47,22 @@ import java.util.Collections;
  * 
  * @author Denis Forveille
  */
-public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> implements DBPNamedObject2, DBPRefreshableObject,
-    DB2StatefulObject {
+public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
+    implements DBPNamedObject2, DBPRefreshableObject, DB2StatefulObject {
 
-    private String owner;
-    private DB2OwnerType ownerType;
+    private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
 
-    private Integer tableId;
+    private String             owner;
+    private DB2OwnerType       ownerType;
 
-    private Timestamp createTime;
-    private Timestamp alterTime;
-    private Timestamp invalidateTime;
-    private Timestamp lastRegenTime;
+    private Integer            tableId;
 
-    private String remarks;
+    private Timestamp          createTime;
+    private Timestamp          alterTime;
+    private Timestamp          invalidateTime;
+    private Timestamp          lastRegenTime;
+
+    private String             remarks;
 
     // -----------------
     // Constructors
@@ -105,16 +109,71 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema> i
         return DBUtils.getFullQualifiedName(getDataSource(), getSchema(), this);
     }
 
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
+    {
+        tableIndexCache.clearCache();
+
+        // DF: Clear base index cache. Not cheap but didn't found another way..
+        getContainer().getIndexCache().clearCache();
+
+        return true;
+    }
+
+    // -----------------
+    // Columns
+    // -----------------
+
+    @Override
+    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
+    {
+        if (this instanceof DB2Table) {
+            return getContainer().getTableCache().getChildren(monitor, getContainer(), (DB2Table) this);
+        }
+        if (this instanceof DB2MaterializedQueryTable) {
+            return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(),
+                (DB2MaterializedQueryTable) this);
+        }
+        if (this instanceof DB2View) {
+            return getContainer().getViewCache().getChildren(monitor, getContainer(), (DB2View) this);
+        }
+
+        // Other kinds don't have columns..
+        throw new DBException("Unknown object with columns encountered");
+    }
+
+    @Override
+    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
+    {
+        if (this instanceof DB2Table) {
+            return getContainer().getTableCache().getChild(monitor, getContainer(), (DB2Table) this, attributeName);
+        }
+        if (this instanceof DB2MaterializedQueryTable) {
+            return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(),
+                (DB2MaterializedQueryTable) this, attributeName);
+        }
+        if (this instanceof DB2View) {
+            return getContainer().getViewCache().getChild(monitor, getContainer(), (DB2View) this, attributeName);
+        }
+        
+        // Other kinds don't have columns..
+        throw new DBException("Unknown object with columns encountered");
+    }
+
+    // -----------------
+    // Associations
+    // -----------------
+    @Override
+    @Association
+    public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
+    {
+        return tableIndexCache.getAllObjects(monitor, this);
+    }
+
     // -----------------
     // Associations (Imposed from DBSTable). In DB2, Most of objects "derived"
     // from Tables don't have those..
     // -----------------
-
-    @Override
-    public Collection<DB2Index> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
-        return Collections.emptyList();
-    }
 
     @Nullable
     @Override

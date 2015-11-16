@@ -38,6 +38,7 @@ public class WMIStatement implements DBCStatement {
     private List<WMIObject> queryResult;
     private long firstRow;
     private long maxRows;
+    private DBCExecutionSource source;
 
     public WMIStatement(WMISession session, DBCStatementType type, String query)
     {
@@ -148,14 +149,15 @@ public class WMIStatement implements DBCStatement {
 
     @Nullable
     @Override
-    public Object getStatementSource()
+    public DBCExecutionSource getStatementSource()
     {
-        return null;
+        return source;
     }
 
     @Override
-    public void setStatementSource(Object source)
+    public void setStatementSource(DBCExecutionSource source)
     {
+        this.source = source;
     }
 
     @Override

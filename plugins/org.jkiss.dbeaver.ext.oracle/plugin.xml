@@ -183,7 +183,7 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" icon="#links" description="Database Links (DBLinks)">
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDBLink" label="%tree.database_links.node.name" icon="#folder_link" description="Database Links (DBLinks)">
                             <items label="%tree.database_links.node.name" path="databaseLink" property="databaseLinks" icon="#link"/>
                         </folder>
                         <!--folder type="org.jkiss.dbeaver.ext.oracle.model.OracleJavaClass" label="Java" icon="#java" description="Java Classes">

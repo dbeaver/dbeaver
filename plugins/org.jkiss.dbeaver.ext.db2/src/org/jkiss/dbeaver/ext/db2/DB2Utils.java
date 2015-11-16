@@ -22,14 +22,26 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
-import org.jkiss.dbeaver.ext.db2.model.*;
+import org.jkiss.dbeaver.ext.db2.model.DB2Bufferpool;
+import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
+import org.jkiss.dbeaver.ext.db2.model.DB2Index;
+import org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable;
+import org.jkiss.dbeaver.ext.db2.model.DB2Package;
+import org.jkiss.dbeaver.ext.db2.model.DB2Routine;
+import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
+import org.jkiss.dbeaver.ext.db2.model.DB2Sequence;
+import org.jkiss.dbeaver.ext.db2.model.DB2Table;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
+import org.jkiss.dbeaver.ext.db2.model.DB2View;
+import org.jkiss.dbeaver.ext.db2.model.DB2XMLSchema;
 import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplication;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablespaceDataType;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.ext.db2.model.module.DB2Module;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -430,6 +442,15 @@ public class DB2Utils {
             return null;
         }
         return db2Schema.getNickname(monitor, db2NicknameName);
+    }
+
+    public static DB2MaterializedQueryTable findMaterializedQueryTableBySchemaNameAndName(DBRProgressMonitor monitor,
+        DB2DataSource db2DataSource, String db2SchemaName, String db2NicknameName) throws DBException    {
+        DB2Schema db2Schema = db2DataSource.getSchema(monitor, db2SchemaName);
+        if (db2Schema == null) {
+            return null;
+        }
+        return db2Schema.getMaterializedQueryTable(monitor, db2NicknameName);
     }
 
     public static DB2Package findPackageBySchemaNameAndName(DBRProgressMonitor monitor, DB2DataSource db2DataSource,

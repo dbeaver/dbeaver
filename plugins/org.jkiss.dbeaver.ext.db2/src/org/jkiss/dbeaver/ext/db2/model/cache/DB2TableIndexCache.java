@@ -18,41 +18,42 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 /**
  * Cache for DB2 Indexes for a given Table
  * 
  * @author Denis Forveille
  */
-public class DB2TableIndexCache extends JDBCObjectCache<DB2Table, DB2Index> {
+public class DB2TableIndexCache extends JDBCObjectCache<DB2TableBase, DB2Index> {
 
     private static final String SQL_INDS_TAB = "SELECT * FROM SYSCAT.INDEXES WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY INDNAME WITH UR";
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Table db2Table) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2TableBase db2Table)
+        throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL_INDS_TAB);
         dbStat.setString(1, db2Table.getSchema().getName());
         dbStat.setString(2, db2Table.getName());
         return dbStat;
     }
-
+ 
     @Override
-    protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2Table db2Table, @NotNull ResultSet dbResult) throws SQLException,
-        DBException
+    protected DB2Index fetchObject(@NotNull JDBCSession session, @NotNull DB2TableBase db2Table, @NotNull ResultSet dbResult)
+        throws SQLException, DBException
     {
 
         // Lookup for indexes in right cache..

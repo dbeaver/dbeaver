@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewBaseDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,9 +45,9 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
 
     protected final DB2ViewBaseDepCache viewBaseDepCache = new DB2ViewBaseDepCache();
 
-    private DB2ViewStatus valid;
-    private String text;
-    private String funcPath;
+    private DB2ViewStatus               valid;
+    private String                      text;
+    private String                      funcPath;
 
     // -----------------
     // Constructors
@@ -88,6 +88,8 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        super.refreshObject(monitor);
+
         viewBaseDepCache.clearCache();
         return true;
     }

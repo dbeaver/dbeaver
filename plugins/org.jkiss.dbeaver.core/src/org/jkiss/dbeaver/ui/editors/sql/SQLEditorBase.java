@@ -45,11 +45,11 @@ import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,15 +57,14 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
-import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -464,7 +463,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         String selText = selection.getText().trim();
         selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText);
         if (!CommonUtils.isEmpty(selText)) {
-            sqlQuery = new SQLQuery(this, selText, selection.getOffset(), selection.getLength());
+            sqlQuery = new SQLQuery(selText, selection.getOffset(), selection.getLength());
         } else if (selection.getOffset() >= 0) {
             sqlQuery = extractQueryAtPos(selection.getOffset());
         } else {
@@ -546,6 +545,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         ruleManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
         int bracketDepth = 0;
+        boolean hasBlocks = false;
         boolean hasValuableTokens = false;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
@@ -566,13 +566,19 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
             if (token instanceof SQLBlockBeginToken) {
                 bracketDepth++;
+                hasBlocks = true;
             } else if (token instanceof SQLBlockEndToken) {
                 bracketDepth--;
+                hasBlocks = true;
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
             }
             if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
+                // FIXME: includes last dleimiter in query (Oracle?)
+                if (isDelimiter && hasBlocks) {
+                    tokenOffset += tokenLength;
+                }
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -614,7 +620,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     }
                     // make script line
                     return new SQLQuery(
-                        this,
                         queryText.trim(),
                         statementStart,
                         tokenOffset - statementStart);
@@ -725,6 +730,5 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             return null;
         }
     }
-
 
 }
