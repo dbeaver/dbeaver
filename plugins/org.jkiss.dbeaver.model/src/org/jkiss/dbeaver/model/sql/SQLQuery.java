@@ -35,7 +35,6 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.utils.CommonUtils;
@@ -48,10 +47,6 @@ import java.util.List;
  */
 public class SQLQuery {
 
-    static final Log log = Log.getLog(SQLQuery.class);
-
-    @NotNull
-    private final Object source;
     @NotNull
     private final String originalQuery;
     @NotNull
@@ -66,21 +61,17 @@ public class SQLQuery {
     private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
 
-    public SQLQuery(@NotNull Object source, @NotNull String query)
+    public SQLQuery(@NotNull String query)
     {
-        this(source, query, 0, query.length());
+        this(query, 0, query.length());
     }
 
-    public SQLQuery(@NotNull Object source, @NotNull String query, int offset, int length)
+    public SQLQuery(@NotNull String query, int offset, int length)
     {
-        this.source = source;
         this.originalQuery = this.query = query;
         this.offset = offset;
         this.length = length;
-        parseQuery();
-    }
 
-    public void parseQuery() {
         try {
             statement = CCJSqlParserUtil.parse(query);
             if (statement instanceof Select) {
@@ -136,11 +127,6 @@ public class SQLQuery {
             return selectBody.getFromItem() != null && CommonUtils.isEmpty(selectBody.getIntoTables()) && selectBody.getLimit() == null && selectBody.getTop() == null;
         }
         return false;
-    }
-
-    @NotNull
-    public Object getSource() {
-        return source;
     }
 
     @NotNull

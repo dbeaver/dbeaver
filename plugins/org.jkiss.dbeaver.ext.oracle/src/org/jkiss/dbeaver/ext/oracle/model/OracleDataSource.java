@@ -267,9 +267,7 @@ public class OracleDataSource extends JDBCDataSource
                 }
 
                 // Get active schema
-                this.activeSchemaName = JDBCUtils.queryString(
-                    session,
-                    "SELECT SYS_CONTEXT( 'USERENV', 'CURRENT_SCHEMA' ) FROM DUAL");
+                this.activeSchemaName = OracleUtils.getCurrentSchema(session);
 
             } catch (SQLException e) {
                 //throw new DBException(e);
@@ -367,14 +365,10 @@ public class OracleDataSource extends JDBCDataSource
             log.debug("Null current schema");
             return;
         }
-        JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema");
-        try {
-            JDBCUtils.executeSQL(session, "ALTER SESSION SET CURRENT_SCHEMA=" + object.getName());
+        try (JDBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active schema")) {
+            OracleUtils.setCurrentSchema(session, object.getName());
         } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-        finally {
-            session.close();
+            throw new DBCException(e, this);
         }
     }
 

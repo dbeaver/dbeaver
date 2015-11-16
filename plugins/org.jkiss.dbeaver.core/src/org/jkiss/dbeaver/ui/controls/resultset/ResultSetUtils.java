@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -57,60 +54,65 @@ public class ResultSetUtils
 
     public static void findValueLocators(
         DBCSession session,
+        DBCResultSet resultSet,
         DBDAttributeBindingMeta[] bindings,
         List<Object[]> rows)
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Discover resultset metadata", 3);
-        Map<DBSEntity, DBDRowIdentifier> locatorMap = new HashMap<>();
         try {
+            DBSEntity entity = null;
+            DBCStatement sourceStatement = resultSet.getSourceStatement();
+            if (sourceStatement != null && sourceStatement.getStatementSource() != null) {
+                DBCExecutionSource executionSource = sourceStatement.getStatementSource();
+
+                monitor.subTask("Discover owner entity");
+                DBSDataContainer dataContainer = executionSource.getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    entity = (DBSEntity)dataContainer;
+                }
+                if (entity == null) {
+                    // Discover from entity metadata
+                    DBCEntityMetaData entityMeta = null;
+                    Object sourceDescriptor = executionSource.getSourceDescriptor();
+                    if (sourceDescriptor instanceof SQLQuery) {
+                        entityMeta = ((SQLQuery) sourceDescriptor).getSingleSource();
+                    }
+                    if (entityMeta != null) {
+                        DBPDataSource dataSource = session.getDataSource();
+                        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+                        if (objectContainer != null) {
+                            String catalogName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getCatalogName());
+                            String schemaName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getSchemaName());
+                            String entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getEntityName());
+                            Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
+                            DBSObject entityObject;
+                            if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
+                                (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
+                                // Do not use catalog name
+                                // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
+                                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
+                            } else {
+                                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
+                            }
+                            if (entityObject == null) {
+                                log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
+                            } else if (entityObject instanceof DBSEntity) {
+                                entity = (DBSEntity) entityObject;
+                            } else {
+                                log.debug("Unsupported table class: " + entityObject.getClass().getName());
+                            }
+                        }
+                    }
+                }
+            }
+
+            final Map<DBSEntity, DBDRowIdentifier> locatorMap = new IdentityHashMap<>();
+
             monitor.subTask("Discover attributes");
             for (DBDAttributeBindingMeta binding : bindings) {
                 monitor.subTask("Discover attribute '" + binding.getName() + "'");
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
-                DBCEntityMetaData entityMeta = attrMeta.getEntityMetaData();
-                Object metaSource = attrMeta.getSource();
-                if (entityMeta == null) {
-                    if (metaSource instanceof SQLQuery) {
-                        entityMeta = ((SQLQuery) metaSource).getSingleSource();
-                    }
-                }
-                DBSEntity entity = null;
-                if (metaSource instanceof IResultSetController) {
-                    DBSDataContainer dataContainer = ((IResultSetController) metaSource).getDataContainer();
-                    if (dataContainer instanceof DBSEntity) {
-                        entity = (DBSEntity)dataContainer;
-                    }
-                } else if (metaSource instanceof DBSEntity) {
-                    entity = (DBSEntity)metaSource;
-                } else if (entityMeta != null) {
-
-                    DBPDataSource dataSource = session.getDataSource();
-                    final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                    if (objectContainer != null) {
-                        String catalogName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getCatalogName());
-                        String schemaName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getSchemaName());
-                        String entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getEntityName());
-                        Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
-                        DBSObject entityObject;
-                        if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
-                            (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType)))
-                        {
-                            // Do not use catalog name
-                            // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
-                            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
-                        } else {
-                            entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
-                        }
-                        if (entityObject == null) {
-                            log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
-                        } else if (entityObject instanceof DBSEntity) {
-                            entity = (DBSEntity) entityObject;
-                        } else {
-                            log.debug("Unsupported table class: " + entityObject.getClass().getName());
-                        }
-                    }
-                }
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
@@ -121,32 +123,33 @@ public class ResultSetUtils
                     } else {
                         tableColumn = entity.getAttribute(monitor, attrMeta.getName());
                     }
-
                     binding.setEntityAttribute(tableColumn);
                 }
             }
             monitor.worked(1);
 
             // Init row identifiers
-            monitor.subTask("Early bindings");
+            monitor.subTask("Detect unique identifiers");
             for (DBDAttributeBindingMeta binding : bindings) {
-                monitor.subTask("Bind attribute '" + binding.getName() + "'");
+                monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                 DBSEntityAttribute attr = binding.getEntityAttribute();
                 if (attr == null) {
                     continue;
                 }
-                DBSEntity entity = attr.getParentObject();
-                DBDRowIdentifier rowIdentifier = locatorMap.get(entity);
-                if (rowIdentifier == null) {
-                    DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, entity, bindings);
-                    if (entityIdentifier != null) {
-                        rowIdentifier = new DBDRowIdentifier(
-                            entity,
-                            entityIdentifier);
-                        locatorMap.put(entity, rowIdentifier);
+                DBSEntity attrEntity = attr.getParentObject();
+                if (attrEntity != null) {
+                    DBDRowIdentifier rowIdentifier = locatorMap.get(attrEntity);
+                    if (rowIdentifier == null) {
+                        DBSEntityReferrer entityIdentifier = getBestIdentifier(monitor, attrEntity, bindings);
+                        if (entityIdentifier != null) {
+                            rowIdentifier = new DBDRowIdentifier(
+                                attrEntity,
+                                entityIdentifier);
+                            locatorMap.put(attrEntity, rowIdentifier);
+                        }
                     }
+                    binding.setRowIdentifier(rowIdentifier);
                 }
-                binding.setRowIdentifier(rowIdentifier);
             }
             monitor.worked(1);
 
@@ -156,12 +159,13 @@ public class ResultSetUtils
                 monitor.subTask("Late bind attribute '" + binding.getName() + "'");
                 binding.lateBinding(session, rows);
             }
+            monitor.subTask("Complete metadata load");
             // Reload attributes in row identifiers
             for (DBDRowIdentifier rowIdentifier : locatorMap.values()) {
                 rowIdentifier.reloadAttributes(monitor, bindings);
             }
         }
-        catch (DBException e) {
+        catch (Throwable e) {
             log.error("Can't extract column identifier info", e);
         }
         finally {

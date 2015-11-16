@@ -187,6 +187,13 @@ public class GenericMetaModel {
                             break;
                         }
                         String functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.FUNCTION_NAME);
+                        if (functionName == null) {
+                            functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                        }
+                        if (functionName == null) {
+                            log.debug("Null function name");
+                            continue;
+                        }
                         String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
                         int funcTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.FUNCTION_TYPE);
                         String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);

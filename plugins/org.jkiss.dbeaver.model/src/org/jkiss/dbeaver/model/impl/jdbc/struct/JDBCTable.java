@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -102,7 +101,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, Object source)
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -155,15 +154,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
         DBCStatement dbStat = DBUtils.prepareStatement(
+            source,
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            firstRow,
-            maxRows);
+            firstRow, maxRows);
         try {
-
-            dbStat.setStatementSource(source);
-
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
                 try {
                     ((JDBCStatement)dbStat).setFetchSize(
@@ -255,7 +251,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     @Override
-    public long countData(@NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
@@ -268,7 +264,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             query.toString(),
             false, false, false);
         try {
-            dbStat.setStatementSource(this);
+            dbStat.setStatementSource(source);
             if (!dbStat.executeStatement()) {
                 return 0;
             }
@@ -301,7 +297,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final Object source)
+    public ExecuteBatch insertData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] attributes, @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -325,7 +321,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     hasKey = true;
                     query.append(getAttributeName(attribute));
                 }
-                query.append(") VALUES ("); //$NON-NLS-1$
+                query.append(")\nVALUES ("); //$NON-NLS-1$
                 hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
@@ -364,7 +360,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @NotNull DBCSession session,
         @NotNull final DBSAttributeBase[] updateAttributes,
         @NotNull final DBSAttributeBase[] keyAttributes,
-        @Nullable DBDDataReceiver keysReceiver, @NotNull final Object source)
+        @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -386,7 +382,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append(" SET "); //$NON-NLS-1$ //$NON-NLS-2$
+                query.append("\nSET "); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (DBSAttributeBase attribute : updateAttributes) {
@@ -397,7 +393,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                     query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
                 }
-                query.append(" WHERE "); //$NON-NLS-1$
+                query.append("\nWHERE "); //$NON-NLS-1$
                 hasKey = false;
                 for (int i = 0; i < keyAttributes.length; i++) {
                     DBSAttributeBase attribute = keyAttributes[i];
@@ -430,7 +426,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final Object source)
+    public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
         readRequiredMeta(session.getProgressMonitor());
@@ -451,7 +447,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append(" WHERE "); //$NON-NLS-1$ //$NON-NLS-2$
+                query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (int i = 0; i < keyAttributes.length; i++) {
@@ -497,7 +493,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
     {
         if (dataFilter != null && dataFilter.hasConditions()) {
-            query.append(" WHERE "); //$NON-NLS-1$
+            query.append("\nWHERE "); //$NON-NLS-1$
             SQLUtils.appendConditionString(dataFilter, getDataSource(), tableAlias, query, true);
         }
     }
@@ -507,7 +503,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (dataFilter != null) {
             // Construct ORDER BY
             if (dataFilter.hasOrdering()) {
-                query.append(" ORDER BY "); //$NON-NLS-1$
+                query.append("\nORDER BY "); //$NON-NLS-1$
                 SQLUtils.appendOrderString(dataFilter, getDataSource(), tableAlias, query);
             }
         }

@@ -115,6 +115,10 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         this.nodeMeta = nodeMeta;
     }
 
+    public IWorkbenchSite getWorkbenchSite() {
+        return workbenchSite;
+    }
+
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         if (rootNode instanceof DBNDatabaseNode) {

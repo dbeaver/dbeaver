@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
@@ -49,7 +50,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull DBCSession session,
         @NotNull DBSAttributeBase[] attributes,
         @Nullable DBDDataReceiver keysReceiver,
-        @NotNull Object source)
+        @NotNull DBCExecutionSource source)
         throws DBCException;
 
     @NotNull
@@ -58,14 +59,14 @@ public interface DBSDataManipulator extends DBSDataContainer {
         @NotNull DBSAttributeBase[] updateAttributes,
         @NotNull DBSAttributeBase[] keyAttributes,
         @Nullable DBDDataReceiver keysReceiver,
-        @NotNull Object source)
+        @NotNull DBCExecutionSource source)
         throws DBCException;
 
     @NotNull
     ExecuteBatch deleteData(
         @NotNull DBCSession session,
         @NotNull DBSAttributeBase[] keyAttributes,
-        @NotNull Object source)
+        @NotNull DBCExecutionSource source)
         throws DBCException;
 
 }

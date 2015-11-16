@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 
@@ -50,35 +51,38 @@ public interface DBSDataContainer extends DBSObject {
     /**
      * Reads data from container and pushes it into receiver
      *
-     * @param session execution context
+     * @param source       source
+     * @param session source
      * @param dataReceiver data receiver. Works as a data pipe
      * @param dataFilter data filter. May be null
      * @param firstRow first row number (<= 0 means do not use it)
      * @param maxRows total rows to fetch (<= 0 means fetch everything)
      * @param flags read flags. See FLAG_ constants
-     * @param source       source
      * @return number of fetched rows
      * @throws DBCException on any error
      */
     @NotNull
     DBCStatistics readData(
+        @NotNull DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull DBDDataReceiver dataReceiver,
         @Nullable DBDDataFilter dataFilter,
         long firstRow,
         long maxRows,
-        long flags,
-        Object source)
+        long flags)
         throws DBCException;
 
     /**
      * Counts data rows in container.
-     * @param session execution context
+     *
+     * @param source execution source
+     * @param session session
      * @param dataFilter data filter (may be null)
      * @return number of rows in container. May return negative values if count feature is not available
      * @throws DBCException on any error
      */
     long countData(
+        @NotNull DBCExecutionSource source,
         @NotNull DBCSession session,
         @Nullable DBDDataFilter dataFilter)
         throws DBCException;

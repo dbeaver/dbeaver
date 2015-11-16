@@ -45,41 +45,41 @@ import java.util.List;
  * 
  * @author Denis Forveille
  */
-public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
+public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
 
-    private static final Log LOG = Log.getLog(DB2Index.class);
+    private static final Log  LOG = Log.getLog(DB2Index.class);
 
     // Structure
-    private DB2UniqueRule uniqueRule;
-    private Integer colCount;
-    private Integer uniqueColCount;
-    private DB2IndexType db2IndexType;
-    private Integer pctFree;
-    private Integer indexId;
-    private Integer minPctUsed;
-    private Boolean reverseScans;
-    private Integer tablespaceId;
+    private DB2UniqueRule     uniqueRule;
+    private Integer           colCount;
+    private Integer           uniqueColCount;
+    private DB2IndexType      db2IndexType;
+    private Integer           pctFree;
+    private Integer           indexId;
+    private Integer           minPctUsed;
+    private Boolean           reverseScans;
+    private Integer           tablespaceId;
     private DB2IndexPageSplit pageSplit;
-    private Boolean compression;
-    private String remarks;
+    private Boolean           compression;
+    private String            remarks;
 
     // Derived
-    private Timestamp createTime;
-    private Boolean madeUnique;
+    private Timestamp         createTime;
+    private Boolean           madeUnique;
 
     // Stats
-    private Timestamp statsTime;
-    private Long fullKeycard;
-    private Long firstKeycard;
-    private Long first2Keycard;
-    private Long first3Keycard;
-    private Long first4Keycard;
-    private Integer clusterRatio;
+    private Timestamp         statsTime;
+    private Long              fullKeycard;
+    private Long              firstKeycard;
+    private Long              first2Keycard;
+    private Long              first3Keycard;
+    private Long              first4Keycard;
+    private Integer           clusterRatio;
 
     // -----------------
     // Constructors
     // -----------------
-    public DB2Index(DBRProgressMonitor monitor, DB2Schema schema, DB2Table table, ResultSet dbResult)
+    public DB2Index(DBRProgressMonitor monitor, DB2Schema schema, DB2TableBase table, ResultSet dbResult)
     {
         super(schema, table, JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME"), null, true);
 
@@ -116,7 +116,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2Table> {
         this.indexType = db2IndexType.getDBSIndexType();
     }
 
-    public DB2Index(DB2Table db2Table, String indexName, DBSIndexType indexType)
+    public DB2Index(DB2TableBase db2Table, String indexName, DBSIndexType indexType)
     {
         super(db2Table.getSchema(), db2Table, indexName, indexType, false);
     }

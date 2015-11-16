@@ -15,27 +15,33 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
+
+package org.jkiss.dbeaver.model.exec;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 /**
- * PostgreTypeType
+ * Execution source.
+ * The thing which initiates statement execution
  */
-public enum PostgreTypeType
+public interface DBCExecutionSource
 {
-    b("base type"),
-    c("composite type (e.g., a table's row type"),
-    d("domain"),
-    e("enum type"),
-    p("pseudo-type"),
-    r("?");
+    @Nullable
+    DBSDataContainer getDataContainer();
 
-    private final String desc;
+    /**
+     * UI controller which initiated execution
+     * @return execution controller
+     */
+    @Nullable
+    Object getExecutionController();
 
-    PostgreTypeType(String desc) {
-        this.desc = desc;
-    }
+    /**
+     * Additional source descriptor
+     */
+    @Nullable
+    Object getSourceDescriptor();
 
-    public String getDesc() {
-        return desc;
-    }
 }

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2013-2015 Denis Forveille titou10.titou10@gmail.com
  * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -47,17 +47,17 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
 
     private static final String I_DEP = "SELECT BSCHEMA,BNAME FROM SYSCAT.INDEXDEP WHERE INDSCHEMA = ? AND INDNAME = ? AND BTYPE = 'V' WITH UR";
 
-    private DB2Index db2Index;
-    private DB2TableColumn tableColumn;
+    private DB2Index            db2Index;
+    private DB2TableColumn      tableColumn;
 
-    private Integer colSeq;
-    private DB2IndexColOrder colOrder;
-    private String collationSchema;
-    private String collationNane;
+    private Integer             colSeq;
+    private DB2IndexColOrder    colOrder;
+    private String              collationSchema;
+    private String              collationNane;
 
-    private DB2IndexColVirtual virtualCol;
-    private String virtualColName;
-    private String virtualColText;
+    private DB2IndexColVirtual  virtualCol;
+    private String              virtualColName;
+    private String              virtualColText;
 
     // -----------------
     // Constructors
@@ -82,13 +82,14 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         }
 
         // Look for Table Column if column is not virtual...
-        DB2Table db2Table = db2Index.getTable();
+        DB2TableBase db2Table = db2Index.getTable();
         String columnName = JDBCUtils.safeGetString(dbResult, "COLNAME");
 
         if ((virtualCol == null) || (virtualCol.isNotVirtual())) {
             this.tableColumn = db2Table.getAttribute(monitor, columnName);
             if (tableColumn == null) {
-                throw new DBException("Column '" + columnName + "' not found in table '" + db2Table.getName() + "' for index '" + db2Index.getName() + "'");
+                throw new DBException("Column '" + columnName + "' not found in table '" + db2Table.getName() + "' for index '"
+                    + db2Index.getName() + "'");
             }
         } else {
             // Virtual Column
@@ -96,7 +97,8 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
             this.virtualColName = columnName;
 
             // Look for the associated View and get the associtaed column
-            DB2View viewDep = getDependentView(monitor, db2DataSource, db2Index.getIndSchema().getName().trim(), db2Index.getName());
+            DB2View viewDep = getDependentView(monitor, db2DataSource, db2Index.getIndSchema().getName().trim(),
+                db2Index.getName());
             if (viewDep != null) {
                 this.tableColumn = viewDep.getAttribute(monitor, columnName);
             }

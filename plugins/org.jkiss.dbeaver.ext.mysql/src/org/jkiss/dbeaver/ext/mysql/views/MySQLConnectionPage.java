@@ -187,10 +187,14 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         super.loadSettings();
 
         DBPDriver driver = getSite().getDriver();
-        if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
-            setImageDescriptor(MARIADB_LOGO_IMG);
-        } else {
-            setImageDescriptor(MYSQL_LOGO_IMG);
+        if (!activated) {
+            // We set image only once at activation
+            // There is a bug in Eclipse which leads to SWTException after wizard image change
+            if (driver != null && driver.getId().equalsIgnoreCase(MySQLConstants.DRIVER_ID_MARIA_DB)) {
+                setImageDescriptor(MARIADB_LOGO_IMG);
+            } else {
+                setImageDescriptor(MYSQL_LOGO_IMG);
+            }
         }
 
         // Load values from new connection info

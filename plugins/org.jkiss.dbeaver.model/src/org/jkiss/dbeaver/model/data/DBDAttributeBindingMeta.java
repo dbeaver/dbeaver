@@ -79,17 +79,17 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     @Override
     public String getTypeName() {
-        return getAttribute().getTypeName();
+        return metaAttribute.getTypeName();
     }
 
     @Override
     public int getTypeID() {
-        return getAttribute().getTypeID();
+        return metaAttribute.getTypeID();
     }
 
     @Override
     public DBPDataKind getDataKind() {
-        return getAttribute().getDataKind();
+        return metaAttribute.getDataKind();
     }
 
     @Override

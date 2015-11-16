@@ -376,7 +376,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            final CellEditor cellEditor = UIUtils.createPropertyEditor(treeControl, prop.propertySource, prop.property);
+            final CellEditor cellEditor = UIUtils.createPropertyEditor(DBeaverUI.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property);
             if (cellEditor == null) {
                 return;
             }

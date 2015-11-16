@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -51,7 +52,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     private long rsOffset = -1;
     private long rsMaxRows = -1;
 
-    private Object source;
+    private DBCExecutionSource source;
     private int updateCount;
     private Throwable executeError;
 
@@ -242,13 +243,13 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
 
     @Nullable
     @Override
-    public Object getStatementSource()
+    public DBCExecutionSource getStatementSource()
     {
         return this.source;
     }
 
     @Override
-    public void setStatementSource(Object source)
+    public void setStatementSource(DBCExecutionSource source)
     {
         this.source = source;
     }

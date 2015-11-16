@@ -19,11 +19,17 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -31,12 +37,35 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * Managable prepared statement.
+ * Manageable prepared statement.
  * Stores information about execution in query manager and operated progress monitor.
  */
 public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
+
+    private static final Object NULL_VALUE = new Object();
+
+    private Map<Object, Object> paramMap;
+
+    protected static class ContentParameter {
+        String displayString;
+        ContentParameter(JDBCSession session, Object value) {
+            if (value instanceof RowId) {
+                displayString = SQLUtils.quoteString(new String(((RowId) value).getBytes()));
+            } else {
+                displayString = "DATA(" + (value == null ? DBConstants.NULL_VALUE_LABEL : value.getClass().getSimpleName()) + ")";
+            }
+        }
+
+        @Override
+        public String toString() {
+            return displayString;
+        }
+    }
 
     public JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
@@ -54,9 +83,103 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         return original;
     }
 
-    private void handleStatementBind(int parameterIndex, @Nullable Object o)
+    @Override
+    public void close() {
+        if (paramMap != null) {
+            paramMap.clear();
+            paramMap = null;
+        }
+        super.close();
+    }
+
+    public String getFormattedQuery() {
+        if (paramMap == null) {
+            return getQueryString();
+        } else {
+            String q = getQueryString();
+            if (q == null) {
+                return "";
+            }
+            int length = q.length();
+            StringBuilder formatted = new StringBuilder(length * 2);
+            int paramIndex = 0;
+            for (int i = 0; i < length; i++) {
+                char c = q.charAt(i);
+                switch (c) {
+                    case '?': {
+                        paramIndex++;
+                        Object paramValue = paramMap.get(paramIndex);
+                        if (paramValue != null) {
+                            formatted.append(formatParameterValue(paramValue));
+                            continue;
+                        }
+                        break;
+                    }
+                    case ':': {
+                        // FIXME: process named parameters
+                        break;
+                    }
+                    case '\'':
+                    case '"': {
+                        formatted.append(c);
+                        for (int k = i + 1; k < length; k++) {
+                            char c2 = q.charAt(k);
+                            if (c2 == c && q.charAt(k - 1) != '\\') {
+                                c = c2;
+                                break;
+                            } else {
+                                formatted.append(c2);
+                            }
+                        }
+                        break;
+                    }
+                }
+                formatted.append(c);
+            }
+
+            return formatted.toString();
+        }
+    }
+
+    @NotNull
+    private String formatParameterValue(Object value) {
+        if (value instanceof CharSequence) {
+            return SQLUtils.quoteString(value.toString());
+        } else if (value instanceof java.util.Date) {
+            try {
+                DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();
+                if (value instanceof Date) {
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                } else if (value instanceof Time) {
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                } else {
+                    return SQLUtils.quoteString(formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP).formatValue(value));
+                }
+            } catch (Exception e) {
+                log.debug("Error formatting date [" + value + "]", e);
+            }
+        } else if (value == NULL_VALUE) {
+            return "NULL";
+        }
+        return value.toString();
+    }
+
+    protected void handleStatementBind(Object parameter, @Nullable Object o)
     {
-        QMUtils.getDefaultHandler().handleStatementBind(this, parameterIndex, o);
+        if (isQMLoggingEnabled()) {
+            // Save parameters
+            if (o == null) {
+                o = NULL_VALUE;
+            } else if (!DBUtils.isAtomicParameter(o)) {
+                // Wrap complex things
+                o = new ContentParameter(connection, o);
+            }
+            if (paramMap == null) {
+                paramMap = new LinkedHashMap<>();
+            }
+            paramMap.put(parameter, o);
+        }
+        QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
     }
 
     ////////////////////////////////////////////////////////////////////
