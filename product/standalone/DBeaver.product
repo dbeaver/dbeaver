@@ -17,6 +17,8 @@
       </programArgs>
       <programArgsLin>--launcher.GTK_version 2
       </programArgsLin>
+      <programArgsSol>--launcher.GTK_version 2
+      </programArgsSol>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
    </launcherArgs>
@@ -44,7 +46,6 @@
             winExtraLargeHigh="/icons/dbeaver-256x256x32.bmp"/>
       </win>
    </launcher>
-
 
    <vm>
    </vm>
