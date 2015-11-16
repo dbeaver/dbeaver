@@ -35,18 +35,15 @@
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="/icons/dbeaver-16x16x32.png,/icons/dbeaver-32x32x32.png,/icons/dbeaver-48x48x32.png,/icons/dbeaver-64x64x32.png,/icons/dbeaver-128x128x32.png,/icons/dbeaver-256x256x32.png"/>
+            <property name="windowImages" value="icons/dbeaver.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>
             <property name="startupProgressRect" value="25,45,150,15"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
             <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
-            <property
-                  name="preferenceCustomization"
-                  value="plugin_customization.ini">
-            </property>
         </product>
     </extension>
 
