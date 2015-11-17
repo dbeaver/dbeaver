@@ -109,6 +109,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
 
     protected void beforeFetch()
     {
+        // FIXME: starte/end block. Do we need them here?
         //this.session.getProgressMonitor().startBlock(statement, null);
         //QMUtils.getDefaultHandler().handleResultSetFetch(this);
     }

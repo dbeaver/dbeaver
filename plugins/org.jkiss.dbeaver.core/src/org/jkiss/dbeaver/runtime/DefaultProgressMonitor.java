@@ -83,7 +83,7 @@ public class DefaultProgressMonitor implements DBRProgressMonitor {
             subTask(taskName);
         }
         if (blocks == null) {
-            blocks = new ArrayList<DBRBlockingObject>();
+            blocks = new ArrayList<>();
         }
         blocks.add(object);
     }
