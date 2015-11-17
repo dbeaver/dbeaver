@@ -213,7 +213,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 Collection<? extends DBSEntityAssociation> refs = rootTable.getReferences(monitor);
                 if (refs != null) {
                     for (DBSEntityAssociation ref : refs) {
-                        result.add(ref.getAssociatedEntity());
+                        result.add(ref.getParentObject());
                     }
                 }
                 monitor.worked(1);
