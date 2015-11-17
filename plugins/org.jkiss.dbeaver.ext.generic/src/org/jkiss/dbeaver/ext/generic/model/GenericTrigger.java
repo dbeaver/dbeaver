@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class GenericTrigger extends AbstractTrigger implements GenericStoredCode
 {
-    static final Log log = Log.getLog(GenericTrigger.class);
 
     private GenericTable table;
     private String source;
