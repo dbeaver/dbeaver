@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -84,7 +85,7 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         if (!legacySyntax) {
             decl.append(constraintName).append(" ");
         }
-        decl.append(constraint.getConstraintType().getName().toUpperCase(Locale.ENGLISH)) //$NON-NLS-1$
+        decl.append(getAddConstraintTypeClause(constraint))
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         try {
@@ -106,6 +107,11 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
             decl.append(" CONSTRAINT ").append(constraintName); //$NON-NLS-1$
         }
         return decl;
+    }
+
+    @NotNull
+    protected String getAddConstraintTypeClause(OBJECT_TYPE constraint) {
+        return constraint.getConstraintType().getName().toUpperCase(Locale.ENGLISH);
     }
 
     protected String getDropConstraintPattern(OBJECT_TYPE constraint)
