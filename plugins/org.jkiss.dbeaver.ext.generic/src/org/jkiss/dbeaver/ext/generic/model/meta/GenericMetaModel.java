@@ -274,7 +274,7 @@ public class GenericMetaModel {
         return new ArrayList<>();
     }
 
-    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) {
+    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
         return "-- Source code not available";
     }
 
