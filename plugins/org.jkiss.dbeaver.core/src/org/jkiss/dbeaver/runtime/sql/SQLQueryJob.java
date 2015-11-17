@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -139,6 +140,7 @@ public class SQLQueryJob extends DataSourceJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
+        RuntimeUtils.setThreadName("SQL script execution");
         statistics = new DBCStatistics();
         try {
             DBCExecutionContext context = getExecutionContext();
