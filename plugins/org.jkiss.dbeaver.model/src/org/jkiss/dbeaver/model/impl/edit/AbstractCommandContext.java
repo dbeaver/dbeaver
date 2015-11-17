@@ -145,7 +145,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
 
                                 // Commit metadata changes
                                 DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
-                                if (txnManager != null) {
+                                if (txnManager != null && !txnManager.isAutoCommit()) {
                                     txnManager.commit(session);
                                 }
                             }
