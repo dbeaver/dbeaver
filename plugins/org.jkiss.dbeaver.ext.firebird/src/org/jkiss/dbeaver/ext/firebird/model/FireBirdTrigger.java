@@ -38,12 +38,13 @@ public class FireBirdTrigger extends GenericTrigger {
         this.sequence = sequence;
     }
 
+    @Property(hidden = true, order = 3)
     public DBSActionTiming getActionTiming()
     {
         return super.getActionTiming();
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(hidden = true, order = 3)
     public DBSManipulationType getManipulationType()
     {
         return super.getManipulationType();
