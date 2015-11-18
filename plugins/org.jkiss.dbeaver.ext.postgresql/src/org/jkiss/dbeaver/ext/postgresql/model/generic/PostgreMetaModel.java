@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeCache;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -129,6 +130,63 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
         }
+    }
+
+    @Override
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
+                "FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+                "WHERE ");
+            if (table == null) {
+                sql.append("trigger_schema=? AND event_object_table IS NULL");
+            } else {
+                sql.append("event_object_schema=? AND event_object_table=?");
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString())) {
+                if (table == null) {
+                    dbStat.setString(1, container.getSchema().getName());
+                } else {
+                    dbStat.setString(1, table.getSchema().getName());
+                    dbStat.setString(2, table.getName());
+                }
+                List<GenericTrigger> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, "trigger_name");
+                        if (name == null) {
+                            continue;
+                        }
+                        String description = "";
+                        String source = JDBCUtils.safeGetString(dbResult, "action_statement");
+                        PostgreTrigger trigger = new PostgreTrigger(
+                            container,
+                            table,
+                            name,
+                            description,
+                            source);
+                        result.add(trigger);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
+    }
+
+    @Override
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
+        // Never be here
+        return null;
     }
 
     @Override
