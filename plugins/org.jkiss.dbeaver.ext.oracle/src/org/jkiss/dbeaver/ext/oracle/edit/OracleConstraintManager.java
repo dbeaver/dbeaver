@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
@@ -86,9 +87,17 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
         if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
             clause = "PRIMARY KEY"; //$NON-NLS-1$
         } else {
-            clause = "KEY"; //$NON-NLS-1$
+            clause = "CONSTRAINT"; //$NON-NLS-1$
         }
         return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP " + clause + " " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    }
+
+    @NotNull
+    protected String getAddConstraintTypeClause(OracleTableConstraint constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+            return "UNIQUE"; //$NON-NLS-1$
+        }
+        return super.getAddConstraintTypeClause(constraint);
     }
 
 }

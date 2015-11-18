@@ -48,6 +48,7 @@ public class FireBirdMetaModel extends GenericMetaModel
         super(cfg);
     }
 
+    @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         return FireBirdUtils.getViewSource(monitor, sourceObject);
     }
@@ -64,7 +65,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read procedure definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS")) {
                 List<GenericSequence> result = new ArrayList<>();
 
@@ -105,6 +106,52 @@ public class FireBirdMetaModel extends GenericMetaModel
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
         }
+    }
+
+    @Override
+    public boolean supportsTriggers(GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, GenericTable table) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, table.getDataSource(), "Read triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT RDB$TRIGGER_NAME,RDB$TRIGGER_SEQUENCE,RDB$TRIGGER_TYPE,RDB$DESCRIPTION FROM RDB$TRIGGERS\n" +
+                    "WHERE RDB$RELATION_NAME=?")) {
+                dbStat.setString(1, table.getName());
+                List<GenericTrigger> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, 1);
+                        if (name == null) {
+                            continue;
+                        }
+                        name = name.trim();
+                        int sequence = JDBCUtils.safeGetInt(dbResult, 2);
+                        int type = JDBCUtils.safeGetInt(dbResult, 3);
+                        String description = JDBCUtils.safeGetString(dbResult, 4);
+                        FireBirdTrigger trigger = new FireBirdTrigger(
+                            table,
+                            name,
+                            description,
+                            FireBirdTriggerType.getByType(type),
+                            sequence);
+                        result.add(trigger);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, table.getDataSource());
+        }
+    }
+
+    @Override
+    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
+        return FireBirdUtils.getTriggerSource(monitor, trigger);
     }
 
     @Override
