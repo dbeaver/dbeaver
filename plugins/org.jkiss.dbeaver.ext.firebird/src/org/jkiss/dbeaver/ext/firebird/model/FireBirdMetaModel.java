@@ -156,7 +156,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        return FireBirdUtils.getTriggerSource(monitor, trigger);
+        return FireBirdUtils.getTriggerSource(monitor, (FireBirdTrigger)trigger);
     }
 
     @Override

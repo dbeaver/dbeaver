@@ -36,20 +36,34 @@ public enum FireBirdTriggerType
     AFTER_UPDATE_OR_DELETE(28),
     BEFORE_INSERT_OR_UPDATE_OR_DELETE(113),
     AFTER_INSERT_OR_UPDATE_OR_DELETE(114),
-    ON_CONNECT(8192),
-    ON_DISCONNECT(8193),
-    ON_TRANSACTION_START(8194),
-    ON_TRANSACTION_COMMIT(8195),
-    ON_TRANSACTION_ROLLBACK (8196);
+    ON_CONNECT(8192, true),
+    ON_DISCONNECT(8193, true),
+    ON_TRANSACTION_START(8194, true),
+    ON_TRANSACTION_COMMIT(8195, true),
+    ON_TRANSACTION_ROLLBACK (8196, true);
 
     private final int type;
+    private final boolean dbEvent;
 
     FireBirdTriggerType(int type) {
+        this(type, false);
+    }
+
+    FireBirdTriggerType(int type, boolean dbEvent) {
         this.type = type;
+        this.dbEvent = dbEvent;
+    }
+
+    public String getDisplayName() {
+        return name().replace('_', ' ');
     }
 
     public int getType() {
         return type;
+    }
+
+    public boolean isDbEvent() {
+        return dbEvent;
     }
 
     static FireBirdTriggerType getByType(int type) {
