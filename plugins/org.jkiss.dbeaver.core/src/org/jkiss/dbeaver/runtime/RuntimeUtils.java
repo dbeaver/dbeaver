@@ -250,6 +250,10 @@ public class RuntimeUtils {
         return Platform.getOS().toLowerCase().contains("win32");
     }
 
+    public static void setThreadName(String name) {
+        Thread.currentThread().setName("DBeaver: " + name);
+    }
+
     private static class MonitoringTask implements DBRRunnableWithProgress {
         private final DBRRunnableWithProgress task;
         volatile boolean finished;

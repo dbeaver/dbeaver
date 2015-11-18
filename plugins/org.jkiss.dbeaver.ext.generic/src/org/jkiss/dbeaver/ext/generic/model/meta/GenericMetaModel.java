@@ -266,6 +266,18 @@ public class GenericMetaModel {
         return new ArrayList<>();
     }
 
+    public boolean supportsTriggers(GenericDataSource dataSource) {
+        return false;
+    }
+
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, GenericTable table) throws DBException {
+        return new ArrayList<>();
+    }
+
+    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
+        return "-- Source code not available";
+    }
+
     public JDBCBasicDataTypeCache createDataTypeCache(DBPDataSourceContainer container) {
         return new JDBCBasicDataTypeCache(container);
     }

@@ -34,7 +34,7 @@ public abstract class AbstractJob extends Job
 {
     static final Log log = Log.getLog(AbstractJob.class);
 
-    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 500;
+    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 200;
 
     private DBRProgressMonitor progressMonitor;
     private volatile boolean finished = false;
@@ -123,6 +123,7 @@ public abstract class AbstractJob extends Job
                     if (!finished && !blockCanceled) {
                         DBRBlockingObject block = progressMonitor.getActiveBlock();
                         if (block != null) {
+                            RuntimeUtils.setThreadName("Operation canceler [" + block + "]");
                             try {
                                 block.cancelBlock();
                             } catch (DBException e) {

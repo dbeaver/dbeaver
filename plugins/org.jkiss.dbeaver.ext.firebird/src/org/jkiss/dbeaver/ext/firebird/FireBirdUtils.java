@@ -79,6 +79,26 @@ public class FireBirdUtils {
         }
     }
 
+    public static String getTriggerSource(DBRProgressMonitor monitor, GenericTrigger trigger)
+        throws DBException
+    {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, trigger.getDataSource(), "Load trigger source code")) {
+            DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
+            String source = (String) fbMetaData.getClass().getMethod("getTriggerSourceCode", String.class).invoke(fbMetaData, trigger.getName());
+            if (CommonUtils.isEmpty(source)) {
+                return null;
+            }
+
+            return source;
+            //return getViewSourceWithHeader(monitor, trigger, source);
+        } catch (SQLException e) {
+            throw new DBException("Can't read source code of trigger '" + trigger.getName() + "'", e);
+        } catch (Exception e) {
+            log.debug(e);
+            return null;
+        }
+    }
+
     public static String getProcedureSourceWithHeader(DBRProgressMonitor monitor, GenericProcedure procedure, String source) throws DBException {
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE OR ALTER PROCEDURE ").append(procedure.getName()).append("\n");

@@ -81,11 +81,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     protected void startBlock()
     {
         this.connection.getProgressMonitor().startBlock(
-            this,
-            SQLUtils.stripTransformations(
-                this.query == null ?
-                    "?" : JDBCUtils.limitQueryLength(query, 200) //$NON-NLS-1$
-                    ));
+            this, this.query == null ? "?" : JDBCUtils.limitQueryLength(query, 200));
     }
 
     protected void endBlock()
@@ -173,11 +169,17 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     @Override
     public JDBCResultSet openResultSet() throws DBCException
     {
+        // Some driver perform real RS fetch at this moment.
+        // So let's start thge block
+        this.startBlock();
         try {
             return getResultSet();
         }
         catch (SQLException e) {
             throw new DBCException(e, connection.getDataSource());
+        }
+        finally {
+            this.endBlock();
         }
     }
 

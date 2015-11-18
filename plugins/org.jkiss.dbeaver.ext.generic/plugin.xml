@@ -62,6 +62,9 @@
                                         </items>
                                     </items>
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                </folder>
                                 <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
                                 </items>
                             </items>

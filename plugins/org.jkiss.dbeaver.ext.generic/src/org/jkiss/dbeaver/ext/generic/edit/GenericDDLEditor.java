@@ -1,9 +1,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 

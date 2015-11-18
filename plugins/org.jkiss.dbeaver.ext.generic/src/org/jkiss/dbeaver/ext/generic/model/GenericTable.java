@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -58,6 +59,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private boolean isSystem;
     private String description;
     private Long rowCount;
+    private List<GenericTrigger> triggers;
 
     public GenericTable(
         GenericStructContainer container)
@@ -207,7 +209,9 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.getContainer().getIndexCache().clearObjectCache(this);
         this.getContainer().getPrimaryKeysCache().clearObjectCache(this);
         this.getContainer().getForeignKeysCache().clearObjectCache(this);
+        triggers = null;
         rowCount = null;
+
         return true;
     }
 
@@ -414,6 +418,23 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             return fkList;
         } catch (SQLException ex) {
             throw new DBException(ex, getDataSource());
+        }
+    }
+
+    @Association
+    public Collection<GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        if (triggers == null) {
+            loadTriggers(monitor);
+        }
+        return triggers;
+    }
+
+    private void loadTriggers(DBRProgressMonitor monitor) throws DBException {
+        triggers = getDataSource().getMetaModel().loadTriggers(monitor, this);
+        if (triggers == null) {
+            triggers = new ArrayList<>();
+        } else {
+            DBUtils.orderObjects(triggers);
         }
     }
 
