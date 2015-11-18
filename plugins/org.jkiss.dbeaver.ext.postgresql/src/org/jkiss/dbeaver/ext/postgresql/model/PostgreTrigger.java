@@ -29,11 +29,32 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class PostgreTrigger extends GenericTrigger {
 
+    private String manipulation;
+    private String orientation;
+    private String timing;
     private String source;
 
-    public PostgreTrigger(GenericStructContainer container, GenericTable table, String name, String description, String source) {
+    public PostgreTrigger(GenericStructContainer container, GenericTable table, String name, String description, String manipulation, String orientation, String timing, String statement) {
         super(container, table, name, description);
-        this.source = source;
+        this.manipulation = manipulation;
+        this.orientation = orientation;
+        this.timing = timing;
+        this.source = statement;
+    }
+
+    @Property(viewable = true, editable = true, updatable = false, order = 20)
+    public String getTiming() {
+        return timing;
+    }
+
+    @Property(viewable = true, editable = true, updatable = false, order = 21)
+    public String getManipulation() {
+        return manipulation;
+    }
+
+    @Property(viewable = true, editable = true, updatable = false, order = 22)
+    public String getOrientation() {
+        return orientation;
     }
 
     @Override
@@ -42,4 +63,7 @@ public class PostgreTrigger extends GenericTrigger {
         return source;
     }
 
+    public void addManipulation(String manipulation) {
+        this.manipulation += " OR " + manipulation;
+    }
 }
