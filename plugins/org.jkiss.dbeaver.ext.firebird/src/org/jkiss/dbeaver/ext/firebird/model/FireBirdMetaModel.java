@@ -116,6 +116,11 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
+    public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
