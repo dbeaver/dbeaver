@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
  */
 public class GenericSequence implements DBSSequence, DBPQualifiedObject
 {
-    private GenericObjectContainer container;
+    private GenericStructContainer container;
     private String name;
     private String description;
     private Number lastValue;
@@ -39,7 +39,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
     private Number maxValue;
     private Number incrementBy;
 
-    public GenericSequence(GenericObjectContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
+    public GenericSequence(GenericStructContainer container, String name, String description, Number lastValue, Number minValue, Number maxValue, Number incrementBy) {
         this.container = container;
         this.name = name;
         this.description = description;

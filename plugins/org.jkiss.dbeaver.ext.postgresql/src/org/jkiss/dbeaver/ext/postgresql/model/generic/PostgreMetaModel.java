@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.generic;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -70,7 +71,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public JDBCBasicDataTypeCache createDataTypeCache(DBPDataSourceContainer container) {
+    public JDBCBasicDataTypeCache createDataTypeCache(@NotNull DBPDataSourceContainer container) {
         return new PostgreDataTypeCache(container);
     }
 
@@ -93,13 +94,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         Version databaseVersion = dataSource.getInfo().getDatabaseVersion();
         return databaseVersion.getMajor() >= 9 || databaseVersion.getMajor() == 8 && databaseVersion.getMinor() >= 4;
     }
 
     @Override
-    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read procedure definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?")) {
                 dbStat.setString(1, container.getName());
@@ -131,12 +132,12 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public DBCQueryPlanner getQueryPlanner(GenericDataSource dataSource) {
+    public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return new PostgreQueryPlaner(dataSource);
     }
 
     @Override
-    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);

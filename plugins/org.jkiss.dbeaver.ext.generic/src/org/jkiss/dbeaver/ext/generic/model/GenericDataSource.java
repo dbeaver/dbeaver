@@ -309,6 +309,11 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
+    public Collection<GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getTriggers(monitor);
+    }
+
+    @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {

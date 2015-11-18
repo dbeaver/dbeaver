@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -46,6 +46,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
     protected List<GenericSequence> sequences;
+    private List<GenericTrigger> triggers;
 
     protected GenericObjectContainer(@NotNull GenericDataSource dataSource)
     {
@@ -307,6 +308,14 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
+    public Collection<GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+        if (triggers == null) {
+            loadTriggers(monitor);
+        }
+        return triggers;
+    }
+
+    @Override
     public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -379,6 +388,19 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             sequences = new ArrayList<>();
         } else {
             DBUtils.orderObjects(sequences);
+        }
+    }
+
+    private synchronized void loadTriggers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        triggers = dataSource.getMetaModel().loadTriggers(monitor, this, null);
+
+        // Order procedures
+        if (triggers == null) {
+            triggers = new ArrayList<>();
+        } else {
+            DBUtils.orderObjects(triggers);
         }
     }
 

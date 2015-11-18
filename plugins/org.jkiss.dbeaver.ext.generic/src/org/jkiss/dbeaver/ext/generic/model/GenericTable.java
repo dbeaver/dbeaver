@@ -430,7 +430,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     private void loadTriggers(DBRProgressMonitor monitor) throws DBException {
-        triggers = getDataSource().getMetaModel().loadTriggers(monitor, this);
+        triggers = getDataSource().getMetaModel().loadTriggers(monitor, getContainer(), this);
         if (triggers == null) {
             triggers = new ArrayList<>();
         } else {
