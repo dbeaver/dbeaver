@@ -234,7 +234,7 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
         if (CommonUtils.isEmpty(iotType)) {
             return DBIcon.TREE_TABLE;
         } else {
-            return DBIcon.TREE_INDEX;
+            return DBIcon.TREE_TABLE_INDEX;
         }
     }
 
