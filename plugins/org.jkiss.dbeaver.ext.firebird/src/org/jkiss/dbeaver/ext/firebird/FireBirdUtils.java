@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.firebird;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
+import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -79,7 +81,7 @@ public class FireBirdUtils {
         }
     }
 
-    public static String getTriggerSource(DBRProgressMonitor monitor, GenericTrigger trigger)
+    public static String getTriggerSource(DBRProgressMonitor monitor, FireBirdTrigger trigger)
         throws DBException
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, trigger.getDataSource(), "Load trigger source code")) {
@@ -89,8 +91,7 @@ public class FireBirdUtils {
                 return null;
             }
 
-            return source;
-            //return getViewSourceWithHeader(monitor, trigger, source);
+            return getTriggerSourceWithHeader(monitor, trigger, source);
         } catch (SQLException e) {
             throw new DBException("Can't read source code of trigger '" + trigger.getName() + "'", e);
         } catch (Exception e) {
@@ -162,6 +163,21 @@ public class FireBirdUtils {
             sql.append(")\n");
         }
         sql.append("AS\n").append(source);
+
+        return sql.toString();
+    }
+
+    public static String getTriggerSourceWithHeader(DBRProgressMonitor monitor, FireBirdTrigger trigger, String source) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE TRIGGER ").append(trigger.getName()).append(" ");
+        FireBirdTriggerType type = trigger.getType();
+        if (type.isDbEvent()) {
+            sql.append(type.getDisplayName());
+        } else if (trigger.getTable() != null) {
+            sql.append("FOR ").append(DBUtils.getQuotedIdentifier(trigger.getTable()));
+            sql.append(" ").append(type.getDisplayName());
+        }
+        sql.append("\n").append(source);
 
         return sql.toString();
     }

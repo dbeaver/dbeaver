@@ -38,9 +38,13 @@ public class FireBirdTrigger extends GenericTrigger {
         this.sequence = sequence;
     }
 
-    @Property(viewable = true, editable = true, updatable = false, order = 10)
-    public FireBirdTriggerType getTriggerType() {
+    public FireBirdTriggerType getType() {
         return type;
+    }
+
+    @Property(viewable = true, editable = true, updatable = false, order = 10)
+    public String getTriggerType() {
+        return type.getDisplayName();
     }
 
     @Property(viewable = true, editable = true, updatable = false, order = 11)
