@@ -29,10 +29,7 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Abstract object attribute
@@ -40,6 +37,12 @@ import java.util.List;
 public abstract class ObjectAttributeDescriptor {
 
     static final Log log = Log.getLog(ObjectAttributeDescriptor.class);
+    public static final Comparator<ObjectAttributeDescriptor> ATTRIBUTE_DESCRIPTOR_COMPARATOR = new Comparator<ObjectAttributeDescriptor>() {
+        @Override
+        public int compare(ObjectAttributeDescriptor o1, ObjectAttributeDescriptor o2) {
+            return o1.getOrderNumber() - o2.getOrderNumber();
+        }
+    };
 
     private final DBPPropertySource source;
     private ObjectPropertyGroupDescriptor parent;
@@ -158,6 +161,31 @@ public abstract class ObjectAttributeDescriptor {
         return annoProps;
     }
 
+    public static List<ObjectPropertyDescriptor> extractAnnotations(
+        DBPPropertySource source,
+        Collection<Class<?>> classList,
+        IPropertyFilter filter)
+    {
+        List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
+        for (Class<?> objectClass : classList) {
+            List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter);
+            for (ObjectPropertyDescriptor prop : props) {
+                boolean dup = false;
+                for (ObjectPropertyDescriptor prop1 : annoProps) {
+                    if (prop.getId().equals(prop1.getId())) {
+                        dup = true;
+                        break;
+                    }
+                }
+                if (!dup) {
+                    annoProps.add(prop);
+                }
+            }
+        }
+        Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
+        return annoProps;
+    }
+
     static void extractAnnotations(DBPPropertySource source, ObjectPropertyGroupDescriptor parent, Class<?> theClass, List<ObjectPropertyDescriptor> annoProps, IPropertyFilter filter)
     {
         Method[] methods = theClass.getMethods();
@@ -180,13 +208,7 @@ public abstract class ObjectAttributeDescriptor {
                 annoProps.add(desc);
             }
         }
-        Collections.sort(annoProps, new Comparator<ObjectAttributeDescriptor>() {
-            @Override
-            public int compare(ObjectAttributeDescriptor o1, ObjectAttributeDescriptor o2)
-            {
-                return o1.getOrderNumber() - o2.getOrderNumber();
-            }
-        });
+        Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
     }
 
 }

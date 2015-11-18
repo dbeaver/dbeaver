@@ -372,17 +372,17 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         ((IDataSourceContainerProvider)ObjectListControl.this).getDataSourceContainer() :
                         null);
 
+                // Collect all properties
+                List<ObjectPropertyDescriptor> allProps = ObjectAttributeDescriptor.extractAnnotations(getListPropertySource(), classList, propertyFilter);
+
                 // Create columns from classes' annotations
-                for (Class<?> objectClass : classList) {
-                    List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(getListPropertySource(), objectClass, propertyFilter);
-                    for (ObjectPropertyDescriptor prop : props) {
-                        if (!prop.isViewable() || prop.isHidden()) {
-                            continue;
-                        }
-                        if (!getListPropertySource().hasProperty(prop)) {
-                            getListPropertySource().addProperty(prop);
-                            createColumn(prop);
-                        }
+                for (ObjectPropertyDescriptor prop : allProps) {
+                    if (!prop.isViewable() || prop.isHidden()) {
+                        continue;
+                    }
+                    if (!getListPropertySource().hasProperty(prop)) {
+                        getListPropertySource().addProperty(prop);
+                        createColumn(prop);
                     }
                 }
             }
