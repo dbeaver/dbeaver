@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
@@ -168,7 +169,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     private static void appendParameterType(StringBuilder cb, MySQLProcedureParameter column)
     {
         cb.append(column.getTypeName());
-        if (column.getMaxLength() > 0) {
+        if (column.getDataKind() == DBPDataKind.STRING && column.getMaxLength() > 0) {
             cb.append('(').append(column.getMaxLength()).append(')');
         }
     }
