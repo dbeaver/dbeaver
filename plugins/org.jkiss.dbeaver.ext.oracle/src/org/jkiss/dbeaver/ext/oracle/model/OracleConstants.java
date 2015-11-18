@@ -112,7 +112,10 @@ public class OracleConstants {
         "IF",
         "EACH",
         "RETURN",
-        "WRAPPED"
+        "WRAPPED",
+        "AFTER",
+        "BEFORE",
+        "DATABASE",
     };
     public static final String NLS_DEFAULT_VALUE = "Default";
     public static final String PREF_KEY_DDL_FORMAT = "oracle.ddl.format";
