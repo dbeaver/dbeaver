@@ -89,7 +89,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
                             <items label="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                <items label="Procedure columns" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
+                                <items label="Parameters" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true">
                                 </items>
                             </items>
                         </folder>

@@ -121,7 +121,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
     {
         if (clientBody == null) {
             StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
+            cb.append("CREATE ").append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
 
             int colIndex = 0;
             for (MySQLProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
