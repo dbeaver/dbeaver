@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model.meta;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -258,35 +259,35 @@ public class GenericMetaModel {
         return "-- Source code not available";
     }
 
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return false;
     }
 
-    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
         return new ArrayList<>();
     }
 
-    public boolean supportsTriggers(GenericDataSource dataSource) {
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return false;
     }
 
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, GenericTable table) throws DBException {
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         return new ArrayList<>();
     }
 
-    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         return "-- Source code not available";
     }
 
-    public JDBCBasicDataTypeCache createDataTypeCache(DBPDataSourceContainer container) {
+    public JDBCBasicDataTypeCache createDataTypeCache(@NotNull DBPDataSourceContainer container) {
         return new JDBCBasicDataTypeCache(container);
     }
 
-    public DBCQueryPlanner getQueryPlanner(GenericDataSource dataSource) {
+    public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
         return null;
     }
 
-    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         return null;
     }
 

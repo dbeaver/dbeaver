@@ -18,26 +18,60 @@
 package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 
 /**
  * GenericProcedure
  */
-public class GenericTrigger extends AbstractTrigger implements GenericStoredCode
+public class GenericTrigger implements DBSTrigger, GenericStoredCode
 {
-
-    private GenericTable table;
+    @NotNull
+    private final GenericStructContainer container;
+    @Nullable
+    private final GenericTable table;
+    private String name;
+    private String description;
     private String source;
 
-    public GenericTrigger(GenericTable table, String name, String description)
-    {
-        super(name, description);
+    public GenericTrigger(@NotNull GenericStructContainer container, @Nullable GenericTable table, String name, String description) {
+        this.container = container;
         this.table = table;
+        this.name = name;
+        this.description = description;
     }
 
+    @NotNull
+    @Override
+    @Property(viewable = true, editable = true, order = 1)
+    public String getName() {
+        return name;
+    }
+
+    @Nullable
+    @Override
+    @Property(viewable = true, order = 100)
+    public String getDescription()
+    {
+        return description;
+    }
+
+    protected void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    @Override
+    public boolean isPersisted()
+    {
+        return true;
+    }
+
+    @Nullable
     @Override
     @Property(viewable = true, order = 4)
     public GenericTable getTable()
@@ -46,16 +80,16 @@ public class GenericTrigger extends AbstractTrigger implements GenericStoredCode
     }
 
     @Override
-    public GenericTable getParentObject()
+    public DBSObject getParentObject()
     {
-        return table;
+        return table == null ? container : table;
     }
 
     @NotNull
     @Override
     public GenericDataSource getDataSource()
     {
-        return table.getDataSource();
+        return container.getDataSource();
     }
 
     @Override

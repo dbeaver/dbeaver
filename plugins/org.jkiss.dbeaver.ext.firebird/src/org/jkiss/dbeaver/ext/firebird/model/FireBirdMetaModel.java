@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.firebird.FireBirdUtils;
 import org.jkiss.dbeaver.ext.generic.model.*;
@@ -59,12 +61,12 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean supportsSequences(GenericDataSource dataSource) {
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
-    public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericObjectContainer container) throws DBException {
+    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS")) {
                 List<GenericSequence> result = new ArrayList<>();
@@ -109,17 +111,19 @@ public class FireBirdMetaModel extends GenericMetaModel
     }
 
     @Override
-    public boolean supportsTriggers(GenericDataSource dataSource) {
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
         return true;
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, GenericTable table) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, table.getDataSource(), "Read triggers")) {
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT RDB$TRIGGER_NAME,RDB$TRIGGER_SEQUENCE,RDB$TRIGGER_TYPE,RDB$DESCRIPTION FROM RDB$TRIGGERS\n" +
-                    "WHERE RDB$RELATION_NAME=?")) {
-                dbStat.setString(1, table.getName());
+                    "WHERE RDB$RELATION_NAME" + (table == null ? " IS NULL" : "=?"))) {
+                if (table != null) {
+                    dbStat.setString(1, table.getName());
+                }
                 List<GenericTrigger> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -133,6 +137,7 @@ public class FireBirdMetaModel extends GenericMetaModel
                         int type = JDBCUtils.safeGetInt(dbResult, 3);
                         String description = JDBCUtils.safeGetString(dbResult, 4);
                         FireBirdTrigger trigger = new FireBirdTrigger(
+                            container,
                             table,
                             name,
                             description,
@@ -145,17 +150,17 @@ public class FireBirdMetaModel extends GenericMetaModel
 
             }
         } catch (SQLException e) {
-            throw new DBException(e, table.getDataSource());
+            throw new DBException(e, container.getDataSource());
         }
     }
 
     @Override
-    public String getTriggerDDL(DBRProgressMonitor monitor, GenericTrigger trigger) throws DBException {
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         return FireBirdUtils.getTriggerSource(monitor, trigger);
     }
 
     @Override
-    public DBPErrorAssistant.ErrorPosition getErrorPosition(Throwable error) {
+    public DBPErrorAssistant.ErrorPosition getErrorPosition(@NotNull Throwable error) {
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
