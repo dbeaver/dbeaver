@@ -207,7 +207,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     }
 
     @Override
-    @Property(viewable = true, order = 80)
+    @Property(viewable = true, order = 60)
     public KeyType getKeyType()
     {
         return keyType;
