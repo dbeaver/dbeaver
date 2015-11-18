@@ -46,7 +46,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
     protected List<GenericSequence> sequences;
-    private List<GenericTrigger> triggers;
+    private List<? extends GenericTrigger> triggers;
 
     protected GenericObjectContainer(@NotNull GenericDataSource dataSource)
     {
@@ -308,7 +308,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         if (triggers == null) {
             loadTriggers(monitor);
         }

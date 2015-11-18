@@ -47,7 +47,9 @@ import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,7 +140,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<PostgreTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
@@ -156,7 +158,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                     dbStat.setString(1, table.getSchema().getName());
                     dbStat.setString(2, table.getName());
                 }
-                List<GenericTrigger> result = new ArrayList<>();
+                Map<String, PostgreTrigger> result = new LinkedHashMap<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
@@ -164,18 +166,26 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                         if (name == null) {
                             continue;
                         }
+                        String manipulation = JDBCUtils.safeGetString(dbResult, "event_manipulation");
+                        PostgreTrigger trigger = result.get(name);
+                        if (trigger != null) {
+                            trigger.addManipulation(manipulation);
+                            continue;
+                        }
                         String description = "";
-                        String source = JDBCUtils.safeGetString(dbResult, "action_statement");
-                        PostgreTrigger trigger = new PostgreTrigger(
+                        trigger = new PostgreTrigger(
                             container,
                             table,
                             name,
                             description,
-                            source);
-                        result.add(trigger);
+                            manipulation,
+                            JDBCUtils.safeGetString(dbResult, "action_orientation"),
+                            JDBCUtils.safeGetString(dbResult, "action_timing"),
+                            JDBCUtils.safeGetString(dbResult, "action_statement"));
+                        result.put(name, trigger);
                     }
                 }
-                return result;
+                return new ArrayList<>(result.values());
 
             }
         } catch (SQLException e) {

@@ -50,25 +50,25 @@ public interface GenericStructContainer extends DBSObjectContainer, DBSProcedure
 
     ForeignKeysCache getForeignKeysCache();
 
-    Collection<GenericTable> getViews(DBRProgressMonitor monitor) throws DBException;
-    Collection<GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericTable> getViews(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericTable> getPhysicalTables(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<GenericTable> getTables(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericTable> getTables(DBRProgressMonitor monitor) throws DBException;
 
     GenericTable getTable(DBRProgressMonitor monitor, String name) throws DBException;
 
-    Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<GenericPackage> getPackages(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericPackage> getPackages(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericProcedure> getProcedures(DBRProgressMonitor monitor) throws DBException;
 
     GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException;
 
-    Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name) throws DBException;
+    Collection<? extends GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name) throws DBException;
 
-    Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException;
 
-    Collection<GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException;
 
 }

@@ -110,11 +110,11 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
 
     private void loadProcedureColumns(DBRProgressMonitor monitor) throws DBException
     {
-        Collection<GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
+        Collection<? extends GenericProcedure> procedures = getContainer().getProcedures(monitor, getName());
         if (procedures == null || !procedures.contains(this)) {
             throw new DBException("Internal error - cannot read columns for procedure '" + getName() + "' because its not found in container");
         }
-        Iterator<GenericProcedure> procIter = procedures.iterator();
+        Iterator<? extends GenericProcedure> procIter = procedures.iterator();
         GenericProcedure procedure = null;
 
         final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);

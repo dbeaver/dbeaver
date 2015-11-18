@@ -59,7 +59,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private boolean isSystem;
     private String description;
     private Long rowCount;
-    private List<GenericTrigger> triggers;
+    private List<? extends GenericTrigger> triggers;
 
     public GenericTable(
         GenericStructContainer container)
@@ -422,7 +422,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Association
-    public Collection<GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         if (triggers == null) {
             loadTriggers(monitor);
         }
