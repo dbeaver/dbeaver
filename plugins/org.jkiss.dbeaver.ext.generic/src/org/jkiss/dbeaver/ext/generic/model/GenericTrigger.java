@@ -36,7 +36,7 @@ public class GenericTrigger implements DBSTrigger, GenericStoredCode
     private final GenericTable table;
     private String name;
     private String description;
-    private String source;
+    protected String source;
 
     public GenericTrigger(@NotNull GenericStructContainer container, @Nullable GenericTable table, String name, String description) {
         this.container = container;
@@ -77,6 +77,11 @@ public class GenericTrigger implements DBSTrigger, GenericStoredCode
     public GenericTable getTable()
     {
         return table;
+    }
+
+    @NotNull
+    public GenericStructContainer getContainer() {
+        return container;
     }
 
     @Override
