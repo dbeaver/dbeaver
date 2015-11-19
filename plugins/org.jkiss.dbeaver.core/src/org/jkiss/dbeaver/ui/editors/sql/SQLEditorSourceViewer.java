@@ -23,6 +23,7 @@ import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 
 public class SQLEditorSourceViewer extends ProjectionViewer {
@@ -46,4 +47,10 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         ITextSelection selection = (ITextSelection)getSelection();
         fireSelectionChanged(selection.getOffset(), selection.getLength());
     }
+
+    @Override
+    protected StyledText createTextWidget(Composite parent, int styles) {
+        return super.createTextWidget(parent, styles);
+    }
+
 }
