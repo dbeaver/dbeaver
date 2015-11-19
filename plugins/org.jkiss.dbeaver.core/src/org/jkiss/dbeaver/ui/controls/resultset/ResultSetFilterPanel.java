@@ -22,6 +22,7 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -243,6 +244,7 @@ class ResultSetFilterPanel extends Composite
         }
         filtersText.getParent().setBackground(filtersText.getBackground());
         filterComposite.layout();
+        for (Control child : filterComposite.getChildren()) child.redraw();
     }
 
     private void setCustomDataFilter()
@@ -339,7 +341,9 @@ class ResultSetFilterPanel extends Composite
 
         @Override
         public Point computeSize(int wHint, int hHint, boolean changed) {
-            return new Point(100, 20);
+            GC sizingGC = new GC(this);
+            Point textSize = sizingGC.textExtent(viewer.getDataContainer().getName());
+            return new Point(textSize.x + 10, Math.min(textSize.y + 4, 20));
         }
 
         @Override
@@ -353,7 +357,8 @@ class ResultSetFilterPanel extends Composite
                 e.x + e.width - 4, e.y + 2,
                 e.x + e.width - 4, e.y + e.height - 4);
 
-            e.gc.setForeground(filtersText.getForeground());
+            //e.gc.setForeground(filtersText.getForeground());
+            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
             e.gc.drawText(viewer.getDataContainer().getName(), 2, 3);
             e.gc.setClipping((Rectangle) null);
