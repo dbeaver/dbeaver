@@ -80,7 +80,7 @@ public class TextUtils {
             int l1 = gc.textExtent(s1).x;
             int l2 = gc.textExtent(s2).x;
             if (l1 + w + l2 < width) {
-                text = s1 + "..." + s2;
+                text = s1 + " ... " + s2;
                 break;
             }
             s--;
