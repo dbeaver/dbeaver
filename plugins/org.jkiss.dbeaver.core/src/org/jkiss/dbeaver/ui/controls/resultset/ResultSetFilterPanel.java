@@ -19,8 +19,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.text.source.IVerticalRuler;
-import org.eclipse.jface.text.source.OverviewRuler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -38,17 +36,16 @@ import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -235,21 +232,8 @@ class ResultSetFilterPanel extends Composite
 
     }
 
-    private void showSourceQuery() {
-        String queryText = getActiveQueryText();
-        ViewSQLDialog dialog = new ViewSQLDialog(viewer.getSite(), viewer.getExecutionContext(), "Query Text", DBeaverIcons.getImage(UIIcon.SQL_TEXT), queryText);
-        dialog.setEnlargeViewPanel(false);
-        dialog.setWordWrap(true);
-        dialog.open();
-    }
-
     @NotNull
     private String getActiveQueryText() {
-        DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer != null) {
-            return dataContainer.getName();
-        }
-
         DBCStatistics statistics = viewer.getModel().getStatistics();
         String queryText = statistics == null ? null : statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
@@ -261,6 +245,12 @@ class ResultSetFilterPanel extends Composite
     @Nullable
     private DBPImage getActiveObjectImage() {
         DBSDataContainer dataContainer = viewer.getDataContainer();
+        if (dataContainer instanceof DBSEntity) {
+            DBNDatabaseNode dcNode = viewer.getDataContainer().getDataSource().getContainer().getApplication().getNavigatorModel().findNode(dataContainer);
+            if (dcNode != null) {
+                return dcNode.getNodeIcon();
+            }
+        }
         if (dataContainer instanceof DBPImageProvider) {
             return ((DBPImageProvider) dataContainer).getObjectImage();
         } else if (dataContainer instanceof DBSEntity) {
@@ -273,10 +263,10 @@ class ResultSetFilterPanel extends Composite
     @NotNull
     private String getActiveObjectDisplayString() {
         DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer == null) {
-            return "???";
+        if (dataContainer instanceof DBSEntity) {
+            return dataContainer.getName();
         }
-        String name = dataContainer.getName();
+        String name = getActiveQueryText();
         name = name.replaceAll("\\s+", " ");
         return name;
     }
@@ -430,8 +420,8 @@ class ResultSetFilterPanel extends Composite
             Rectangle displayRect = getMonitor().getClientArea();
             int width = Math.min(filterComposite.getSize().x, Math.max(MIN_INFO_PANEL_WIDTH, controlRect.x + 30));
             int height = Math.min(MAX_INFO_PANEL_HEIGHT, Math.max(MIN_INFO_PANEL_HEIGHT, controlRect.y + 30));
-            int x = parentRect.x + e.x;
-            int y = parentRect.y + e.y;
+            int x = parentRect.x + e.x + 1;
+            int y = parentRect.y + e.y + 1;
             if (y + height > displayRect.y + displayRect.height) {
                 y = parentRect.y - height;
             }
@@ -495,7 +485,11 @@ class ResultSetFilterPanel extends Composite
     @NotNull
     private Control createObjectPanel(Shell popup) throws PartInitException {
         Composite panel = new Composite(popup, SWT.BORDER);
-        panel.setLayout(new GridLayout(2, false));
+        GridLayout gl = new GridLayout(2, false);
+//        gl.marginWidth = 0;
+//        gl.marginHeight = 0;
+//        gl.horizontalSpacing = 0;
+        panel.setLayout(gl);
 
         Label iconLabel = new Label(panel, SWT.NONE);
         iconLabel.setImage(DBeaverIcons.getImage(getActiveObjectImage()));
@@ -504,7 +498,7 @@ class ResultSetFilterPanel extends Composite
         editorPH.setLayoutData(new GridData(GridData.FILL_BOTH));
         editorPH.setLayout(new FillLayout());
 
-        SQLEditorBase editor = new SQLEditorBase() {
+        final SQLEditorBase editor = new SQLEditorBase() {
             @Nullable
             @Override
             public DBCExecutionContext getExecutionContext() {
@@ -519,7 +513,20 @@ class ResultSetFilterPanel extends Composite
         StyledText textWidget = editor.getTextViewer().getTextWidget();
         textWidget.setAlwaysShowScrollBars(false);
 
+/*
+        new Label(panel, SWT.SEPARATOR | SWT.VERTICAL).setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        Button button = new Button(panel, SWT.PUSH | SWT.FLAT);
+        button.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        button.setText(">");
+*/
+
         panel.setBackground(textWidget.getBackground());
+        panel.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                editor.dispose();
+            }
+        });
 
         return textWidget;
     }
