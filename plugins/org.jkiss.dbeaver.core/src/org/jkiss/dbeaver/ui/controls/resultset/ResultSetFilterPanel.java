@@ -49,6 +49,7 @@ class ResultSetFilterPanel extends Composite
 
     private ToolItem filtersApplyButton;
     private ToolItem filtersClearButton;
+    private ToolItem filtersCustomButton;
     private ToolItem historyBackButton;
     private ToolItem historyForwardButton;
 
@@ -84,6 +85,7 @@ class ResultSetFilterPanel extends Composite
             }
         });
 
+/*
         Button customizeButton = new Button(this, SWT.PUSH | SWT.NO_FOCUS);
         customizeButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
         customizeButton.setText("Filters");
@@ -94,8 +96,7 @@ class ResultSetFilterPanel extends Composite
                 new FilterSettingsDialog(viewer).open();
             }
         });
-
-        //UIUtils.createControlLabel(filtersPanel, " Filter");
+*/
 
         this.filtersText = new Combo(this, SWT.BORDER | SWT.DROP_DOWN);
         this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -149,6 +150,17 @@ class ResultSetFilterPanel extends Composite
             }
         });
         filtersClearButton.setEnabled(false);
+
+        filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+        filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
+        filtersCustomButton.setToolTipText("Custom Filters");
+        filtersCustomButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                new FilterSettingsDialog(viewer).open();
+            }
+        });
+        filtersCustomButton.setEnabled(true);
 
         historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
         historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));
