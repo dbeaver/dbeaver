@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -60,6 +61,7 @@ class ResultSetFilterPanel extends Composite
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private final ResultSetViewer viewer;
     private final ActiveObjectPanel activeObjectPanel;
+    private final RefreshPanel refreshPanel;
 
     private StyledText filtersText;
 
@@ -126,7 +128,7 @@ class ResultSetFilterPanel extends Composite
             });
 */
 
-            new RefreshPanel(filterComposite);
+            refreshPanel = new RefreshPanel(filterComposite);
 
             //addressBar.setBackgroundMode(filtersText.getBackground());
         }
@@ -237,6 +239,10 @@ class ResultSetFilterPanel extends Composite
         DBCStatistics statistics = viewer.getModel().getStatistics();
         String queryText = statistics == null ? null : statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
+            DBSDataContainer dataContainer = viewer.getDataContainer();
+            if (dataContainer != null) {
+                return dataContainer.getName();
+            }
             queryText = "<empty>";
         }
         return queryText;
@@ -302,6 +308,7 @@ class ResultSetFilterPanel extends Composite
         filtersText.getParent().setBackground(filtersText.getBackground());
         filterComposite.layout();
         activeObjectPanel.redraw();
+        refreshPanel.redraw();
         //activeObjectPanel.setToolTipText(getActiveQueryText());
     }
 
@@ -350,136 +357,6 @@ class ResultSetFilterPanel extends Composite
 
     void setFilterValue(String whereCondition) {
         filtersText.setText(whereCondition);
-    }
-
-    private class FilterPanel extends Canvas {
-        public FilterPanel(Composite parent, int style) {
-            super(parent, style);
-
-            addPaintListener(new PaintListener() {
-                @Override
-                public void paintControl(PaintEvent e) {
-                    paintPanel(e);
-                }
-            });
-        }
-
-        protected void paintPanel(PaintEvent e) {
-
-        }
-    }
-
-    private class ActiveObjectPanel extends FilterPanel {
-        public static final int MIN_INFO_PANEL_WIDTH = 300;
-        public static final int MIN_INFO_PANEL_HEIGHT = 100;
-        public static final int MAX_INFO_PANEL_HEIGHT = 400;
-
-        private boolean hover = false;
-        private String activeDisplayName;
-
-        public ActiveObjectPanel(Composite addressBar) {
-            super(addressBar, SWT.NONE);
-            setLayoutData(new GridData(GridData.FILL_VERTICAL));
-
-            this.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseDown(MouseEvent e) {
-                    showObjectInfoPopup(e);
-                }
-            });
-            addMouseTrackListener(new MouseTrackAdapter() {
-                @Override
-                public void mouseEnter(MouseEvent e) {
-                    hover = true;
-                    redraw();
-                }
-
-                @Override
-                public void mouseExit(MouseEvent e) {
-                    hover = false;
-                    redraw();
-                }
-            });
-        }
-
-        private void showObjectInfoPopup(MouseEvent e) {
-            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
-            popup.setLayout(new FillLayout());
-            Control editControl;
-            try {
-                editControl = createObjectPanel(popup);
-            } catch (PartInitException e1) {
-                UIUtils.showErrorDialog(getShell(), "Object info", "Error opening object info", e1);
-                popup.dispose();
-                return;
-            }
-
-            Point controlRect = editControl.computeSize(-1, -1);
-
-            Rectangle parentRect = getDisplay().map(activeObjectPanel, null, getBounds());
-            Rectangle displayRect = getMonitor().getClientArea();
-            int width = Math.min(filterComposite.getSize().x, Math.max(MIN_INFO_PANEL_WIDTH, controlRect.x + 30));
-            int height = Math.min(MAX_INFO_PANEL_HEIGHT, Math.max(MIN_INFO_PANEL_HEIGHT, controlRect.y + 30));
-            int x = parentRect.x + e.x + 1;
-            int y = parentRect.y + e.y + 1;
-            if (y + height > displayRect.y + displayRect.height) {
-                y = parentRect.y - height;
-            }
-            popup.setBounds(x, y, width, height);
-            popup.setVisible(true);
-            editControl.setFocus();
-
-            editControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    popup.dispose();
-                }
-            });
-        }
-
-        @Override
-        public Point computeSize(int wHint, int hHint, boolean changed) {
-            int maxWidth = filterComposite.getSize().x / 3;
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(getActiveObjectDisplayString(), 200));
-            //TextUtils.getShortText(sizingGC, getActiveObjectDisplayString(), maxWidth);
-            Point textSize = sizingGC.textExtent(activeDisplayName);
-            Image image = DBeaverIcons.getImage(getActiveObjectImage());
-            if (image != null) {
-                textSize.x += image.getBounds().width + 4;
-            }
-            return new Point(
-                Math.max(MIN_FILTER_TEXT_WIDTH, Math.min(textSize.x + 10, maxWidth)),
-                Math.min(textSize.y + 4, MIN_FILTER_TEXT_HEIGHT));
-        }
-
-        @Override
-        protected void paintPanel(PaintEvent e) {
-            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-            if (hover) {
-                e.gc.setBackground(hoverBgColor);
-                e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
-                e.gc.drawLine(
-                    e.x + e.width - 4, e.y,
-                    e.x + e.width - 4, e.y + e.height);
-            } else {
-                e.gc.drawLine(
-                    e.x + e.width - 4, e.y + 2,
-                    e.x + e.width - 4, e.y + e.height - 4);
-            }
-
-            //e.gc.setForeground(filtersText.getForeground());
-            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
-            e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
-
-            int textOffset = 2;
-            Image icon = DBeaverIcons.getImage(getActiveObjectImage());
-            if (icon != null) {
-                e.gc.drawImage(icon, 2, 3);
-                textOffset += icon.getBounds().width + 2;
-            }
-            e.gc.drawText(activeDisplayName, textOffset, 3);
-            e.gc.setClipping((Rectangle) null);
-        }
     }
 
     @NotNull
@@ -531,20 +408,180 @@ class ResultSetFilterPanel extends Composite
         return textWidget;
     }
 
+    private class FilterPanel extends Canvas {
+        protected boolean hover = false;
+        public FilterPanel(Composite parent, int style) {
+            super(parent, style);
+
+            addPaintListener(new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    paintPanel(e);
+                }
+            });
+            addMouseTrackListener(new MouseTrackAdapter() {
+                @Override
+                public void mouseEnter(MouseEvent e) {
+                    hover = true;
+                    redraw();
+                }
+
+                @Override
+                public void mouseExit(MouseEvent e) {
+                    hover = false;
+                    redraw();
+                }
+            });
+        }
+
+        protected void paintPanel(PaintEvent e) {
+
+        }
+    }
+
+    private class ActiveObjectPanel extends FilterPanel {
+        public static final int MIN_INFO_PANEL_WIDTH = 300;
+        public static final int MIN_INFO_PANEL_HEIGHT = 100;
+        public static final int MAX_INFO_PANEL_HEIGHT = 400;
+
+        private String activeDisplayName;
+
+        public ActiveObjectPanel(Composite addressBar) {
+            super(addressBar, SWT.NONE);
+            setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+            this.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    showObjectInfoPopup(e);
+                }
+            });
+        }
+
+        private void showObjectInfoPopup(MouseEvent e) {
+            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+            popup.setLayout(new FillLayout());
+            Control editControl;
+            try {
+                editControl = createObjectPanel(popup);
+            } catch (PartInitException e1) {
+                UIUtils.showErrorDialog(getShell(), "Object info", "Error opening object info", e1);
+                popup.dispose();
+                return;
+            }
+
+            Point controlRect = editControl.computeSize(-1, -1);
+
+            Rectangle parentRect = getDisplay().map(activeObjectPanel, null, getBounds());
+            Rectangle displayRect = getMonitor().getClientArea();
+            int width = Math.min(filterComposite.getSize().x, Math.max(MIN_INFO_PANEL_WIDTH, controlRect.x + 30));
+            int height = Math.min(MAX_INFO_PANEL_HEIGHT, Math.max(MIN_INFO_PANEL_HEIGHT, controlRect.y + 30));
+            int x = parentRect.x + e.x + 1;
+            int y = parentRect.y + e.y + 1;
+            if (y + height > displayRect.y + displayRect.height) {
+                y = parentRect.y - height;
+            }
+            popup.setBounds(x, y, width, height);
+            popup.setVisible(true);
+            editControl.setFocus();
+
+            editControl.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    popup.dispose();
+                }
+            });
+        }
+
+        @Override
+        public Point computeSize(int wHint, int hHint, boolean changed) {
+            int maxWidth = viewer.getControl().getParent().getSize().x / 3;
+            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(getActiveObjectDisplayString(), 200));
+            //TextUtils.getShortText(sizingGC, getActiveObjectDisplayString(), maxWidth);
+            Point textSize = sizingGC.textExtent(activeDisplayName);
+            Image image = DBeaverIcons.getImage(getActiveObjectImage());
+            if (image != null) {
+                textSize.x += image.getBounds().width + 4;
+            }
+            return new Point(
+                Math.max(MIN_FILTER_TEXT_WIDTH, Math.min(textSize.x + 10, maxWidth)),
+                Math.min(textSize.y + 4, MIN_FILTER_TEXT_HEIGHT));
+        }
+
+        @Override
+        protected void paintPanel(PaintEvent e) {
+            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            if (hover) {
+                e.gc.setBackground(hoverBgColor);
+                e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
+                e.gc.drawLine(
+                    e.x + e.width - 4, e.y,
+                    e.x + e.width - 4, e.y + e.height);
+            } else {
+                e.gc.drawLine(
+                    e.x + e.width - 4, e.y + 2,
+                    e.x + e.width - 4, e.y + e.height - 4);
+            }
+
+            //e.gc.setForeground(filtersText.getForeground());
+            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
+            e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
+
+            int textOffset = 2;
+            Image icon = DBeaverIcons.getImage(getActiveObjectImage());
+            if (icon != null) {
+                e.gc.drawImage(icon, 2, 3);
+                textOffset += icon.getBounds().width + 2;
+            }
+            e.gc.drawText(activeDisplayName, textOffset, 3);
+            e.gc.setClipping((Rectangle) null);
+        }
+    }
+
     private class RefreshPanel extends FilterPanel {
+
+        private final Image enabledImage, disabledImage;
+
         public RefreshPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
+            setToolTipText(CoreMessages.controls_resultset_viewer_action_refresh);
+            enabledImage = DBeaverIcons.getImage(UIIcon.RS_REFRESH);
+            disabledImage = new Image(enabledImage.getDevice(), enabledImage, SWT.IMAGE_GRAY);
+            addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    UIUtils.dispose(disabledImage);
+                }
+            });
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+                    if (!viewer.isRefreshInProgress() && e.x > 8) {
+                        viewer.refresh();
+                        redraw();
+                    }
+                }
+            });
+
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
-            gd.widthHint = 50;
+            gd.widthHint = 10 + enabledImage.getBounds().width + 6;
             setLayoutData(gd);
         }
+
         @Override
         protected void paintPanel(PaintEvent e) {
             e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
             e.gc.drawLine(
                 e.x + 4, e.y + 2,
                 e.x + 4, e.y + e.height - 4);
+            if (viewer.isRefreshInProgress()) {
+                e.gc.drawImage(DBeaverIcons.getImage(UIIcon.CLOSE), e.x + 10, e.y + 2);
+            } else if (hover) {
+                e.gc.drawImage(enabledImage, e.x + 10, e.y + 2);
+            } else {
+                e.gc.drawImage(disabledImage, e.x + 10, e.y + 2);
+            }
         }
     }
 
