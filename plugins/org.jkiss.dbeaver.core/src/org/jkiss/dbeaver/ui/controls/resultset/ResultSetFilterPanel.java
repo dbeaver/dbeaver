@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
@@ -377,7 +377,7 @@ class ResultSetFilterPanel extends Composite
             this.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseDown(MouseEvent e) {
-                    showObjectInfoPopup();
+                    showObjectInfoPopup(e);
                 }
             });
             addMouseTrackListener(new MouseTrackAdapter() {
@@ -395,8 +395,34 @@ class ResultSetFilterPanel extends Composite
             });
         }
 
-        private void showObjectInfoPopup() {
-            filtersText.setFocus();
+        private void showObjectInfoPopup(MouseEvent e) {
+            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP);
+            popup.setLayout(new FillLayout());
+            Text text = new Text(popup, SWT.MULTI | SWT.BORDER);
+            text.setText(getActiveQueryText());
+
+            Display display = getDisplay();
+            Point listRect = text.computeSize(-1, -1);
+            Rectangle parentRect = display.map(activeObjectPanel, null, getBounds());
+            Point comboSize = new Point(300, 200);
+            Rectangle displayRect = getMonitor().getClientArea();
+            int width = Math.max(comboSize.x, listRect.x);
+            int height = listRect.y;
+            int x = parentRect.x + e.x;
+            int y = parentRect.y + e.y;
+            if (y + height > displayRect.y + displayRect.height) {
+                y = parentRect.y - height;
+            }
+            popup.setBounds(x, y, width, height);
+            popup.setVisible(true);
+            text.setFocus();
+
+            text.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    popup.dispose();
+                }
+            });
         }
 
         @Override
