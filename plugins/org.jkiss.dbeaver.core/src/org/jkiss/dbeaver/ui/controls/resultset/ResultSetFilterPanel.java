@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -45,7 +46,7 @@ class ResultSetFilterPanel extends Composite
 {
     private final ResultSetViewer viewer;
 
-    private Combo filtersText;
+    private StyledText filtersText;
 
     private ToolItem filtersApplyButton;
     private ToolItem filtersClearButton;
@@ -54,6 +55,7 @@ class ResultSetFilterPanel extends Composite
     private ToolItem historyForwardButton;
 
     private ControlEnableState filtersEnableState;
+    private final Composite filterComposite;
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -66,6 +68,7 @@ class ResultSetFilterPanel extends Composite
         gl.marginWidth = 3;
         this.setLayout(gl);
 
+/*
         Button sourceQueryButton = new Button(this, SWT.PUSH | SWT.NO_FOCUS);
         sourceQueryButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
         sourceQueryButton.setText("SQL");
@@ -73,40 +76,38 @@ class ResultSetFilterPanel extends Composite
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                DBCStatistics statistics = viewer.getModel().getStatistics();
-                String queryText = statistics == null ? null : statistics.getQueryText();
-                if (queryText == null || queryText.isEmpty()) {
-                    queryText = "<empty>";
-                }
-                ViewSQLDialog dialog = new ViewSQLDialog(viewer.getSite(), viewer.getExecutionContext(), "Query Text", DBeaverIcons.getImage(UIIcon.SQL_TEXT), queryText);
-                dialog.setEnlargeViewPanel(false);
-                dialog.setWordWrap(true);
-                dialog.open();
-            }
-        });
-
-/*
-        Button customizeButton = new Button(this, SWT.PUSH | SWT.NO_FOCUS);
-        customizeButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
-        customizeButton.setText("Filters");
-        customizeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                new FilterSettingsDialog(viewer).open();
+                showSourceQuery();
             }
         });
 */
 
-        this.filtersText = new Combo(this, SWT.BORDER | SWT.DROP_DOWN);
-        this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        this.filtersText.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                setCustomDataFilter();
-            }
-        });
+        {
+            filterComposite = new Composite(this, SWT.BORDER);
+            gl = new GridLayout(3, false);
+            gl.marginHeight = 0;
+            gl.marginWidth = 0;
+            gl.horizontalSpacing = 0;
+            gl.verticalSpacing = 0;
+            filterComposite.setLayout(gl);
+            filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            new ActiveObjectPanel(filterComposite);
+
+            this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
+            this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+/*
+            this.filtersText.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setCustomDataFilter();
+                }
+            });
+*/
+
+            new RefreshPanel(filterComposite);
+
+            //addressBar.setBackgroundMode(filtersText.getBackground());
+        }
 
         {
             // Register filters text in focus service
@@ -200,6 +201,18 @@ class ResultSetFilterPanel extends Composite
 
     }
 
+    private void showSourceQuery() {
+        DBCStatistics statistics = viewer.getModel().getStatistics();
+        String queryText = statistics == null ? null : statistics.getQueryText();
+        if (queryText == null || queryText.isEmpty()) {
+            queryText = "<empty>";
+        }
+        ViewSQLDialog dialog = new ViewSQLDialog(viewer.getSite(), viewer.getExecutionContext(), "Query Text", DBeaverIcons.getImage(UIIcon.SQL_TEXT), queryText);
+        dialog.setEnlargeViewPanel(false);
+        dialog.setWordWrap(true);
+        dialog.open();
+    }
+
     void enableFilters(boolean enableFilters) {
         if (enableFilters) {
             if (filtersEnableState != null) {
@@ -228,6 +241,8 @@ class ResultSetFilterPanel extends Composite
         } else if (filtersEnableState == null) {
             filtersEnableState = ControlEnableState.disable(this);
         }
+        filtersText.getParent().setBackground(filtersText.getBackground());
+        filterComposite.layout();
     }
 
     private void setCustomDataFilter()
@@ -251,6 +266,7 @@ class ResultSetFilterPanel extends Composite
 
     void addFiltersHistory(String whereCondition)
     {
+/*
         int historyCount = filtersText.getItemCount();
         for (int i = 0; i < historyCount; i++) {
             if (filtersText.getItem(i).equals(whereCondition)) {
@@ -264,6 +280,7 @@ class ResultSetFilterPanel extends Composite
             }
         }
         filtersText.add(whereCondition, 0);
+*/
         filtersText.setText(whereCondition);
     }
 
@@ -273,6 +290,83 @@ class ResultSetFilterPanel extends Composite
 
     void setFilterValue(String whereCondition) {
         filtersText.setText(whereCondition);
+    }
+
+    private class FilterPanel extends Canvas {
+        public FilterPanel(Composite parent, int style) {
+            super(parent, style);
+
+            addPaintListener(new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    paintPanel(e);
+                }
+            });
+        }
+
+        protected void paintPanel(PaintEvent e) {
+
+        }
+    }
+
+    private class ActiveObjectPanel extends FilterPanel {
+        private boolean hover = false;
+
+        public ActiveObjectPanel(Composite addressBar) {
+            super(addressBar, SWT.NONE);
+            setLayoutData(new GridData(GridData.FILL_VERTICAL));
+
+            this.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    filtersText.setFocus();
+                }
+            });
+            addMouseTrackListener(new MouseTrackAdapter() {
+                @Override
+                public void mouseEnter(MouseEvent e) {
+                    hover = true;
+                    redraw();
+                }
+
+                @Override
+                public void mouseExit(MouseEvent e) {
+                    hover = false;
+                    redraw();
+                }
+            });
+        }
+
+        @Override
+        public Point computeSize(int wHint, int hHint, boolean changed) {
+            return new Point(100, 20);
+        }
+
+        @Override
+        protected void paintPanel(PaintEvent e) {
+            if (hover) {
+                e.gc.setBackground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
+                e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
+            }
+            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            e.gc.drawLine(
+                e.x + e.width - 4, e.y + 2,
+                e.x + e.width - 4, e.y + e.height - 4);
+
+            e.gc.setForeground(filtersText.getForeground());
+            e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
+            e.gc.drawText(viewer.getDataContainer().getName(), 2, 3);
+            e.gc.setClipping((Rectangle) null);
+        }
+    }
+
+    private class RefreshPanel extends FilterPanel {
+        public RefreshPanel(Composite addressBar) {
+            super(addressBar, SWT.NONE);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.heightHint = 10;
+            setLayoutData(gd);
+        }
     }
 
     private class HistoryMenuListener extends SelectionAdapter {
