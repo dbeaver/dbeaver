@@ -26,12 +26,19 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
@@ -44,7 +51,10 @@ import java.util.List;
  */
 class ResultSetFilterPanel extends Composite
 {
+    public static final int MIN_FILTER_TEXT_WIDTH = 50;
+    public static final int MIN_FILTER_TEXT_HEIGHT = 20;
     private final ResultSetViewer viewer;
+    private final ActiveObjectPanel activeObjectPanel;
 
     private StyledText filtersText;
 
@@ -56,12 +66,15 @@ class ResultSetFilterPanel extends Composite
     private ControlEnableState filtersEnableState;
     private final Composite filterComposite;
     private final Color hoverBgColor;
+    private final GC sizingGC;
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
         this.viewer = rsv;
 
         this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        sizingGC = new GC(this);
 
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 3;
@@ -94,7 +107,7 @@ class ResultSetFilterPanel extends Composite
             filterComposite.setLayout(gl);
             filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            new ActiveObjectPanel(filterComposite);
+            activeObjectPanel = new ActiveObjectPanel(filterComposite);
             //new Label(filterComposite, SWT.SEPARATOR | SWT.VERTICAL);
 
             this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
@@ -205,18 +218,54 @@ class ResultSetFilterPanel extends Composite
 
         filtersEnableState = ControlEnableState.disable(this);
 
+        this.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                UIUtils.dispose(sizingGC);
+            }
+        });
+
     }
 
     private void showSourceQuery() {
+        String queryText = getActiveQueryText();
+        ViewSQLDialog dialog = new ViewSQLDialog(viewer.getSite(), viewer.getExecutionContext(), "Query Text", DBeaverIcons.getImage(UIIcon.SQL_TEXT), queryText);
+        dialog.setEnlargeViewPanel(false);
+        dialog.setWordWrap(true);
+        dialog.open();
+    }
+
+    @NotNull
+    private String getActiveQueryText() {
         DBCStatistics statistics = viewer.getModel().getStatistics();
         String queryText = statistics == null ? null : statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
             queryText = "<empty>";
         }
-        ViewSQLDialog dialog = new ViewSQLDialog(viewer.getSite(), viewer.getExecutionContext(), "Query Text", DBeaverIcons.getImage(UIIcon.SQL_TEXT), queryText);
-        dialog.setEnlargeViewPanel(false);
-        dialog.setWordWrap(true);
-        dialog.open();
+        return queryText;
+    }
+
+    @Nullable
+    private DBPImage getActiveObjectImage() {
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        if (dataContainer instanceof DBPImageProvider) {
+            return ((DBPImageProvider) dataContainer).getObjectImage();
+        } else if (dataContainer instanceof DBSEntity) {
+            return DBIcon.TREE_TABLE;
+        } else {
+            return UIIcon.SQL_TEXT;
+        }
+    }
+
+    @NotNull
+    private String getActiveObjectDisplayString() {
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        if (dataContainer == null) {
+            return "???";
+        }
+        String name = dataContainer.getName();
+        name = name.replaceAll("\\s+", " ");
+        return name;
     }
 
     void enableFilters(boolean enableFilters) {
@@ -249,7 +298,8 @@ class ResultSetFilterPanel extends Composite
         }
         filtersText.getParent().setBackground(filtersText.getBackground());
         filterComposite.layout();
-        for (Control child : filterComposite.getChildren()) child.redraw();
+        activeObjectPanel.redraw();
+        activeObjectPanel.setToolTipText(getActiveQueryText());
     }
 
     private void setCustomDataFilter()
@@ -318,6 +368,7 @@ class ResultSetFilterPanel extends Composite
 
     private class ActiveObjectPanel extends FilterPanel {
         private boolean hover = false;
+        private String activeDisplayName;
 
         public ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
@@ -326,7 +377,7 @@ class ResultSetFilterPanel extends Composite
             this.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseDown(MouseEvent e) {
-                    filtersText.setFocus();
+                    showObjectInfoPopup();
                 }
             });
             addMouseTrackListener(new MouseTrackAdapter() {
@@ -344,17 +395,23 @@ class ResultSetFilterPanel extends Composite
             });
         }
 
+        private void showObjectInfoPopup() {
+            filtersText.setFocus();
+        }
+
         @Override
         public Point computeSize(int wHint, int hHint, boolean changed) {
-            GC sizingGC = new GC(this);
-            Point textSize = sizingGC.textExtent(viewer.getDataContainer().getName());
-            Image image = DBeaverIcons.getImage(DBIcon.TREE_TABLE);
+            int maxWidth = filterComposite.getSize().x / 3;
+            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(getActiveObjectDisplayString(), 200));
+            //TextUtils.getShortText(sizingGC, getActiveObjectDisplayString(), maxWidth);
+            Point textSize = sizingGC.textExtent(activeDisplayName);
+            Image image = DBeaverIcons.getImage(getActiveObjectImage());
             if (image != null) {
                 textSize.x += image.getBounds().width + 4;
             }
             return new Point(
-                Math.min(textSize.x + 10, filterComposite.getSize().x / 3),
-                Math.min(textSize.y + 4, 20));
+                Math.max(MIN_FILTER_TEXT_WIDTH, Math.min(textSize.x + 10, maxWidth)),
+                Math.min(textSize.y + 4, MIN_FILTER_TEXT_HEIGHT));
         }
 
         @Override
@@ -377,12 +434,12 @@ class ResultSetFilterPanel extends Composite
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
 
             int textOffset = 2;
-            Image icon = DBeaverIcons.getImage(DBIcon.TREE_TABLE);
+            Image icon = DBeaverIcons.getImage(getActiveObjectImage());
             if (icon != null) {
                 e.gc.drawImage(icon, 2, 3);
                 textOffset += icon.getBounds().width + 2;
             }
-            e.gc.drawText(viewer.getDataContainer().getName(), textOffset, 3);
+            e.gc.drawText(activeDisplayName, textOffset, 3);
             e.gc.setClipping((Rectangle) null);
         }
     }
@@ -391,8 +448,16 @@ class ResultSetFilterPanel extends Composite
         public RefreshPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.heightHint = 10;
+            gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
+            gd.widthHint = 50;
             setLayoutData(gd);
+        }
+        @Override
+        protected void paintPanel(PaintEvent e) {
+            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            e.gc.drawLine(
+                e.x + 4, e.y + 2,
+                e.x + 4, e.y + e.height - 4);
         }
     }
 
