@@ -111,14 +111,14 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
             contextService.deferUpdates(true);
             if (part instanceof INavigatorModelView) {
                 if (activationNavigator != null) {
-                    log.debug("Double activation of navigator context");
+                    //log.debug("Double activation of navigator context");
                     contextService.deactivateContext(activationNavigator);
                 }
                 activationNavigator = contextService.activateContext(NAVIGATOR_CONTEXT_ID);
             }
             if (part instanceof SQLEditorBase) {
                 if (activationSQL != null) {
-                    log.debug("Double activation of SQL context");
+                    //log.debug("Double activation of SQL context");
                     contextService.deactivateContext(activationSQL);
                 }
                 activationSQL = contextService.activateContext(SQL_EDITOR_CONTEXT_ID);
