@@ -41,6 +41,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.sql.Clob;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 
 /**
  * JDBCContentCLOB
@@ -168,7 +169,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                         tmpReader);
                 }
                 catch (Throwable e) {
-                    if (e instanceof SQLException) {
+                    if (e instanceof SQLException && !(e instanceof SQLFeatureNotSupportedException)) {
                         throw (SQLException)e;
                     } else {
                         long streamLength = ContentUtils.calculateContentLength(storage.getContentReader());
@@ -179,7 +180,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                                 streamLength);
                         }
                         catch (Throwable e1) {
-                            if (e1 instanceof SQLException) {
+                            if (e1 instanceof SQLException && !(e instanceof SQLFeatureNotSupportedException)) {
                                 throw (SQLException)e1;
                             } else {
                                 preparedStatement.setCharacterStream(
