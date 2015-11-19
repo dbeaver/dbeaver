@@ -22,12 +22,11 @@ import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -57,6 +56,7 @@ class ResultSetFilterPanel extends Composite
 
     private ControlEnableState filtersEnableState;
     private final Composite filterComposite;
+    private final Color hoverBgColor;
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -68,6 +68,9 @@ class ResultSetFilterPanel extends Composite
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         this.setLayout(gl);
+
+        hoverBgColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
+            //new Color(getDisplay(), 0xe7, 0xe6, 0xe6);
 
 /*
         Button sourceQueryButton = new Button(this, SWT.PUSH | SWT.NO_FOCUS);
@@ -343,24 +346,41 @@ class ResultSetFilterPanel extends Composite
         public Point computeSize(int wHint, int hHint, boolean changed) {
             GC sizingGC = new GC(this);
             Point textSize = sizingGC.textExtent(viewer.getDataContainer().getName());
-            return new Point(textSize.x + 10, Math.min(textSize.y + 4, 20));
+            Image image = DBeaverIcons.getImage(DBIcon.TREE_TABLE);
+            if (image != null) {
+                textSize.x += image.getBounds().width + 4;
+            }
+            return new Point(
+                Math.min(textSize.x + 10, filterComposite.getSize().x / 3),
+                Math.min(textSize.y + 4, 20));
         }
 
         @Override
         protected void paintPanel(PaintEvent e) {
-            if (hover) {
-                e.gc.setBackground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW));
-                e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
-            }
             e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
-            e.gc.drawLine(
-                e.x + e.width - 4, e.y + 2,
-                e.x + e.width - 4, e.y + e.height - 4);
+            if (hover) {
+                e.gc.setBackground(hoverBgColor);
+                e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
+                e.gc.drawLine(
+                    e.x + e.width - 4, e.y,
+                    e.x + e.width - 4, e.y + e.height);
+            } else {
+                e.gc.drawLine(
+                    e.x + e.width - 4, e.y + 2,
+                    e.x + e.width - 4, e.y + e.height - 4);
+            }
 
             //e.gc.setForeground(filtersText.getForeground());
             e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
-            e.gc.drawText(viewer.getDataContainer().getName(), 2, 3);
+
+            int textOffset = 2;
+            Image icon = DBeaverIcons.getImage(DBIcon.TREE_TABLE);
+            if (icon != null) {
+                e.gc.drawImage(icon, 2, 3);
+                textOffset += icon.getBounds().width + 2;
+            }
+            e.gc.drawText(viewer.getDataContainer().getName(), textOffset, 3);
             e.gc.setClipping((Rectangle) null);
         }
     }
