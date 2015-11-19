@@ -262,18 +262,16 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             DBPDataSourceContainer oldContainer = getDataSourceContainer(activePart);
             DBPDataSourceContainer newContainer = getDataSourceContainer(part);
             activePart = part;
-            if (oldContainer == newContainer) {
-                // The same container
-                return;
-            }
-            if (oldContainer != null) {
-                oldContainer.getPreferenceStore().removePropertyChangeListener(this);
-            }
-            oldContainer = getDataSourceContainer();
+            if (oldContainer != newContainer) {
+                if (oldContainer != null) {
+                    oldContainer.getPreferenceStore().removePropertyChangeListener(this);
+                }
+                oldContainer = getDataSourceContainer();
 
-            if (oldContainer != null) {
-                // Update editor actions
-                oldContainer.getPreferenceStore().addPropertyChangeListener(this);
+                if (oldContainer != null) {
+                    // Update editor actions
+                    oldContainer.getPreferenceStore().addPropertyChangeListener(this);
+                }
             }
 
             // Update controls and actions
