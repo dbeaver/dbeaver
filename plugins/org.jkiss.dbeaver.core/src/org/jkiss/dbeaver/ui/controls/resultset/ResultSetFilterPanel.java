@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.OverviewRuler;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -27,6 +29,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -42,6 +45,11 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewer;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -237,6 +245,11 @@ class ResultSetFilterPanel extends Composite
 
     @NotNull
     private String getActiveQueryText() {
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        if (dataContainer != null) {
+            return dataContainer.getName();
+        }
+
         DBCStatistics statistics = viewer.getModel().getStatistics();
         String queryText = statistics == null ? null : statistics.getQueryText();
         if (queryText == null || queryText.isEmpty()) {
@@ -299,7 +312,7 @@ class ResultSetFilterPanel extends Composite
         filtersText.getParent().setBackground(filtersText.getBackground());
         filterComposite.layout();
         activeObjectPanel.redraw();
-        activeObjectPanel.setToolTipText(getActiveQueryText());
+        //activeObjectPanel.setToolTipText(getActiveQueryText());
     }
 
     private void setCustomDataFilter()
@@ -367,6 +380,10 @@ class ResultSetFilterPanel extends Composite
     }
 
     private class ActiveObjectPanel extends FilterPanel {
+        public static final int MIN_INFO_PANEL_WIDTH = 300;
+        public static final int MIN_INFO_PANEL_HEIGHT = 100;
+        public static final int MAX_INFO_PANEL_HEIGHT = 400;
+
         private boolean hover = false;
         private String activeDisplayName;
 
@@ -396,18 +413,23 @@ class ResultSetFilterPanel extends Composite
         }
 
         private void showObjectInfoPopup(MouseEvent e) {
-            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP);
+            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
             popup.setLayout(new FillLayout());
-            Text text = new Text(popup, SWT.MULTI | SWT.BORDER);
-            text.setText(getActiveQueryText());
+            Control editControl;
+            try {
+                editControl = createObjectPanel(popup);
+            } catch (PartInitException e1) {
+                UIUtils.showErrorDialog(getShell(), "Object info", "Error opening object info", e1);
+                popup.dispose();
+                return;
+            }
 
-            Display display = getDisplay();
-            Point listRect = text.computeSize(-1, -1);
-            Rectangle parentRect = display.map(activeObjectPanel, null, getBounds());
-            Point comboSize = new Point(300, 200);
+            Point controlRect = editControl.computeSize(-1, -1);
+
+            Rectangle parentRect = getDisplay().map(activeObjectPanel, null, getBounds());
             Rectangle displayRect = getMonitor().getClientArea();
-            int width = Math.max(comboSize.x, listRect.x);
-            int height = listRect.y;
+            int width = Math.min(filterComposite.getSize().x, Math.max(MIN_INFO_PANEL_WIDTH, controlRect.x + 30));
+            int height = Math.min(MAX_INFO_PANEL_HEIGHT, Math.max(MIN_INFO_PANEL_HEIGHT, controlRect.y + 30));
             int x = parentRect.x + e.x;
             int y = parentRect.y + e.y;
             if (y + height > displayRect.y + displayRect.height) {
@@ -415,9 +437,9 @@ class ResultSetFilterPanel extends Composite
             }
             popup.setBounds(x, y, width, height);
             popup.setVisible(true);
-            text.setFocus();
+            editControl.setFocus();
 
-            text.addFocusListener(new FocusAdapter() {
+            editControl.addFocusListener(new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
                     popup.dispose();
@@ -468,6 +490,38 @@ class ResultSetFilterPanel extends Composite
             e.gc.drawText(activeDisplayName, textOffset, 3);
             e.gc.setClipping((Rectangle) null);
         }
+    }
+
+    @NotNull
+    private Control createObjectPanel(Shell popup) throws PartInitException {
+        Composite panel = new Composite(popup, SWT.BORDER);
+        panel.setLayout(new GridLayout(2, false));
+
+        Label iconLabel = new Label(panel, SWT.NONE);
+        iconLabel.setImage(DBeaverIcons.getImage(getActiveObjectImage()));
+        iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        Composite editorPH = new Composite(panel, SWT.NONE);
+        editorPH.setLayoutData(new GridData(GridData.FILL_BOTH));
+        editorPH.setLayout(new FillLayout());
+
+        SQLEditorBase editor = new SQLEditorBase() {
+            @Nullable
+            @Override
+            public DBCExecutionContext getExecutionContext() {
+                return viewer.getExecutionContext();
+            }
+
+        };
+        editor.setHasVerticalRuler(false);
+        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, ContentUtils.DEFAULT_CHARSET));
+        editor.createPartControl(editorPH);
+        editor.reloadSyntaxRules();
+        StyledText textWidget = editor.getTextViewer().getTextWidget();
+        textWidget.setAlwaysShowScrollBars(false);
+
+        panel.setBackground(textWidget.getBackground());
+
+        return textWidget;
     }
 
     private class RefreshPanel extends FilterPanel {

@@ -1442,7 +1442,7 @@ public class SQLEditor extends SQLEditorBase implements
         {
             final SQLQueryJob job = queryProcessor.curJob;
             String name = job == null ? null :
-                    job.getLastQuery() == null ? null : CommonUtils.truncateString(job.getLastQuery().getQuery(), 200);
+                    job.getLastQuery() == null ? null : job.getLastQuery().getQuery();
             if (name == null) {
                 name = "SQL";
             }

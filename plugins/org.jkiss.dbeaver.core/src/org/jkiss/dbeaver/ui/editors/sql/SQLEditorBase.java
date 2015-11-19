@@ -209,10 +209,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
     }
 
-//    public void setHasVerticalRuler(boolean hasVerticalRuler)
-//    {
-//        this.hasVerticalRuler = hasVerticalRuler;
-//    }
+    public void setHasVerticalRuler(boolean hasVerticalRuler)
+    {
+        this.hasVerticalRuler = hasVerticalRuler;
+    }
 
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException
@@ -241,12 +241,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 VERTICAL_RULER_WIDTH,
                 getSharedColors());
         }
-        SQLEditorSourceViewer sourceViewer = new SQLEditorSourceViewer(
-            parent,
-            ruler,
-            overviewRuler,
-            true,
-            styles);
+        SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, overviewRuler);
 
         {
             char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
@@ -270,6 +265,16 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
 
         return sourceViewer;
+    }
+
+    @NotNull
+    protected SQLEditorSourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles, OverviewRuler overviewRuler) {
+        return new SQLEditorSourceViewer(
+                parent,
+                ruler,
+                overviewRuler,
+                true,
+                styles);
     }
 
     private IAnnotationAccess getAnnotationAccess()
