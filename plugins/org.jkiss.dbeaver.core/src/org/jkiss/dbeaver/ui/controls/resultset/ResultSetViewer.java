@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -39,7 +38,10 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.*;
+import org.eclipse.ui.ISaveablePart2;
+import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.code.NotNull;
@@ -75,7 +77,6 @@ import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
-import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
@@ -103,36 +104,11 @@ public class ResultSetViewer extends Viewer
 {
     static final Log log = Log.getLog(ResultSetViewer.class);
 
-    private class StateItem {
-        DBSDataContainer dataContainer;
-        DBDDataFilter filter;
-        int rowNumber;
-
-        public StateItem(DBSDataContainer dataContainer, @Nullable DBDDataFilter filter, int rowNumber) {
-            this.dataContainer = dataContainer;
-            this.filter = filter;
-            this.rowNumber = rowNumber;
-        }
-
-        public String describeState() {
-            DBCExecutionContext context = getExecutionContext();
-            String desc = dataContainer.getName();
-            if (context != null && filter != null && filter.hasConditions()) {
-                StringBuilder condBuffer = new StringBuilder();
-                SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
-                desc += " [" + condBuffer + "]";
-            }
-            return desc;
-        }
-    }
-
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
-    private Composite filtersPanel;
+    private ResultSetFilterPanel filtersPanel;
     private final Composite presentationPanel;
-    private ControlEnableState filtersEnableState;
-    private Combo filtersText;
     private Text statusLabel;
 
     private final DynamicFindReplaceTarget findReplaceTarget;
@@ -164,11 +140,6 @@ public class ResultSetViewer extends Viewer
     private final List<StateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
-    private ToolItem filtersApplyButton;
-    private ToolItem filtersClearButton;
-    private ToolItem historyBackButton;
-    private ToolItem historyForwardButton;
-
     private final Color colorRed;
 
     private boolean actionsDisabled;
@@ -187,7 +158,7 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
 
-        createFiltersPanel();
+        this.filtersPanel = new ResultSetFilterPanel(this);
         this.findReplaceTarget = new DynamicFindReplaceTarget();
         this.presentationPanel = UIUtils.createPlaceholder(viewerPanel, 1);
         this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -221,159 +192,9 @@ public class ResultSetViewer extends Viewer
             (dataContainer.getSupportedFeatures() & DBSDataContainer.DATA_FILTER) == DBSDataContainer.DATA_FILTER;
     }
 
-    private void createFiltersPanel()
-    {
-        filtersPanel = new Composite(viewerPanel, SWT.NONE);
-        filtersPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        GridLayout gl = new GridLayout(4, false);
-        gl.marginHeight = 3;
-        gl.marginWidth = 3;
-        filtersPanel.setLayout(gl);
-
-        Button sourceQueryButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        sourceQueryButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
-        sourceQueryButton.setText("SQL");
-        sourceQueryButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                String queryText = model.getStatistics() == null ? null : model.getStatistics().getQueryText();
-                if (queryText == null || queryText.isEmpty()) {
-                    queryText = "<empty>";
-                }
-                ViewSQLDialog dialog = new ViewSQLDialog(site, getExecutionContext(), "Query Text", DBeaverIcons.getImage(UIIcon.SQL_TEXT), queryText);
-                dialog.setEnlargeViewPanel(false);
-                dialog.setWordWrap(true);
-                dialog.open();
-            }
-        });
-
-        Button customizeButton = new Button(filtersPanel, SWT.PUSH | SWT.NO_FOCUS);
-        customizeButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
-        customizeButton.setText("Filters");
-        customizeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                new FilterSettingsDialog(ResultSetViewer.this).open();
-            }
-        });
-
-        //UIUtils.createControlLabel(filtersPanel, " Filter");
-
-        this.filtersText = new Combo(filtersPanel, SWT.BORDER | SWT.DROP_DOWN);
-        this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        this.filtersText.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                setCustomDataFilter();
-            }
-        });
-
-        {
-            // Register filters text in focus service
-            UIUtils.addFocusTracker(site, UIUtils.INLINE_WIDGET_EDITOR_ID, this.filtersText);
-
-            this.filtersText.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    // Unregister from focus service
-                    UIUtils.removeFocusTracker(ResultSetViewer.this.site, filtersText);
-                    dispose();
-                }
-            });
-        }
-
-        // Handle all shortcuts by filters editor, not by host editor
-        UIUtils.enableHostEditorKeyBindingsSupport(getSite(), this.filtersText);
-
-        ToolBar filterToolbar = new ToolBar(filtersPanel, SWT.HORIZONTAL | SWT.RIGHT);
-
-        filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
-        //filtersApplyButton.setText("Apply");
-        filtersApplyButton.setToolTipText("Apply filter criteria");
-        filtersApplyButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setCustomDataFilter();
-            }
-        });
-        filtersApplyButton.setEnabled(false);
-
-        filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
-        filtersClearButton.setToolTipText("Remove all filters");
-        filtersClearButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                resetDataFilter(true);
-            }
-        });
-        filtersClearButton.setEnabled(false);
-
-        historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));
-        historyBackButton.setEnabled(false);
-        historyBackButton.addSelectionListener(new HistoryMenuListener(historyBackButton, true));
-
-        historyForwardButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        historyForwardButton.setImage(DBeaverIcons.getImage(UIIcon.RS_FORWARD));
-        historyForwardButton.setEnabled(false);
-        historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
-
-        this.filtersText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                if (filtersEnableState == null) {
-                    String filterText = filtersText.getText();
-                    filtersApplyButton.setEnabled(true);
-                    filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
-                }
-            }
-        });
-
-        filtersPanel.addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e)
-            {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
-                    setCustomDataFilter();
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
-                }
-            }
-        });
-
-        filtersEnableState = ControlEnableState.disable(filtersPanel);
-    }
-
     public void resetDataFilter(boolean refresh)
     {
         setDataFilter(model.createDataFilter(), refresh);
-    }
-
-    private void setCustomDataFilter()
-    {
-        DBCExecutionContext context = getExecutionContext();
-        if (context == null) {
-            return;
-        }
-        String condition = filtersText.getText();
-        StringBuilder currentCondition = new StringBuilder();
-        SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, currentCondition, true);
-        if (currentCondition.toString().trim().equals(condition.trim())) {
-            // The same
-            return;
-        }
-        DBDDataFilter newFilter = model.createDataFilter();
-        newFilter.setWhere(condition);
-        setDataFilter(newFilter, true);
-        viewerPanel.setFocus();
     }
 
     public void updateFiltersText()
@@ -387,70 +208,21 @@ public class ResultSetViewer extends Viewer
                 StringBuilder where = new StringBuilder();
                 SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, where, true);
                 String whereCondition = where.toString().trim();
-                filtersText.setText(whereCondition);
+                filtersPanel.setFilterValue(whereCondition);
                 if (!whereCondition.isEmpty()) {
-                    addFiltersHistory(whereCondition);
+                    filtersPanel.addFiltersHistory(whereCondition);
                 }
 
                 if (container.isReadyToRun() &&
                     !model.isUpdateInProgress() &&
-                    (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleAttributeCount() > 0 && supportsDataFilter()))) {
+                    (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleAttributeCount() > 0 && supportsDataFilter())))
+                {
                     enableFilters = true;
                 }
             }
         }
-        enableFilters(enableFilters);
-    }
-
-    private void enableFilters(boolean enableFilters) {
-        if (enableFilters) {
-            if (filtersEnableState != null) {
-                filtersEnableState.restore();
-                filtersEnableState = null;
-            }
-            String filterText = filtersText.getText();
-            filtersApplyButton.setEnabled(true);
-            filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
-            // Update history buttons
-            if (historyPosition > 0) {
-                historyBackButton.setEnabled(true);
-                historyBackButton.setToolTipText(stateHistory.get(historyPosition - 1).describeState());
-            } else {
-                historyBackButton.setEnabled(false);
-            }
-            if (historyPosition < stateHistory.size() - 1) {
-                historyForwardButton.setEnabled(true);
-                historyForwardButton.setToolTipText(stateHistory.get(historyPosition + 1).describeState());
-            } else {
-                historyForwardButton.setEnabled(false);
-            }
-            updateBreadcrumbs();
-        } else if (filtersEnableState == null) {
-            filtersEnableState = ControlEnableState.disable(filtersPanel);
-        }
+        filtersPanel.enableFilters(enableFilters);
         presentationSwitchCombo.combo.setEnabled(enableFilters);
-    }
-
-    private void updateBreadcrumbs() {
-
-    }
-
-    private void addFiltersHistory(String whereCondition)
-    {
-        int historyCount = filtersText.getItemCount();
-        for (int i = 0; i < historyCount; i++) {
-            if (filtersText.getItem(i).equals(whereCondition)) {
-                if (i > 0) {
-                    // Move to beginning
-                    filtersText.remove(i);
-                    break;
-                } else {
-                    return;
-                }
-            }
-        }
-        filtersText.add(whereCondition, 0);
-        filtersText.setText(whereCondition);
     }
 
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
@@ -489,12 +261,12 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public Color getDefaultBackground() {
-        return filtersText.getBackground();
+        return filtersPanel.getEditControl().getBackground();
     }
 
     @Override
     public Color getDefaultForeground() {
-        return filtersText.getForeground();
+        return filtersPanel.getEditControl().getForeground();
     }
 
     public List<ResultSetPresentationDescriptor> getAvailablePresentations() {
@@ -936,9 +708,13 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////
     // History
 
-//    public StateItem getCurrentState() {
-//        return curState;
-//    }
+    int getHistoryPosition() {
+        return historyPosition;
+    }
+
+    List<StateItem> getStateHistory() {
+        return stateHistory;
+    }
 
     private void setNewState(DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter) {
         // Create filter copy to avoid modifications
@@ -970,7 +746,7 @@ public class ResultSetViewer extends Viewer
         historyPosition = -1;
     }
 
-    private void navigateHistory(int position) {
+    void navigateHistory(int position) {
         StateItem state = stateHistory.get(position);
         int segmentSize = getSegmentMaxRows();
         if (state.rowNumber >= 0 && state.rowNumber >= segmentSize && segmentSize > 0) {
@@ -1395,7 +1171,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public Control getControl()
+    public Composite getControl()
     {
         return this.viewerPanel;
     }
@@ -1629,7 +1405,7 @@ public class ResultSetViewer extends Viewer
                 getControl().getDisplay().asyncExec(new Runnable() {
                     @Override
                     public void run() {
-                        enableFilters(false);
+                        filtersPanel.enableFilters(false);
                     }
                 });
             }
@@ -2333,43 +2109,6 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class HistoryMenuListener extends SelectionAdapter {
-        private final ToolItem dropdown;
-        private final boolean back;
-        public HistoryMenuListener(ToolItem item, boolean back) {
-            this.dropdown = item;
-            this.back = back;
-        }
-
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            if (e.detail == SWT.ARROW) {
-                ToolItem item = (ToolItem) e.widget;
-                Rectangle rect = item.getBounds();
-                Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
-
-                Menu menu = new Menu(dropdown.getParent().getShell());
-                menu.setLocation(pt.x, pt.y + rect.height);
-                menu.setVisible(true);
-                for (int i = historyPosition + (back ? -1 : 1); i >= 0 && i < stateHistory.size(); i += back ? -1 : 1) {
-                    MenuItem mi = new MenuItem(menu, SWT.NONE);
-                    StateItem state = stateHistory.get(i);
-                    mi.setText(state.describeState());
-                    final int statePosition = i;
-                    mi.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            navigateHistory(statePosition);
-                        }
-                    });
-                }
-            } else {
-                int newPosition = back ? historyPosition - 1 : historyPosition + 1;
-                navigateHistory(newPosition);
-            }
-        }
-    }
-
     private class PresentationSwitchCombo extends ContributionItem implements SelectionListener {
         private ToolItem toolitem;
         private CImageCombo combo;
@@ -2407,6 +2146,29 @@ public class ResultSetViewer extends Viewer
         @Override
         public void widgetDefaultSelected(SelectionEvent e) {
 
+        }
+    }
+
+    class StateItem {
+        DBSDataContainer dataContainer;
+        DBDDataFilter filter;
+        int rowNumber;
+
+        public StateItem(DBSDataContainer dataContainer, @Nullable DBDDataFilter filter, int rowNumber) {
+            this.dataContainer = dataContainer;
+            this.filter = filter;
+            this.rowNumber = rowNumber;
+        }
+
+        public String describeState() {
+            DBCExecutionContext context = getExecutionContext();
+            String desc = dataContainer.getName();
+            if (context != null && filter != null && filter.hasConditions()) {
+                StringBuilder condBuffer = new StringBuilder();
+                SQLUtils.appendConditionString(filter, context.getDataSource(), null, condBuffer, true);
+                desc += " [" + condBuffer + "]";
+            }
+            return desc;
         }
     }
 
