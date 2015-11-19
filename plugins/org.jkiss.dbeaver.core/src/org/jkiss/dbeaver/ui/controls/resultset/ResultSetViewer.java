@@ -599,21 +599,13 @@ public class ResultSetViewer extends Viewer
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
         // Use simple action for refresh to avoid ambiguous behaviour of F5 shortcut
-        Action refreshAction = new Action(CoreMessages.controls_resultset_viewer_action_refresh, DBeaverIcons.getImageDescriptor(UIIcon.RS_REFRESH)) {
-            @Override
-            public void run()
-            {
-                refresh();
-            }
-        };
-        toolBarManager.add(refreshAction);
         toolBarManager.add(new Separator());
-        // Link to standard Find/Replace action - it has to be handled by owner site
-        toolBarManager.add(ActionUtils.makeCommandContribution(
-            site,
-            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-            CommandContributionItem.STYLE_PUSH,
-            UIIcon.FIND_TEXT));
+//        // FIXME: Link to standard Find/Replace action - it has to be handled by owner site
+//        toolBarManager.add(ActionUtils.makeCommandContribution(
+//            site,
+//            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+//            CommandContributionItem.STYLE_PUSH,
+//            UIIcon.FIND_TEXT));
 
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE, CommandContributionItem.STYLE_CHECK));
