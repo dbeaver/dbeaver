@@ -123,11 +123,11 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
                 }
                 break;
             case S:
-                if (name.equals("text")) {
-                    valueType = Types.CLOB;
-                } else {
+//                if (name.equals("text")) {
+//                    valueType = Types.CLOB;
+//                } else {
                     valueType = Types.VARCHAR;
-                }
+//                }
                 break;
             case U:
                 switch (name) {
