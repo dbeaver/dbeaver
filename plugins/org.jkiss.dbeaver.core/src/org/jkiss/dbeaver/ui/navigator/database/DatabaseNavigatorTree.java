@@ -30,7 +30,9 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -68,7 +70,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot)
     {
-        //super(parent, style, new TreeFilter(), true);
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.defaultSelection = new StructuredSelection(rootNode);
@@ -104,14 +105,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
 
-/*
-    protected WorkbenchJob doCreateRefreshJob() {
-        WorkbenchJob job = super.doCreateRefreshJob();
-        job.addJobChangeListener(new TreeRefreshJobListener());
-        return job;
-    }
-*/
-
     protected TreeViewer doCreateTreeViewer(Composite parent, int style) {
         checkEnabled = (style & SWT.CHECK) != 0;
 
@@ -124,7 +117,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         if (checkEnabled) {
             return new CheckboxTreeViewer(parent, treeStyle);
         } else {
-            //FilteredTree filteredTree = new FilteredTree(this, treeStyle, new TreeFilter(), true);
+            //return new CustomFilteredTree(treeStyle).getViewer();
             return new TreeViewer(parent, treeStyle) {
                 @Override
                 public ISelection getSelection() {
@@ -443,6 +436,18 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         @Override
         public void done(IJobChangeEvent event) {
             isFiltering = false;
+        }
+    }
+
+    private class CustomFilteredTree extends FilteredTree {
+        public CustomFilteredTree(int treeStyle) {
+            super(DatabaseNavigatorTree.this, treeStyle, new TreeFilter(), true);
+        }
+
+        protected WorkbenchJob doCreateRefreshJob() {
+            WorkbenchJob job = super.doCreateRefreshJob();
+            job.addJobChangeListener(new TreeRefreshJobListener());
+            return job;
         }
     }
 }
