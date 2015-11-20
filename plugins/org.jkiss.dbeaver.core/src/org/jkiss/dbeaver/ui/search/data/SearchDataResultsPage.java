@@ -78,23 +78,7 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
                         return;
                     }
                     SearchDataObject object = (SearchDataObject) objectValue;
-                    IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
-                        (DBNDatabaseNode) node,
-                        DatabaseDataEditor.class.getName(),
-                        Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, object.getFilter()),
-                        DBeaverUI.getActiveWorkbenchWindow()
-                    );
-
-                    if (entityEditor instanceof MultiPageEditorPart) {
-                        Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-                        if (selectedPage instanceof IResultSetContainer) {
-                            ResultSetViewer rsv = ((IResultSetContainer) selectedPage).getResultSetViewer();
-                            if (rsv != null && !rsv.isRefreshInProgress() && !object.getFilter().equals(rsv.getModel().getDataFilter())) {
-                                // Set filter directly
-                                rsv.refreshWithFilter(object.getFilter());
-                            }
-                        }
-                    }
+                    ResultSetViewer.openNewDataEditor((DBNDatabaseNode) node, object.getFilter());
                 }
             });
         }

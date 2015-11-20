@@ -821,7 +821,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     ///////////////////////////////////////////////
     // Links
 
-    public void navigateLink(@NotNull GridCell cell, int state) {
+    public void navigateLink(@NotNull GridCell cell, final int state) {
         boolean recordMode = controller.isRecordMode();
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
         final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
@@ -837,7 +837,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        controller.navigateAssociation(monitor, attr, row);
+                        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
+                        controller.navigateAssociation(monitor, attr, row, ctrlPressed);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
