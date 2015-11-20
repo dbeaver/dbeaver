@@ -154,7 +154,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     }
                     if (editorInput instanceof EntityEditorInput && ((EntityEditorInput) editorInput).getNavigatorNode() == selectedNode) {
                         final IEditorPart editor = ref.getEditor(true);
-                        if (editor instanceof IFolderContainer) {
+                        if (editor instanceof IFolderContainer && defaultFolderId != null) {
                             // Activate default folder
                             ((IFolderContainer)editor).switchFolder(defaultFolderId);
                         }
