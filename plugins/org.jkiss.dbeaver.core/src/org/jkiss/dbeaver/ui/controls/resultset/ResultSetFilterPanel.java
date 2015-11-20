@@ -72,8 +72,11 @@ class ResultSetFilterPanel extends Composite
 
     private ControlEnableState filtersEnableState;
     private final Composite filterComposite;
+
     private final Color hoverBgColor;
+    private final Color shadowColor;
     private final GC sizingGC;
+    private final Font hintFont;
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -89,23 +92,11 @@ class ResultSetFilterPanel extends Composite
         this.setLayout(gl);
 
         hoverBgColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
-            //new Color(getDisplay(), 0xe7, 0xe6, 0xe6);
-
-/*
-        Button sourceQueryButton = new Button(this, SWT.PUSH | SWT.NO_FOCUS);
-        sourceQueryButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
-        sourceQueryButton.setText("SQL");
-        sourceQueryButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                showSourceQuery();
-            }
-        });
-*/
+        shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        hintFont = UIUtils.modifyFont(getFont(), SWT.ITALIC);
 
         {
-            filterComposite = new Composite(this, SWT.BORDER);
+            this.filterComposite = new Composite(this, SWT.BORDER);
             gl = new GridLayout(4, false);
             gl.marginHeight = 0;
             gl.marginWidth = 0;
@@ -115,35 +106,43 @@ class ResultSetFilterPanel extends Composite
             filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             activeObjectPanel = new ActiveObjectPanel(filterComposite);
-            //new Label(filterComposite, SWT.SEPARATOR | SWT.VERTICAL);
 
             this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
             this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-/*
-            this.filtersText.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    setCustomDataFilter();
-                }
-            });
-*/
 
-            refreshPanel = new RefreshPanel(filterComposite);
+            this.refreshPanel = new RefreshPanel(filterComposite);
 
-            //addressBar.setBackgroundMode(filtersText.getBackground());
-        }
-
-        {
             // Register filters text in focus service
             UIUtils.addFocusTracker(viewer.getSite(), UIUtils.INLINE_WIDGET_EDITOR_ID, this.filtersText);
-
             this.filtersText.addDisposeListener(new DisposeListener() {
                 @Override
                 public void widgetDisposed(DisposeEvent e)
                 {
                     // Unregister from focus service
                     UIUtils.removeFocusTracker(viewer.getSite(), filtersText);
-                    dispose();
+                }
+            });
+
+            this.filtersText.addPaintListener(new PaintListener() {
+                @Override
+                public void paintControl(PaintEvent e) {
+                    if (filtersText.getCharCount() == 0) {
+                        e.gc.setForeground(shadowColor);
+                        e.gc.setFont(hintFont);
+                        e.gc.drawText("Enter a SQL expression to filter results", 2, 0);
+                        e.gc.setFont(null);
+                    }
+                }
+            });
+            this.filtersText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e)
+                {
+                    if (filtersEnableState == null) {
+                        String filterText = filtersText.getText();
+                        filtersApplyButton.setEnabled(true);
+                        filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+                    }
                 }
             });
         }
@@ -151,65 +150,55 @@ class ResultSetFilterPanel extends Composite
         // Handle all shortcuts by filters editor, not by host editor
         UIUtils.enableHostEditorKeyBindingsSupport(viewer.getSite(), this.filtersText);
 
-        ToolBar filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
+        {
+            ToolBar filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
 
-        filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
-        //filtersApplyButton.setText("Apply");
-        filtersApplyButton.setToolTipText("Apply filter criteria");
-        filtersApplyButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                setCustomDataFilter();
-            }
-        });
-        filtersApplyButton.setEnabled(false);
-
-        filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
-        filtersClearButton.setToolTipText("Remove all filters");
-        filtersClearButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                viewer.resetDataFilter(true);
-            }
-        });
-        filtersClearButton.setEnabled(false);
-
-        ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
-        filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
-        filtersCustomButton.setToolTipText("Custom Filters");
-        filtersCustomButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                new FilterSettingsDialog(viewer).open();
-            }
-        });
-        filtersCustomButton.setEnabled(true);
-
-        new ToolItem(filterToolbar, SWT.SEPARATOR).setControl(new Label(filterToolbar, SWT.SEPARATOR | SWT.VERTICAL));
-
-        historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));
-        historyBackButton.setEnabled(false);
-        historyBackButton.addSelectionListener(new HistoryMenuListener(historyBackButton, true));
-
-        historyForwardButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
-        historyForwardButton.setImage(DBeaverIcons.getImage(UIIcon.RS_FORWARD));
-        historyForwardButton.setEnabled(false);
-        historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
-
-        this.filtersText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                if (filtersEnableState == null) {
-                    String filterText = filtersText.getText();
-                    filtersApplyButton.setEnabled(true);
-                    filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+            filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+            filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
+            //filtersApplyButton.setText("Apply");
+            filtersApplyButton.setToolTipText("Apply filter criteria");
+            filtersApplyButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    setCustomDataFilter();
                 }
-            }
-        });
+            });
+            filtersApplyButton.setEnabled(false);
+
+            filtersClearButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+            filtersClearButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_RESET));
+            filtersClearButton.setToolTipText("Remove all filters");
+            filtersClearButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    viewer.resetDataFilter(true);
+                }
+            });
+            filtersClearButton.setEnabled(false);
+
+            ToolItem filtersCustomButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
+            filtersCustomButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER));
+            filtersCustomButton.setToolTipText("Custom Filters");
+            filtersCustomButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    new FilterSettingsDialog(viewer).open();
+                }
+            });
+            filtersCustomButton.setEnabled(true);
+
+            new ToolItem(filterToolbar, SWT.SEPARATOR).setControl(new Label(filterToolbar, SWT.SEPARATOR | SWT.VERTICAL));
+
+            historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
+            historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));
+            historyBackButton.setEnabled(false);
+            historyBackButton.addSelectionListener(new HistoryMenuListener(historyBackButton, true));
+
+            historyForwardButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
+            historyForwardButton.setImage(DBeaverIcons.getImage(UIIcon.RS_FORWARD));
+            historyForwardButton.setEnabled(false);
+            historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
+        }
 
         this.addTraverseListener(new TraverseListener() {
             @Override
@@ -229,6 +218,7 @@ class ResultSetFilterPanel extends Composite
             @Override
             public void widgetDisposed(DisposeEvent e) {
                 UIUtils.dispose(sizingGC);
+                UIUtils.dispose(hintFont);
             }
         });
 
@@ -510,7 +500,7 @@ class ResultSetFilterPanel extends Composite
 
         @Override
         protected void paintPanel(PaintEvent e) {
-            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            e.gc.setForeground(shadowColor);
             if (hover) {
                 e.gc.setBackground(hoverBgColor);
                 e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
@@ -571,7 +561,7 @@ class ResultSetFilterPanel extends Composite
 
         @Override
         protected void paintPanel(PaintEvent e) {
-            e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW));
+            e.gc.setForeground(shadowColor);
             e.gc.drawLine(
                 e.x + 4, e.y + 2,
                 e.x + 4, e.y + e.height - 4);
