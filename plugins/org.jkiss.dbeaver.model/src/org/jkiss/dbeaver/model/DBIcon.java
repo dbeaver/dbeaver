@@ -71,6 +71,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_FOLDER_VIEW = new DBIcon("folder_view", "tree/folder_view.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOLDER_USER = new DBIcon("folder_user", "tree/folder_user.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOLDER_ADMIN = new DBIcon("folder_admin", "tree/folder_admin.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_CONSTRAINT = new DBIcon("constraints", "tree/folder_constraint.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SESSIONS = new DBIcon("sessions", "tree/sessions.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PACKAGE = new DBIcon("package", "tree/package.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATA_TYPE = new DBIcon("data_type", "tree/data_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
