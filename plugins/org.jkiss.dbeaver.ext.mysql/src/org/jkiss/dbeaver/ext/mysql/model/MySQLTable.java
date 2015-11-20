@@ -439,6 +439,9 @@ public class MySQLTable extends MySQLTableBase
         protected MySQLPartition fetchObject(@NotNull JDBCSession session, @NotNull MySQLTable table, @NotNull ResultSet dbResult) throws SQLException, DBException
         {
             String partitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_PARTITION_NAME);
+            if (partitionName == null) {
+                partitionName = "PARTITION";
+            }
             String subPartitionName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_SUBPARTITION_NAME);
             if (CommonUtils.isEmpty(subPartitionName)) {
                 return new MySQLPartition(table, null, partitionName, dbResult);
