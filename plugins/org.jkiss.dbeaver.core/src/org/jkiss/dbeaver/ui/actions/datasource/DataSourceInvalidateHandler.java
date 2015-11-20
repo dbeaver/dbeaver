@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
@@ -65,14 +64,12 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                 @Override
                 public void done(IJobChangeEvent event) {
                     StringBuilder message = new StringBuilder();
-                    boolean error = false;
+                    Throwable error = null;
                     int totalNum = 0, connectedNum = 0, aliveNum = 0;
                     for (InvalidateJob.ContextInvalidateResult result : invalidateJob.getInvalidateResults()) {
                         totalNum++;
                         if (result.error != null) {
-                            error = true;
-                            if (message.length() > 0) message.append("\n");
-                            message.append("Error: ").append(result.error.getMessage());
+                            error = result.error;
                         }
                         switch (result.result) {
                             case CONNECTED:
@@ -91,11 +88,15 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                     } else if (message.length() == 0) {
                         message.insert(0, "All connections (" + totalNum + ") are alive!");
                     }
-                    UIUtils.showMessageBox(
-                        shell,
-                        "Invalidate data source [" + context.getDataSource().getContainer().getName() + "]",
-                        message.toString(),// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
-                        error ? SWT.ICON_ERROR : SWT.ICON_INFORMATION);
+                    if (error != null) {
+                        UIUtils.showErrorDialog(
+                            shell,
+                            "Invalidate data source [" + context.getDataSource().getContainer().getName() + "]",
+                            "Error while connecting to the datasource",// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
+                            error);
+                    } else {
+                        log.info(message);
+                    }
                 }
             });
             invalidateJob.schedule();
