@@ -190,7 +190,7 @@ public class DiagramLoader
                 if (!dataSourceContainer.isConnected()) {
                     monitor.subTask("Connect to '" + dataSourceContainer.getName() + "'");
                     try {
-                        dataSourceContainer.connect(monitor);
+                        dataSourceContainer.connect(monitor, true, true);
                     } catch (DBException e) {
                         diagram.addErrorMessage("Can't connect to '" + dataSourceContainer.getName() + "': " + e.getMessage());
                         continue;

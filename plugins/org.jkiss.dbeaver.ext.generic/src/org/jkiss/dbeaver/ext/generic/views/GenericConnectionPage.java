@@ -540,7 +540,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     private void createEmbeddedDatabase(DBRProgressMonitor monitor, DataSourceDescriptor testDataSource) throws DBException {
         try {
             // Connect and disconnect immediately
-            testDataSource.connect(monitor);
+            testDataSource.connect(monitor, true, true);
 
             testDataSource.disconnect(monitor);
         } finally {

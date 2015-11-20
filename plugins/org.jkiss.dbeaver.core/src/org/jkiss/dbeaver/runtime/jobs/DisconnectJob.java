@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -35,7 +36,7 @@ public class DisconnectJob extends EventProcessorJob
 {
     private IStatus connectStatus;
 
-    public DisconnectJob(DataSourceDescriptor container)
+    public DisconnectJob(DBPDataSourceContainer container)
     {
         super(NLS.bind(CoreMessages.runtime_jobs_disconnect_name, container.getName()), container);
         setUser(true);
