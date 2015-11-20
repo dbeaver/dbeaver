@@ -116,9 +116,11 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
      * This is async method and returns immediately.
      * Connection will be opened in separate job, so no progress monitor is required.
      * @param monitor progress monitor
+     * @param initialize initialize datasource after connect (call DBPDataSource.initialize)
+     * @param reflect notify UI about connection state change
      * @throws DBException on error
      */
-    boolean connect(DBRProgressMonitor monitor) throws DBException;
+    boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect) throws DBException;
 
     /**
      * Disconnects from datasource.

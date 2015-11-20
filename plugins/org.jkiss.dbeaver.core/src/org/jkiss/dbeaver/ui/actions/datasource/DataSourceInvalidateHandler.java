@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -94,6 +95,8 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                             "Invalidate data source [" + context.getDataSource().getContainer().getName() + "]",
                             "Error while connecting to the datasource",// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
                             error);
+                        // Disconnect - to notify UI and reflect model changes
+                        new DisconnectJob(context.getDataSource().getContainer()).schedule();
                     } else {
                         log.info(message);
                     }

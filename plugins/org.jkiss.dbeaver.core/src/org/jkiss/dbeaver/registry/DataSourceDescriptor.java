@@ -547,13 +547,6 @@ public class DataSourceDescriptor
         DataSourceHandler.connectToDataSource(monitor, this, onFinish);
     }
 
-    @Override
-    public boolean connect(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return connect(monitor, true, true);
-    }
-
     public boolean connect(DBRProgressMonitor monitor, boolean initialize, boolean reflect)
         throws DBException
     {

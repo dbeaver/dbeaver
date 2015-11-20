@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.runtime.jobs;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -46,9 +47,9 @@ public abstract class EventProcessorJob extends AbstractJob {
     public static final String VARIABLE_PASSWORD = "password";
     public static final String VARIABLE_URL = "url";
 
-    protected final DataSourceDescriptor container;
+    protected final DBPDataSourceContainer container;
 
-    protected EventProcessorJob(String name, DataSourceDescriptor container)
+    protected EventProcessorJob(String name, DBPDataSourceContainer container)
     {
         super(name);
         this.container = container;
@@ -76,8 +77,9 @@ public abstract class EventProcessorJob extends AbstractJob {
             if (command.isWaitProcessFinish()) {
                 processDescriptor.waitFor();
             }
-
-            container.addChildProcess(processDescriptor);
+            if (container instanceof DataSourceDescriptor) {
+                ((DataSourceDescriptor)container).addChildProcess(processDescriptor);
+            }
         }
     }
 
