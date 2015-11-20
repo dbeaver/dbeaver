@@ -1312,6 +1312,7 @@ public class SQLEditor extends SQLEditorBase implements
         private final ResultSetViewer viewer;
         private final int resultSetNumber;
         private SQLQuery query = null;
+        private SQLQuery lastGoodQuery = null;
 
         private QueryResultsContainer(QueryProcessor queryProcessor, int resultSetNumber)
         {
@@ -1395,6 +1396,9 @@ public class SQLEditor extends SQLEditorBase implements
                 job.setResultSetLimit(firstRow, maxRows);
                 job.setDataFilter(dataFilter);
                 job.extractData(session);
+
+                lastGoodQuery = job.getLastGoodQuery();
+
                 return job.getStatistics();
             } else {
                 DBCStatistics statistics = new DBCStatistics();
@@ -1440,9 +1444,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public String getName()
         {
-            final SQLQueryJob job = queryProcessor.curJob;
-            String name = job == null ? null :
-                    job.getLastQuery() == null ? null : job.getLastQuery().getQuery();
+            String name = lastGoodQuery == null ? null : lastGoodQuery.getQuery();
             if (name == null) {
                 name = "SQL";
             }

@@ -89,6 +89,7 @@ public class SQLQueryJob extends DataSourceJob
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
     private int resultSetNumber;
+    private SQLQuery lastGoodQuery;
 
     public SQLQueryJob(
         @NotNull IWorkbenchPartSite partSite,
@@ -124,6 +125,10 @@ public class SQLQueryJob extends DataSourceJob
     public SQLQuery getLastQuery()
     {
         return queries.isEmpty() ? null : queries.get(0);
+    }
+
+    public SQLQuery getLastGoodQuery() {
+        return lastGoodQuery;
     }
 
     public boolean hasLimits()
@@ -398,6 +403,7 @@ public class SQLQueryJob extends DataSourceJob
             return false;
         }
         // Success
+        lastGoodQuery = sqlStatement;
         return true;
     }
 

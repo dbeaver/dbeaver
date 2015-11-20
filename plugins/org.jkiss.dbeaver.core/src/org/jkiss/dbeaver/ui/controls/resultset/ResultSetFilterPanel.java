@@ -78,6 +78,8 @@ class ResultSetFilterPanel extends Composite
     private final GC sizingGC;
     private final Font hintFont;
 
+    private String activeDisplayName;
+
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
         this.viewer = rsv;
@@ -256,17 +258,6 @@ class ResultSetFilterPanel extends Composite
         }
     }
 
-    @NotNull
-    private String getActiveObjectDisplayString() {
-        DBSDataContainer dataContainer = viewer.getDataContainer();
-        if (dataContainer instanceof DBSEntity) {
-            return dataContainer.getName();
-        }
-        String name = getActiveQueryText();
-        name = name.replaceAll("\\s+", " ");
-        return name;
-    }
-
     void enableFilters(boolean enableFilters) {
         if (enableFilters) {
             if (filtersEnableState != null) {
@@ -296,6 +287,21 @@ class ResultSetFilterPanel extends Composite
             filtersEnableState = ControlEnableState.disable(this);
         }
         filtersText.getParent().setBackground(filtersText.getBackground());
+
+        {
+            DBSDataContainer dataContainer = viewer.getDataContainer();
+            if (dataContainer != null) {
+                activeDisplayName = dataContainer.getName();
+            } else {
+                activeDisplayName = getActiveQueryText();
+            }
+            if (activeDisplayName == null) {
+                activeDisplayName = "";
+            }
+            activeDisplayName = activeDisplayName.replaceAll("\\s+", " ");
+            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(activeDisplayName, 200));
+        }
+
         filterComposite.layout();
         activeObjectPanel.redraw();
         refreshPanel.redraw();
@@ -434,8 +440,6 @@ class ResultSetFilterPanel extends Composite
         public static final int MIN_INFO_PANEL_HEIGHT = 100;
         public static final int MAX_INFO_PANEL_HEIGHT = 400;
 
-        private String activeDisplayName;
-
         public ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
             setLayoutData(new GridData(GridData.FILL_VERTICAL));
@@ -486,8 +490,6 @@ class ResultSetFilterPanel extends Composite
         @Override
         public Point computeSize(int wHint, int hHint, boolean changed) {
             int maxWidth = viewer.getControl().getParent().getSize().x / 3;
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(getActiveObjectDisplayString(), 200));
-            //TextUtils.getShortText(sizingGC, getActiveObjectDisplayString(), maxWidth);
             Point textSize = sizingGC.textExtent(activeDisplayName);
             Image image = DBeaverIcons.getImage(getActiveObjectImage());
             if (image != null) {
@@ -513,7 +515,6 @@ class ResultSetFilterPanel extends Composite
                     e.x + e.width - 4, e.y + e.height - 4);
             }
 
-            //e.gc.setForeground(filtersText.getForeground());
             e.gc.setForeground(e.gc.getDevice().getSystemColor(SWT.COLOR_DARK_GREEN));
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
 
