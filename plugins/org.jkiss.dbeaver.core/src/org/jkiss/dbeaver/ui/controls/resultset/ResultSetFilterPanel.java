@@ -51,6 +51,8 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.regex.*;
+import java.util.regex.Pattern;
 
 /**
  * ResultSetFilterPanel
@@ -291,17 +293,27 @@ class ResultSetFilterPanel extends Composite
         filtersText.getParent().setBackground(filtersText.getBackground());
 
         {
+            String displayName;
             DBSDataContainer dataContainer = viewer.getDataContainer();
             if (dataContainer != null) {
-                activeDisplayName = dataContainer.getName();
+                displayName = dataContainer.getName();
             } else {
-                activeDisplayName = getActiveQueryText();
+                displayName = getActiveQueryText();
             }
-            if (activeDisplayName == null) {
+            if (displayName == null) {
+                displayName = DEFAULT_QUERY_TEXT;
+            }
+            Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
+            Matcher m = mlCommentsPattern.matcher(displayName);
+            if (m.find()) {
+                displayName = m.replaceAll("");
+            }
+
+            displayName = displayName.replaceAll("--.+\\n", "").replaceAll("\\s+", " ");
+            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
+            if (CommonUtils.isEmpty(activeDisplayName)) {
                 activeDisplayName = DEFAULT_QUERY_TEXT;
             }
-            activeDisplayName = activeDisplayName.replaceAll("\\s+", " ");
-            activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(activeDisplayName, 200));
         }
 
         filterComposite.layout();
@@ -387,13 +399,6 @@ class ResultSetFilterPanel extends Composite
         editor.reloadSyntaxRules();
         StyledText textWidget = editor.getTextViewer().getTextWidget();
         textWidget.setAlwaysShowScrollBars(false);
-
-/*
-        new Label(panel, SWT.SEPARATOR | SWT.VERTICAL).setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        Button button = new Button(panel, SWT.PUSH | SWT.FLAT);
-        button.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        button.setText(">");
-*/
 
         panel.setBackground(textWidget.getBackground());
         panel.addDisposeListener(new DisposeListener() {
