@@ -50,7 +50,9 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
 
     @Override
     protected StyledText createTextWidget(Composite parent, int styles) {
-        return super.createTextWidget(parent, styles);
+        StyledText textWidget = super.createTextWidget(parent, styles);
+        //textWidget.setAlwaysShowScrollBars(false);
+        return textWidget;
     }
 
 }
