@@ -38,12 +38,10 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.ISaveablePart2;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -56,6 +54,8 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
@@ -78,6 +79,8 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
 
@@ -1100,7 +1103,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row)
+    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException
     {
         DBSEntityAssociation association = null;
@@ -1153,7 +1156,25 @@ public class ResultSetViewer extends Viewer
         }
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
-        runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, null);
+        if (newWindow) {
+            openResultsInNewWindow(monitor, targetEntity, newFilter);
+        } else {
+            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, null);
+        }
+    }
+
+    private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
+        final DBNDatabaseNode targetNode = getExecutionContext().getDataSource().getContainer().getApplication().getNavigatorModel().getNodeByObject(monitor, targetEntity, false);
+        if (targetNode == null) {
+            UIUtils.showMessageBox(null, "Open link", "Can't navigate to '" + DBUtils.getObjectFullName(targetEntity) + "' - navigator node not found", SWT.ICON_ERROR);
+            return;
+        }
+        UIUtils.runInDetachedUI(null, new Runnable() {
+            @Override
+            public void run() {
+                openNewDataEditor(targetNode, newFilter);
+            }
+        });
     }
 
     @Override
@@ -1684,7 +1705,7 @@ public class ResultSetViewer extends Viewer
                         result = ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
                     }
                 };
-                UIUtils.runInUI(getControl().getShell(), confirmer);
+                UIUtils.runInUI(null, confirmer);
                 return confirmer.getResult();
             }
         }
@@ -2161,6 +2182,26 @@ public class ResultSetViewer extends Viewer
                 desc += " [" + condBuffer + "]";
             }
             return desc;
+        }
+    }
+
+    public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
+        IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
+            targetNode,
+            DatabaseDataEditor.class.getName(),
+            Collections.<String, Object>singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
+            DBeaverUI.getActiveWorkbenchWindow()
+        );
+
+        if (entityEditor instanceof MultiPageEditorPart) {
+            Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
+            if (selectedPage instanceof IResultSetContainer) {
+                ResultSetViewer rsv = ((IResultSetContainer) selectedPage).getResultSetViewer();
+                if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
+                    // Set filter directly
+                    rsv.refreshWithFilter(newFilter);
+                }
+            }
         }
     }
 

@@ -59,6 +59,8 @@ class ResultSetFilterPanel extends Composite
 {
     public static final int MIN_FILTER_TEXT_WIDTH = 50;
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;
+    private static final String DEFAULT_QUERY_TEXT = "<empty>";
+
     private final ResultSetViewer viewer;
     private final ActiveObjectPanel activeObjectPanel;
     private final RefreshPanel refreshPanel;
@@ -78,7 +80,7 @@ class ResultSetFilterPanel extends Composite
     private final GC sizingGC;
     private final Font hintFont;
 
-    private String activeDisplayName;
+    private String activeDisplayName = DEFAULT_QUERY_TEXT;
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -235,7 +237,7 @@ class ResultSetFilterPanel extends Composite
             if (dataContainer != null) {
                 return dataContainer.getName();
             }
-            queryText = "<empty>";
+            queryText = DEFAULT_QUERY_TEXT;
         }
         return queryText;
     }
@@ -296,7 +298,7 @@ class ResultSetFilterPanel extends Composite
                 activeDisplayName = getActiveQueryText();
             }
             if (activeDisplayName == null) {
-                activeDisplayName = "";
+                activeDisplayName = DEFAULT_QUERY_TEXT;
             }
             activeDisplayName = activeDisplayName.replaceAll("\\s+", " ");
             activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(activeDisplayName, 200));

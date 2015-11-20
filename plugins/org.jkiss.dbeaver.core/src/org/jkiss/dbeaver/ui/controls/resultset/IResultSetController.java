@@ -101,7 +101,7 @@ public interface IResultSetController extends DBPContextProvider {
 
     void setCurrentRow(@Nullable ResultSetRow row);
 
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row)
+    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException;
 
     void updateValueView();
