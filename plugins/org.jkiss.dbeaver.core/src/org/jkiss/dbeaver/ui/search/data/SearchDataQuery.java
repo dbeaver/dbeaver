@@ -159,7 +159,8 @@ public class SearchDataQuery implements IObjectSearchQuery {
                                     try {
                                         value = new BigDecimal(params.searchString);
                                     } catch (Exception e3) {
-                                        value = params.searchString;
+                                        // Not a number
+                                        continue;
                                     }
                                 }
                             }
