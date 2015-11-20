@@ -126,7 +126,7 @@ class ResultSetFilterPanel extends Composite
             this.filtersText.addPaintListener(new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
-                    if (filtersText.getCharCount() == 0) {
+                    if (filtersText.isEnabled() && filtersText.getCharCount() == 0) {
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
                         e.gc.drawText("Enter a SQL expression to filter results", 2, 0);
