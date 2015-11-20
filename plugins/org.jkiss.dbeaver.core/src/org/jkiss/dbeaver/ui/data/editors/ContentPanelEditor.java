@@ -248,6 +248,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                 }
                 catch (Exception e) {
                     // this is not an image
+                    log.debug(e.getMessage());
                 }
             }
         }
