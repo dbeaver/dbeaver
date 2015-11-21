@@ -125,6 +125,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                         for (int k = i + 1; k < length; k++) {
                             char c2 = q.charAt(k);
                             if (c2 == c && q.charAt(k - 1) != '\\') {
+                                i = k;
                                 c = c2;
                                 break;
                             } else {
