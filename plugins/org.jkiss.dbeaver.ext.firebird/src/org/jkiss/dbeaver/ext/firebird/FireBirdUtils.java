@@ -24,17 +24,21 @@ import org.jkiss.dbeaver.ext.firebird.model.FireBirdTrigger;
 import org.jkiss.dbeaver.ext.firebird.model.FireBirdTriggerType;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * FireBird utils
@@ -149,8 +153,13 @@ public class FireBirdUtils {
     }
 
     public static String getViewSourceWithHeader(DBRProgressMonitor monitor, GenericTable view, String source) throws DBException {
+        Version version = getFireBirdServerVersion(view.getDataSource());
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE VIEW ").append(view.getName()).append(" ");
+        sql.append("CREATE ");
+        if (version.getMajor() > 2 || (version.getMajor() == 2 && version.getMinor() >= 5)) {
+            sql.append("OR ALTER ");
+        }
+        sql.append("VIEW ").append(view.getName()).append(" ");
         Collection<GenericTableColumn> columns = view.getAttributes(monitor);
         if (columns != null) {
             sql.append("(");
@@ -182,6 +191,17 @@ public class FireBirdUtils {
         sql.append("\n").append(source);
 
         return sql.toString();
+    }
+
+    private static Pattern VERSION_PATTERN = Pattern.compile(".+\\-V([0-9]+\\.[0-9]+\\.[0-9]+).+");
+
+    public static Version getFireBirdServerVersion(DBPDataSource dataSource) {
+        String versionInfo = dataSource.getInfo().getDatabaseProductVersion();
+        Matcher matcher = VERSION_PATTERN.matcher(versionInfo);
+        if (matcher.matches()) {
+            return new Version(matcher.group(1));
+        }
+        return new Version(0, 0, 0);
     }
 
 }
