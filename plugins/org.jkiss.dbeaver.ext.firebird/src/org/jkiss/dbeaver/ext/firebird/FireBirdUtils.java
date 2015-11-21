@@ -160,7 +160,7 @@ public class FireBirdUtils {
                     sql.append(", ");
                 }
                 first = false;
-                sql.append(column.getName());
+                sql.append(DBUtils.getQuotedIdentifier(column));
             }
             sql.append(")\n");
         }
