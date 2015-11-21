@@ -189,9 +189,13 @@ public class OracleUtils {
             return null;
         }
         monitor.beginTask("Load sources for '" + sourceObject.getName() + "'...", 1);
+        String sysViewName = OracleConstants.VIEW_DBA_SOURCE;
+        if (!sourceObject.getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, sysViewName)) {
+            sysViewName = OracleConstants.VIEW_ALL_SOURCE;
+        }
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner.getDataSource(), "Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TEXT FROM SYS.ALL_SOURCE " +
+                "SELECT TEXT FROM " + OracleConstants.SCHEMA_SYS + "." + sysViewName + " " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
                     "ORDER BY LINE")) {
                 dbStat.setString(1, body ? sourceType + " BODY" : sourceType);
