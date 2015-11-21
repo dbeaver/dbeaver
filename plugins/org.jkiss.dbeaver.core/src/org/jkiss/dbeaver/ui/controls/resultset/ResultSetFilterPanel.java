@@ -218,6 +218,18 @@ class ResultSetFilterPanel extends Composite
             }
         });
 
+        this.addControlListener(new ControlListener() {
+            @Override
+            public void controlMoved(ControlEvent e) {
+                redrawPanels();
+            }
+
+            @Override
+            public void controlResized(ControlEvent e) {
+                redrawPanels();
+            }
+        });
+
         filtersEnableState = ControlEnableState.disable(this);
 
         this.addDisposeListener(new DisposeListener() {
@@ -228,6 +240,15 @@ class ResultSetFilterPanel extends Composite
             }
         });
 
+    }
+
+    private void redrawPanels() {
+        if (activeObjectPanel != null && !activeObjectPanel.isDisposed()) {
+            activeObjectPanel.redraw();
+        }
+        if (refreshPanel != null && !refreshPanel.isDisposed()) {
+            refreshPanel.redraw();
+        }
     }
 
     @NotNull
@@ -317,9 +338,7 @@ class ResultSetFilterPanel extends Composite
         }
 
         filterComposite.layout();
-        activeObjectPanel.redraw();
-        refreshPanel.redraw();
-        //activeObjectPanel.setToolTipText(getActiveQueryText());
+        redrawPanels();
     }
 
     private void setCustomDataFilter()
