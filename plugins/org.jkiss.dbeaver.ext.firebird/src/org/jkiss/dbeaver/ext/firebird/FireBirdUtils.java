@@ -102,7 +102,7 @@ public class FireBirdUtils {
 
     public static String getProcedureSourceWithHeader(DBRProgressMonitor monitor, GenericProcedure procedure, String source) throws DBException {
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE OR ALTER PROCEDURE ").append(procedure.getName()).append("\n");
+        sql.append("CREATE OR ALTER PROCEDURE ").append(procedure.getName()).append(" ");
         Collection<GenericProcedureParameter> parameters = procedure.getParameters(monitor);
         if (parameters != null && !parameters.isEmpty()) {
             List<GenericProcedureParameter> args = new ArrayList<>();
@@ -124,11 +124,13 @@ public class FireBirdUtils {
                 sql.append(")\n");
             }
             if (!results.isEmpty()) {
-                sql.append("RETURNS (");
+                sql.append("RETURNS (\n");
                 for (int i = 0; i < results.size(); i++) {
+                    sql.append('\t');
                     GenericProcedureParameter param = results.get(i);
-                    if (i > 0) sql.append(", ");
                     printParam(sql, param);
+                    if (i < results.size() - 1) sql.append(",");
+                    sql.append('\n');
                 }
                 sql.append(")\n");
             }
@@ -140,7 +142,7 @@ public class FireBirdUtils {
     }
 
     private static void printParam(StringBuilder sql, GenericProcedureParameter param) {
-        sql.append(param.getName()).append(" ").append(param.getTypeName());
+        sql.append(DBUtils.getQuotedIdentifier(param)).append(" ").append(param.getTypeName());
         if (param.getDataKind() == DBPDataKind.STRING) {
             sql.append("(").append(param.getMaxLength()).append(")");
         }
