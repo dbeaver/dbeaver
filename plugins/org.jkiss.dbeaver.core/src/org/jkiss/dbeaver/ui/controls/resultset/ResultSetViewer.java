@@ -1470,7 +1470,7 @@ public class ResultSetViewer extends Viewer
                             }
 
                             model.setUpdateInProgress(false);
-                            if (dataFilter != null) {
+                            if (error == null && dataFilter != null) {
                                 model.updateDataFilter(dataFilter);
                                 activePresentation.refreshData(false, false);
                             }
