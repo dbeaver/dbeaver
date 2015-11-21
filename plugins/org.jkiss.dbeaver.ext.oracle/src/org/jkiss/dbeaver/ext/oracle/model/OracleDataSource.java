@@ -76,10 +76,30 @@ public class OracleDataSource extends JDBCDataSource
     private boolean isAdminVisible;
     private String planTableName;
 
+    private final Map<String,Boolean> availableViews = new HashMap<>();
+
     public OracleDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
     {
         super(monitor, container);
+    }
+
+    public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName, @NotNull String viewName) {
+        viewName = viewName.toUpperCase();
+        Boolean available = availableViews.get(viewName);
+        if (available == null) {
+            try {
+                try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Check view existence")) {
+                    available = JDBCUtils.executeQuery(
+                        session,
+                        "SELECT 1 FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=? AND ROWNUM<2", schemaName, viewName) != null;
+                }
+            } catch (SQLException e) {
+                available = false;
+            }
+            availableViews.put(viewName, available);
+        }
+        return available;
     }
 
     @Override
