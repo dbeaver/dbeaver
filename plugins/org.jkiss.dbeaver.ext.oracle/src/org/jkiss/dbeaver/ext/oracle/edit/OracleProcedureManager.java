@@ -95,7 +95,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
             return null;
         }
         List<DBEPersistAction> actions = new ArrayList<>();
-        actions.add(new SQLDatabasePersistAction("Create procedure", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
+        actions.add(new SQLDatabasePersistAction("Create procedure", source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, procedure);
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }
