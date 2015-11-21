@@ -34,7 +34,7 @@ public abstract class AbstractJob extends Job
 {
     static final Log log = Log.getLog(AbstractJob.class);
 
-    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 200;
+    public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 400;
 
     private DBRProgressMonitor progressMonitor;
     private volatile boolean finished = false;
@@ -116,6 +116,11 @@ public abstract class AbstractJob extends Job
         }
         // Run canceling job
         if (!blockCanceled) {
+            // Try to interrupt thread first
+            Thread activeThread = getActiveThread();
+            activeThread.interrupt();
+
+            // Schedule block cancel after timeout (let activeThread.interrupt to finish it's job)
             Job cancelJob = new Job("Cancel block") { //$NON-N LS-1$
                 @Override
                 protected IStatus run(IProgressMonitor monitor)
