@@ -81,6 +81,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         return Collections.<DBCExecutionContext>singleton(this);
     }
 
+    @NotNull
     @Override
     public String getContextName() {
         return "WMI Data Source";
@@ -112,7 +113,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
 
     @NotNull
     @Override
-    public DBCSession openSession(@NotNull DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task)
+    public DBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String task)
     {
         return new WMISession(monitor, purpose, task, this);
     }
@@ -124,6 +125,7 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         return this;
     }
 
+    @NotNull
     @Override
     public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException
     {

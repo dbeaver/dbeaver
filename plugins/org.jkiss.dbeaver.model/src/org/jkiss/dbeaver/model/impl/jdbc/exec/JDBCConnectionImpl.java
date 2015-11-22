@@ -45,9 +45,10 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     static final Log log = Log.getLog(JDBCConnectionImpl.class);
 
+    @NotNull
     final JDBCExecutionContext context;
 
-    public JDBCConnectionImpl(JDBCExecutionContext context, DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
+    public JDBCConnectionImpl(@NotNull JDBCExecutionContext context, @NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle)
     {
         super(monitor, purpose, taskTitle);
         this.context = context;
@@ -59,6 +60,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         return context.getConnection(getProgressMonitor());
     }
 
+    @NotNull
     @Override
     public DBCExecutionContext getExecutionContext() {
         return context;
@@ -86,8 +88,8 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @NotNull
     @Override
     public JDBCStatement prepareStatement(
-        DBCStatementType type,
-        String sqlQuery,
+        @NotNull DBCStatementType type,
+        @NotNull String sqlQuery,
         boolean scrollable,
         boolean updatable,
         boolean returnGeneratedKeys)

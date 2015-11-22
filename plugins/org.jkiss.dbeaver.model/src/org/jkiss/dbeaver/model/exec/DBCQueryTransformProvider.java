@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**
@@ -32,6 +33,6 @@ public interface DBCQueryTransformProvider {
      * @return new transformer or null if transformation of specified type is not supported
      */
     @Nullable
-    DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type);
+    DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type);
 
 }

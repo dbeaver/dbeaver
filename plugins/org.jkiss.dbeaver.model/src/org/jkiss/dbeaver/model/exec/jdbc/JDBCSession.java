@@ -42,8 +42,8 @@ public interface JDBCSession extends DBCSession, Connection {
     @Override
     @NotNull
     JDBCStatement prepareStatement(
-        DBCStatementType type,
-        String query,
+        @NotNull DBCStatementType type,
+        @NotNull String query,
         boolean scrollable,
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;

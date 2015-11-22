@@ -44,6 +44,7 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
         ERROR
     }
 
+    @NotNull
     String getContextName();
 
     /**
@@ -68,7 +69,7 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      * @return execution context
      */
     @NotNull
-    DBCSession openSession(@NotNull DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String task);
+    DBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String task);
 
     /**
      * Checks context is alive and reconnects if needed.
@@ -77,6 +78,7 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      * @param monitor progress monitor
      * @return true if reconnect was applied false if connection is alive and nothing was done.
      */
+    @NotNull
     InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

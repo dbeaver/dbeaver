@@ -61,7 +61,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         connect(monitor, null, null, false);
     }
 
-    void connect(DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, boolean forceActiveObject) throws DBCException
+    void connect(@NotNull DBRProgressMonitor monitor, Boolean autoCommit, @Nullable Integer txnLevel, boolean forceActiveObject) throws DBCException
     {
         if (connection != null) {
             log.error("Reopening not-closed connection");
@@ -147,7 +147,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @NotNull
     @Override
-    public JDBCSession openSession(@NotNull DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle)
+    public JDBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String taskTitle)
     {
         return dataSource.createConnection(monitor, this, purpose, taskTitle);
     }
@@ -158,6 +158,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         return connection != null;
     }
 
+    @NotNull
     @Override
     public InvalidateResult invalidateContext(@NotNull DBRProgressMonitor monitor)
         throws DBException

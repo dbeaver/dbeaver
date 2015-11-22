@@ -233,10 +233,10 @@ public abstract class JDBCDataSource
 
     @NotNull
     protected JDBCConnectionImpl createConnection(
-        DBRProgressMonitor monitor,
-        JDBCExecutionContext context,
-        DBCExecutionPurpose purpose,
-        String taskTitle)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @NotNull DBCExecutionPurpose purpose,
+        @NotNull String taskTitle)
     {
         return new JDBCConnectionImpl(context, monitor, purpose, taskTitle);
     }
@@ -365,7 +365,7 @@ public abstract class JDBCDataSource
 
     @Nullable
     @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type)
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type)
     {
 //        if (type == DBCQueryTransformType.ORDER_BY) {
 //
@@ -375,7 +375,7 @@ public abstract class JDBCDataSource
         return null;
     }
 
-    private static int getValueTypeByTypeName(String typeName, int valueType)
+    private static int getValueTypeByTypeName(@NotNull String typeName, int valueType)
     {
         // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
         if (valueType == Types.OTHER || valueType == Types.VARCHAR) {

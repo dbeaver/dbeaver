@@ -32,12 +32,14 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
      * Session title
      * @return title
      */
+    @NotNull
     String getTaskTitle();
 
     /**
      * Data source of this session
      * @return data source
      */
+    @NotNull
     DBCExecutionContext getExecutionContext();
 
     /**
@@ -58,12 +60,14 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
      * Each context has it's progress monitor which is passed at context creation time and never changes.
      * @return progress monitor
      */
+    @NotNull
     DBRProgressMonitor getProgressMonitor();
 
     /**
      * Context's purpose
      * @return purpose
      */
+    @NotNull
     DBCExecutionPurpose getPurpose();
 
     /**
@@ -71,8 +75,8 @@ public interface DBCSession extends DBPCloseableObject, DBDPreferences {
      */
     @NotNull
     DBCStatement prepareStatement(
-        DBCStatementType type,
-        String query,
+        @NotNull DBCStatementType type,
+        @NotNull String query,
         boolean scrollable,
         boolean updatable,
         boolean returnGeneratedKeys) throws DBCException;
