@@ -53,6 +53,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
     private final Map<FolderInfo, Composite> contentsMap = new HashMap<>();
     private List<IFolderListener> listeners = new ArrayList<>();
     private FolderPane[] folderPanes;
+    private FolderPane lastActiveFolder = null;
 
     private class FolderPane {
         FolderInfo[] folders;
@@ -279,8 +280,12 @@ public class FolderComposite extends Composite implements IFolderContainer {
         Control focusControl = getDisplay().getFocusControl();
         for (FolderPane folderPane : folderPanes) {
             if (UIUtils.isParent(folderPane.editorPane, focusControl)) {
+                lastActiveFolder = folderPane;
                 return getActiveFolder(folderPane);
             }
+        }
+        if (lastActiveFolder != null) {
+            return getActiveFolder(lastActiveFolder);
         }
         return null;
     }
@@ -296,6 +301,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
             for (int i = 0; i < folderPane.folderList.getNumberOfElements(); i++) {
                 if (folderPane.folderList.getElementAt(i).getInfo().getId().equals(folderId)) {
                     folderPane.folderList.select(i);
+                    lastActiveFolder = folderPane;
                     break;
                 }
             }

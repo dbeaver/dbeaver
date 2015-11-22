@@ -67,7 +67,12 @@ public class FolderPageProperties extends FolderPage implements ILazyPropertyLoa
         }
 	}
 
-	@Override
+    @Override
+    public void setFocus() {
+        propertyTree.getControl().setFocus();
+    }
+
+    @Override
     public void dispose() {
         if (curPropertySource.getEditableValue() instanceof DBSObject) {
             DBUtils.getRegistry((DBSObject) curPropertySource.getEditableValue()).removeDataSourceListener(this);
