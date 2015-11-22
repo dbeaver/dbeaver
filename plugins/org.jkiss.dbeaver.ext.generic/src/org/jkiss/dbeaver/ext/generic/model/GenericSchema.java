@@ -89,7 +89,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
     }
 
     @Override
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return GenericTable.class;

@@ -318,28 +318,28 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<OracleSchema> getChildren(DBRProgressMonitor monitor)
+    public Collection<OracleSchema> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getSchemas(monitor);
     }
 
     @Override
-    public OracleSchema getChild(DBRProgressMonitor monitor, String childName)
+    public OracleSchema getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return getSchema(monitor, childName);
     }
 
     @Override
-    public Class<? extends OracleSchema> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends OracleSchema> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return OracleSchema.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         

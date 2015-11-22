@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -30,19 +31,19 @@ public interface DBSObjectContainer extends DBSObject
     /**
      * Cache underlying entities
      */
-    public static final int STRUCT_ENTITIES = 1;
+    int STRUCT_ENTITIES = 1;
     /**
      * Cache attributes of underlying entities/relations
      */
-    public static final int STRUCT_ATTRIBUTES = 2;
+    int STRUCT_ATTRIBUTES = 2;
     /**
      * Cache underlying relations
      */
-    public static final int STRUCT_ASSOCIATIONS = 4;
+    int STRUCT_ASSOCIATIONS = 4;
     /**
      * Cache everything
      */
-    public static final int STRUCT_ALL = STRUCT_ENTITIES | STRUCT_ATTRIBUTES | STRUCT_ASSOCIATIONS;
+    int STRUCT_ALL = STRUCT_ENTITIES | STRUCT_ATTRIBUTES | STRUCT_ASSOCIATIONS;
 
     /**
      * Retrieve list of immediate child objects (not recursive)
@@ -51,7 +52,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @param monitor progress monitor
      */
-    Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets child object by its name.
@@ -62,7 +63,7 @@ public interface DBSObjectContainer extends DBSObject
      * @throws DBException on any DB error
      * @return child object or null
      */
-    DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException;
+    DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException;
 
     /**
      * Gets type of child elements.
@@ -71,7 +72,7 @@ public interface DBSObjectContainer extends DBSObject
      * @return type of child objects
      * @throws org.jkiss.dbeaver.DBException on error
      */
-    Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException;
+    Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Caches all underlying structure contents.
@@ -82,6 +83,6 @@ public interface DBSObjectContainer extends DBSObject
      * @param monitor progress monitor
      * @param scope underlying structure scope
      */
-    void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException;
+    void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException;
 
 }

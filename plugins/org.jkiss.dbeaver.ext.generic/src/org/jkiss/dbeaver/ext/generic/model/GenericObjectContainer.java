@@ -195,7 +195,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         // Cache tables
@@ -316,14 +316,14 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getTables(monitor);
     }
 
     @Override
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return getTable(monitor, childName);

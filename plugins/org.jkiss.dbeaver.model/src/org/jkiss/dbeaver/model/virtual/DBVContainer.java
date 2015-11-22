@@ -172,25 +172,25 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return !containers.isEmpty() ? containers.values() : entities.values();
     }
 
     @Override
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return !containers.isEmpty() ? containers.get(childName) : entities.get(childName);
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return !containers.isEmpty() ? DBVContainer.class : DBVEntity.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
     {
         // do nothing
     }

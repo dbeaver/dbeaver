@@ -227,7 +227,7 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public Collection<? extends WMIContainer> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends WMIContainer> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         List<WMIContainer> children = new ArrayList<>();
         children.addAll(getNamespaces(monitor));
@@ -237,19 +237,19 @@ public class WMINamespace extends WMIContainer implements DBSObjectContainer, DB
     }
 
     @Override
-    public WMIContainer getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public WMIContainer getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return DBUtils.findObject(getChildren(monitor), childName);
     }
 
     @Override
-    public Class<? extends WMIContainer> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<? extends WMIContainer> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return WMIContainer.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
     {
         getNamespaces(monitor);
         getClasses(monitor);

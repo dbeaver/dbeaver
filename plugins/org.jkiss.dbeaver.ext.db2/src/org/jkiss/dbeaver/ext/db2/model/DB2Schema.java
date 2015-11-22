@@ -158,7 +158,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public synchronized void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
     {
         if ((scope & STRUCT_ENTITIES) != 0) {
             monitor.subTask("Cache tables");
@@ -237,13 +237,13 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     // --------------------------
 
     @Override
-    public Class<DB2TableBase> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<DB2TableBase> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return DB2TableBase.class;
     }
 
     @Override
-    public Collection<DB2TableBase> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableBase> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         List<DB2TableBase> allChildren = new ArrayList<>();
         allChildren.addAll(tableCache.getAllObjects(monitor, this));
@@ -254,7 +254,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
     }
 
     @Override
-    public DB2TableBase getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public DB2TableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         DB2TableBase child = tableCache.getObject(monitor, this, childName);
         if (child == null) {

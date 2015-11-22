@@ -200,7 +200,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException
     {
         // TODO DF: No idea what to do with this method, what it is used for...
     }
@@ -338,19 +338,19 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public Class<? extends DB2Schema> getChildType(DBRProgressMonitor monitor) throws DBException
+    public Class<? extends DB2Schema> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return DB2Schema.class;
     }
 
     @Override
-    public Collection<DB2Schema> getChildren(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2Schema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getSchemas(monitor);
     }
 
     @Override
-    public DB2Schema getChild(DBRProgressMonitor monitor, String childName) throws DBException
+    public DB2Schema getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException
     {
         return getSchema(monitor, childName);
     }

@@ -247,28 +247,28 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public Collection<MySQLTableBase> getChildren(DBRProgressMonitor monitor)
+    public Collection<MySQLTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public MySQLTableBase getChild(DBRProgressMonitor monitor, String childName)
+    public MySQLTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return tableCache.getObject(monitor, this, childName);
     }
 
     @Override
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLTable.class;
     }
 
     @Override
-    public synchronized void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         monitor.subTask("Cache tables");
