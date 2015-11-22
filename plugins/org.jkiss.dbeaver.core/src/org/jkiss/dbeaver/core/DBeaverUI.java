@@ -26,7 +26,10 @@ import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.services.IDisposable;
@@ -119,6 +122,15 @@ public class DBeaverUI implements DBUICallback {
 
         // Register context listener
         WorkbenchContextListener.registerInWorkbench();
+
+/*      // Global focus lister for debug
+        Display.getCurrent().addFilter(SWT.FocusIn, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                System.out.println("FOCUS TO: " + event.widget);
+            }
+        });
+*/
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress)

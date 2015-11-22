@@ -145,6 +145,11 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     }
 
     @Override
+    public void setFocus() {
+        editor.setFocus();
+    }
+
+    @Override
     public void aboutToBeShown() {
         if (editor instanceof IActiveWorkbenchPart) {
             ((IActiveWorkbenchPart) editor).activatePart();

@@ -202,7 +202,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public void setFocus()
     {
-        folderComposite.setFocus();
+        // do not force focus in active editor. We can't do it properly because folderComposite detects
+        // active folder by focus (which it doesn't have)
+        //folderComposite.setFocus();
         IFolder selectedPage = folderComposite.getActiveFolder();
         if (selectedPage != null) {
             selectedPage.setFocus();
