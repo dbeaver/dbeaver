@@ -84,6 +84,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         return refTable;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

@@ -130,6 +130,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
         columns.add(column);
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

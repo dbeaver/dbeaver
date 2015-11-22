@@ -500,6 +500,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return componentType;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -565,6 +566,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return typeName;
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -572,7 +574,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
 
     }

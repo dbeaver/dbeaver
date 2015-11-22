@@ -155,6 +155,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     // -----------------
     // Business Contract
     // -----------------
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -162,7 +163,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
     }
 
@@ -179,6 +180,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         return type.getProcedureType();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -194,6 +196,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
         return db2Schema;
     }
 
+    @NotNull
     @Override
     public String getUniqueName()
     {

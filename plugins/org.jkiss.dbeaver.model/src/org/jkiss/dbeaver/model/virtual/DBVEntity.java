@@ -292,6 +292,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

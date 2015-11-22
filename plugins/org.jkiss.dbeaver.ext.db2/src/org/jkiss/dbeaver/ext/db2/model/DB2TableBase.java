@@ -99,10 +99,11 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     // -----------------
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

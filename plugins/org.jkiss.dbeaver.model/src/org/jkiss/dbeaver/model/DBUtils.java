@@ -166,7 +166,8 @@ public final class DBUtils {
         return quoteString + str + quoteString;
     }
 
-    public static String getFullQualifiedName(DBPDataSource dataSource, DBPNamedObject ... path)
+    @NotNull
+    public static String getFullQualifiedName(@NotNull DBPDataSource dataSource, @NotNull DBPNamedObject ... path)
     {
         StringBuilder name = new StringBuilder(20 * path.length);
         if (!(dataSource instanceof SQLDataSource)) {

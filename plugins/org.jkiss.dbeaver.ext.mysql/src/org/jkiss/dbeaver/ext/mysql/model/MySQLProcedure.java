@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -197,6 +198,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         return getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

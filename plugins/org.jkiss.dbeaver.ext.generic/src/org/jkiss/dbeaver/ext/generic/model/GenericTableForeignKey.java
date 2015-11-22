@@ -83,6 +83,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         this.columns = columns;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

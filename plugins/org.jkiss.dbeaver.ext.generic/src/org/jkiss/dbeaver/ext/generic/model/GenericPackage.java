@@ -99,6 +99,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         return procedures;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

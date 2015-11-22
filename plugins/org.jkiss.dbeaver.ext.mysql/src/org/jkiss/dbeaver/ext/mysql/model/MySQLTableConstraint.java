@@ -56,6 +56,7 @@ public class MySQLTableConstraint extends JDBCTableConstraint<MySQLTable> {
         this.columns = columns;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

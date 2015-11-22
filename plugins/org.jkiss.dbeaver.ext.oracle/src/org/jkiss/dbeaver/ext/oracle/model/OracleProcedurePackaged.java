@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
@@ -41,6 +42,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
             DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, "PROCEDURE_TYPE")));
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -67,6 +69,7 @@ public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> 
         this.overload = overload;
     }
 
+    @NotNull
     @Override
     public String getUniqueName()
     {

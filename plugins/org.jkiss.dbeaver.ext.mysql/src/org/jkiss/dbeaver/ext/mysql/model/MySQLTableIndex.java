@@ -118,6 +118,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
         columns.add(column);
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

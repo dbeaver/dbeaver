@@ -178,7 +178,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TABLE);
     }

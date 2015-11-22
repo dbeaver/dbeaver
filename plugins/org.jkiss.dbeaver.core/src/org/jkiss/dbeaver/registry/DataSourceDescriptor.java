@@ -904,6 +904,7 @@ public class DataSourceDescriptor
         return driver.getPlainIcon();
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -917,7 +918,7 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor)
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor)
     {
         // just do nothing
     }

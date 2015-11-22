@@ -97,6 +97,7 @@ public class DB2TableForeignKey extends JDBCTableConstraint<DB2Table> implements
         return refTable;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

@@ -80,6 +80,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
         return container.getDataSource();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName() {
         return DBUtils.getFullQualifiedName(getDataSource(),

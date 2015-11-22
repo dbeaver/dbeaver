@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 
@@ -35,6 +36,7 @@ public abstract class DB2SchemaObject extends DB2Object<DB2Schema> implements DB
         return getParentObject();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

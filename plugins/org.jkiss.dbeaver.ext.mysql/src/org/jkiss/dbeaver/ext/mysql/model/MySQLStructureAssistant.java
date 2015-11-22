@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -262,6 +263,7 @@ public class MySQLStructureAssistant extends JDBCStructureAssistant
                     final String tableName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TABLE_NAME);
                     final String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);
                     objects.add(new AbstractObjectReference(columnName, dataSource.getCatalog(catalogName), null, RelationalObjectType.TYPE_TABLE_COLUMN) {
+                        @NotNull
                         @Override
                         public String getFullQualifiedName() {
                             return DBUtils.getQuotedIdentifier(dataSource, catalogName) +

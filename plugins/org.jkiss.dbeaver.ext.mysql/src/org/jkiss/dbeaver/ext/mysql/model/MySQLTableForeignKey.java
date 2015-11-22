@@ -59,6 +59,7 @@ public class MySQLTableForeignKey extends JDBCTableForeignKey<MySQLTable, MySQLT
         columns.add(column);
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

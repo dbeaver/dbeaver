@@ -84,7 +84,7 @@ public abstract class JDBCDataSource
     protected volatile SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
 
-    public JDBCDataSource(DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+    public JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
@@ -95,7 +95,7 @@ public abstract class JDBCDataSource
         this.executionContext.connect(monitor, null, null, false);
     }
 
-    protected Connection openConnection(DBRProgressMonitor monitor, String purpose)
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose)
         throws DBCException
     {
         // It MUST be a JDBC driver
@@ -227,7 +227,7 @@ public abstract class JDBCDataSource
         return context;
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
 
     }
 
@@ -395,11 +395,13 @@ public abstract class JDBCDataSource
         return valueType;
     }
 
+    @NotNull
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
         return getDataKind(typeName, valueType);
     }
 
+    @NotNull
     public static DBPDataKind getDataKind(@NotNull String typeName, int valueType)
     {
         switch (getValueTypeByTypeName(typeName, valueType)) {
@@ -501,7 +503,7 @@ public abstract class JDBCDataSource
     }
 
     @Nullable
-    protected Driver getDriverInstance(DBRProgressMonitor monitor)
+    protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return Driver.class.cast(
@@ -521,16 +523,17 @@ public abstract class JDBCDataSource
         return null;
     }
 
-    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
     }
 
-    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData)
+    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData)
     {
         return new JDBCSQLDialect(this, "JDBC", metaData);
     }
 
+    @NotNull
     protected JDBCFactory createJdbcFactory() {
         return new JDBCFactoryDefault();
     }

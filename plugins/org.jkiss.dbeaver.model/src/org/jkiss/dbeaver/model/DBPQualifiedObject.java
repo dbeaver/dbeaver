@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Named object extension
  */
@@ -28,6 +30,7 @@ public interface DBPQualifiedObject extends DBPObject
      * Should include all parent objects' names and thus uniquely identify this entity within database.
      * @return full qualified name, never returns null.
      */
+    @NotNull
     String getFullQualifiedName();
 
 }

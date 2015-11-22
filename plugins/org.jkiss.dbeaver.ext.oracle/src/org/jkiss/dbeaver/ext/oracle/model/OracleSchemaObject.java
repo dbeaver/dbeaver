@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 
@@ -38,6 +39,7 @@ public abstract class OracleSchemaObject extends OracleObject<OracleSchema> impl
         return getParentObject();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

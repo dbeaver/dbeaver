@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -176,6 +177,7 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
             )};
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -183,7 +185,7 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.PACKAGE);
     }
