@@ -136,6 +136,7 @@ public class OracleTableIndex extends JDBCTableIndex<OracleSchema, OracleTablePh
         columns.add(column);
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

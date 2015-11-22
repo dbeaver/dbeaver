@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+
 /**
  * Object with unique name.
  * Generally all objects have unique name (in context of their parent objects) but sometimes the name isn't unique.
@@ -33,6 +35,7 @@ public interface DBSObjectUnique extends DBSObject
      *
      * @return object unique name
      */
+    @NotNull
     String getUniqueName();
 
 }

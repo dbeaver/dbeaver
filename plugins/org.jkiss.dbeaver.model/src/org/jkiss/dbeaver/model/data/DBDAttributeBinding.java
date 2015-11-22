@@ -164,6 +164,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return parent;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName() {
         if (parent == null) {

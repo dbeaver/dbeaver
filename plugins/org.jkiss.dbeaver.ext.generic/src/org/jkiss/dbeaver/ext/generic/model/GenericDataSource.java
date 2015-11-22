@@ -96,7 +96,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
             setActiveEntityName(monitor, context, getSelectedObject());
         }
@@ -119,7 +119,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
         final GenericDataSourceInfo info = new GenericDataSourceInfo(getContainer().getDriver(), metaData);
         final GenericSQLDialect dialect = (GenericSQLDialect)getSQLDialect();
@@ -152,7 +152,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
         return new GenericSQLDialect(this, metaData);
     }
 
@@ -839,6 +839,7 @@ public class GenericDataSource extends JDBCDataSource
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @NotNull
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
         DBSDataType dataType = dataTypeCache.getCachedObject(typeName);

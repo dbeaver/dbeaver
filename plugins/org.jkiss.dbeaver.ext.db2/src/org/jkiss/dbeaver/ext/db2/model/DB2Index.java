@@ -137,6 +137,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

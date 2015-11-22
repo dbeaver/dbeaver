@@ -48,6 +48,7 @@ public abstract class GenericTableConstraint extends JDBCTableConstraint<Generic
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

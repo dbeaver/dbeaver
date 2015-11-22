@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -60,6 +61,7 @@ public class OracleTableConstraint extends OracleTableConstraintBase {
         return searchCondition;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

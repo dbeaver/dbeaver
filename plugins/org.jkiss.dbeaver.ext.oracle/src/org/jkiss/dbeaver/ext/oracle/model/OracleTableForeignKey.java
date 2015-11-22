@@ -126,6 +126,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return getReferencedTable();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

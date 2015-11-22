@@ -182,6 +182,7 @@ public class DB2Table extends DB2TableBase
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -189,7 +190,7 @@ public class DB2Table extends DB2TableBase
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
     }
 

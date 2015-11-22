@@ -125,6 +125,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -268,6 +269,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
         return OracleUtils.getDDL(monitor, getTableTypeName(), this, ddlFormat);
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {

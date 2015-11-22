@@ -219,6 +219,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         this.sourceDeclaration = source;
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -226,7 +227,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
         this.status = (OracleUtils.getObjectStatus(monitor, this, OracleObjectType.TRIGGER) ? OracleObjectStatus.ENABLED : OracleObjectStatus.ERROR);
     }

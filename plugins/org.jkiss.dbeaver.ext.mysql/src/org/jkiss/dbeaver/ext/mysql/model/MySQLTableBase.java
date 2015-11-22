@@ -62,6 +62,7 @@ public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCat
         return getContainer().getTableCache();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

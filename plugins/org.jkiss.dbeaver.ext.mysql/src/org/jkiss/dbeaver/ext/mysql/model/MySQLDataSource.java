@@ -84,7 +84,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return MySQLDataSourceProvider.getConnectionsProps();
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
             MySQLCatalog object = getSelectedObject();
             if (object != null) {
@@ -94,7 +94,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
         return new MySQLDialect(this, metaData);
     }
 
@@ -303,7 +303,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected Connection openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException {
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
         Connection mysqlConnection = super.openConnection(monitor, purpose);
 
         {

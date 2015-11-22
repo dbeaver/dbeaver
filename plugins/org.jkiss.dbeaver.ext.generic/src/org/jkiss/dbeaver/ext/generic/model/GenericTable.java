@@ -98,6 +98,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return getContainer().getObject();
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

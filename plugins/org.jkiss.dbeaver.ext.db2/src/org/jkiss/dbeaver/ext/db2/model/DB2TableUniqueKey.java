@@ -92,6 +92,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     // Business Contract
     // -----------------
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

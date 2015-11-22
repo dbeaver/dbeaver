@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -244,6 +245,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         this.columns.add(column);
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -253,6 +255,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
             this);
     }
 
+    @NotNull
     @Override
     public String getUniqueName()
     {

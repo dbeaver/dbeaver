@@ -90,6 +90,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
 
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -128,6 +129,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
         return getTable().getSchema();
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -135,7 +137,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
     }
 

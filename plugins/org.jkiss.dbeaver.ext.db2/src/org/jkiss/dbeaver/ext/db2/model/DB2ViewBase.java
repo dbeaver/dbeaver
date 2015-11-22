@@ -74,6 +74,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
         return true;
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -81,7 +82,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
     }
 

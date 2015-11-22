@@ -103,7 +103,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Connection openConnection(DBRProgressMonitor monitor, String purpose) throws DBCException
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException
     {
         // Set tns admin directory
         DBPClientHome clientHome = getContainer().getClientHome();
@@ -126,7 +126,7 @@ public class OracleDataSource extends JDBCDataSource
         return connection;
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         // Enable DBMS output
         enableServerOutput(
             monitor,
@@ -145,13 +145,13 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
         return new JDBCDataSourceInfo(metaData);
     }
 
     @Override
-    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData) {
+    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
         JDBCSQLDialect dialect = new OracleSQLDialect(this, metaData);
         for (String kw : OracleConstants.ADVANCED_KEYWORDS) {
             dialect.addSQLKeyword(kw);
@@ -416,6 +416,7 @@ public class OracleDataSource extends JDBCDataSource
         return this;
     }
 
+    @NotNull
     @Override
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {

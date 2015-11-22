@@ -66,6 +66,7 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         return type;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

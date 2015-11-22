@@ -223,6 +223,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         return name;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

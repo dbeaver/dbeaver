@@ -169,6 +169,7 @@ public class WMIClass extends WMIContainer
         }
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {

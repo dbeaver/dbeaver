@@ -140,6 +140,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // Business contract
     // -----------------
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -147,7 +148,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
     }
 

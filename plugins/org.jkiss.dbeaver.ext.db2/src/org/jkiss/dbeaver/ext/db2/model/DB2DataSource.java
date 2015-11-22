@@ -183,7 +183,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         this.dataTypeCache.getAllObjects(monitor, this);
     }
 
-    protected void initializeContextState(DBRProgressMonitor monitor, JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
             setCurrentSchema(monitor, context, getSelectedObject());
         }
@@ -223,7 +223,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
         final DB2DataSourceInfo info = new DB2DataSourceInfo(metaData);
 
@@ -261,7 +261,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    protected SQLDialect createSQLDialect(JDBCDatabaseMetaData metaData)
+    protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData)
     {
         return new DB2SQLDialect(this, metaData);
     }

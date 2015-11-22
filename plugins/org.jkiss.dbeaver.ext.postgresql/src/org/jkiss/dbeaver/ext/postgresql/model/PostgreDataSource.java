@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel;
@@ -38,6 +39,7 @@ public class PostgreDataSource extends GenericDataSource
 //        super(monitor, container, new PostgreMetaModel());
 //    }
 
+    @NotNull
     @Override
     protected JDBCFactory createJdbcFactory() {
         return new PostgreJdbcFactory();

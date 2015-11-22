@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -87,6 +88,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
         return null;
     }
 
+    @NotNull
     @Override
     public String getFullQualifiedName()
     {
@@ -123,6 +125,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
             )};
     }
 
+    @NotNull
     @Override
     public DBSObjectState getObjectState()
     {
@@ -130,7 +133,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
     }
 
     @Override
-    public void refreshObjectState(DBRProgressMonitor monitor) throws DBCException
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
         this.valid = OracleUtils.getObjectStatus(monitor, this,
             getProcedureType() == DBSProcedureType.PROCEDURE ?

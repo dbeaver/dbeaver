@@ -36,6 +36,7 @@ public interface DBPDataTypeProvider
      * @param typeID type ID
      * @return data kind or null if type can't be resolved
      */
+    @NotNull
     DBPDataKind resolveDataKind(@NotNull String typeName, int typeID);
 
     /**
