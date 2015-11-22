@@ -523,7 +523,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Nullable
     @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (metaModel instanceof DBCQueryTransformProvider) {
             DBCQueryTransformer transformer = ((DBCQueryTransformProvider) metaModel).createQueryTransformer(type);
             if (transformer != null) {
@@ -533,7 +533,7 @@ public class GenericDataSource extends JDBCDataSource
         return super.createQueryTransformer(type);
     }
 
-    GenericTable findTable(DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
+    GenericTable findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
         throws DBException
     {
         GenericObjectContainer container = null;

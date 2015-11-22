@@ -36,6 +36,7 @@ public class WMISession extends AbstractSession {
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBCExecutionContext getExecutionContext() {
         return dataSource;
@@ -50,7 +51,7 @@ public class WMISession extends AbstractSession {
 
     @NotNull
     @Override
-    public DBCStatement prepareStatement(DBCStatementType type, String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException
+    public DBCStatement prepareStatement(@NotNull DBCStatementType type, @NotNull String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException
     {
         return new WMIStatement(this, type, query);
     }

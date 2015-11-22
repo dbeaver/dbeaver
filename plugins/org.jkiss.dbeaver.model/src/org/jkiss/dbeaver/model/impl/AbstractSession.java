@@ -54,6 +54,7 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
         QMUtils.getDefaultHandler().handleSessionOpen(this);
     }
 
+    @NotNull
     @Override
     public String getTaskTitle()
     {
@@ -66,12 +67,14 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBRProgressMonitor getProgressMonitor()
     {
         return monitor;
     }
 
+    @NotNull
     @Override
     public DBCExecutionPurpose getPurpose()
     {

@@ -110,7 +110,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Nullable
     @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             //return new QueryTransformerTop();
         }

@@ -47,6 +47,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
         this.purpose = purpose;
     }
 
+    @NotNull
     @Override
     public String getContextName() {
         return purpose;

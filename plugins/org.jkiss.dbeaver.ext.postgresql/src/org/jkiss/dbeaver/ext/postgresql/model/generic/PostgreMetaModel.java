@@ -220,7 +220,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Nullable
     @Override
-    public DBCQueryTransformer createQueryTransformer(DBCQueryTransformType type) {
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
             return new QueryTransformerLimit(false);
         }
