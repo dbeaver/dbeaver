@@ -227,28 +227,28 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public Collection<? extends MySQLCatalog> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends MySQLCatalog> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getCatalogs();
     }
 
     @Override
-    public MySQLCatalog getChild(DBRProgressMonitor monitor, String childName)
+    public MySQLCatalog getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return getCatalog(childName);
     }
 
     @Override
-    public Class<? extends MySQLCatalog> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends MySQLCatalog> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return MySQLCatalog.class;
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         

@@ -564,7 +564,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor)
+    public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -579,7 +579,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSObject getChild(DBRProgressMonitor monitor, String childName)
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(getCatalogs())) {
@@ -594,7 +594,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Class<? extends DBSObject> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogs)) {
@@ -607,7 +607,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void cacheStructure(DBRProgressMonitor monitor, int scope) throws DBException {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             for (GenericCatalog catalog : catalogs) catalog.cacheStructure(monitor, scope);
         } else if (!CommonUtils.isEmpty(schemas)) {
@@ -889,7 +889,7 @@ public class GenericDataSource extends JDBCDataSource
         }
 
         @Override
-        public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor) throws DBException {
+        public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
             return GenericTable.class;
         }
 

@@ -270,28 +270,28 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     }
 
     @Override
-    public Collection<OracleTableBase> getChildren(DBRProgressMonitor monitor)
+    public Collection<OracleTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public OracleTableBase getChild(DBRProgressMonitor monitor, String childName)
+    public OracleTableBase getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
         return tableCache.getObject(monitor, this, childName);
     }
 
     @Override
-    public Class<? extends DBSEntity> getChildType(DBRProgressMonitor monitor)
+    public Class<? extends DBSEntity> getChildType(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return OracleTable.class;
     }
 
     @Override
-    public synchronized void cacheStructure(DBRProgressMonitor monitor, int scope)
+    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
         monitor.subTask("Cache tables");
