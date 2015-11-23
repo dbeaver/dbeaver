@@ -50,11 +50,12 @@ public class SQLEditorPropertyTester extends PropertyTester
             return false;
         }
         SQLEditor editor = (SQLEditor)receiver;
+        boolean isFocused = editor.getEditorControl().isFocusControl();
         boolean isConnected = editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
         if (property.equals(PROP_CAN_EXECUTE)) {
-            return isConnected && (!"statement".equals(expectedValue) || editor.hasActiveQuery());
+            return isConnected && isFocused && (!"statement".equals(expectedValue) || editor.hasActiveQuery());
         } else if (property.equals(PROP_CAN_EXPLAIN)) {
-            return isConnected && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
+            return isConnected && isFocused && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
         } else if (property.equals(PROP_CAN_NAVIGATE)) {
             // Check whether some word is under cursor
             ISelectionProvider selectionProvider = editor.getSelectionProvider();
