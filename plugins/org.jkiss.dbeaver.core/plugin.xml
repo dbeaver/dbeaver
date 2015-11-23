@@ -1672,7 +1672,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+X"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>

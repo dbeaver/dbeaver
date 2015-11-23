@@ -154,8 +154,9 @@ abstract class ViewValuePanel extends Composite {
 
                         @Override
                         public void keyPressed(KeyEvent e) {
-                            if (e.keyCode == 'x' && e.stateMask == SWT.CONTROL) {
+                            if (e.keyCode == SWT.CR && e.stateMask == SWT.CTRL) {
                                 saveValue();
+                                e.doit = false;
                             }
                         }
                     });
@@ -246,6 +247,7 @@ abstract class ViewValuePanel extends Composite {
                 };
                 applyAction.setActionDefinitionId(CMD_SAVE_VALUE);
                 applyAction.setId(CMD_SAVE_VALUE);
+                applyAction.setAccelerator(SWT.CTRL | SWT.CR);
             toolBarManager.add(applyAction);
         }
         toolBarManager.add(
