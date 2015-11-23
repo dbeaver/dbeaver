@@ -100,8 +100,12 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             int divPos = fullName.indexOf(syntaxManager.getStructSeparator());
             if (divPos != -1) {
                 containerName = fullName.substring(0, divPos);
+                tableName = fullName.substring(divPos + 1);
                 if (wordDetector.isQuoted(containerName)) {
                     containerName = DBUtils.getUnQuotedIdentifier(containerName, syntaxManager.getQuoteSymbol());
+                }
+                if (wordDetector.isQuoted(tableName)) {
+                    tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteSymbol());
                 }
             }
         }
