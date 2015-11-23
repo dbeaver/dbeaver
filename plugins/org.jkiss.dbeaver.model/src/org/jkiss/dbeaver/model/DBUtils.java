@@ -1444,7 +1444,7 @@ public final class DBUtils {
     }
 
     public static boolean isAtomicParameter(Object o) {
-        return o == null || o instanceof CharSequence || o instanceof Number || o instanceof java.sql.Date || o instanceof Boolean;
+        return o == null || o instanceof CharSequence || o instanceof Number || o instanceof java.util.Date || o instanceof Boolean;
     }
 
     public static String formatBinaryString(DBPDataSource dataSource, byte[] data, DBDDisplayFormat format) {
