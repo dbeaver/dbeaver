@@ -56,6 +56,11 @@ public class MySQLEnumValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             {
+                final MySQLEnumValue value = (MySQLEnumValue) controller.getValue();
+                assert value != null;
+                if (value.getColumn().isTypeSet()) {
+                    return null;
+                }
                 return new EnumInlineEditor(controller);
             }
             case PANEL:
