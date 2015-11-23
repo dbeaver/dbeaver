@@ -91,6 +91,8 @@ public class OracleXMLValueHandler extends JDBCContentValueHandler {
     {
         if (object == null) {
             return new OracleContentXML(session.getDataSource(), null);
+        } else if (object instanceof OracleContentXML) {
+            return copy ? (OracleContentXML)((OracleContentXML) object).cloneValue(session.getProgressMonitor()) : (OracleContentXML) object;
         }
         return super.getValueFromObject(session, type, object, copy);
     }

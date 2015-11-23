@@ -18,16 +18,18 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
@@ -169,8 +171,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return clob;
         } else if (object instanceof SQLXML) {
             return new JDBCContentXML(session.getDataSource(), (SQLXML) object);
-        } else if (object instanceof DBDContent && object instanceof DBDValueCloneable) {
-            return (DBDContent) ((DBDValueCloneable)object).cloneValue(session.getProgressMonitor());
+        } else if (object instanceof DBDContent) {
+            if (copy && object instanceof DBDValueCloneable) {
+                return (DBDContent) ((DBDValueCloneable)object).cloneValue(session.getProgressMonitor());
+            }
+            return (DBDContent) object;
         } else {
             throw new DBCException(ModelMessages.model_jdbc_unsupported_value_type_ + object.getClass().getName());
         }
