@@ -123,12 +123,15 @@ public class ResultSetUtils
                     } else {
                         tableColumn = entity.getAttribute(monitor, attrMeta.getName());
                     }
-                    if (binding.setEntityAttribute(tableColumn)) {
+                    if (tableColumn != null && binding.setEntityAttribute(tableColumn)) {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.
                         // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
                         try {
-                            resolveAttributeValues(session, binding, rows);
+                            int pos = attrMeta.getOrdinalPosition();
+                            for (Object[] row : rows) {
+                                row[pos] = binding.getValueHandler().getValueFromObject(session, tableColumn, row[pos], false);
+                            }
                         } catch (DBCException e) {
                             log.warn("Error resolving attribute '" + binding.getName() + "' values", e);
                         }
@@ -179,15 +182,6 @@ public class ResultSetUtils
         }
         finally {
             monitor.done();
-        }
-    }
-
-    private static void resolveAttributeValues(DBCSession session, DBDAttributeBindingMeta attr, List<Object[]> rows)
-        throws DBCException
-    {
-        int pos = attr.getOrdinalPosition();
-        for (Object[] row : rows) {
-            row[pos] = attr.getValueHandler().getValueFromObject(session, attr.getEntityAttribute(), row[pos], false);
         }
     }
 
