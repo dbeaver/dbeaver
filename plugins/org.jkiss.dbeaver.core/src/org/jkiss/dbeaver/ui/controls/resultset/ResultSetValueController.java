@@ -87,7 +87,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     @Override
     public DBSTypedObject getValueType()
     {
-        return binding.getMetaAttribute();
+        return binding.getAttribute();
     }
 
     @NotNull
