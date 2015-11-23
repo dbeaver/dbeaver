@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -27,6 +29,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.*;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -48,7 +51,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -74,7 +77,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
     implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
 {
     static final Log log = Log.getLog(EntityEditor.class);
-    private Composite breadcrumbsPanel;
 
     private static class EditorDefaults {
         String pageId;
@@ -220,37 +222,54 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         final DBECommandContext commandContext = getCommandContext();
         if (commandContext != null && commandContext.isDirty()) {
-            if (!saveCommandContext(monitor)) {
-                monitor.setCanceled(true);
-                return;
-            }
-            if (monitor.isCanceled()) {
-                return;
+            monitor.beginTask("Save changes...", 1);
+            try {
+                monitor.subTask("Save '" + getPartName() + "' changes...");
+                SaveJob saveJob = new SaveJob();
+                saveJob.schedule();
+
+                // Wait until job finished
+                Display display = Display.getCurrent();
+                while (saveJob.finished == null) {
+                    if (!display.readAndDispatch()) {
+                        display.sleep();
+                    }
+                }
+                display.update();
+                if (!saveJob.finished) {
+                    monitor.setCanceled(true);
+                    return;
+                }
+            } finally {
+                monitor.done();
             }
         }
 
         firePropertyChange(IEditorPart.PROP_DIRTY);
     }
 
-    private boolean saveCommandContext(IProgressMonitor monitor)
+    private boolean saveCommandContext(DBRProgressMonitor monitor)
     {
         monitor.beginTask(CoreMessages.editors_entity_monitor_preview_changes, 1);
         int previewResult = showChanges(true);
         monitor.done();
 
-        final DefaultProgressMonitor monitorWrapper = new DefaultProgressMonitor(monitor);
 
         if (previewResult == IDialogConstants.PROCEED_ID) {
             Throwable error = null;
             final DBECommandContext commandContext = getCommandContext();
+            if (commandContext == null) {
+                log.warn("Null command context");
+                return true;
+            }
             try {
-                commandContext.saveChanges(monitorWrapper);
+                commandContext.saveChanges(monitor);
             } catch (DBException e) {
                 error = e;
             }
             if (getDatabaseObject() instanceof DBPStatefulObject) {
                 try {
-                    ((DBPStatefulObject) getDatabaseObject()).refreshObjectState(monitorWrapper);
+                    ((DBPStatefulObject) getDatabaseObject()).refreshObjectState(monitor);
                 } catch (DBCException e) {
                     // Just report an error
                     log.error(e);
@@ -825,7 +844,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected Control createTopRightControl(Composite composite) {
         // Path
-        breadcrumbsPanel = new Composite(composite, SWT.NONE);
+        Composite breadcrumbsPanel = new Composite(composite, SWT.NONE);
         breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         breadcrumbsPanel.setLayout(new RowLayout());
 
@@ -908,4 +927,24 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    private class SaveJob extends AbstractJob {
+        private transient Boolean finished = null;
+
+        public SaveJob() {
+            super("Save '" + getPartName() + "' changes...");
+            setUser(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                finished = saveCommandContext(monitor);
+                return finished ? Status.OK_STATUS : Status.CANCEL_STATUS;
+            } catch (Throwable e) {
+                finished = false;
+                log.error(e);
+                return Status.CANCEL_STATUS;
+            }
+        }
+    }
 }
