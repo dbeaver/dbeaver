@@ -43,7 +43,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Nullable
     protected final DBDAttributeBinding parent;
     @NotNull
-    protected final DBDValueHandler valueHandler;
+    protected DBDValueHandler valueHandler;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 

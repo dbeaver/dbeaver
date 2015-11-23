@@ -164,6 +164,12 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
 
     public void setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
         this.entityAttribute = entityAttribute;
+        // Do NOT update value handler
+        // Update may lead to incorrect value handling:
+        // value was read with one handler and then processed by another.
+//        if (entityAttribute != null) {
+//            this.valueHandler = DBUtils.findValueHandler(dataSource, entityAttribute);
+//        }
     }
 
     public void setRowIdentifier(@Nullable DBDRowIdentifier rowIdentifier) {
