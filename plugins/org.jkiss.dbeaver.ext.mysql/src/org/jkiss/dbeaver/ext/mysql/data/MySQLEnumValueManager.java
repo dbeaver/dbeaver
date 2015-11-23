@@ -52,99 +52,11 @@ public class MySQLEnumValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             {
-                return new BaseValueEditor<Combo>(controller) {
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException
-                    {
-                        MySQLEnumValue enumValue = (MySQLEnumValue) value;
-                        control.setText(DBUtils.isNullValue(enumValue) ? "" : enumValue.getValue());
-                    }
-                    @Override
-                    public Object extractEditorValue()
-                    {
-                        int selIndex = control.getSelectionIndex();
-                        if (selIndex < 0) {
-                            return new MySQLEnumValue(getColumn(), null);
-                        } else {
-                            return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
-                        }
-                    }
-                    @Override
-                    protected Combo createControl(Composite editPlaceholder)
-                    {
-                        final Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
-                        Collection<String> enumValues = getColumn().getEnumValues();
-                        if (enumValues != null) {
-                            for (String enumValue : enumValues) {
-                                editor.add(enumValue);
-                            }
-                        }
-                        if (editor.getSelectionIndex() < 0) {
-                            editor.select(0);
-                        }
-                        return editor;
-                    }
-
-                    private MySQLTableColumn getColumn()
-                    {
-                        return ((MySQLEnumValue) controller.getValue()).getColumn();
-                    }
-                };
+                return new EnumInlineEditor(controller);
             }
             case PANEL:
             {
-                return new BaseValueEditor<List>(controller) {
-                    @Override
-                    public void primeEditorValue(@Nullable Object value) throws DBException
-                    {
-                        MySQLEnumValue enumValue = (MySQLEnumValue) value;
-                        if (enumValue.isNull()) {
-                            control.setSelection(-1);
-                        }
-                        int itemCount = control.getItemCount();
-                        for (int i = 0 ; i < itemCount; i++) {
-                            if (control.getItem(i).equals(enumValue.getValue())) {
-                                control.setSelection(i);
-                                break;
-                            }
-                        }
-                    }
-
-                    @Override
-                    public Object extractEditorValue()
-                    {
-                        int selIndex = control.getSelectionIndex();
-                        if (selIndex < 0) {
-                            return new MySQLEnumValue(getColumn(), null);
-                        } else {
-                            return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
-                        }
-                    }
-
-                    @Override
-                    protected List createControl(Composite editPlaceholder)
-                    {
-                        final MySQLTableColumn column = ((MySQLEnumValue) controller.getValue()).getColumn();
-                        final List editor = new List(controller.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
-                        Collection<String> enumValues = column.getEnumValues();
-                        if (enumValues != null) {
-                            for (String enumValue : enumValues) {
-                                editor.add(enumValue);
-                            }
-                        }
-                        if (editor.getSelectionIndex() < 0) {
-                            editor.select(0);
-                        }
-                        if (controller.getEditType() == IValueController.EditType.INLINE) {
-                            editor.setFocus();
-                        }
-                        return editor;
-                    }
-                    private MySQLTableColumn getColumn()
-                    {
-                        return ((MySQLEnumValue) controller.getValue()).getColumn();
-                    }
-                };
+                return new EnumPanelEditor(controller);
             }
             case EDITOR:
                 return new DefaultValueViewDialog(controller);
@@ -153,4 +65,112 @@ public class MySQLEnumValueManager extends BaseValueManager {
         }
     }
 
+    private static class EnumInlineEditor extends BaseValueEditor<Combo> {
+        private final IValueController controller;
+
+        public EnumInlineEditor(IValueController controller) {
+            super(controller);
+            this.controller = controller;
+        }
+
+        @Override
+        public void primeEditorValue(@Nullable Object value) throws DBException
+        {
+            MySQLEnumValue enumValue = (MySQLEnumValue) value;
+            control.setText(DBUtils.isNullValue(enumValue) ? "" : enumValue.getValue());
+        }
+
+        @Override
+        public Object extractEditorValue()
+        {
+            int selIndex = control.getSelectionIndex();
+            if (selIndex < 0) {
+                return new MySQLEnumValue(getColumn(), null);
+            } else {
+                return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
+            }
+        }
+
+        @Override
+        protected Combo createControl(Composite editPlaceholder)
+        {
+            final Combo editor = new Combo(controller.getEditPlaceholder(), SWT.READ_ONLY);
+            Collection<String> enumValues = getColumn().getEnumValues();
+            if (enumValues != null) {
+                for (String enumValue : enumValues) {
+                    editor.add(enumValue);
+                }
+            }
+            if (editor.getSelectionIndex() < 0) {
+                editor.select(0);
+            }
+            return editor;
+        }
+
+        private MySQLTableColumn getColumn()
+        {
+            return ((MySQLEnumValue) controller.getValue()).getColumn();
+        }
+    }
+
+    private static class EnumPanelEditor extends BaseValueEditor<List> {
+        private final IValueController controller;
+
+        public EnumPanelEditor(IValueController controller) {
+            super(controller);
+            this.controller = controller;
+        }
+
+        @Override
+        public void primeEditorValue(@Nullable Object value) throws DBException
+        {
+            MySQLEnumValue enumValue = (MySQLEnumValue) value;
+            if (enumValue.isNull()) {
+                control.setSelection(-1);
+            }
+            int itemCount = control.getItemCount();
+            for (int i = 0 ; i < itemCount; i++) {
+                if (control.getItem(i).equals(enumValue.getValue())) {
+                    control.setSelection(i);
+                    break;
+                }
+            }
+        }
+
+        @Override
+        public Object extractEditorValue()
+        {
+            int selIndex = control.getSelectionIndex();
+            if (selIndex < 0) {
+                return new MySQLEnumValue(getColumn(), null);
+            } else {
+                return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
+            }
+        }
+
+        @Override
+        protected List createControl(Composite editPlaceholder)
+        {
+            final MySQLTableColumn column = ((MySQLEnumValue) controller.getValue()).getColumn();
+            final List editor = new List(controller.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.SINGLE);
+            Collection<String> enumValues = column.getEnumValues();
+            if (enumValues != null) {
+                for (String enumValue : enumValues) {
+                    editor.add(enumValue);
+                }
+            }
+            if (editor.getSelectionIndex() < 0) {
+                editor.select(0);
+            }
+            if (controller.getEditType() == IValueController.EditType.INLINE) {
+                editor.setFocus();
+            }
+            return editor;
+        }
+
+        private MySQLTableColumn getColumn()
+        {
+            return ((MySQLEnumValue) controller.getValue()).getColumn();
+        }
+    }
 }
