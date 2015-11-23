@@ -724,7 +724,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
 
-            controller.lockActions(placeholder);
+            controller.lockActionsByControl(placeholder);
         }
 
         SpreadsheetValueController valueController = new SpreadsheetValueController(

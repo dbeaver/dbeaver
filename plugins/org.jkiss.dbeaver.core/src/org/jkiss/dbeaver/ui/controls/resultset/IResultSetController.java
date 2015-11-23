@@ -125,5 +125,7 @@ public interface IResultSetController extends DBPContextProvider {
      * Actions will be locked until lockedBy will be disposed
      * @param lockedBy    locker control
      */
-    void lockActions(Control lockedBy);
+    void lockActionsByControl(Control lockedBy);
+
+    void lockActionsByFocus(Control lockedBy);
 }

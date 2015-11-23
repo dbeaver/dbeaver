@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -80,7 +79,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
 
@@ -286,9 +284,8 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void lockActions(Control lockedBy) {
-        if (actionsDisabled) {
-            log.error("Double-lock actions by [" + lockedBy + "]");
+    public void lockActionsByControl(Control lockedBy) {
+        if (checkDoubleLock(lockedBy)) {
             return;
         }
         actionsDisabled = true;
@@ -298,6 +295,30 @@ public class ResultSetViewer extends Viewer
                 actionsDisabled = false;
             }
         });
+    }
+
+    @Override
+    public void lockActionsByFocus(final Control lockedBy) {
+        lockedBy.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                checkDoubleLock(lockedBy);
+                actionsDisabled = true;
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                actionsDisabled = false;
+            }
+        });
+    }
+
+    private boolean checkDoubleLock(Control lockedBy) {
+        if (actionsDisabled) {
+            log.error("Double-lock actions by [" + lockedBy + "]");
+            return true;
+        }
+        return false;
     }
 
     void updatePresentation(final DBCResultSet resultSet) {

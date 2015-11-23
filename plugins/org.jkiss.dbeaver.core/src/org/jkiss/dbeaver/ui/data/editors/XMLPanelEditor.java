@@ -90,23 +90,25 @@ public class XMLPanelEditor extends ContentPanelEditor {
         if (content == null) {
             log.warn("NULL content value. Must be DBDContent.");
         } else {
-            DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Read XML value", 1);
-                    try {
-                        monitor.subTask("Read XML value");
-                        editor.doSave(monitor.getNestedMonitor());
+            final ContentEditorInput editorInput = (ContentEditorInput) editor.getEditorInput();
+            if (editorInput != null) {
+                DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        monitor.beginTask("Read XML value", 1);
+                        try {
+                            monitor.subTask("Read XML value");
+                            editor.doSave(monitor.getNestedMonitor());
 
-                        ContentEditorInput editorInput = (ContentEditorInput) editor.getEditorInput();
-                        editorInput.updateContentFromFile(monitor.getNestedMonitor());
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
+                            editorInput.updateContentFromFile(monitor.getNestedMonitor());
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
+                        } finally {
+                            monitor.done();
+                        }
                     }
-                }
-            });
+                });
+            }
         }
         return content;
     }
