@@ -1389,7 +1389,6 @@ public final class DBUtils {
                 return new BigDecimal(text);
             }
         } catch (NumberFormatException e) {
-            log.debug("Bad numeric value '" + text + "' - " + e.getMessage()); //$NON-NLS-1$ //$NON-NLS-2$
             try {
                 return (Number)formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
