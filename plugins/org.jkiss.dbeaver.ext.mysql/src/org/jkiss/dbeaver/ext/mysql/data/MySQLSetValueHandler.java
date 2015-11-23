@@ -69,31 +69,6 @@ public class MySQLSetValueHandler extends MySQLEnumValueHandler {
         }
     }
 
-    static void fillSetList(org.eclipse.swt.widgets.List editor, MySQLTypeEnum value)
-    {
-        editor.removeAll();
-        List<String> enumValues = value.getColumn().getEnumValues();
-        String setString = value.getValue();
-        List<String> setValues = new ArrayList<String>();
-        if (!CommonUtils.isEmpty(setString)) {
-            StringTokenizer st = new StringTokenizer(setString, ",");
-            while (st.hasMoreTokens()) {
-                setValues.add(st.nextToken());
-            }
-        }
-        if (enumValues != null) {
-            int[] selIndices = new int[setValues.size()];
-            int selIndex = 0;
-            for (int i = 0; i < enumValues.size(); i++) {
-                String enumValue = enumValues.get(i);
-                editor.add(enumValue);
-                if (setValues.contains(enumValue)) {
-                    selIndices[selIndex++] = i;
-                }
-            }
-            editor.select(selIndices);
-        }
-    }
 */
 
 }
