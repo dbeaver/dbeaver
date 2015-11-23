@@ -195,6 +195,10 @@ public class OracleDataType extends OracleObject<DBSObject>
                 this.valueType = java.sql.Types.ARRAY;
             } else if (TYPE_CODE_OBJECT.equals(this.typeCode)) {
                 this.valueType = java.sql.Types.STRUCT;
+            } else {
+                if (this.name.equals(OracleConstants.TYPE_NAME_XML) && owner.getName().equals(OracleConstants.SCHEMA_SYS)) {
+                    this.valueType = java.sql.Types.SQLXML;
+                }
             }
         }
     }
