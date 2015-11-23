@@ -56,7 +56,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
                     @Override
                     public void primeEditorValue(@Nullable Object value) throws DBException
                     {
-                        MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
+                        MySQLEnumValue enumValue = (MySQLEnumValue) value;
                         control.setText(DBUtils.isNullValue(enumValue) ? "" : enumValue.getValue());
                     }
                     @Override
@@ -64,9 +64,9 @@ public class MySQLEnumValueManager extends BaseValueManager {
                     {
                         int selIndex = control.getSelectionIndex();
                         if (selIndex < 0) {
-                            return new MySQLTypeEnum(getColumn(), null);
+                            return new MySQLEnumValue(getColumn(), null);
                         } else {
-                            return new MySQLTypeEnum(getColumn(), control.getItem(selIndex));
+                            return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
                         }
                     }
                     @Override
@@ -87,7 +87,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
 
                     private MySQLTableColumn getColumn()
                     {
-                        return ((MySQLTypeEnum) controller.getValue()).getColumn();
+                        return ((MySQLEnumValue) controller.getValue()).getColumn();
                     }
                 };
             }
@@ -97,7 +97,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
                     @Override
                     public void primeEditorValue(@Nullable Object value) throws DBException
                     {
-                        MySQLTypeEnum enumValue = (MySQLTypeEnum) value;
+                        MySQLEnumValue enumValue = (MySQLEnumValue) value;
                         if (enumValue.isNull()) {
                             control.setSelection(-1);
                         }
@@ -115,16 +115,16 @@ public class MySQLEnumValueManager extends BaseValueManager {
                     {
                         int selIndex = control.getSelectionIndex();
                         if (selIndex < 0) {
-                            return new MySQLTypeEnum(getColumn(), null);
+                            return new MySQLEnumValue(getColumn(), null);
                         } else {
-                            return new MySQLTypeEnum(getColumn(), control.getItem(selIndex));
+                            return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
                         }
                     }
 
                     @Override
                     protected List createControl(Composite editPlaceholder)
                     {
-                        final MySQLTableColumn column = ((MySQLTypeEnum) controller.getValue()).getColumn();
+                        final MySQLTableColumn column = ((MySQLEnumValue) controller.getValue()).getColumn();
                         final List editor = new List(controller.getEditPlaceholder(), SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL);
                         Collection<String> enumValues = column.getEnumValues();
                         if (enumValues != null) {
@@ -142,7 +142,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
                     }
                     private MySQLTableColumn getColumn()
                     {
-                        return ((MySQLTypeEnum) controller.getValue()).getColumn();
+                        return ((MySQLEnumValue) controller.getValue()).getColumn();
                     }
                 };
             }

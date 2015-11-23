@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -162,14 +164,22 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         throw new DBCException("Meta binding doesn't support nested values");
     }
 
-    public void setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
+    /**
+     * Sets entity attribute
+     * @return true if attribute type differs from meta attribute type.
+     */
+    public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
         this.entityAttribute = entityAttribute;
-        // Do NOT update value handler
-        // Update may lead to incorrect value handling:
-        // value was read with one handler and then processed by another.
-//        if (entityAttribute != null) {
-//            this.valueHandler = DBUtils.findValueHandler(dataSource, entityAttribute);
-//        }
+        if (entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
+            valueHandler = DBUtils.findValueHandler(dataSource, entityAttribute);
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean haveEqualsTypes(DBSTypedObject object1, DBSTypedObject object2) {
+        return object1.getTypeID() == object2.getTypeID() &&
+            object1.getTypeName().equalsIgnoreCase(object2.getTypeName());
     }
 
     public void setRowIdentifier(@Nullable DBDRowIdentifier rowIdentifier) {

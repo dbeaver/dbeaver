@@ -46,11 +46,11 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return new MySQLTypeEnum((MySQLTableColumn) type, null);
-        } else if (object instanceof MySQLTypeEnum) {
-            return copy ? new MySQLTypeEnum((MySQLTypeEnum) object) : object;
+            return new MySQLEnumValue((MySQLTableColumn) type, null);
+        } else if (object instanceof MySQLEnumValue) {
+            return copy ? new MySQLEnumValue((MySQLEnumValue) object) : object;
         } else if (object instanceof String && type instanceof MySQLTableColumn) {
-            return new MySQLTypeEnum((MySQLTableColumn) type, (String) object);
+            return new MySQLEnumValue((MySQLTableColumn) type, (String) object);
         } else {
             throw new DBCException("Unsupported ");
         }
@@ -60,10 +60,10 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (!(value instanceof MySQLTypeEnum)) {
+        if (!(value instanceof MySQLEnumValue)) {
             return super.getValueDisplayString(column, value, format);
         }
-        String strValue = ((MySQLTypeEnum) value).getValue();
+        String strValue = ((MySQLEnumValue) value).getValue();
         return DBUtils.getDefaultValueDisplayString(strValue, format);
     }
 
@@ -90,7 +90,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         } else {
             throw new SQLException("Bad column type: " + attribute.getClass().getName());
         }
-        return new MySQLTypeEnum(enumColumn, resultSet.getString(index));
+        return new MySQLEnumValue(enumColumn, resultSet.getString(index));
     }
 
     @Override
@@ -100,8 +100,8 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
         // Sometimes we have String in value instead of MySQLTypeEnum
         // It happens when we edit result sets as MySQL reports RS column type as CHAR for enum/set types
         String strValue;
-        if (value instanceof MySQLTypeEnum) {
-            strValue = ((MySQLTypeEnum) value).getValue();
+        if (value instanceof MySQLEnumValue) {
+            strValue = ((MySQLEnumValue) value).getValue();
         } else {
             strValue = CommonUtils.toString(value);
         }
@@ -116,7 +116,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
     @Override
     public Class getValueObjectType(@NotNull DBSTypedObject attribute)
     {
-        return MySQLTypeEnum.class;
+        return MySQLEnumValue.class;
     }
 
 
