@@ -283,18 +283,10 @@ public class ResultSetUtils
         return true;
     }
 
-    public static boolean equalAttributes(DBSAttributeBase attr1, DBSAttributeBase attr2) {
-        if (attr1 instanceof DBCAttributeMetaData) {
-            // Check attribute metadata props
-            if (attr2 instanceof DBCAttributeMetaData) {
-                if (!CommonUtils.equalObjects(((DBCAttributeMetaData) attr1).getLabel(), ((DBCAttributeMetaData) attr2).getLabel())) {
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
+    public static boolean equalAttributes(DBCAttributeMetaData attr1, DBCAttributeMetaData attr2) {
         return
+            CommonUtils.equalObjects(attr1.getLabel(), attr2.getLabel()) &&
+            CommonUtils.equalObjects(attr1.getEntityMetaData(), attr2.getEntityMetaData()) &&
             attr1.getOrdinalPosition() == attr2.getOrdinalPosition() &&
             attr1.isRequired() == attr2.isRequired() &&
             attr1.getMaxLength() == attr2.getMaxLength() &&

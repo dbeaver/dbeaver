@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,4 +79,26 @@ public class JDBCTableMetaData implements DBCEntityMetaData {
         columns.add(columnMetaData);
     }
 
+    @Override
+    public String toString() {
+        return DBUtils.getSimpleQualifiedName(catalogName, schemaName, tableName);
+    }
+
+    @Override
+    public int hashCode() {
+        return (catalogName == null ? 1 : catalogName.hashCode()) *
+            (schemaName == null ? 2 : schemaName.hashCode()) *
+            tableName.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof JDBCTableMetaData)) {
+            return false;
+        }
+        JDBCTableMetaData md2 = (JDBCTableMetaData) obj;
+        return CommonUtils.equalObjects(catalogName, md2.catalogName) &&
+            CommonUtils.equalObjects(schemaName, md2.schemaName) &&
+            CommonUtils.equalObjects(tableName, md2.tableName);
+    }
 }
