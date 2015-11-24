@@ -57,20 +57,23 @@ public class DerbyMetaModel extends GenericMetaModel
         }
     }
 
-/*
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        JDBCSession session = sourceObject.getDataSource().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Read procedure definition");
-        try {
-            return JDBCUtils.queryString(session, "SELECT pg_get_functiondef(p.oid) FROM PG_CATALOG.PG_PROC P, PG_CATALOG.PG_NAMESPACE NS\n" +
-                "WHERE ns.oid=p.pronamespace and ns.nspname=? AND p.proname=?", sourceObject.getContainer().getName(), sourceObject.getName());
-        } catch (SQLException e) {
-            throw new DBException(e, sourceObject.getDataSource());
-        } finally {
-            session.close();
+        String procMethodName = sourceObject.getDescription();
+        int divPos = procMethodName.lastIndexOf('.');
+        if (divPos == -1) {
+            throw new DBException("Bad Java method reference: " + procMethodName);
         }
+        String className = procMethodName.substring(0, divPos);
+        String methodName = procMethodName.substring(divPos + 1);
+        return decompileJavaMethod(className, methodName);
     }
-*/
+
+    private String decompileJavaMethod(String className, String methodName) throws DBException {
+//        JavaDecompiler decompiler = new JavaDecompiler();
+//        return decompiler.decompileJavaMethod(className, methodName);
+        return "-- Source of " + className + "." + methodName;
+    }
 
     @Override
     public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
