@@ -90,17 +90,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         SQLCompletionProcessor.lookupTemplates = lookupTemplates;
     }
 
-    /**
-     * This method returns a list of completion proposals as ICompletionProposal
-     * objects. The proposals are based on the word at the offset in the document
-     * where the cursor is positioned. In this implementation, we find the word at
-     * the document offset and compare it to our list of SQL reserved words. The
-     * list is a subset, of those words that match what the user has entered. For
-     * example, the text or proposes the SQL keywords OR and ORDER. The list is
-     * returned as an array of completion proposals.
-     *
-     * @see org.eclipse.jface.text.contentassist.IContentAssistProcessor#computeCompletionProposals(ITextViewer, int)
-     */
     @Override
     public ICompletionProposal[] computeCompletionProposals(
         ITextViewer viewer,
