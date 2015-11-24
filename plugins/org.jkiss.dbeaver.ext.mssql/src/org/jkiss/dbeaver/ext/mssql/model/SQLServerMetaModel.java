@@ -70,10 +70,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
-            ServerType serverType = getServerType(monitor, container.getDataSource());
+            String schema = getSystemSchema(monitor, container);
             String catalog = table.getCatalog().getName();
             String query =
-                "SELECT triggers.name FROM " + catalog + ".sys.sysobjects tables, " + catalog + ".sys.sysobjects triggers\n" +
+                "SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects tables, " + catalog + "." + schema + ".sysobjects triggers\n" +
                 "WHERE triggers.type = 'TR'\n" +
                 "AND triggers.deltrig = tables.id\n" +
                 "AND user_name(tables.uid) = ? AND tables.name = ?";
@@ -101,6 +101,12 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
     }
 
+    @NotNull
+    private String getSystemSchema(DBRProgressMonitor monitor, @NotNull GenericStructContainer container) {
+        ServerType serverType = getServerType(monitor, container.getDataSource());
+        return serverType == ServerType.SQL_SERVER ? "sys" : "dbo";
+    }
+
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         GenericTable table = trigger.getTable();
@@ -118,8 +124,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
+        String systemSchema = getSystemSchema(monitor, dataSource);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(catalog + ".sys.sp_helptext '" + schema + "." + name + "'")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(catalog + "." + systemSchema + ".sp_helptext '" + schema + "." + name + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
