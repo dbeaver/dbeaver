@@ -71,38 +71,15 @@ public class ResultSetUtils
                 if (dataContainer instanceof DBSEntity) {
                     entity = (DBSEntity)dataContainer;
                 }
+                DBCEntityMetaData entityMeta = null;
                 if (entity == null) {
                     // Discover from entity metadata
-                    DBCEntityMetaData entityMeta = null;
                     Object sourceDescriptor = executionSource.getSourceDescriptor();
                     if (sourceDescriptor instanceof SQLQuery) {
                         entityMeta = ((SQLQuery) sourceDescriptor).getSingleSource();
                     }
                     if (entityMeta != null) {
-                        DBPDataSource dataSource = session.getDataSource();
-                        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
-                        if (objectContainer != null) {
-                            String catalogName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getCatalogName());
-                            String schemaName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getSchemaName());
-                            String entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getEntityName());
-                            Class<? extends DBSObject> scChildType = objectContainer.getChildType(monitor);
-                            DBSObject entityObject;
-                            if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
-                                (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
-                                // Do not use catalog name
-                                // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
-                                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, null, schemaName, entityName);
-                            } else {
-                                entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
-                            }
-                            if (entityObject == null) {
-                                log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
-                            } else if (entityObject instanceof DBSEntity) {
-                                entity = (DBSEntity) entityObject;
-                            } else {
-                                log.debug("Unsupported table class: " + entityObject.getClass().getName());
-                            }
-                        }
+                        entity = getEntityFromMetaData(session, entityMeta);
                     }
                 }
             }
@@ -116,6 +93,9 @@ public class ResultSetUtils
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
+                if (entity == null && attrMeta.getEntityMetaData() != null) {
+                    entity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
+                }
                 if (entity != null) {
                     DBSEntityAttribute tableColumn;
                     if (attrMeta.getPseudoAttribute() != null) {
@@ -183,6 +163,34 @@ public class ResultSetUtils
         finally {
             monitor.done();
         }
+    }
+
+    private static DBSEntity getEntityFromMetaData(DBCSession session, DBCEntityMetaData entityMeta) throws DBException {
+        DBPDataSource dataSource = session.getDataSource();
+        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        if (objectContainer != null) {
+            String catalogName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getCatalogName());
+            String schemaName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getSchemaName());
+            String entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getEntityName());
+            Class<? extends DBSObject> scChildType = objectContainer.getChildType(session.getProgressMonitor());
+            DBSObject entityObject;
+            if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
+                (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
+                // Do not use catalog name
+                // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
+                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+            } else {
+                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
+            }
+            if (entityObject == null) {
+                log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
+            } else if (entityObject instanceof DBSEntity) {
+                return (DBSEntity) entityObject;
+            } else {
+                log.debug("Unsupported table class: " + entityObject.getClass().getName());
+            }
+        }
+        return null;
     }
 
     private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
