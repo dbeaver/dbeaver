@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 /**
  * JDBC table column manager
  */
@@ -100,12 +102,15 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
             String defaultValue = CommonUtils.toString(column.getDefaultValue());
             if (!CommonUtils.isEmpty(defaultValue)) {
-                boolean useQuotes =
-                    column.getDataKind() == DBPDataKind.STRING ||
-                    column.getDataKind() == DBPDataKind.DATETIME;
+                boolean useQuotes = column.getDataKind() == DBPDataKind.STRING;
 
                 if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
                     useQuotes = false;
+                }
+                if (column.getDataKind() == DBPDataKind.DATETIME) {
+                    if (!defaultValue.toUpperCase(Locale.ENGLISH).startsWith("CURRENT")) {
+                        useQuotes = true;
+                    }
                 }
 
                 sql.append(" DEFAULT "); //$NON-NLS-1$
