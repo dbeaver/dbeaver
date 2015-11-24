@@ -55,4 +55,7 @@ public class CustomTextCellEditor extends TextCellEditor {
         super.doSetValue(CommonUtils.toString(value));
     }
 
+    protected int getDoubleClickTimeout() {
+        return 0;
+    }
 }

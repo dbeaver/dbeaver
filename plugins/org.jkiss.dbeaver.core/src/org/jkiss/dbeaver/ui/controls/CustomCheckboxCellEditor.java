@@ -127,4 +127,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         fireApplyEditorValue();
     }
 
+    protected int getDoubleClickTimeout() {
+        return 0;
+    }
 }

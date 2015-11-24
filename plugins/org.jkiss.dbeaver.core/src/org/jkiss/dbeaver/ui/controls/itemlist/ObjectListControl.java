@@ -26,6 +26,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -133,13 +135,12 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         itemsViewer.setContentProvider(contentProvider);
         //itemsViewer.setLabelProvider(new ItemLabelProvider());
-        itemsViewer.addDoubleClickListener(new IDoubleClickListener() {
+        itemsViewer.getControl().addMouseListener(new MouseAdapter() {
             @Override
-            public void doubleClick(DoubleClickEvent event)
-            {
+            public void mouseDoubleClick(MouseEvent e) {
                 if (doubleClickHandler != null) {
                     // Uee provided double click
-                    doubleClickHandler.doubleClick(event);
+                    doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
                 }
             }
         });

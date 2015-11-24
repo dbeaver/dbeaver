@@ -71,4 +71,7 @@ public class CustomNumberCellEditor extends TextCellEditor {
         super.doSetValue(CommonUtils.toString(value));
     }
 
+    protected int getDoubleClickTimeout() {
+        return 0;
+    }
 }
