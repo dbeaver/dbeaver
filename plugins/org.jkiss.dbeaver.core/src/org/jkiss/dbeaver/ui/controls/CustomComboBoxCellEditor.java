@@ -265,4 +265,7 @@ public class CustomComboBoxCellEditor extends CellEditor {
         comboBox.paste();
     }
 
+	protected int getDoubleClickTimeout() {
+		return 0;
+	}
 }
