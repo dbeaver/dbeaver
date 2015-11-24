@@ -48,7 +48,7 @@ public class UndoChangesHandler extends AbstractHandler implements IElementUpdat
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
-        IWorkbenchWindow workbenchWindow = (IWorkbenchWindow) element.getServiceLocator().getService(IWorkbenchWindow.class);
+        IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
         final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
         if (activeEditor instanceof EntityEditor) {
             final DBECommandContext commandContext = ((EntityEditor) activeEditor).getCommandContext();

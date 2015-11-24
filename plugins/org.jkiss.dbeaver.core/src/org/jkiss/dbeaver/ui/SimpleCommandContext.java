@@ -35,7 +35,7 @@ public class SimpleCommandContext extends AbstractCommandContext {
 
     protected void refreshCommandState()
     {
-        ICommandService commandService = (ICommandService) DBeaverUI.getActiveWorkbenchWindow().getService(ICommandService.class);
+        ICommandService commandService = DBeaverUI.getActiveWorkbenchWindow().getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
             commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);

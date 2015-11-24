@@ -102,7 +102,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             return null;
         }
         if (object instanceof DBPDataSourceContainer && object.getDataSource() instanceof DBSObject) {
-            object = (DBSObject) object.getDataSource();
+            object = object.getDataSource();
         }
         return object;
     }

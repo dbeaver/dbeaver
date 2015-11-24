@@ -44,7 +44,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.StatusTextEditor;
 import org.eclipse.ui.texteditor.rulers.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -101,7 +100,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
         if (editor instanceof BaseTextEditor) {
             return (BaseTextEditor) editor;
         }
-        return (BaseTextEditor) editor.getAdapter(BaseTextEditor.class);
+        return editor.getAdapter(BaseTextEditor.class);
     }
 
     protected ScriptPositionColumn getScriptColumn()

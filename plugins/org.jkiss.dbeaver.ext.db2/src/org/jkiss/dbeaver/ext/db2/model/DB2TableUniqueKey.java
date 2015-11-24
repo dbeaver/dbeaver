@@ -64,7 +64,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
     {
         super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, type, true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) table.getDataSource();
+        DB2DataSource db2DataSource = table.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.enforced = JDBCUtils.safeGetBoolean(dbResult, "ENFORCED", DB2YesNo.Y.name());

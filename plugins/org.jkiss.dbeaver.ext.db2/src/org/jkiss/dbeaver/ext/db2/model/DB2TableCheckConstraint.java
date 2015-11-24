@@ -70,7 +70,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     {
         super(table, JDBCUtils.safeGetString(dbResult, "CONSTNAME"), null, DBSEntityConstraintType.CHECK, true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) table.getDataSource();
+        DB2DataSource db2DataSource = table.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");

@@ -52,7 +52,7 @@ public class DB2ViewBaseDep extends DB2Object<DB2ViewBase> {
         // TODO DF: Bad should be BTYPE+BSCHEMA+BNAME
         super(db2ViewBase, JDBCUtils.safeGetString(resultSet, "BNAME"), true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) db2ViewBase.getDataSource();
+        DB2DataSource db2DataSource = db2ViewBase.getDataSource();
 
         this.tabAuth = JDBCUtils.safeGetString(resultSet, "TABAUTH");
         this.tableDepType = CommonUtils.valueOf(DB2TableDepType.class, JDBCUtils.safeGetString(resultSet, "BTYPE"));

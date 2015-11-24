@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.ext.oracle.model.OracleTableColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndex;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableIndexColumn;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTablePhysical;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;

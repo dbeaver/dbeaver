@@ -81,7 +81,7 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         }
         DBPConnectionConfiguration tmpConnectionInfo = new DBPConnectionConfiguration();
         DataSourceDescriptor tempDataSource = new DataSourceDescriptor(
-            (DataSourceRegistry) site.getDataSourceRegistry(),
+            site.getDataSourceRegistry(),
             activeDataSource.getId(),
             (DriverDescriptor) activeDataSource.getDriver(),
             tmpConnectionInfo);

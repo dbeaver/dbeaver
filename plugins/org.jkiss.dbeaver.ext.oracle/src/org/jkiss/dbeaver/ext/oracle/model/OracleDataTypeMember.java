@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityElement;
-import org.jkiss.dbeaver.model.struct.DBSParametrizedObject;
 
 import java.sql.ResultSet;
 

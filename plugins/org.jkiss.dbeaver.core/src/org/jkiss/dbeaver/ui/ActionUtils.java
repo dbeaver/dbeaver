@@ -123,7 +123,7 @@ public class ActionUtils
         if (commandId != null && part != null) {
             try {
                 //Command cmd = new Command();
-                ICommandService commandService = (ICommandService)part.getSite().getService(ICommandService.class);
+                ICommandService commandService = part.getSite().getService(ICommandService.class);
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
                     return command != null && command.isEnabled();
@@ -140,7 +140,7 @@ public class ActionUtils
     {
         String commandName = null;
         String shortcut = null;
-        ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
+        ICommandService commandService = serviceLocator.getService(ICommandService.class);
         if (commandService != null) {
             Command command = commandService.getCommand(commandId);
             if (command != null && command.isDefined()) {
@@ -151,7 +151,7 @@ public class ActionUtils
                 }
             }
         }
-        IBindingService bindingService = (IBindingService)serviceLocator.getService(IBindingService.class);
+        IBindingService bindingService = serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = null;
             for (Binding b : bindingService.getBindings()) {
@@ -184,11 +184,11 @@ public class ActionUtils
         if (commandId != null) {
             try {
                 //Command cmd = new Command();
-                ICommandService commandService = (ICommandService)serviceLocator.getService(ICommandService.class);
+                ICommandService commandService = serviceLocator.getService(ICommandService.class);
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
                     if (command != null && command.isEnabled()) {
-                        IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
+                        IHandlerService handlerService = serviceLocator.getService(IHandlerService.class);
                         handlerService.executeCommand(commandId, null);
                     }
                 }
@@ -237,7 +237,7 @@ public class ActionUtils
 
     public static void evaluatePropertyState(String propertyName)
     {
-        IEvaluationService service = (IEvaluationService) PlatformUI.getWorkbench().getService(IEvaluationService.class);
+        IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
             try {
                 service.requestEvaluation(propertyName);

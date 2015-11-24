@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ui.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 
-import java.util.Collection;
 import java.util.List;
 
 /**

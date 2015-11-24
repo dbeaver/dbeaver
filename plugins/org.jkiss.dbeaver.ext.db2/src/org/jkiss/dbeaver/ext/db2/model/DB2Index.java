@@ -83,7 +83,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
     {
         super(schema, table, JDBCUtils.safeGetStringTrimmed(dbResult, "INDNAME"), null, true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+        DB2DataSource db2DataSource = schema.getDataSource();
 
         this.uniqueRule = CommonUtils.valueOf(DB2UniqueRule.class, JDBCUtils.safeGetString(dbResult, "UNIQUERULE"));
         this.colCount = JDBCUtils.safeGetInteger(dbResult, "COLCOUNT");

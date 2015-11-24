@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
@@ -234,7 +233,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public void removeDataSource(DBPDataSourceContainer dataSource)
     {
         synchronized (dataSources) {
-            this.dataSources.remove((DataSourceDescriptor)dataSource);
+            this.dataSources.remove(dataSource);
         }
         this.saveDataSources();
         try {

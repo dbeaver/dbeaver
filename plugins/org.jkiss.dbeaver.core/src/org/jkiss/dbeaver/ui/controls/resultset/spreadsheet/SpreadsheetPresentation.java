@@ -635,7 +635,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         DBeaverCore.getGlobalPreferenceStore().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
 
         // Refresh elements
-        ICommandService commandService = (ICommandService) controller.getSite().getService(ICommandService.class);
+        ICommandService commandService = controller.getSite().getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW, null);
         }

@@ -222,7 +222,7 @@ public class ResourceInfoPage extends PropertyPage {
 				"Resource properties");
 
 		// layout the page
-		IResource resource = (IResource) getElement().getAdapter(
+		IResource resource = getElement().getAdapter(
 				IResource.class);
 		
 		if (resource == null) {
@@ -287,7 +287,7 @@ public class ResourceInfoPage extends PropertyPage {
 
 	protected void performDefaults() {
 
-		IResource resource = (IResource) getElement().getAdapter(IResource.class);
+		IResource resource = getElement().getAdapter(IResource.class);
 
         if (resource == null) {
             return;
@@ -302,7 +302,7 @@ public class ResourceInfoPage extends PropertyPage {
 	 * Apply the read only state and the encoding to the resource.
 	 */
 	public boolean performOk() {
-        IResource resource = (IResource) getElement().getAdapter(IResource.class);
+        IResource resource = getElement().getAdapter(IResource.class);
 
         if (resource == null) {
             return true;

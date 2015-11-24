@@ -20,7 +20,6 @@ package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;

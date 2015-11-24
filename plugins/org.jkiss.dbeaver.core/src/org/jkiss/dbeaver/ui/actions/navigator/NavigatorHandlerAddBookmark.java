@@ -39,7 +39,7 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-            final DBNNode node = NavigatorUtils.getSelectedNode((IStructuredSelection) selection);
+            final DBNNode node = NavigatorUtils.getSelectedNode(selection);
             if (node instanceof DBNDatabaseNode) {
                 try {
                     final String title = EnterNameDialog.chooseName(

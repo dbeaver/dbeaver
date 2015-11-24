@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.sql.GenerateMultiSQLDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;

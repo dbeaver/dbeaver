@@ -299,13 +299,13 @@ public class BeanUtils {
 		return null;
 	}
 
-	public static final Short DEFAULT_SHORT = new Short((short)0);
-	public static final Integer DEFAULT_INTEGER = new Integer(0);
-	public static final Long DEFAULT_LONG = new Long(0l);
+	public static final Short DEFAULT_SHORT = (short) 0;
+	public static final Integer DEFAULT_INTEGER = 0;
+	public static final Long DEFAULT_LONG = 0l;
 	public static final Float DEFAULT_FLOAT = new Float(0.0);
-	public static final Double DEFAULT_DOUBLE = new Double(0.0);
-	public static final Byte DEFAULT_BYTE = new Byte((byte)0);
-	public static final Character DEFAULT_CHAR = new Character((char)0);
+	public static final Double DEFAULT_DOUBLE = 0.0;
+	public static final Byte DEFAULT_BYTE = (byte) 0;
+	public static final Character DEFAULT_CHAR = (char) 0;
 
 	public static boolean isBooleanType(Type paramClass)
 	{

@@ -73,7 +73,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
         setName(JDBCUtils.safeGetString(dbResult, "TABNAME"));
 
-        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+        DB2DataSource db2DataSource = schema.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.tableId = JDBCUtils.safeGetInteger(dbResult, "TABLEID");

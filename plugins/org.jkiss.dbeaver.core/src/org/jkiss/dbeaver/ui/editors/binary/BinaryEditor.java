@@ -129,7 +129,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
             }
         }
         if (storage == null) {
-            storage = (IStorage)editorInput.getAdapter(IStorage.class);
+            storage = editorInput.getAdapter(IStorage.class);
         }
 
         manager = new HexManager();

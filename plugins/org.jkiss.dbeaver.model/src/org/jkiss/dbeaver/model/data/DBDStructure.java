@@ -24,8 +24,6 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.List;
-
 /**
  * Structured data record.
  * Consists of primitive values or other records

@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.search;
 
 import org.eclipse.jface.dialogs.IDialogPage;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 

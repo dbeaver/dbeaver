@@ -519,7 +519,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 		@Override
         public Long getKey()
 		{
-			return Long.valueOf(key);
+			return key;
 		}
 
 		@Override
@@ -648,7 +648,7 @@ public class LongKeyMap<VALUE> implements Map<Long, VALUE> {
 	private class KeyIterator extends HashIterator<Long> {
 		@Override
         public Long next() {
-			return Long.valueOf(nextEntry().key);
+			return nextEntry().key;
 		}
 		public long nextLong() {
 			return nextEntry().key;

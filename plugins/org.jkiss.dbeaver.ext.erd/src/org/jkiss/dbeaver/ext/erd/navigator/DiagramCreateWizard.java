@@ -66,7 +66,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
         if (selection != null) {
             Object element = selection.getFirstElement();
             if (element != null) {
-                diagramFolder = (IFolder) Platform.getAdapterManager().getAdapter(element, IFolder.class);
+                diagramFolder = Platform.getAdapterManager().getAdapter(element, IFolder.class);
 			}
         }
         if (diagramFolder == null) {

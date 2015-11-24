@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.model.struct.rdb;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;
 

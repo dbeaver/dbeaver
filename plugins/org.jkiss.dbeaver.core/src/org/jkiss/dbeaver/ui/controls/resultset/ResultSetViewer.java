@@ -416,7 +416,7 @@ public class ResultSetViewer extends Viewer
         {
             IFindReplaceTarget nested = null;
             if (presentation instanceof IAdaptable) {
-                nested = (IFindReplaceTarget) ((IAdaptable) presentation).getAdapter(IFindReplaceTarget.class);
+                nested = ((IAdaptable) presentation).getAdapter(IFindReplaceTarget.class);
             }
             findReplaceTarget.setTarget(nested);
         }
@@ -661,7 +661,7 @@ public class ResultSetViewer extends Viewer
         changeMode(!recordMode);
 
         // Refresh elements
-        ICommandService commandService = (ICommandService) site.getService(ICommandService.class);
+        ICommandService commandService = site.getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(ResultSetCommandHandler.CMD_TOGGLE_MODE, null);
         }

@@ -98,7 +98,7 @@ public class GraphAnimation
 			return false;
 		}
 		while (iter.hasNext())
-			recordFinalState((IFigure) iter.next());
+			recordFinalState(iter.next());
 
 		start = System.currentTimeMillis();
 		finish = start + DURATION;

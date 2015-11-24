@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 

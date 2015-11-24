@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 /**

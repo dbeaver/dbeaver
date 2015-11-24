@@ -102,7 +102,7 @@ public class DataSourcePropertyTester extends PropertyTester
     public static void fireCommandRefresh(final String commandID)
     {
         // Update commands
-        final ICommandService commandService = (ICommandService) PlatformUI.getWorkbench().getService(ICommandService.class);
+        final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         if (commandService != null) {
             Display.getDefault().asyncExec(new Runnable() {
                 @Override

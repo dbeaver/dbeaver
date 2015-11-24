@@ -23,7 +23,6 @@ import org.jkiss.code.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -415,13 +414,13 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static <T extends Enum> T valueOf(@NotNull Class<T> type, @Nullable String name)
+    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name)
     {
         return valueOf(type, name, false);
     }
 
     @Nullable
-    public static <T extends Enum> T valueOf(@Nullable Class<T> type, @Nullable String name, boolean underscoreSpaces)
+    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, boolean underscoreSpaces)
     {
         if (name == null) {
             return null;
@@ -434,7 +433,7 @@ public class CommonUtils {
             name = name.replace(' ', '_');
         }
         try {
-            return (T) Enum.valueOf(type, name);
+            return Enum.valueOf(type, name);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

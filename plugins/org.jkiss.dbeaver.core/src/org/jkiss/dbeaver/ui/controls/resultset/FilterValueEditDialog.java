@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;

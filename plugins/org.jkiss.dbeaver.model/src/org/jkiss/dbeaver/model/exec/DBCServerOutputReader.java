@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.PrintWriter;
-import java.io.Writer;
 
 /**
  * Provides ability to read server logs for certain session

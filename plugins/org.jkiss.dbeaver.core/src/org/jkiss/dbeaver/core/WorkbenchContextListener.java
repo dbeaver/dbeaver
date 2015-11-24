@@ -103,7 +103,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     @Override
     public void partActivated(IWorkbenchPart part) {
-        IContextService contextService = (IContextService) PlatformUI.getWorkbench().getService(IContextService.class);
+        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
         if (contextService == null) {
             return;
         }
@@ -132,7 +132,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     @Override
     public void partDeactivated(IWorkbenchPart part) {
-        IContextService contextService = (IContextService) PlatformUI.getWorkbench().getService(IContextService.class);
+        IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
         if (contextService == null) {
             return;
         }
