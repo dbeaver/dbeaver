@@ -399,8 +399,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     protected void createPages()
     {
-        if (getEditorInput() instanceof ErrorEditorInput) {
-            ErrorEditorInput errorInput = (ErrorEditorInput) getEditorInput();
+        final IDatabaseEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof ErrorEditorInput) {
+            ErrorEditorInput errorInput = (ErrorEditorInput) editorInput;
             try {
                 addPage(new ErrorEditorPartEx(errorInput.getError()), errorInput);
                 setPageImage(0, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK));
@@ -438,55 +439,42 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         super.createPages();
 
-        EditorDefaults editorDefaults;
-        synchronized (defaultPageMap) {
-            editorDefaults = defaultPageMap.get(getEditorInput().getDatabaseObject().getClass().getName());
-        }
+        DBSObject databaseObject = editorInput.getDatabaseObject();
+        EditorDefaults editorDefaults = null;
+        if (databaseObject == null) {
+            // Weird
+            log.debug("Null database object in EntityEditor");
+        } else {
+            synchronized (defaultPageMap) {
+                editorDefaults = defaultPageMap.get(databaseObject.getClass().getName());
+            }
 
-        EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
-        DBSObject databaseObject = getEditorInput().getDatabaseObject();
+            EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
 
-        // Add object editor page
-        EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject);
-        hasPropertiesEditor = false;
-        if (defaultEditor != null) {
-            hasPropertiesEditor = addEditorTab(defaultEditor);
-        }
-        if (hasPropertiesEditor) {
-            DBNNode node = getEditorInput().getNavigatorNode();
-            int propEditorIndex = getPageCount() - 1;
-            setPageText(propEditorIndex, CoreMessages.editors_entity_properties_text);
-            setPageToolTip(propEditorIndex, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
-            setPageImage(propEditorIndex, DBeaverIcons.getImage(node.getNodeIconDefault()));
-        }
-/*
-        if (!mainAdded) {
-            try {
-                DBNNode node = getEditorInput().getNavigatorNode();
-                int index = addPage(new ObjectPropertiesEditor(node), getEditorInput());
-                setPageText(index, "Properties");
-                if (node instanceof DBNDatabaseNode) {
-                    setPageToolTip(index, ((DBNDatabaseNode)node).getMeta().getChildrenType() + " Properties");
-                }
-                setPageImage(index, node.getNodeIconDefault());
-            } catch (PartInitException e) {
-                log.error("Error creating object editor");
+            // Add object editor page
+            EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject);
+            hasPropertiesEditor = false;
+            if (defaultEditor != null) {
+                hasPropertiesEditor = addEditorTab(defaultEditor);
+            }
+            if (hasPropertiesEditor) {
+                DBNNode node = editorInput.getNavigatorNode();
+                int propEditorIndex = getPageCount() - 1;
+                setPageText(propEditorIndex, CoreMessages.editors_entity_properties_text);
+                setPageToolTip(propEditorIndex, node.getNodeType() + CoreMessages.editors_entity_properties_tooltip_suffix);
+                setPageImage(propEditorIndex, DBeaverIcons.getImage(node.getNodeIconDefault()));
             }
         }
-*/
 
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_PROPS);
         addContributions(EntityEditorDescriptor.POSITION_START);
         addContributions(EntityEditorDescriptor.POSITION_MIDDLE);
 
-        // Add navigator tabs
-        //addNavigatorTabs();
-
         // Add contributed pages
         addContributions(EntityEditorDescriptor.POSITION_END);
 
-        String defPageId = getEditorInput().getDefaultPageId();
+        String defPageId = editorInput.getDefaultPageId();
         if (defPageId == null && editorDefaults != null) {
             defPageId = editorDefaults.pageId;
         }
@@ -498,7 +486,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         this.activeEditor = getActiveEditor();
         if (activeEditor instanceof IFolderContainer) {
-            String defFolderId = getEditorInput().getDefaultFolderId();
+            String defFolderId = editorInput.getDefaultFolderId();
             if (defFolderId == null && editorDefaults != null) {
                 defFolderId = editorDefaults.folderId;
             }
@@ -509,37 +497,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
     }
-
-/*
-    private void addNavigatorTabs()
-    {
-        // Collect tabs from navigator tree model
-        final List<TabInfo> tabs = new ArrayList<TabInfo>();
-        DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-            {
-                tabs.addAll(collectTabs(monitor));
-            }
-        };
-        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
-        try {
-            if (node.needsInitialization()) {
-                DBeaverUI.runInProgressService(tabsCollector);
-            } else {
-                tabsCollector.run(VoidProgressMonitor.INSTANCE);
-            }
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        } catch (InterruptedException e) {
-            // just go further
-        }
-
-        for (TabInfo tab : tabs) {
-            addNodeTab(tab);
-        }
-    }
-*/
 
     @Override
     protected void pageChange(int newPageIndex) {
@@ -655,70 +612,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public void removeFolderListener(IFolderListener listener)
     {
     }
-/*
-
-    private static class TabInfo {
-        DBNDatabaseNode node;
-        DBXTreeNode meta;
-        private TabInfo(DBNDatabaseNode node)
-        {
-            this.node = node;
-        }
-        private TabInfo(DBNDatabaseNode node, DBXTreeNode meta)
-        {
-            this.node = node;
-            this.meta = meta;
-        }
-        public String getName()
-        {
-            return meta == null ? node.getNodeName() : meta.getChildrenType(node.getObject().getDataSource());
-        }
-    }
-
-    private List<TabInfo> collectTabs(DBRProgressMonitor monitor)
-    {
-        List<TabInfo> tabs = new ArrayList<TabInfo>();
-
-        // Add all nested folders as tabs
-        DBNDatabaseNode node = getEditorInput().getNavigatorNode();
-        if (node instanceof DBNDataSource &&
-            (node.getDataSourceContainer() == null || !node.getDataSourceContainer().isConnected()))
-        {
-            // Do not add children tabs
-        } else if (node != null) {
-            try {
-                List<? extends DBNNode> children = node.getChildren(monitor);
-                if (children != null) {
-                    for (DBNNode child : children) {
-                        if (child instanceof DBNDatabaseFolder) {
-                            monitor.subTask(CoreMessages.editors_entity_monitor_add_folder + child.getNodeName() + "'");
-                            tabs.add(new TabInfo((DBNDatabaseFolder)child));
-                        }
-                    }
-                }
-            } catch (DBException e) {
-                log.error("Error initializing entity editor", e); //$NON-NLS-1$
-            }
-            // Add itself as tab (if it has child items)
-            List<DBXTreeNode> subNodes = node.getMeta().getChildren(node);
-            if (subNodes != null) {
-                for (DBXTreeNode child : subNodes) {
-                    if (child instanceof DBXTreeItem) {
-                        try {
-                            if (!((DBXTreeItem)child).isOptional() || node.hasChildren(monitor, child)) {
-                                monitor.subTask(CoreMessages.editors_entity_monitor_add_node + node.getNodeName() + "'");
-                                tabs.add(new TabInfo(node, child));
-                            }
-                        } catch (DBException e) {
-                            log.debug("Can't add child items tab", e); //$NON-NLS-1$
-                        }
-                    }
-                }
-            }
-        }
-        return tabs;
-    }
-*/
 
     private void addContributions(String position)
     {
