@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-
 /**
  * Complex value
  */

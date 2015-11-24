@@ -87,7 +87,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
     {
         super(tableBase, true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) tableBase.getDataSource();
+        DB2DataSource db2DataSource = tableBase.getDataSource();
 
         setName(JDBCUtils.safeGetString(dbResult, "COLNAME"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLNO"));

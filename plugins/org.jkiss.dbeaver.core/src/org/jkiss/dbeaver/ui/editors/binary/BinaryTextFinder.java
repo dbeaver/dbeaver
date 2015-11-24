@@ -211,7 +211,7 @@ public class BinaryTextFinder {
         int length = currentPartFoundIsUnicode ? literalByteLength : byteFindSequence.length;
         setNewStart(resultPosition + (directionForward ? 1 : length - 1));
 
-        return new Number[]{Long.valueOf(resultPosition), Integer.valueOf(length)};
+        return new Number[]{resultPosition, length};
     }
 
 

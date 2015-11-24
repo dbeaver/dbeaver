@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 

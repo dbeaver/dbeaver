@@ -103,7 +103,7 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
 
     @Override
     public String toString() {
-        String dsName = dataSource instanceof DBPNamedObject ? ((DBPNamedObject) dataSource).getName() : dataSource.toString();
+        String dsName = dataSource instanceof DBPNamedObject ? dataSource.getName() : dataSource.toString();
         return dsName + " - " + purpose;
     }
 

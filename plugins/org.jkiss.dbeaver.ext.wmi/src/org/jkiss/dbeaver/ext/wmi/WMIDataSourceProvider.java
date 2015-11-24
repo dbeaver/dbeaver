@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.wmi.service.WMIService;
 
 import java.io.File;

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.ScrollBar;
 
 /**
  * A null-op scrollbar proxy.  Used when the grid is not showing scrollbars.

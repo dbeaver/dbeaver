@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.ArrayList;
 import java.util.List;

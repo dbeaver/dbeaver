@@ -67,7 +67,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
         if (session.getDataSource() instanceof DBPDataTypeProvider) {
             try {
                 String baseTypeName = array.getBaseTypeName();
-                type = ((DBPDataTypeProvider) session.getDataSource()).resolveDataType(session.getProgressMonitor(), baseTypeName);
+                type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
             } catch (Exception e) {
                 log.warn("Error resolving data type", e);
             }
@@ -108,7 +108,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             if (type == null) {
                 type = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), itemMeta.getTypeName());
                 if (type == null) {
-                    type = new JDBCDataType((JDBCDataSource)session.getDataSource(), itemMeta);
+                    type = new JDBCDataType(session.getDataSource(), itemMeta);
                 }
             }
             valueHandler = DBUtils.findValueHandler(session, itemMeta);

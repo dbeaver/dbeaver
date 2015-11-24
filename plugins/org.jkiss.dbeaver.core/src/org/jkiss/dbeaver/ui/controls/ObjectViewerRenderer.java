@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 

@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;

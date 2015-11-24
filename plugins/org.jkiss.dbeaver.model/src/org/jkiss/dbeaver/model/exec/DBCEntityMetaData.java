@@ -19,11 +19,6 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.util.List;
 

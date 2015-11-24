@@ -20,17 +20,11 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.IRegion;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.text.Region;
-import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
-import org.jkiss.utils.ArrayUtils;
 
 public class AssistTemplatesHandler extends AbstractHandler {
 

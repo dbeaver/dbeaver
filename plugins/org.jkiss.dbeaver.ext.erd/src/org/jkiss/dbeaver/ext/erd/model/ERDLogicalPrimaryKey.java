@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraintColumn;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**

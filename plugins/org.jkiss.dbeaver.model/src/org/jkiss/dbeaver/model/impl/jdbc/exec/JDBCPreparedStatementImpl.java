@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,7 +36,6 @@ import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

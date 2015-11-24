@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.bundle;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;

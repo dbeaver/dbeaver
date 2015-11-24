@@ -137,7 +137,7 @@ public class ExtendedDirectEditManager extends DirectEditManager
 		getCellEditor().setValue(originalValue);
 
 		//calculate the font size of the underlying
-		IFigure figure = ((GraphicalEditPart) getEditPart()).getFigure();
+		IFigure figure = getEditPart().getFigure();
 		figureFont = figure.getFont();
 		FontData data = figureFont.getFontData()[0];
 		Dimension fontSize = new Dimension(0, data.getHeight());

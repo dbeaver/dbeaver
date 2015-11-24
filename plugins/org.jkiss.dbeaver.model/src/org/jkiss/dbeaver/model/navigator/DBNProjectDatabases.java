@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;

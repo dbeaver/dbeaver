@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.runtime.MonitorRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;

@@ -147,7 +147,7 @@ public class EntityPart extends NodePart
 	{
 		if (manager == null)
 		{
-			ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
+			ERDGraphicalViewer viewer = getViewer();
 			ValidationMessageHandler handler = viewer.getValidationHandler();
 
 			EntityFigure figure = (EntityFigure) getFigure();

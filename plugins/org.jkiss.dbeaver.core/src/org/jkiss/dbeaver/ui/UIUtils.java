@@ -632,7 +632,7 @@ public class UIUtils {
     @Nullable
     public static IHandlerActivation registerKeyBinding(IServiceLocator serviceLocator, IAction action)
     {
-        IHandlerService handlerService = (IHandlerService) serviceLocator.getService(IHandlerService.class);
+        IHandlerService handlerService = serviceLocator.getService(IHandlerService.class);
         if (handlerService != null) {
             return handlerService.activateHandler(action.getActionDefinitionId(), new ActionHandler(action));
         } else {
@@ -990,7 +990,7 @@ public class UIUtils {
 
     public static void addFocusTracker(IServiceLocator serviceLocator, String controlID, Control control)
     {
-        final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
+        final IFocusService focusService = serviceLocator.getService(IFocusService.class);
         if (focusService != null) {
             focusService.addFocusTracker(control, controlID);
         } else {
@@ -1004,7 +1004,7 @@ public class UIUtils {
             // TODO: it is a bug in eclipse. During workbench shutdown disposed service returned.
             return;
         }
-        final IFocusService focusService = (IFocusService) serviceLocator.getService(IFocusService.class);
+        final IFocusService focusService = serviceLocator.getService(IFocusService.class);
         if (focusService != null) {
             focusService.removeFocusTracker(control);
         } else {
@@ -1025,9 +1025,9 @@ public class UIUtils {
     @Nullable
     public static IWorkbenchPartSite getWorkbenchPartSite(IServiceLocator serviceLocator)
     {
-        IWorkbenchPartSite partSite = (IWorkbenchPartSite) serviceLocator.getService(IWorkbenchPartSite.class);
+        IWorkbenchPartSite partSite = serviceLocator.getService(IWorkbenchPartSite.class);
         if (partSite == null) {
-            IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
+            IWorkbenchPart activePart = serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
                 IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
                 if (workbenchWindow != null) {
@@ -1046,8 +1046,8 @@ public class UIUtils {
 
     public static boolean isContextActive(String contextId)
     {
-        Collection<?> contextIds = ((IContextService) PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-            .getService(IContextService.class)).getActiveContextIds();
+        Collection<?> contextIds = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
+            .getService(IContextService.class).getActiveContextIds();
         for (Object id : contextIds) {
             if (contextId.equals(id)) {
                 return true;
@@ -1059,13 +1059,13 @@ public class UIUtils {
     @Nullable
     public static ISelectionProvider getSelectionProvider(IServiceLocator serviceLocator)
     {
-        ISelectionProvider selectionProvider = (ISelectionProvider) serviceLocator.getService(ISelectionProvider.class);
+        ISelectionProvider selectionProvider = serviceLocator.getService(ISelectionProvider.class);
         if (selectionProvider != null) {
             return selectionProvider;
         }
         IWorkbenchPartSite partSite = getWorkbenchPartSite(serviceLocator);
         if (partSite == null) {
-            IWorkbenchPart activePart = (IWorkbenchPart) serviceLocator.getService(IWorkbenchPart.class);
+            IWorkbenchPart activePart = serviceLocator.getService(IWorkbenchPart.class);
             if (activePart == null) {
                 IWorkbenchWindow activeWindow = DBeaverUI.getActiveWorkbenchWindow();
                 if (activeWindow != null) {

@@ -108,9 +108,9 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         if (element == null) {
             return;
         }
-        containerNode = (DBNDataSource) element.getAdapter(DBNDataSource.class);
+        containerNode = element.getAdapter(DBNDataSource.class);
         if (containerNode == null) {
-            IDatabaseEditorInput dbInput = (IDatabaseEditorInput) element.getAdapter(IDatabaseEditorInput.class);
+            IDatabaseEditorInput dbInput = element.getAdapter(IDatabaseEditorInput.class);
             if (dbInput != null) {
                 DBNNode dbNode = dbInput.getNavigatorNode();
                 if (dbNode instanceof DBNDataSource) {

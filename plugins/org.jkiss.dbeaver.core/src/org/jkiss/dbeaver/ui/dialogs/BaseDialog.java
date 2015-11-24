@@ -18,14 +18,9 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Base dialog with title and image

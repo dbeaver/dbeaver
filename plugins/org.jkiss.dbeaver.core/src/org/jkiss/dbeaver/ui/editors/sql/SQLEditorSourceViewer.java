@@ -22,7 +22,6 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 

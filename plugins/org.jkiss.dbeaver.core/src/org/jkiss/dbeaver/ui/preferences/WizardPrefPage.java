@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
-import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.graphics.Image;

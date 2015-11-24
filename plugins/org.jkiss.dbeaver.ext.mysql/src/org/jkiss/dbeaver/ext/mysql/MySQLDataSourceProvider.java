@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;

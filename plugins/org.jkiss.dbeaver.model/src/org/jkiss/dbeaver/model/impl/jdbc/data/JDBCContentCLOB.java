@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;

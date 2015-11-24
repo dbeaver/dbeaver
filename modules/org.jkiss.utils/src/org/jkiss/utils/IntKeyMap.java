@@ -519,7 +519,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 		@Override
         public Integer getKey()
 		{
-			return Integer.valueOf(key);
+			return key;
 		}
 
 		@Override
@@ -648,7 +648,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	private class KeyIterator extends HashIterator<Integer> {
 		@Override
         public Integer next() {
-			return Integer.valueOf(nextEntry().key);
+			return nextEntry().key;
 		}
 		public int nextInt() {
 			return nextEntry().key;

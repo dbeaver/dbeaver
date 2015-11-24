@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;

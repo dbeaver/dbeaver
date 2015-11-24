@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**

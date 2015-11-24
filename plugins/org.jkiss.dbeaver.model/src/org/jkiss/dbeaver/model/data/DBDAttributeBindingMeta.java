@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 

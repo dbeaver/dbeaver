@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.dialogs.sql;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Collection;

@@ -26,10 +26,7 @@ import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Text utils

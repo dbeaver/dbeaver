@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.sql.*;
 

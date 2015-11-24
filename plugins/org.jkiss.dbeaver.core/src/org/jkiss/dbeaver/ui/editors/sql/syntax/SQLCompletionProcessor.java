@@ -249,7 +249,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (selectedObject != null) {
                         makeProposalsFromChildren(monitor, selectedObject, null, proposals);
                     }
-                    rootObject = (DBSObjectContainer) dataSource;
+                    rootObject = dataSource;
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(monitor, rootObject, null, proposals);

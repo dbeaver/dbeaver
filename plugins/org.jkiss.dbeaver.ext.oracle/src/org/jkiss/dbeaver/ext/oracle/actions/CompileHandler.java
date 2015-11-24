@@ -83,7 +83,7 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                 if (activePart != null) {
                     sourceHost = RuntimeUtils.getObjectAdapter(activePart, DBCSourceHost.class);
                     if (sourceHost == null) {
-                        sourceHost = (DBCSourceHost) activePart.getAdapter(DBCSourceHost.class);
+                        sourceHost = activePart.getAdapter(DBCSourceHost.class);
                     }
                 }
                 if (sourceHost != null && sourceHost.getSourceObject() != unit) {

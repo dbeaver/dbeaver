@@ -97,7 +97,7 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
     {
         super(schema, JDBCUtils.safeGetStringTrimmed(dbResult, "PKGNAME"), true);
 
-        DB2DataSource db2DataSource = (DB2DataSource) schema.getDataSource();
+        DB2DataSource db2DataSource = schema.getDataSource();
 
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
 

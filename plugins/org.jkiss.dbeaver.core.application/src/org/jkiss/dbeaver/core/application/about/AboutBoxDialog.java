@@ -115,7 +115,7 @@ public class AboutBoxDialog extends Dialog
                         // Do not create InstallationDialog directly
                         // but execute "org.eclipse.ui.help.installationDialog" command
                         IWorkbenchWindow workbenchWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-                        IHandlerService service = (IHandlerService) workbenchWindow.getService(IHandlerService.class);
+                        IHandlerService service = workbenchWindow.getService(IHandlerService.class);
                         if (service != null) {
                             try {
                                 service.executeCommand("org.eclipse.ui.help.installationDialog", null); //$NON-NLS-1$

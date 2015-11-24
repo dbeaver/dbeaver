@@ -55,7 +55,7 @@ public class RuntimeUtils {
     @SuppressWarnings("unchecked")
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)
     {
-        return (T) Platform.getAdapterManager().getAdapter(adapter, objectType);
+        return Platform.getAdapterManager().getAdapter(adapter, objectType);
     }
 
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor)

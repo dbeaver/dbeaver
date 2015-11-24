@@ -75,7 +75,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
-        IWorkbenchWindow workbenchWindow = (IWorkbenchWindow) element.getServiceLocator().getService(IWorkbenchWindow.class);
+        IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
         if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
             return;
         }

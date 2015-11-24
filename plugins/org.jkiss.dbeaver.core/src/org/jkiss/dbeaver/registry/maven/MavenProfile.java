@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.registry.maven;
 
-import org.w3c.dom.Element;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
