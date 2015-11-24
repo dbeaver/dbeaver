@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectBody;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.utils.CommonUtils;
@@ -237,6 +238,29 @@ public class SQLQuery {
         @Override
         public List<? extends DBCAttributeMetaData> getAttributes() {
             return Collections.emptyList();
+        }
+
+        @Override
+        public String toString() {
+            return DBUtils.getSimpleQualifiedName(catalogName, schemaName, tableName);
+        }
+
+        @Override
+        public int hashCode() {
+            return (catalogName == null ? 1 : catalogName.hashCode()) *
+                (schemaName == null ? 2 : schemaName.hashCode()) *
+                tableName.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof SingleTableMeta)) {
+                return false;
+            }
+            SingleTableMeta md2 = (SingleTableMeta) obj;
+            return CommonUtils.equalObjects(catalogName, md2.catalogName) &&
+                CommonUtils.equalObjects(schemaName, md2.schemaName) &&
+                CommonUtils.equalObjects(tableName, md2.tableName);
         }
     }
 
