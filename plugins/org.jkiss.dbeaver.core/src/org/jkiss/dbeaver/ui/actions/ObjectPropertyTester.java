@@ -61,40 +61,42 @@ public class ObjectPropertyTester extends PropertyTester
         }
         DBNNode node = (DBNNode)receiver;
 
-        if (property.equals(PROP_CAN_OPEN)) {
-            return node.isPersisted();
-        } else if (property.equals(PROP_CAN_CREATE) || property.equals(PROP_CAN_PASTE)) {
-            Class objectType;
-            if (!(node instanceof DBNContainer)) {
-                if (node.getParentNode() instanceof DBNContainer) {
-                    node = node.getParentNode();
+        switch (property) {
+            case PROP_CAN_OPEN:
+                return node.isPersisted();
+            case PROP_CAN_CREATE:
+            case PROP_CAN_PASTE: {
+                Class objectType;
+                if (!(node instanceof DBNContainer)) {
+                    if (node.getParentNode() instanceof DBNContainer) {
+                        node = node.getParentNode();
+                    }
                 }
-            }
-            DBNContainer container;
-            if (node instanceof DBNContainer) {
-                // Try to detect child type
-                objectType = ((DBNContainer)node).getChildrenClass();
-                container = (DBNContainer) node;
-            } else {
-                return false;
-            }
+                DBNContainer container;
+                if (node instanceof DBNContainer) {
+                    // Try to detect child type
+                    objectType = ((DBNContainer) node).getChildrenClass();
+                    container = (DBNContainer) node;
+                } else {
+                    return false;
+                }
 
-            if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
-                return false;
-            }
-            if (objectType == null) {
-                return false;
-            }
-            DBEObjectMaker objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
-            if (objectMaker == null) {
-                return false;
-            }
-            if (!objectMaker.canCreateObject(container.getValueObject())) {
-                return false;
-            }
-            // Do not check PASTE command state. It requires clipboard contents check
-            // which means UI interaction which can break menu popup [RedHat]
-            // and also is a slow operation. So let paste be always enabled.
+                if (node instanceof DBSWrapper && isReadOnly(((DBSWrapper) node).getObject())) {
+                    return false;
+                }
+                if (objectType == null) {
+                    return false;
+                }
+                DBEObjectMaker objectMaker = getObjectManager(objectType, DBEObjectMaker.class);
+                if (objectMaker == null) {
+                    return false;
+                }
+                if (!objectMaker.canCreateObject(container.getValueObject())) {
+                    return false;
+                }
+                // Do not check PASTE command state. It requires clipboard contents check
+                // which means UI interaction which can break menu popup [RedHat]
+                // and also is a slow operation. So let paste be always enabled.
 /*
             if (property.equals(PROP_CAN_CREATE)) {
                 return true;
@@ -115,38 +117,45 @@ public class ObjectPropertyTester extends PropertyTester
                 }
             }
 */
-            return true;
-        } else if (property.equals(PROP_CAN_DELETE)) {
-            if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
                 return true;
             }
-            if (node instanceof DBSWrapper) {
-                DBSObject object = ((DBSWrapper)node).getObject();
-                if (object == null  || isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer)) {
-                    return false;
-                }
-                DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
-                return objectMaker != null && objectMaker.canDeleteObject(object);
-            } else if (node instanceof DBNResource) {
-                if ((((DBNResource)node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
+            case PROP_CAN_DELETE: {
+                if (node instanceof DBNDataSource || node instanceof DBNLocalFolder) {
                     return true;
                 }
+                if (node instanceof DBSWrapper) {
+                    DBSObject object = ((DBSWrapper) node).getObject();
+                    if (object == null || isReadOnly(object) || !(node.getParentNode() instanceof DBNContainer)) {
+                        return false;
+                    }
+                    DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
+                    return objectMaker != null && objectMaker.canDeleteObject(object);
+                } else if (node instanceof DBNResource) {
+                    if ((((DBNResource) node).getFeatures() & DBPResourceHandler.FEATURE_DELETE) != 0) {
+                        return true;
+                    }
+                }
+                break;
             }
-        } else if (property.equals(PROP_CAN_RENAME)) {
-            if (node.supportsRename()) {
-                return true;
+            case PROP_CAN_RENAME: {
+                if (node.supportsRename()) {
+                    return true;
+                }
+                if (node instanceof DBNDatabaseNode) {
+                    DBSObject object = ((DBNDatabaseNode) node).getObject();
+                    return
+                        object != null &&
+                            !isReadOnly(object) &&
+                            node.getParentNode() instanceof DBNContainer &&
+                            getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
+                }
+                break;
             }
-            if (node instanceof DBNDatabaseNode) {
-                DBSObject object = ((DBNDatabaseNode)node).getObject();
-                return
-                    object != null &&
-                    !isReadOnly(object) &&
-                    node.getParentNode() instanceof DBNContainer &&
-                    getObjectManager(object.getClass(), DBEObjectRenamer.class) != null;
-            }
-        } else if (property.equals(PROP_CAN_FILTER)) {
-            if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
-                return true;
+            case PROP_CAN_FILTER: {
+                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
+                    return true;
+                }
+                break;
             }
         }
         return false;

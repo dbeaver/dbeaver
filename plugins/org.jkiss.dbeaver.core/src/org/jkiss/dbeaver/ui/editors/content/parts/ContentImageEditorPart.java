@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.EditorPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -128,7 +129,7 @@ public class ContentImageEditorPart extends EditorPart implements ContentEditorP
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public Control getEditorControl()
     {

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * Editor with single main control.
@@ -31,7 +32,7 @@ public interface ISingleControlEditor extends IEditorPart
      * Gets main editor control
      * @return control
      */
-    @NotNull
+    @Nullable
     Control getEditorControl();
 
 }

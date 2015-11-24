@@ -101,6 +101,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         if (editor instanceof ISingleControlEditor) {
             // Use focus to active selection provider and contributed actions
             Control editorControl = ((ISingleControlEditor) editor).getEditorControl();
+            assert editorControl != null;
             editorControl.addFocusListener(new FocusListener() {
                 @Override
                 public void focusGained(FocusEvent e) {

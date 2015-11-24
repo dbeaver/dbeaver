@@ -123,10 +123,11 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
         return provider == null ? null : (Document)provider.getDocument(getEditorInput());
     }
 
-    @NotNull
+    @Nullable
     @Override
     public Control getEditorControl() {
-        return getTextViewer().getTextWidget();
+        final TextViewer textViewer = getTextViewer();
+        return textViewer == null ? null : textViewer.getTextWidget();
     }
 
     @Override

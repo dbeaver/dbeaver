@@ -57,38 +57,39 @@ public class DataSourcePropertyTester extends PropertyTester
         DBPContextProvider contextProvider = (DBPContextProvider)receiver;
         @Nullable
         DBCExecutionContext context = contextProvider.getExecutionContext();
-        if (PROP_CONNECTED.equals(property)) {
-            boolean isConnected = Boolean.TRUE.equals(expectedValue);
-            return isConnected ? context != null && context.isConnected() : context == null || !context.isConnected();
-        } else if (PROP_TRANSACTIONAL.equals(property)) {
-            if (context == null) {
-                return false;
-            }
-            if (!context.isConnected()) {
-                return Boolean.FALSE.equals(expectedValue);
-            }
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-            try {
-                return txnManager != null && Boolean.valueOf(!txnManager.isAutoCommit()).equals(expectedValue);
-            } catch (DBCException e) {
-                log.debug("Error checking auto-commit state", e);
-                return false;
-            }
-        } else if (PROP_TRANSACTION_ACTIVE.equals(property)) {
-            if (context != null && context.isConnected()) {
-                QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(context);
-                QMMTransactionInfo transaction = session.getTransaction();
-                if (transaction != null) {
-                    QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();
-                    if (savepoint != null) {
-                        QMMStatementExecuteInfo execute = savepoint.getLastExecute();
-                        if (execute != null) {
-                            return Boolean.TRUE.equals(expectedValue);
+        switch (property) {
+            case PROP_CONNECTED:
+                boolean isConnected = Boolean.TRUE.equals(expectedValue);
+                return isConnected ? context != null && context.isConnected() : context == null || !context.isConnected();
+            case PROP_TRANSACTIONAL:
+                if (context == null) {
+                    return false;
+                }
+                if (!context.isConnected()) {
+                    return Boolean.FALSE.equals(expectedValue);
+                }
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                try {
+                    return txnManager != null && Boolean.valueOf(!txnManager.isAutoCommit()).equals(expectedValue);
+                } catch (DBCException e) {
+                    log.debug("Error checking auto-commit state", e);
+                    return false;
+                }
+            case PROP_TRANSACTION_ACTIVE:
+                if (context != null && context.isConnected()) {
+                    QMMSessionInfo session = DBeaverCore.getInstance().getQueryManager().getMetaCollector().getSessionInfo(context);
+                    QMMTransactionInfo transaction = session.getTransaction();
+                    if (transaction != null) {
+                        QMMTransactionSavepointInfo savepoint = transaction.getCurrentSavepoint();
+                        if (savepoint != null) {
+                            QMMStatementExecuteInfo execute = savepoint.getLastExecute();
+                            if (execute != null) {
+                                return Boolean.TRUE.equals(expectedValue);
+                            }
                         }
                     }
                 }
-            }
-            return Boolean.FALSE.equals(expectedValue);
+                return Boolean.FALSE.equals(expectedValue);
         }
         return false;
     }

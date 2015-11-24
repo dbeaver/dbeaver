@@ -22,6 +22,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -50,29 +51,35 @@ public class SQLEditorPropertyTester extends PropertyTester
             return false;
         }
         SQLEditor editor = (SQLEditor)receiver;
-        boolean isFocused = editor.getEditorControl().isFocusControl();
+        final Control editorControl = editor.getEditorControl();
+        if (editorControl == null) {
+            return false;
+        }
+        boolean isFocused = editorControl.isFocusControl();
         boolean isConnected = editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
-        if (property.equals(PROP_CAN_EXECUTE)) {
-            return isConnected && isFocused && (!"statement".equals(expectedValue) || editor.hasActiveQuery());
-        } else if (property.equals(PROP_CAN_EXPLAIN)) {
-            return isConnected && isFocused && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
-        } else if (property.equals(PROP_CAN_NAVIGATE)) {
-            // Check whether some word is under cursor
-            ISelectionProvider selectionProvider = editor.getSelectionProvider();
-            if (selectionProvider == null) {
-                return false;
+        switch (property) {
+            case PROP_CAN_EXECUTE:
+                return isConnected && isFocused && (!"statement".equals(expectedValue) || editor.hasActiveQuery());
+            case PROP_CAN_EXPLAIN:
+                return isConnected && isFocused && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
+            case PROP_CAN_NAVIGATE: {
+                // Check whether some word is under cursor
+                ISelectionProvider selectionProvider = editor.getSelectionProvider();
+                if (selectionProvider == null) {
+                    return false;
+                }
+                ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
+                Document document = editor.getDocument();
+                return
+                    selection != null &&
+                        document != null &&
+                        !new SQLIdentifierDetector(
+                            editor.getSyntaxManager().getStructSeparator(),
+                            editor.getSyntaxManager().getQuoteSymbol())
+                            .detectIdentifier(document, new Region(selection.getOffset(), selection.getLength())).isEmpty();
             }
-            ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
-            Document document = editor.getDocument();
-            return
-                selection != null &&
-                document != null &&
-                !new SQLIdentifierDetector(
-                    editor.getSyntaxManager().getStructSeparator(),
-                    editor.getSyntaxManager().getQuoteSymbol())
-                .detectIdentifier(document, new Region(selection.getOffset(), selection.getLength())).isEmpty();
-        } else if (property.equals(PROP_CAN_EXPORT)) {
-            return isConnected && editor.hasActiveQuery();
+            case PROP_CAN_EXPORT:
+                return isConnected && editor.hasActiveQuery();
         }
         return false;
     }

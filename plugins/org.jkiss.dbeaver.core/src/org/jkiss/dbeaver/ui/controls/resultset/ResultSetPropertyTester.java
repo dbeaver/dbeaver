@@ -50,59 +50,65 @@ public class ResultSetPropertyTester extends PropertyTester
     {
         boolean actionsDisabled = rsv.isActionsDisabled();
 
-        if (PROP_ACTIVE.equals(property)) {
-            return true;
-        } else if (PROP_HAS_DATA.equals(property)) {
-            return rsv.getModel().hasData();
-        } else if (PROP_HAS_MORE_DATA.equals(property)) {
-            return rsv.isHasMoreData();
-        } else if (PROP_CAN_COPY.equals(property)) {
-            return !actionsDisabled && rsv.getModel().hasData();
-        } else if (PROP_CAN_PASTE.equals(property) || PROP_CAN_CUT.equals(property)) {
-            DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-            return !actionsDisabled && attr != null && !rsv.isAttributeReadOnly(attr);
-        } else if (PROP_CAN_MOVE.equals(property)) {
-            if (actionsDisabled) return false;
-            ResultSetRow currentRow = rsv.getCurrentRow();
-            if ("back".equals(expectedValue)) {
-                return currentRow != null && currentRow.getVisualNumber() > 0;
-            } else if ("forward".equals(expectedValue)) {
-                return currentRow != null && currentRow.getVisualNumber() < rsv.getModel().getRowCount() - 1;
-            }
-        } else if (PROP_EDITABLE.equals(property)) {
-            if (actionsDisabled || !rsv.hasData()) {
-                return false;
-            }
-            if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
+        switch (property) {
+            case PROP_ACTIVE:
+                return true;
+            case PROP_HAS_DATA:
+                return rsv.getModel().hasData();
+            case PROP_HAS_MORE_DATA:
+                return rsv.isHasMoreData();
+            case PROP_CAN_COPY:
+                return !actionsDisabled && rsv.getModel().hasData();
+            case PROP_CAN_PASTE:
+            case PROP_CAN_CUT: {
                 DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
-                if (attr == null) {
+                return !actionsDisabled && attr != null && !rsv.isAttributeReadOnly(attr);
+            }
+            case PROP_CAN_MOVE: {
+                if (actionsDisabled) return false;
+                ResultSetRow currentRow = rsv.getCurrentRow();
+                if ("back".equals(expectedValue)) {
+                    return currentRow != null && currentRow.getVisualNumber() > 0;
+                } else if ("forward".equals(expectedValue)) {
+                    return currentRow != null && currentRow.getVisualNumber() < rsv.getModel().getRowCount() - 1;
+                }
+                break;
+            }
+            case PROP_EDITABLE: {
+                if (actionsDisabled || !rsv.hasData()) {
                     return false;
                 }
-                if ("inline".equals(expectedValue)) {
-                    return !rsv.isAttributeReadOnly(attr);
+                if ("edit".equals(expectedValue) || "inline".equals(expectedValue)) {
+                    DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                    if (attr == null) {
+                        return false;
+                    }
+                    if ("inline".equals(expectedValue)) {
+                        return !rsv.isAttributeReadOnly(attr);
+                    } else {
+                        return true;
+                    }
+                } else if ("add".equals(expectedValue)) {
+                    return rsv.isInsertable();
+                } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
+                    ResultSetRow currentRow = rsv.getCurrentRow();
+                    return currentRow != null && rsv.isInsertable();
                 } else {
-                    return true;
+                    return false;
                 }
-            } else if ("add".equals(expectedValue)) {
-                return rsv.isInsertable();
-            } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
-                ResultSetRow currentRow = rsv.getCurrentRow();
-                return currentRow != null && rsv.isInsertable();
-            } else {
-                return false;
             }
-        } else if (PROP_CHANGED.equals(property)) {
-            return rsv.isDirty();
-        } else if (PROP_CAN_TOGGLE.equals(property)) {
-            return
-                !actionsDisabled &&
-                rsv.getActivePresentation().getControl().isFocusControl();
-        } else if (PROP_CAN_SWITCH_PRESENTATION.equals(property)) {
-            return
-                !actionsDisabled &&
-                !rsv.isRefreshInProgress() &&
-                rsv.getAvailablePresentations() != null &&
-                rsv.getAvailablePresentations().size() > 1;
+            case PROP_CHANGED:
+                return rsv.isDirty();
+            case PROP_CAN_TOGGLE:
+                return
+                    !actionsDisabled &&
+                        rsv.getActivePresentation().getControl().isFocusControl();
+            case PROP_CAN_SWITCH_PRESENTATION:
+                return
+                    !actionsDisabled &&
+                        !rsv.isRefreshInProgress() &&
+                        rsv.getAvailablePresentations() != null &&
+                        rsv.getAvailablePresentations().size() > 1;
         }
         return false;
     }
