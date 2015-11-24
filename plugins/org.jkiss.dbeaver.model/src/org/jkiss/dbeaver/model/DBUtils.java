@@ -39,11 +39,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.sql.*;
-import java.text.DateFormat;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.*;
-import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -274,6 +272,14 @@ public final class DBUtils {
                 return null;
             }
             rootSC = (DBSObjectContainer) catalog;
+        } else {
+            DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
+            if (objectSelector != null) {
+                final DBSObject so = objectSelector.getSelectedObject();
+                if (so instanceof DBSCatalog) {
+                    rootSC = (DBSObjectContainer) so;
+                }
+            }
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             DBSObject schema = rootSC.getChild(monitor, schemaName);
@@ -500,15 +506,17 @@ public final class DBUtils {
         if (!(association instanceof DBSEntityReferrer)) {
             return false;
         }
-        DBSEntityReferrer referrer = (DBSEntityReferrer)association;
-        DBSEntity refEntity = association.getAssociatedEntity();
-        if (refEntity == association.getParentObject()) {
+        final DBSEntityReferrer referrer = (DBSEntityReferrer)association;
+        final DBSEntity refEntity = association.getAssociatedEntity();
+        final DBSEntity ownerEntity = association.getParentObject();
+        assert ownerEntity != null;
+        if (refEntity == ownerEntity) {
             // Can't migrate into itself
             return false;
         }
         // Migrating association is: if all referenced attributes are included in some unique key
         List<DBSEntityAttribute> ownAttrs = getEntityAttributes(monitor, referrer);
-        Collection<? extends DBSEntityConstraint> constraints = association.getParentObject().getConstraints(monitor);
+        Collection<? extends DBSEntityConstraint> constraints = ownerEntity.getConstraints(monitor);
         if (constraints != null) {
             boolean hasPrimaryKey = false;
             for (DBSEntityConstraint constraint : constraints) {
@@ -592,6 +600,7 @@ public final class DBUtils {
         throws DBException
     {
         DBSEntity entity = entityAttribute.getParentObject();
+        assert entity != null;
         List<DBSEntityReferrer> refs = null;
         Collection<? extends DBSEntityAssociation> associations = entity.getAssociations(monitor);
         if (associations != null) {
