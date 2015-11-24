@@ -202,8 +202,18 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                         if (childContainer instanceof DBSObjectContainer) {
                             container = (DBSObjectContainer) childContainer;
                         } else {
-                            // Bad container - stop search
-                            return Status.CANCEL_STATUS;
+                            // Check in selected object
+                            DBSObjectSelector dsSelector = DBUtils.getAdapter(DBSObjectSelector.class, getExecutionContext().getDataSource());
+                            if (dsSelector != null) {
+                                DBSObject curCatalog = dsSelector.getSelectedObject();
+                                if (curCatalog instanceof DBSObjectContainer) {
+                                    childContainer = ((DBSObjectContainer)curCatalog).getChild(monitor, containerName);
+                                }
+                            }
+                            if (childContainer == null) {
+                                // Bad container - stop search
+                                return Status.CANCEL_STATUS;
+                            }
                         }
                     }
                 }
