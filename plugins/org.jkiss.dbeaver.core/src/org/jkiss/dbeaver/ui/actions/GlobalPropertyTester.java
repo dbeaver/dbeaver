@@ -36,12 +36,13 @@ public class GlobalPropertyTester extends PropertyTester {
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        if (property.equals(PROP_HAS_MULTI_PROJECTS)) {
-            return DBeaverCore.getInstance().getLiveProjects().size() > 1;
-        } else if (property.equals(PROP_HAS_ACTIVE_PROJECT)) {
-            return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != null;
-        } else if (property.equals(PROP_STANDALONE)) {
-            return DBeaverCore.isStandalone();
+        switch (property) {
+            case PROP_HAS_MULTI_PROJECTS:
+                return DBeaverCore.getInstance().getLiveProjects().size() > 1;
+            case PROP_HAS_ACTIVE_PROJECT:
+                return DBeaverCore.getInstance().getProjectRegistry().getActiveProject() != null;
+            case PROP_STANDALONE:
+                return DBeaverCore.isStandalone();
         }
         return false;
     }

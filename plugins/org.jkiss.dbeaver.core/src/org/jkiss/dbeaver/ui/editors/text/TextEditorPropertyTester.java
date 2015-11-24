@@ -44,26 +44,28 @@ public class TextEditorPropertyTester extends PropertyTester
         if (editor == null) {
             return false;
         }
-        if (property.equals(PROP_AVAILABLE) || property.equals(PROP_CAN_SAVE)) {
-            return true;
-        } else if (property.equals(PROP_CAN_LOAD)) {
-            return !editor.isReadOnly();
-        } else if (property.equals(PROP_CAN_COMMENT)) {
-            if (editor.getSelectionProvider() == null ||
-                editor.getSelectionProvider().getSelection() == null ||
-                editor.getSelectionProvider().getSelection().isEmpty())
-            {
-                return false;
-            }
-            ICommentsSupport commentsSupport = editor.getCommentsSupport();
-            if (commentsSupport == null) {
-                return false;
-            }
-            if ("single".equals(expectedValue)) {
-                return !ArrayUtils.isEmpty(commentsSupport.getSingleLineComments());
-            } else if ("multi".equals(expectedValue)) {
-                return commentsSupport.getMultiLineComments() != null;
-            }
+        switch (property) {
+            case PROP_AVAILABLE:
+            case PROP_CAN_SAVE:
+                return true;
+            case PROP_CAN_LOAD:
+                return !editor.isReadOnly();
+            case PROP_CAN_COMMENT:
+                if (editor.getSelectionProvider() == null ||
+                    editor.getSelectionProvider().getSelection() == null ||
+                    editor.getSelectionProvider().getSelection().isEmpty()) {
+                    return false;
+                }
+                ICommentsSupport commentsSupport = editor.getCommentsSupport();
+                if (commentsSupport == null) {
+                    return false;
+                }
+                if ("single".equals(expectedValue)) {
+                    return !ArrayUtils.isEmpty(commentsSupport.getSingleLineComments());
+                } else if ("multi".equals(expectedValue)) {
+                    return commentsSupport.getMultiLineComments() != null;
+                }
+                break;
         }
         return false;
     }

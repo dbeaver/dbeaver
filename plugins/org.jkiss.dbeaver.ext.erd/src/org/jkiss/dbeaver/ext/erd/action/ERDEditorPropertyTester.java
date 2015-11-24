@@ -39,16 +39,17 @@ public class ERDEditorPropertyTester extends PropertyTester
             return false;
         }
         ERDEditorPart erdEditor = (ERDEditorPart) receiver;
-        if (property.equals(PROP_CAN_UNDO)) {
-            return erdEditor.getCommandStack().canUndo();
-        } else if (property.equals(PROP_CAN_REDO)) {
-            return erdEditor.getCommandStack().canRedo();
-        } else if (property.equals(PROP_EDITABLE)) {
-            return !erdEditor.isReadOnly();
-        } else if (property.equals(PROP_CAN_DELETE)) {
-            DeleteAction deleteAction = new DeleteAction((IWorkbenchPart) erdEditor);
-            deleteAction.update();
-            return deleteAction.isEnabled();
+        switch (property) {
+            case PROP_CAN_UNDO:
+                return erdEditor.getCommandStack().canUndo();
+            case PROP_CAN_REDO:
+                return erdEditor.getCommandStack().canRedo();
+            case PROP_EDITABLE:
+                return !erdEditor.isReadOnly();
+            case PROP_CAN_DELETE:
+                DeleteAction deleteAction = new DeleteAction((IWorkbenchPart) erdEditor);
+                deleteAction.update();
+                return deleteAction.isEnabled();
         }
         return false;
     }

@@ -137,7 +137,9 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
 
         // Use focus to activate page control
-        getEditorControl().addFocusListener(new FocusListener() {
+        final Control editorControl = getEditorControl();
+        assert editorControl != null;
+        editorControl.addFocusListener(new FocusListener() {
             @Override
             public void focusGained(FocusEvent e) {
                 if (pageControl != null && !pageControl.isDisposed()) {

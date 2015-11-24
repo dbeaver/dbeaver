@@ -46,12 +46,13 @@ public class EntityEditorPropertyTester extends PropertyTester
         EntityEditor editor = (EntityEditor)receiver;
         DBECommandContext commandContext = editor.getEditorInput().getCommandContext();
         if (commandContext != null) {
-            if (property.equals(PROP_CAN_UNDO)) {
-                return commandContext.getUndoCommand() != null;
-            } else if (property.equals(PROP_CAN_REDO)) {
-                return commandContext.getRedoCommand() != null;
-            } else if (property.equals(PROP_DIRTY)) {
-                return commandContext.isDirty();
+            switch (property) {
+                case PROP_CAN_UNDO:
+                    return commandContext.getUndoCommand() != null;
+                case PROP_CAN_REDO:
+                    return commandContext.getRedoCommand() != null;
+                case PROP_DIRTY:
+                    return commandContext.isDirty();
             }
         }
 

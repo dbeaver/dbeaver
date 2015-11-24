@@ -54,19 +54,20 @@ public class ResourcePropertyTester extends PropertyTester
             return false;
         }
 
-        if (property.equals(PROP_CAN_OPEN)) {
-            return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_OPEN) != 0;
-        } else if (property.equals(PROP_CAN_DELETE)) {
-            return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_DELETE) != 0;
-        } else if (property.equals(PROP_CAN_CREATE_FOLDER)) {
-            return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
-        } else if (property.equals(PROP_CAN_CREATE_LINK)) {
-            return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0 && !resource.isLinked(IResource.CHECK_ANCESTORS);
-        } else if (property.equals(PROP_CAN_SET_ACTIVE)) {
-            return resource instanceof IProject && resource != projectRegistry.getActiveProject();
-        } else if (property.equals(PROP_TYPE)) {
-            final DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
-            return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
+        switch (property) {
+            case PROP_CAN_OPEN:
+                return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_OPEN) != 0;
+            case PROP_CAN_DELETE:
+                return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_DELETE) != 0;
+            case PROP_CAN_CREATE_FOLDER:
+                return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0;
+            case PROP_CAN_CREATE_LINK:
+                return (handler.getFeatures(resource) & DBPResourceHandler.FEATURE_CREATE_FOLDER) != 0 && !resource.isLinked(IResource.CHECK_ANCESTORS);
+            case PROP_CAN_SET_ACTIVE:
+                return resource instanceof IProject && resource != projectRegistry.getActiveProject();
+            case PROP_TYPE:
+                final DBPResourceHandler resourceHandler = DBeaverCore.getInstance().getProjectRegistry().getResourceHandler(resource);
+                return resourceHandler != null && expectedValue.equals(resourceHandler.getTypeName(resource));
         }
         return false;
     }

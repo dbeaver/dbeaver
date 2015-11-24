@@ -21,6 +21,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryEditor;
@@ -48,7 +49,7 @@ public class ContentBinaryEditorPart extends BinaryEditor implements ContentEdit
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public Control getEditorControl()
     {

@@ -59,9 +59,6 @@ public class SQLUtilsPropertyTester extends PropertyTester
                 return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
             } else {
                 // Table
-                if (structuredSelection.isEmpty()) {
-                    return false;
-                }
                 DBNNode node = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class);
                 if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
                     return true;
