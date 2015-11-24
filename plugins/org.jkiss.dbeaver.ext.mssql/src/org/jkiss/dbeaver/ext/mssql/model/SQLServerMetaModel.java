@@ -70,7 +70,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
-            String schema = getSystemSchema(monitor, container);
+            String schema = getSystemSchema(getServerType(monitor, container.getDataSource()));
             String catalog = table.getCatalog().getName();
             String query =
                 "SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects tables, " + catalog + "." + schema + ".sysobjects triggers\n" +
@@ -102,8 +102,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @NotNull
-    private String getSystemSchema(DBRProgressMonitor monitor, @NotNull GenericStructContainer container) {
-        ServerType serverType = getServerType(monitor, container.getDataSource());
+    private String getSystemSchema(ServerType serverType) {
         return serverType == ServerType.SQL_SERVER ? "sys" : "dbo";
     }
 
@@ -124,9 +123,21 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
-        String systemSchema = getSystemSchema(monitor, dataSource);
+        ServerType serverType = getServerType(monitor, dataSource);
+        String systemSchema = getSystemSchema(serverType);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(catalog + "." + systemSchema + ".sp_helptext '" + schema + "." + name + "'")) {
+            String mdQuery = serverType == ServerType.SQL_SERVER ?
+                catalog + "." + systemSchema + ".sp_helptext '" + schema + "." + name + "'"
+                :
+                "SELECT sc.text\n" +
+                "FROM " + catalog + "." + systemSchema + ".sysobjects so\n" +
+                "INNER JOIN " + catalog + "." + systemSchema + ".syscomments sc on sc.id = so.id\n" +
+                "WHERE user_name(so.uid)=? AND so.name=?";
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
+                if (serverType == ServerType.SYBASE) {
+                    dbStat.setString(1, schema);
+                    dbStat.setString(2, name);
+                }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
