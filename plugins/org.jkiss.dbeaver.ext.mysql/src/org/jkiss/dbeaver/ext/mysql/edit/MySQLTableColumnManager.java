@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -43,6 +44,13 @@ import java.util.Locale;
  * MySQL table column manager
  */
 public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableColumn, MySQLTableBase> implements DBEObjectRenamer<MySQLTableColumn>  {
+
+    protected final ColumnModifier<MySQLTableColumn> DataTypeModifier = new ColumnModifier<MySQLTableColumn>() {
+        @Override
+        public void appendModifier(MySQLTableColumn column, StringBuilder sql, DBECommandAbstract<MySQLTableColumn> command) {
+            sql.append(' ').append(column.getFullTypeName());
+        }
+    };
 
     @Nullable
     @Override
