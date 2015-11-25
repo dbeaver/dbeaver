@@ -145,7 +145,8 @@
 
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
 
-                    <property name="loginTimeout" value="10"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
 
                     <parameter name="query-get-active-db" value="SHOW search_path"/>
                     <parameter name="query-set-active-db" value="SET search_path = ?"/>
@@ -180,6 +181,8 @@
                     webURL="http://www.ibm.com/software/data/db2/express/download.html"
                     description="DB2 JCC driver">
 
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -206,6 +209,8 @@
                         description="DB2 LUW driver for older DB2 versions (8.x)">
                     <replace provider="generic" driver="db2"/>
 
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -230,6 +235,8 @@
                     description="DB2 z/OS driver"
                     note="In order to connect to z/OS DB2 instance you have to install license file 'db2jcc_license_cisuz.jar'. Edit driver settings and and license file as a library.">
 
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
                     <property name="fullyMaterializeLobData" value="true"/>
                     <property name="fullyMaterializeInputStreams" value="true"/>
                     <property name="progressiveStreaming" value="2"/>
@@ -270,11 +277,15 @@
                     defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
                     description="jTDS SQL Server driver">
+
+                    <property name="loginTimeout" value="20"/>
+
                     <parameter name="query-get-active-db" value="select db_name()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="script-delimiter" value="go"/>
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="supports-multiple-results" value="true"/>
+
                     <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll"/>
@@ -320,6 +331,9 @@
                     defaultPort="5000"
                     webURL="http://jtds.sourceforge.net/"
                     description="Sybase jTDS driver">
+
+                    <property name="loginTimeout" value="20"/>
+
                     <!--parameter name="query-get-active-db">select db_name()</query>
                     <parameter name="query-set-active-db">use ?</query-->
                     <parameter name="script-delimiter" value="go"/>

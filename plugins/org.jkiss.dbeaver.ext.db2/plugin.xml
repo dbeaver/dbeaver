@@ -357,6 +357,8 @@
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
                     description="DB2 for Linux/Unix/Windows driver">
 
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectionTimeout" value="20"/>
                     <property name="maxStatements" value="50"/>
                     <property name="progressiveStreaming" value="2"/>
                     <property name="retrieveMessagesFromServerOnGetMessage" value="true"/>

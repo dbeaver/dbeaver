@@ -144,7 +144,7 @@
                     webURL="http://www.mysql.com/products/connector/"
                     description="MySQL standard driver">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE"/>
-                    <property name="connectTimeout" value="30000"/>
+                    <property name="connectTimeout" value="20000"/>
                 </driver>
                 <driver
                     id="mariaDB"
