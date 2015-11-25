@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,6 +35,7 @@ import java.util.*;
  */
 public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> implements DBSObjectCache<OWNER, OBJECT>
 {
+    static final Log log = Log.getLog(AbstractObjectCache.class);
 
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;
@@ -95,11 +98,11 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 detectCaseSensitivity(object);
                 this.objectList.add(object);
                 if (this.objectMap != null) {
-                    this.objectMap.put(
-                        caseSensitive ?
-                            object.getName() :
-                            object.getName().toUpperCase(),
-                        object);
+                    String name = caseSensitive ?
+                        object.getName() :
+                        object.getName().toUpperCase();
+                    checkDuplicateName(name, object);
+                    this.objectMap.put(name, object);
                 }
             }
         }
@@ -158,14 +161,20 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         if (objectMap == null) {
             this.objectMap = new HashMap<>();
             for (OBJECT object : objectList) {
-                this.objectMap.put(
-                    caseSensitive ?
-                        object.getName() :
-                        object.getName().toUpperCase(),
-                    object);
+                String name = caseSensitive ?
+                    object.getName() :
+                    object.getName().toUpperCase();
+                checkDuplicateName(name, object);
+                this.objectMap.put(name, object);
             }
         }
         return objectMap;
+    }
+
+    private void checkDuplicateName(String name, OBJECT object) {
+        if (this.objectMap.containsKey(name)) {
+            log.warn("Duplicate object name '" + name + "' in cache " + this.getClass().getSimpleName() + ". Last value: " + DBUtils.getObjectFullName(object));
+        }
     }
 
     protected void detectCaseSensitivity(DBSObject object) {
