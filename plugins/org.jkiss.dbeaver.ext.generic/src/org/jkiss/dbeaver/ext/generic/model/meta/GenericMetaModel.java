@@ -283,7 +283,7 @@ public class GenericMetaModel {
     }
 
     public JDBCBasicDataTypeCache createDataTypeCache(@NotNull DBPDataSourceContainer container) {
-        return new JDBCBasicDataTypeCache(container);
+        return new GenericDataTypeCache(container);
     }
 
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {

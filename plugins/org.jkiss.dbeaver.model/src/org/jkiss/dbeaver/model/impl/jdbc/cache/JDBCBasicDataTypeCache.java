@@ -33,12 +33,11 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
     private final DBSObject owner;
+    protected final Set<String> ignoredTypes = new HashSet<>();
 
     public JDBCBasicDataTypeCache(DBSObject owner)
     {
@@ -59,6 +58,10 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
+        if (ignoredTypes.contains(name.toUpperCase(Locale.ENGLISH))) {
+            return null;
+        }
+
         return new JDBCDataType(
             this.owner,
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
