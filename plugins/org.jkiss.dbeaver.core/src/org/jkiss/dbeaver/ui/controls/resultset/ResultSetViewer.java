@@ -106,6 +106,16 @@ public class ResultSetViewer extends Viewer
     static final Log log = Log.getLog(ResultSetViewer.class);
 
     @NotNull
+    private static IResultSetFilterManager filterManager = new NoOpFilterManager();
+
+    public static void registerFilterManager(@Nullable IResultSetFilterManager filterManager) {
+        if (filterManager == null) {
+            filterManager = new NoOpFilterManager();
+        }
+        ResultSetViewer.filterManager = filterManager;
+    }
+
+    @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
     private ResultSetFilterPanel filtersPanel;
@@ -124,6 +134,7 @@ public class ResultSetViewer extends Viewer
     private final IResultSetContainer container;
     @NotNull
     private final ResultSetDataReceiver dataReceiver;
+
     private ToolBarManager toolBarManager;
 
     // Current row/col number
@@ -1263,6 +1274,12 @@ public class ResultSetViewer extends Viewer
         return dataReceiver;
     }
 
+    @NotNull
+    @Override
+    public IResultSetFilterManager getFilterManager() {
+        return filterManager;
+    }
+
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
@@ -1813,6 +1830,18 @@ public class ResultSetViewer extends Viewer
                     listener.handleResultSetLoad();
                 }
             }
+        }
+    }
+
+    private static class NoOpFilterManager implements IResultSetFilterManager {
+        @Override
+        public Collection<String> getQueryFilterHistory(String query) throws DBException {
+            return Collections.emptyList();
+        }
+
+        @Override
+        public void saveQueryFilterValue(String query, String filterValue) throws DBException {
+            // no op
         }
     }
 
