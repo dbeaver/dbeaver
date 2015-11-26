@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
 import java.util.Collection;
@@ -28,8 +29,10 @@ import java.util.Collection;
  */
 public interface IResultSetFilterManager
 {
-    Collection<String> getQueryFilterHistory(String query) throws DBException;
+    Collection<String> getQueryFilterHistory(@NotNull String query) throws DBException;
 
-    void saveQueryFilterValue(String query, String filterValue) throws DBException;
+    void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) throws DBException;
+
+    void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException;
 
 }
