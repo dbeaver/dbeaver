@@ -741,6 +741,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             return null;
         }
+/*
         if (inline &&
             (!ArrayUtils.contains(supportedEditTypes, IValueController.EditType.INLINE) || controller.isAttributeReadOnly(attr)) &&
             ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL))
@@ -754,6 +755,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
             return null;
         }
+*/
 
         final IValueEditor editor;
         try {
