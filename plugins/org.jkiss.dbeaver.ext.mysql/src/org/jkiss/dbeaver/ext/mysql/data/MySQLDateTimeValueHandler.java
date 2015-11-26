@@ -40,7 +40,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
+            if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Calendar cal = Calendar.getInstance();
             cal.setTime((Date) value);
             final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY) + 1);
