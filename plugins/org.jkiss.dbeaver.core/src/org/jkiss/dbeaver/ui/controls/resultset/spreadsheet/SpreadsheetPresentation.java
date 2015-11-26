@@ -701,10 +701,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
 
-        if (controller.isAttributeReadOnly(attr) && inline) {
-            // No inline editors for readonly columns
-            return null;
-        }
+//        if (controller.isAttributeReadOnly(attr) && inline) {
+//            // No inline editors for readonly columns
+//            return null;
+//        }
 
         Composite placeholder = null;
         if (inline) {
