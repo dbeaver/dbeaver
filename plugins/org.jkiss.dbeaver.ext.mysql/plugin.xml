@@ -251,9 +251,9 @@
 
             <type name="ENUM"/>
             <type name="SET"/>
-            <type name="DATE"/>
-            <type name="DATETIME"/>
-            <type name="TIMESTAMP"/>
+            <type standard="DATE"/>
+            <type standard="TIME"/>
+            <type standard="TIMESTAMP"/>
 
         </provider>
     </extension>
