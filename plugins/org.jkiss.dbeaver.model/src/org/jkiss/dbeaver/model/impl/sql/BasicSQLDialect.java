@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -25,10 +24,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -38,7 +37,7 @@ import java.util.*;
  */
 public class BasicSQLDialect implements SQLDialect {
 
-    static final Log log = Log.getLog(BasicSQLDialect.class);
+    public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
     private static final String[] DEFAULT_LINE_COMMENTS = {"--"};
 
@@ -53,7 +52,7 @@ public class BasicSQLDialect implements SQLDialect {
     // Comments
     protected Pair<String, String> multiLineComments = new Pair<>(SQLConstants.ML_COMMENT_START, SQLConstants.ML_COMMENT_END);
 
-    public BasicSQLDialect()
+    protected BasicSQLDialect()
     {
         loadStandardKeywords();
     }
@@ -282,6 +281,11 @@ public class BasicSQLDialect implements SQLDialect {
     public String[] getSingleLineComments()
     {
         return DEFAULT_LINE_COMMENTS;
+    }
+
+    @Override
+    public boolean isDelimiterAfterBlock() {
+        return false;
     }
 
     protected void loadStandardKeywords()

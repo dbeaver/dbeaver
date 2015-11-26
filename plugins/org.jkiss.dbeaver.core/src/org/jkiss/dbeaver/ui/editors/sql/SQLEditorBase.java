@@ -387,14 +387,22 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
-    public void reloadSyntaxRules()
-    {
+    protected SQLDialect getSQLDialect() {
         DBCExecutionContext executionContext = getExecutionContext();
         DBPDataSource dataSource = executionContext == null ? null : executionContext.getDataSource();
         // Refresh syntax
         if (dataSource instanceof SQLDataSource) {
-            SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
-            syntaxManager.setDataSource((SQLDataSource) dataSource);
+            return ((SQLDataSource) dataSource).getSQLDialect();
+        }
+        return null;
+    }
+
+    public void reloadSyntaxRules()
+    {
+        // Refresh syntax
+        SQLDialect dialect = getSQLDialect();
+        if (dialect != null) {
+            syntaxManager.init(dialect, getActivePreferenceStore());
             ruleManager.refreshRules();
 
             Document document = getDocument();
@@ -420,7 +428,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
 
         Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
-        Color bgColor = ruleManager.getColor(!syntaxManager.isUnassigned() && dataSource == null ?
+        Color bgColor = ruleManager.getColor(!syntaxManager.isUnassigned() && dialect == null ?
             SQLConstants.CONFIG_COLOR_DISABLED :
             SQLConstants.CONFIG_COLOR_BACKGROUND);
         if (fgColor != null) {
@@ -546,6 +554,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (endPos - startPos <= 0) {
             return null;
         }
+        SQLDialect dialect = getSQLDialect();
         // Parse range
         ruleManager.setRange(document, startPos, endPos - startPos);
         int statementStart = startPos;
@@ -557,6 +566,15 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             int tokenOffset = ruleManager.getTokenOffset();
             final int tokenLength = ruleManager.getTokenLength();
             boolean isDelimiter = token instanceof SQLDelimiterToken;
+            String delimiterText = null;
+            if (isDelimiter) {
+                try {
+                    delimiterText = document.get(tokenOffset, tokenLength);
+                } catch (BadLocationException e) {
+                    log.debug(e);
+                    delimiterText = "";
+                }
+            }
             if (tokenLength == 1) {
                 try {
                     char aChar = document.getChar(tokenOffset);
@@ -592,6 +610,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 }
                 assert (tokenOffset >= currentPos);
                 try {
+                    String queryText = document.get(statementStart, tokenOffset - statementStart);
+
                     // remove leading spaces
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
                         statementStart++;
@@ -604,24 +624,23 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                         // Empty statement
                         return null;
                     }
-                    String queryText = document.get(statementStart, tokenOffset - statementStart);
-                    queryText = queryText.trim();
 
                     Collection<String> delimiterTexts;
                     if (isDelimiter) {
-                        delimiterTexts = Collections.singleton(document.get(tokenOffset, tokenLength));
+                        delimiterTexts = Collections.singleton(delimiterText);
                     } else {
                         delimiterTexts = syntaxManager.getStatementDelimiters();
                     }
 
-                    // FIXME: includes last dleimiter in query (Oracle?)
-                    if (isDelimiter && hasBlocks) {
-                        tokenOffset += tokenLength;
-                    }
-
-                    for (String delim : delimiterTexts) {
-                        if (queryText.endsWith(delim)) {
-                            queryText = queryText.substring(0, queryText.length() - delim.length());
+                    // FIXME: includes last delimiter in query (Oracle?)
+                    if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
+                        queryText = (queryText + delimiterText).trim();
+                    } else {
+                        queryText = queryText.trim();
+                        for (String delim : delimiterTexts) {
+                            if (queryText.endsWith(delim)) {
+                                queryText = queryText.substring(0, queryText.length() - delim.length());
+                            }
                         }
                     }
                     // make script line

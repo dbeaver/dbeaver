@@ -87,7 +87,7 @@ public abstract class JDBCDataSource
         throws DBException
     {
         this.dataSourceInfo = new JDBCDataSourceInfo(container);
-        this.sqlDialect = new BasicSQLDialect();
+        this.sqlDialect = BasicSQLDialect.INSTANCE;
         this.jdbcFactory = createJdbcFactory();
         this.container = container;
         this.executionContext = new JDBCExecutionContext(this, "Main");
@@ -307,7 +307,7 @@ public abstract class JDBCDataSource
         } finally {
             if (sqlDialect == null) {
                 log.warn("NULL SQL dialect was created");
-                sqlDialect = new BasicSQLDialect();
+                sqlDialect = BasicSQLDialect.INSTANCE;
             }
             if (dataSourceInfo == null) {
                 log.warn("NULL datasource info was created");

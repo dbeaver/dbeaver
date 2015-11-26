@@ -208,7 +208,7 @@ public final class SQLUtils {
     public static String formatSQL(SQLDataSource dataSource, String query)
     {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
-        syntaxManager.setDataSource(dataSource);
+        syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
         configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
         return new SQLTokenizedFormatter().format(query, configuration);

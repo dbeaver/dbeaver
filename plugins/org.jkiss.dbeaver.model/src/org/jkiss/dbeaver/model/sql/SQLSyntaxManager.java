@@ -37,7 +37,7 @@ import java.util.StringTokenizer;
 public class SQLSyntaxManager {
 
     @NotNull
-    private SQLDialect sqlDialect;
+    private SQLDialect sqlDialect = BasicSQLDialect.INSTANCE;
     @Nullable
     private String quoteSymbol;
     private char structSeparator;
@@ -45,7 +45,7 @@ public class SQLSyntaxManager {
     private boolean anonymousParametersEnabled;
     private char anonymousParameterMark;
     @NotNull
-    private String catalogSeparator;
+    private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
     private Set<String> statementDelimiters = new LinkedHashSet<>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
 
@@ -107,23 +107,19 @@ public class SQLSyntaxManager {
         return anonymousParameterMark;
     }
 
-    public void setDataSource(@Nullable SQLDataSource dataSource)
+    public void init(@Nullable SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
-        this.unassigned = dataSource == null;
+        this.unassigned = dialect == null;
         this.statementDelimiters.clear();
-        DBPPreferenceStore preferenceStore;
-        if (dataSource == null) {
-            preferenceStore = ModelPreferences.getPreferences();
-            sqlDialect = new BasicSQLDialect();
+        if (dialect == null) {
+            sqlDialect = BasicSQLDialect.INSTANCE;
             quoteSymbol = null;
             structSeparator = SQLConstants.STRUCT_SEPARATOR;
             catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
             escapeChar = '\\';
             statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
         } else {
-            preferenceStore = dataSource.getContainer().getPreferenceStore();
-
-            sqlDialect = dataSource.getSQLDialect();
+            sqlDialect = dialect;
             quoteSymbol = sqlDialect.getIdentifierQuoteString();
             structSeparator = sqlDialect.getStructSeparator();
             catalogSeparator = sqlDialect.getCatalogSeparator();

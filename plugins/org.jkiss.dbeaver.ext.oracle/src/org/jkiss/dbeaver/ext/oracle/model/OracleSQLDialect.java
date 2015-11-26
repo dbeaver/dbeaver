@@ -63,4 +63,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public boolean supportsAliasInUpdate() {
         return true;
     }
+
+    @Override
+    public boolean isDelimiterAfterBlock() {
+        return true;
+    }
 }
