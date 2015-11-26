@@ -1835,12 +1835,17 @@ public class ResultSetViewer extends Viewer
 
     private static class NoOpFilterManager implements IResultSetFilterManager {
         @Override
-        public Collection<String> getQueryFilterHistory(String query) throws DBException {
+        public Collection<String> getQueryFilterHistory(@NotNull String query) throws DBException {
             return Collections.emptyList();
         }
 
         @Override
-        public void saveQueryFilterValue(String query, String filterValue) throws DBException {
+        public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) throws DBException {
+            // no op
+        }
+
+        @Override
+        public void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException {
             // no op
         }
     }
