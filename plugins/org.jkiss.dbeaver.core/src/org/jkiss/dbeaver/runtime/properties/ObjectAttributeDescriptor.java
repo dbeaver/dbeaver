@@ -166,21 +166,9 @@ public abstract class ObjectAttributeDescriptor {
         Collection<Class<?>> classList,
         IPropertyFilter filter)
     {
-        List<ObjectPropertyDescriptor> annoProps = new ArrayList<ObjectPropertyDescriptor>();
+        List<ObjectPropertyDescriptor> annoProps = new ArrayList<>();
         for (Class<?> objectClass : classList) {
-            List<ObjectPropertyDescriptor> props = ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter);
-            for (ObjectPropertyDescriptor prop : props) {
-                boolean dup = false;
-                for (ObjectPropertyDescriptor prop1 : annoProps) {
-                    if (prop.getId().equals(prop1.getId())) {
-                        dup = true;
-                        break;
-                    }
-                }
-                if (!dup) {
-                    annoProps.add(prop);
-                }
-            }
+            annoProps.addAll(ObjectAttributeDescriptor.extractAnnotations(source, objectClass, filter));
         }
         Collections.sort(annoProps, ATTRIBUTE_DESCRIPTOR_COMPARATOR);
         return annoProps;
