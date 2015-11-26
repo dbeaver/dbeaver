@@ -213,4 +213,8 @@ public interface SQLDialect {
      */
     String[] getSingleLineComments();
 
+    /**
+     * True if anonymous SQL blocks must be finished with delimiter
+     */
+    boolean isDelimiterAfterBlock();
 }
