@@ -50,8 +50,9 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -61,6 +62,8 @@ class ResultSetFilterPanel extends Composite
 {
     public static final int MIN_FILTER_TEXT_WIDTH = 50;
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;
+    public static final int MAX_HISTORY_PANEL_HEIGHT = 200;
+
     private static final String DEFAULT_QUERY_TEXT = "<empty>";
 
     private final ResultSetViewer viewer;
@@ -84,6 +87,9 @@ class ResultSetFilterPanel extends Composite
     private final Font hintFont;
 
     private String activeDisplayName = DEFAULT_QUERY_TEXT;
+
+    private String prevQuery = null;
+    private final List<String> filtersHistory = new ArrayList<>();
 
     public ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -326,8 +332,9 @@ class ResultSetFilterPanel extends Composite
             } else {
                 displayName = getActiveQueryText();
             }
-            if (displayName == null) {
-                displayName = DEFAULT_QUERY_TEXT;
+            if (prevQuery == null || !prevQuery.equals(displayName)) {
+                filtersHistory.clear();
+                prevQuery = displayName;
             }
             Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
             Matcher m = mlCommentsPattern.matcher(displayName);
@@ -367,21 +374,9 @@ class ResultSetFilterPanel extends Composite
 
     void addFiltersHistory(String whereCondition)
     {
-/*
-        int historyCount = filtersText.getItemCount();
-        for (int i = 0; i < historyCount; i++) {
-            if (filtersText.getItem(i).equals(whereCondition)) {
-                if (i > 0) {
-                    // Move to beginning
-                    filtersText.remove(i);
-                    break;
-                } else {
-                    return;
-                }
-            }
-        }
-        filtersText.add(whereCondition, 0);
-*/
+        filtersHistory.remove(whereCondition);
+        filtersHistory.add(whereCondition);
+
         filtersText.setText(whereCondition);
     }
 
@@ -435,6 +430,39 @@ class ResultSetFilterPanel extends Composite
         return textWidget;
     }
 
+    @NotNull
+    private Table createFilterHistoryPanel(final Shell popup) {
+        final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION);
+        new TableColumn(historyTable, SWT.NONE);
+
+        if (filtersHistory.isEmpty()) {
+            // nothing
+        } else {
+            String curFilterValue = filtersText.getText();
+            for (int i = filtersHistory.size(); i > 0; i--) {
+                String hi = filtersHistory.get(i - 1);
+                if (!CommonUtils.equalObjects(hi, curFilterValue)) {
+                    new TableItem(historyTable, SWT.NONE).setText(hi);
+                }
+            }
+        }
+
+        historyTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                final int selectionIndex = historyTable.getSelectionIndex();
+                if (selectionIndex >= 0) {
+                    final String newFilter = historyTable.getItem(selectionIndex).getText();
+                    popup.dispose();
+                    setFilterValue(newFilter);
+                    setCustomDataFilter();
+                }
+            }
+        });
+
+        return historyTable;
+    }
+
     private class FilterPanel extends Canvas {
         protected boolean hover = false;
         public FilterPanel(Composite parent, int style) {
@@ -464,6 +492,7 @@ class ResultSetFilterPanel extends Composite
         protected void paintPanel(PaintEvent e) {
 
         }
+
     }
 
     private class ActiveObjectPanel extends FilterPanel {
@@ -583,7 +612,7 @@ class ResultSetFilterPanel extends Composite
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e) {
-
+                    showFilterHistoryPopup(e);
                 }
             });
         }
@@ -596,6 +625,34 @@ class ResultSetFilterPanel extends Composite
             } else {
                 e.gc.drawImage(dropImageD, e.x, e.y + 2);
             }
+        }
+
+        private void showFilterHistoryPopup(MouseEvent e) {
+            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+            popup.setLayout(new FillLayout());
+            Table editControl = createFilterHistoryPanel(popup);
+
+            Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
+            Rectangle displayRect = getMonitor().getClientArea();
+            final Point filterTextSize = filtersText.getSize();
+            int width = filterTextSize.x + historyPanel.getSize().x + refreshPanel.getSize().x;
+            int height = Math.min(MAX_HISTORY_PANEL_HEIGHT, editControl.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            int x = parentRect.x;
+            int y = parentRect.y + getSize().y;
+            if (y + height > displayRect.y + displayRect.height) {
+                y = parentRect.y - height;
+            }
+            popup.setBounds(x, y, width, height);
+            editControl.getColumn(0).setWidth(editControl.getSize().x - editControl.getBorderWidth() * 2);
+            popup.setVisible(true);
+            editControl.setFocus();
+
+            editControl.addFocusListener(new FocusAdapter() {
+                @Override
+                public void focusLost(FocusEvent e) {
+                    popup.dispose();
+                }
+            });
         }
     }
 
