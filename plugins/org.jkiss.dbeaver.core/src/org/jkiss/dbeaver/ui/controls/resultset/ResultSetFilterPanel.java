@@ -30,6 +30,8 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -51,6 +53,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -60,6 +63,8 @@ import java.util.regex.Pattern;
  */
 class ResultSetFilterPanel extends Composite
 {
+    static final Log log = Log.getLog(ResultSetFilterPanel.class);
+
     public static final int MIN_FILTER_TEXT_WIDTH = 50;
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;
     public static final int MAX_HISTORY_PANEL_HEIGHT = 200;
@@ -325,15 +330,9 @@ class ResultSetFilterPanel extends Composite
         filtersText.getParent().setBackground(filtersText.getBackground());
 
         {
-            String displayName;
-            DBSDataContainer dataContainer = viewer.getDataContainer();
-            if (dataContainer != null) {
-                displayName = dataContainer.getName();
-            } else {
-                displayName = getActiveQueryText();
-            }
+            String displayName = getActiveSourceQuery();
             if (prevQuery == null || !prevQuery.equals(displayName)) {
-                filtersHistory.clear();
+                loadFiltersHistory(displayName);
                 prevQuery = displayName;
             }
             Pattern mlCommentsPattern = Pattern.compile("/\\*.*\\*/", Pattern.DOTALL);
@@ -351,6 +350,28 @@ class ResultSetFilterPanel extends Composite
 
         filterComposite.layout();
         redrawPanels();
+    }
+
+    @NotNull
+    private String getActiveSourceQuery() {
+        String displayName;
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        if (dataContainer != null) {
+            displayName = dataContainer.getName();
+        } else {
+            displayName = getActiveQueryText();
+        }
+        return displayName;
+    }
+
+    private void loadFiltersHistory(String query) {
+        filtersHistory.clear();
+        try {
+            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(query);
+            filtersHistory.addAll(history);
+        } catch (Throwable e) {
+            log.debug("Error reading history", e);
+        }
     }
 
     private void setCustomDataFilter()
@@ -374,8 +395,15 @@ class ResultSetFilterPanel extends Composite
 
     void addFiltersHistory(String whereCondition)
     {
-        filtersHistory.remove(whereCondition);
+        final boolean oldFilter = filtersHistory.remove(whereCondition);
         filtersHistory.add(whereCondition);
+        if (!oldFilter) {
+            try {
+                viewer.getFilterManager().saveQueryFilterValue(getActiveSourceQuery(), whereCondition);
+            } catch (Throwable e) {
+                log.debug("Error saving filter", e);
+            }
+        }
 
         filtersText.setText(whereCondition);
     }
