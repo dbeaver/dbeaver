@@ -32,11 +32,13 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -83,7 +85,8 @@ public class TextViewDialog extends ValueViewDialog {
 
         boolean readOnly = getValueController().isReadOnly();
         boolean useHex = !isForeignKey;
-        long maxSize = getValueController().getValueType().getMaxLength();
+        final DBSTypedObject valueType = getValueController().getValueType();
+        long maxSize = valueType.getMaxLength();
         if (useHex) {
             editorContainer = new CTabFolder(dialogGroup, SWT.FLAT | SWT.TOP);
             editorContainer.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -110,7 +113,7 @@ public class TextViewDialog extends ValueViewDialog {
             }
             textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
 
-            if (maxSize > 0) {
+            if (maxSize > 0 && valueType.getDataKind() == DBPDataKind.STRING) {
                 textEdit.setTextLimit((int) maxSize);
             }
             if (readOnly) {
