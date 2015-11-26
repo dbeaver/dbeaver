@@ -67,6 +67,7 @@ public class UIIcon {
     public static final DBIcon FIT_WINDOW = new DBIcon("fit_window", "misc/fit-window.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ORIGINAL_SIZE = new DBIcon("original_size", "misc/original-size.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ASTERISK = new DBIcon("asterisk", "misc/asterisk.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DROP_DOWN = new DBIcon("drop_down", "misc/drop_down.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BULLET_BLACK = new DBIcon("bullet_black", "misc/bullet_black.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BULLET_GREEN = new DBIcon("bullet_green", "misc/bullet_green.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BULLET_RED = new DBIcon("bullet_red", "misc/bullet_red.png"); //$NON-NLS-1$ //$NON-NLS-2$

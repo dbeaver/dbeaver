@@ -66,6 +66,7 @@ class ResultSetFilterPanel extends Composite
     private final ResultSetViewer viewer;
     private final ActiveObjectPanel activeObjectPanel;
     private final RefreshPanel refreshPanel;
+    private final HistoryPanel historyPanel;
 
     private StyledText filtersText;
 
@@ -116,6 +117,7 @@ class ResultSetFilterPanel extends Composite
             this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
             this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+            this.historyPanel = new HistoryPanel(filterComposite);
             this.refreshPanel = new RefreshPanel(filterComposite);
 
             // Register filters text in focus service
@@ -135,7 +137,7 @@ class ResultSetFilterPanel extends Composite
                     if (filtersText.isEnabled() && filtersText.getCharCount() == 0) {
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
-                        e.gc.drawText("Enter a SQL expression to filter results", 2, 0);
+                        e.gc.drawText("Enter an SQL expression to filter results", 2, 0);
                         e.gc.setFont(null);
                     }
                 }
@@ -245,6 +247,9 @@ class ResultSetFilterPanel extends Composite
     private void redrawPanels() {
         if (activeObjectPanel != null && !activeObjectPanel.isDisposed()) {
             activeObjectPanel.redraw();
+        }
+        if (historyPanel != null && !historyPanel.isDisposed()) {
+            historyPanel.redraw();
         }
         if (refreshPanel != null && !refreshPanel.isDisposed()) {
             refreshPanel.redraw();
@@ -552,6 +557,45 @@ class ResultSetFilterPanel extends Composite
             }
             e.gc.drawText(activeDisplayName, textOffset, 3);
             e.gc.setClipping((Rectangle) null);
+        }
+    }
+
+    private class HistoryPanel extends FilterPanel {
+
+        private final Image dropImageE, dropImageD;
+
+        public HistoryPanel(Composite addressBar) {
+            super(addressBar, SWT.NONE);
+            dropImageE = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
+            dropImageD = new Image(dropImageE.getDevice(), dropImageE, SWT.IMAGE_GRAY);
+
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
+            gd.widthHint = dropImageE.getBounds().width;
+            setLayoutData(gd);
+
+            addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    UIUtils.dispose(dropImageD);
+                }
+            });
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseUp(MouseEvent e) {
+
+                }
+            });
+        }
+
+        @Override
+        protected void paintPanel(PaintEvent e) {
+            e.gc.setForeground(shadowColor);
+            if (hover) {
+                e.gc.drawImage(dropImageE, e.x, e.y + 2);
+            } else {
+                e.gc.drawImage(dropImageD, e.x, e.y + 2);
+            }
         }
     }
 
