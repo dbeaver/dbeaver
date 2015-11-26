@@ -580,10 +580,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 continue;
             }
             if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
-                // FIXME: includes last dleimiter in query (Oracle?)
-                if (isDelimiter && hasBlocks) {
-                    tokenOffset += tokenLength;
-                }
                 // get position before last token start
                 if (tokenOffset > endPos) {
                     tokenOffset = endPos;
@@ -616,6 +612,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                         delimiterTexts = Collections.singleton(document.get(tokenOffset, tokenLength));
                     } else {
                         delimiterTexts = syntaxManager.getStatementDelimiters();
+                    }
+
+                    // FIXME: includes last dleimiter in query (Oracle?)
+                    if (isDelimiter && hasBlocks) {
+                        tokenOffset += tokenLength;
                     }
 
                     for (String delim : delimiterTexts) {
