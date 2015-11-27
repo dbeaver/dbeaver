@@ -1401,7 +1401,7 @@ public final class DBUtils {
             try {
                 return (Number)formatter.parseValue(text, hintType);
             } catch (ParseException e1) {
-                log.debug("Can't parse numeric value [" + text + "] using formatter", e);
+                log.debug("Can't parse numeric value [" + text + "] using formatter: " + e.getMessage());
                 return null;
             }
         }
