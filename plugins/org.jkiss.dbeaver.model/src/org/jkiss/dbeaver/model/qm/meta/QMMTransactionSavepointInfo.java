@@ -122,6 +122,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
         for (QMMStatementExecuteInfo exec = lastExecute; exec != null; exec = exec.getPrevious()) {
             switch (exec.getStatement().getPurpose()) {
                 case USER:
+                case USER_FILTERED:
                 case USER_SCRIPT:
                 case UTIL:
                 case META_DDL:

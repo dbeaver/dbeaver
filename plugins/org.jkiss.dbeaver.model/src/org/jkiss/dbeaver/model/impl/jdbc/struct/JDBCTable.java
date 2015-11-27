@@ -158,7 +158,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
-            firstRow, maxRows);
+            firstRow,
+            maxRows);
         try {
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
                 try {

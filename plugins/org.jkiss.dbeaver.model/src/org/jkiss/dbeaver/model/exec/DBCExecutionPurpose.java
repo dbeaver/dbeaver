@@ -30,10 +30,21 @@ package org.jkiss.dbeaver.model.exec;
  */
 public enum DBCExecutionPurpose {
 
-    USER,               // User query
-    USER_SCRIPT,        // User script query
-    UTIL,               // Utility query (utility method initialized by user)
-    META,               // Metadata query, processed by data source providers internally
-    META_DDL,           // Metadata modifications (DDL)
+    USER(true),               // User query
+    USER_FILTERED(true),      // User query with additional filters
+    USER_SCRIPT(true),        // User script query
+    UTIL(false),              // Utility query (utility method initialized by user)
+    META(false),              // Metadata query, processed by data source providers internally
+    META_DDL(false),;
+
+    private final boolean user;
+
+    DBCExecutionPurpose(boolean user) {
+        this.user = user;
+    }
+
+    public boolean isUser() {
+        return user;
+    }           // Metadata modifications (DDL)
 
 }
