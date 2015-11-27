@@ -273,7 +273,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     public void close()
     {
         DBCExecutionPurpose purpose = getPurpose();
-        if (purpose == DBCExecutionPurpose.USER || purpose == DBCExecutionPurpose.USER_SCRIPT) {
+        if (purpose.isUser()) {
             // Check for warnings
             try {
                 final Connection connection = getOriginal();

@@ -1220,7 +1220,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_query_manager_checkbox_transactions;
 
 	public static String pref_page_query_manager_checkbox_user_queries;
-
+	public static String pref_page_query_manager_checkbox_user_filtered;
 	public static String pref_page_query_manager_checkbox_user_scripts;
 
 	public static String pref_page_query_manager_checkbox_utility_functions;

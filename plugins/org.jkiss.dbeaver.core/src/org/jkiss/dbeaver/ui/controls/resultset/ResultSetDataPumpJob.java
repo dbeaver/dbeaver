@@ -124,9 +124,13 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
             }
         };
         PumpVisualizer visualizer = new PumpVisualizer();
+        DBCExecutionPurpose purpose = DBCExecutionPurpose.USER;
+        if (dataFilter.hasFilters()) {
+            purpose = DBCExecutionPurpose.USER_FILTERED;
+        }
         try (DBCSession session = getExecutionContext().openSession(
             proxyMonitor,
-            DBCExecutionPurpose.USER,
+            purpose,
             NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.getName())))
         {
             visualizer.schedule(PROGRESS_VISUALIZE_PERIOD * 2);

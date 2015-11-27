@@ -147,8 +147,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_OBJECT_TYPES,
           QMObjectType.toString(Arrays.asList(QMObjectType.txn, QMObjectType.query)));
       PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_QUERY_TYPES,
-          DBCExecutionPurpose.USER + "," +
-              DBCExecutionPurpose.USER_SCRIPT);
+          DBCExecutionPurpose.USER + "," + DBCExecutionPurpose.USER_FILTERED + "," + DBCExecutionPurpose.USER_SCRIPT);
       PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_STORE_LOG_FILE, false);
       PrefUtils.setDefaultPreferenceValue(store, QMConstants.PROP_LOG_DIRECTORY, Platform.getLogFileLocation().toFile().getParent());
 

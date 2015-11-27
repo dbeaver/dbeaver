@@ -485,12 +485,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     {
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();
-            switch (exec.getStatement().getPurpose()) {
-                case USER_SCRIPT:
-                case USER:
-                    return null;
-                default:
-                    return colorGray;
+            if (exec.getStatement().getPurpose().isUser()) {
+                return null;
+            } else {
+                return colorGray;
             }
         }
         return null;

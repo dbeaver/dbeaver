@@ -52,6 +52,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
     private Button checkObjectTypeTxn;
     private Button checkObjectTypeQueries;
     private Button checkQueryTypeUser;
+    private Button checkQueryTypeUserFiltered;
     private Button checkQueryTypeScript;
     private Button checkQueryTypeUtil;
     private Button checkQueryTypeMeta;
@@ -83,6 +84,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
 
         Group groupQueryTypes = UIUtils.createControlGroup(filterSettings, CoreMessages.pref_page_query_manager_group_query_types, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 170);
         checkQueryTypeUser = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_queries, false);
+        checkQueryTypeUserFiltered = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_filtered, false);
         checkQueryTypeScript = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_user_scripts, false);
         checkQueryTypeUtil = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_utility_functions, false);
         checkQueryTypeMeta = UIUtils.createCheckbox(groupQueryTypes, CoreMessages.pref_page_query_manager_checkbox_metadata_read, false);
@@ -127,6 +129,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         checkObjectTypeQueries.setSelection(objectTypes.contains(QMObjectType.query));
 
         checkQueryTypeUser.setSelection(queryTypes.contains(DBCExecutionPurpose.USER.name()));
+        checkQueryTypeUserFiltered.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_FILTERED.name()));
         checkQueryTypeScript.setSelection(queryTypes.contains(DBCExecutionPurpose.USER_SCRIPT.name()));
         checkQueryTypeUtil.setSelection(queryTypes.contains(DBCExecutionPurpose.UTIL.name()));
         checkQueryTypeMeta.setSelection(queryTypes.contains(DBCExecutionPurpose.META.name()));
@@ -152,6 +155,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
         if (checkObjectTypeQueries.getSelection()) objectTypes.add(QMObjectType.query);
 
         if (checkQueryTypeUser.getSelection()) queryTypes.add(DBCExecutionPurpose.USER.name());
+        if (checkQueryTypeUserFiltered.getSelection()) queryTypes.add(DBCExecutionPurpose.USER_FILTERED.name());
         if (checkQueryTypeScript.getSelection()) queryTypes.add(DBCExecutionPurpose.USER_SCRIPT.name());
         if (checkQueryTypeUtil.getSelection()) queryTypes.add(DBCExecutionPurpose.UTIL.name());
         if (checkQueryTypeMeta.getSelection()) queryTypes.add(DBCExecutionPurpose.META.name());
