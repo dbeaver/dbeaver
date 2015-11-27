@@ -458,39 +458,6 @@ class ResultSetFilterPanel extends Composite
         return textWidget;
     }
 
-    @NotNull
-    private Table createFilterHistoryPanel(final Shell popup) {
-        final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION);
-        new TableColumn(historyTable, SWT.NONE);
-
-        if (filtersHistory.isEmpty()) {
-            // nothing
-        } else {
-            String curFilterValue = filtersText.getText();
-            for (int i = filtersHistory.size(); i > 0; i--) {
-                String hi = filtersHistory.get(i - 1);
-                if (!CommonUtils.equalObjects(hi, curFilterValue)) {
-                    new TableItem(historyTable, SWT.NONE).setText(hi);
-                }
-            }
-        }
-
-        historyTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                final int selectionIndex = historyTable.getSelectionIndex();
-                if (selectionIndex >= 0) {
-                    final String newFilter = historyTable.getItem(selectionIndex).getText();
-                    popup.dispose();
-                    setFilterValue(newFilter);
-                    setCustomDataFilter();
-                }
-            }
-        });
-
-        return historyTable;
-    }
-
     private class FilterPanel extends Canvas {
         protected boolean hover = false;
         public FilterPanel(Composite parent, int style) {
@@ -527,6 +494,7 @@ class ResultSetFilterPanel extends Composite
         public static final int MIN_INFO_PANEL_WIDTH = 300;
         public static final int MIN_INFO_PANEL_HEIGHT = 100;
         public static final int MAX_INFO_PANEL_HEIGHT = 400;
+        private Shell popup;
 
         public ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
@@ -541,7 +509,10 @@ class ResultSetFilterPanel extends Composite
         }
 
         private void showObjectInfoPopup(MouseEvent e) {
-            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+            if (popup != null) {
+                popup.dispose();
+            }
+            popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
             popup.setLayout(new FillLayout());
             Control editControl;
             try {
@@ -620,6 +591,8 @@ class ResultSetFilterPanel extends Composite
     private class HistoryPanel extends FilterPanel {
 
         private final Image dropImageE, dropImageD;
+        private TableItem hoverItem;
+        private Shell popup;
 
         public HistoryPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
@@ -656,7 +629,10 @@ class ResultSetFilterPanel extends Composite
         }
 
         private void showFilterHistoryPopup(MouseEvent e) {
-            final Shell popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+            if (popup != null) {
+                popup.dispose();
+            }
+            popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
             popup.setLayout(new FillLayout());
             Table editControl = createFilterHistoryPanel(popup);
 
@@ -682,6 +658,69 @@ class ResultSetFilterPanel extends Composite
                 }
             });
         }
+
+        @NotNull
+        private Table createFilterHistoryPanel(final Shell popup) {
+            final Table historyTable = new Table(popup, SWT.BORDER | SWT.FULL_SELECTION | SWT.SINGLE);
+            new TableColumn(historyTable, SWT.NONE);
+
+            if (filtersHistory.isEmpty()) {
+                // nothing
+            } else {
+                String curFilterValue = filtersText.getText();
+                for (int i = filtersHistory.size(); i > 0; i--) {
+                    String hi = filtersHistory.get(i - 1);
+                    if (!CommonUtils.equalObjects(hi, curFilterValue)) {
+                        new TableItem(historyTable, SWT.NONE).setText(hi);
+                    }
+                }
+                historyTable.deselectAll();
+            }
+
+            historyTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    final int selectionIndex = historyTable.getSelectionIndex();
+                    if (selectionIndex >= 0) {
+                        final String newFilter = historyTable.getItem(selectionIndex).getText();
+                        popup.dispose();
+                        setFilterValue(newFilter);
+                        setCustomDataFilter();
+                    }
+                }
+            });
+            historyTable.addMouseTrackListener(new MouseTrackAdapter() {
+                @Override
+                public void mouseHover(MouseEvent e) {
+                    hoverItem = historyTable.getItem(new Point(e.x, e.y));
+                }
+
+                @Override
+                public void mouseExit(MouseEvent e) {
+                    hoverItem = null;
+                }
+            });
+            historyTable.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.keyCode == SWT.DEL) {
+                        if (hoverItem != null) {
+                            final String filterValue = hoverItem.getText();
+                            try {
+                                viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
+                            } catch (DBException e1) {
+                                log.warn("Error deleting filter value [" + filterValue + "]", e1);
+                            }
+                            filtersHistory.remove(filterValue);
+                            hoverItem.dispose();
+                        }
+                    }
+                }
+            });
+
+            return historyTable;
+        }
+
     }
 
     private class RefreshPanel extends FilterPanel {
