@@ -668,7 +668,12 @@ class ResultSetFilterPanel extends Composite
                 y = parentRect.y - height;
             }
             popup.setBounds(x, y, width, height);
-            editControl.getColumn(0).setWidth(editControl.getSize().x - editControl.getBorderWidth() * 2);
+            int tableWidth = editControl.getSize().x - editControl.getBorderWidth() * 2;
+            final ScrollBar vsb = editControl.getVerticalBar();
+            if (vsb != null) {
+                tableWidth -= vsb.getSize().x;
+            }
+            editControl.getColumn(0).setWidth(tableWidth);
             popup.setVisible(true);
             editControl.setFocus();
 
