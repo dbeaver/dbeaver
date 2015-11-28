@@ -164,6 +164,27 @@ class ResultSetFilterPanel extends Composite
                     }
                 }
             });
+            this.filtersText.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.keyCode == SWT.ARROW_DOWN) {
+                        historyPanel.showFilterHistoryPopup();
+                    }
+                }
+            });
+/*
+            this.filtersText.addFocusListener(new FocusListener() {
+                @Override
+                public void focusGained(FocusEvent e) {
+
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+
+                }
+            });
+*/
         }
 
         // Handle all shortcuts by filters editor, not by host editor
@@ -390,7 +411,7 @@ class ResultSetFilterPanel extends Composite
         DBDDataFilter newFilter = viewer.getModel().createDataFilter();
         newFilter.setWhere(condition);
         viewer.setDataFilter(newFilter, true);
-        viewer.getControl().setFocus();
+        //viewer.getControl().setFocus();
     }
 
     void addFiltersHistory(String whereCondition)
@@ -613,7 +634,7 @@ class ResultSetFilterPanel extends Composite
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e) {
-                    showFilterHistoryPopup(e);
+                    showFilterHistoryPopup();
                 }
             });
         }
@@ -628,7 +649,7 @@ class ResultSetFilterPanel extends Composite
             }
         }
 
-        private void showFilterHistoryPopup(MouseEvent e) {
+        private void showFilterHistoryPopup() {
             if (popup != null) {
                 popup.dispose();
             }
@@ -677,22 +698,10 @@ class ResultSetFilterPanel extends Composite
                 historyTable.deselectAll();
             }
 
-            historyTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    final int selectionIndex = historyTable.getSelectionIndex();
-                    if (selectionIndex >= 0) {
-                        final String newFilter = historyTable.getItem(selectionIndex).getText();
-                        popup.dispose();
-                        setFilterValue(newFilter);
-                        setCustomDataFilter();
-                    }
-                }
-            });
             historyTable.addMouseTrackListener(new MouseTrackAdapter() {
                 @Override
                 public void mouseHover(MouseEvent e) {
-                    hoverItem = historyTable.getItem(new Point(e.x, e.y));
+                    //hoverItem = historyTable.getItem(new Point(e.x, e.y));
                 }
 
                 @Override
@@ -703,17 +712,47 @@ class ResultSetFilterPanel extends Composite
             historyTable.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    if (e.keyCode == SWT.DEL) {
-                        if (hoverItem != null) {
-                            final String filterValue = hoverItem.getText();
+                    TableItem item = hoverItem;
+                    if (item == null) {
+                        final int selectionIndex = historyTable.getSelectionIndex();
+                        if (selectionIndex != -1) {
+                            item = historyTable.getItem(selectionIndex);
+                        }
+                    }
+                    if (item != null) {
+                        if (e.keyCode == SWT.DEL) {
+                            final String filterValue = item.getText();
                             try {
                                 viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
                             } catch (DBException e1) {
                                 log.warn("Error deleting filter value [" + filterValue + "]", e1);
                             }
                             filtersHistory.remove(filterValue);
-                            hoverItem.dispose();
+                            item.dispose();
+                            hoverItem = null;
+                        } else if (e.keyCode == SWT.CR || e.keyCode == SWT.SPACE) {
+                            final String newFilter = item.getText();
+                            popup.dispose();
+                            setFilterValue(newFilter);
+                            setCustomDataFilter();
                         }
+                    }
+                }
+            });
+            historyTable.addMouseMoveListener(new MouseMoveListener() {
+                @Override
+                public void mouseMove(MouseEvent e) {
+                    hoverItem = historyTable.getItem(new Point(e.x, e.y));
+                }
+            });
+            historyTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    if (hoverItem != null) {
+                        final String newFilter = hoverItem.getText();
+                        popup.dispose();
+                        setFilterValue(newFilter);
+                        setCustomDataFilter();
                     }
                 }
             });

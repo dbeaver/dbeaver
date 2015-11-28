@@ -29,6 +29,7 @@ import java.util.Collection;
  */
 public interface IResultSetFilterManager
 {
+    @NotNull
     Collection<String> getQueryFilterHistory(@NotNull String query) throws DBException;
 
     void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) throws DBException;
