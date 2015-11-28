@@ -106,11 +106,11 @@ public class ResultSetViewer extends Viewer
     static final Log log = Log.getLog(ResultSetViewer.class);
 
     @NotNull
-    private static IResultSetFilterManager filterManager = new NoOpFilterManager();
+    private static IResultSetFilterManager filterManager = new SimpleFilterManager();
 
     public static void registerFilterManager(@Nullable IResultSetFilterManager filterManager) {
         if (filterManager == null) {
-            filterManager = new NoOpFilterManager();
+            filterManager = new SimpleFilterManager();
         }
         ResultSetViewer.filterManager = filterManager;
     }
@@ -1833,20 +1833,34 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private static class NoOpFilterManager implements IResultSetFilterManager {
+    private static class SimpleFilterManager implements IResultSetFilterManager {
+        private final Map<String, List<String>> filterHistory = new HashMap<>();
+        @NotNull
         @Override
-        public Collection<String> getQueryFilterHistory(@NotNull String query) throws DBException {
+        public List<String> getQueryFilterHistory(@NotNull String query) throws DBException {
+            final List<String> filters = filterHistory.get(query);
+            if (filters != null) {
+                return filters;
+            }
             return Collections.emptyList();
         }
 
         @Override
         public void saveQueryFilterValue(@NotNull String query, @NotNull String filterValue) throws DBException {
-            // no op
+            List<String> filters = filterHistory.get(query);
+            if (filters == null) {
+                filters = new ArrayList<>();
+                filterHistory.put(query, filters);
+            }
+            filters.add(filterValue);
         }
 
         @Override
         public void deleteQueryFilterValue(@NotNull String query, String filterValue) throws DBException {
-            // no op
+            List<String> filters = filterHistory.get(query);
+            if (filters != null) {
+                filters.add(filterValue);
+            }
         }
     }
 
