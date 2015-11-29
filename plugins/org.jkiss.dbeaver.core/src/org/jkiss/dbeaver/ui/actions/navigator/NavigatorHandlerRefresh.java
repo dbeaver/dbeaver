@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -29,12 +28,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 import java.util.*;
 
@@ -50,14 +50,19 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         //final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart workbenchPart = HandlerUtil.getActivePart(event);
-        if (!(workbenchPart instanceof INavigatorModelView)) {
+        INavigatorModelView navigatorView;
+        if (workbenchPart instanceof INavigatorModelView) {
+            navigatorView = (INavigatorModelView) workbenchPart;
+        } else {
+            navigatorView = workbenchPart.getAdapter(INavigatorModelView.class);
+        }
+        if (navigatorView == null) {
             // Try to refresh as refreshable part
             if (workbenchPart instanceof IRefreshablePart) {
                 ((IRefreshablePart) workbenchPart).refreshPart(this, true);
             }
             return null;
         }
-        final INavigatorModelView navigatorView = (INavigatorModelView)workbenchPart;
         final List<DBNNode> refreshObjects = new ArrayList<>();
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
