@@ -50,17 +50,9 @@ public class SQLSyntaxManager {
     private Set<String> statementDelimiters = new LinkedHashSet<>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
 
     private char escapeChar;
-    private boolean unassigned;
 
     public SQLSyntaxManager()
     {
-    }
-
-    /**
-     * Returns true if this syntax manager wasn't assigned to a some particular data source container/ SQL dialect
-     */
-    public boolean isUnassigned() {
-        return unassigned;
     }
 
     @NotNull
@@ -107,42 +99,32 @@ public class SQLSyntaxManager {
         return anonymousParameterMark;
     }
 
-    public void init(@Nullable SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
+    public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
-        this.unassigned = dialect == null;
         this.statementDelimiters.clear();
-        if (dialect == null) {
-            sqlDialect = BasicSQLDialect.INSTANCE;
-            quoteSymbol = null;
-            structSeparator = SQLConstants.STRUCT_SEPARATOR;
-            catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
-            escapeChar = '\\';
-            statementDelimiters.add(SQLConstants.DEFAULT_STATEMENT_DELIMITER);
-        } else {
-            sqlDialect = dialect;
-            quoteSymbol = sqlDialect.getIdentifierQuoteString();
-            structSeparator = sqlDialect.getStructSeparator();
-            catalogSeparator = sqlDialect.getCatalogSeparator();
-            sqlDialect.getSearchStringEscape();
-            escapeChar = '\\';
-            if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
-                statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
-            }
-
-            String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
-            StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
-            while (st.hasMoreTokens()) {
-                statementDelimiters.add(st.nextToken());
-            }
+        this.sqlDialect = dialect;
+        this.quoteSymbol = sqlDialect.getIdentifierQuoteString();
+        this.structSeparator = sqlDialect.getStructSeparator();
+        this.catalogSeparator = sqlDialect.getCatalogSeparator();
+        this.sqlDialect.getSearchStringEscape();
+        this.escapeChar = '\\';
+        if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
+            this.statementDelimiters.add(sqlDialect.getScriptDelimiter().toLowerCase());
         }
 
-        parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
-        anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
+        String extraDelimiters = preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
+        StringTokenizer st = new StringTokenizer(extraDelimiters, " \t,");
+        while (st.hasMoreTokens()) {
+            this.statementDelimiters.add(st.nextToken());
+        }
+
+        this.parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
+        this.anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         String markString = preferenceStore.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
         if (CommonUtils.isEmpty(markString)) {
-            anonymousParameterMark = SQLConstants.DEFAULT_PARAMETER_MARK;
+            this.anonymousParameterMark = SQLConstants.DEFAULT_PARAMETER_MARK;
         } else {
-            anonymousParameterMark = markString.charAt(0);
+            this.anonymousParameterMark = markString.charAt(0);
         }
     }
 

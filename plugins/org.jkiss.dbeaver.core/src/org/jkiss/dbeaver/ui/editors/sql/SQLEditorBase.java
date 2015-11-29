@@ -32,6 +32,7 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
@@ -376,6 +378,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
+    @NotNull
     protected SQLDialect getSQLDialect() {
         DBCExecutionContext executionContext = getExecutionContext();
         DBPDataSource dataSource = executionContext == null ? null : executionContext.getDataSource();
@@ -383,47 +386,47 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (dataSource instanceof SQLDataSource) {
             return ((SQLDataSource) dataSource).getSQLDialect();
         }
-        return null;
+        return BasicSQLDialect.INSTANCE;
     }
 
     public void reloadSyntaxRules()
     {
         // Refresh syntax
         SQLDialect dialect = getSQLDialect();
-        if (dialect != null) {
-            syntaxManager.init(dialect, getActivePreferenceStore());
-            ruleManager.refreshRules();
 
-            Document document = getDocument();
-            if (document != null) {
-                IDocumentPartitioner partitioner = new FastPartitioner(
-                    new SQLPartitionScanner(dialect),
-                    SQLPartitionScanner.SQL_PARTITION_TYPES);
-                partitioner.connect(document);
-                document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+        syntaxManager.init(dialect, getActivePreferenceStore());
+        ruleManager.refreshRules();
 
-                ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
-                if (projectionViewer != null && document.getLength() > 0) {
-                    // Refresh viewer
-                    //projectionViewer.getTextWidget().redraw();
-                    try {
-                        projectionViewer.reinitializeProjection();
-                    } catch (Throwable ex) {
-                        // We can catch OutOfMemory here for too big/complex documents
-                        log.warn("Can't initialize SQL syntax projection", ex); //$NON-NLS-1$
-                    }
+        Document document = getDocument();
+        if (document != null) {
+            IDocumentPartitioner partitioner = new FastPartitioner(
+                new SQLPartitionScanner(dialect),
+                SQLPartitionScanner.SQL_PARTITION_TYPES);
+            partitioner.connect(document);
+            document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
+
+            ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
+            if (projectionViewer != null && document.getLength() > 0) {
+                // Refresh viewer
+                //projectionViewer.getTextWidget().redraw();
+                try {
+                    projectionViewer.reinitializeProjection();
+                } catch (Throwable ex) {
+                    // We can catch OutOfMemory here for too big/complex documents
+                    log.warn("Can't initialize SQL syntax projection", ex); //$NON-NLS-1$
                 }
             }
         }
 
         Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
-        Color bgColor = ruleManager.getColor(!syntaxManager.isUnassigned() && dialect == null ?
+        Color bgColor = ruleManager.getColor(getExecutionContext() == null ?
             SQLConstants.CONFIG_COLOR_DISABLED :
             SQLConstants.CONFIG_COLOR_BACKGROUND);
+        final StyledText textWidget = getTextViewer().getTextWidget();
         if (fgColor != null) {
-            getTextViewer().getTextWidget().setForeground(fgColor);
+            textWidget.setForeground(fgColor);
         }
-        getTextViewer().getTextWidget().setBackground(bgColor);
+        textWidget.setBackground(bgColor);
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
