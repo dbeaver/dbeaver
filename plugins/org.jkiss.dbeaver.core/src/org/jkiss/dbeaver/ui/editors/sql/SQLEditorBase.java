@@ -214,17 +214,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         this.hasVerticalRuler = hasVerticalRuler;
     }
 
-    @Override
-    protected void doSetInput(IEditorInput input) throws CoreException
-    {
-        IEditorInput oldInput = getEditorInput();
-        super.doSetInput(input);
-        if (oldInput != null && input != null && !oldInput.equals(input)) {
-            // Editor input changed - it may be a result of resource change (move/rename)
-            reloadSyntaxRules();
-        }
-    }
-
     protected ISharedTextColors getSharedColors()
     {
         return DBeaverUI.getSharedTextColors();

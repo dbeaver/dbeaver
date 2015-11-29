@@ -32,12 +32,8 @@ import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ui.IActiveWorkbenchPart;
-import org.jkiss.dbeaver.ui.IPropertyChangeReflector;
-import org.jkiss.dbeaver.ui.IRefreshablePart;
-import org.jkiss.dbeaver.ui.ISingleControlEditor;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -184,6 +180,9 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
 
     @Override
     public void refreshPart(Object source, boolean force) {
+        if (editor instanceof IRefreshablePart) {
+            ((IRefreshablePart) editor).refreshPart(source, force);
+        }
         // Reload sources
         if (editor instanceof IReusableEditor) {
             ((IReusableEditor) editor).setInput(editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));

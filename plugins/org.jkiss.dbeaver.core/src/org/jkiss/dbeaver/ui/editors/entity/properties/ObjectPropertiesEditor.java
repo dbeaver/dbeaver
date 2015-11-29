@@ -27,24 +27,26 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.IProgressControlProvider;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.*;
@@ -65,7 +67,7 @@ import java.util.Map;
  * ObjectPropertiesEditor
  */
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
-    implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, IRefreshableContainer, INavigatorModelView
+    implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, INavigatorModelView
 {
     static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
@@ -74,7 +76,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private final List<IFolderListener> folderListeners = new ArrayList<>();
     private String curFolderId;
 
-    private final List<IRefreshablePart> refreshClients = new ArrayList<>();
     private final List<ISaveablePart> nestedSaveable = new ArrayList<>();
     private final Map<IFolder, IEditorActionBarContributor> pageContributors = new HashMap<>();
 
@@ -321,26 +322,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void addRefreshClient(IRefreshablePart part)
-    {
-        synchronized (refreshClients) {
-            refreshClients.add(part);
-        }
-    }
-
-    @Override
-    public void removeRefreshClient(IRefreshablePart part)
-    {
-        synchronized (refreshClients) {
-            refreshClients.add(part);
-        }
-    }
-
-    @Override
     public void refreshPart(Object source, boolean force) {
-        synchronized (refreshClients) {
-            for (IRefreshablePart part : refreshClients) {
-                part.refreshPart(source, force);
+        if (folderComposite != null && folderComposite.getFolders() != null) {
+            for (FolderInfo folder : folderComposite.getFolders()) {
+                if (folder.getContents() instanceof IRefreshablePart) {
+                    ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
+                }
             }
         }
     }
