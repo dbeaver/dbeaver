@@ -43,29 +43,17 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefreshablePart, INavigatorModelView, IAdaptable
 {
 
-    private IDatabaseEditor editor;
+    private IDatabaseEditor mainEditor;
     private DBNNode node;
     private DBXTreeNode metaNode;
     private ItemListControl itemControl;
     private boolean activated;
 
-    FolderPageNode(IDatabaseEditor editor, DBNNode node, DBXTreeNode metaNode)
+    FolderPageNode(IDatabaseEditor mainEditor, DBNNode node, DBXTreeNode metaNode)
     {
-        this.editor = editor;
+        this.mainEditor = mainEditor;
         this.node = node;
         this.metaNode = metaNode;
-
-        if (editor instanceof IRefreshableContainer) {
-            ((IRefreshableContainer) editor).addRefreshClient(this);
-        }
-    }
-
-    @Override
-    public void dispose()
-    {
-        if (editor instanceof IRefreshableContainer) {
-            ((IRefreshableContainer) editor).removeRefreshClient(this);
-        }
     }
 
     public void setFocus()
@@ -75,12 +63,12 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
 
     @Override
     public void createControl(Composite parent) {
-        itemControl = new ItemListControl(parent, SWT.SHEET, editor.getSite(), node, metaNode);
+        itemControl = new ItemListControl(parent, SWT.SHEET, mainEditor.getSite(), node, metaNode);
         //itemControl.getLayout().marginHeight = 0;
         //itemControl.getLayout().marginWidth = 0;
         ProgressPageControl progressControl = null;
-        if (editor instanceof IProgressControlProvider) {
-            progressControl = ((IProgressControlProvider)editor).getProgressControl();
+        if (mainEditor instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider) mainEditor).getProgressControl();
         }
         if (progressControl != null) {
             itemControl.substituteProgressPanel(progressControl);
@@ -96,14 +84,14 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
             public void focusGained(FocusEvent e) {
                 // Update selection provider and selection
                 final ISelectionProvider selectionProvider = itemControl.getSelectionProvider();
-                editor.getSite().setSelectionProvider(selectionProvider);
+                mainEditor.getSite().setSelectionProvider(selectionProvider);
                 selectionProvider.setSelection(selectionProvider.getSelection());
                 itemControl.activate(true);
 
                 // Notify owner MultiPart editor about page change
                 // We need it to update search actions and other contributions provided by node editor
-                if (editor.getSite() instanceof MultiPageEditorSite) {
-                    ((MultiPageEditorSite) editor.getSite()).getMultiPageEditor().setActiveEditor(editor);
+                if (mainEditor.getSite() instanceof MultiPageEditorSite) {
+                    ((MultiPageEditorSite) mainEditor.getSite()).getMultiPageEditor().setActiveEditor(mainEditor);
                 }
             }
 
@@ -131,7 +119,7 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
 
     public IDatabaseEditorInput getEditorInput()
     {
-        return editor.getEditorInput();
+        return mainEditor.getEditorInput();
     }
 
     @Override

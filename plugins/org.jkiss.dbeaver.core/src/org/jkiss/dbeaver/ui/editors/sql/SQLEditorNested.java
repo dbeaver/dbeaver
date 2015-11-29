@@ -37,6 +37,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
+import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
@@ -175,9 +176,6 @@ public abstract class SQLEditorNested<T extends DBSObject>
         if (lazyInput != null) {
             try {
                 super.init(getEditorSite(), lazyInput);
-                reloadSyntaxRules();
-
-                //pageControl.setInfo(OracleMessages.editors_oracle_source_abstract_editor_state + getSourceObject().getObjectState().getTitle());
                 lazyInput = null;
             } catch (PartInitException e) {
                 log.error(e);
@@ -191,10 +189,13 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void refreshPart(Object source, boolean force) {
+        final IDocumentProvider documentProvider = getDocumentProvider();
+        if (documentProvider instanceof SQLEditorNested.ObjectDocumentProvider) {
+            ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceText = null;
+        }
         if (lazyInput == null && force) {
             try {
                 super.init(getEditorSite(), getEditorInput());
-                reloadSyntaxRules();
                 setFocus();
             } catch (PartInitException e) {
                 log.error(e);
@@ -245,6 +246,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                                     public void run() {
                                         try {
                                             doResetDocument(getEditorInput(), monitor.getNestedMonitor());
+                                            reloadSyntaxRules();
                                         } catch (CoreException e) {
                                             log.error(e);
                                         }
