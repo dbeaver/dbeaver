@@ -202,19 +202,36 @@ public class ReferenceValueEditor {
             @Override
             public void modifyText(ModifyEvent e)
             {
+                Object curEditorValue;
+                try {
+                    curEditorValue = valueEditor.extractEditorValue();
+                } catch (DBException e1) {
+                    log.error(e1);
+                    return;
+                }
                 if (handleEditorChange) {
                     if (loaderJob.getState() == Job.RUNNING) {
                         // Cancel it and create new one
                         loaderJob.cancel();
                         loaderJob = new SelectorLoaderJob();
                     }
-                    try {
-                        loaderJob.setPattern(valueEditor.extractEditorValue());
-                    } catch (DBException e1) {
-                        log.error(e1);
-                    }
+                    loaderJob.setPattern(curEditorValue);
                     if (loaderJob.getState() != Job.WAITING) {
                         loaderJob.schedule(500);
+                    }
+                } else {
+                    // Just select current value in the table
+                    final String curTextValue = valueController.getValueHandler().getValueDisplayString(
+                        ((IAttributeController) valueController).getBinding(),
+                        curEditorValue,
+                        DBDDisplayFormat.UI);
+
+                    for (TableItem item : editorSelector.getItems()) {
+                        if (item.getText(0).equals(curTextValue)) {
+                            editorSelector.select(editorSelector.indexOf(item));
+                            editorSelector.showSelection();
+                            break;
+                        }
                     }
                 }
             }
@@ -230,6 +247,10 @@ public class ReferenceValueEditor {
         loaderJob.schedule(500);
 
         return true;
+    }
+
+    public void setHandleEditorChange(boolean handleEditorChange) {
+        this.handleEditorChange = handleEditorChange;
     }
 
     private class SelectorLoaderJob extends DataSourceJob {
@@ -253,6 +274,9 @@ public class ReferenceValueEditor {
         @Override
         protected IStatus run(DBRProgressMonitor monitor)
         {
+            if (editorSelector.isDisposed()) {
+                return Status.OK_STATUS;
+            }
             final Map<Object, String> keyValues = new TreeMap<>();
             try {
                 IAttributeController attributeController = (IAttributeController)valueController;
