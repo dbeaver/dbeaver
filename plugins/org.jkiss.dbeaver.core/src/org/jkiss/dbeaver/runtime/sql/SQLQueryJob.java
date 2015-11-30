@@ -261,13 +261,13 @@ public class SQLQueryJob extends DataSourceJob
         }
     }
 
-    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLQuery sqlStatement, boolean fireEvents)
+    private boolean executeSingleQuery(@NotNull DBCSession session, @NotNull SQLQuery sqlQuery, boolean fireEvents)
     {
         lastError = null;
 
-        String sqlQuery = sqlStatement.getQuery();
+        final String originalQueryText = sqlQuery.getQuery();
         DBCExecutionContext executionContext = getExecutionContext();
-        SQLQueryResult curResult = new SQLQueryResult(sqlStatement);
+        SQLQueryResult curResult = new SQLQueryResult(sqlQuery);
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
@@ -275,7 +275,7 @@ public class SQLQueryJob extends DataSourceJob
 
         if (fireEvents && listener != null) {
             // Notify query start
-            listener.onStartQuery(sqlStatement);
+            listener.onStartQuery(sqlQuery);
         }
 
         try {
@@ -292,21 +292,25 @@ public class SQLQueryJob extends DataSourceJob
             try {
                 // Modify query (filters + parameters)
                 if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
-                    sqlQuery = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, sqlQuery, dataFilter);
+                    String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(dataSource, originalQueryText, dataFilter);
+                    sqlQuery = new SQLQuery(
+                        filteredQueryText,
+                        sqlQuery.getOffset(),
+                        sqlQuery.getLength());
                 }
             } catch (DBException e) {
                 throw new DBCException("Can't apply query filter", e);
             }
 
-            Boolean hasParameters = prepareStatementParameters(sqlStatement);
+            Boolean hasParameters = prepareStatementParameters(sqlQuery);
             if (hasParameters == null) {
                 return false;
             }
 
-            statistics.setQueryText(sqlQuery);
+            statistics.setQueryText(originalQueryText);
 
             startTime = System.currentTimeMillis();
-            DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlStatement);
+            DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlQuery);
             curStatement = DBUtils.prepareStatement(
                 source,
                 session,
@@ -315,7 +319,7 @@ public class SQLQueryJob extends DataSourceJob
                 rsOffset, rsMaxRows);
 
             if (hasParameters) {
-                bindStatementParameters(session, sqlStatement);
+                bindStatementParameters(session, sqlQuery);
             }
 
             // Execute statement
@@ -330,7 +334,7 @@ public class SQLQueryJob extends DataSourceJob
                     // Fetch data only if we have to fetch all results or if it is rs requested
                     if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
                         if (hasResultSet && fetchResultSets) {
-                            DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlStatement, resultSetNumber);
+                            DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
                             if (dataReceiver != null) {
                                 hasResultSet = fetchQueryData(session, curStatement.openResultSet(), curResult, dataReceiver, true);
                             }
@@ -380,7 +384,7 @@ public class SQLQueryJob extends DataSourceJob
                 }
 
                 // Release parameters
-                releaseStatementParameters(sqlStatement);
+                releaseStatementParameters(sqlQuery);
             }
         }
         catch (Throwable ex) {
@@ -403,7 +407,7 @@ public class SQLQueryJob extends DataSourceJob
             return false;
         }
         // Success
-        lastGoodQuery = sqlStatement;
+        lastGoodQuery = sqlQuery;
         return true;
     }
 
