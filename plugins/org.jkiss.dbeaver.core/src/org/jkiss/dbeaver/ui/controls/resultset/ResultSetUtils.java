@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLSelectItem;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -61,6 +62,7 @@ public class ResultSetUtils
         DBRProgressMonitor monitor = session.getProgressMonitor();
         monitor.beginTask("Discover resultset metadata", 3);
         try {
+            SQLQuery sqlQuery = null;
             DBSEntity entity = null;
             DBCStatement sourceStatement = resultSet.getSourceStatement();
             if (sourceStatement != null && sourceStatement.getStatementSource() != null) {
@@ -76,7 +78,8 @@ public class ResultSetUtils
                     // Discover from entity metadata
                     Object sourceDescriptor = executionSource.getSourceDescriptor();
                     if (sourceDescriptor instanceof SQLQuery) {
-                        entityMeta = ((SQLQuery) sourceDescriptor).getSingleSource();
+                        sqlQuery = (SQLQuery) sourceDescriptor;
+                        entityMeta = sqlQuery.getSingleSource();
                     }
                     if (entityMeta != null) {
                         entity = getEntityFromMetaData(session, entityMeta);
@@ -97,6 +100,14 @@ public class ResultSetUtils
                     entity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
                 }
                 if (entity != null) {
+                    if (sqlQuery != null) {
+                        final SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getName());
+                        if (selectItem != null && !selectItem.isPlainColumn()) {
+                            // It is not a column.
+                            // It maybe an expression, function or anything else
+                            continue;
+                        }
+                    }
                     DBSEntityAttribute tableColumn;
                     if (attrMeta.getPseudoAttribute() != null) {
                         tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(entity, attrMeta);
