@@ -123,7 +123,11 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                                         }
                                     }
                                 }
-                                saveValue();
+                                if (!valueController.isReadOnly()) {
+                                    saveValue();
+                                } else {
+                                    ((IMultiController) valueController).closeInlineEditor();
+                                }
                             }
                         });
                     }
