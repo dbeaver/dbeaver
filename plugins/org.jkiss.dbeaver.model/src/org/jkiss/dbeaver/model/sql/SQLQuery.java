@@ -32,6 +32,7 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectBody;
+import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -41,7 +42,9 @@ import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * SQLQuery
@@ -61,6 +64,7 @@ public class SQLQuery {
     private Statement statement;
     private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
+    private Map<String, SQLSelectItem> selectItems;
 
     public SQLQuery(@NotNull String query)
     {
@@ -95,6 +99,15 @@ public class SQLQuery {
                             schemaName,
                             tableName);
                     }
+                    // Extract select items info
+                    final List<SelectItem> items = plainSelect.getSelectItems();
+                    if (items != null && !items.isEmpty()) {
+                        selectItems = new LinkedHashMap<>();
+                        for (SelectItem item : items) {
+                            SQLSelectItem si = new SQLSelectItem(item);
+                            selectItems.put(si.getName(), si);
+                        }
+                    }
                 }
             } else if (statement instanceof Insert) {
                 type = SQLQueryType.INSERT;
@@ -128,6 +141,10 @@ public class SQLQuery {
             return selectBody.getFromItem() != null && CommonUtils.isEmpty(selectBody.getIntoTables()) && selectBody.getLimit() == null && selectBody.getTop() == null;
         }
         return false;
+    }
+
+    public SQLSelectItem getSelectItem(String name) {
+        return selectItems == null ? null : selectItems.get(name);
     }
 
     @NotNull
