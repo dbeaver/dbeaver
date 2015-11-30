@@ -40,9 +40,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         "name",
         "label",
         "display",
+        "displayname",
         "description",
         "comment",
         "remark",
+        "information",
+        "email",
     };
     private static final int MIN_DESC_COLUMN_LENGTH = 4;
     private static final int MAX_DESC_COLUMN_LENGTH = 1000;
@@ -252,7 +255,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             // Make some tests
             for (String pattern : DESC_COLUMN_PATTERNS) {
                 for (String columnName : stringColumns.keySet()) {
-                    if (columnName.contains(pattern)) {
+                    if (columnName.toLowerCase(Locale.ENGLISH).contains(pattern)) {
                         return DBUtils.getQuotedIdentifier(stringColumns.get(columnName));
                     }
                 }
