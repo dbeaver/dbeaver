@@ -763,13 +763,18 @@ public final class DBUtils {
         long maxRows) throws DBCException
     {
         SQLQuery sqlQuery = new SQLQuery(query);
-        DBCStatement statement = prepareStatement(session, statementType, sqlQuery, offset, maxRows);
-        statement.setStatementSource(executionSource);
-        return statement;
+        return prepareStatement(
+            executionSource,
+            session,
+            statementType,
+            sqlQuery,
+            offset,
+            maxRows);
     }
 
     @NotNull
     public static DBCStatement prepareStatement(
+        DBCExecutionSource executionSource,
         DBCSession session,
         DBCStatementType statementType,
         SQLQuery sqlQuery,
@@ -810,6 +815,7 @@ public final class DBUtils {
         DBCStatement dbStat = statementType == DBCStatementType.SCRIPT ?
             createStatement(session, queryText, hasLimits) :
             prepareStatement(session, queryText, hasLimits);
+        dbStat.setStatementSource(executionSource);
 
         if (hasLimits || offset > 0) {
             if (limitTransformer == null) {
