@@ -496,8 +496,10 @@ public class ResultSetModel {
                         break;
                     }
                 } else {
-                    singleSourceCells = false;
-                    break;
+                    // Do not mark it a multi-source.
+                    // It is just some column without identifier, probably a constant or an expression
+                    //singleSourceCells = false;
+                    //break;
                 }
             }
         }
