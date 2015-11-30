@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -53,7 +54,7 @@ abstract class ViewValuePanel extends Composite {
     static final Log log = Log.getLog(ViewValuePanel.class);
     public static final String CMD_SAVE_VALUE = "org.jkiss.dbeaver.core.resultset.cell.save";
 
-    private final IResultSetController controller;
+    private final IResultSetController resultSet;
     private final Label columnImageLabel;
     private final Text columnNameLabel;
     private final Composite viewPlaceholder;
@@ -61,11 +62,12 @@ abstract class ViewValuePanel extends Composite {
     private IValueController previewController;
     private IValueEditor valueViewer;
     private ToolBarManager toolBarManager;
+    private ReferenceValueEditor referenceValueEditor;
 
-    ViewValuePanel(IResultSetController controller, Composite parent)
+    ViewValuePanel(IResultSetController resultSet, Composite parent)
     {
         super(parent, SWT.NONE);
-        this.controller = controller;
+        this.resultSet = resultSet;
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 0;
         gl.horizontalSpacing = 0;
@@ -150,7 +152,7 @@ abstract class ViewValuePanel extends Composite {
                 }
                 Control control = valueViewer.getControl();
                 if (control != null) {
-                    controller.lockActionsByFocus(control);
+                    resultSet.lockActionsByFocus(control);
                     control.addKeyListener(new KeyAdapter() {
                         @Override
                         public void keyPressed(KeyEvent e) {
@@ -161,6 +163,17 @@ abstract class ViewValuePanel extends Composite {
                         }
                     });
                 }
+
+                referenceValueEditor = new ReferenceValueEditor(valueController, valueViewer);
+                if (referenceValueEditor.isReferenceValue()) {
+                    GridLayout gl = new GridLayout(1, false);
+                    viewPlaceholder.setLayout(gl);
+                    valueViewer.getControl().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                    referenceValueEditor.createEditorSelector(viewPlaceholder);
+                } else {
+                    viewPlaceholder.setLayout(new FillLayout());
+                }
+
             } else {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
@@ -174,6 +187,7 @@ abstract class ViewValuePanel extends Composite {
                         e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
                     }
                 });
+                referenceValueEditor = null;
             }
             previewController = valueController;
 
@@ -184,6 +198,9 @@ abstract class ViewValuePanel extends Composite {
         }
         if (valueViewer != null) {
             try {
+                if (referenceValueEditor != null) {
+                    referenceValueEditor.setHandleEditorChange(false);
+                }
                 Object newValue = previewController.getValue();
                 if (newValue instanceof DBDValue) {
                     // Do not check for difference
@@ -196,6 +213,10 @@ abstract class ViewValuePanel extends Composite {
                 }
             } catch (DBException e) {
                 log.error(e);
+            } finally {
+                if (referenceValueEditor != null) {
+                    referenceValueEditor.setHandleEditorChange(true);
+                }
             }
         }
     }
@@ -235,7 +256,7 @@ abstract class ViewValuePanel extends Composite {
         toolBarManager.add(new Separator());
         if (previewController != null && !previewController.isReadOnly()) {
 //                ActionUtils.makeCommandContribution(
-//                    controller.getSite(),
+//                    resultSet.getSite(),
 //                    CMD_SAVE_VALUE,
 //                    CommandContributionItem.STYLE_PUSH));
 
@@ -252,7 +273,7 @@ abstract class ViewValuePanel extends Composite {
         }
         toolBarManager.add(
             ActionUtils.makeCommandContribution(
-                controller.getSite(),
+                resultSet.getSite(),
                 SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
                 CommandContributionItem.STYLE_PUSH,
                 UIIcon.CLOSE));
