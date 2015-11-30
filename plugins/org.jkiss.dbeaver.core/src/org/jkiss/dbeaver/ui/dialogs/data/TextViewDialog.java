@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -78,7 +79,8 @@ public class TextViewDialog extends ValueViewDialog {
     {
         Composite dialogGroup = (Composite)super.createDialogArea(parent);
 
-        boolean isForeignKey = super.isForeignKey();
+        ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(getValueController(), this);
+        boolean isForeignKey = referenceValueEditor.isReferenceValue();
 
         Label label = new Label(dialogGroup, SWT.NONE);
         label.setText(CoreMessages.dialog_data_label_value);
@@ -184,9 +186,11 @@ public class TextViewDialog extends ValueViewDialog {
         }
 
         primeEditorValue(getValueController().getValue());
+
         if (isForeignKey) {
-            super.createEditorSelector(dialogGroup);
+            referenceValueEditor.createEditorSelector(dialogGroup);
         }
+
         if (minSize != null) {
             // Set default size as minimum
             getShell().setMinimumSize(minSize);

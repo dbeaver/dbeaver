@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 
 /**
  * Default value view dialog.
@@ -59,13 +60,17 @@ public class DefaultValueViewDialog extends ValueViewDialog {
 
         try {
             panelEditor = createPanelEditor(editorPlaceholder);
+            if (panelEditor == null) {
+                return dialogGroup;
+            }
             panelEditor.primeEditorValue(getValueController().getValue());
         } catch (DBException e) {
             log.error(e);
             return dialogGroup;
         }
-        if (super.isForeignKey()) {
-            super.createEditorSelector(dialogGroup);
+        ReferenceValueEditor referenceValueEditor = new ReferenceValueEditor(getValueController(), this);
+        if (referenceValueEditor.isReferenceValue()) {
+            referenceValueEditor.createEditorSelector(dialogGroup);
         }
 
         return dialogGroup;
