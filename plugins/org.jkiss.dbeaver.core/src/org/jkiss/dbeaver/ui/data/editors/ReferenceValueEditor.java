@@ -253,6 +253,50 @@ public class ReferenceValueEditor {
         this.handleEditorChange = handleEditorChange;
     }
 
+    private void updateDictionarySelector(Map<Object, String> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
+        if (editorSelector == null || editorSelector.isDisposed()) {
+            return;
+        }
+        editorSelector.setRedraw(false);
+        try {
+            editorSelector.removeAll();
+            for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
+                TableItem discItem = new TableItem(editorSelector, SWT.NONE);
+                discItem.setText(0,
+                    keyHandler.getValueDisplayString(
+                        keyColumn.getAttribute(),
+                        entry.getKey(),
+                        DBDDisplayFormat.UI));
+                discItem.setText(1, entry.getValue());
+                discItem.setData(entry.getKey());
+            }
+
+            Control editorControl = valueEditor.getControl();
+            if (editorControl != null && !editorControl.isDisposed()) {
+                try {
+                    Object curValue = valueEditor.extractEditorValue();
+                    TableItem curItem = null;
+                    for (TableItem item : editorSelector.getItems()) {
+                        if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
+                            curItem = item;
+                            break;
+                        }
+                    }
+                    if (curItem != null) {
+                        editorSelector.select(editorSelector.indexOf(curItem));
+                        editorSelector.showSelection();
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+
+            UIUtils.maxTableColumnsWidth(editorSelector);
+        } finally {
+            editorSelector.setRedraw(true);
+        }
+    }
+
     private class SelectorLoaderJob extends DataSourceJob {
 
         private Object pattern;
@@ -337,51 +381,11 @@ public class ReferenceValueEditor {
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
+                    final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkColumn.getAttribute());
                     UIUtils.runInUI(null, new Runnable() {
                         @Override
                         public void run() {
-                            DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkColumn.getAttribute());
-
-                            if (editorSelector != null && !editorSelector.isDisposed()) {
-                                editorSelector.setRedraw(false);
-                                try {
-                                    editorSelector.removeAll();
-                                    for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
-                                        TableItem discItem = new TableItem(editorSelector, SWT.NONE);
-                                        discItem.setText(0,
-                                            colHandler.getValueDisplayString(
-                                                fkColumn.getAttribute(),
-                                                entry.getKey(),
-                                                DBDDisplayFormat.UI));
-                                        discItem.setText(1, entry.getValue());
-                                        discItem.setData(entry.getKey());
-                                    }
-
-                                    Control editorControl = valueEditor.getControl();
-                                    if (editorControl != null && !editorControl.isDisposed()) {
-                                        try {
-                                            Object curValue = valueEditor.extractEditorValue();
-                                            TableItem curItem = null;
-                                            for (TableItem item : editorSelector.getItems()) {
-                                                if (item.getData() == curValue || (item.getData() != null && curValue != null && item.getData().equals(curValue))) {
-                                                    curItem = item;
-                                                    break;
-                                                }
-                                            }
-                                            if (curItem != null) {
-                                                editorSelector.select(editorSelector.indexOf(curItem));
-                                                editorSelector.showSelection();
-                                            }
-                                        } catch (DBException e) {
-                                            log.error(e);
-                                        }
-                                    }
-
-                                    UIUtils.maxTableColumnsWidth(editorSelector);
-                                } finally {
-                                    editorSelector.setRedraw(true);
-                                }
-                            }
+                            updateDictionarySelector(keyValues, fkColumn, colHandler);
                         }
                     });
                 }
@@ -393,5 +397,7 @@ public class ReferenceValueEditor {
             }
             return Status.OK_STATUS;
         }
+
     }
+
 }
