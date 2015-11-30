@@ -99,7 +99,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 row[i] = metaColumns[i].getValueHandler().fetchValueObject(
                     session,
                     resultSet,
-                    metaColumns[i].getMetaAttribute(),
+                    metaColumns[i].getAttribute(),
                     metaColumns[i].getOrdinalPosition());
             }
             catch (DBCException e) {

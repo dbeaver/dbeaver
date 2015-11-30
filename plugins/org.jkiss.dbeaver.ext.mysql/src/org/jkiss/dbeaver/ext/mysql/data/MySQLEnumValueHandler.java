@@ -82,7 +82,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
             attribute = ((DBDAttributeBinding) type).getEntityAttribute();
         }
         if (attribute == null) {
-            throw new SQLException("Can't find table column for column '" + index + "'");
+            throw new SQLException("Enum column wasn't resolved for '" + type + "'");
         }
         MySQLTableColumn enumColumn;
         if (attribute instanceof MySQLTableColumn) {
