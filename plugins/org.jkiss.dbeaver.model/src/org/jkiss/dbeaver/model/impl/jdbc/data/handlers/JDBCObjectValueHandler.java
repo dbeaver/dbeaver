@@ -99,10 +99,12 @@ public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (copy && object != null) {
-            if (object instanceof DBDValueCloneable) {
-                return ((DBDValueCloneable) object).cloneValue(session.getProgressMonitor());
+            if (object instanceof DBDObject) {
+                if (object instanceof DBDValueCloneable) {
+                    return ((DBDValueCloneable) object).cloneValue(session.getProgressMonitor());
+                }
+                throw new DBCException("Can't copy object value " + object);
             }
-            throw new DBCException("Can't copy object value " + object);
         }
         return object;
     }
