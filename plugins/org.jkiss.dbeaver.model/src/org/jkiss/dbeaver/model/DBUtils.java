@@ -839,7 +839,7 @@ public final class DBUtils {
     {
         DBCStatementType statementType = DBCStatementType.SCRIPT;
         query = SQLUtils.makeUnifiedLineFeeds(query);
-        if (isExecQuery(session.getDataSource(), query)) {
+        if (SQLUtils.isExecQuery(SQLUtils.getDialectFromObject(session.getDataSource()), query)) {
             statementType = DBCStatementType.EXEC;
         }
         return session.prepareStatement(
@@ -867,7 +867,7 @@ public final class DBUtils {
             statementType = DBCStatementType.EXEC;
         }
 */
-        if (isExecQuery(session.getDataSource(), query)) {
+        if (SQLUtils.isExecQuery(SQLUtils.getDialectFromObject(session.getDataSource()), query)) {
             statementType = DBCStatementType.EXEC;
         }
 
@@ -877,22 +877,6 @@ public final class DBUtils {
             scrollable && session.getDataSource().getInfo().supportsResultSetScroll(),
             false,
             false);
-    }
-
-    public static boolean isExecQuery(DBPDataSource dataSource, String query) {
-        if (dataSource instanceof SQLDataSource) {
-            // Check for EXEC query
-            final Collection<String> executeKeywords = ((SQLDataSource) dataSource).getSQLDialect().getExecuteKeywords();
-            if (!CommonUtils.isEmpty(executeKeywords)) {
-                final String queryStart = SQLUtils.getFirstKeyword(query);
-                for (String keyword : executeKeywords) {
-                    if (keyword.equalsIgnoreCase(queryStart)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     public static void fireObjectUpdate(DBSObject object)

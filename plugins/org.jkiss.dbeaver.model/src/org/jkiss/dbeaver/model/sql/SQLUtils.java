@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
@@ -257,7 +258,7 @@ public final class SQLUtils {
         return sql;
     }
 
-    @Nullable
+    @NotNull
     public static SQLDialect getDialectFromObject(DBPObject object)
     {
         if (object instanceof DBSObject) {
@@ -266,7 +267,7 @@ public final class SQLUtils {
                 return ((SQLDataSource) dataSource).getSQLDialect();
             }
         }
-        return null;
+        return BasicSQLDialect.INSTANCE;
     }
 
     public static void appendConditionString(
@@ -409,4 +410,17 @@ public final class SQLUtils {
         return null;
     }
 
+    public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
+        // Check for EXEC query
+        final Collection<String> executeKeywords = dialect.getExecuteKeywords();
+        if (!CommonUtils.isEmpty(executeKeywords)) {
+            final String queryStart = getFirstKeyword(query);
+            for (String keyword : executeKeywords) {
+                if (keyword.equalsIgnoreCase(queryStart)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

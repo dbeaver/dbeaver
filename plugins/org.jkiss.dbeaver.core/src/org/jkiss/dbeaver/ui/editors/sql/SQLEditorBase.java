@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -53,7 +52,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.*;
@@ -118,8 +116,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     @Nullable
     public abstract DBCExecutionContext getExecutionContext();
 
-    public final DBPDataSource getDataSource()
-    {
+    public final DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();
     }
@@ -127,6 +124,16 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     public DBPPreferenceStore getActivePreferenceStore() {
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? DBeaverCore.getGlobalPreferenceStore() : dataSource.getContainer().getPreferenceStore();
+    }
+
+    @NotNull
+    protected SQLDialect getSQLDialect() {
+        DBPDataSource dataSource = getDataSource();
+        // Refresh syntax
+        if (dataSource instanceof SQLDataSource) {
+            return ((SQLDataSource) dataSource).getSQLDialect();
+        }
+        return BasicSQLDialect.INSTANCE;
     }
 
     public boolean hasAnnotations()
@@ -378,17 +385,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
-    @NotNull
-    protected SQLDialect getSQLDialect() {
-        DBCExecutionContext executionContext = getExecutionContext();
-        DBPDataSource dataSource = executionContext == null ? null : executionContext.getDataSource();
-        // Refresh syntax
-        if (dataSource instanceof SQLDataSource) {
-            return ((SQLDataSource) dataSource).getSQLDialect();
-        }
-        return BasicSQLDialect.INSTANCE;
-    }
-
     public void reloadSyntaxRules()
     {
         // Refresh syntax
@@ -419,7 +415,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
 
         Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
-        Color bgColor = ruleManager.getColor(getExecutionContext() == null ?
+        Color bgColor = ruleManager.getColor(getDataSource() == null ?
             SQLConstants.CONFIG_COLOR_DISABLED :
             SQLConstants.CONFIG_COLOR_BACKGROUND);
         final StyledText textWidget = getTextViewer().getTextWidget();
@@ -658,7 +654,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     }
 
     protected List<SQLQueryParameter> parseParameters(IDocument document, SQLQuery query) {
-        boolean execQuery = DBUtils.isExecQuery(getDataSource(), query.getQuery());
+        boolean execQuery = SQLUtils.isExecQuery(getSQLDialect(), query.getQuery());
         List<SQLQueryParameter> parameters = null;
         ruleManager.setRange(document, query.getOffset(), query.getLength());
         int blockDepth = 0;
@@ -724,28 +720,19 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     @Override
     public ICommentsSupport getCommentsSupport()
     {
-        DBCExecutionContext context = getExecutionContext();
-        DBPDataSource dataSource = context == null ? null : context.getDataSource();
-        if (dataSource instanceof SQLDataSource) {
-            final SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
-            if (dialect == null) {
-                return null;
+        final SQLDialect dialect = getSQLDialect();
+        return new ICommentsSupport() {
+            @Nullable
+            @Override
+            public Pair<String, String> getMultiLineComments() {
+                return dialect.getMultiLineComments();
             }
-            return new ICommentsSupport() {
-                @Nullable
-                @Override
-                public Pair<String, String> getMultiLineComments() {
-                    return dialect.getMultiLineComments();
-                }
 
-                @Override
-                public String[] getSingleLineComments() {
-                    return dialect.getSingleLineComments();
-                }
-            };
-        } else {
-            return null;
-        }
+            @Override
+            public String[] getSingleLineComments() {
+                return dialect.getSingleLineComments();
+            }
+        };
     }
 
 }
