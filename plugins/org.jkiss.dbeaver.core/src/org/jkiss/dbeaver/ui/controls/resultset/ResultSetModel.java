@@ -339,7 +339,7 @@ public class ResultSetModel {
 
                 boolean cellWasEdited = row.changes != null && row.changes.containsKey(attr);
                 Object oldOldValue = !cellWasEdited ? null : row.changes.get(attr);
-                if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue)) {
+                if (cellWasEdited && !CommonUtils.equalObjects(oldValue, oldOldValue) && !CommonUtils.equalObjects(oldValue, value)) {
                     // Value rewrite - release previous stored old value
                     DBUtils.releaseValue(oldValue);
                 } else if (updateChanges) {
