@@ -180,7 +180,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return comment;
     }
 
-    void setComment(String comment)
+    public void setComment(String comment)
     {
         this.comment = comment;
     }
