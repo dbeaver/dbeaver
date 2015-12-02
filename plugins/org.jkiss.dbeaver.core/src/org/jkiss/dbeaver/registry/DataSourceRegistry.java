@@ -73,9 +73,6 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     static final Log log = Log.getLog(DataSourceRegistry.class);
 
-    public static final String CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
-    public static final String CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
-    public static final String CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 
     private final DBPApplication application;
@@ -253,6 +250,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public void flushConfig()
     {
         this.saveDataSources();
+    }
+
+    @Override
+    public void refreshConfig() {
+
     }
 
     @Override

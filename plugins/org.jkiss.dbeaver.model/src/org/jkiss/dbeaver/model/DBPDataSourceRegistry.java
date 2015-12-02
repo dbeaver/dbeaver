@@ -29,6 +29,10 @@ import java.util.List;
  */
 public interface DBPDataSourceRegistry {
 
+    String CONFIG_FILE_PREFIX = ".dbeaver-data-sources"; //$NON-NLS-1$
+    String CONFIG_FILE_EXT = ".xml"; //$NON-NLS-1$
+    String CONFIG_FILE_NAME = CONFIG_FILE_PREFIX + CONFIG_FILE_EXT;
+
     @NotNull
     DBPApplication getApplication();
     /**
@@ -59,5 +63,8 @@ public interface DBPDataSourceRegistry {
 
     void flushConfig();
 
+    void refreshConfig();
+
     void notifyDataSourceListeners(final DBPEvent event);
+
 }
