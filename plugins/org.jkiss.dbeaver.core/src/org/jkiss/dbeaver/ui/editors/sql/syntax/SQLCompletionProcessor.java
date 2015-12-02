@@ -50,9 +50,7 @@ import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
@@ -221,6 +219,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     null));
             }
         }
+        Collections.sort(templateProposals, new Comparator<SQLTemplateCompletionProposal>() {
+            @Override
+            public int compare(SQLTemplateCompletionProposal o1, SQLTemplateCompletionProposal o2) {
+                return o1.getDisplayString().compareTo(o2.getDisplayString());
+            }
+        });
         return templateProposals.toArray(new ICompletionProposal[templateProposals.size()]);
     }
 
@@ -391,7 +395,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return null;
         }
         if (activeQuery == null) {
-            activeQuery = editor.extractQueryAtPos(documentOffset).getQuery() + " ";
+            final SQLQuery queryAtPos = editor.extractQueryAtPos(documentOffset);
+            if (queryAtPos != null) {
+                activeQuery = queryAtPos.getQuery() + " ";
+            }
         }
 
         final List<String> nameList = new ArrayList<>();
