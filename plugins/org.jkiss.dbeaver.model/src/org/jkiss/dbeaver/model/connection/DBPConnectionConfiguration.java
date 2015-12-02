@@ -215,6 +215,11 @@ public class DBPConnectionConfiguration implements DBPObject
 
     public void addHandler(DBWHandlerConfiguration handler)
     {
+        for (int i = 0; i < handlers.size(); i++) {
+            if (handlers.get(i).getId().equals(handler.getId())) {
+                return;
+            }
+        }
         this.handlers.add(handler);
     }
 

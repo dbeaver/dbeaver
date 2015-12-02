@@ -409,6 +409,10 @@ public class DataSourceDescriptor
         updateObjectFilter(type.getName(), parentObject == null ? null : DBUtils.getObjectUniqueName(parentObject), filter);
     }
 
+    void clearFilters() {
+        filterMap.clear();
+    }
+
     void updateObjectFilter(String typeName, @Nullable String objectID, DBSObjectFilter filter)
     {
         FilterMapping filterMapping = filterMap.get(typeName);
