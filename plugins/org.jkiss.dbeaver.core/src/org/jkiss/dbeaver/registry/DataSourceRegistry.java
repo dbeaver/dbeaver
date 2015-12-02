@@ -683,6 +683,11 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             id,
                             driver,
                             new DBPConnectionConfiguration());
+                    } else {
+                        // Clean settings - they have to be loaded later by parser
+                        curDataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
+                        curDataSource.getConnectionConfiguration().setHandlers(Collections.<DBWHandlerConfiguration>emptyList());
+                        curDataSource.clearFilters();
                     }
                     if (extraConfig) {
                         curDataSource.setProvided(true);
