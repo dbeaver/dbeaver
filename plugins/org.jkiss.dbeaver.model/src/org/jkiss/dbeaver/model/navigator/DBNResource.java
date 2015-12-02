@@ -345,7 +345,7 @@ public class DBNResource extends DBNNode
         return handler == null ? null : handler.getAssociatedDataSources(resource);
     }
 
-    void handleResourceChange(IResourceDelta delta)
+    protected void handleResourceChange(IResourceDelta delta)
     {
         DBNModel model = getModel();
         if (delta.getKind() == IResourceDelta.CHANGED) {
@@ -356,38 +356,44 @@ public class DBNResource extends DBNNode
             // Child nodes are not yet read so nothing to change here - just return
             return;
         }
-        for (IResourceDelta childDelta : delta.getAffectedChildren()) {
-            DBNResource childResource = getChild(childDelta.getResource());
-            if (childResource == null) {
-                if (childDelta.getKind() == IResourceDelta.ADDED || childDelta.getKind() == IResourceDelta.CHANGED) {
-                    // New child or new "grand-child"
-                    DBNNode newChild = makeNode(childDelta.getResource());
-                    if (newChild != null) {
-                        children.add(newChild);
-                        sortChildren(children);
-                        model.fireNodeEvent(new DBNEvent(childDelta, DBNEvent.Action.ADD, newChild));
+        //delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)
+        for (IResourceDelta childDelta : delta.getAffectedChildren(IResourceDelta.ALL_WITH_PHANTOMS, IContainer.INCLUDE_HIDDEN)) {
+            handleChildResourceChange(childDelta);
+        }
+    }
 
-                        if (childDelta.getKind() == IResourceDelta.CHANGED) {
-                            // Notify just created resource
-                            // This may happen (e.g.) when first script created in just created script folder
-                            childResource = getChild(childDelta.getResource());
-                            if (childResource != null) {
-                                childResource.handleResourceChange(childDelta);
-                            }
+    protected void handleChildResourceChange(IResourceDelta delta) {
+        final IResource deltaResource = delta.getResource();
+        DBNResource childResource = getChild(deltaResource);
+        if (childResource == null) {
+            if (delta.getKind() == IResourceDelta.ADDED || delta.getKind() == IResourceDelta.CHANGED) {
+                // New child or new "grand-child"
+                DBNNode newChild = makeNode(deltaResource);
+                if (newChild != null) {
+                    children.add(newChild);
+                    sortChildren(children);
+                    getModel().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.ADD, newChild));
+
+                    if (delta.getKind() == IResourceDelta.CHANGED) {
+                        // Notify just created resource
+                        // This may happen (e.g.) when first script created in just created script folder
+                        childResource = getChild(deltaResource);
+                        if (childResource != null) {
+                            childResource.handleResourceChange(delta);
                         }
                     }
-                } else {
-                    //log.warn("Can't find resource '" + childDelta.getResource().getName() + "' in navigator model");
                 }
             } else {
-                if (childDelta.getKind() == IResourceDelta.REMOVED) {
-                    // Node deleted
-                    children.remove(childResource);
-                    childResource.dispose(true);
-                } else {
-                    // Node changed - handle it recursive
-                    childResource.handleResourceChange(childDelta);
-                }
+                //log.warn("Can't find resource '" + childDelta.getResource().getName() + "' in navigator model");
+            }
+        } else {
+            if (delta.getKind() == IResourceDelta.REMOVED) {
+                // Node deleted
+                children.remove(childResource);
+                childResource.dispose(true);
+            } else {
+                // Node changed - handle it recursive
+                childResource.handleResourceChange(delta);
             }
         }
     }

@@ -191,7 +191,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         List<String> urlComponents = metaURL.getUrlComponents();
         for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
             String component = urlComponents.get(i);
-            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' && metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
+            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
+                metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1)))
+            {
                 // Property
                 int partEnd;
                 if (i < urlComponentsSize - 1) {

@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
@@ -163,5 +160,16 @@ public class DBNProject extends DBNResource implements IAdaptable
             }
         }
         return resNode;
+    }
+
+    @Override
+    protected void handleChildResourceChange(IResourceDelta delta) {
+        final String name = delta.getResource().getName();
+        if (name.startsWith(DBPDataSourceRegistry.CONFIG_FILE_PREFIX) && name.endsWith(DBPDataSourceRegistry.CONFIG_FILE_EXT)) {
+            // DS registry configuration changed
+            getDatabases().getDataSourceRegistry().refreshConfig();
+        } else {
+            super.handleChildResourceChange(delta);
+        }
     }
 }
