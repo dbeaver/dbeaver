@@ -85,23 +85,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     {
         this.application = application;
         this.project = project;
-        try {
-            for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {
-                if (res instanceof IFile) {
-                    IFile file = (IFile) res;
-                    if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
-                        if (file.exists()) {
-                            File dsFile = file.getLocation().toFile();
-                            if (dsFile.exists()) {
-                                loadDataSources(dsFile, new SimpleStringEncrypter());
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (CoreException e) {
-            log.error("Error reading datasources configuration", e);
-        }
+        loadDataSources(false);
         DataSourceProviderRegistry.getInstance().fireRegistryChange(this, true);
     }
 
@@ -254,7 +238,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     @Override
     public void refreshConfig() {
-
+        this.loadDataSources(true);
     }
 
     @Override
@@ -294,7 +278,50 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(File fromFile, PasswordEncrypter encrypter)
+    private void loadDataSources(boolean refresh) {
+        ParseResults parseResults = new ParseResults();
+        try {
+            for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {
+                if (res instanceof IFile) {
+                    IFile file = (IFile) res;
+                    if (res.getName().startsWith(CONFIG_FILE_PREFIX) && res.getName().endsWith(CONFIG_FILE_EXT)) {
+                        if (file.exists()) {
+                            File dsFile = file.getLocation().toFile();
+                            if (dsFile.exists()) {
+                                loadDataSources(dsFile, new SimpleStringEncrypter(), refresh, parseResults);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (CoreException e) {
+            log.error("Error reading datasources configuration", e);
+        }
+
+        // Reflect changes
+        if (refresh) {
+            for (DataSourceDescriptor ds : parseResults.updatedDataSources) {
+                fireDataSourceEvent(DBPEvent.Action.OBJECT_UPDATE, ds);
+            }
+            for (DataSourceDescriptor ds : parseResults.addedDataSources) {
+                fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, ds);
+            }
+
+            List<DataSourceDescriptor> removedDataSource = new ArrayList<>();
+            for (DataSourceDescriptor ds : dataSources) {
+                if (!parseResults.addedDataSources.contains(ds) && !parseResults.updatedDataSources.contains(ds)) {
+                    removedDataSource.add(ds);
+                }
+            }
+            for (DataSourceDescriptor ds : removedDataSource) {
+                this.dataSources.remove(ds);
+                this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, ds);
+                ds.dispose();
+            }
+        }
+    }
+
+    private void loadDataSources(File fromFile, PasswordEncrypter encrypter, boolean refresh, ParseResults parseResults)
     {
         if (!fromFile.exists()) {
             return;
@@ -304,7 +331,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             InputStream is = new FileInputStream(fromFile);
             try {
                 try {
-                    loadDataSources(is, extraConfig, encrypter);
+                    loadDataSources(is, encrypter, extraConfig, refresh, parseResults);
                 } catch (DBException ex) {
                     log.warn("Error loading datasource config from " + fromFile.getAbsolutePath(), ex);
                 }
@@ -323,12 +350,13 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         }
     }
 
-    private void loadDataSources(InputStream is, boolean extraConfig, PasswordEncrypter encrypter)
+    private void loadDataSources(InputStream is, PasswordEncrypter encrypter, boolean extraConfig, boolean refresh, ParseResults parseResults)
         throws DBException, IOException
     {
         SAXReader parser = new SAXReader(is);
         try {
-            parser.parse(new DataSourcesParser(extraConfig, encrypter));
+            final DataSourcesParser dsp = new DataSourcesParser(extraConfig, refresh, parseResults, encrypter);
+            parser.parse(dsp);
         }
         catch (XMLException ex) {
             throw new DBException("Datasource config parse error", ex);
@@ -592,20 +620,29 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         return project;
     }
 
+    private static class ParseResults {
+        Set<DataSourceDescriptor> updatedDataSources = new HashSet<>();
+        Set<DataSourceDescriptor> addedDataSources = new HashSet<>();
+    }
+
     private class DataSourcesParser implements SAXListener
     {
         DataSourceDescriptor curDataSource;
         boolean extraConfig;
+        boolean refresh;
         PasswordEncrypter encrypter;
         boolean isDescription = false;
         DBRShellCommand curCommand = null;
         private DBWHandlerConfiguration curNetworkHandler;
         private DBSObjectFilter curFilter;
         private StringBuilder curQuery;
+        private ParseResults parseResults;
 
-        private DataSourcesParser(boolean extraConfig, PasswordEncrypter encrypter)
+        private DataSourcesParser(boolean extraConfig, boolean refresh, ParseResults parseResults, PasswordEncrypter encrypter)
         {
             this.extraConfig = extraConfig;
+            this.refresh = refresh;
+            this.parseResults = parseResults;
             this.encrypter = encrypter;
         }
 
@@ -615,191 +652,214 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         {
             isDescription = false;
             curCommand = null;
-            if (localName.equals(RegistryConstants.TAG_DATA_SOURCE)) {
-            	String name = atts.getValue(RegistryConstants.ATTR_NAME);
-                String id = atts.getValue(RegistryConstants.ATTR_ID);
-                if (id == null) {
-                    // Support of old version without ID
-                    id = name;
-                }
-                String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
-                DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
-                if (provider == null) {
-                    log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
-                    curDataSource = null;
-                    reader.setListener(EMPTY_LISTENER);
-                    return;
-                }
-                String driverId = atts.getValue(RegistryConstants.ATTR_DRIVER);
-                DriverDescriptor driver = provider.getDriver(driverId);
-                if (driver == null) {
-                    log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + name + "'. Create new driver");
-                    driver = provider.createDriver(driverId);
-                    provider.addDriver(driver);
-                }
-                curDataSource = new DataSourceDescriptor(
-                    DataSourceRegistry.this,
-                    id,
-                    driver,
-                    new DBPConnectionConfiguration());
-                if (extraConfig) {
-                    curDataSource.setProvided(true);
-                }
-                curDataSource.setName(name);
-                String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
-                if (!CommonUtils.isEmpty(createDate)) {
-                    curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
-                }
-                String updateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
-                if (!CommonUtils.isEmpty(updateDate)) {
-                    curDataSource.setUpdateDate(new Date(Long.parseLong(updateDate)));
-                }
-                String loginDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
-                if (!CommonUtils.isEmpty(loginDate)) {
-                    curDataSource.setLoginDate(new Date(Long.parseLong(loginDate)));
-                }
-                curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
-                curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
-                curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
-                curDataSource.setFolderPath(atts.getValue(RegistryConstants.ATTR_FOLDER));
-                {
-                    // Legacy filter settings
-                    String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
-                    if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
-                        curDataSource.updateObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
+            switch (localName) {
+                case RegistryConstants.TAG_DATA_SOURCE: {
+                    String name = atts.getValue(RegistryConstants.ATTR_NAME);
+                    String id = atts.getValue(RegistryConstants.ATTR_ID);
+                    if (id == null) {
+                        // Support of old version without ID
+                        id = name;
                     }
-                    String legacySchemaFilter = atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
-                    if (!CommonUtils.isEmpty(legacySchemaFilter)) {
-                        curDataSource.updateObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
-                    }
-                }
-
-                dataSources.add(curDataSource);
-            } else if (localName.equals(RegistryConstants.TAG_CONNECTION)) {
-                if (curDataSource != null) {
-                    DriverDescriptor driver = curDataSource.getDriver();
-                    if (CommonUtils.isEmpty(driver.getName())) {
-                        // Broken driver - seems to be just created
-                        driver.setName(atts.getValue(RegistryConstants.ATTR_URL));
-                        driver.setDriverClassName("java.sql.Driver");
-                    }
-                    DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
-                    config.setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
-                    config.setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
-                    config.setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
-                    config.setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
-                    config.setUrl(atts.getValue(RegistryConstants.ATTR_URL));
-                    config.setUserName(atts.getValue(RegistryConstants.ATTR_USER));
-                    config.setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
-                    config.setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
-                    config.setConnectionType(
-                        DataSourceProviderRegistry.getInstance().getConnectionType(
-                            CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_TYPE)),
-                            DBPConnectionType.DEFAULT_TYPE)
-                    );
-                    String colorValue = atts.getValue(RegistryConstants.ATTR_COLOR);
-                    if (!CommonUtils.isEmpty(colorValue)) {
-                        config.setConnectionColor(colorValue);
-                    }
-                }
-            } else if (localName.equals(RegistryConstants.TAG_BOOTSTRAP)) {
-                if (curDataSource != null) {
-                    DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
-                    if (atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT) != null) {
-                        config.getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)));
-                    }
-                    if (atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION) != null) {
-                        config.getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION)));
-                    }
-                    if (!CommonUtils.isEmpty(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT))) {
-                        config.getBootstrap().setDefaultObjectName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
-                    }
-                    if (atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS) != null) {
-                        config.getBootstrap().setIgnoreErrors(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS)));
-                    }
-                }
-            } else if (localName.equals(RegistryConstants.TAG_QUERY)) {
-                curQuery = new StringBuilder();
-            } else if (localName.equals(RegistryConstants.TAG_PROPERTY)) {
-                if (curNetworkHandler != null) {
-                    curNetworkHandler.getProperties().put(
-                        atts.getValue(RegistryConstants.ATTR_NAME),
-                        atts.getValue(RegistryConstants.ATTR_VALUE));
-                } else if (curDataSource != null) {
-                    curDataSource.getConnectionConfiguration().setProperty(
-                        atts.getValue(RegistryConstants.ATTR_NAME),
-                        atts.getValue(RegistryConstants.ATTR_VALUE));
-                }
-            } else if (localName.equals(RegistryConstants.TAG_EVENT)) {
-                if (curDataSource != null) {
-                    DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(atts.getValue(RegistryConstants.ATTR_TYPE));
-                    curCommand = new DBRShellCommand("");
-                    curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
-                    curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
-                    curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
-                    curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
-                    curDataSource.getConnectionConfiguration().setEvent(eventType, curCommand);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_CUSTOM_PROPERTY)) {
-                if (curDataSource != null) {
-                    String propName = atts.getValue(RegistryConstants.ATTR_NAME);
-                    String propValue = atts.getValue(RegistryConstants.ATTR_VALUE);
-                    // TODO: remove bootstrap preferences later. PResent for config backward compatibility
-                    if (propName.equals(DEFAULT_AUTO_COMMIT)) {
-                        curDataSource.getConnectionConfiguration().getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(propValue));
-                    } else if (propName.equals(DEFAULT_ISOLATION)) {
-                        curDataSource.getConnectionConfiguration().getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(propValue));
-                    } else if (propName.equals(DEFAULT_ACTIVE_OBJECT)) {
-                        if (!CommonUtils.isEmpty(propValue)) {
-                            curDataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(propValue);
-                        }
-                    } else {
-                        curDataSource.getPreferenceStore().getProperties().put(propName, propValue);
-                    }
-                }
-            } else if (localName.equals(RegistryConstants.TAG_NETWORK_HANDLER)) {
-                if (curDataSource != null) {
-                    String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
-                    NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
-                    if (handlerDescriptor == null) {
-                        log.warn("Can't find network handler '" + handlerId + "'");
+                    String providerId = atts.getValue(RegistryConstants.ATTR_PROVIDER);
+                    DataSourceProviderDescriptor provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider(providerId);
+                    if (provider == null) {
+                        log.warn("Can't find datasource provider " + providerId + " for datasource '" + name + "'");
+                        curDataSource = null;
                         reader.setListener(EMPTY_LISTENER);
                         return;
                     }
-                    curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
-                    curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
-                    curNetworkHandler.setUserName(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_USER)));
-                    curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
-                    curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
-                    curDataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
-                }
-            } else if (localName.equals(RegistryConstants.TAG_FILTER)) {
-                if (curDataSource != null) {
-                    String typeName = atts.getValue(RegistryConstants.ATTR_TYPE);
-                    String objectID = atts.getValue(RegistryConstants.ATTR_ID);
-                    if (typeName != null) {
-                        curFilter = new DBSObjectFilter();
-                        curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
-                        curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
-                        curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
-                        curDataSource.updateObjectFilter(typeName, objectID, curFilter);
-
+                    String driverId = atts.getValue(RegistryConstants.ATTR_DRIVER);
+                    DriverDescriptor driver = provider.getDriver(driverId);
+                    if (driver == null) {
+                        log.warn("Can't find driver " + driverId + " in datasource provider " + provider.getId() + " for datasource '" + name + "'. Create new driver");
+                        driver = provider.createDriver(driverId);
+                        provider.addDriver(driver);
                     }
+                    curDataSource = getDataSource(id);
+                    boolean newDataSource = (curDataSource == null);
+                    if (newDataSource) {
+                        curDataSource = new DataSourceDescriptor(
+                            DataSourceRegistry.this,
+                            id,
+                            driver,
+                            new DBPConnectionConfiguration());
+                    }
+                    if (extraConfig) {
+                        curDataSource.setProvided(true);
+                    }
+                    curDataSource.setName(name);
+                    String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
+                    if (!CommonUtils.isEmpty(createDate)) {
+                        curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
+                    }
+                    String updateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
+                    if (!CommonUtils.isEmpty(updateDate)) {
+                        curDataSource.setUpdateDate(new Date(Long.parseLong(updateDate)));
+                    }
+                    String loginDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
+                    if (!CommonUtils.isEmpty(loginDate)) {
+                        curDataSource.setLoginDate(new Date(Long.parseLong(loginDate)));
+                    }
+                    curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                    curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
+                    curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
+                    curDataSource.setFolderPath(atts.getValue(RegistryConstants.ATTR_FOLDER));
+                    {
+                        // Legacy filter settings
+                        String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
+                        if (!CommonUtils.isEmpty(legacyCatalogFilter)) {
+                            curDataSource.updateObjectFilter(DBSCatalog.class.getName(), null, new DBSObjectFilter(legacyCatalogFilter, null));
+                        }
+                        String legacySchemaFilter = atts.getValue(RegistryConstants.ATTR_FILTER_SCHEMA);
+                        if (!CommonUtils.isEmpty(legacySchemaFilter)) {
+                            curDataSource.updateObjectFilter(DBSSchema.class.getName(), null, new DBSObjectFilter(legacySchemaFilter, null));
+                        }
+                    }
+                    if (newDataSource) {
+                        dataSources.add(curDataSource);
+                        parseResults.addedDataSources.add(curDataSource);
+                    } else {
+                        parseResults.updatedDataSources.add(curDataSource);
+                    }
+                    break;
                 }
-            } else if (localName.equals(RegistryConstants.TAG_INCLUDE)) {
-                if (curFilter != null) {
-                    curFilter.addInclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
-                }
-            } else if (localName.equals(RegistryConstants.TAG_EXCLUDE)) {
-                if (curFilter != null) {
-                    curFilter.addExclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
-                }
-            } else if (localName.equals(RegistryConstants.TAG_DESCRIPTION)) {
-                isDescription = true;
-            } else if (localName.equals(RegistryConstants.TAG_VIRTUAL_META_DATA)) {
-                if (curDataSource != null) {
-                    reader.setListener(curDataSource.getVirtualModel().getModelParser());
-                }
+                case RegistryConstants.TAG_CONNECTION:
+                    if (curDataSource != null) {
+                        DriverDescriptor driver = curDataSource.getDriver();
+                        if (CommonUtils.isEmpty(driver.getName())) {
+                            // Broken driver - seems to be just created
+                            driver.setName(atts.getValue(RegistryConstants.ATTR_URL));
+                            driver.setDriverClassName("java.sql.Driver");
+                        }
+                        DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
+                        config.setHostName(atts.getValue(RegistryConstants.ATTR_HOST));
+                        config.setHostPort(atts.getValue(RegistryConstants.ATTR_PORT));
+                        config.setServerName(atts.getValue(RegistryConstants.ATTR_SERVER));
+                        config.setDatabaseName(atts.getValue(RegistryConstants.ATTR_DATABASE));
+                        config.setUrl(atts.getValue(RegistryConstants.ATTR_URL));
+                        config.setUserName(atts.getValue(RegistryConstants.ATTR_USER));
+                        config.setUserPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
+                        config.setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
+                        config.setConnectionType(
+                            DataSourceProviderRegistry.getInstance().getConnectionType(
+                                CommonUtils.toString(atts.getValue(RegistryConstants.ATTR_TYPE)),
+                                DBPConnectionType.DEFAULT_TYPE)
+                        );
+                        String colorValue = atts.getValue(RegistryConstants.ATTR_COLOR);
+                        if (!CommonUtils.isEmpty(colorValue)) {
+                            config.setConnectionColor(colorValue);
+                        }
+                    }
+                    break;
+                case RegistryConstants.TAG_BOOTSTRAP:
+                    if (curDataSource != null) {
+                        DBPConnectionConfiguration config = curDataSource.getConnectionConfiguration();
+                        if (atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT) != null) {
+                            config.getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_AUTOCOMMIT)));
+                        }
+                        if (atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION) != null) {
+                            config.getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(atts.getValue(RegistryConstants.ATTR_TXN_ISOLATION)));
+                        }
+                        if (!CommonUtils.isEmpty(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT))) {
+                            config.getBootstrap().setDefaultObjectName(atts.getValue(RegistryConstants.ATTR_DEFAULT_OBJECT));
+                        }
+                        if (atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS) != null) {
+                            config.getBootstrap().setIgnoreErrors(CommonUtils.toBoolean(atts.getValue(RegistryConstants.ATTR_IGNORE_ERRORS)));
+                        }
+                    }
+                    break;
+                case RegistryConstants.TAG_QUERY:
+                    curQuery = new StringBuilder();
+                    break;
+                case RegistryConstants.TAG_PROPERTY:
+                    if (curNetworkHandler != null) {
+                        curNetworkHandler.getProperties().put(
+                            atts.getValue(RegistryConstants.ATTR_NAME),
+                            atts.getValue(RegistryConstants.ATTR_VALUE));
+                    } else if (curDataSource != null) {
+                        curDataSource.getConnectionConfiguration().setProperty(
+                            atts.getValue(RegistryConstants.ATTR_NAME),
+                            atts.getValue(RegistryConstants.ATTR_VALUE));
+                    }
+                    break;
+                case RegistryConstants.TAG_EVENT:
+                    if (curDataSource != null) {
+                        DBPConnectionEventType eventType = DBPConnectionEventType.valueOf(atts.getValue(RegistryConstants.ATTR_TYPE));
+                        curCommand = new DBRShellCommand("");
+                        curCommand.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
+                        curCommand.setShowProcessPanel(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_PANEL)));
+                        curCommand.setWaitProcessFinish(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_WAIT_PROCESS)));
+                        curCommand.setTerminateAtDisconnect(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_TERMINATE_AT_DISCONNECT)));
+                        curDataSource.getConnectionConfiguration().setEvent(eventType, curCommand);
+                    }
+                    break;
+                case RegistryConstants.TAG_CUSTOM_PROPERTY:
+                    if (curDataSource != null) {
+                        String propName = atts.getValue(RegistryConstants.ATTR_NAME);
+                        String propValue = atts.getValue(RegistryConstants.ATTR_VALUE);
+                        // TODO: remove bootstrap preferences later. PResent for config backward compatibility
+                        if (propName.equals(DEFAULT_AUTO_COMMIT)) {
+                            curDataSource.getConnectionConfiguration().getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(propValue));
+                        } else if (propName.equals(DEFAULT_ISOLATION)) {
+                            curDataSource.getConnectionConfiguration().getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(propValue));
+                        } else if (propName.equals(DEFAULT_ACTIVE_OBJECT)) {
+                            if (!CommonUtils.isEmpty(propValue)) {
+                                curDataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(propValue);
+                            }
+                        } else {
+                            curDataSource.getPreferenceStore().getProperties().put(propName, propValue);
+                        }
+                    }
+                    break;
+                case RegistryConstants.TAG_NETWORK_HANDLER:
+                    if (curDataSource != null) {
+                        String handlerId = atts.getValue(RegistryConstants.ATTR_ID);
+                        NetworkHandlerDescriptor handlerDescriptor = NetworkHandlerRegistry.getInstance().getDescriptor(handlerId);
+                        if (handlerDescriptor == null) {
+                            log.warn("Can't find network handler '" + handlerId + "'");
+                            reader.setListener(EMPTY_LISTENER);
+                            return;
+                        }
+                        curNetworkHandler = new DBWHandlerConfiguration(handlerDescriptor, curDataSource.getDriver());
+                        curNetworkHandler.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED)));
+                        curNetworkHandler.setUserName(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_USER)));
+                        curNetworkHandler.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
+                        curNetworkHandler.setPassword(decryptPassword(atts.getValue(RegistryConstants.ATTR_PASSWORD)));
+                        curDataSource.getConnectionConfiguration().addHandler(curNetworkHandler);
+                    }
+                    break;
+                case RegistryConstants.TAG_FILTER:
+                    if (curDataSource != null) {
+                        String typeName = atts.getValue(RegistryConstants.ATTR_TYPE);
+                        String objectID = atts.getValue(RegistryConstants.ATTR_ID);
+                        if (typeName != null) {
+                            curFilter = new DBSObjectFilter();
+                            curFilter.setName(atts.getValue(RegistryConstants.ATTR_NAME));
+                            curFilter.setDescription(atts.getValue(RegistryConstants.ATTR_DESCRIPTION));
+                            curFilter.setEnabled(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_ENABLED), true));
+                            curDataSource.updateObjectFilter(typeName, objectID, curFilter);
+
+                        }
+                    }
+                    break;
+                case RegistryConstants.TAG_INCLUDE:
+                    if (curFilter != null) {
+                        curFilter.addInclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
+                    }
+                    break;
+                case RegistryConstants.TAG_EXCLUDE:
+                    if (curFilter != null) {
+                        curFilter.addExclude(CommonUtils.notEmpty(atts.getValue(RegistryConstants.ATTR_NAME)));
+                    }
+                    break;
+                case RegistryConstants.TAG_DESCRIPTION:
+                    isDescription = true;
+                    break;
+                case RegistryConstants.TAG_VIRTUAL_META_DATA:
+                    if (curDataSource != null) {
+                        reader.setListener(curDataSource.getVirtualModel().getModelParser());
+                    }
+                    break;
             }
         }
 
@@ -821,17 +881,22 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName)
             throws XMLException
         {
-            if (localName.equals(RegistryConstants.TAG_DATA_SOURCE)) {
-                curDataSource = null;
-            } else if (localName.equals(RegistryConstants.TAG_NETWORK_HANDLER)) {
-                curNetworkHandler = null;
-            } else if (localName.equals(RegistryConstants.TAG_FILTER)) {
-                curFilter = null;
-            } else if (localName.equals(RegistryConstants.TAG_QUERY)) {
-                if (curDataSource != null && curQuery != null && curQuery.length() > 0) {
-                    curDataSource.getConnectionConfiguration().getBootstrap().getInitQueries().add(curQuery.toString());
-                    curQuery = null;
-                }
+            switch (localName) {
+                case RegistryConstants.TAG_DATA_SOURCE:
+                    curDataSource = null;
+                    break;
+                case RegistryConstants.TAG_NETWORK_HANDLER:
+                    curNetworkHandler = null;
+                    break;
+                case RegistryConstants.TAG_FILTER:
+                    curFilter = null;
+                    break;
+                case RegistryConstants.TAG_QUERY:
+                    if (curDataSource != null && curQuery != null && curQuery.length() > 0) {
+                        curDataSource.getConnectionConfiguration().getBootstrap().getInitQueries().add(curQuery.toString());
+                        curQuery = null;
+                    }
+                    break;
             }
             isDescription = false;
         }
