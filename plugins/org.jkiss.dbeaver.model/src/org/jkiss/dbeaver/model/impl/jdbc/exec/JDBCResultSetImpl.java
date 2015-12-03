@@ -48,6 +48,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     private JDBCSession session;
     private JDBCStatement statement;
     private ResultSet original;
+    private final String description;
     private JDBCResultSetMetaData metaData;
     private long rowsFetched;
     private long maxRows = -1;
@@ -64,23 +65,10 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     {
         this.session = session;
         this.original = original;
-        if (this.original == null) {
-            log.debug("Null result set passed. Possibly broken database metadata");
-        }
         this.disableLogging = disableLogging;
+        this.description = description;
         if (statement == null) {
-            // Make fake statement
-            JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(
-                session,
-                this,
-                "-- " + description, // Set description as commented SQL
-                disableLogging);
-            this.statement = fakeStatement;
             this.fake = true;
-
-            // Simulate statement execution
-            fakeStatement.beforeExecute();
-            fakeStatement.afterExecute();
         } else {
             this.statement = statement;
             this.fake = false;
@@ -134,13 +122,25 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     @Override
     public JDBCStatement getSourceStatement()
     {
+        if (fake && statement == null) {
+            // Make fake statement
+            JDBCFakeStatementImpl fakeStatement = new JDBCFakeStatementImpl(
+                session,
+                this,
+                "-- " + description, // Set description as commented SQL
+                disableLogging);
+            this.statement = fakeStatement;
+
+            fakeStatement.beforeExecute();
+            fakeStatement.afterExecute();
+        }
         return statement;
     }
 
     @Override
     public JDBCStatement getStatement()
     {
-        return statement;
+        return getSourceStatement();
     }
 
     @Override
@@ -319,11 +319,6 @@ public class JDBCResultSetImpl implements JDBCResultSet {
             catch (SQLException e) {
                 log.error("Can't close result set", e);
             }
-        }
-
-        if (this.fake) {
-            // Close fake statement
-            statement.close();
         }
     }
 

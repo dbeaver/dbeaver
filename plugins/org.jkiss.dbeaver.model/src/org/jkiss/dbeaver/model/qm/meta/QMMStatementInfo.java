@@ -44,6 +44,7 @@ public class QMMStatementInfo extends QMMObject {
     public void close()
     {
         super.close();
+        reference = null;
     }
 
     public QMMSessionInfo getSession()
