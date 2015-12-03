@@ -23,10 +23,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -50,11 +47,11 @@ import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.ui.controls.ClientHomesPanel;
 import org.jkiss.dbeaver.ui.controls.ConnectionPropertiesControl;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -91,7 +88,7 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private String defaultCategory;
     private String curFolder = null;
-    private TableViewer libTable;
+    private TreeViewer libTable;
     private Button deleteButton;
     private Button updateVersionButton;
     private Combo classListCombo;
@@ -321,23 +318,28 @@ public class DriverEditDialog extends HelpEnabledDialog
             libsListGroup.setLayout(layout);
 
             // Additional libraries list
-            libTable = new TableViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
-            libTable.setContentProvider(new ListContentProvider());
+            libTable = new TreeViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+            libTable.setContentProvider(new LibContentProvider());
             libTable.setLabelProvider(new CellLabelProvider() {
                 @Override
-                public void update(ViewerCell cell)
-                {
-                    DBPDriverLibrary lib = (DBPDriverLibrary) cell.getElement();
-                    cell.setText(lib.getDisplayName());
-                    File localFile = lib.getLocalFile();
-                    if (localFile != null && !localFile.exists()) {
-                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
-                    } else if (!driver.isLibraryResolved(lib)) {
-                        cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
+                public void update(ViewerCell cell) {
+                    final Object element = cell.getElement();
+                    if (element instanceof DBPDriverLibrary) {
+                        DBPDriverLibrary lib = (DBPDriverLibrary) element;
+                        cell.setText(lib.getDisplayName());
+                        File localFile = lib.getLocalFile();
+                        if (localFile != null && !localFile.exists()) {
+                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
+                        } else if (!driver.isLibraryResolved(lib)) {
+                            cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_BLUE));
+                        } else {
+                            cell.setForeground(null);
+                        }
+                        cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                     } else {
-                        cell.setForeground(null);
+                        cell.setText(element.toString());
+                        cell.setImage(DBeaverIcons.getImage(UIIcon.JAR));
                     }
-                    cell.setImage(DBeaverIcons.getImage(lib.getIcon()));
                 }
             });
             libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -609,7 +611,13 @@ public class DriverEditDialog extends HelpEnabledDialog
     private DriverLibraryAbstract getSelectedLibrary()
     {
         IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
-        return selection == null || selection.isEmpty() ? null : (DriverLibraryAbstract) selection.getFirstElement();
+        if (selection != null && !selection.isEmpty()) {
+            final Object element = selection.getFirstElement();
+            if (element instanceof DriverLibraryAbstract) {
+                return (DriverLibraryAbstract) element;
+            }
+        }
+        return null;
     }
 
     private void changeLibContent()
@@ -900,6 +908,52 @@ public class DriverEditDialog extends HelpEnabledDialog
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
+        }
+    }
+
+    private class LibContentProvider implements ITreeContentProvider {
+        @Override
+        public void dispose()
+        {
+        }
+
+        @Override
+        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
+        {
+        }
+
+        @Override
+        public Object[] getElements(Object inputElement)
+        {
+            if (inputElement instanceof Collection) {
+                return ((Collection<?>)inputElement).toArray();
+            }
+            return null;
+        }
+
+        @Override
+        public Object[] getChildren(Object parentElement) {
+            if (parentElement instanceof DBPDriverLibrary) {
+                final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles((DBPDriverLibrary) parentElement);
+                if (CommonUtils.isEmpty(files)) {
+                    return null;
+                }
+                return files.toArray(new Object[files.size()]);
+            }
+            return new Object[0];
+        }
+
+        @Override
+        public Object getParent(Object element) {
+            return null;
+        }
+
+        @Override
+        public boolean hasChildren(Object element) {
+            if (element instanceof DBPDriverLibrary) {
+                return !CommonUtils.isEmpty(driver.getLibraryFiles((DBPDriverLibrary) element));
+            }
+            return false;
         }
     }
 }
