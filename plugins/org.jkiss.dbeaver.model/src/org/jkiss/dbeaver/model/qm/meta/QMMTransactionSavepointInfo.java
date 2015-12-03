@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 
-import java.lang.ref.SoftReference;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -29,16 +28,17 @@ import java.util.NoSuchElementException;
 public class QMMTransactionSavepointInfo extends QMMObject {
 
     private final QMMTransactionInfo transaction;
-    private SoftReference<DBCSavepoint> reference;
     private final String name;
     private boolean commited;
     private final QMMTransactionSavepointInfo previous;
     private QMMStatementExecuteInfo lastExecute;
 
+    private transient DBCSavepoint reference;
+
     QMMTransactionSavepointInfo(QMMTransactionInfo transaction, DBCSavepoint reference, String name, QMMTransactionSavepointInfo previous)
     {
         this.transaction = transaction;
-        this.reference = new SoftReference<>(reference);
+        this.reference = reference;
         this.name = name;
         this.previous = previous;
     }
@@ -47,16 +47,17 @@ public class QMMTransactionSavepointInfo extends QMMObject {
     {
         this.commited = commit;
         super.close();
+        this.reference = null;
+    }
+
+    DBCSavepoint getReference()
+    {
+        return reference;
     }
 
     public QMMTransactionInfo getTransaction()
     {
         return transaction;
-    }
-
-    public DBCSavepoint getReference()
-    {
-        return reference == null ? null : reference.get();
     }
 
     public String getName()
