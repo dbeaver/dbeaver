@@ -49,9 +49,9 @@ class SQLLogFilter implements QMEventFilter {
             return ((QMMSessionInfo)object).getContainer() == editor.getDataSourceContainer();
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
-                return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getReference());
+                return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getSession());
             } else if (object instanceof QMMStatementInfo) {
-                return belongsToEditor(((QMMStatementInfo) object).getReference());
+                return belongsToEditor(((QMMStatementInfo) object).getSession());
             } else if (object instanceof QMMTransactionInfo) {
                 return belongsToEditor(((QMMTransactionInfo)object).getSession());
             } else if (object instanceof QMMTransactionSavepointInfo) {
@@ -64,17 +64,6 @@ class SQLLogFilter implements QMEventFilter {
     private boolean belongsToEditor(QMMSessionInfo session) {
         DBCExecutionContext executionContext = session.getReference();
         return executionContext != null && executionContext == editor.getExecutionContext();
-    }
-
-    private boolean belongsToEditor(DBCStatement statement) {
-        if (statement == null) {
-            return false;
-        }
-        DBCExecutionSource source = statement.getStatementSource();
-        if (source != null) {
-            return source.getExecutionController() == editor;
-        }
-        return false;
     }
 
 }
