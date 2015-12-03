@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.scripts;
 
+import org.eclipse.core.resources.IResource;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -126,7 +127,12 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 path.add(0, parent);
             }
             // Get target dir
-            IFolder targetDir = (IFolder)importData.getImportDir().getResource();
+            final IResource srcResource = importData.getImportDir().getResource();
+            if (!(srcResource instanceof IFolder)) {
+                log.warn("Resource '" + srcResource + "' is not a folder"); //$NON-NLS-1$ //$NON-NLS-2$
+                continue;
+            }
+            IFolder targetDir = (IFolder) srcResource;
             for (File folder : path) {
                 targetDir = targetDir.getFolder(folder.getName());
                 if (!targetDir.exists()) {
