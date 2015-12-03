@@ -97,6 +97,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this.version = library.getVersion();
             this.file = library.getLocalFile();
         }
+
+        @Override
+        public String toString() {
+            return file.getName();
+        }
     }
 
     private final DataSourceProviderDescriptor providerDescriptor;
@@ -942,6 +947,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     public boolean isLibraryResolved(DBPDriverLibrary library) {
         return !library.isDownloadable() || !CommonUtils.isEmpty(resolvedFiles.get(library));
+    }
+
+    public Collection<DriverFileInfo> getLibraryFiles(DBPDriverLibrary library) {
+        return resolvedFiles.get(library);
     }
 
     private void collectLibraryFiles(DBPDriverDependencies.DependencyNode node, List<DriverFileInfo> files) {
