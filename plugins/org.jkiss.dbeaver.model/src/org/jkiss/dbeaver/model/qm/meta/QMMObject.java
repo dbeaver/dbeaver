@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.Log;
 /**
  * Abstract QM meta object
  */
-public class QMMObject {
+public abstract class QMMObject {
 
     static final Log log = Log.getLog(QMMObject.class);
 
@@ -43,7 +43,7 @@ public class QMMObject {
         this.openTime = getTimeStamp();
     }
 
-    public void close()
+    protected void close()
     {
         this.closeTime = getTimeStamp();
         this.update();

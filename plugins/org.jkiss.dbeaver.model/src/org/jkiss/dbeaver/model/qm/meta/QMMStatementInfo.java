@@ -28,14 +28,15 @@ import java.lang.ref.SoftReference;
 public class QMMStatementInfo extends QMMObject {
 
     private final QMMSessionInfo session;
-    private SoftReference<DBCStatement> reference;
     private final DBCExecutionPurpose purpose;
     private final QMMStatementInfo previous;
+
+    private transient DBCStatement reference;
 
     QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementInfo previous)
     {
         this.session = session;
-        this.reference = new SoftReference<>(reference);
+        this.reference = reference;
         this.purpose = reference.getSession().getPurpose();
         this.previous = previous;
     }
@@ -47,14 +48,14 @@ public class QMMStatementInfo extends QMMObject {
         reference = null;
     }
 
+    DBCStatement getReference()
+    {
+        return reference;
+    }
+
     public QMMSessionInfo getSession()
     {
         return session;
-    }
-
-    public DBCStatement getReference()
-    {
-        return reference == null ? null : reference.get();
     }
 
     public DBCExecutionPurpose getPurpose()

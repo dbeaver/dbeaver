@@ -28,7 +28,6 @@ public class QMMStatementExecuteInfo extends QMMObject {
     private QMMStatementInfo statement;
     private QMMTransactionSavepointInfo savepoint;
     private String queryString;
-    //private Map<Object, Object> parameters;
 
     private long rowCount;
 
