@@ -175,8 +175,9 @@ public abstract class ObjectViewerRenderer {
                 //int columnWidth = event.width;
                 int columnHeight = isTree ? getTree().getItemHeight() : getTable().getItemHeight();
                 Image image = (Boolean)cellValue ?
-                    (editable ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
-                    (editable ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
+                    ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff();
+                    //(editable ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxDisabledOn()) :
+                    //(editable ? ImageUtils.getImageCheckboxEnabledOff() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
                 gc.drawImage(image, event.x + 4 /*+ (columnWidth - imageBounds.width) / 2*/, event.y + (columnHeight - imageBounds.height) / 2);
                 event.doit = false;
