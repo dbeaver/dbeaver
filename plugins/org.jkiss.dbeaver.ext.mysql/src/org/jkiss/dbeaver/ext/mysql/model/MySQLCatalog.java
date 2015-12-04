@@ -64,6 +64,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     final TriggerCache triggerCache = new TriggerCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final IndexCache indexCache = new IndexCache();
+    final EventCache eventCache = new EventCache();
 
     private MySQLDataSource dataSource;
     private String name;
@@ -193,6 +194,10 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return indexCache;
     }
 
+    public EventCache getEventCache() {
+        return eventCache;
+    }
+
     @Association
     public Collection<MySQLTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
@@ -244,6 +249,13 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         throws DBException
     {
         return triggerCache.getObject(monitor, this, name);
+    }
+
+    @Association
+    public Collection<MySQLEvent> getEvents(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return eventCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -622,6 +634,26 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
             MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
             return new MySQLTrigger(MySQLCatalog.this, triggerTable, dbResult);
+        }
+
+    }
+
+    class EventCache extends JDBCObjectCache<MySQLCatalog, MySQLEvent> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
+            throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM information_schema.EVENTS WHERE EVENT_SCHEMA=?");
+            dbStat.setString(1, DBUtils.getQuotedIdentifier(MySQLCatalog.this));
+            return dbStat;
+        }
+
+        @Override
+        protected MySQLEvent fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull ResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new MySQLEvent(owner, dbResult);
         }
 
     }
