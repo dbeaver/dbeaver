@@ -63,15 +63,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_TRIGGER = new DBIcon("trigger", "tree/trigger.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_USER = new DBIcon("user", "tree/user.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PAGE = new DBIcon("page", "tree/page.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER = new DBIcon("folder", "tree/folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_LINK = new DBIcon("folder_link", "tree/folder_link.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_DATABASE = new DBIcon("folder_database", "tree/folder_database.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_SCHEMA = new DBIcon("folder_schema", "tree/folder_schema.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_TABLE = new DBIcon("folder_table", "tree/folder_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_VIEW = new DBIcon("folder_view", "tree/folder_view.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_USER = new DBIcon("folder_user", "tree/folder_user.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_ADMIN = new DBIcon("folder_admin", "tree/folder_admin.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_CONSTRAINT = new DBIcon("constraints", "tree/folder_constraint.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_INFO = new DBIcon("info", "tree/info.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SESSIONS = new DBIcon("sessions", "tree/sessions.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_PACKAGE = new DBIcon("package", "tree/package.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_DATA_TYPE = new DBIcon("data_type", "tree/data_type.png"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -89,9 +81,19 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_ASSOCIATION = new DBIcon("association", "tree/association.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SERVER = new DBIcon("server", "tree/server.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_SERVERS = new DBIcon("servers", "tree/servers.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_INFO = new DBIcon("info", "tree/info.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon TREE_FOLDER_INFO = new DBIcon("folder_info", "tree/folder_info.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_RECYCLE_BIN = new DBIcon("recycle_bin", "tree/recycle_bin.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_EVENT = new DBIcon("event", "tree/event.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
+    public static final DBIcon TREE_FOLDER = new DBIcon("folder", "tree/folder.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_LINK = new DBIcon("folder_link", "tree/folder_link.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_DATABASE = new DBIcon("folder_database", "tree/folder_database.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_SCHEMA = new DBIcon("folder_schema", "tree/folder_schema.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_TABLE = new DBIcon("folder_table", "tree/folder_table.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_VIEW = new DBIcon("folder_view", "tree/folder_view.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_USER = new DBIcon("folder_user", "tree/folder_user.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_ADMIN = new DBIcon("folder_admin", "tree/folder_admin.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_CONSTRAINT = new DBIcon("constraints", "tree/folder_constraint.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_INFO = new DBIcon("folder_info", "tree/folder_info.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PROJECT = new DBIcon("project", "project.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CONNECTIONS = new DBIcon("connections", "connections.png"); //$NON-NLS-1$ //$NON-NLS-2$

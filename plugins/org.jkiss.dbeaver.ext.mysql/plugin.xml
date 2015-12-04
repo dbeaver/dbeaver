@@ -97,6 +97,10 @@
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger">
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLEvent" label="%tree.events.node.name" icon="#events" description="Events">
+                            <items label="%tree.event.node.name" path="event" property="events" icon="#event">
+                            </items>
+                        </folder>
                     </items>
                 </folder>
                 <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLUser" label="%tree.users.node.name" icon="#folder_user" description="Users">
