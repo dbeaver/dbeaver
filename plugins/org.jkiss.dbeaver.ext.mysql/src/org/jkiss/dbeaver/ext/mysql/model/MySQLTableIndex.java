@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
+import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +37,9 @@ import java.util.List;
 public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
 {
     private boolean nonUnique;
-    private String comment;
+    private String additionalInfo;
+    private String indexComment;
+    private long cardinality;
     private List<MySQLTableIndexColumn> columns;
 
     public MySQLTableIndex(
@@ -53,7 +58,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
     {
         super(table.getContainer(), table, indexName, indexType, true);
         this.nonUnique = nonUnique;
-        this.comment = comment;
+        this.indexComment = comment;
     }
 
     /**
@@ -64,12 +69,28 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
     {
         super(source);
         this.nonUnique = source.nonUnique;
+        this.cardinality = source.cardinality;
+        this.indexComment = source.indexComment;
+        this.additionalInfo = source.additionalInfo;
         if (source.columns != null) {
             this.columns = new ArrayList<>(source.columns.size());
             for (MySQLTableIndexColumn sourceColumn : source.columns) {
                 this.columns.add(new MySQLTableIndexColumn(this, sourceColumn));
             }
         }
+    }
+
+    public MySQLTableIndex(MySQLTable parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
+        super(
+            parent.getContainer(),
+            parent,
+            indexName,
+            indexType,
+            true);
+        this.nonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
+        this.cardinality = JDBCUtils.safeGetLong(dbResult, "cardinality");
+        this.indexComment = JDBCUtils.safeGetString(dbResult, "INDEX_COMMENT");
+        this.additionalInfo = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
     }
 
     @NotNull
@@ -91,7 +112,17 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
     @Property(viewable = true, order = 6)
     public String getDescription()
     {
-        return comment;
+        return indexComment;
+    }
+
+    @Property(viewable = true, order = 20)
+    public long getCardinality() {
+        return cardinality;
+    }
+
+    @Property(viewable = false, order = 30)
+    public String getAdditionalInfo() {
+        return additionalInfo;
     }
 
     @Override

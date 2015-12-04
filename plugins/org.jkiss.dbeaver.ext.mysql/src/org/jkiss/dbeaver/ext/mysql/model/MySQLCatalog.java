@@ -408,7 +408,6 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            boolean isNonUnique = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NON_UNIQUE) != 0;
             String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
             DBSIndexType indexType;
             if (MySQLConstants.INDEX_TYPE_BTREE.getId().equals(indexTypeName)) {
@@ -422,14 +421,11 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             } else {
                 indexType = DBSIndexType.OTHER;
             }
-            final String comment = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COMMENT);
-
             return new MySQLTableIndex(
                 parent,
-                isNonUnique,
                 indexName,
                 indexType,
-                comment);
+                dbResult);
         }
 
         @Override
