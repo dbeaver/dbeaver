@@ -108,6 +108,7 @@ public class MavenRepository
             return version;
         } catch (IOException e) {
             // Generally it is ok. Artifact not present in this repository
+            log.debug("Maven artifact '" + ref + "' not found in repository '" + this + "': " + e.getMessage());
             return null;
         }
     }
