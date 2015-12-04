@@ -32,7 +32,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.IPropertySourceEditable;
@@ -684,7 +686,7 @@ public class PropertyTreeViewer extends TreeViewer {
                     if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
                     } else if (propertyValue instanceof Boolean) {
-                        return DBUtils.getBooleanString((Boolean) propertyValue);
+                        return "";//DBUtils.getBooleanString((Boolean) propertyValue);
                     } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
                         return "";
                     }
