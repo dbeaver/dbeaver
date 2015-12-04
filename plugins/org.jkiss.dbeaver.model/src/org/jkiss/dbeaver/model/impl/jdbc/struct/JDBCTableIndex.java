@@ -62,6 +62,7 @@ public abstract class JDBCTableIndex<CONTAINER extends DBSObjectContainer, TABLE
         return container;
     }
 
+    @NotNull
     @Override
     public TABLE getParentObject()
     {
