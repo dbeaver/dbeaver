@@ -229,7 +229,7 @@ public class ReferenceValueEditor {
                     for (TableItem item : editorSelector.getItems()) {
                         if (item.getText(0).equals(curTextValue)) {
                             editorSelector.select(editorSelector.indexOf(item));
-                            editorSelector.showSelection();
+                            editorSelector.showItem(item);
                             break;
                         }
                     }
@@ -284,7 +284,7 @@ public class ReferenceValueEditor {
                     }
                     if (curItem != null) {
                         editorSelector.select(editorSelector.indexOf(curItem));
-                        editorSelector.showSelection();
+                        editorSelector.showItem(curItem);
                     }
                 } catch (DBException e) {
                     log.error(e);

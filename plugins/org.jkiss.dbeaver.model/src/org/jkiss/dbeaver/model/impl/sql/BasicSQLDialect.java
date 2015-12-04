@@ -87,7 +87,10 @@ public class BasicSQLDialect implements SQLDialect {
         if (set != null) {
             for (String keyword : set) {
                 reservedWords.add(keyword);
-                allKeywords.put(keyword, type);
+                DBPKeywordType oldType = allKeywords.get(keyword);
+                if (oldType == null || oldType.ordinal() > type.ordinal()) {
+                    allKeywords.put(keyword, type);
+                }
             }
         }
     }
