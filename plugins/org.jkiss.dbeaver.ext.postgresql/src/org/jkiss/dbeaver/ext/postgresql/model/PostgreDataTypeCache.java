@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -39,6 +40,17 @@ import java.sql.Types;
 public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
 {
     static final Log log = Log.getLog(PostgreDataTypeCache.class);
+
+    private static String[] OID_TYPES = new String[] {
+        "regproc",
+        "regprocedure",
+        "regoper",
+        "regoperator",
+        "regclass",
+        "regtype",
+        "regconfig",
+        "regdictionary",
+    };
 
     public PostgreDataTypeCache(DBPDataSourceContainer owner) {
         super(owner);
@@ -58,7 +70,7 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
     @Override
     protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull ResultSet dbResult) throws SQLException, DBException
     {
-        int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
+        int typeId = JDBCUtils.safeGetInt(dbResult, "typid");
         String ownerSchema = JDBCUtils.safeGetString(dbResult, "typnsname");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
@@ -78,73 +90,77 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
             log.debug(e);
         }
         int valueType;
-        switch (typeCategory) {
-            case A:
-            case P:
-                return null;
-            case B:
-                valueType = Types.BOOLEAN;
-                break;
-            case C:
-                valueType = Types.STRUCT;
-                break;
-            case D:
-                if (name.startsWith("timestamp")) {
-                    valueType = Types.TIMESTAMP;
-                } else if (name.startsWith("date")) {
-                    valueType = Types.DATE;
-                } else {
-                    valueType = Types.TIME;
-                }
-                break;
-            case N:
-                valueType = Types.NUMERIC;
-                if (name.startsWith("float")) {
-                    switch (typeLength) {
-                        case 4:
-                            valueType = Types.FLOAT;
-                            break;
-                        case 8:
-                            valueType = Types.DOUBLE;
-                            break;
+        if (ArrayUtils.contains(OID_TYPES, name)) {
+            valueType = Types.VARCHAR;
+        } else {
+            switch (typeCategory) {
+                case A:
+                case P:
+                    return null;
+                case B:
+                    valueType = Types.BOOLEAN;
+                    break;
+                case C:
+                    valueType = Types.STRUCT;
+                    break;
+                case D:
+                    if (name.startsWith("timestamp")) {
+                        valueType = Types.TIMESTAMP;
+                    } else if (name.startsWith("date")) {
+                        valueType = Types.DATE;
+                    } else {
+                        valueType = Types.TIME;
                     }
-                } else {
-                    switch (typeLength) {
-                        case 2:
-                            valueType = Types.SMALLINT;
-                            break;
-                        case 4:
-                            valueType = Types.INTEGER;
-                            break;
-                        case 8:
-                            valueType = Types.BIGINT;
-                            break;
+                    break;
+                case N:
+                    valueType = Types.NUMERIC;
+                    if (name.startsWith("float")) {
+                        switch (typeLength) {
+                            case 4:
+                                valueType = Types.FLOAT;
+                                break;
+                            case 8:
+                                valueType = Types.DOUBLE;
+                                break;
+                        }
+                    } else {
+                        switch (typeLength) {
+                            case 2:
+                                valueType = Types.SMALLINT;
+                                break;
+                            case 4:
+                                valueType = Types.INTEGER;
+                                break;
+                            case 8:
+                                valueType = Types.BIGINT;
+                                break;
+                        }
                     }
-                }
-                break;
-            case S:
-//                if (name.equals("text")) {
-//                    valueType = Types.CLOB;
-//                } else {
+                    break;
+                case S:
+                    //                if (name.equals("text")) {
+                    //                    valueType = Types.CLOB;
+                    //                } else {
                     valueType = Types.VARCHAR;
-//                }
-                break;
-            case U:
-                switch (name) {
-                    case "bytea":
-                        valueType = Types.BINARY;
-                        break;
-                    case "xml":
-                        valueType = Types.SQLXML;
-                        break;
-                    default:
-                        valueType = Types.OTHER;
-                        break;
-                }
-                break;
-            default:
-                valueType = Types.OTHER;
-                break;
+                    //                }
+                    break;
+                case U:
+                    switch (name) {
+                        case "bytea":
+                            valueType = Types.BINARY;
+                            break;
+                        case "xml":
+                            valueType = Types.SQLXML;
+                            break;
+                        default:
+                            valueType = Types.OTHER;
+                            break;
+                    }
+                    break;
+                default:
+                    valueType = Types.OTHER;
+                    break;
+            }
         }
 
         return new PostgreDataType(
