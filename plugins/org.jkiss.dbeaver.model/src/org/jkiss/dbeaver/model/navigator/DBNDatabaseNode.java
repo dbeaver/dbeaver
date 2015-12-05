@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -524,10 +525,15 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return dataSource == null ? null : dataSource.getDefaultContext(true);
     }
 
+    @NotNull
     public DBPDataSourceContainer getDataSourceContainer()
     {
-        DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getContainer();
+        for (DBNNode p = getParentNode(); p != null; p = p.getParentNode()) {
+            if (p instanceof DBNDataSource) {
+                return ((DBNDataSource) p).getDataSourceContainer();
+            }
+        }
+        throw new IllegalStateException("No parent datasource node");
     }
 
     public DBPDataSource getDataSource() {

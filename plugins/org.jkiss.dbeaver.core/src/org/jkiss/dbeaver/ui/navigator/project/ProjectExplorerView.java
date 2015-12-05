@@ -65,14 +65,14 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     {
         super.createPartControl(parent);
         final TreeViewer viewer = getNavigatorViewer();
+        assert viewer != null;
         viewer.getTree().setHeaderVisible(true);
         createColumns(viewer);
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
 
-        this.getNavigatorViewer().addFilter(new ViewerFilter() {
+        viewer.addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element)
-            {
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
                 return !(element instanceof DBNProjectDatabases);
             }
         });

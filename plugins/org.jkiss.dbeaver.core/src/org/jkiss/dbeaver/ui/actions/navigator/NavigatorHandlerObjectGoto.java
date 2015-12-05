@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -68,6 +69,9 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
             }
         }
         if (context == null) {
+            DBUserInterface.getInstance().showError(
+                "Go to object",
+                "No active datasource");
             return null;
         }
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
