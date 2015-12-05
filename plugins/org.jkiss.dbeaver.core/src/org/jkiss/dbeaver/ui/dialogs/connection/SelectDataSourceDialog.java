@@ -78,7 +78,7 @@ public class SelectDataSourceDialog extends Dialog {
         DBeaverCore core = DBeaverCore.getInstance();
         DBNProject rootNode = core.getNavigatorModel().getRoot().getProject(core.getProjectRegistry().getActiveProject());
 
-        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode.getDatabases(), SWT.SINGLE, false);
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, rootNode.getDatabases(), SWT.SINGLE | SWT.BORDER, false);
         dataSourceTree.setLayoutData(new GridData(GridData.FILL_BOTH));
         dataSourceTree.getViewer().addFilter(new ViewerFilter() {
             @Override
