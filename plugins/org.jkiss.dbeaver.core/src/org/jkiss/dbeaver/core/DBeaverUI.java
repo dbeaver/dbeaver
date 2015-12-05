@@ -306,6 +306,11 @@ public class DBeaverUI implements DBUICallback {
     }
 
     @Override
+    public void showError(@NotNull String title, @Nullable String message) {
+        UIUtils.showErrorDialog(null, title, message);
+    }
+
+    @Override
     public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword) {
         // Ask user
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();

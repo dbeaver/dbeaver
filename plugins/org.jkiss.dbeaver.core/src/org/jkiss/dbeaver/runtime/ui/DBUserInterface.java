@@ -43,6 +43,11 @@ public class DBUserInterface {
             e.printStackTrace(System.out);
         }
 
+        @Override
+        public void showError(@NotNull String title, @Nullable String message) {
+            System.out.println(title + (message == null ? "" : ": " + message));
+        }
+
         private void printStatus(@NotNull IStatus status, int level) {
             char[] indent = new char[level * 4];
             for (int i = 0; i < indent.length; i++) indent[i] = ' ';

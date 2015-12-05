@@ -394,6 +394,11 @@ public class ViewerColumnController {
                     } else if (value2 == null) {
                         result = 1;
                     } else {
+                        try {
+                            return (int)(Long.parseLong(value1) - Long.parseLong(value2));
+                        } catch (NumberFormatException e) {
+                            // not numbers
+                        }
                         result = value1.compareToIgnoreCase(value2);
                     }
                     return sortDirection == SWT.DOWN ? result : -result;
