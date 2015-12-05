@@ -30,6 +30,7 @@ import java.sql.SQLException;
 class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
 
     private JDBCResultSetImpl resultSet;
+    private boolean closed;
 
     JDBCFakeStatementImpl(
         JDBCSession connection,
@@ -72,4 +73,13 @@ class JDBCFakeStatementImpl extends JDBCPreparedStatementImpl {
         return resultSet;
     }
 
+    @Override
+    public void close() {
+        // Fake statements can be closed twice (explicitly and by owner resultset close)
+        // So do real close only once
+        if (!closed) {
+            super.close();
+            closed = true;
+        }
+    }
 }
