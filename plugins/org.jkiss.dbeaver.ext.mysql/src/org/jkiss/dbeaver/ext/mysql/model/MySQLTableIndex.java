@@ -109,7 +109,7 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, order = 100)
     public String getDescription()
     {
         return indexComment;
