@@ -294,7 +294,7 @@ public class BasicSQLDialect implements SQLDialect {
     protected void loadStandardKeywords()
     {
         // Add default set of keywords
-        Collections.addAll(reservedWords, SQLConstants.SQL92_KEYWORDS);
+        Collections.addAll(reservedWords, SQLConstants.SQL2003_KEYWORDS);
         Collections.addAll(reservedWords, SQLConstants.SQL_EX_KEYWORDS);
         Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
         Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
