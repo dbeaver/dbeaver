@@ -439,10 +439,10 @@ class ResultSetFilterPanel extends Composite
 
     @NotNull
     private Control createObjectPanel(Shell popup) throws PartInitException {
-        Composite panel = new Composite(popup, SWT.BORDER);
+        Composite panel = new Composite(popup, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
 //        gl.marginWidth = 0;
-//        gl.marginHeight = 0;
+        gl.marginHeight = 0;
 //        gl.horizontalSpacing = 0;
         panel.setLayout(gl);
 
@@ -533,7 +533,7 @@ class ResultSetFilterPanel extends Composite
             if (popup != null) {
                 popup.dispose();
             }
-            popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP | SWT.RESIZE);
+            popup = new Shell(getShell(), SWT.ON_TOP | SWT.RESIZE);
             popup.setLayout(new FillLayout());
             Control editControl;
             try {
