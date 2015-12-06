@@ -43,7 +43,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.DriverTreeControl;
+import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
 
 import java.util.*;
 
