@@ -58,6 +58,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
 
+    private final StringBuilder buffer = new StringBuilder();
+
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
@@ -173,22 +175,23 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private void writeCellValue(String value, boolean quote)
     {
         // check for needed quote
+        final boolean hasQuotes = value.indexOf(quoteChar) != -1;
         if (!quote && !value.isEmpty()) {
-            if (value.indexOf(delimiter) != -1 || value.contains(rowDelimiter)) {
+            if (hasQuotes || value.indexOf(delimiter) != -1 || value.contains(rowDelimiter)) {
                 quote = true;
             }
         }
-        if (quote && value.indexOf(quoteChar) != -1) {
+        if (quote && hasQuotes) {
             // escape quotes with double quotes
-            StringBuilder buf = new StringBuilder(value.length() + 5);
-            for (int i = 0; i <value.length(); i++) {
+            buffer.setLength(0);
+            for (int i = 0; i < value.length(); i++) {
                 char c = value.charAt(i);
                 if (c == quoteChar) {
-                    buf.append(quoteChar);
+                    buffer.append(quoteChar);
                 }
-                buf.append(c);
+                buffer.append(c);
             }
-            value = buf.toString();
+            value = buffer.toString();
         }
         if (quote) out.write(quoteChar);
         out.write(value);
