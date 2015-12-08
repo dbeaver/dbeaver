@@ -21,12 +21,20 @@
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.test.object.validate" name="Test - Validate"/>
+        <command id="org.jkiss.dbeaver.test.object.validate" name="Node - Validate"/>
+        <command id="org.jkiss.dbeaver.test.connection.validate" name="Connection - Validate"/>
         <command id="org.jkiss.dbeaver.test.dialog" name="Show dialog"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.test.object.validate" class="org.jkiss.dbeaver.ext.test.handlers.HandlerObjectValidate">
+            <activeWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                </with>
+            </activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.test.connection.validate" class="org.jkiss.dbeaver.ext.test.handlers.HandlerConnectionValidate">
             <activeWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -46,6 +54,7 @@
                    </with>
                </visibleWhen>
             </command>
+            <command commandId="org.jkiss.dbeaver.test.connection.validate"/>
         </menuContribution>
        <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="test" label="Test">
