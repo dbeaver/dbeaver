@@ -572,7 +572,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
                 if (children != null) {
                     for (DBSObject child : children) {
-                        schemaNames.add(DBUtils.getQuotedIdentifier(child));
+                        schemaNames.add(child.getName());
                     }
                 }
                 if (!schemaNames.isEmpty()) {

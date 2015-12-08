@@ -90,7 +90,7 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
             log.debug(e);
         }
         int valueType;
-        if (ArrayUtils.contains(OID_TYPES, name)) {
+        if (ArrayUtils.contains(OID_TYPES, name) || name.equals("hstore")) {
             valueType = Types.VARCHAR;
         } else {
             switch (typeCategory) {
