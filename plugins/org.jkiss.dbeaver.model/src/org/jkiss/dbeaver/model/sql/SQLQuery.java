@@ -95,9 +95,9 @@ public class SQLQuery {
                         String schemaName = fromItem.getSchemaName();
                         String tableName = fromItem.getName();
                         singleTableMeta = new SingleTableMeta(
-                            database == null ? null : database.getDatabaseName(),
-                            schemaName,
-                            tableName);
+                            unquoteIdentifier(database == null ? null : database.getDatabaseName()),
+                            unquoteIdentifier(schemaName),
+                            unquoteIdentifier(tableName));
                     }
                     // Extract select items info
                     final List<SelectItem> items = plainSelect.getSelectItems();
@@ -129,6 +129,13 @@ public class SQLQuery {
             this.type = SQLQueryType.UNKNOWN;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
+    }
+
+    private String unquoteIdentifier(String name) {
+        if (name == null) {
+            return null;
+        }
+        return DBUtils.getUnQuotedIdentifier(name, "\"");
     }
 
     /**

@@ -96,10 +96,14 @@ public class ResultSetUtils
                 // We got table name and column name
                 // To be editable we need this result   set contain set of columns from the same table
                 // which construct any unique key
-                if (entity == null && attrMeta.getEntityMetaData() != null) {
-                    entity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
+                DBSEntity attrEntity = null;
+                if (attrMeta.getEntityMetaData() != null) {
+                    attrEntity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
                 }
-                if (entity != null) {
+                if (attrEntity == null) {
+                    attrEntity = entity;
+                }
+                if (attrEntity != null) {
                     if (sqlQuery != null) {
                         final SQLSelectItem selectItem = sqlQuery.getSelectItem(attrMeta.getName());
                         if (selectItem != null && !selectItem.isPlainColumn()) {
@@ -110,9 +114,9 @@ public class ResultSetUtils
                     }
                     DBSEntityAttribute tableColumn;
                     if (attrMeta.getPseudoAttribute() != null) {
-                        tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(entity, attrMeta);
+                        tableColumn = attrMeta.getPseudoAttribute().createFakeAttribute(attrEntity, attrMeta);
                     } else {
-                        tableColumn = entity.getAttribute(monitor, attrMeta.getName());
+                        tableColumn = attrEntity.getAttribute(monitor, attrMeta.getName());
                     }
                     if (tableColumn != null && binding.setEntityAttribute(tableColumn)) {
                         // We have new type and new value handler.
