@@ -1096,6 +1096,10 @@ public class ResultSetViewer extends Viewer
             });
         }
         manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
+        if (dataContainer != null && model.hasData()) {
+            manager.add(new Separator());
+            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
+        }
     }
 
     private void fillFiltersMenu(@NotNull DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
