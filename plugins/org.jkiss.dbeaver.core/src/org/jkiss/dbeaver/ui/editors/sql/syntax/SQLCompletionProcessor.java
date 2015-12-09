@@ -115,7 +115,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
-        if (queryType != null) {
+        if (queryType != null && !CommonUtils.isEmpty(wordPart)) {
             if (editor.getDataSource() != null) {
                 try {
                     final QueryType qt = queryType;
