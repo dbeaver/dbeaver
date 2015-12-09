@@ -188,10 +188,9 @@ public class GenericMetaModel {
                         }
                         String functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.FUNCTION_NAME);
                         if (functionName == null) {
-                            functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
-                        }
-                        if (functionName == null) {
-                            log.debug("Null function name");
+                            //functionName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.PROCEDURE_NAME);
+                            // Apparently some drivers return the same results for getProcedures and getFunctions -
+                            // so let's skip yet another procedure list
                             continue;
                         }
                         String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
