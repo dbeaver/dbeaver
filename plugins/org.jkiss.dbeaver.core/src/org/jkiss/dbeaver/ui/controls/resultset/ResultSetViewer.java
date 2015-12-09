@@ -963,7 +963,7 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public boolean isHasMoreData() {
-        return dataReceiver.isHasMoreData();
+        return getExecutionContext() != null && dataReceiver.isHasMoreData();
     }
 
     @Override
