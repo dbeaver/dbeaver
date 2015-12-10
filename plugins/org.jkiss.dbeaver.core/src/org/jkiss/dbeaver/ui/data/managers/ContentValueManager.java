@@ -156,7 +156,9 @@ public class ContentValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
                 // Open inline/panel editor
-                if (controller.getValue() instanceof DBDContentCached) {
+                if (controller.getValue() instanceof DBDContentCached &&
+                    ContentUtils.isTextValue(((DBDContentCached)controller.getValue()).getCachedValue()))
+            {
                     return new ContentInlineEditor(controller);
                 } else {
                     return null;

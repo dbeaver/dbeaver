@@ -407,6 +407,24 @@ public class ContentUtils {
         return contentType != null && contentType.toLowerCase(Locale.ENGLISH).startsWith("text");
     }
 
+    public static boolean isTextValue(Object value)
+    {
+        if (value == null) {
+            return false;
+        }
+        if (value instanceof CharSequence) {
+            return true;
+        }
+        if (value instanceof byte[]) {
+            for (byte b : (byte[])value) {
+                if (!Character.isLetterOrDigit(b) && !Character.isSpaceChar(b) && !Character.isISOControl(b)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     public static boolean isXML(DBDContent content)
     {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
