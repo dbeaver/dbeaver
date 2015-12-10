@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
 /**
  * GenericProcedure
  */
-public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructContainer> implements GenericStoredCode, DBSObjectUnique
+public class GenericProcedure extends AbstractProcedure<GenericDataSource, GenericStructContainer> implements GenericScriptObject, DBSObjectUnique
 {
     private static final Pattern PATTERN_COL_NAME_NUMERIC = Pattern.compile("\\$?([0-9]+)");
 
@@ -263,7 +263,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
     }
 
     @Override
-    public String getSource(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         if (source == null) {
             source = getDataSource().getMetaModel().getProcedureDDL(monitor, this);
         }

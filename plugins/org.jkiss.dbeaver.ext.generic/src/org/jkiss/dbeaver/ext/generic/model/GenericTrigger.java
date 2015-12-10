@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 /**
  * GenericProcedure
  */
-public class GenericTrigger implements DBSTrigger, GenericStoredCode
+public class GenericTrigger implements DBSTrigger, GenericScriptObject
 {
     @NotNull
     private final GenericStructContainer container;
@@ -99,7 +99,7 @@ public class GenericTrigger implements DBSTrigger, GenericStoredCode
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSource(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (source == null) {
             source = getDataSource().getMetaModel().getTriggerDDL(monitor, this);
