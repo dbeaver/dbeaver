@@ -41,7 +41,7 @@ public class MySQLSourceViewEditor extends SQLEditorNested<MySQLSourceObject> {
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
-        return getSourceObject().getScriptSourceText(monitor);
+        return getSourceObject().getObjectDefinitionText(monitor);
     }
 
     @Override

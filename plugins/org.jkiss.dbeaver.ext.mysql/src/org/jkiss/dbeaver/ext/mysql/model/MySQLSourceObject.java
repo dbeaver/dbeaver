@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface MySQLSourceObject extends DBPScriptObject, DBSObject {
 
-    void setScriptSourceText(String sourceText)
+    void setObjectDefinitionText(String sourceText)
         throws DBException;
 
 }

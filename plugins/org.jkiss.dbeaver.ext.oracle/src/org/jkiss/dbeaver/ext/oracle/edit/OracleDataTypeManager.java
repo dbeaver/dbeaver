@@ -60,7 +60,7 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
             parent,
             dialog.getEntityName(),
             false);
-        dataType.setScriptSourceText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
+        dataType.setObjectDefinitionText("TYPE " + dataType.getName() + " AS OBJECT\n" + //$NON-NLS-1$ //$NON-NLS-2$
             "(\n" + //$NON-NLS-1$
             ")"); //$NON-NLS-1$
         return dataType;

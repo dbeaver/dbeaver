@@ -121,12 +121,12 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getText();
     }
 
-    public void setScriptSourceText(String source)
+    public void setObjectDefinitionText(String source)
     {
         if (source == null) {
             additionalInfo.loaded = false;

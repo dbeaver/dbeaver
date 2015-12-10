@@ -205,7 +205,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
@@ -213,7 +213,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return sourceDeclaration;
     }
 
-    public void setScriptSourceText(String source)
+    public void setObjectDefinitionText(String source)
     {
         this.sourceDeclaration = source;
     }
