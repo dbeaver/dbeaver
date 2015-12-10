@@ -85,8 +85,8 @@ public class OracleConstants {
     public static final DBSIndexType INDEX_TYPE_FUNCTION_BASED_BITMAP = new DBSIndexType("FUNCTION-BASED BITMAP", "Function-based Bitmap");
     public static final DBSIndexType INDEX_TYPE_DOMAIN = new DBSIndexType("DOMAIN", "Domain");
 
-    public static final String PROP_SOURCE_DEFINITION = "sourceDefinition";
-    public static final String PROP_SOURCE_DECLARATION = "sourceDeclaration";
+    public static final String PROP_OBJECT_DEFINITION = "objectDefinitionText";
+    public static final String PROP_OBJECT_BODY_DEFINITION = "objectBodyDefinitionText";
 
     public static final String COL_OWNER = "OWNER";
     public static final String COL_TABLE_NAME = "TABLE_NAME";

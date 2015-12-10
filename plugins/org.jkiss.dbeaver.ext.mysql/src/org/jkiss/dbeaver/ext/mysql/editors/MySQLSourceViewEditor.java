@@ -47,7 +47,7 @@ public class MySQLSourceViewEditor extends SQLEditorNested<MySQLSourceObject> {
     @Override
     protected void setSourceText(String sourceText)
     {
-        getEditorInput().getPropertySource().setPropertyValue("sourceText", sourceText);
+        getEditorInput().getPropertySource().setPropertyValue("objectDefinitionText", sourceText);
     }
 
 }
