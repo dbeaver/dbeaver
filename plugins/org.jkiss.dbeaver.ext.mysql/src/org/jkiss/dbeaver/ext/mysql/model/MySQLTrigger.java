@@ -99,13 +99,13 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         return getBody();
     }
 
     @Override
-    public void setScriptSourceText(String sourceText) throws DBException
+    public void setObjectDefinitionText(String sourceText) throws DBException
     {
         body = sourceText;
     }

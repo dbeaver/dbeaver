@@ -95,14 +95,14 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         try {
-            String header = pack.getScriptSourceText(VoidProgressMonitor.INSTANCE);
+            String header = pack.getObjectDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(header)) {
                 actions.add(
                     new SQLDatabasePersistAction(
                         "Create package header",
                         header)); //$NON-NLS-1$
             }
-            String body = pack.getSourceDefinition(VoidProgressMonitor.INSTANCE);
+            String body = pack.getObjectBodyDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(body)) {
                 actions.add(
                     new SQLDatabasePersistAction(

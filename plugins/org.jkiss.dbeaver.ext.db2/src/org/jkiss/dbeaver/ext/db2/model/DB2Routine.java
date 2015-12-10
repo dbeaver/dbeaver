@@ -218,7 +218,7 @@ public class DB2Routine extends DB2Object<DBSObject> implements DBSProcedure, DB
     // -----------------
 
     @Override
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if ((language != null) && (language.equals(DB2RoutineLanguage.SQL))) {
             return DB2Utils.formatSQLProcedureDDL(getDataSource(), text);

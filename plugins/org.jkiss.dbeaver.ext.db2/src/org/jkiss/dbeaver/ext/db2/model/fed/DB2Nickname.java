@@ -64,7 +64,7 @@ public class DB2Nickname extends DB2Table {
     }
 
     @Override
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         return DB2Messages.no_ddl_for_nicknames;
     }

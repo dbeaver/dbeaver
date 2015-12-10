@@ -209,13 +209,13 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         return getClientBody(monitor);
     }
 
     @Override
-    public void setScriptSourceText(String sourceText) throws DBException
+    public void setObjectDefinitionText(String sourceText) throws DBException
     {
         setClientBody(sourceText);
     }

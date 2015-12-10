@@ -31,6 +31,8 @@ public interface OracleSourceObject extends DBPScriptObject, OracleStatefulObjec
 
     void setName(String name);
 
+    void setObjectDefinitionText(String source);
+
     OracleSourceType getSourceType();
 
     DBEPersistAction[] getCompileActions();

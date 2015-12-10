@@ -142,7 +142,7 @@ public class DB2TableCheckConstraint extends JDBCTableConstraint<DB2Table> imple
     }
 
     @Override
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
     }

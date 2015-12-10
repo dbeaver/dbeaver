@@ -20,9 +20,12 @@ package org.jkiss.dbeaver.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+/**
+ * Object with DDL
+ */
 public interface DBPScriptObject extends DBPObject {
 
-    String getScriptSourceText(DBRProgressMonitor monitor)
+    String getObjectDefinitionText(DBRProgressMonitor monitor)
         throws DBException;
 
 }

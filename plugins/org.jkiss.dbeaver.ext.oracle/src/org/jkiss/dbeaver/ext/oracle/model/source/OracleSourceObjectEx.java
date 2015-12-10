@@ -26,9 +26,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface OracleSourceObjectEx extends OracleSourceObject {
 
-    String getSourceDefinition(DBRProgressMonitor monitor)
+    String getObjectBodyDefinitionText(DBRProgressMonitor monitor)
         throws DBException;
 
-    void setSourceDefinition(String source);
+    void setObjectBodyDefinitionText(String source);
 
 }

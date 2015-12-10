@@ -73,7 +73,7 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
             return null;
         }
         OracleTrigger newTrigger = new OracleTrigger(parent.getContainer(), parent, dialog.getEntityName());
-        newTrigger.setScriptSourceText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+        newTrigger.setObjectDefinitionText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
             "BEGIN\n" + //$NON-NLS-1$
             "END;"); //$NON-NLS-1$
         return newTrigger;

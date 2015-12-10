@@ -71,7 +71,7 @@ public class OracleObjectDDLEditor extends SQLEditorNested<OracleTable> {
                 log.error(e);
             }
         }
-        return ((OracleTable)getEditorInput().getDatabaseObject()).getDDL(monitor, ddlFormat);
+        return getSourceObject().getDDL(monitor, ddlFormat);
     }
 
     @Override

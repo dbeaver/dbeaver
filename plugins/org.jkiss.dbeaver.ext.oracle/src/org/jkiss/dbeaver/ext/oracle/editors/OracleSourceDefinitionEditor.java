@@ -37,7 +37,7 @@ public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceOb
 
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException {
-        return getSourceObject().getSourceDefinition(monitor);
+        return getSourceObject().getObjectBodyDefinitionText(monitor);
     }
 
     @Override

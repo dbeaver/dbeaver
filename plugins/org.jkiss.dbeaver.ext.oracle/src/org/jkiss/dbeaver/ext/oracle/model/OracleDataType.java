@@ -253,7 +253,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBCException
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
@@ -261,7 +261,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return sourceDeclaration;
     }
 
-    public void setScriptSourceText(String sourceDeclaration)
+    public void setObjectDefinitionText(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
     }
@@ -279,7 +279,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSourceDefinition(DBRProgressMonitor monitor) throws DBException
+    public String getObjectBodyDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDefinition == null && monitor != null) {
             sourceDefinition = OracleUtils.getSource(monitor, this, true, false);
@@ -288,7 +288,7 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public void setSourceDefinition(String source)
+    public void setObjectBodyDefinitionText(String source)
     {
         this.sourceDefinition = source;
     }

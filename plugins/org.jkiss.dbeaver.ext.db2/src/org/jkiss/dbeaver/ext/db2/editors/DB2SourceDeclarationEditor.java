@@ -32,7 +32,7 @@ public class DB2SourceDeclarationEditor extends SQLEditorNested<DB2SourceObject>
     @Override
     protected String getSourceText(DBRProgressMonitor monitor) throws DBException
     {
-        return getSourceObject().getScriptSourceText(monitor);
+        return getSourceObject().getObjectDefinitionText(monitor);
     }
 
     @Override
