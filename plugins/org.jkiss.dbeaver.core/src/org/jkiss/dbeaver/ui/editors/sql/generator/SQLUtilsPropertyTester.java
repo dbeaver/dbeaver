@@ -53,20 +53,23 @@ public class SQLUtilsPropertyTester extends PropertyTester
         if (structuredSelection == null || structuredSelection.isEmpty()) {
             return false;
         }
-        if (property.equals(PROP_CAN_GENERATE)) {
-            if (structuredSelection instanceof IResultSetSelection) {
-                // Results
-                return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
-            } else {
-                // Table
-                DBNNode node = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class);
-                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
-                    return true;
+        switch (property) {
+            case PROP_CAN_GENERATE:
+                if (structuredSelection instanceof IResultSetSelection) {
+                    // Results
+                    return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
+                } else {
+                    // Table
+                    DBNNode node = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class);
+                    if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
+                        return true;
+                    }
                 }
+                break;
+            case PROP_HAS_TOOLS: {
+                DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
+                return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
             }
-        } else if (property.equals(PROP_HAS_TOOLS)) {
-            DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
-            return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
         }
         return false;
     }

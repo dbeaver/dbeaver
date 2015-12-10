@@ -18,16 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.editors;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 
 /**
  * Object that provide a DDL text
  * 
  * @author Denis Forveille
  */
-public interface DB2SourceObject extends DB2StatefulObject {
-
-    String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException;
+public interface DB2SourceObject extends DBPScriptObject, DB2StatefulObject {
 
 }

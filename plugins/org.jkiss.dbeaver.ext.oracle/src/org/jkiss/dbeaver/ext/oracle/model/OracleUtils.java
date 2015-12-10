@@ -137,7 +137,7 @@ public class OracleUtils {
         try {
             String source = body ?
                 ((OracleSourceObjectEx)object).getSourceDefinition(null) :
-                object.getSourceDeclaration(null);
+                object.getScriptSourceText(null);
             if (source == null) {
                 return null;
             }

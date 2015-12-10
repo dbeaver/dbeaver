@@ -100,7 +100,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     // -----------------
 
     @Override
-    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
     }

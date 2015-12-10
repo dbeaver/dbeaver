@@ -44,14 +44,14 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
 {
     static final Log log = Log.getLog(OracleTrigger.class);
 
-    public static enum BaseObjectType {
+    public enum BaseObjectType {
         TABLE,
         VIEW,
         SCHEMA,
         DATABASE
     }
 
-    public static enum ActionType implements DBPNamedObject {
+    public enum ActionType implements DBPNamedObject {
         PLSQL("PL/SQL"),
         CALL("CALL");
 
@@ -205,7 +205,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false, false);
@@ -213,8 +213,7 @@ public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, Ora
         return sourceDeclaration;
     }
 
-    @Override
-    public void setSourceDeclaration(String source)
+    public void setScriptSourceText(String source)
     {
         this.sourceDeclaration = source;
     }

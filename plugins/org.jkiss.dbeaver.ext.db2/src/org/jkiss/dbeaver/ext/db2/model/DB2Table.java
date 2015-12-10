@@ -195,7 +195,7 @@ public class DB2Table extends DB2TableBase
     }
 
     @Override
-    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return DB2Utils.generateDDLforTable(monitor, LINE_SEPARATOR, getDataSource(), this);
     }

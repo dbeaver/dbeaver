@@ -49,7 +49,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty"); //$NON-NLS-1$
         }
-        if (CommonUtils.isEmpty(command.getObject().getSourceDeclaration(null))) {
+        if (CommonUtils.isEmpty(command.getObject().getScriptSourceText(null))) {
             throw new DBException("View definition cannot be empty"); //$NON-NLS-1$
         }
     }
@@ -93,7 +93,7 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
-            .append("AS ").append(view.getSourceDeclaration(null)); //$NON-NLS-1$
+            .append("AS ").append(view.getScriptSourceText(null)); //$NON-NLS-1$
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName()), //$NON-NLS-2$
             new SQLDatabasePersistAction("Create view", decl.toString())

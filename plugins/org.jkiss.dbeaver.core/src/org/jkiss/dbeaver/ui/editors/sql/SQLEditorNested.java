@@ -234,7 +234,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                         try {
                             sourceText = getSourceText(monitor);
                             if (sourceText == null) {
-                                sourceText = "-- Empty source returned";
+                                sourceText = "-- Empty source";
                             }
                         } catch (DBException e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";

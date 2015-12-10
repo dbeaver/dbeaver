@@ -95,7 +95,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         try {
-            String header = pack.getSourceDeclaration(VoidProgressMonitor.INSTANCE);
+            String header = pack.getScriptSourceText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(header)) {
                 actions.add(
                     new SQLDatabasePersistAction(
