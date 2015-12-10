@@ -34,11 +34,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Blob;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 
 /**
  * JDBCContentBLOB
@@ -166,19 +169,28 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     preparedStatement.setBinaryStream(paramIndex, tmpStream);
                 }
                 catch (Throwable e) {
-                    if (e instanceof SQLException) {
-                        throw (SQLException)e;
-                    } else {
-                        try {
-                            preparedStatement.setBinaryStream(paramIndex, tmpStream, storage.getContentLength());
-                        }
-                        catch (Throwable e1) {
-                            if (e1 instanceof SQLException) {
-                                throw (SQLException)e1;
-                            } else {
-                                preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)storage.getContentLength());
+                    try {
+                        if (e instanceof SQLException) {
+                            throw (SQLException)e;
+                        } else {
+                            try {
+                                preparedStatement.setBinaryStream(paramIndex, tmpStream, storage.getContentLength());
+                            }
+                            catch (Throwable e1) {
+                                if (e1 instanceof SQLException) {
+                                    throw (SQLException)e1;
+                                } else {
+                                    preparedStatement.setBinaryStream(paramIndex, tmpStream, (int)storage.getContentLength());
+                                }
                             }
                         }
+                    } catch (SQLFeatureNotSupportedException e1) {
+                        // Stream values seems to be unsupported
+                        // Let's try bytes
+                        int contentLength = (int) storage.getContentLength();
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream(contentLength);
+                        IOUtils.copyStream(tmpStream, buffer);
+                        preparedStatement.setBytes(paramIndex, buffer.toByteArray());
                     }
                 }
             } else if (blob != null) {
@@ -216,8 +228,8 @@ public class JDBCContentBLOB extends JDBCContentLOB {
         catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
-        catch (IOException e) {
-            throw new DBCException("IO error while reading content", e);
+        catch (Throwable e) {
+            throw new DBCException("Error while reading content", e);
         }
     }
 
