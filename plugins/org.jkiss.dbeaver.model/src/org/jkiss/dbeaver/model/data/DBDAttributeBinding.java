@@ -156,7 +156,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Nullable
     @Override
     public String getDescription() {
-        return null;
+        DBSEntityAttribute attr = getEntityAttribute();
+        return attr == null ? null : attr.getDescription();
     }
 
     @Nullable
