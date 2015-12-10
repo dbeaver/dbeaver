@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -91,6 +92,18 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBC
     public String getTypeName()
     {
         return super.getTypeName();
+    }
+
+    @Override
+    public void setTypeName(String typeName) {
+        super.setTypeName(typeName);
+        final DBPDataSource dataSource = getDataSource();
+        if (dataSource instanceof DBPDataTypeProvider) {
+            DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getDataType(typeName);
+            if (dataType != null) {
+                this.valueType = dataType.getTypeID();
+            }
+        }
     }
 
     @Property(viewable = true, editable = true, order = 40)
