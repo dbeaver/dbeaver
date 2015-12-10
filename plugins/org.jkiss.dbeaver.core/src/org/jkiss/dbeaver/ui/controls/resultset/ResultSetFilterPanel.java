@@ -577,7 +577,7 @@ class ResultSetFilterPanel extends Composite
             }
             return new Point(
                 Math.max(MIN_FILTER_TEXT_WIDTH, Math.min(textSize.x + 10, maxWidth)),
-                Math.min(textSize.y + 4, MIN_FILTER_TEXT_HEIGHT));
+                Math.min(textSize.y + 6, MIN_FILTER_TEXT_HEIGHT));
         }
 
         @Override
