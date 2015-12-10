@@ -209,7 +209,7 @@ public abstract class LightGrid extends Canvas {
      * renderer determines what the hover detail means and how it affects
      * painting.
      */
-    private String hoveringDetail = "";
+    private Object hoveringDetail = null;
 
     /**
      * Are the grid lines visible?
@@ -3126,7 +3126,7 @@ public abstract class LightGrid extends Canvas {
     private void onMouseExit(MouseEvent e)
     {
         hoveringItem = -1;
-        hoveringDetail = "";
+        hoveringDetail = null;
         hoveringColumn = null;
         redraw();
     }
@@ -3445,16 +3445,14 @@ public abstract class LightGrid extends Canvas {
      */
     private boolean handleCellHover(int x, int y)
     {
-
-        String detail = "";
-
         Point point = new Point(x, y);
         final GridColumn col = getColumn(point);
         final int row = getRow(point);
+        Integer detail = y;
 
         boolean hoverChange = false;
 
-        if (hoveringItem != row || !hoveringDetail.equals(detail) || hoveringColumn != col) {
+        if (hoveringItem != row || !CommonUtils.equalObjects(hoveringDetail, detail) || hoveringColumn != col) {
             hoveringItem = row;
             hoveringDetail = detail;
             hoveringColumn = col;
@@ -3487,13 +3485,9 @@ public abstract class LightGrid extends Canvas {
             if ((hoveringItem >= 0) && (hoveringColumn != null)) {
                 // get cell specific tooltip
                 newTip = getCellToolTip(hoveringColumn, hoveringItem);
-            } else if (hoveringColumn != null && y <= getHeaderHeight()) {
+            } else if (columnHeadersVisible && hoveringColumn != null && y <= headerHeight) {
                 // get column header specific tooltip
                 newTip = hoveringColumn.getHeaderTooltip();
-            }
-
-            if (newTip == null) { // no cell or column header specific tooltip then use base Grid tooltip
-                newTip = getToolTipText();
             }
 
             //Avoid unnecessarily resetting tooltip - this will cause the tooltip to jump around
