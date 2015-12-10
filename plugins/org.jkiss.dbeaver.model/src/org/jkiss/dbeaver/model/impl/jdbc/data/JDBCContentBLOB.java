@@ -189,7 +189,7 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                         // Let's try bytes
                         int contentLength = (int) storage.getContentLength();
                         ByteArrayOutputStream buffer = new ByteArrayOutputStream(contentLength);
-                        IOUtils.copyStream(tmpStream, buffer);
+                        ContentUtils.copyStreams(tmpStream, contentLength, buffer, session.getProgressMonitor());
                         preparedStatement.setBytes(paramIndex, buffer.toByteArray());
                     }
                 }
