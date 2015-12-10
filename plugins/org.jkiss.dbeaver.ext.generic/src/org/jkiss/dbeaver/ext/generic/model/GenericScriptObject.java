@@ -15,39 +15,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+package org.jkiss.dbeaver.ext.generic.model;
 
-package org.jkiss.dbeaver.ext.generic.edit;
-
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericScriptObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * GenericSourceViewEditor
+ * Generic stored code interface. Implemented by procedures and packages.
+ * Used in navigator tree to allow nodes search in procedures folder
  */
-public class GenericSourceViewEditor extends SQLEditorNested<GenericScriptObject> {
+public interface GenericScriptObject extends DBSObject, DBPScriptObject {
 
-    public GenericSourceViewEditor()
-    {
-    }
-
-    @Override
-    protected boolean isReadOnly()
-    {
-        return true;
-    }
-
-    @Override
-    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
-    {
-        return getSourceObject().getObjectDefinitionText(monitor);
-    }
-
-    @Override
-    protected void setSourceText(String sourceText)
-    {
-        //
-    }
 
 }

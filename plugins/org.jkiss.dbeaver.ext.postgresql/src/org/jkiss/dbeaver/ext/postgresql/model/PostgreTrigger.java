@@ -59,7 +59,7 @@ public class PostgreTrigger extends GenericTrigger {
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSource(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         return source;
     }
 

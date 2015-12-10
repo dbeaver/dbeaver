@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * GenericPackage
  */
-public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericStoredCode
+public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericScriptObject
 {
 
     private GenericStructContainer container;
@@ -155,7 +155,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    public String getSource(DBRProgressMonitor monitor) throws DBException {
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 }
