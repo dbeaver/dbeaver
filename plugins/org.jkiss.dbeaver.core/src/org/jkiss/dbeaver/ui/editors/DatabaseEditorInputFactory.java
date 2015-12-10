@@ -122,25 +122,26 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                 }
                                 try {
                                     DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
-                                    if (node != null) {
-                                        Class<?> aClass = Class.forName(inputClass);
-                                        Constructor<?> constructor = null;
-                                        for (Class nodeType = node.getClass(); nodeType != null; nodeType = nodeType.getSuperclass()) {
-                                            try {
-                                                constructor = aClass.getConstructor(nodeType);
-                                                break;
-                                            } catch (NoSuchMethodException e) {
-                                                // No such constructor
-                                            }
+                                    if (node == null) {
+                                        throw new DBException("Node '" + nodePath + "' not found");
+                                    }
+                                    Class<?> aClass = Class.forName(inputClass);
+                                    Constructor<?> constructor = null;
+                                    for (Class nodeType = node.getClass(); nodeType != null; nodeType = nodeType.getSuperclass()) {
+                                        try {
+                                            constructor = aClass.getConstructor(nodeType);
+                                            break;
+                                        } catch (NoSuchMethodException e) {
+                                            // No such constructor
                                         }
-                                        if (constructor != null) {
-                                            DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
-                                            input.setDefaultPageId(activePageId);
-                                            input.setDefaultFolderId(activeFolderId);
-                                            result = input;
-                                        } else {
-                                            throw new DBException("Can't create object instance [" + inputClass + "]");
-                                        }
+                                    }
+                                    if (constructor != null) {
+                                        DatabaseEditorInput input = DatabaseEditorInput.class.cast(constructor.newInstance(node));
+                                        input.setDefaultPageId(activePageId);
+                                        input.setDefaultFolderId(activeFolderId);
+                                        result = input;
+                                    } else {
+                                        throw new DBException("Can't create object instance [" + inputClass + "]");
                                     }
                                 } catch (Exception e) {
                                     errorStatus = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), e.getMessage(), e);
