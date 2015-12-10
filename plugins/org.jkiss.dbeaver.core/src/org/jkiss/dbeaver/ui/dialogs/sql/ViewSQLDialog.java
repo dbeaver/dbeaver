@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.sql;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -26,8 +27,11 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class ViewSQLDialog extends BaseSQLDialog {
+
+    private static final String DIALOG_ID = "DBeaver.ViewSQLDialog";//$NON-NLS-1$
 
     private DBCExecutionContext context;
     private String text;
@@ -40,6 +44,12 @@ public class ViewSQLDialog extends BaseSQLDialog {
         super(parentSite, title, image);
         this.context = context;
         this.text = text;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     public void setShowSaveButton(boolean showSaveButton)

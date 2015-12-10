@@ -149,6 +149,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
     public void setFullTypeName(String fullTypeName) {
         this.fullTypeName = fullTypeName;
+        this.typeName = fullTypeName.replace("([A-Za-z]+).*", "$1");
+        DBSDataType dataType = getDataSource().getDataType(this.typeName);
+        if (dataType != null) {
+            this.valueType = dataType.getTypeID();
+        }
     }
 
     //@Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnTypeNameListProvider.class)
