@@ -263,19 +263,10 @@ class GridColumn {
 	@Nullable
     public String getHeaderTooltip() {
         String tip = grid.getLabelProvider().getTooltip(element);
-        String text = grid.getLabelProvider().getText(element);
         if (tip == null) {
-            tip = text;
+            tip = grid.getLabelProvider().getText(element);
         }
-        if (!CommonUtils.equalObjects(tip, text)) {
-            return tip;
-        }
-        Point ttSize = getGrid().sizingGC.textExtent(tip);
-        if (ttSize.x > getWidth()) {
-            return tip;
-        }
-
-		return null;
+        return tip;
 	}
 
     public GridColumn getParent() {

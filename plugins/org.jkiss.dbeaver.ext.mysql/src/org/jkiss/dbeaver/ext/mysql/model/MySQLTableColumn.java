@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -262,6 +263,12 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
     public void setComment(String comment)
     {
         this.comment = comment;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return getComment();
     }
 
     public static class CharsetListProvider implements IPropertyValueListProvider<MySQLTableColumn> {
