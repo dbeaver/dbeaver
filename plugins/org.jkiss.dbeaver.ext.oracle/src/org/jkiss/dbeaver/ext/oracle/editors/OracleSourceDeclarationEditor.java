@@ -42,7 +42,7 @@ public class OracleSourceDeclarationEditor extends SQLEditorNested<OracleSourceO
     @Override
     protected void setSourceText(String sourceText) {
         getEditorInput().getPropertySource().setPropertyValue(
-            OracleConstants.PROP_SOURCE_DECLARATION, sourceText);
+            OracleConstants.PROP_OBJECT_DEFINITION, sourceText);
     }
 
 }
