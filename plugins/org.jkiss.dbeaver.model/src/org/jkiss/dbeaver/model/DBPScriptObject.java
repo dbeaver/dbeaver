@@ -15,39 +15,14 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-package org.jkiss.dbeaver.ext.mysql.editors;
+package org.jkiss.dbeaver.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
 
-/**
- * MySQLSourceViewEditor
- */
-public class MySQLSourceViewEditor extends SQLEditorNested<MySQLSourceObject> {
+public interface DBPScriptObject extends DBPObject {
 
-    public MySQLSourceViewEditor()
-    {
-    }
-
-    @Override
-    protected boolean isReadOnly()
-    {
-        return false;
-    }
-
-    @Override
-    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
-    {
-        return getSourceObject().getScriptSourceText(monitor);
-    }
-
-    @Override
-    protected void setSourceText(String sourceText)
-    {
-        getEditorInput().getPropertySource().setPropertyValue("sourceText", sourceText);
-    }
+    String getScriptSourceText(DBRProgressMonitor monitor)
+        throws DBException;
 
 }

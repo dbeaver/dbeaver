@@ -79,7 +79,7 @@ public class OraclePackage extends OracleSchemaObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBCException
+    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBCException
     {
         if (sourceDeclaration == null && monitor != null) {
             sourceDeclaration = OracleUtils.getSource(monitor, this, false, true);
@@ -87,8 +87,7 @@ public class OraclePackage extends OracleSchemaObject
         return sourceDeclaration;
     }
 
-    @Override
-    public void setSourceDeclaration(String sourceDeclaration)
+    public void setScriptSourceText(String sourceDeclaration)
     {
         this.sourceDeclaration = sourceDeclaration;
     }

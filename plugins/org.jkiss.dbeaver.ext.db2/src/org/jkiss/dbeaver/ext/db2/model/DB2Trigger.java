@@ -157,7 +157,7 @@ public class DB2Trigger extends DB2SchemaObject implements DBSTrigger, DB2Source
     // -----------------
 
     @Override
-    public String getSourceDeclaration(DBRProgressMonitor monitor) throws DBException
+    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return SQLUtils.formatSQL(getDataSource(), text);
     }

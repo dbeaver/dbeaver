@@ -214,13 +214,13 @@ public class MySQLView extends MySQLTableBase implements MySQLSourceObject
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSourceText(DBRProgressMonitor monitor) throws DBException
+    public String getScriptSourceText(DBRProgressMonitor monitor) throws DBException
     {
         return getAdditionalInfo(monitor).getDefinition();
     }
 
     @Override
-    public void setSourceText(String sourceText) throws DBException
+    public void setScriptSourceText(String sourceText) throws DBException
     {
         getAdditionalInfo().setDefinition(sourceText);
     }

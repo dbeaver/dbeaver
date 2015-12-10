@@ -155,13 +155,12 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
 
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getSourceDeclaration(DBRProgressMonitor monitor)
+    public String getScriptSourceText(DBRProgressMonitor monitor)
     {
         return query;
     }
 
-    @Override
-    public void setSourceDeclaration(String source)
+    public void setScriptSourceText(String source)
     {
         this.query = source;
     }

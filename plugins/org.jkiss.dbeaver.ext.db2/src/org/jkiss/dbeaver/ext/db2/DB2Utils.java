@@ -68,7 +68,7 @@ public class DB2Utils {
 
     private static final String LINE_SEP = ";\n";
 
-    // TODO DF: many things in this class could probably be factorized or genreric-ified
+    // TODO DF: many things in this class could probably be factorized or generic-field
 
     // DB2LOOK
     private static final String CALL_DB2LK_GEN = "CALL SYSPROC.DB2LK_GENERATE_DDL(?,?)";
@@ -163,7 +163,7 @@ public class DB2Utils {
 
         monitor.beginTask("Generating DDL", 3);
 
-        Integer token = 0;
+        int token;
         StringBuilder sb = new StringBuilder(2048);
         String command = String.format(DB2LK_COMMAND, statementDelimiter, db2Table.getFullQualifiedName());
 

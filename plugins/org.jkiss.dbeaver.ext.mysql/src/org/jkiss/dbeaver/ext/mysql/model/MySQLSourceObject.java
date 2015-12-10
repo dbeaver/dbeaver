@@ -19,18 +19,16 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * MySQLSourceObject
  */
-public interface MySQLSourceObject extends DBSObject {
+public interface MySQLSourceObject extends DBPScriptObject, DBSObject {
 
-    String getSourceText(DBRProgressMonitor monitor)
-        throws DBException;
-
-    void setSourceText(String sourceText)
+    void setScriptSourceText(String sourceText)
         throws DBException;
 
 }
