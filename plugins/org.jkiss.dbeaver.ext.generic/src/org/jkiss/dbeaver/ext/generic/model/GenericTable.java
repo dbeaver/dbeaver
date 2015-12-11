@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -50,7 +51,7 @@ import java.util.*;
 /**
  * Generic table
  */
-public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject
+public class GenericTable extends JDBCTable<GenericDataSource, GenericStructContainer> implements DBPRefreshableObject, DBPSystemObject, DBPScriptObject
 {
     static final Log log = Log.getLog(GenericTable.class);
 
@@ -60,6 +61,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     private String description;
     private Long rowCount;
     private List<? extends GenericTrigger> triggers;
+    private String ddl;
 
     public GenericTable(
         GenericStructContainer container)
@@ -212,6 +214,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         this.getContainer().getForeignKeysCache().clearObjectCache(this);
         triggers = null;
         rowCount = null;
+        ddl = null;
 
         return true;
     }
@@ -273,6 +276,20 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
             log.error(e);
         }
         return null;
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+        if (ddl == null) {
+            if (isView()) {
+                ddl = getDataSource().getMetaModel().getViewDDL(monitor, this);
+            } else if (!isPersisted()) {
+                ddl = "";
+            } else {
+                ddl = getDataSource().getMetaModel().getTableDDL(monitor, this);
+            }
+        }
+        return ddl;
     }
 
     private static class ForeignKeyInfo {
