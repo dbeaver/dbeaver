@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -189,6 +190,12 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         if (this.comment == null) {
             this.comment = "";
         }
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return comment;
     }
 
     @Override
