@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -189,4 +190,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         foreignKey.setColumns(rows);
     }
 
+    @Override
+    protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
+        final String pkTableName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_NAME);
+        return "FK_" + parentName + "_" + pkTableName;
+    }
 }

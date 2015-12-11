@@ -232,7 +232,7 @@ public abstract class JDBCCompositeCache<
 
                         if (CommonUtils.isEmpty(objectName)) {
                             // Use default name
-                            objectName = getDefaultObjectName(parentName);
+                            objectName = getDefaultObjectName(dbResult, parentName);
                         }
 
                         if (forParent == null && CommonUtils.isEmpty(parentName)) {
@@ -359,7 +359,7 @@ public abstract class JDBCCompositeCache<
 
     }
 
-    protected String getDefaultObjectName(String parentName) {
+    protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
         return parentName == null ? DEFAULT_OBJECT_NAME : parentName.toUpperCase() + "_" + DEFAULT_OBJECT_NAME;
     }
 

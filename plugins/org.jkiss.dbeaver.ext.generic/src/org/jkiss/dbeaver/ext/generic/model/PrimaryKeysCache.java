@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -72,7 +73,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         }
     }
 
-    protected String getDefaultObjectName(String parentName) {
+    protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
         return parentName.toUpperCase(Locale.ENGLISH) + "_PK";
     }
 
