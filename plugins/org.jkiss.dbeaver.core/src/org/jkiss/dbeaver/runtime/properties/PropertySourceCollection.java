@@ -18,9 +18,11 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,7 +58,7 @@ public class PropertySourceCollection implements DBPPropertySource {
     }
 
     @Override
-    public Object getPropertyValue(Object id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
         return items.get((Integer) id);
     }
@@ -73,7 +75,7 @@ public class PropertySourceCollection implements DBPPropertySource {
     }
 
     @Override
-    public void resetPropertyValue(Object id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
 
     }
@@ -84,7 +86,7 @@ public class PropertySourceCollection implements DBPPropertySource {
     }
 
     @Override
-    public void setPropertyValue(Object id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
     {
     }
 

@@ -17,11 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
@@ -128,7 +130,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     }
 
     @Override
-    public Object getPropertyValue(Object id) {
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
         return attributes.get(id.toString());
     }
 
@@ -143,7 +145,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     }
 
     @Override
-    public void resetPropertyValue(Object id) {
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id) {
 
     }
 
@@ -153,7 +155,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     }
 
     @Override
-    public void setPropertyValue(Object id, Object value) {
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value) {
 
     }
 

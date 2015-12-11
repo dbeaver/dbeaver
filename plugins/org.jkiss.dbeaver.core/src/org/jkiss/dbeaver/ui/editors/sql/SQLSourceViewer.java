@@ -16,17 +16,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.mysql.editors;
+package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
- * MySQLDDLViewEditor
+ * Display Source text (Read Only)
  */
-public class MySQLDDLViewEditor extends SQLEditorNested<MySQLTable> {
+public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLEditorNested<T> {
+
+    @Override
+    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
+    {
+        return getSourceObject().getObjectDefinitionText(monitor);
+    }
 
     @Override
     protected boolean isReadOnly()
@@ -35,13 +41,7 @@ public class MySQLDDLViewEditor extends SQLEditorNested<MySQLTable> {
     }
 
     @Override
-    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
-    {
-        return getSourceObject().getDDL(monitor);
-    }
-
-    @Override
-    protected void setSourceText(String sourceText)
+    protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
     }
 

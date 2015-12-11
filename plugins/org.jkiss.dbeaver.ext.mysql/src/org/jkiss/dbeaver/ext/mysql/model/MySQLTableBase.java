@@ -40,7 +40,7 @@ import java.util.Collection;
  * MySQLTable base
  */
 public abstract class MySQLTableBase extends JDBCTable<MySQLDataSource, MySQLCatalog>
-    implements DBPNamedObject2,DBPRefreshableObject
+    implements DBPNamedObject2,DBPRefreshableObject, MySQLSourceObject
 {
     static final Log log = Log.getLog(MySQLTableBase.class);
 

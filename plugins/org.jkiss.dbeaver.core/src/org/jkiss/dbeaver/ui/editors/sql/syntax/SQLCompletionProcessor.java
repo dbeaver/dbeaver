@@ -571,7 +571,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         PropertyCollector collector = new PropertyCollector(object, false);
         collector.collectProperties();
         for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-            Object propValue = collector.getPropertyValue(descriptor.getId());
+            Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
             if (propValue == null) {
                 continue;
             }

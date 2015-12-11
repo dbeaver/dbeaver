@@ -205,7 +205,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                return getListPropertySource().getPropertyValue(getObjectValue(object), property);
+                return getListPropertySource().getPropertyValue(null, getObjectValue(object), property);
             }
             return null;
         }
@@ -216,7 +216,7 @@ public class ItemListControl extends NodeListControl
             DBNNode object = (DBNNode) element;
             final ObjectPropertyDescriptor property = getObjectProperty(object, columnIndex);
             if (property != null) {
-                getListPropertySource().setPropertyValue(getObjectValue(object), property, value);
+                getListPropertySource().setPropertyValue(null, getObjectValue(object), property, value);
                 if (value instanceof Boolean) {
                     // Redraw control to let it repaint checkbox
                     getItemsViewer().getControl().redraw();

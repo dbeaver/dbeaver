@@ -402,7 +402,7 @@
     <extension point="org.jkiss.dbeaver.databaseEditor">
     
         <editor id="source.declaration" 
-                class="org.jkiss.dbeaver.ext.db2.editors.DB2SourceDeclarationEditor"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="%editor.source.declaration.name"
                 description="%editor.source.declaration.description"
                 icon="#sql_text" 
@@ -418,7 +418,7 @@
         </editor>
 
         <editor id="source.ddl"
-                class="org.jkiss.dbeaver.ext.db2.editors.DB2SourceDeclarationEditor"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="%editor.source.ddl.name"
                 description="%editor.source.ddl.description"
                 icon="#sql_text"

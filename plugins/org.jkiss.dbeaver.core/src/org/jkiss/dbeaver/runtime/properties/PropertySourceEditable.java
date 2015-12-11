@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
 import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.utils.ArrayUtils;
@@ -80,13 +82,13 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 
     @Override
     @SuppressWarnings("unchecked")
-    public void setPropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object newValue)
     {
         if (prop.getValueTransformer() != null) {
             newValue = prop.getValueTransformer().transform(editableValue, newValue);
         }
-        final Object oldValue = getPropertyValue(editableValue, prop);
-        if (!updatePropertyValue(editableValue, prop, newValue, false)) {
+        final Object oldValue = getPropertyValue(monitor, editableValue, prop);
+        if (!updatePropertyValue(monitor, editableValue, prop, newValue, false)) {
             return;
         }
         if (lastCommand == null || lastCommand.getObject() != editableValue || lastCommand.property != prop) {
@@ -127,7 +129,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 */
     }
 
-    private boolean updatePropertyValue(Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
+    private boolean updatePropertyValue(@Nullable DBRProgressMonitor monitor, Object editableValue, ObjectPropertyDescriptor prop, Object value, boolean force)
     {
         // Write property value
         try {
@@ -147,7 +149,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
                     }
                 }
             }
-            final Object oldValue = getPropertyValue(editableValue, prop);
+            final Object oldValue = getPropertyValue(monitor, editableValue, prop);
             if (CommonUtils.equalObjects(oldValue, value)) {
                 return false;
             }
@@ -174,7 +176,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
     }
 
     @Override
-    public void resetPropertyValue(Object object, ObjectPropertyDescriptor prop)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop)
     {
 //        final DBECommandComposite compositeCommand = (DBECommandComposite)getCommandContext().getUserParams().get(obj);
 //        if (compositeCommand != null) {
@@ -182,7 +184,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
 //        }
 
         if (lastCommand != null && lastCommand.property == prop) {
-            setPropertyValue(object, prop, lastCommand.getOldValue());
+            setPropertyValue(monitor, object, prop, lastCommand.getOldValue());
         }
 //        final ObjectProps objectProps = getObjectProps(object);
 //        DBECommandProperty curCommand = objectProps.propValues.get(prop);
@@ -204,7 +206,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         public void updateModel()
         {
             super.updateModel();
-            updatePropertyValue(getObject(), property, getNewValue(), true);
+            updatePropertyValue(null, getObject(), property, getNewValue(), true);
         }
     }
 
@@ -213,7 +215,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         @Override
         public void redoCommand(PropertyChangeCommand command)
         {
-            updatePropertyValue(command.getObject(), command.property, command.getNewValue(), false);
+            updatePropertyValue(null, command.getObject(), command.property, command.getNewValue(), false);
 /*
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {
@@ -225,7 +227,7 @@ public class PropertySourceEditable extends PropertySourceAbstract implements DB
         @Override
         public void undoCommand(PropertyChangeCommand command)
         {
-            updatePropertyValue(command.getObject(), command.property, command.getOldValue(), false);
+            updatePropertyValue(null, command.getObject(), command.property, command.getOldValue(), false);
 /*
             // Notify listeners
             for (IPropertySourceListener listener : listeners) {

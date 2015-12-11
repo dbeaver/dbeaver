@@ -45,7 +45,7 @@ import java.util.List;
 /**
  * MySQLView
  */
-public class MySQLView extends MySQLTableBase implements MySQLSourceObject
+public class MySQLView extends MySQLTableBase
 {
     public enum CheckOption {
         NONE(null),

@@ -30,12 +30,14 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.IPropertySourceEditable;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
@@ -176,15 +178,15 @@ public class PropertyTreeViewer extends TreeViewer {
 
     public void loadProperties(DBPPropertySource propertySource)
     {
-        loadProperties(null, propertySource);
+        loadProperties(null, null, propertySource);
     }
 
-    protected void loadProperties(TreeNode parent, DBPPropertySource propertySource)
+    protected void loadProperties(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
     {
         // Make tree model
         customCategories = getCustomCategories();
 
-        Map<String, TreeNode> categories = loadTreeNodes(parent, propertySource);
+        Map<String, TreeNode> categories = loadTreeNodes(monitor, parent, propertySource);
         if (customCategories != null) {
             for (String customCategory : customCategories) {
                 TreeNode node = categories.get(customCategory);
@@ -209,7 +211,7 @@ public class PropertyTreeViewer extends TreeViewer {
         UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f});
     }
 
-    private Map<String, TreeNode> loadTreeNodes(TreeNode parent, DBPPropertySource propertySource)
+    private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
     {
         Map<String, TreeNode> categories = new LinkedHashMap<>();
         final DBPPropertyDescriptor[] props = propertySource.getPropertyDescriptors2();
@@ -229,15 +231,15 @@ public class PropertyTreeViewer extends TreeViewer {
                 Class<?> propType = ((DBPPropertyDescriptor) prop).getDataType();
                 if (propType != null) {
                     if (DBPObject.class.isAssignableFrom(propType)) {
-                        Object propertyValue = propertySource.getPropertyValue(prop.getId());
+                        Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
                         if (propertyValue != null) {
                             PropertyCollector nestedCollector = new PropertyCollector(propertyValue, true);
                             if (nestedCollector.collectProperties()) {
-                                categories.putAll(loadTreeNodes(propNode, nestedCollector));
+                                categories.putAll(loadTreeNodes(monitor, propNode, nestedCollector));
                             }
                         }
                     } else if (BeanUtils.isCollectionType(propType)) {
-                        Object propertyValue = propertySource.getPropertyValue(prop.getId());
+                        Object propertyValue = propertySource.getPropertyValue(monitor, prop.getId());
                         if (propertyValue != null) {
                             Collection<?> collection;
                             if (BeanUtils.isArrayType(propType)) {
@@ -382,16 +384,17 @@ public class PropertyTreeViewer extends TreeViewer {
             if (cellEditor == null) {
                 return;
             }
-            final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
+            final Object propertyValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
             final ICellEditorListener cellEditorListener = new ICellEditorListener() {
                 @Override
                 public void applyEditorValue()
                 {
                     //editorValueChanged(true, true);
                     final Object value = cellEditor.getValue();
-                    final Object oldValue = prop.propertySource.getPropertyValue(prop.property.getId());
+                    final Object oldValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
                     if (!CommonUtils.equalObjects(oldValue, value)) {
                         prop.propertySource.setPropertyValue(
+                            null,
                             prop.property.getId(),
                             value);
                         handlePropertyChange(prop);
@@ -530,7 +533,7 @@ public class PropertyTreeViewer extends TreeViewer {
         if (prop.category != null) {
             return prop.category;
         } else {
-            final Object propertyValue = prop.propertySource.getPropertyValue(prop.property.getId());
+            final Object propertyValue = prop.propertySource.getPropertyValue(null, prop.property.getId());
             return GeneralUtils.makeDisplayString(propertyValue);
         }
     }
@@ -800,7 +803,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (toDefault) {
                     prop.propertySource.resetPropertyValueToDefault(prop.property.getId());
                 } else {
-                    prop.propertySource.resetPropertyValue(prop.property.getId());
+                    prop.propertySource.resetPropertyValue(null, prop.property.getId());
                 }
             }
             handlePropertyChange(prop);

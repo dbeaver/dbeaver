@@ -48,10 +48,10 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     private Object sourceObject;
     private Object object;
     private boolean loadLazyProps;
-    private final List<DBPPropertyDescriptor> props = new ArrayList<DBPPropertyDescriptor>();
-    private final Map<Object, Object> propValues = new HashMap<Object, Object>();
-    private final Map<Object, Object> lazyValues = new HashMap<Object, Object>();
-    private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<ObjectPropertyDescriptor>();
+    private final List<DBPPropertyDescriptor> props = new ArrayList<>();
+    private final Map<Object, Object> propValues = new HashMap<>();
+    private final Map<Object, Object> lazyValues = new HashMap<>();
+    private final List<ObjectPropertyDescriptor> lazyProps = new ArrayList<>();
     private LoadingJob<Map<ObjectPropertyDescriptor, Object>> lazyLoadJob;
 
     /**
@@ -152,21 +152,21 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final Object getPropertyValue(final Object id)
+    public final Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
-            value = getPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) value);
+            value = getPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
         }
         return value;
     }
 
 
     @Override
-    public Object getPropertyValue(final Object object, final ObjectPropertyDescriptor prop)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, final Object object, final ObjectPropertyDescriptor prop)
     {
         try {
-            if (prop.isLazy(object, true) && !prop.supportsPreview()) {
+            if (monitor == null && prop.isLazy(object, true) && !prop.supportsPreview()) {
                 final Object value = lazyValues.get(prop.getId());
                 if (value != null) {
                     return value;
@@ -207,7 +207,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
                     return null;
                 }
             } else {
-                return prop.readValue(object, null);
+                return prop.readValue(object, monitor);
             }
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
@@ -237,18 +237,18 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final void resetPropertyValue(Object id)
+    public final void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
         Object value = propValues.get(id);
         if (value instanceof ObjectPropertyDescriptor) {
-            resetPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) value);
+            resetPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) value);
         } else {
             throw new UnsupportedOperationException("Direct property reset not implemented");
         }
     }
 
     @Override
-    public void resetPropertyValue(Object object, ObjectPropertyDescriptor id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor id)
     {
         throw new UnsupportedOperationException("Cannot reset property in non-editable property source");
     }
@@ -259,11 +259,11 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public final void setPropertyValue(Object id, Object value)
+    public final void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
     {
         Object prop = propValues.get(id);
         if (prop instanceof ObjectPropertyDescriptor) {
-            setPropertyValue(getEditableValue(), (ObjectPropertyDescriptor) prop, value);
+            setPropertyValue(monitor, getEditableValue(), (ObjectPropertyDescriptor) prop, value);
             lazyValues.put(((ObjectPropertyDescriptor) prop).getId(), value);
         } else {
             propValues.put(id, value);
@@ -271,7 +271,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
     }
 
     @Override
-    public void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop, Object value)
     {
         throw new UnsupportedOperationException("Cannot update property in non-editable property source");
     }
@@ -302,7 +302,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             if (!ArrayUtils.isEmpty(ownProperties)) {
                 for (DBPPropertyDescriptor prop : ownProperties) {
                     props.add(prop);
-                    propValues.put(prop.getId(), ownPropSource.getPropertyValue(prop.getId()));
+                    propValues.put(prop.getId(), ownPropSource.getPropertyValue(null, prop.getId()));
                 }
             }
         }
@@ -323,7 +323,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             throws InvocationTargetException, InterruptedException
         {
             try {
-                Map<ObjectPropertyDescriptor, Object> result = new IdentityHashMap<ObjectPropertyDescriptor, Object>();
+                Map<ObjectPropertyDescriptor, Object> result = new IdentityHashMap<>();
                 for (ObjectPropertyDescriptor prop : obtainLazyProperties()) {
                     if (getProgressMonitor().isCanceled()) {
                         break;
@@ -353,7 +353,7 @@ public abstract class PropertySourceAbstract implements DBPPropertyManager, IPro
             if (lazyProps.isEmpty()) {
                 return Collections.emptyList();
             } else {
-                List<ObjectPropertyDescriptor> result = new ArrayList<ObjectPropertyDescriptor>(lazyProps);
+                List<ObjectPropertyDescriptor> result = new ArrayList<>(lazyProps);
                 lazyProps.clear();
                 return result;
             }

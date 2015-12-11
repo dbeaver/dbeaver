@@ -18,7 +18,9 @@
 
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * Property source which allows editing of multiple objects.
@@ -27,12 +29,12 @@ public interface IPropertySourceMulti extends DBPPropertySource {
 
     boolean isPropertySet(Object object, ObjectPropertyDescriptor id);
 
-    Object getPropertyValue(Object object, ObjectPropertyDescriptor prop);
+    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop);
 
     boolean isPropertyResettable(Object object, ObjectPropertyDescriptor prop);
 
-    void resetPropertyValue(Object object, ObjectPropertyDescriptor prop);
+    void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop);
 
-    void setPropertyValue(Object object, ObjectPropertyDescriptor prop, Object value);
+    void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object object, ObjectPropertyDescriptor prop, Object value);
 
 }

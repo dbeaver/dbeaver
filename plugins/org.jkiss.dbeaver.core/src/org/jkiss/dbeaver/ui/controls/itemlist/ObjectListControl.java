@@ -614,14 +614,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
             }
             if (prop.supportsPreview()) {
-                final Object previewValue = getListPropertySource().getPropertyValue(objectValue, prop);
+                final Object previewValue = getListPropertySource().getPropertyValue(null, objectValue, prop);
                 if (previewValue != null) {
                     return new LazyValue(previewValue);
                 }
             }
             return DEF_LAZY_VALUE;
         }
-        return getListPropertySource().getPropertyValue(objectValue, prop);
+        return getListPropertySource().getPropertyValue(null, objectValue, prop);
     }
 
     @Nullable
