@@ -74,6 +74,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     protected String getDefaultObjectName(JDBCResultSet dbResult, String parentName) {
+        int keySeq = GenericUtils.safeGetInt(pkObject, dbResult, JDBCConstants.KEY_SEQ);
         return parentName.toUpperCase(Locale.ENGLISH) + "_PK";
     }
 
@@ -122,4 +123,5 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     {
         primaryKey.setColumns(rows);
     }
+
 }

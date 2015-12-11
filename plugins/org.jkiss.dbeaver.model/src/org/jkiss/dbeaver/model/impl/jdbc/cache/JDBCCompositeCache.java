@@ -278,7 +278,8 @@ public abstract class JDBCCompositeCache<
                             // At least one of rows is broken.
                             // So entire object is broken, let's just skip it.
                             objectInfo.broken = true;
-                            break;
+                            log.warn("Object '" + objectName + "' metadata corrupted");
+                            continue;
                         }
                         objectInfo.rows.add(rowRef);
                     }
@@ -337,10 +338,10 @@ public abstract class JDBCCompositeCache<
                     Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                     ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
                     for (ObjectInfo objectInfo : objectInfos) {
-                        if (!objectInfo.broken) {
+//                        if (!objectInfo.broken) {
                             cacheChildren(objectInfo.object, objectInfo.rows);
                             objects.add(objectInfo.object);
-                        }
+//                        }
                     }
                     objectCache.put(colEntry.getKey(), objects);
                 }
