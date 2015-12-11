@@ -41,7 +41,6 @@ import java.util.*;
 public class CompareObjectsExecutor {
 
     private final Object PROPS_LOCK = new Object();
-    private final static Object LAZY_VALUE = new Object();
 
     private CompareObjectsSettings settings;
 
@@ -230,8 +229,6 @@ public class CompareObjectsExecutor {
         }
         compareLazyProperties = compareLazyProperties && settings.isCompareLazyProperties();
 
-        // Check should we read lazy properties
-        boolean hasLazy = false;
         // Load all properties
         for (DBNDatabaseNode node : nodes) {
             if (monitor.isCanceled()) {
@@ -245,41 +242,12 @@ public class CompareObjectsExecutor {
             }
             PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties);
             for (ObjectPropertyDescriptor prop : properties) {
-                if (prop.isLazy(databaseObject, true)) {
-                    if (compareLazyProperties) {
-                        synchronized (PROPS_LOCK) {
-                            nodeProperties.put(prop, LAZY_VALUE);
-                        }
-                        // Initiate lazy value read
-                        propertySource.getPropertyValue(databaseObject, prop);
-                        hasLazy = true;
-                    }
-                } else {
-                    Object propertyValue = propertySource.getPropertyValue(databaseObject, prop);
-                    synchronized (PROPS_LOCK) {
-                        nodeProperties.put(prop, propertyValue);
-                    }
+                Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop);
+                synchronized (PROPS_LOCK) {
+                    nodeProperties.put(prop, propertyValue);
                 }
             }
             monitor.worked(1);
-        }
-
-        // Wait for all lazy properties to load
-        while (hasLazy) {
-            if (monitor.isCanceled()) {
-                throw new InterruptedException();
-            }
-
-            Thread.sleep(50);
-            synchronized (PROPS_LOCK) {
-                hasLazy = false;
-                for (Map<DBPPropertyDescriptor, Object> objectProps : propertyValues.values()) {
-                    if (objectProps.values().contains(LAZY_VALUE)) {
-                        hasLazy = true;
-                        break;
-                    }
-                }
-            }
         }
 
         // Compare properties

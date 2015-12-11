@@ -18,15 +18,14 @@
 
 package org.jkiss.dbeaver.ext.mysql.editors;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLSourceObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorNested;
+import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 
 /**
  * MySQLSourceViewEditor
  */
-public class MySQLSourceViewEditor extends SQLEditorNested<MySQLSourceObject> {
+public class MySQLSourceViewEditor extends SQLSourceViewer<MySQLSourceObject> {
 
     public MySQLSourceViewEditor()
     {
@@ -39,15 +38,9 @@ public class MySQLSourceViewEditor extends SQLEditorNested<MySQLSourceObject> {
     }
 
     @Override
-    protected String getSourceText(DBRProgressMonitor monitor) throws DBException
+    protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
-        return getSourceObject().getObjectDefinitionText(monitor);
-    }
-
-    @Override
-    protected void setSourceText(String sourceText)
-    {
-        getEditorInput().getPropertySource().setPropertyValue("objectDefinitionText", sourceText);
+        getEditorInput().getPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
     }
 
 }

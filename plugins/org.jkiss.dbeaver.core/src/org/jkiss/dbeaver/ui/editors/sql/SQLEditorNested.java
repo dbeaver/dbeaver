@@ -45,12 +45,14 @@ import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
 
 import java.lang.reflect.InvocationTargetException;
@@ -189,13 +191,23 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void refreshPart(Object source, boolean force) {
+        // Check if we are in saving process
+        // If so then no refresh needed (source text was updated during save)
+        IEditorSite editorSite = getEditorSite();
+        if (editorSite instanceof MultiPageEditorSite &&
+            ((MultiPageEditorSite) editorSite).getMultiPageEditor() instanceof EntityEditor &&
+            ((EntityEditor) ((MultiPageEditorSite) editorSite).getMultiPageEditor()).isSaveInProgress())
+        {
+            return;
+        }
+
         final IDocumentProvider documentProvider = getDocumentProvider();
         if (documentProvider instanceof SQLEditorNested.ObjectDocumentProvider) {
             ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceText = null;
         }
         if (lazyInput == null && force) {
             try {
-                super.init(getEditorSite(), getEditorInput());
+                super.init(editorSite, getEditorInput());
                 setFocus();
             } catch (PartInitException e) {
                 log.error(e);
@@ -236,7 +248,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                             if (sourceText == null) {
                                 sourceText = "-- Empty source";
                             }
-                        } catch (DBException e) {
+                        } catch (Throwable e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
                             throw new InvocationTargetException(e);
                         } finally {
@@ -265,7 +277,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException {
-            setSourceText(document.get());
+            setSourceText(new DefaultProgressMonitor(monitor), document.get());
         }
     }
 
@@ -305,7 +317,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     protected abstract String getSourceText(DBRProgressMonitor monitor)
         throws DBException;
 
-    protected abstract void setSourceText(String sourceText);
+    protected abstract void setSourceText(DBRProgressMonitor monitor, String sourceText);
 
     protected void contributeEditorCommands(ToolBarManager toolBarManager)
     {

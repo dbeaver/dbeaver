@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.runtime.properties;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -29,11 +31,11 @@ import java.util.*;
  */
 public class PropertySourceCustom implements DBPPropertySource {
 
-    private List<DBPPropertyDescriptor> props = new ArrayList<DBPPropertyDescriptor>();
+    private List<DBPPropertyDescriptor> props = new ArrayList<>();
 
-    private Map<Object, Object> originalValues = new TreeMap<Object, Object>();
-    private Map<Object, Object> propValues = new TreeMap<Object, Object>();
-    private Map<Object,Object> defaultValues = new TreeMap<Object, Object>();
+    private Map<Object, Object> originalValues = new TreeMap<>();
+    private Map<Object, Object> propValues = new TreeMap<>();
+    private Map<Object,Object> defaultValues = new TreeMap<>();
 
     public PropertySourceCustom()
     {
@@ -47,7 +49,7 @@ public class PropertySourceCustom implements DBPPropertySource {
 
     public void setValues(Map<Object, Object> values)
     {
-        this.originalValues = new HashMap<Object, Object>();
+        this.originalValues = new HashMap<>();
         // Set only allowed properties + transform property types
         for (Map.Entry<Object, Object> value : values.entrySet()) {
             Object propValue = value.getValue();
@@ -70,13 +72,13 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     public Map<Object, Object> getProperties() {
-        Map<Object, Object> allValues = new HashMap<Object, Object>(originalValues);
+        Map<Object, Object> allValues = new HashMap<>(originalValues);
         allValues.putAll(propValues);
         return allValues;
     }
 
     public Map<Object, Object> getPropertiesWithDefaults() {
-        Map<Object, Object> allValues = new HashMap<Object, Object>(defaultValues);
+        Map<Object, Object> allValues = new HashMap<>(defaultValues);
         allValues.putAll(originalValues);
         allValues.putAll(propValues);
         return allValues;
@@ -105,7 +107,7 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     @Override
-    public Object getPropertyValue(Object id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
         Object value = propValues.get(id);
         if (value == null) {
@@ -123,7 +125,7 @@ public class PropertySourceCustom implements DBPPropertySource {
     @Override
     public boolean isPropertySet(Object id)
     {
-        final Object value = getPropertyValue(id);
+        final Object value = getPropertyValue(null, id);
         if (value == null) {
             return false;
         }
@@ -132,13 +134,13 @@ public class PropertySourceCustom implements DBPPropertySource {
     }
 
     @Override
-    public void resetPropertyValue(Object id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
         propValues.remove(id);
     }
 
     @Override
-    public void setPropertyValue(Object id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
     {
         if (!originalValues.containsKey(id)) {
             if (propValues.containsKey(id)) {

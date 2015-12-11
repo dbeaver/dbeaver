@@ -75,7 +75,7 @@ public class OracleObjectDDLEditor extends SQLEditorNested<OracleTable> {
     }
 
     @Override
-    protected void setSourceText(String sourceText) {
+    protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
     }
 
     @Override

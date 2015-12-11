@@ -97,6 +97,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private IFolderListener folderListener;
     private boolean hasPropertiesEditor;
     private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
+    private volatile boolean saveInProgress = false;
 
     public EntityEditor()
     {
@@ -199,6 +200,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
+    public boolean isSaveInProgress() {
+        return saveInProgress;
+    }
+
     /**
      * Saves data in all nested editors
      * @param monitor progress monitor
@@ -210,42 +215,49 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return;
         }
 
-        for (IEditorPart editor : editorMap.values()) {
-            editor.doSave(monitor);
+        try {
+            saveInProgress = true;
+
+            for (IEditorPart editor : editorMap.values()) {
+                editor.doSave(monitor);
+                if (monitor.isCanceled()) {
+                    return;
+                }
+            }
             if (monitor.isCanceled()) {
                 return;
             }
-        }
-        if (monitor.isCanceled()) {
-            return;
-        }
 
-        final DBECommandContext commandContext = getCommandContext();
-        if (commandContext != null && commandContext.isDirty()) {
-            monitor.beginTask("Save changes...", 1);
-            try {
-                monitor.subTask("Save '" + getPartName() + "' changes...");
-                SaveJob saveJob = new SaveJob();
-                saveJob.schedule();
+            final DBECommandContext commandContext = getCommandContext();
+            if (commandContext != null && commandContext.isDirty()) {
+                monitor.beginTask("Save changes...", 1);
+                try {
+                    monitor.subTask("Save '" + getPartName() + "' changes...");
+                    SaveJob saveJob = new SaveJob();
+                    saveJob.schedule();
 
-                // Wait until job finished
-                Display display = Display.getCurrent();
-                while (saveJob.finished == null) {
-                    if (!display.readAndDispatch()) {
-                        display.sleep();
+                    // Wait until job finished
+                    Display display = Display.getCurrent();
+                    while (saveJob.finished == null) {
+                        if (!display.readAndDispatch()) {
+                            display.sleep();
+                        }
                     }
+                    display.update();
+                    if (!saveJob.finished) {
+                        monitor.setCanceled(true);
+                        return;
+                    }
+                } finally {
+                    monitor.done();
                 }
-                display.update();
-                if (!saveJob.finished) {
-                    monitor.setCanceled(true);
-                    return;
-                }
-            } finally {
-                monitor.done();
             }
-        }
 
-        firePropertyChange(IEditorPart.PROP_DIRTY);
+            firePropertyChange(IEditorPart.PROP_DIRTY);
+        }
+        finally {
+            saveInProgress = false;
+        }
     }
 
     private boolean saveCommandContext(DBRProgressMonitor monitor)

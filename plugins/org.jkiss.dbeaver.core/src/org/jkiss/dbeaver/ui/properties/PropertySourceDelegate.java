@@ -58,7 +58,7 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public Object getPropertyValue(Object id) {
-        return source.getPropertyValue(id);
+        return source.getPropertyValue(null, id);
     }
 
     @Override
@@ -68,11 +68,11 @@ public class PropertySourceDelegate implements IPropertySource2
 
     @Override
     public void resetPropertyValue(Object id) {
-        source.resetPropertyValue(id);
+        source.resetPropertyValue(null, id);
     }
 
     @Override
     public void setPropertyValue(Object id, Object value) {
-        source.setPropertyValue(id, value);
+        source.setPropertyValue(null, id, value);
     }
 }

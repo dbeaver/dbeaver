@@ -184,9 +184,9 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
             ((IRefreshablePart) editor).refreshPart(source, force);
         }
         // Reload sources
-        if (editor instanceof IReusableEditor) {
-            ((IReusableEditor) editor).setInput(editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
-        }
+//        if (editor instanceof IReusableEditor) {
+//            ((IReusableEditor) editor).setInput(editorDescriptor.getNestedEditorInput(mainEditor.getEditorInput()));
+//        }
     }
 
     @Override

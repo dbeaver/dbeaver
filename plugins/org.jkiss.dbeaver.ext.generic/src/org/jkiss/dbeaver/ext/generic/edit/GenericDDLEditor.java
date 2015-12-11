@@ -31,7 +31,7 @@ public class GenericDDLEditor extends SQLEditorNested<GenericTable> {
     }
 
     @Override
-    protected void setSourceText(String sourceText)
+    protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
         // We are read-only
     }

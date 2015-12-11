@@ -730,7 +730,7 @@
                 embeddable="true">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericTable" if="object.view"/>
         </editor>
-        <editor id="source.view" class="org.jkiss.dbeaver.ext.generic.edit.GenericSourceViewEditor"
+        <editor id="generic.source.view" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
                 label="%editor.source.name" description="%editor.source.name" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="true">
             <objectType name="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject"/>

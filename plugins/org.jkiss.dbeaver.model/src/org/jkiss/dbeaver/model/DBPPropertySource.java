@@ -17,6 +17,9 @@
  */
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 /**
  * Property source
  */
@@ -26,17 +29,17 @@ public interface DBPPropertySource {
 
     DBPPropertyDescriptor[] getPropertyDescriptors2();
 
-    Object getPropertyValue(Object id);
+    Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id);
 
     boolean isPropertySet(Object id);
 
     boolean isPropertyResettable(Object id);
 
-    void resetPropertyValue(Object id);
+    void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id);
 
     void resetPropertyValueToDefault(Object id);
 
-    void setPropertyValue(Object id, Object value);
+    void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value);
 
     boolean isDirty(Object id);
 

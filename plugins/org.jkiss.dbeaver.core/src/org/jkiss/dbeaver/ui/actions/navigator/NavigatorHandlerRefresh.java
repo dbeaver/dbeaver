@@ -42,6 +42,8 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
     static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
 
+    public static final Object FORCE_REFRESH = new Object();
+
     public NavigatorHandlerRefresh() {
 
     }
@@ -115,7 +117,7 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                     }
                     setName("Refresh '" + node.getNodeName() + "'...");
                     try {
-                        DBNNode refreshed = node.refreshNode(monitor, this);
+                        DBNNode refreshed = node.refreshNode(monitor, FORCE_REFRESH);
                         if (refreshed != null) {
                             refreshedSet.add(refreshed);
                         }

@@ -41,9 +41,11 @@ public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceOb
     }
 
     @Override
-    protected void setSourceText(String sourceText) {
+    protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
         getEditorInput().getPropertySource().setPropertyValue(
-            OracleConstants.PROP_OBJECT_BODY_DEFINITION, sourceText);
+            monitor,
+            OracleConstants.PROP_OBJECT_BODY_DEFINITION,
+            sourceText);
     }
 
 }

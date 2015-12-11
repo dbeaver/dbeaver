@@ -17,11 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.wmi.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertySource;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIQualifiedObject;
 import org.jkiss.wmi.service.WMIQualifier;
@@ -79,7 +81,7 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public Object getPropertyValue(Object id)
+    public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
         try {
             return getQualifiedObject().getQualifier(id.toString());
@@ -101,13 +103,13 @@ public abstract class WMIPropertySource implements DBPPropertySource
     }
 
     @Override
-    public void resetPropertyValue(Object id)
+    public void resetPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
 
     }
 
     @Override
-    public void setPropertyValue(Object id, Object value)
+    public void setPropertyValue(@Nullable DBRProgressMonitor monitor, Object id, Object value)
     {
 
     }

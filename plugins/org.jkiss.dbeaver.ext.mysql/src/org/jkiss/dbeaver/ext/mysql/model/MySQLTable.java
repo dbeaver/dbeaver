@@ -197,45 +197,6 @@ public class MySQLTable extends MySQLTableBase
         return partitionCache.getAllObjects(monitor, this);
     }
 
-
-    @Override
-    public String getDDL(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (!isPersisted()) {
-            return "";
-        }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Retrieve table DDL")) {
-            try (PreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
-                try (ResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        byte[] ddl;
-                        if (isView()) {
-                            ddl = dbResult.getBytes("Create View");
-                        } else {
-                            ddl = dbResult.getBytes("Create Table");
-                        }
-                        if (ddl == null) {
-                            return null;
-                        } else {
-                            try {
-                                return new String(ddl, getContainer().getDefaultCharset().getName());
-                            } catch (UnsupportedEncodingException e) {
-                                log.debug(e);
-                                return new String(ddl);
-                            }
-                        }
-                    } else {
-                        return "DDL is not available";
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
-        }
-    }
-
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
@@ -419,6 +380,16 @@ public class MySQLTable extends MySQLTableBase
         } catch (SQLException ex) {
             throw new DBException(ex, getDataSource());
         }
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+        return getDDL(monitor);
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Table DDL is read-only");
     }
 
     class PartitionCache extends JDBCObjectCache<MySQLTable, MySQLPartition> {
