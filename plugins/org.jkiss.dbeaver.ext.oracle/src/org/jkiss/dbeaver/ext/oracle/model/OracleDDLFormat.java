@@ -18,6 +18,9 @@
 
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.dbeaver.Log;
+import org.jkiss.utils.CommonUtils;
+
 /**
  * DDL format
  */
@@ -31,6 +34,8 @@ public enum OracleDDLFormat {
     private final boolean showStorage;
     private final boolean showSegments;
     private final boolean showTablespace;
+
+    static final Log log = org.jkiss.dbeaver.Log.getLog(OracleDDLFormat.class);
 
     private OracleDDLFormat(String title, boolean showStorage, boolean showSegments, boolean showTablespace)
     {
@@ -59,4 +64,17 @@ public enum OracleDDLFormat {
     {
         return showTablespace;
     }
+
+    public static OracleDDLFormat getCurrentFormat(OracleDataSource dataSource) {
+        String ddlFormatString = dataSource.getContainer().getPreferenceStore().getString(OracleConstants.PREF_KEY_DDL_FORMAT);
+        if (!CommonUtils.isEmpty(ddlFormatString)) {
+            try {
+                return OracleDDLFormat.valueOf(ddlFormatString);
+            } catch (IllegalArgumentException e) {
+                log.error(e);
+            }
+        }
+        return OracleDDLFormat.FULL;
+    }
+
 }
