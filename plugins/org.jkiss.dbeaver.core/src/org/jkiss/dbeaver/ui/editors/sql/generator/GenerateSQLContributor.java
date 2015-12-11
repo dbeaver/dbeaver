@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.generator;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.ContributionItem;
-import org.eclipse.jface.action.IContributionItem;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
@@ -39,6 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -224,6 +222,16 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 sql.append(");\n");
             }
         }));
+        if (table instanceof DBPScriptObject) {
+            menu.add(new Separator());
+            menu.add(makeAction("DDL", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
+                    String definitionText = ((DBPScriptObject) table).getObjectDefinitionText(monitor);
+                    sql.append(definitionText);
+                }
+            }));
+        }
     }
 
     private void makeResultSetContributions(List<IContributionItem> menu, IResultSetSelection rss)
