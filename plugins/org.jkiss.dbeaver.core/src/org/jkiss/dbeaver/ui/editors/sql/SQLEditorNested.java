@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
-import org.eclipse.jface.text.BadLocationException;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.FocusEvent;
@@ -208,7 +205,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         if (lazyInput == null && force) {
             try {
                 super.init(editorSite, getEditorInput());
-                setFocus();
+                //setFocus();
             } catch (PartInitException e) {
                 log.error(e);
             }
@@ -256,12 +253,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                                 UIUtils.runInUI(null, new Runnable() {
                                     @Override
                                     public void run() {
-                                        try {
-                                            doResetDocument(getEditorInput(), monitor.getNestedMonitor());
-                                            reloadSyntaxRules();
-                                        } catch (CoreException e) {
-                                            log.error(e);
-                                        }
+                                        resetDocumentContents(monitor);
                                     }
                                 });
                             }
@@ -269,10 +261,26 @@ public abstract class SQLEditorNested<T extends DBSObject>
                     }
                 });
             } else {
+                // Set text
                 document.set(sourceText);
             }
 
             return document;
+        }
+
+        private void resetDocumentContents(DBRProgressMonitor monitor) {
+            try {
+                doResetDocument(getEditorInput(), monitor.getNestedMonitor());
+                // Reset undo queue
+                if (getSourceViewer() instanceof ITextViewerExtension6) {
+                    ((ITextViewerExtension6) getSourceViewer()).getUndoManager().reset();
+                }
+
+                // Load syntax
+                reloadSyntaxRules();
+            } catch (CoreException e) {
+                log.error(e);
+            }
         }
 
         @Override
