@@ -145,14 +145,22 @@ public class FolderComposite extends Composite implements IFolderContainer {
                 newFolder.createControl(newContent);
                 contentsMap.put(folder, newContent);
             }
+
+            // Notify part about hide/show
+            if (curContent != null && curFolder != null) {
+                curFolder.aboutToBeHidden();
+            }
+            newFolder.aboutToBeShown();
+
+            // Make actual hide/show
             if (curContent != null && curFolder != null) {
                 curContent.setVisible(false);
-                curFolder.aboutToBeHidden();
                 ((GridData)curContent.getLayoutData()).exclude = true;
             }
             ((GridData)newContent.getLayoutData()).exclude = false;
-            newFolder.aboutToBeShown();
             newContent.setVisible(true);
+
+            // Layout and notify listeners
             curContent = newContent;
             curFolder = newFolder;
 
