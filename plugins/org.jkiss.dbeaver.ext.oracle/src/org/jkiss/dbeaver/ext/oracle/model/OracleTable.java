@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,7 +40,7 @@ import java.util.List;
 /**
  * OracleTable
  */
-public class OracleTable extends OracleTablePhysical implements DBDPseudoAttributeContainer, DBPImageProvider
+public class OracleTable extends OracleTablePhysical implements DBPScriptObject, DBDPseudoAttributeContainer, DBPImageProvider
 {
     private OracleDataType tableType;
     private String iotType;
@@ -47,8 +48,6 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
     private boolean temporary;
     private boolean secondary;
     private boolean nested;
-
-    //private OracleTableColumn objectValueAttribute;
 
     public static class AdditionalInfo extends TableAdditionalInfo {
     }
@@ -227,6 +226,12 @@ public class OracleTable extends OracleTablePhysical implements DBDPseudoAttribu
         }
         super.appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
     }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
+        return getDDL(monitor, OracleDDLFormat.getCurrentFormat(getDataSource()));
+    }
+
 
     @Nullable
     @Override
