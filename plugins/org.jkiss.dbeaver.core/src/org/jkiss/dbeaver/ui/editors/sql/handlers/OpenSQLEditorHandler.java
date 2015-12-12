@@ -34,6 +34,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -70,8 +71,8 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
                 NavigatorHandlerObjectOpen.openResource(newScript, workbenchWindow);
             } else {
                 // Show script chooser
-                ScriptSelectorShell selector = new ScriptSelectorShell(workbenchWindow, dataSourceContainer, rootFolder, scriptFiles);
-                selector.show();
+                ScriptSelectorShell selector = new ScriptSelectorShell(workbenchWindow, dataSourceContainer, rootFolder);
+                selector.show(scriptFiles);
             }
 /*
             scriptFile = ScriptsHandlerImpl.findRecentScript(project, dataSourceContainer);
@@ -92,21 +93,15 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
     private static class ScriptSelectorShell {
 
         private final IWorkbenchWindow workbenchWindow;
+        private final IFolder rootFolder;
         private final Shell popup;
-        private final List<IFile> scriptFiles;
         private final Text patternText;
         private final Tree scriptTable;
         private final Button newButton;
 
-        public ScriptSelectorShell(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder, List<IFile> scriptFiles) {
+        public ScriptSelectorShell(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder) {
             this.workbenchWindow = workbenchWindow;
-            this.scriptFiles = new ArrayList<>(scriptFiles);
-            Collections.sort(this.scriptFiles, new Comparator<IFile>() {
-                @Override
-                public int compare(IFile o1, IFile o2) {
-                    return (int)(o1.getLocation().toFile().lastModified() - o2.getLocation().toFile().lastModified());
-                }
-            });
+            this.rootFolder = rootFolder;
             Shell parent = this.workbenchWindow.getShell();
 
             final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
@@ -156,19 +151,6 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             UIUtils.createTreeColumn(scriptTable, SWT.LEFT, "Script");
             UIUtils.createTreeColumn(scriptTable, SWT.LEFT, "Info");
 
-            for (IFile scriptFile : this.scriptFiles) {
-                final TreeItem item = new TreeItem(scriptTable, SWT.NONE);
-                item.setData(scriptFile);
-                item.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-                item.setText(0, scriptFile.getName() + "  ");
-
-                String desc = SQLUtils.getScriptDescription(scriptFile);
-                if (CommonUtils.isEmptyTrimmed(desc)) {
-                    desc = "<empty>";
-                }
-                item.setText(1, desc);
-            }
-
             scriptTable.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetDefaultSelected(SelectionEvent e) {
@@ -215,10 +197,13 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             });
         }
 
-        void show() {
+        void show(List<IFile> scriptFiles) {
             // Fill script list
             popup.layout();
             popup.setVisible(true);
+
+            loadScriptTree(scriptFiles);
+
             final int totalWidth = scriptTable.getSize().x;
             final TreeColumn column0 = scriptTable.getColumn(0);
             final TreeColumn column1 = scriptTable.getColumn(1);
@@ -227,11 +212,55 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             if (column0.getWidth() + column1.getWidth() < totalWidth) {
                 column1.setWidth(totalWidth - column0.getWidth());
             }
-            //int nameWidth = Math.max(100, totalWidth / 2);
-            //scriptTable.getColumn(1).setWidth(totalWidth - column0.x);
-            //UIUtils.packColumns(scriptTable, true, new float[] {0.7f, 0.3f});
 
             patternText.setFocus();
+        }
+
+        private void loadScriptTree(List<IFile> scriptFiles) {
+            scriptFiles = new ArrayList<>(scriptFiles);
+            Collections.sort(scriptFiles, new Comparator<IFile>() {
+                @Override
+                public int compare(IFile o1, IFile o2) {
+                    return (int)(o2.getLocation().toFile().lastModified() / 1000 - o1.getLocation().toFile().lastModified() / 1000);
+                }
+            });
+
+            scriptTable.removeAll();
+
+            IFolder prevParent = null;
+            TreeItem prevParentNode = null;
+            for (IFile scriptFile : scriptFiles) {
+                IFolder parent = (IFolder) scriptFile.getParent();
+                TreeItem parentNode = null;
+                if (CommonUtils.equalObjects(parent, prevParent)) {
+                    parentNode = prevParentNode;
+                }
+                if (parentNode == null && !CommonUtils.equalObjects(parent, rootFolder)) {
+                    parentNode = new TreeItem(scriptTable, SWT.NONE);
+                    parentNode.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                    parentNode.setText(0, parent.getName());
+                }
+
+                final TreeItem item = parentNode == null ?
+                    new TreeItem(scriptTable, SWT.NONE) :
+                    new TreeItem(parentNode, SWT.NONE);
+                item.setData(scriptFile);
+                item.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                item.setText(0, scriptFile.getName() + "  ");
+                item.setExpanded(true);
+
+                String desc = SQLUtils.getScriptDescription(scriptFile);
+                if (CommonUtils.isEmptyTrimmed(desc)) {
+                    desc = "<empty>";
+                }
+                item.setText(1, desc);
+                if (parentNode != null) {
+                    parentNode.setExpanded(true);
+                }
+
+                prevParent = parent;
+                prevParentNode = parentNode;
+            }
         }
     }
 
