@@ -70,7 +70,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
                 NavigatorHandlerObjectOpen.openResource(newScript, workbenchWindow);
             } else {
                 // Show script chooser
-                ScriptSelectorShell selector = new ScriptSelectorShell(workbenchWindow, scriptFiles);
+                ScriptSelectorShell selector = new ScriptSelectorShell(workbenchWindow, dataSourceContainer, rootFolder, scriptFiles);
                 selector.show();
             }
 /*
@@ -96,8 +96,9 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         private final List<IFile> scriptFiles;
         private final Text patternText;
         private final Tree scriptTable;
+        private final Button newButton;
 
-        public ScriptSelectorShell(IWorkbenchWindow workbenchWindow, List<IFile> scriptFiles) {
+        public ScriptSelectorShell(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder, List<IFile> scriptFiles) {
             this.workbenchWindow = workbenchWindow;
             this.scriptFiles = new ArrayList<>(scriptFiles);
             Collections.sort(this.scriptFiles, new Comparator<IFile>() {
@@ -126,8 +127,22 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             patternText.setBackground(bg);
 
-            Button newButton = new Button(composite, SWT.PUSH | SWT.FLAT | SWT.NO_FOCUS);
+            newButton = new Button(composite, SWT.PUSH | SWT.FLAT);
             newButton.setText("&New Script");
+            newButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    popup.dispose();
+                    IFile scriptFile;
+                    try {
+                        scriptFile = ScriptsHandlerImpl.createNewScript(rootFolder.getProject(), rootFolder, dataSourceContainer);
+                        NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
+                    }
+                    catch (CoreException ex) {
+                        log.error(ex);
+                    }
+                }
+            });
 
             ((GridData)UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
 
@@ -185,7 +200,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             final Listener focusFilter = new Listener() {
                 public void handleEvent(Event event)
                 {
-                    if (event.widget != scriptTable && event.widget != patternText) {
+                    if (event.widget != scriptTable && event.widget != patternText && event.widget != newButton) {
                         popup.dispose();
                     }
                 }
