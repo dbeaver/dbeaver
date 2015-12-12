@@ -69,7 +69,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public static IFile findRecentScript(IProject project, @Nullable DBPDataSourceContainer container) throws CoreException
     {
         List<IFile> scripts = new ArrayList<>();
-        findRecentScripts(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
+        findScriptsByDataSource(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
         long recentTimestamp = 0l;
         IFile recentFile = null;
         for (IFile file : scripts) {
@@ -81,16 +81,16 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return recentFile;
     }
 
-    public static void findRecentScripts(IFolder folder, @Nullable DBPDataSourceContainer container, List<IFile> result)
+    public static void findScriptsByDataSource(IFolder folder, @Nullable DBPDataSourceContainer container, List<IFile> result)
     {
         try {
             for (IResource resource : folder.members()) {
-                if (resource instanceof IFile) {
+                if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
                     if (SQLEditorInput.getScriptDataSource((IFile) resource) == container) {
                         result.add((IFile) resource);
                     }
                 } else if (resource instanceof IFolder) {
-                    findRecentScripts((IFolder) resource, container, result);
+                    findScriptsByDataSource((IFolder) resource, container, result);
                 }
 
             }
