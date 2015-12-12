@@ -345,12 +345,16 @@ public class DBNResource extends DBNNode
         return handler == null ? null : handler.getAssociatedDataSources(resource);
     }
 
+    public void refreshResourceState(Object source) {
+        getModel().fireNodeEvent(new DBNEvent(source, DBNEvent.Action.UPDATE, this));
+    }
+
     protected void handleResourceChange(IResourceDelta delta)
     {
         DBNModel model = getModel();
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator
-            model.fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.UPDATE, this));
+            refreshResourceState(delta);
         }
         if (children == null) {
             // Child nodes are not yet read so nothing to change here - just return
