@@ -31,13 +31,15 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenSQLEditorHandler;
+import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Collection;
 
 public abstract class NavigatorViewBase extends ViewPart implements INavigatorModelView, IDataSourceContainerProvider
 {
@@ -218,6 +220,11 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             } else if (((DBNDatabaseNode) lastSelection).getObject() != null) {
                 final DBPDataSource dataSource = ((DBNDatabaseNode) lastSelection).getObject().getDataSource();
                 return dataSource == null ? null : dataSource.getContainer();
+            }
+        } else if (lastSelection instanceof DBNResource) {
+            Collection<DBPDataSourceContainer> containers = ((DBNResource) lastSelection).getAssociatedDataSources();
+            if (containers != null && containers.size() == 1) {
+                return containers.iterator().next();
             }
         }
         return null;
