@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -111,7 +112,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     @Override
     public void createPageControls(Composite pageContainer)
     {
-        DBPDataSourceContainer container = getDatabaseObject().getDataSource().getContainer();
+        DBPDataSourceContainer container = databaseObject.getDataSource().getContainer();
         connectionInfo = container.getActualConnectionConfiguration();
 
         super.createPageControls(pageContainer);
@@ -140,7 +141,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             RuntimeUtils.run(getContainer(), true, true, this);
         }
         catch (InterruptedException ex) {
-            UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, getDatabaseObject().getName()), SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, databaseObject.getName()), SWT.ICON_ERROR);
             return false;
         }
         catch (InvocationTargetException ex) {
@@ -153,6 +154,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         }
         finally {
             getContainer().updateButtons();
+
         }
         onSuccess();
         return false;
@@ -163,12 +165,15 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     {
         try {
             finished = executeProcess(monitor);
+
+            final DBNDatabaseNode node = databaseObject.getDataSource().getContainer().getApplication().getNavigatorModel().findNode(databaseObject);
+            if (node != null) {
+                node.refreshNode(monitor, AbstractToolWizard.this);
+            }
         } catch (InterruptedException e) {
             throw e;
         } catch (Exception e) {
             throw new InvocationTargetException(e);
-        } finally {
-            //finished = true;
         }
         if (monitor.isCanceled()) {
             throw new InterruptedException();
