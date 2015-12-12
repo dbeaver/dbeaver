@@ -107,6 +107,8 @@ public class DBeaverCore implements DBPApplication {
             Bundle definingBundle = Platform.getProduct().getDefiningBundle();
             if (definingBundle != null) {
                 log.debug("Host plugin: " + definingBundle.getSymbolicName() + " " + definingBundle.getVersion());
+            } else {
+                log.debug("!!! No product bundle found");
             }
         }
 

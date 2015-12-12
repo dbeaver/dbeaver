@@ -95,10 +95,13 @@ public class DBeaverApplication implements IApplication
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
+        final Runtime runtime = Runtime.getRuntime();
+
         DBeaverCore.setStandalone(true);
         log.debug(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         log.debug("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
+        log.debug("Memory available " + (runtime.totalMemory() / (1024*1024)) + "Mb/" + (runtime.maxMemory() / (1024*1024)) + "Mb");
 
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,

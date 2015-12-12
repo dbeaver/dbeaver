@@ -19,22 +19,22 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -169,7 +169,13 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
         try {
             file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
             if (notify) {
-                file.appendContents(new ByteArrayInputStream(new byte[0]), true, false, new NullProgressMonitor());
+                final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(file.getProject());
+                if (projectNode != null) {
+                    final DBNResource fileNode = projectNode.findResource(file);
+                    if (fileNode != null) {
+                        fileNode.refreshResourceState(dataSourceContainer);
+                    }
+                }
             }
         } catch (CoreException e) {
             log.error("Internal error while writing file property", e);
