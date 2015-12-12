@@ -199,6 +199,7 @@
         <command id="org.jkiss.dbeaver.core.txn.autocommit" name="%command.org.jkiss.dbeaver.core.txn.autocommit.name" description="%command.org.jkiss.dbeaver.core.txn.autocommit.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.core.sql.editor.open" name="%command.org.jkiss.dbeaver.core.sql.editor.open.name" description="%command.org.jkiss.dbeaver.core.sql.editor.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.sql.editor.recent" name="%command.org.jkiss.dbeaver.core.sql.editor.recent.name" description="%command.org.jkiss.dbeaver.core.sql.editor.recent.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.create" name="%command.org.jkiss.dbeaver.core.sql.editor.create.name" description="%command.org.jkiss.dbeaver.core.sql.editor.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -242,7 +243,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.row.delete" name="%command.org.jkiss.dbeaver.core.resultset.row.delete.name" description="%command.org.jkiss.dbeaver.core.resultset.row.delete.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.applyChanges" name="%command.org.jkiss.dbeaver.core.resultset.applyChanges.name" description="%command.org.jkiss.dbeaver.core.resultset.applyChanges.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.rejectChanges" name="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.name" description="%command.org.jkiss.dbeaver.core.resultset.rejectChanges.description" categoryId="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.cell.save" name="%command.org.jkiss.dbeaver.core.resultset.cell.save.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.save.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <!--<command id="org.jkiss.dbeaver.core.resultset.cell.save" name="%command.org.jkiss.dbeaver.core.resultset.cell.save.name" description="%command.org.jkiss.dbeaver.core.resultset.cell.save.description" categoryId="org.jkiss.dbeaver.core.rs"/>-->
         <command id="org.jkiss.dbeaver.core.resultset.grid.togglePreview" name="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.togglePreview.description" categoryId="org.jkiss.dbeaver.core.rs"/>
 
         <command id="org.jkiss.dbeaver.core.edit.copy.special" name="%command.org.jkiss.dbeaver.core.edit.copy.special.name" description="%command.org.jkiss.dbeaver.core.edit.copy.special.description" categoryId="org.jkiss.dbeaver.core.util"/>
@@ -280,6 +281,7 @@
         <image commandId="org.jkiss.dbeaver.core.resource.create.link" icon="icons/file/link.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.sql.editor.open" icon="icons/sql/sql_script.png"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="icons/sql/sql_script_recent.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/edit.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
@@ -310,7 +312,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="icons/sql/accept.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="icons/sql/cancel.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/misc/confirm.png"/>
+        <!--<image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/misc/confirm.png"/>-->
         <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="icons/sql/details.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
@@ -764,7 +766,10 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.sql.editor.create" class="org.jkiss.dbeaver.ui.editors.sql.handlers.CreateSQLEditorHandler">
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.recent" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenRecentSQLEditorHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.sql.editor.create" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler">
             <enabledWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.global.hasActiveProject"/>
@@ -1297,8 +1302,10 @@
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
-                <separator name="tools" visible="true"/>
+                <separator name="sql-tools" visible="true"/>
+                <control class="org.jkiss.dbeaver.ui.controls.ToolbarVerticalSeparator"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="additions" visible="false"/>
             </toolbar>
@@ -1414,7 +1421,7 @@
                 </visibleWhen>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.project.create">
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.recent">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="+"/>
@@ -1434,7 +1441,7 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="Create SQL script">
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="Create SQL script">
                 <visibleWhen>
                     <with variable="selection">
                         <count value="1"/>
@@ -1534,6 +1541,7 @@
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="SQLEditorMenu" label="%menu.sqleditor">
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.open"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
                 <command commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
                 <separator name="execute" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement">
@@ -1672,7 +1680,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ENTER"/>
+        <!--<key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ENTER"/>-->
         <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
@@ -1683,7 +1691,7 @@
 
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>
-        <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+L"/>
+        <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+L"/>
         <key
               commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"

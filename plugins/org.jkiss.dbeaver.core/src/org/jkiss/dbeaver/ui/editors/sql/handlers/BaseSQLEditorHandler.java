@@ -18,6 +18,10 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFolder;
@@ -32,7 +36,9 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
 
 public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
 
@@ -70,6 +76,21 @@ public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
             }
         }
         return null;
+    }
+
+    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) {
+        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
+        IFile scriptFile;
+        try {
+            scriptFile = ScriptsHandlerImpl.findRecentScript(project, dataSourceContainer);
+            if (scriptFile == null) {
+                scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
+            }
+            NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
+        }
+        catch (CoreException e) {
+            log.error(e);
+        }
     }
 
 }
