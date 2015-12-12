@@ -111,11 +111,11 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
 
             final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 
-            popup = new Shell(parent, SWT.RESIZE | SWT.NO_TRIM);
+            popup = new Shell(parent, SWT.RESIZE);
             popup.setLayout(new FillLayout());
             popup.setBounds(100, 100, 400, 200);
 
-            Composite composite = new Composite(popup, SWT.BORDER);
+            Composite composite = new Composite(popup, SWT.NONE);
 
             final GridLayout gl = new GridLayout(2, false);
             //gl.marginHeight = 0;
