@@ -562,6 +562,7 @@ public class DataSourceDescriptor
             log.debug("Can't connect - already connected");
             return false;
         }
+        log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
         connecting = true;
         DBPConnectionConfiguration savedConnectionInfo = null;
@@ -618,9 +619,10 @@ public class DataSourceDescriptor
                     DataSourceDescriptor.this,
                     true));
             }
-
+            log.debug("Connected (" + getId() + ")");
             return true;
         } catch (Exception e) {
+            log.debug("Connection failed (" + getId() + ")");
             // Failed
             connectFailed = true;
             //if (reflect) {
