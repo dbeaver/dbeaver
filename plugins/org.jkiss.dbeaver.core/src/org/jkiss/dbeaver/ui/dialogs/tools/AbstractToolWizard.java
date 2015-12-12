@@ -165,7 +165,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     {
         try {
             finished = executeProcess(monitor);
-
+            // Refresh navigator node (script execution can change everything inside)
             final DBNDatabaseNode node = databaseObject.getDataSource().getContainer().getApplication().getNavigatorModel().findNode(databaseObject);
             if (node != null) {
                 node.refreshNode(monitor, AbstractToolWizard.this);

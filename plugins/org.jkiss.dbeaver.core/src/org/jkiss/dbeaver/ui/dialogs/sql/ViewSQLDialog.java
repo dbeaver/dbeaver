@@ -22,7 +22,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -71,9 +70,9 @@ public class ViewSQLDialog extends BaseSQLDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
         Composite sqlPanel = createSQLPanel(composite);
         GridData gd = (GridData) sqlPanel.getLayoutData();
         if (enlargeViewPanel) {

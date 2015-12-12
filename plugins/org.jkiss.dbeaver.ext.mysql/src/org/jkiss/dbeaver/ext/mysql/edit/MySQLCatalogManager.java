@@ -18,9 +18,11 @@
  */
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.mysql.views.MySQLCreateDatabaseDialog;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
@@ -54,20 +56,31 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     @Override
     protected MySQLCatalog createDatabaseObject(DBECommandContext context, MySQLDataSource parent, Object copyFrom)
     {
-        String schemaName = EnterNameDialog.chooseName(DBeaverUI.getActiveWorkbenchShell(), MySQLMessages.edit_catalog_manager_dialog_schema_name);
-        if (CommonUtils.isEmpty(schemaName)) {
+        MySQLCreateDatabaseDialog dialog = new MySQLCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+        if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
+        String schemaName = dialog.getName();
         MySQLCatalog newCatalog = new MySQLCatalog(parent, null);
         newCatalog.setName(schemaName);
+        newCatalog.setDefaultCharset(dialog.getCharset());
+        newCatalog.setDefaultCollation(dialog.getCollation());
         return newCatalog;
     }
 
     @Override
     protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
+        final MySQLCatalog catalog = command.getObject();
+        final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
+        if (catalog.getDefaultCharset() != null) {
+            script.append("\nDEFAULT CHARACTER SET ").append(catalog.getDefaultCharset().getName());
+        }
+        if (catalog.getDefaultCollation() != null) {
+            script.append("\nDEFAULT COLLATE ").append(catalog.getDefaultCollation().getName());
+        }
         return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Create schema", "CREATE SCHEMA `" + command.getObject().getName() + "`") //$NON-NLS-2$
+            new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
         };
     }
 

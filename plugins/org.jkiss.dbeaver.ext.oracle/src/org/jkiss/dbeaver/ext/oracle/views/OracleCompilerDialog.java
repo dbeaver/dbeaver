@@ -18,18 +18,16 @@
  */
 package org.jkiss.dbeaver.ext.oracle.views;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Table;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
@@ -46,15 +44,16 @@ import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 /**
- * DriverEditDialog
+ * OracleCompilerDialog
  */
-public class OracleCompilerDialog extends TrayDialog
+public class OracleCompilerDialog extends BaseDialog
 {
     static final Log log = Log.getLog(OracleCompilerDialog.class);
 
@@ -69,7 +68,7 @@ public class OracleCompilerDialog extends TrayDialog
 
     public OracleCompilerDialog(Shell shell, java.util.List<OracleSourceObject> compileUnits)
     {
-        super(shell);
+        super(shell, OracleMessages.views_oracle_compiler_dialog_title, null);
         this.compileUnits = compileUnits;
     }
 
@@ -80,10 +79,8 @@ public class OracleCompilerDialog extends TrayDialog
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        getShell().setText(OracleMessages.views_oracle_compiler_dialog_title);
-
         GridData gd;
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayout(new GridLayout(2, false));

@@ -142,7 +142,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return defaultCharset;
     }
 
-    void setDefaultCharset(MySQLCharset defaultCharset)
+    public void setDefaultCharset(MySQLCharset defaultCharset)
     {
         this.defaultCharset = defaultCharset;
     }
@@ -153,7 +153,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         return defaultCollation;
     }
 
-    void setDefaultCollation(MySQLCollation defaultCollation)
+    public void setDefaultCollation(MySQLCollation defaultCollation)
     {
         this.defaultCollation = defaultCollation;
     }

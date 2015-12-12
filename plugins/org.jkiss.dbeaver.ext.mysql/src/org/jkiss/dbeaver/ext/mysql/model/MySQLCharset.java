@@ -82,6 +82,15 @@ public class MySQLCharset extends MySQLInformation {
         return null;
     }
 
+    public MySQLCollation getCollation(String name) {
+        for (MySQLCollation collation : collations) {
+            if (collation.getName().equals(name)) {
+                return collation;
+            }
+        }
+        return null;
+    }
+
     @Property(viewable = true, order = 3)
     public int getMaxLength()
     {

@@ -60,6 +60,11 @@ public class BaseDialog extends Dialog
     }
 
     @Override
+    protected Composite createDialogArea(Composite parent) {
+        return (Composite)super.createDialogArea(parent);
+    }
+
+    @Override
     public void create()
     {
         super.create();
@@ -67,5 +72,6 @@ public class BaseDialog extends Dialog
         if (icon != null) {
             getShell().setImage(icon);
         }
+
     }
 }

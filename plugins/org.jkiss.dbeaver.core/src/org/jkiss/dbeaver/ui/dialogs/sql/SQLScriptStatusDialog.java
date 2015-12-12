@@ -53,8 +53,8 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite composite = (Composite)super.createDialogArea(parent);
+    protected Composite createDialogArea(Composite parent) {
+        Composite composite = super.createDialogArea(parent);
         objectTree = new Tree(composite, SWT.BORDER | SWT.SINGLE);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
