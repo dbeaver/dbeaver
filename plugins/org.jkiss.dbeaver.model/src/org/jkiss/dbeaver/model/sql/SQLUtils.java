@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.eclipse.core.resources.IFile;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -30,12 +32,16 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
-import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -47,14 +53,13 @@ import java.util.regex.Pattern;
  */
 public final class SQLUtils {
 
-    //static final Log log = Log.getLog(SQLUtils.class);
-
-    //public static final String TOKEN_TRANSFORM_START = "/*DB[*/";
-    //public static final String TOKEN_TRANSFORM_END = "/*]DB*/";
-
-    //public static final Pattern PATTERN_XFORM = Pattern.compile(Pattern.quote(TOKEN_TRANSFORM_START) + "[^" + Pattern.quote(TOKEN_TRANSFORM_END) + "]*" + Pattern.quote(TOKEN_TRANSFORM_END));
+    static final Log log = Log.getLog(SQLUtils.class);
 
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
+    public static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+    public static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
+    public static final int MAX_SQL_DESCRIPTION_LENGTH = 200;
 
     public static String stripTransformations(String query)
     {
@@ -423,4 +428,48 @@ public final class SQLUtils {
         }
         return false;
     }
+
+    public static String getScriptDescripion(String sql) {
+        Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
+        if (matcher.find() && matcher.start(0) == 0) {
+            sql = sql.substring(matcher.end(1));
+        }
+        sql = sql.replaceAll("\\s+", " ");
+        if (sql.length() > MAX_SQL_DESCRIPTION_LENGTH) {
+            sql = sql.substring(0, MAX_SQL_DESCRIPTION_LENGTH) + " ...";
+        }
+        return sql;
+    }
+
+    @Nullable
+    public static String getScriptDescription(@NotNull IFile sqlScript)
+    {
+        try {
+            StringBuilder sql = new StringBuilder();
+            try (Reader is = new InputStreamReader(sqlScript.getContents())) {
+                char[] buffer = new char[16384];
+                for (;;) {
+                    final int count = is.read(buffer);
+                    if (count <= 0) {
+                        break;
+                    }
+                    int start = 0;
+                    for (; start < count; start++) {
+                        if (!Character.isWhitespace(buffer[start])) {
+                            break;
+                        }
+                    }
+                    sql.append(buffer, start, count - start);
+                    if (sql.length() > MIN_SQL_DESCRIPTION_LENGTH) {
+                        break;
+                    }
+                }
+            }
+            return SQLUtils.getScriptDescripion(sql.toString());
+        } catch (Exception e) {
+            log.warn("", e);
+        }
+        return null;
+    }
+
 }

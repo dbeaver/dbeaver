@@ -24,10 +24,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -38,13 +35,17 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
@@ -69,7 +70,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
                 NavigatorHandlerObjectOpen.openResource(newScript, workbenchWindow);
             } else {
                 // Show script chooser
-                ScriptSelectorShell selector = new ScriptSelectorShell(HandlerUtil.getActiveShell(event), scriptFiles);
+                ScriptSelectorShell selector = new ScriptSelectorShell(workbenchWindow, scriptFiles);
                 selector.show();
             }
 /*
@@ -90,13 +91,22 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
 
     private static class ScriptSelectorShell {
 
+        private final IWorkbenchWindow workbenchWindow;
         private final Shell popup;
         private final List<IFile> scriptFiles;
         private final Text patternText;
         private final Tree scriptTable;
 
-        public ScriptSelectorShell(Shell parent, List<IFile> scriptFiles) {
-            this.scriptFiles = scriptFiles;
+        public ScriptSelectorShell(IWorkbenchWindow workbenchWindow, List<IFile> scriptFiles) {
+            this.workbenchWindow = workbenchWindow;
+            this.scriptFiles = new ArrayList<>(scriptFiles);
+            Collections.sort(this.scriptFiles, new Comparator<IFile>() {
+                @Override
+                public int compare(IFile o1, IFile o2) {
+                    return (int)(o1.getLocation().toFile().lastModified() - o2.getLocation().toFile().lastModified());
+                }
+            });
+            Shell parent = this.workbenchWindow.getShell();
 
             final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 
@@ -106,29 +116,71 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
 
             Composite composite = new Composite(popup, SWT.BORDER);
 
-            composite.setLayout(new GridLayout(1, false));
+            final GridLayout gl = new GridLayout(2, false);
+            //gl.marginHeight = 0;
+            //gl.marginWidth = 0;
+            composite.setLayout(gl);
             composite.setBackground(bg);
 
             patternText = new Text(composite, SWT.NONE);
             patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             patternText.setBackground(bg);
 
-            UIUtils.createHorizontalLine(composite);
+            Button newButton = new Button(composite, SWT.PUSH | SWT.FLAT | SWT.NO_FOCUS);
+            newButton.setText("&New Script");
 
-            scriptTable = new Tree(composite, SWT.NONE);
-            scriptTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+            ((GridData)UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
+
+            scriptTable = new Tree(composite, SWT.MULTI | SWT.FULL_SELECTION);
+            final GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 2;
+            scriptTable.setLayoutData(gd);
             scriptTable.setBackground(bg);
+            scriptTable.setLinesVisible(true);
             //scriptTable.setHeaderVisible(true);
             UIUtils.createTreeColumn(scriptTable, SWT.LEFT, "Script");
             UIUtils.createTreeColumn(scriptTable, SWT.LEFT, "Info");
 
-            for (IFile scriptFile : scriptFiles) {
+            for (IFile scriptFile : this.scriptFiles) {
                 final TreeItem item = new TreeItem(scriptTable, SWT.NONE);
+                item.setData(scriptFile);
                 item.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-                item.setText(0, scriptFile.getName());
-                item.setText(1, "");
+                item.setText(0, scriptFile.getName() + "  ");
+
+                String desc = SQLUtils.getScriptDescription(scriptFile);
+                if (CommonUtils.isEmptyTrimmed(desc)) {
+                    desc = "<empty>";
+                }
+                item.setText(1, desc);
             }
 
+            scriptTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    List<IFile> files = new ArrayList<>();
+                    for (TreeItem item : scriptTable.getSelection()) {
+                        files.add((IFile) item.getData());
+                    }
+                    popup.dispose();
+                    for (IFile file : files) {
+                        NavigatorHandlerObjectOpen.openResource(
+                            file,
+                            ScriptSelectorShell.this.workbenchWindow);
+                    }
+                }
+            });
+            this.patternText.addKeyListener(new KeyAdapter() {
+                @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.keyCode == SWT.ARROW_DOWN) {
+                        scriptTable.select(scriptTable.getItem(0));
+                        scriptTable.setFocus();
+                    } else if (e.keyCode == SWT.ARROW_UP) {
+                        scriptTable.select(scriptTable.getItem(scriptTable.getItemCount() - 1));
+                        scriptTable.setFocus();
+                    }
+                }
+            });
 
             final Listener focusFilter = new Listener() {
                 public void handleEvent(Event event)
@@ -152,7 +204,17 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             // Fill script list
             popup.layout();
             popup.setVisible(true);
-            UIUtils.packColumns(scriptTable, true, null);
+            final int totalWidth = scriptTable.getSize().x;
+            final TreeColumn column0 = scriptTable.getColumn(0);
+            final TreeColumn column1 = scriptTable.getColumn(1);
+            column0.pack();
+            column1.pack();
+            if (column0.getWidth() + column1.getWidth() < totalWidth) {
+                column1.setWidth(totalWidth - column0.getWidth());
+            }
+            //int nameWidth = Math.max(100, totalWidth / 2);
+            //scriptTable.getColumn(1).setWidth(totalWidth - column0.x);
+            //UIUtils.packColumns(scriptTable, true, new float[] {0.7f, 0.3f});
 
             patternText.setFocus();
         }
