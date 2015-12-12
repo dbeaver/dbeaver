@@ -156,7 +156,12 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
                 public void widgetDefaultSelected(SelectionEvent e) {
                     List<IFile> files = new ArrayList<>();
                     for (TreeItem item : scriptTable.getSelection()) {
-                        files.add((IFile) item.getData());
+                        if (item.getData() instanceof IFile) {
+                            files.add((IFile) item.getData());
+                        }
+                    }
+                    if (files.isEmpty()) {
+                        return;
                     }
                     popup.dispose();
                     for (IFile file : files) {
