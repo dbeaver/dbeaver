@@ -22,11 +22,14 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,6 +42,7 @@ import java.util.ResourceBundle;
  */
 public class DBeaverActivator extends AbstractUIPlugin
 {
+    static final Log log = Log.getLog(DBeaverActivator.class);
 
     // The shared instance
     private static DBeaverActivator instance;
@@ -62,6 +66,14 @@ public class DBeaverActivator extends AbstractUIPlugin
     public void start(BundleContext context)
         throws Exception
     {
+        context.addBundleListener(new BundleListener() {
+            @Override
+            public void bundleChanged(BundleEvent event) {
+                if (event.getType() == BundleEvent.STARTED) {
+                    log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                }
+            }
+        });
         super.start(context);
 
         instance = this;
