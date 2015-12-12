@@ -75,7 +75,7 @@ public class BaseAuthDialog extends BaseDialog
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
         Composite addrGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);

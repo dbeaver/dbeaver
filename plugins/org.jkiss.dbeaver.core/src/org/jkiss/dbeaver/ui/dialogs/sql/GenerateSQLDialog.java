@@ -29,7 +29,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
@@ -73,9 +72,9 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
         Composite controlsPanel = UIUtils.createPlaceholder(composite, 1, 5);
         GridData gd = new GridData(GridData.FILL_BOTH);
         //gd.heightHint = 300;

@@ -21,7 +21,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
@@ -45,9 +44,9 @@ public class EditTextDialog extends BaseDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Composite createDialogArea(Composite parent)
     {
-        Composite composite = (Composite) super.createDialogArea(parent);
+        Composite composite = super.createDialogArea(parent);
 
         textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         textControl.setText(text);

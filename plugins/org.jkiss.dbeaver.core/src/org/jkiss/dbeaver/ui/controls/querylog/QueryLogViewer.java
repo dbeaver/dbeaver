@@ -841,7 +841,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
 	    @Override
-        protected Control createDialogArea(Composite parent) {
+        protected Composite createDialogArea(Composite parent) {
 
             final Composite composite = new Composite(parent, SWT.NONE);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
