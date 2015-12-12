@@ -351,7 +351,6 @@ public class DBNResource extends DBNNode
 
     protected void handleResourceChange(IResourceDelta delta)
     {
-        DBNModel model = getModel();
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Update this node in navigator
             refreshResourceState(delta);
