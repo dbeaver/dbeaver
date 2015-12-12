@@ -60,19 +60,4 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         return null;
     }
 
-    public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) {
-        IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        IFile scriptFile;
-        try {
-            scriptFile = ScriptsHandlerImpl.findRecentScript(project, dataSourceContainer);
-            if (scriptFile == null) {
-                scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
-            }
-            NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
-        }
-        catch (CoreException e) {
-            log.error(e);
-        }
-    }
-
 }
