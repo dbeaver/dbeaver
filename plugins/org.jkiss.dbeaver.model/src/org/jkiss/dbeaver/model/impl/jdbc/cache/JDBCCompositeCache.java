@@ -278,7 +278,7 @@ public abstract class JDBCCompositeCache<
                             // At least one of rows is broken.
                             // So entire object is broken, let's just skip it.
                             objectInfo.broken = true;
-                            log.warn("Object '" + objectName + "' metadata corrupted");
+                            log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
                             continue;
                         }
                         objectInfo.rows.add(rowRef);
