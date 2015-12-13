@@ -23,6 +23,7 @@ import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -50,8 +51,14 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     protected void fillContributionItems(List<IContributionItem> menuItems)
     {
         IWorkbenchPart activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
-
-        ISelection selection = activePart.getSite().getSelectionProvider().getSelection();
+        if (activePart == null) {
+            return;
+        }
+        final ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+        if (selectionProvider == null) {
+            return;
+        }
+        ISelection selection = selectionProvider.getSelection();
         if (!(selection instanceof IStructuredSelection)) {
             return;
         }
@@ -68,7 +75,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         boolean hasTools = false;
         if (!CommonUtils.isEmpty(tools)) {
             IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
-            if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
+            if (workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {
                     Map<ToolGroupDescriptor, MenuManager> groupsMap = new HashMap<>();
