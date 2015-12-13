@@ -159,6 +159,11 @@ public class ViewerColumnController {
         }
     }
 
+    public void sortByColumn(int index, int direction) {
+        final ColumnInfo columnInfo = columns.get(index);
+        columnInfo.sortListener.sortViewer(columnInfo.column, direction);
+    }
+
     private void createVisibleColumns()
     {
         for (final ColumnInfo columnInfo : getVisibleColumns()) {
@@ -202,7 +207,8 @@ public class ViewerColumnController {
                 columnInfo.column = column;
             }
             if (columnInfo.labelProvider instanceof ILabelProvider) {
-                columnInfo.column.addListener(SWT.Selection, new SortListener(columnInfo));
+                columnInfo.sortListener = new SortListener(columnInfo);
+                columnInfo.column.addListener(SWT.Selection, columnInfo.sortListener);
             }
         }
     }
@@ -272,6 +278,7 @@ public class ViewerColumnController {
         int order;
         int width;
         Item column;
+        SortListener sortListener;
 
         private ColumnInfo(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider, int order)
         {
@@ -364,13 +371,18 @@ public class ViewerColumnController {
 
         @Override
         public void handleEvent(Event e) {
-            Collator collator = Collator.getInstance();
             Item column = (Item)e.widget;
             if (prevColumn == column) {
                 // Set reverse order
                 sortDirection = sortDirection == SWT.UP ? SWT.DOWN : SWT.UP;
             }
             prevColumn = column;
+
+            sortViewer(column, sortDirection);
+        }
+
+        private void sortViewer(Item column, final int sortDirection) {
+            Collator collator = Collator.getInstance();
             if (viewer instanceof TreeViewer) {
                 ((TreeViewer)viewer).getTree().setSortColumn((TreeColumn) column);
                 ((TreeViewer)viewer).getTree().setSortDirection(sortDirection);
