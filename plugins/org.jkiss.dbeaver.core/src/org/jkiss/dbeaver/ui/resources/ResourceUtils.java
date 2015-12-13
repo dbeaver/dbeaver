@@ -60,6 +60,9 @@ public class ResourceUtils {
             return localFile;
         }
 
+        public boolean isDirectory() {
+            return resource instanceof IFolder;
+        }
         public List<ResourceInfo> getChildren() {
             return children;
         }
@@ -90,6 +93,11 @@ public class ResourceUtils {
             }
 
             return description;
+        }
+
+        @Override
+        public String toString() {
+            return resource.getName();
         }
     }
 

@@ -59,7 +59,7 @@ public final class SQLUtils {
     public static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     public static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
-    public static final int MAX_SQL_DESCRIPTION_LENGTH = 200;
+    public static final int MAX_SQL_DESCRIPTION_LENGTH = 500;
 
     public static String stripTransformations(String query)
     {
@@ -445,6 +445,7 @@ public final class SQLUtils {
     public static String getScriptDescription(@NotNull IFile sqlScript)
     {
         try {
+            log.debug("Read script '" + sqlScript.getName() + "' description");
             StringBuilder sql = new StringBuilder();
             try (Reader is = new InputStreamReader(sqlScript.getContents())) {
                 char[] buffer = new char[1024];

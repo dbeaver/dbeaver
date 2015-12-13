@@ -177,7 +177,7 @@ public class ScriptSelectorPanel {
         columnController.addColumn("Script", "Resource name", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public Image getImage(Object element) {
-                if (element instanceof ResourceInfo && ((ResourceInfo) element).getResource() instanceof IFile) {
+                if (element instanceof ResourceInfo && !((ResourceInfo) element).isDirectory()) {
                     return DBeaverIcons.getImage(UIIcon.SQL_SCRIPT);
                 } else {
                     return DBeaverIcons.getImage(DBIcon.TREE_FOLDER);
@@ -205,7 +205,7 @@ public class ScriptSelectorPanel {
         columnController.addColumn("Info", "Script preview", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                return ((ResourceInfo)element).getDescription();
+                return "";//((ResourceInfo)element).getDescription();
             }
         });
         columnController.createColumns();
@@ -227,6 +227,16 @@ public class ScriptSelectorPanel {
                     NavigatorHandlerObjectOpen.openResource(
                         file,
                         ScriptSelectorPanel.this.workbenchWindow);
+                }
+            }
+        });
+
+        scriptTree.addListener(SWT.PaintItem, new Listener() {
+            public void handleEvent(Event event) {
+                TreeItem item = (TreeItem) event.item;
+                ResourceInfo ri = (ResourceInfo) item.getData();
+                if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
+                    item.setText(2, ri.getDescription());
                 }
             }
         });
@@ -280,10 +290,13 @@ public class ScriptSelectorPanel {
         final TreeColumn[] columns = tree.getColumns();
         columns[0].pack();
         columns[1].pack();
+/*
         columns[2].pack();
         if (columns[0].getWidth() + columns[1].getWidth() + columns[2].getWidth() < totalWidth) {
             columns[2].setWidth(totalWidth - columns[0].getWidth() - columns[1].getWidth());
         }
+*/
+        columns[2].setWidth(200 * 8);
         columnController.sortByColumn(1, SWT.UP);
 
         patternText.setFocus();
