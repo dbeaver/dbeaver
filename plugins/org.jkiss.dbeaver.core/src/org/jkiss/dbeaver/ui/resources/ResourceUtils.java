@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -49,6 +50,7 @@ public class ResourceUtils {
         private final IResource resource;
         private final File localFile;
         private final List<ResourceInfo> children;
+        private String description;
 
         public IResource getResource() {
             return resource;
@@ -71,6 +73,23 @@ public class ResourceUtils {
             resource = folder;
             localFile = folder.getLocation().toFile();
             children = new ArrayList<>();
+        }
+
+        public String getDescription() {
+            if (description == null) {
+                if (localFile.isDirectory()) {
+                    return null;
+                } else if (SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
+                    description = SQLUtils.getScriptDescription((IFile) resource);
+                    if (CommonUtils.isEmptyTrimmed(description)) {
+                        description = "<empty>";
+                    }
+                } else {
+                    description = "";
+                }
+            }
+
+            return description;
         }
     }
 

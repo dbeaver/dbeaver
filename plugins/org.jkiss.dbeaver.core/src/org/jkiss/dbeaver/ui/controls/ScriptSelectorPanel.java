@@ -21,6 +21,9 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -31,6 +34,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -66,6 +70,7 @@ public class ScriptSelectorPanel {
     private List<ResourceInfo> rawFiles;
     private List<ResourceInfo> input;
     private final ViewerColumnController columnController;
+    private volatile FilterJob filterJob;
 
     public ScriptSelectorPanel(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder) {
         this.workbenchWindow = workbenchWindow;
@@ -91,7 +96,11 @@ public class ScriptSelectorPanel {
         patternText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
-                scriptViewer.setFilters(new ViewerFilter[] { new PatternFilter() });
+                if (filterJob != null) {
+                    return;
+                }
+                filterJob = new FilterJob();
+                filterJob.schedule(250);
             }
         });
 
@@ -175,16 +184,7 @@ public class ScriptSelectorPanel {
         columnController.addColumn("Info", "Script preview", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
-                final File localFile = ((ResourceInfo) element).getLocalFile();
-                if (localFile.isDirectory()) {
-                    return null;
-                } else {
-                    String desc = SQLUtils.getScriptDescription((IFile) ((ResourceInfo) element).getResource());
-                    if (CommonUtils.isEmptyTrimmed(desc)) {
-                        desc = "<empty>";
-                    }
-                    return desc;
-                }
+                return ((ResourceInfo)element).getDescription();
             }
         });
         columnController.createColumns();
@@ -275,20 +275,12 @@ public class ScriptSelectorPanel {
 
         scriptViewer.setInput(this.input);
         scriptViewer.expandAll();
-/*
-
-        scriptViewer.removeAll();
-
-        for (ResourceInfo file : rawFiles) {
-            createFileItem(null, file);
-        }
-*/
     }
 
-    private class PatternFilter extends ViewerFilter {
+    private class ScriptFilter extends ViewerFilter {
         private final String pattern;
 
-        public PatternFilter() {
+        public ScriptFilter() {
             pattern = patternText.getText().toLowerCase(Locale.ENGLISH);
         }
 
@@ -296,11 +288,42 @@ public class ScriptSelectorPanel {
         public boolean select(Viewer viewer, Object parentElement, Object element) {
             final IResource resource = ((ResourceInfo) element).getResource();
             if (resource instanceof IFolder) {
-                return true;
+                return isAnyChildMatches((ResourceInfo) element);
             } else {
                 return resource.getName().toLowerCase(Locale.ENGLISH).contains(pattern);
             }
         }
+
+        private boolean isAnyChildMatches(ResourceInfo ri) {
+            for (ResourceInfo child : ri.getChildren()) {
+                if (child.getResource() instanceof IFolder) {
+                    if (isAnyChildMatches(child)) {
+                        return true;
+                    }
+                } else {
+                    if (child.getResource().getName().toLowerCase(Locale.ENGLISH).contains(pattern)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
     }
 
+    private class FilterJob extends UIJob {
+        public FilterJob() {
+            super("Filter scripts");
+        }
+        @Override
+        public IStatus runInUIThread(IProgressMonitor monitor) {
+            filterJob = null;
+            scriptViewer.setFilters(new ViewerFilter[] { new ScriptFilter() });
+            scriptViewer.expandAll();
+            final Tree tree = scriptViewer.getTree();
+            if (tree.getItemCount() > 0) {
+                scriptViewer.reveal(tree.getItem(0).getData());
+            }
+            return Status.OK_STATUS;
+        }
+    }
 }
