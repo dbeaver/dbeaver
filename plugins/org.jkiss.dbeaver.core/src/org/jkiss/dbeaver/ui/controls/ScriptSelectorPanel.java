@@ -24,11 +24,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -38,7 +40,6 @@ import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -61,13 +62,13 @@ import java.util.Locale;
 public class ScriptSelectorPanel {
 
     static final Log log = Log.getLog(ScriptSelectorPanel.class);
+    public static final String CONFIG_BOUNDS_PARAM = "bounds";
 
     private final IWorkbenchWindow workbenchWindow;
     private final Shell popup;
     private final Text patternText;
     private final TreeViewer scriptViewer;
     private final Button newButton;
-    private List<ResourceInfo> rawFiles;
     private List<ResourceInfo> input;
     private final ViewerColumnController columnController;
     private volatile FilterJob filterJob;
@@ -78,9 +79,29 @@ public class ScriptSelectorPanel {
 
         final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 
-        popup = new Shell(parent, SWT.RESIZE);
+        popup = new Shell(parent, SWT.RESIZE | SWT.TITLE | SWT.CLOSE);
+        if (dataSourceContainer != null) {
+            popup.setText("Choose SQL script for '" + dataSourceContainer.getName() + "'");
+            popup.setImage(DBeaverIcons.getImage(dataSourceContainer.getDriver().getIcon()));
+        } else {
+            popup.setText("Choose SQL script");
+        }
         popup.setLayout(new FillLayout());
-        popup.setBounds(100, 100, 500, 200);
+        Rectangle bounds = new Rectangle(100, 100, 500, 200);
+        final String boundsStr = getBoundsSettings().get(CONFIG_BOUNDS_PARAM);
+        if (boundsStr != null && !boundsStr.isEmpty()) {
+            final String[] bc = boundsStr.split(",");
+            try {
+                bounds = new Rectangle(
+                    Integer.parseInt(bc[0]),
+                    Integer.parseInt(bc[1]),
+                    Integer.parseInt(bc[2]),
+                    Integer.parseInt(bc[3]));
+            } catch (NumberFormatException e) {
+                log.warn(e);
+            }
+        }
+        popup.setBounds(bounds);
 
         Composite composite = new Composite(popup, SWT.NONE);
 
@@ -236,9 +257,15 @@ public class ScriptSelectorPanel {
         popup.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
+                final Rectangle bounds = popup.getBounds();
+                getBoundsSettings().put(CONFIG_BOUNDS_PARAM, bounds.x + "," + bounds.y + "," + bounds.width + "," + bounds.height);
                 popup.getDisplay().removeFilter(SWT.FocusIn, focusFilter);
             }
         });
+    }
+
+    IDialogSettings getBoundsSettings() {
+        return UIUtils.getDialogSettings("DBeaver.ScriptSelectorPanel");
     }
 
     public void showTree(List<ResourceInfo> scriptFiles) {
@@ -270,8 +297,7 @@ public class ScriptSelectorPanel {
 //                    return (int)(o2.getLocation().toFile().lastModified() / 1000 - o1.getLocation().toFile().lastModified() / 1000);
 //                }
 //            });
-        this.rawFiles = new ArrayList<>(scriptFiles);
-        this.input = new ArrayList<>(rawFiles);
+        this.input = new ArrayList<>(scriptFiles);
 
         scriptViewer.setInput(this.input);
         scriptViewer.expandAll();

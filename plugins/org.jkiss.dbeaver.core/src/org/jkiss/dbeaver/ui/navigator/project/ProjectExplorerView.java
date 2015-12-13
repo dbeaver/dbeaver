@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.ProgramInfo;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ViewerColumnController;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
 
@@ -116,6 +113,20 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
                 return "";
             }
+            @Override
+            public Image getImage(Object element) {
+                DBNNode node = (DBNNode) element;
+                if (node instanceof DBNDatabaseNode) {
+                    return DBeaverIcons.getImage(((DBNDatabaseNode) node).getDataSourceContainer().getDriver().getIcon());
+                } else if (node instanceof DBNResource) {
+                    Collection<DBPDataSourceContainer> containers = ((DBNResource) node).getAssociatedDataSources();
+                    if (containers != null && containers.size() == 1) {
+                        return DBeaverIcons.getImage((containers.iterator().next().getDriver().getIcon()));
+                    }
+                }
+                return null;
+            }
+
         }));
         columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
