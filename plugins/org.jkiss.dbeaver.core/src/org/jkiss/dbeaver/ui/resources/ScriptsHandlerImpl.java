@@ -21,12 +21,10 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -34,14 +32,9 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
 
-import java.io.ByteArrayInputStream;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 /**
  * Scripts handler
@@ -49,86 +42,6 @@ import java.util.List;
 public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
     static final Log log = Log.getLog(ScriptsHandlerImpl.class);
-
-    public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
-
-    public static IFolder getScriptsFolder(IProject project, boolean forceCreate) throws CoreException
-    {
-    	if (project == null) {
-    		IStatus status = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), "No active project to locate Script Folder");
-			throw new CoreException(status);
-		}
-        final IFolder scriptsFolder = DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, ScriptsHandlerImpl.class);
-        if (!scriptsFolder.exists() && forceCreate) {
-            scriptsFolder.create(true, true, new NullProgressMonitor());
-        }
-        return scriptsFolder;
-    }
-
-    @Nullable
-    public static IFile findRecentScript(IProject project, @Nullable DBPDataSourceContainer container) throws CoreException
-    {
-        List<IFile> scripts = new ArrayList<>();
-        findScriptsByDataSource(ScriptsHandlerImpl.getScriptsFolder(project, false), container, scripts);
-        long recentTimestamp = 0l;
-        IFile recentFile = null;
-        for (IFile file : scripts) {
-            if (file.getLocalTimeStamp() > recentTimestamp) {
-                recentTimestamp = file.getLocalTimeStamp();
-                recentFile = file;
-            }
-        }
-        return recentFile;
-    }
-
-    public static void findScriptsByDataSource(IFolder folder, @Nullable DBPDataSourceContainer container, List<IFile> result)
-    {
-        try {
-            for (IResource resource : folder.members()) {
-                if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    if (SQLEditorInput.getScriptDataSource((IFile) resource) == container) {
-                        result.add((IFile) resource);
-                    }
-                } else if (resource instanceof IFolder) {
-                    findScriptsByDataSource((IFolder) resource, container, result);
-                }
-
-            }
-        } catch (CoreException e) {
-            log.debug(e);
-        }
-    }
-
-    public static IFile createNewScript(IProject project, @Nullable IFolder folder, @Nullable DBPDataSourceContainer dataSourceContainer) throws CoreException
-    {
-        final IProgressMonitor progressMonitor = new NullProgressMonitor();
-
-        // Get folder
-        IFolder scriptsFolder = folder;
-        if (scriptsFolder == null) {
-            scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(project, true);
-            if (dataSourceContainer != null && dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)) {
-                IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
-                if (dbFolder != null) {
-                    if (!dbFolder.exists()) {
-                        dbFolder.create(true, true, progressMonitor);
-                    }
-                    scriptsFolder = dbFolder;
-                }
-            }
-        }
-
-        // Make new script file
-        IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
-        tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
-
-        // Save ds container reference
-        if (dataSourceContainer != null) {
-            SQLEditorInput.setScriptDataSource(tempFile, dataSourceContainer);
-        }
-
-        return tempFile;
-    }
 
     @Override
     public int getFeatures(IResource resource)

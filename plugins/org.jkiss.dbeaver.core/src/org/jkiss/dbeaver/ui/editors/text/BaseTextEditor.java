@@ -56,7 +56,7 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
-import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -378,7 +378,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
             try {
                 // TODO: change to EFS
                 IPath location = new Path(saveFile.getAbsolutePath());
-                IFolder scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(curFile.getProject(), true);
+                IFolder scriptsFolder = ResourceUtils.getScriptsFolder(curFile.getProject(), true);
                 IFile newFile = scriptsFolder.getFile(location.lastSegment());
                 newFile.createLink(location, IResource.NONE, null);
 
