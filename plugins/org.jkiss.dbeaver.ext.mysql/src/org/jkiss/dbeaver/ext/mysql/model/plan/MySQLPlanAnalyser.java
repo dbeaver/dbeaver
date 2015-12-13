@@ -18,15 +18,14 @@
 package org.jkiss.dbeaver.ext.mysql.model.plan;
 
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -63,7 +62,7 @@ public class MySQLPlanAnalyser implements DBCPlan {
     public void explain(DBCSession session)
         throws DBCException
     {
-        String plainQuery = SQLUtils.stripComments((SQLDataSource) session.getDataSource(), query).toUpperCase();
+        String plainQuery = SQLUtils.stripComments(SQLUtils.getDialectFromObject(session.getDataSource()), query).toUpperCase();
         if (!plainQuery.startsWith("SELECT")) {
             throw new DBCException("Only SELECT statements could produce execution plan");
         }

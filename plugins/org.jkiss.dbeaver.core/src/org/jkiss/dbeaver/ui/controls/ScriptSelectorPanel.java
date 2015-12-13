@@ -177,8 +177,13 @@ public class ScriptSelectorPanel {
         columnController.addColumn("Script", "Resource name", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public Image getImage(Object element) {
-                if (element instanceof ResourceInfo && !((ResourceInfo) element).isDirectory()) {
-                    return DBeaverIcons.getImage(UIIcon.SQL_SCRIPT);
+                final ResourceInfo ri = (ResourceInfo) element;
+                if (!ri.isDirectory()) {
+                    if (ri.getDataSource() == null) {
+                        return DBeaverIcons.getImage(UIIcon.SQL_SCRIPT);
+                    } else {
+                        return DBeaverIcons.getImage(ri.getDataSource().getDriver().getIcon());
+                    }
                 } else {
                     return DBeaverIcons.getImage(DBIcon.TREE_FOLDER);
                 }
@@ -209,6 +214,7 @@ public class ScriptSelectorPanel {
             }
         });
         columnController.createColumns();
+        columnController.sortByColumn(1, SWT.UP);
 
         scriptTree.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -286,34 +292,19 @@ public class ScriptSelectorPanel {
         loadScriptTree(scriptFiles);
 
         final Tree tree = scriptViewer.getTree();
-        final int totalWidth = tree.getSize().x;
         final TreeColumn[] columns = tree.getColumns();
         columns[0].pack();
         columns[1].pack();
-/*
-        columns[2].pack();
-        if (columns[0].getWidth() + columns[1].getWidth() + columns[2].getWidth() < totalWidth) {
-            columns[2].setWidth(totalWidth - columns[0].getWidth() - columns[1].getWidth());
-        }
-*/
         columns[2].setWidth(200 * 8);
-        columnController.sortByColumn(1, SWT.UP);
 
         patternText.setFocus();
     }
 
     private void loadScriptTree(List<ResourceInfo> scriptFiles) {
-//            scriptFiles = new ArrayList<>(scriptFiles);
-//            Collections.sort(scriptFiles, new Comparator<IFile>() {
-//                @Override
-//                public int compare(IFile o1, IFile o2) {
-//                    return (int)(o2.getLocation().toFile().lastModified() / 1000 - o1.getLocation().toFile().lastModified() / 1000);
-//                }
-//            });
         this.input = new ArrayList<>(scriptFiles);
 
         scriptViewer.setInput(this.input);
-        scriptViewer.expandAll();
+        scriptViewer.expandToLevel(2);
     }
 
     private class ScriptFilter extends ViewerFilter {

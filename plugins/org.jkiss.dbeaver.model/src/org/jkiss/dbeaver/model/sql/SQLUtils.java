@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Collection;
@@ -71,9 +72,8 @@ public final class SQLUtils {
 //        }
     }
 
-    public static String stripComments(SQLDataSource dataSource, String query)
+    public static String stripComments(SQLDialect dialect, String query)
     {
-        SQLDialect dialect = dataSource.getSQLDialect();
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
         return stripComments(
             query,
@@ -430,6 +430,7 @@ public final class SQLUtils {
     }
 
     public static String getScriptDescripion(String sql) {
+        sql = stripComments(BasicSQLDialect.INSTANCE, sql);
         Matcher matcher = CREATE_PREFIX_PATTERN.matcher(sql);
         if (matcher.find() && matcher.start(0) == 0) {
             sql = sql.substring(matcher.end(1));
@@ -447,20 +448,22 @@ public final class SQLUtils {
         try {
             log.debug("Read script '" + sqlScript.getName() + "' description");
             StringBuilder sql = new StringBuilder();
-            try (Reader is = new InputStreamReader(sqlScript.getContents())) {
-                char[] buffer = new char[1024];
+            try (BufferedReader is = new BufferedReader(new InputStreamReader(sqlScript.getContents()))) {
                 for (;;) {
-                    final int count = is.read(buffer);
-                    if (count <= 0) {
+                    String line = is.readLine();
+                    if (line == null) {
                         break;
                     }
-                    int start = 0;
-                    for (; start < count; start++) {
-                        if (!Character.isWhitespace(buffer[start])) {
-                            break;
-                        }
+                    line = line.trim();
+                    if (line.startsWith("--") ||
+                        line.startsWith("Rem") ||
+                        line.startsWith("rem") ||
+                        line.startsWith("REM")
+                        )
+                    {
+                        continue;
                     }
-                    sql.append(buffer, start, count - start);
+                    sql.append(line).append('\n');
                     if (sql.length() > MIN_SQL_DESCRIPTION_LENGTH) {
                         break;
                     }

@@ -49,8 +49,22 @@ public class ResourceUtils {
     public static class ResourceInfo {
         private final IResource resource;
         private final File localFile;
+        private final DBPDataSourceContainer dataSource;
         private final List<ResourceInfo> children;
         private String description;
+
+        public ResourceInfo(IFile file, DBPDataSourceContainer dataSource) {
+            this.resource = file;
+            this.localFile = file.getLocation().toFile();
+            this.dataSource = dataSource;
+            this.children = null;
+        }
+        public ResourceInfo(IFolder folder) {
+            this.resource = folder;
+            this.localFile = folder.getLocation().toFile();
+            this.dataSource = null;
+            this.children = new ArrayList<>();
+        }
 
         public IResource getResource() {
             return resource;
@@ -60,22 +74,15 @@ public class ResourceUtils {
             return localFile;
         }
 
+        public DBPDataSourceContainer getDataSource() {
+            return dataSource;
+        }
+
         public boolean isDirectory() {
             return resource instanceof IFolder;
         }
         public List<ResourceInfo> getChildren() {
             return children;
-        }
-
-        public ResourceInfo(IFile file) {
-            resource = file;
-            localFile = file.getLocation().toFile();
-            children = null;
-        }
-        public ResourceInfo(IFolder folder) {
-            resource = folder;
-            localFile = folder.getLocation().toFile();
-            children = new ArrayList<>();
         }
 
         public String getDescription() {
@@ -135,8 +142,9 @@ public class ResourceUtils {
         try {
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    if (SQLEditorInput.getScriptDataSource((IFile) resource) == container) {
-                        result.add(new ResourceInfo((IFile) resource));
+                    final DBPDataSourceContainer scriptDataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+                    if (container == null || scriptDataSource == container) {
+                        result.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     }
                 } else if (resource instanceof IFolder) {
                     findScriptList((IFolder) resource, container, result);
@@ -154,8 +162,9 @@ public class ResourceUtils {
         try {
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    if (SQLEditorInput.getScriptDataSource((IFile) resource) == container) {
-                        result.add(new ResourceInfo((IFile) resource));
+                    final DBPDataSourceContainer scriptDataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+                    if (container == null || scriptDataSource == container) {
+                        result.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     }
                 } else if (resource instanceof IFolder) {
                     final ResourceInfo folderInfo = new ResourceInfo((IFolder) resource);
@@ -175,8 +184,9 @@ public class ResourceUtils {
         boolean hasScripts = false;
         for (IResource resource : ((IFolder)folder.resource).members()) {
             if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                if (SQLEditorInput.getScriptDataSource((IFile) resource) == container) {
-                    folder.children.add(new ResourceInfo((IFile) resource));
+                final DBPDataSourceContainer scriptDataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+                if (container == null || scriptDataSource == container) {
+                    folder.children.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     hasScripts = true;
                 }
             } else if (resource instanceof IFolder) {
