@@ -31,7 +31,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
@@ -140,8 +140,8 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
                 }
             }
             String targetName = file.getName();
-            if (!targetName.toLowerCase().endsWith("." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION)) { //$NON-NLS-1$
-                targetName += "." + ScriptsHandlerImpl.SCRIPT_FILE_EXTENSION; //$NON-NLS-1$
+            if (!targetName.toLowerCase().endsWith("." + ResourceUtils.SCRIPT_FILE_EXTENSION)) { //$NON-NLS-1$
+                targetName += "." + ResourceUtils.SCRIPT_FILE_EXTENSION; //$NON-NLS-1$
             }
 
             final IFile targetFile = targetDir.getFile(targetName);

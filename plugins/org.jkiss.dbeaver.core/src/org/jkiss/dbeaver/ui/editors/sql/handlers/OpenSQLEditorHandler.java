@@ -41,7 +41,8 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils.ResourceInfo;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -62,25 +63,17 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             dataSourceContainer.getRegistry().getProject() :
             DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         try {
-            final IFolder rootFolder = ScriptsHandlerImpl.getScriptsFolder(project, false);
-            List<IFile> scriptFiles = new ArrayList<>();
-            ScriptsHandlerImpl.findScriptsByDataSource(rootFolder, dataSourceContainer, scriptFiles);
-            if (scriptFiles.isEmpty()) {
+            final IFolder rootFolder = ResourceUtils.getScriptsFolder(project, false);
+            final List<ResourceInfo> scriptTree = ResourceUtils.findScriptTree(rootFolder, dataSourceContainer);
+            if (scriptTree.isEmpty()) {
                 // Create new script
-                final IFile newScript = ScriptsHandlerImpl.createNewScript(project, rootFolder, dataSourceContainer);
+                final IFile newScript = ResourceUtils.createNewScript(project, rootFolder, dataSourceContainer);
                 NavigatorHandlerObjectOpen.openResource(newScript, workbenchWindow);
             } else {
                 // Show script chooser
                 ScriptSelectorShell selector = new ScriptSelectorShell(workbenchWindow, dataSourceContainer, rootFolder);
-                selector.show(scriptFiles);
+                selector.show(scriptTree);
             }
-/*
-            scriptFile = ScriptsHandlerImpl.findRecentScript(project, dataSourceContainer);
-            if (scriptFile == null) {
-                scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
-            }
-            NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
-*/
         }
         catch (CoreException e) {
             log.error(e);
@@ -98,6 +91,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         private final Text patternText;
         private final Tree scriptTable;
         private final Button newButton;
+        private List<ResourceInfo> rawFiles;
 
         public ScriptSelectorShell(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder) {
             this.workbenchWindow = workbenchWindow;
@@ -130,7 +124,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
                     popup.dispose();
                     IFile scriptFile;
                     try {
-                        scriptFile = ScriptsHandlerImpl.createNewScript(rootFolder.getProject(), rootFolder, dataSourceContainer);
+                        scriptFile = ResourceUtils.createNewScript(rootFolder.getProject(), rootFolder, dataSourceContainer);
                         NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
                     }
                     catch (CoreException ex) {
@@ -202,7 +196,7 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             });
         }
 
-        void show(List<IFile> scriptFiles) {
+        void show(List<ResourceInfo> scriptFiles) {
             // Fill script list
             popup.layout();
             popup.setVisible(true);
@@ -221,50 +215,42 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
             patternText.setFocus();
         }
 
-        private void loadScriptTree(List<IFile> scriptFiles) {
-            scriptFiles = new ArrayList<>(scriptFiles);
-            Collections.sort(scriptFiles, new Comparator<IFile>() {
-                @Override
-                public int compare(IFile o1, IFile o2) {
-                    return (int)(o2.getLocation().toFile().lastModified() / 1000 - o1.getLocation().toFile().lastModified() / 1000);
-                }
-            });
+        private void loadScriptTree(List<ResourceInfo> scriptFiles) {
+//            scriptFiles = new ArrayList<>(scriptFiles);
+//            Collections.sort(scriptFiles, new Comparator<IFile>() {
+//                @Override
+//                public int compare(IFile o1, IFile o2) {
+//                    return (int)(o2.getLocation().toFile().lastModified() / 1000 - o1.getLocation().toFile().lastModified() / 1000);
+//                }
+//            });
+            this.rawFiles = new ArrayList<>(scriptFiles);
 
             scriptTable.removeAll();
 
-            IFolder prevParent = null;
-            TreeItem prevParentNode = null;
-            for (IFile scriptFile : scriptFiles) {
-                IFolder parent = (IFolder) scriptFile.getParent();
-                TreeItem parentNode = null;
-                if (CommonUtils.equalObjects(parent, prevParent)) {
-                    parentNode = prevParentNode;
-                }
-                if (parentNode == null && !CommonUtils.equalObjects(parent, rootFolder)) {
-                    parentNode = new TreeItem(scriptTable, SWT.NONE);
-                    parentNode.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-                    parentNode.setText(0, parent.getName());
-                }
+            for (ResourceInfo file : rawFiles) {
+                createFileItem(null, file);
+            }
+       }
 
-                final TreeItem item = parentNode == null ?
-                    new TreeItem(scriptTable, SWT.NONE) :
-                    new TreeItem(parentNode, SWT.NONE);
-                item.setData(scriptFile);
+        private void createFileItem(TreeItem parentItem, ResourceInfo file) {
+            final TreeItem item = parentItem == null ?
+                new TreeItem(scriptTable, SWT.NONE) :
+                new TreeItem(parentItem, SWT.NONE);
+            item.setData(file);
+            item.setText(0, file.getResource().getName() + "  ");
+            if (file.getResource() instanceof IFile) {
                 item.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-                item.setText(0, scriptFile.getName() + "  ");
-                item.setExpanded(true);
-
-                String desc = SQLUtils.getScriptDescription(scriptFile);
+                String desc = SQLUtils.getScriptDescription((IFile) file.getResource());
                 if (CommonUtils.isEmptyTrimmed(desc)) {
                     desc = "<empty>";
                 }
                 item.setText(1, desc);
-                if (parentNode != null) {
-                    parentNode.setExpanded(true);
+            } else {
+                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
+                for (ResourceInfo child : file.getChildren()) {
+                    createFileItem(item, child);
                 }
-
-                prevParent = parent;
-                prevParentNode = parentNode;
+                item.setExpanded(true);
             }
         }
     }

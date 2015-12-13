@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 
 /**
  * Utils
@@ -47,7 +47,7 @@ class ScriptsExportUtils {
         DBNNode scriptsNode = projectNode;
         final IFolder scriptsFolder;
         try {
-            scriptsFolder = ScriptsHandlerImpl.getScriptsFolder(activeProject, false);
+            scriptsFolder = ResourceUtils.getScriptsFolder(activeProject, false);
         } catch (CoreException e) {
             log.error(e);
             return scriptsNode;

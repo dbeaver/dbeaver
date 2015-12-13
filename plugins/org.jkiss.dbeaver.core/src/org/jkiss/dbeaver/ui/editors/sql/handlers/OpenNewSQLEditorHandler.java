@@ -26,7 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
 public class OpenNewSQLEditorHandler extends BaseSQLEditorHandler {
@@ -39,7 +39,7 @@ public class OpenNewSQLEditorHandler extends BaseSQLEditorHandler {
         IFolder scriptFolder = getCurrentFolder(event);
         IFile scriptFile;
         try {
-            scriptFile = ScriptsHandlerImpl.createNewScript(project, scriptFolder, dataSourceContainer);
+            scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
         }
         catch (CoreException e) {
             log.error(e);
