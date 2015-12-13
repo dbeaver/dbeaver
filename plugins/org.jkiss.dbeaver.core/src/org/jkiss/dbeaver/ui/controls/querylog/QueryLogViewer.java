@@ -158,8 +158,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             QMMObject object = event.getObject();
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                if (exec.isClosed() && !exec.isFetching()) {
-                    return String.valueOf(exec.getCloseTime() - exec.getOpenTime()) + CoreMessages.controls_querylog__ms;
+                if (exec.isClosed()) {
+                    final long execTime = exec.getCloseTime() - exec.getOpenTime();
+                    final long fetchTime = exec.isFetching() ? 0 : exec.getFetchEndTime() - exec.getFetchBeginTime();
+                    return String.valueOf(execTime + fetchTime) + CoreMessages.controls_querylog__ms;
                 } else {
                     return ""; //$NON-NLS-1$
                 }
