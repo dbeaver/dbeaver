@@ -212,6 +212,11 @@ public class ScriptSelectorPanel {
             public String getText(Object element) {
                 return "";//((ResourceInfo)element).getDescription();
             }
+
+            @Override
+            public Color getForeground(Object element) {
+                return popup.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+            }
         });
         columnController.createColumns();
         columnController.sortByColumn(1, SWT.UP);
@@ -239,10 +244,15 @@ public class ScriptSelectorPanel {
 
         scriptTree.addListener(SWT.PaintItem, new Listener() {
             public void handleEvent(Event event) {
-                TreeItem item = (TreeItem) event.item;
-                ResourceInfo ri = (ResourceInfo) item.getData();
+                final TreeItem item = (TreeItem) event.item;
+                final ResourceInfo ri = (ResourceInfo) item.getData();
                 if (ri != null && !ri.isDirectory() && CommonUtils.isEmpty(item.getText(2))) {
-                    item.setText(2, ri.getDescription());
+                    UIUtils.runInDetachedUI(popup, new Runnable() {
+                        @Override
+                        public void run() {
+                            item.setText(2, ri.getDescription());
+                        }
+                    });
                 }
             }
         });

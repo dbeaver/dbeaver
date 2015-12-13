@@ -66,13 +66,13 @@
             icon="icons/templates_view.png"
             category="org.eclipse.ui"
             class="org.eclipse.ui.texteditor.templates.TemplatesView"/>
-        <view
+        <!--view
             id="org.eclipse.help.ui.HelpView"
             category="org.jkiss.dbeaver.core.category"
             class="org.jkiss.dbeaver.ui.help.LightweightHelpView"
             allowMultiple="false"
             icon="icons/help.png"
-            name="Help"/>
+            name="Help"/-->
         <view id="org.jkiss.dbeaver.ui.search.DatabaseSearchView"
             name="%view.search.title"
             icon="platform:/plugin/org.jkiss.dbeaver.core/icons/misc/find.png"
