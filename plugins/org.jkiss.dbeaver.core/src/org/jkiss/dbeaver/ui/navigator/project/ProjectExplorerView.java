@@ -131,7 +131,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
             }
         }));
         columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
-            private SimpleDateFormat sdf = new SimpleDateFormat("yyyy.MM.dd HH:mm");
+            private SimpleDateFormat sdf = new SimpleDateFormat(UIUtils.DEFAULT_TIMESTAMP_PATTERN);
             @Override
             public String getText(Object element) {
                 DBNNode node = (DBNNode) element;

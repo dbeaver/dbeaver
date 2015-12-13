@@ -19,10 +19,13 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -35,12 +38,18 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils.ResourceInfo;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Script selector panel (shell)
@@ -52,9 +61,11 @@ public class ScriptSelectorPanel {
     private final IWorkbenchWindow workbenchWindow;
     private final Shell popup;
     private final Text patternText;
-    private final Tree scriptTable;
+    private final TreeViewer scriptViewer;
     private final Button newButton;
-    private List<ResourceUtils.ResourceInfo> rawFiles;
+    private List<ResourceInfo> rawFiles;
+    private List<ResourceInfo> input;
+    private final ViewerColumnController columnController;
 
     public ScriptSelectorPanel(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder) {
         this.workbenchWindow = workbenchWindow;
@@ -64,7 +75,7 @@ public class ScriptSelectorPanel {
 
         popup = new Shell(parent, SWT.RESIZE);
         popup.setLayout(new FillLayout());
-        popup.setBounds(100, 100, 400, 200);
+        popup.setBounds(100, 100, 500, 200);
 
         Composite composite = new Composite(popup, SWT.NONE);
 
@@ -77,6 +88,12 @@ public class ScriptSelectorPanel {
         patternText = new Text(composite, SWT.NONE);
         patternText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         patternText.setBackground(bg);
+        patternText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                scriptViewer.setFilters(new ViewerFilter[] { new PatternFilter() });
+            }
+        });
 
         newButton = new Button(composite, SWT.PUSH | SWT.FLAT);
         newButton.setText("&New Script");
@@ -96,23 +113,89 @@ public class ScriptSelectorPanel {
 
         ((GridData) UIUtils.createHorizontalLine(composite).getLayoutData()).horizontalSpan = 2;
 
-        scriptTable = new Tree(composite, SWT.MULTI | SWT.FULL_SELECTION);
+        Tree scriptTree = new Tree(composite, SWT.MULTI | SWT.FULL_SELECTION);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
-        scriptTable.setLayoutData(gd);
-        scriptTable.setBackground(bg);
-        scriptTable.setLinesVisible(true);
-        //scriptTable.setHeaderVisible(true);
-        UIUtils.createTreeColumn(scriptTable, SWT.LEFT, "Script");
-        UIUtils.createTreeColumn(scriptTable, SWT.LEFT, "Info");
+        scriptTree.setLayoutData(gd);
+        scriptTree.setBackground(bg);
+        scriptTree.setLinesVisible(true);
+        //scriptViewer.setHeaderVisible(true);
 
-        scriptTable.addSelectionListener(new SelectionAdapter() {
+        this.scriptViewer = new TreeViewer(scriptTree);
+        //scriptTree.setS
+        this.scriptViewer.setContentProvider(new TreeContentProvider() {
+            @Override
+            public Object[] getChildren(Object parentElement) {
+                if (parentElement instanceof ResourceInfo) {
+                    final List<ResourceInfo> children = ((ResourceInfo) parentElement).getChildren();
+                    return CommonUtils.isEmpty(children) ? null : children.toArray();
+                }
+                return null;
+            }
+
+            @Override
+            public boolean hasChildren(Object element) {
+                if (element instanceof ResourceInfo) {
+                    final List<ResourceInfo> children = ((ResourceInfo) element).getChildren();
+                    return !CommonUtils.isEmpty(children);
+                }
+                return false;
+            }
+
+        });
+        columnController = new ViewerColumnController("scriptSelectorViewer", scriptViewer);
+        columnController.addColumn("Script", "Resource name", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            @Override
+            public Image getImage(Object element) {
+                if (element instanceof ResourceInfo && ((ResourceInfo) element).getResource() instanceof IFile) {
+                    return DBeaverIcons.getImage(UIIcon.SQL_SCRIPT);
+                } else {
+                    return DBeaverIcons.getImage(DBIcon.TREE_FOLDER);
+                }
+            }
+
+            @Override
+            public String getText(Object element) {
+                return ((ResourceInfo) element).getResource().getName();
+            }
+        });
+        columnController.addColumn("Time", "Modification time", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            private SimpleDateFormat sdf = new SimpleDateFormat(UIUtils.DEFAULT_TIMESTAMP_PATTERN);
+
+            @Override
+            public String getText(Object element) {
+                final File localFile = ((ResourceInfo) element).getLocalFile();
+                if (localFile.isDirectory()) {
+                    return null;
+                } else {
+                    return sdf.format(new Date(localFile.lastModified()));
+                }
+            }
+        });
+        columnController.addColumn("Info", "Script preview", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                final File localFile = ((ResourceInfo) element).getLocalFile();
+                if (localFile.isDirectory()) {
+                    return null;
+                } else {
+                    String desc = SQLUtils.getScriptDescription((IFile) ((ResourceInfo) element).getResource());
+                    if (CommonUtils.isEmptyTrimmed(desc)) {
+                        desc = "<empty>";
+                    }
+                    return desc;
+                }
+            }
+        });
+        columnController.createColumns();
+
+        scriptTree.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
                 List<IFile> files = new ArrayList<>();
-                for (TreeItem item : scriptTable.getSelection()) {
-                    if (item.getData() instanceof IFile) {
-                        files.add((IFile) item.getData());
+                for (Object item : ((IStructuredSelection)scriptViewer.getSelection()).toArray()) {
+                    if (((ResourceInfo)item).getResource() instanceof IFile) {
+                        files.add((IFile) ((ResourceInfo)item).getResource());
                     }
                 }
                 if (files.isEmpty()) {
@@ -129,19 +212,21 @@ public class ScriptSelectorPanel {
         this.patternText.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
+                final Tree tree = scriptViewer.getTree();
                 if (e.keyCode == SWT.ARROW_DOWN) {
-                    scriptTable.select(scriptTable.getItem(0));
-                    scriptTable.setFocus();
+                    //scriptViewer.get
+                    scriptViewer.setSelection(new StructuredSelection(tree.getItem(0).getData()));
+                    tree.setFocus();
                 } else if (e.keyCode == SWT.ARROW_UP) {
-                    scriptTable.select(scriptTable.getItem(scriptTable.getItemCount() - 1));
-                    scriptTable.setFocus();
+                    scriptViewer.setSelection(new StructuredSelection(tree.getItem(tree.getItemCount() - 1).getData()));
+                    tree.setFocus();
                 }
             }
         });
 
         final Listener focusFilter = new Listener() {
             public void handleEvent(Event event) {
-                if (event.widget != scriptTable && event.widget != patternText && event.widget != newButton) {
+                if (event.widget != scriptViewer.getTree() && event.widget != patternText && event.widget != newButton) {
                     popup.dispose();
                 }
             }
@@ -156,26 +241,28 @@ public class ScriptSelectorPanel {
         });
     }
 
-    public void showTree(List<ResourceUtils.ResourceInfo> scriptFiles) {
+    public void showTree(List<ResourceInfo> scriptFiles) {
         // Fill script list
         popup.layout();
         popup.setVisible(true);
 
         loadScriptTree(scriptFiles);
 
-        final int totalWidth = scriptTable.getSize().x;
-        final TreeColumn column0 = scriptTable.getColumn(0);
-        final TreeColumn column1 = scriptTable.getColumn(1);
-        column0.pack();
-        column1.pack();
-        if (column0.getWidth() + column1.getWidth() < totalWidth) {
-            column1.setWidth(totalWidth - column0.getWidth());
+        final Tree tree = scriptViewer.getTree();
+        final int totalWidth = tree.getSize().x;
+        final TreeColumn[] columns = tree.getColumns();
+        columns[0].pack();
+        columns[1].pack();
+        columns[2].pack();
+        if (columns[0].getWidth() + columns[1].getWidth() + columns[2].getWidth() < totalWidth) {
+            columns[2].setWidth(totalWidth - columns[0].getWidth() - columns[1].getWidth());
         }
+        columnController.sortByColumn(1, SWT.UP);
 
         patternText.setFocus();
     }
 
-    private void loadScriptTree(List<ResourceUtils.ResourceInfo> scriptFiles) {
+    private void loadScriptTree(List<ResourceInfo> scriptFiles) {
 //            scriptFiles = new ArrayList<>(scriptFiles);
 //            Collections.sort(scriptFiles, new Comparator<IFile>() {
 //                @Override
@@ -184,33 +271,36 @@ public class ScriptSelectorPanel {
 //                }
 //            });
         this.rawFiles = new ArrayList<>(scriptFiles);
+        this.input = new ArrayList<>(rawFiles);
 
-        scriptTable.removeAll();
+        scriptViewer.setInput(this.input);
+        scriptViewer.expandAll();
+/*
 
-        for (ResourceUtils.ResourceInfo file : rawFiles) {
+        scriptViewer.removeAll();
+
+        for (ResourceInfo file : rawFiles) {
             createFileItem(null, file);
         }
+*/
     }
 
-    private void createFileItem(TreeItem parentItem, ResourceUtils.ResourceInfo file) {
-        final TreeItem item = parentItem == null ?
-            new TreeItem(scriptTable, SWT.NONE) :
-            new TreeItem(parentItem, SWT.NONE);
-        item.setData(file);
-        item.setText(0, file.getResource().getName() + "  ");
-        if (file.getResource() instanceof IFile) {
-            item.setImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-            String desc = SQLUtils.getScriptDescription((IFile) file.getResource());
-            if (CommonUtils.isEmptyTrimmed(desc)) {
-                desc = "<empty>";
+    private class PatternFilter extends ViewerFilter {
+        private final String pattern;
+
+        public PatternFilter() {
+            pattern = patternText.getText().toLowerCase(Locale.ENGLISH);
+        }
+
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            final IResource resource = ((ResourceInfo) element).getResource();
+            if (resource instanceof IFolder) {
+                return true;
+            } else {
+                return resource.getName().toLowerCase(Locale.ENGLISH).contains(pattern);
             }
-            item.setText(1, desc);
-        } else {
-            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-            for (ResourceUtils.ResourceInfo child : file.getChildren()) {
-                createFileItem(item, child);
-            }
-            item.setExpanded(true);
         }
     }
+
 }
