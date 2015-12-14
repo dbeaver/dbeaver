@@ -255,7 +255,7 @@
 
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format SQL text" categoryId="org.jkiss.dbeaver.core.sql"/>
 
-        <command id="org.jkiss.dbeaver.ui.tools.menu" name="Tools menu" description="Shows menu with database tools" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.tools.menu" name="Context tools" description="Shows context menu with database tools" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -1299,6 +1299,7 @@
                 <menu label="%menu.database.tools" icon="icons/misc/tools.png">
                     <dynamic id="org.jkiss.dbeaver.core.menu.tools" class="org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolsContributor"/>
                 </menu>
+                <command commandId="org.jkiss.dbeaver.ui.tools.menu"/>
             </menu>
         </menuContribution>
 
