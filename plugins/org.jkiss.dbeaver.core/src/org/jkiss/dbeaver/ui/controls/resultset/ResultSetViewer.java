@@ -1510,8 +1510,8 @@ public class ResultSetViewer extends Viewer
                                     updateStatusMessage();
                                 }
                                 restorePresentationState(presentationState);
-                                activePresentation.updateValueView();
                             }
+                            activePresentation.updateValueView();
 
                             if (error == null) {
                                 setNewState(dataContainer, dataFilter != null ? dataFilter :

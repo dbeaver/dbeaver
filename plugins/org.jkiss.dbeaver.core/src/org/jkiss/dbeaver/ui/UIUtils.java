@@ -1342,6 +1342,12 @@ public class UIUtils {
         });
     }
 
+    public static void drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
+        Rectangle bounds = control.getBounds();
+        Point ext = e.gc.textExtent(message);
+        e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
+    }
+
     private static class SaveRunner implements Runnable {
         private final DBRProgressMonitor monitor;
         private final ISaveablePart saveable;
