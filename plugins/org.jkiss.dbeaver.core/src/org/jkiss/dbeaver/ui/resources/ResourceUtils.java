@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayInputStream;
@@ -156,19 +157,19 @@ public class ResourceUtils {
         }
     }
 
-    public static List<ResourceInfo> findScriptTree(IFolder folder, @Nullable DBPDataSourceContainer container)
+    public static List<ResourceInfo> findScriptTree(IFolder folder, @Nullable DBPDataSourceContainer[] containers)
     {
         List<ResourceInfo> result = new ArrayList<>();
         try {
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
                     final DBPDataSourceContainer scriptDataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
-                    if (container == null || scriptDataSource == container) {
+                    if (containers == null || ArrayUtils.containsRef(containers, scriptDataSource)) {
                         result.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     }
                 } else if (resource instanceof IFolder) {
                     final ResourceInfo folderInfo = new ResourceInfo((IFolder) resource);
-                    if (findChildScripts(folderInfo, container)) {
+                    if (findChildScripts(folderInfo, containers)) {
                         result.add(folderInfo);
                     }
                 }
@@ -180,18 +181,18 @@ public class ResourceUtils {
         return result;
     }
 
-    private static boolean findChildScripts(ResourceInfo folder, @Nullable DBPDataSourceContainer container) throws CoreException {
+    private static boolean findChildScripts(ResourceInfo folder, @Nullable DBPDataSourceContainer[] containers) throws CoreException {
         boolean hasScripts = false;
         for (IResource resource : ((IFolder)folder.resource).members()) {
             if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
                 final DBPDataSourceContainer scriptDataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
-                if (container == null || scriptDataSource == container) {
+                if (containers == null || ArrayUtils.containsRef(containers, scriptDataSource)) {
                     folder.children.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     hasScripts = true;
                 }
             } else if (resource instanceof IFolder) {
                 final ResourceInfo folderInfo = new ResourceInfo((IFolder) resource);
-                if (findChildScripts(folderInfo, container)) {
+                if (findChildScripts(folderInfo, containers)) {
                     folder.children.add(folderInfo);
                     hasScripts = true;
                 }

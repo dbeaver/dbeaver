@@ -32,9 +32,12 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 
 /**
@@ -66,12 +69,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof DBNDataSource) {
                 return ((DBNDataSource)adaptableObject).getDataSourceContainer();
             }
-            DBSObject object = null;
-            if (adaptableObject instanceof DBSWrapper) {
-                object = ((DBSWrapper) adaptableObject).getObject();
-            } else if (adaptableObject instanceof DBSObject) {
-                object = (DBSObject) adaptableObject;
-            }
+            DBSObject object = DBUtils.getFromObject(adaptableObject);
             if (object == null) {
                 return null;
             }

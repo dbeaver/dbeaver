@@ -37,6 +37,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.progress.UIJob;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -69,20 +70,18 @@ public class ScriptSelectorPanel {
     private final Text patternText;
     private final TreeViewer scriptViewer;
     private final Button newButton;
-    private List<ResourceInfo> input;
-    private final ViewerColumnController columnController;
     private volatile FilterJob filterJob;
 
-    public ScriptSelectorPanel(final IWorkbenchWindow workbenchWindow, final DBPDataSourceContainer dataSourceContainer, final IFolder rootFolder) {
+    public ScriptSelectorPanel(@NotNull final IWorkbenchWindow workbenchWindow, @NotNull final DBPDataSourceContainer[] containers, @NotNull final IFolder rootFolder) {
         this.workbenchWindow = workbenchWindow;
         Shell parent = this.workbenchWindow.getShell();
 
         final Color bg = parent.getDisplay().getSystemColor(SWT.COLOR_INFO_BACKGROUND);
 
         popup = new Shell(parent, SWT.RESIZE | SWT.TITLE | SWT.CLOSE);
-        if (dataSourceContainer != null) {
-            popup.setText("Choose SQL script for '" + dataSourceContainer.getName() + "'");
-            popup.setImage(DBeaverIcons.getImage(dataSourceContainer.getDriver().getIcon()));
+        if (containers.length == 1) {
+            popup.setText("Choose SQL script for '" + containers[0].getName() + "'");
+            popup.setImage(DBeaverIcons.getImage(containers[0].getDriver().getIcon()));
         } else {
             popup.setText("Choose SQL script");
         }
@@ -133,7 +132,7 @@ public class ScriptSelectorPanel {
                 popup.dispose();
                 IFile scriptFile;
                 try {
-                    scriptFile = ResourceUtils.createNewScript(rootFolder.getProject(), rootFolder, dataSourceContainer);
+                    scriptFile = ResourceUtils.createNewScript(rootFolder.getProject(), rootFolder, containers.length == 0 ? null : containers[0]);
                     NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
                 } catch (CoreException ex) {
                     log.error(ex);
@@ -152,6 +151,7 @@ public class ScriptSelectorPanel {
         //scriptViewer.setHeaderVisible(true);
 
         this.scriptViewer = new TreeViewer(scriptTree);
+        ColumnViewerToolTipSupport.enableFor(this.scriptViewer);
         //scriptTree.setS
         this.scriptViewer.setContentProvider(new TreeContentProvider() {
             @Override
@@ -173,7 +173,7 @@ public class ScriptSelectorPanel {
             }
 
         });
-        columnController = new ViewerColumnController("scriptSelectorViewer", scriptViewer);
+        ViewerColumnController columnController = new ViewerColumnController("scriptSelectorViewer", scriptViewer);
         columnController.addColumn("Script", "Resource name", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public Image getImage(Object element) {
@@ -192,6 +192,18 @@ public class ScriptSelectorPanel {
             @Override
             public String getText(Object element) {
                 return ((ResourceInfo) element).getResource().getName();
+            }
+
+            @Override
+            public String getToolTipText(Object element) {
+                final DBPDataSourceContainer dataSource = ((ResourceInfo) element).getDataSource();
+                return dataSource == null ? null : dataSource.getName();
+            }
+
+            @Override
+            public Image getToolTipImage(Object element) {
+                final DBPDataSourceContainer dataSource = ((ResourceInfo) element).getDataSource();
+                return dataSource == null ? null : DBeaverIcons.getImage(dataSource.getDriver().getIcon());
             }
         });
         columnController.addColumn("Time", "Modification time", SWT.LEFT, true, true, new ColumnLabelProvider() {
@@ -304,6 +316,7 @@ public class ScriptSelectorPanel {
         final Tree tree = scriptViewer.getTree();
         final TreeColumn[] columns = tree.getColumns();
         columns[0].pack();
+        columns[0].setWidth(columns[0].getWidth() + 10);
         columns[1].pack();
         columns[2].setWidth(200 * 8);
 
@@ -311,9 +324,7 @@ public class ScriptSelectorPanel {
     }
 
     private void loadScriptTree(List<ResourceInfo> scriptFiles) {
-        this.input = new ArrayList<>(scriptFiles);
-
-        scriptViewer.setInput(this.input);
+        scriptViewer.setInput(scriptFiles);
         scriptViewer.expandToLevel(2);
     }
 

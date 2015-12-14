@@ -107,14 +107,7 @@ public class NavigatorUtils {
         if (selection.isEmpty()) {
             return null;
         }
-        Object selectedObject = selection.getFirstElement();
-        if (selectedObject instanceof DBSWrapper) {
-            return ((DBSWrapper) selectedObject).getObject();
-        } else if (selectedObject instanceof DBSObject) {
-            return (DBSObject) selectedObject;
-        } else {
-            return null;
-        }
+        return DBUtils.getFromObject(selection.getFirstElement());
     }
 
     public static List<DBSObject> getSelectedObjects(IStructuredSelection selection)
@@ -124,11 +117,9 @@ public class NavigatorUtils {
         }
         List<DBSObject> result = new ArrayList<>();
         for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-            Object selectedObject = iter.next();
-            if (selectedObject instanceof DBSWrapper) {
-                result.add(((DBSWrapper) selectedObject).getObject());
-            } else if (selectedObject instanceof DBSObject) {
-                result.add((DBSObject)selectedObject);
+            DBSObject selectedObject = DBUtils.getFromObject(iter.next());
+            if (selectedObject != null) {
+                result.add(selectedObject);
             }
         }
         return result;
