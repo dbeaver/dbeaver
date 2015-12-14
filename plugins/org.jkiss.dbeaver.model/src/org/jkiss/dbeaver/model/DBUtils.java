@@ -1443,6 +1443,17 @@ public final class DBUtils {
         return null;
     }
 
+    @Nullable
+    public static DBSObject getFromObject(Object object) {
+        if (object instanceof DBSWrapper) {
+            return ((DBSWrapper) object).getObject();
+        } else if (object instanceof DBSObject) {
+            return (DBSObject) object;
+        } else {
+            return null;
+        }
+    }
+
     public static boolean isAtomicParameter(Object o) {
         return o == null || o instanceof CharSequence || o instanceof Number || o instanceof java.util.Date || o instanceof Boolean;
     }

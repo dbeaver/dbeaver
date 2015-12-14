@@ -98,8 +98,18 @@ public class ArrayUtils {
     {
         if (isEmpty(array))
             return false;
-        for (OBJECT_TYPE v : array) {
-            if (CommonUtils.equalObjects(value, v))
+        for (int i = 0; i < array.length; i++) {
+            if (CommonUtils.equalObjects(value, array[i]))
+                return true;
+        }
+        return false;
+    }
+
+    public static <OBJECT_TYPE> boolean containsRef(@NotNull OBJECT_TYPE[] array, @Nullable OBJECT_TYPE value)
+    {
+        final int length = array.length;
+        for (int i = 0; i < length; i++) {
+            if (value == array[i])
                 return true;
         }
         return false;
@@ -109,9 +119,9 @@ public class ArrayUtils {
     {
         if (isEmpty(array))
             return false;
-        for (OBJECT_TYPE v : array) {
-            for (OBJECT_TYPE v2 : values) {
-                if (CommonUtils.equalObjects(v, v2))
+        for (int i = 0; i < array.length; i++) {
+            for (int k = 0; k < values.length; k++) {
+                if (CommonUtils.equalObjects(array[i], values[k]))
                     return true;
             }
         }
