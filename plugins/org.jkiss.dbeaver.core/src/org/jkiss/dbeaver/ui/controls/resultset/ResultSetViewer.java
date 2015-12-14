@@ -211,6 +211,11 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText()
     {
+        updateFiltersText(true);
+    }
+
+    private void updateFiltersText(boolean resetFilterValue)
+    {
         boolean enableFilters = false;
         DBCExecutionContext context = getExecutionContext();
         if (context != null) {
@@ -220,9 +225,11 @@ public class ResultSetViewer extends Viewer
                 StringBuilder where = new StringBuilder();
                 SQLUtils.appendConditionString(model.getDataFilter(), context.getDataSource(), null, where, true);
                 String whereCondition = where.toString().trim();
-                filtersPanel.setFilterValue(whereCondition);
-                if (!whereCondition.isEmpty()) {
-                    filtersPanel.addFiltersHistory(whereCondition);
+                if (resetFilterValue) {
+                    filtersPanel.setFilterValue(whereCondition);
+                    if (!whereCondition.isEmpty()) {
+                        filtersPanel.addFiltersHistory(whereCondition);
+                    }
                 }
 
                 if (container.isReadyToRun() &&
@@ -1516,7 +1523,7 @@ public class ResultSetViewer extends Viewer
                                 model.updateDataFilter(dataFilter);
                                 activePresentation.refreshData(false, false);
                             }
-                            updateFiltersText();
+                            updateFiltersText(error == null);
                             updateToolbar();
                             fireResultSetLoad();
 
