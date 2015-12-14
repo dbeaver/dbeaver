@@ -114,7 +114,7 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<DBDContent> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return DBDContent.class;
     }

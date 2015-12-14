@@ -117,7 +117,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
             }
         } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE)) {
             FindReplaceAction action = new FindReplaceAction(
-                DBeaverActivator.getResourceBundle(),
+                DBeaverActivator.getCoreResourceBundle(),
                 "Editor.FindReplace.",
                 HandlerUtil.getActiveShell(event),
                 (IFindReplaceTarget)resultSet.getAdapter(IFindReplaceTarget.class));

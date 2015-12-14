@@ -208,7 +208,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<? extends Number> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return getNumberType(attribute);
     }

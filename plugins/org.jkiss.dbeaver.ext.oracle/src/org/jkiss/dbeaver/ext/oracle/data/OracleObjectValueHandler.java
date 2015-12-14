@@ -63,7 +63,7 @@ public class OracleObjectValueHandler extends JDBCAbstractValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<Object> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return java.lang.Object.class;
     }

@@ -27,7 +27,7 @@ import java.sql.SQLException;
  */
 public class JDBCException extends DBCException
 {
-	private static final long serialVersionUID = 6456893563327791919L;
+    private static final long serialVersionUID = 1L;
 
     public JDBCException(SQLException cause, DBPDataSource dataSource)
     {

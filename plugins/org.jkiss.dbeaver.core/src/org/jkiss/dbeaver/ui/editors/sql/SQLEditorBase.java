@@ -337,7 +337,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     {
         super.createActions();
 
-        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
 
         IAction a = new TextOperationAction(
             bundle,

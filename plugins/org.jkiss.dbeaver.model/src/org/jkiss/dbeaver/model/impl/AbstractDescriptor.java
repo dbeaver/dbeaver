@@ -95,7 +95,7 @@ public abstract class AbstractDescriptor {
             return implName;
         }
 
-        public Class getObjectClass()
+        public Class<?> getObjectClass()
         {
             return getObjectClass(Object.class);
         }

@@ -67,7 +67,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<JDBCStruct> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return JDBCStruct.class;
     }

@@ -133,7 +133,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
 
     public static int showConfirmDialogEx(Shell shell, String id, int type, int imageType, Object... args)
     {
-        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
         String titleKey = getResourceKey(id, RES_KEY_TITLE);
         String messageKey = getResourceKey(id, RES_KEY_MESSAGE);
         String toggleKey = getResourceKey(id, RES_KEY_TOGGLE_MESSAGE);

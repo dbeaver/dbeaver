@@ -455,7 +455,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T extends Enum> T fromOrdinal(Class<T> enumClass, int ordinal)
+    public static <T extends Enum<T>> T fromOrdinal(Class<T> enumClass, int ordinal)
     {
         T[] enumConstants = enumClass.getEnumConstants();
         for (T value : enumConstants) {

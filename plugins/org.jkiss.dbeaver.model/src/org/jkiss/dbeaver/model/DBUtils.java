@@ -1361,7 +1361,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Number convertStringToNumber(String text, Class<? extends Number> hintType, DBDDataFormatter formatter)
+    public static Number convertStringToNumber(String text, Class<?> hintType, DBDDataFormatter formatter)
     {
         if (text == null || text.length() == 0) {
             return null;
