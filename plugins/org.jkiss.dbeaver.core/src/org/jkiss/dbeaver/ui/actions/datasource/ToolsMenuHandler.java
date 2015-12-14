@@ -22,6 +22,8 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.MenuAdapter;
+import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class ToolsMenuHandler extends AbstractDataSourceHandler
 {
@@ -68,10 +71,13 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
         }
         menuManager.add(new Separator());
         {
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_SQL_EDITOR_OPEN));
+/*
             final MenuManager toolsMenu = new MenuManager(
                 DBeaverActivator.getPluginResourceBundle().getString("menu.database.tools"));
             toolsMenu.add(new DataSourceToolsContributor());
             menuManager.add(toolsMenu);
+*/
         }
 
         final Menu contextMenu = menuManager.createContextMenu(focusControl);
@@ -79,6 +85,21 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
             contextMenu.setLocation(location);
         }
         contextMenu.setVisible(true);
+        contextMenu.addMenuListener(new MenuAdapter() {
+            @Override
+            public void menuShown(MenuEvent e) {
+                int keyIndex = 1;
+                for (MenuItem item : contextMenu.getItems()) {
+                    if (/*item.getMenu() == null && */!CommonUtils.isEmpty(item.getText())) {
+                        item.setText(String.valueOf(keyIndex) + ". " + item.getText());
+                        keyIndex++;
+                        if (keyIndex >= 10) {
+                            break;
+                        }
+                    }
+                }
+            }
+        });
 
 
         return null;
