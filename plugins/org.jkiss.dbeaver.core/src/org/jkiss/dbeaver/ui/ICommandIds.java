@@ -53,5 +53,6 @@ public interface ICommandIds
     String CMD_INVALIDATE = "org.jkiss.dbeaver.core.invalidate";
     String CMD_COMMIT = "org.jkiss.dbeaver.core.commit";
     String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
-    String CMD_AUTOCOMMIT = "org.jkiss.dbeaver.core.txn.autocommit";
+
+    String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
 }
