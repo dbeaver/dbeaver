@@ -22,6 +22,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -35,10 +36,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -78,7 +76,8 @@ abstract class ViewValuePanel extends Composite {
         setLayout(gl);
         //this.setBackground(this.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         this.setLayoutData(new GridData(GridData.FILL_BOTH));
-        //Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+
+        Color infoBackground = getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);
 
         // Title
         Composite titleBar = UIUtils.createPlaceholder(this, 3);
@@ -104,6 +103,18 @@ abstract class ViewValuePanel extends Composite {
         viewPlaceholder = UIUtils.createPlaceholder(this, 1);
         viewPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
         viewPlaceholder.setLayout(new FillLayout());
+        //viewPlaceholder.setBackground(infoBackground);
+        viewPlaceholder.addPaintListener(new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                if (viewPlaceholder.getChildren().length == 0) {
+                    String hidePanelCmd = ActionUtils.findCommandDescription(SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW, ViewValuePanel.this.resultSet.getSite(), true);
+
+                    UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
+                    UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 20);
+                }
+            }
+        });
 
         addTraverseListener(new TraverseListener() {
             @Override
@@ -129,7 +140,7 @@ abstract class ViewValuePanel extends Composite {
             cleanupPanel();
             // Rest column info
             columnImageLabel.setImage(DBeaverIcons.getImage(DBUtils.getTypeImage(valueController.getValueType())));
-            columnNameLabel.setText(valueController.getValueName());
+            columnNameLabel.setText(valueController.getValueName() + ": " + valueController.getValueType().getTypeName());
             // Create a new one
             IValueManager valueManager = valueController.getValueManager();
             try {
@@ -234,12 +245,15 @@ abstract class ViewValuePanel extends Composite {
     public void clearValue()
     {
         cleanupPanel();
+
         toolBarManager.getControl().getParent().layout();
         viewPlaceholder.layout();
     }
 
     private void cleanupPanel()
     {
+        columnImageLabel.setImage(null);
+        columnNameLabel.setText("");
         // Cleanup previous viewer
         for (Control child : viewPlaceholder.getChildren()) {
             child.dispose();

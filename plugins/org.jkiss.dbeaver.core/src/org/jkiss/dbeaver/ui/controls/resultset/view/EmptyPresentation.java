@@ -27,8 +27,6 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
@@ -78,20 +76,15 @@ public class EmptyPresentation implements IResultSetPresentation {
                     return;
                 }
                 e.gc.setFont(largeFont);
-                drawMessage(e, "No Data", -10);
+                UIUtils.drawMessageOverControl(placeholder, e, "No Data", -10);
                 e.gc.setFont(normalFont);
                 if (controller.getDataContainer() instanceof SQLEditor.QueryResultsContainer) {
                     String execQuery = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
                     String execScript = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
-                    drawMessage(e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 20);
+                    UIUtils.drawMessageOverControl(placeholder, e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 20);
                 }
             }
 
-            private void drawMessage(PaintEvent e, String message, int offset) {
-                Rectangle bounds = placeholder.getBounds();
-                Point ext = e.gc.textExtent(message);
-                e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
-            }
         });
     }
 

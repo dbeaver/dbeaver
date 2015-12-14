@@ -645,7 +645,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         DBDAttributeBinding attr = getFocusAttribute();
         ResultSetRow row = getFocusRow();
-        if (!isPreviewVisible() || attr == null || row == null) {
+        if (!isPreviewVisible()) {
+            return;
+        }
+        if (attr == null || row == null) {
+            previewPane.clearValue();
             return;
         }
         if (panelValueController == null || panelValueController.getBinding() != attr) {
