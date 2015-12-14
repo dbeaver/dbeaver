@@ -271,6 +271,7 @@ public class SQLQueryJob extends DataSourceJob
         if (rsOffset > 0) {
             curResult.setRowOffset(rsOffset);
         }
+        SQLQuery originalQuery = sqlQuery;
         long startTime = System.currentTimeMillis();
 
         if (fireEvents && listener != null) {
@@ -407,7 +408,7 @@ public class SQLQueryJob extends DataSourceJob
             return false;
         }
         // Success
-        lastGoodQuery = sqlQuery;
+        lastGoodQuery = originalQuery;
         return true;
     }
 
