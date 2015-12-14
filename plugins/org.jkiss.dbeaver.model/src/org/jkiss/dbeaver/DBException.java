@@ -30,6 +30,8 @@ import java.sql.SQLException;
  */
 public class DBException extends Exception
 {
+    private static final long serialVersionUID = 1L;
+
     private final DBPDataSource dataSource;
 
     public DBException(String message)

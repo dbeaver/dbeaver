@@ -89,7 +89,7 @@ public class PrefPageConfirmations extends PreferencePage implements IWorkbenchP
 
     private void createConfirmCheckbox(Composite parent, String id)
     {
-        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
         String labelKey = ConfirmationDialog.getResourceKey(id, ConfirmationDialog.RES_KEY_TITLE);
 
         UIUtils.createControlLabel(parent, bundle.getString(labelKey));

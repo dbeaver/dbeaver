@@ -529,17 +529,17 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public void setSchema(String schema) throws SQLException
     {
-        JDBCUtils.callMethod17(getOriginal(), "setSchema", null, new Class[]{String.class}, schema);
+        JDBCUtils.callMethod17(getOriginal(), "setSchema", null, new Class<?>[]{String.class}, schema);
     }
 
     @Override
     public void abort(Executor executor) throws SQLException {
-        JDBCUtils.callMethod17(getOriginal(), "abort", null, new Class[]{Executor.class}, executor);
+        JDBCUtils.callMethod17(getOriginal(), "abort", null, new Class<?>[]{Executor.class}, executor);
     }
 
     @Override
     public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-        JDBCUtils.callMethod17(getOriginal(), "setNetworkTimeout", null, new Class[]{Executor.class, Integer.TYPE}, executor, milliseconds);
+        JDBCUtils.callMethod17(getOriginal(), "setNetworkTimeout", null, new Class<?>[]{Executor.class, Integer.TYPE}, executor, milliseconds);
     }
 
     @Override

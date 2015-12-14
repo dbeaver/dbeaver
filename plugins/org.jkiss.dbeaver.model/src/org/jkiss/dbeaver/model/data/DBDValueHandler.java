@@ -38,7 +38,7 @@ public interface DBDValueHandler
      * @return value object type
      */
     @NotNull
-    Class getValueObjectType(@NotNull DBSTypedObject attribute);
+    Class<?> getValueObjectType(@NotNull DBSTypedObject attribute);
 
     /**
      * Determine value content type (MIME).

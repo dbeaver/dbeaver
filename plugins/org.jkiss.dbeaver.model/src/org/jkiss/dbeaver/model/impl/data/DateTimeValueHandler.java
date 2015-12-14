@@ -48,7 +48,7 @@ public abstract class DateTimeValueHandler extends BaseValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<Date> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return Date.class;
     }

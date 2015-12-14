@@ -568,9 +568,9 @@ public abstract class JDBCDataSource
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
-            return executionContext;
+            return adapter.cast(executionContext);
         }
         return null;
     }

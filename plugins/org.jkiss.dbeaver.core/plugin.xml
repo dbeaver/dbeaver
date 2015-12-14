@@ -254,6 +254,8 @@
         <command id="org.jkiss.dbeaver.core.process.stop" name="%command.org.jkiss.dbeaver.core.process.stop.name" description="%command.org.jkiss.dbeaver.core.process.stop.description" categoryId="org.jkiss.dbeaver.core.util"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.text.content.format" name="Content Format" description="Format SQL text" categoryId="org.jkiss.dbeaver.core.sql"/>
+
+        <command id="org.jkiss.dbeaver.ui.tools.menu" name="Tools menu" description="Shows menu with database tools" categoryId="org.jkiss.dbeaver.core.database"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
@@ -1265,6 +1267,10 @@
                 </with>
             </enabledWhen>
         </handler>
+
+        <!-- Tools menu -->
+        <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsMenuHandler"/>
+
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -1665,6 +1671,7 @@
 
     <extension point="org.eclipse.ui.bindings">
 
+        <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+`"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+TAB"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>

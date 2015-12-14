@@ -22,6 +22,7 @@ import java.util.*;
 /**
 	Map with int key.
 */
+@SuppressWarnings("unchecked")
 public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	/**
 	 * The default initial capacity - MUST be a power of two.
@@ -195,7 +196,7 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	{
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		IntEntry e = table[i];
+		IntEntry<VALUE> e = table[i];
 		while (e != null) {
 			if (e.hash == hash && key == e.key)
 				return true;
@@ -209,10 +210,10 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * IntKeyMap.  Returns null if the IntKeyMap contains no mapping
 	 * for this key.
 	 */
-	IntEntry getEntry(int key) {
+	IntEntry<VALUE> getEntry(int key) {
 		int hash = hash(key);
 		int i = indexFor(hash, table.length);
-		IntEntry e = table[i];
+		IntEntry<VALUE> e = table[i];
 		while (e != null && !(e.hash == hash && key == e.key))
 			e = e.next;
 		return e;
@@ -305,14 +306,14 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
 	 * Transfer all entries from current table to newTable.
 	 */
 	void transfer(IntEntry[] newTable) {
-		IntEntry[] src = table;
+		IntEntry<VALUE>[] src = table;
 		int newCapacity = newTable.length;
 		for (int j = 0; j < src.length; j++) {
-			IntEntry e = src[j];
+			IntEntry<VALUE> e = src[j];
 			if (e != null) {
 				src[j] = null;
 				do {
-					IntEntry next = e.next;
+					IntEntry<VALUE> next = e.next;
 					int i = indexFor(e.hash, newCapacity);
 					e.next = newTable[i];
 					newTable[i] = e;
@@ -783,8 +784,8 @@ public class IntKeyMap<VALUE> implements Map<Integer, VALUE> {
         public boolean contains(Object o) {
 			if (!(o instanceof IntEntry))
 				return false;
-			IntEntry e = (IntEntry)o;
-			IntEntry candidate = getEntry(e.key);
+			IntEntry<VALUE> e = (IntEntry<VALUE>)o;
+			IntEntry<VALUE> candidate = getEntry(e.key);
 			return candidate != null && candidate.equals(e);
 		}
 		@Override

@@ -1656,13 +1656,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     @Nullable
     @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {Integer.TYPE, Class.class}, columnIndex, type);
+        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class<?>[] {Integer.TYPE, Class.class}, columnIndex, type);
     }
 
     @Nullable
     @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {String.class, Class.class}, columnLabel, type);
+        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class<?>[] {String.class, Class.class}, columnLabel, type);
     }
 
     @Override

@@ -68,7 +68,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
     private void createActions()
     {
         // Init custom actions
-        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
         contentAssistProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_ASSIST_PROPOSAL));
         contentAssistProposal.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         contentFormatProposal = new RetargetTextEditorAction(bundle, getActionResourcePrefix(ACTION_CONTENT_FORMAT_PROPOSAL));

@@ -114,7 +114,7 @@ public class MySQLEnumValueHandler extends JDBCAbstractValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<MySQLEnumValue> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return MySQLEnumValue.class;
     }

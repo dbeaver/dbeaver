@@ -236,7 +236,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         if (deleteAll != null) {
             return deleteAll ? ConfirmResult.YES : ConfirmResult.NO;
         }
-        ResourceBundle bundle = DBeaverActivator.getResourceBundle();
+        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
         String objectType = node instanceof DBNLocalFolder ? DBeaverPreferences.CONFIRM_LOCAL_FOLDER_DELETE : DBeaverPreferences.CONFIRM_ENTITY_DELETE;
         String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_TITLE; //$NON-NLS-1$
         String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_MESSAGE; //$NON-NLS-1$

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
  */
 public class DBCConnectException extends DBCException
 {
+    private static final long serialVersionUID = 1L;
 
     public DBCConnectException(String message, Throwable cause, DBPDataSource dataSource) {
         super(message, cause, dataSource);

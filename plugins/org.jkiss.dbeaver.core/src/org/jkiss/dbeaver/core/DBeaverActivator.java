@@ -46,7 +46,7 @@ public class DBeaverActivator extends AbstractUIPlugin
 
     // The shared instance
     private static DBeaverActivator instance;
-    private ResourceBundle resourceBundle;
+    private ResourceBundle pluginResourceBundle, coreResourceBundle;
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
 
@@ -83,9 +83,10 @@ public class DBeaverActivator extends AbstractUIPlugin
         DBeaverUI.getInstance();
 
         try {
-            resourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
+            coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
+            pluginResourceBundle = Platform.getResourceBundle(bundle);
         } catch (MissingResourceException x) {
-            resourceBundle = null;
+            coreResourceBundle = null;
         }
     }
 
@@ -144,9 +145,13 @@ public class DBeaverActivator extends AbstractUIPlugin
      * Returns the plugin's resource bundle,
      * @return core resource bundle
      */
-    public static ResourceBundle getResourceBundle()
+    public static ResourceBundle getCoreResourceBundle()
     {
-        return getInstance().resourceBundle;
+        return getInstance().coreResourceBundle;
+    }
+
+    public static ResourceBundle getPluginResourceBundle() {
+        return getInstance().pluginResourceBundle;
     }
 
     public DBPPreferenceStore getPreferences() {

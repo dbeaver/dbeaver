@@ -43,7 +43,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<JDBCArray> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return JDBCArray.class;
     }

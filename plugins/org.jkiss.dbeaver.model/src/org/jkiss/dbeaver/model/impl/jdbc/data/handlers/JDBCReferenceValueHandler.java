@@ -72,7 +72,7 @@ public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<Ref> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return Ref.class;
     }

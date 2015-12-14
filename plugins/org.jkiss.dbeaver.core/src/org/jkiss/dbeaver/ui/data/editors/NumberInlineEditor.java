@@ -56,7 +56,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         editor.setEditable(!valueController.isReadOnly());
         editor.setTextLimit(MAX_NUMBER_LENGTH);
         Object curValue = valueController.getValue();
-        Class type = curValue instanceof Number ?
+        Class<?> type = curValue instanceof Number ?
             curValue.getClass() :
             valueController.getValueHandler().getValueObjectType(valueController.getValueType());
         Locale locale = formatterProfile.getLocale();
@@ -90,7 +90,7 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             return null;
         }
         Object curValue = valueController.getValue();
-        Class hintType = curValue instanceof Number ?
+        Class<?> hintType = curValue instanceof Number ?
             curValue.getClass() :
             valueController.getValueHandler().getValueObjectType(valueController.getValueType());
         try {

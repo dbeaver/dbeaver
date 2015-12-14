@@ -62,7 +62,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
     @NotNull
     @Override
-    public Class getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<Boolean> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
         return Boolean.class;
     }
