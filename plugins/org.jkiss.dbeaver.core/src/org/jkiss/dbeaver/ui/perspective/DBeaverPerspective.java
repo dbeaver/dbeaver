@@ -86,6 +86,7 @@ public class DBeaverPerspective implements IPerspectiveFactory
         // Search views
         bottomRight.addPlaceholder("org.eclipse.search.ui.views.SearchView");
         bottomRight.addPlaceholder("org.jkiss.dbeaver.ui.search.DatabaseSearchView");
+        bottomRight.addPlaceholder("org.jkiss.dbeaver.core.shellProcess");
     }
 
 }
