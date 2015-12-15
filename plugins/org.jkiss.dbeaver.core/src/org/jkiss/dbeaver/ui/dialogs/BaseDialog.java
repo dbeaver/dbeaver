@@ -18,9 +18,11 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
  * Base dialog with title and image
@@ -29,9 +31,9 @@ public class BaseDialog extends Dialog
 {
 
     private String title;
-    private Image icon;
+    private DBPImage icon;
 
-    public BaseDialog(Shell parentShell, String title, @Nullable Image icon)
+    public BaseDialog(Shell parentShell, String title, @Nullable DBPImage icon)
     {
         super(parentShell);
         this.title = title;
@@ -46,11 +48,11 @@ public class BaseDialog extends Dialog
         this.title = title;
     }
 
-    public Image getImage() {
+    public DBPImage getImage() {
         return icon;
     }
 
-    public void setImage(Image image)
+    public void setImage(DBPImage image)
     {
         this.icon = image;
     }
@@ -70,7 +72,7 @@ public class BaseDialog extends Dialog
         super.create();
         getShell().setText(title);
         if (icon != null) {
-            getShell().setImage(icon);
+            getShell().setImage(DBeaverIcons.getImage(icon));
         }
 
     }

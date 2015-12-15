@@ -30,6 +30,7 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.text.Collator;
@@ -249,7 +250,7 @@ public class ViewerColumnController {
         }
     }
 
-    private void configureColumns()
+    public void configureColumns()
     {
         ConfigDialog configDialog = new ConfigDialog();
         if (configDialog.open() != IDialogConstants.OK_ID) {
@@ -293,12 +294,16 @@ public class ViewerColumnController {
         }
     }
 
-    private class ConfigDialog extends Dialog {
+    private class ConfigDialog extends BaseDialog {
 
         private final Map<ColumnInfo, Button> buttonMap = new HashMap<>();
         protected ConfigDialog()
         {
-            super(viewer.getControl().getShell());
+            super(viewer.getControl().getShell(), "Configure columns", UIIcon.CONFIGURATION);
+        }
+
+        protected void setShellStyle(int newShellStyle) {
+            super.setShellStyle(newShellStyle & ~SWT.MAX);
         }
 
         @Override
@@ -307,11 +312,9 @@ public class ViewerColumnController {
         }
 
         @Override
-        protected Control createDialogArea(Composite parent)
+        protected Composite createDialogArea(Composite parent)
         {
-            getShell().setText("Configure columns");
-
-            Composite composite = (Composite) super.createDialogArea(parent);
+            Composite composite = super.createDialogArea(parent);
 
             UIUtils.createControlLabel(composite, "Select columns you want to display");
 

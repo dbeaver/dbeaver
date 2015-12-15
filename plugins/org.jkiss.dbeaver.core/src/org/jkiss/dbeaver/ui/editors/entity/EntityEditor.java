@@ -820,7 +820,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 getEditorSite(),
                 getExecutionContext(),
                 allowSave ? CoreMessages.editors_entity_dialog_persist_title : CoreMessages.editors_entity_dialog_preview_title,
-                DBeaverIcons.getImage(UIIcon.SQL_PREVIEW),
+                UIIcon.SQL_PREVIEW,
                 script.toString());
             dialog.setShowSaveButton(allowSave);
             result = dialog.open();
