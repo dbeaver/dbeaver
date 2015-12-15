@@ -55,4 +55,5 @@ public interface ICommandIds
     String CMD_ROLLBACK = "org.jkiss.dbeaver.core.rollback";
 
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
+    String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
 }
