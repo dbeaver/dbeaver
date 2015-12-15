@@ -22,12 +22,13 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.utils.CommonUtils;
@@ -77,8 +78,10 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         updateTitle();
     }
 
-    private void createColumns(TreeViewer viewer)
+    private void createColumns(final TreeViewer viewer)
     {
+        final Color shadowColor = viewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
+
         final LabelProvider mainLabelProvider = (LabelProvider)viewer.getLabelProvider();
         columnController = new ViewerColumnController("projectExplorer", viewer);
         columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new TreeColumnViewerLabelProvider(new LabelProvider() {
@@ -117,6 +120,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
 
             @Override
             public Image getImage(Object element) {
+/*
                 DBNNode node = (DBNNode) element;
                 if (node instanceof DBNDatabaseNode) {
                     return DBeaverIcons.getImage(((DBNDatabaseNode) node).getDataSourceContainer().getDriver().getIcon());
@@ -126,10 +130,17 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                         return DBeaverIcons.getImage((containers.iterator().next().getDriver().getIcon()));
                     }
                 }
+*/
                 return null;
             }
 
         }));
+        columnController.addColumn("Preview", "Script content preview", SWT.LEFT, false, false, new LazyLabelProvider(shadowColor) {
+            @Override
+            public String getLazyText(Object element) {
+                return ((DBNNode)element).getNodeDescription();
+            }
+        });
         columnController.addColumn("Size", "File size", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
