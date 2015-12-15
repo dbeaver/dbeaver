@@ -80,7 +80,7 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
 */
         }
         if (part instanceof IEditorPart) {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_LINK_EDITOR, "Link with navigator", null));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_LINK_EDITOR, "Find in navigator", null));
         }
 
         final Menu contextMenu = menuManager.createContextMenu(focusControl);
