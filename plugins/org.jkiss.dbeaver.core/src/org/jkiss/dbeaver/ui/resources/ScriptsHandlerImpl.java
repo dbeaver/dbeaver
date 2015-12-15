@@ -65,10 +65,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     @Override
     public String getResourceDescription(IResource resource)
     {
-        if (resource instanceof IFile) {
-            return new SQLEditorInput((IFile)resource).getName();
-        }
-        return super.getResourceDescription(resource);
+        return ResourceUtils.getResourceDescription(resource);
     }
 
     @Override
