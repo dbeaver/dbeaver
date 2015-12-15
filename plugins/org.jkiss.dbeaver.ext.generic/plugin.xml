@@ -516,6 +516,7 @@
                     description="Firebird JayBird driver">
                     <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
                 </driver>
                 <driver
                     id="sqlite_jdbc"
