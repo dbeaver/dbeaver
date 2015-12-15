@@ -45,6 +45,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     //static final Log log = Log.getLog(ProjectExplorerView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectExplorer";
+    private ViewerColumnController columnController;
 
     public ProjectExplorerView() {
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
@@ -79,7 +80,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     private void createColumns(TreeViewer viewer)
     {
         final LabelProvider mainLabelProvider = (LabelProvider)viewer.getLabelProvider();
-        ViewerColumnController columnController = new ViewerColumnController("projectExplorer", viewer);
+        columnController = new ViewerColumnController("projectExplorer", viewer);
         columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
             public String getText(Object element) {
@@ -113,6 +114,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 }
                 return "";
             }
+
             @Override
             public Image getImage(Object element) {
                 DBNNode node = (DBNNode) element;
@@ -143,6 +145,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
         }));
         columnController.addColumn("Modified", "Time the file was last modified", SWT.LEFT, false, false, new TreeColumnViewerLabelProvider(new LabelProvider() {
             private SimpleDateFormat sdf = new SimpleDateFormat(UIUtils.DEFAULT_TIMESTAMP_PATTERN);
+
             @Override
             public String getText(Object element) {
                 DBNNode node = (DBNNode) element;
@@ -196,6 +199,10 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     private void updateTitle()
     {
         setPartName("Project - " + getRootNode().getNodeName());
+    }
+
+    public void configureView() {
+        columnController.configureColumns();
     }
 
 }

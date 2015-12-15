@@ -22,12 +22,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -47,7 +47,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
     private Collection<T> objects;
     private int processedCount;
 
-    public SQLScriptStatusDialog(final Shell shell, String title, @Nullable Image image)
+    public SQLScriptStatusDialog(final Shell shell, String title, @Nullable DBPImage image)
     {
         super(shell, title, image);
     }

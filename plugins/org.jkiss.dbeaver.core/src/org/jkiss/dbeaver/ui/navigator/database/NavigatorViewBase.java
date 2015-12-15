@@ -229,4 +229,9 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
         return null;
     }
+
+    public void configureView() {
+
+    }
+
 }

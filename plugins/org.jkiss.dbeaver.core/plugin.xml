@@ -179,6 +179,7 @@
         <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.new.folder" name="%command.org.jkiss.dbeaver.core.new.folder.name" description="%command.org.jkiss.dbeaver.core.new.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.migrate.connection" name="%command.org.jkiss.dbeaver.core.migrate.connection.name" description="%command.org.jkiss.dbeaver.core.migrate.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.view.configure" name="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" description="%command.org.jkiss.dbeaver.core.navigator.view.configure.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" description="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="%command.org.jkiss.dbeaver.core.navigator.set.active.name" description="%command.org.jkiss.dbeaver.core.navigator.set.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -266,6 +267,7 @@
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.folder" icon="icons/file/folder_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.view.configure" icon="icons/configuration.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="icons/bookmark.png"/>
 
@@ -546,6 +548,7 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.view.configure" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerViewConfigure"/>
         <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -1389,6 +1392,7 @@
 
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
+            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.eclipse.ui.navigate.expandAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
