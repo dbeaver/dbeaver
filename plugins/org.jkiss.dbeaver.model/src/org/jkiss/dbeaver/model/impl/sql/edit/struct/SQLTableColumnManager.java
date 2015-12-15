@@ -18,23 +18,21 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.Locale;
 
 /**
  * JDBC table column manager
@@ -103,14 +101,15 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
             String defaultValue = CommonUtils.toString(column.getDefaultValue());
             if (!CommonUtils.isEmpty(defaultValue)) {
                 DBPDataKind dataKind = column.getDataKind();
-                boolean useQuotes = dataKind == DBPDataKind.STRING;
-
-                if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
-                    useQuotes = false;
-                }
-                if (dataKind == DBPDataKind.DATETIME) {
-                    if (!Character.isLetter(defaultValue.charAt(0))) {
-                        useQuotes = true;
+                boolean useQuotes = false;//dataKind == DBPDataKind.STRING;
+                if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
+                    if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
+                        useQuotes = false;
+                    }
+                    if (dataKind == DBPDataKind.DATETIME) {
+                        if (!Character.isLetter(defaultValue.charAt(0))) {
+                            useQuotes = true;
+                        }
                     }
                 }
 

@@ -119,7 +119,21 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         setRequired(!"YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_NULLABLE)));
         setScale(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_SCALE));
         setPrecision(JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_NUMERIC_PRECISION));
-        setDefaultValue(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT));
+        String defaultValue = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_DEFAULT);
+        if (defaultValue != null) {
+            switch (getDataKind()) {
+                case STRING:
+                    defaultValue = "'" + defaultValue + "'";
+                    break;
+                case DATETIME:
+                    if (!defaultValue.isEmpty() && Character.isDigit(defaultValue.charAt(0))) {
+                        defaultValue = "'" + defaultValue + "'";
+                    }
+                    break;
+
+            }
+            setDefaultValue(defaultValue);
+        }
         this.collation = getDataSource().getCollation(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLLATION_NAME));
 
         this.extraInfo = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_EXTRA);
