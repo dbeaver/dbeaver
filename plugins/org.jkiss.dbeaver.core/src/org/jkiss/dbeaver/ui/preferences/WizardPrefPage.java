@@ -22,6 +22,7 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -137,6 +138,10 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
 
     public void addSubPage(IPreferencePage page, String title, String description) {
         subPages.add(new WizardPrefPage(page, title, description));
+        // Sety the same element to sub page
+        if (preferencePage instanceof IWorkbenchPropertyPage && page instanceof IWorkbenchPropertyPage) {
+            ((IWorkbenchPropertyPage) page).setElement(((IWorkbenchPropertyPage) preferencePage).getElement());
+        }
     }
 
 }
