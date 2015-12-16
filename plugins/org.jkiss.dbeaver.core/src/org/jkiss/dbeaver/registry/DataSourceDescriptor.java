@@ -565,7 +565,6 @@ public class DataSourceDescriptor
         log.debug("Connect with '" + getName() + "' (" + getId() + ")");
 
         connecting = true;
-        DBPConnectionConfiguration savedConnectionInfo = null;
         tunnelConnectionInfo = null;
         try {
             // Handle tunnel
@@ -589,10 +588,6 @@ public class DataSourceDescriptor
                     throw new DBCException("Can't initialize tunnel", e);
                 }
                 monitor.worked(1);
-            }
-            if (tunnelConnectionInfo != null) {
-                savedConnectionInfo = connectionInfo;
-                connectionInfo = tunnelConnectionInfo;
             }
             monitor.subTask("Connect to data source");
             dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
@@ -638,9 +633,6 @@ public class DataSourceDescriptor
             }
         } finally {
             monitor.done();
-            if (savedConnectionInfo != null) {
-                connectionInfo = savedConnectionInfo;
-            }
             connecting = false;
         }
     }

@@ -119,18 +119,14 @@ public abstract class JDBCDataSource
         {
             // Use driver properties
             final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
-            if (driverProperties != null) {
-                for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
-                    connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-                }
+            for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
+                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
             }
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
-        if (connectionInfo.getProperties() != null) {
-            for (Map.Entry<Object,Object> prop : connectionInfo.getProperties().entrySet()) {
-                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-            }
+        for (Map.Entry<Object,Object> prop : connectionInfo.getProperties().entrySet()) {
+            connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
         }
         if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
             connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
