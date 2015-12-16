@@ -148,7 +148,7 @@ public class DBNResource extends DBNNode
     {
         List<DBNNode> result = new ArrayList<>();
         try {
-            IResource[] members = ((IContainer) resource).members();
+            IResource[] members = ((IContainer) resource).members(false);
             for (IResource member : members) {
                 DBNNode newChild = makeNode(member);
                 if (newChild != null) {
@@ -214,6 +214,14 @@ public class DBNResource extends DBNNode
     {
         try {
             resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
+
+            // FIXME: seems to be a bug in Eclipse. Some resources are "stuck" in workspace
+            // FIXME: although they do not exist on physical file-system.
+            // FIXME: The only workaround is to check real file and drop resource by force
+            if (!resource.getLocation().toFile().exists()) {
+                log.warn("Resource '" + resource.getName() + "' doesn't exists on file system: deleted in workspace");
+                resource.delete(true, monitor.getNestedMonitor());
+            }
         } catch (CoreException e) {
             throw new DBException("Can't refresh resource", e);
         }

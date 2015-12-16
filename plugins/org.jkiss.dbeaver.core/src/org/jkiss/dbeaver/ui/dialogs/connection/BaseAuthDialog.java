@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -42,7 +41,7 @@ public class BaseAuthDialog extends BaseDialog
 
     public BaseAuthDialog(Shell parentShell, String title)
     {
-        super(parentShell, title, DBeaverIcons.getImage(DBIcon.CONNECTIONS));
+        super(parentShell, title, DBIcon.CONNECTIONS);
     }
 
     public DBAAuthInfo getAuthInfo()

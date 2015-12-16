@@ -23,7 +23,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -33,6 +32,7 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -46,7 +46,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
 
-    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable Image image)
+    public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable DBPImage image)
     {
         super(parentSite.getShell(), title, image);
         this.subSite = new SubEditorSite(parentSite);
