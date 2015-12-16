@@ -31,11 +31,11 @@ import java.util.Collection;
  */
 public interface DBPResourceHandler {
 
-    public static final int FEATURE_OPEN            = 1;
-    public static final int FEATURE_DELETE          = 2;
-    public static final int FEATURE_CREATE_FOLDER   = 4;
-    public static final int FEATURE_RENAME          = 8;
-    public static final int FEATURE_MOVE_INTO       = 16;
+    int FEATURE_OPEN            = 1;
+    int FEATURE_DELETE          = 2;
+    int FEATURE_CREATE_FOLDER   = 4;
+    int FEATURE_RENAME          = 8;
+    int FEATURE_MOVE_INTO       = 16;
 
     int getFeatures(IResource resource);
 

@@ -88,24 +88,28 @@ public class ResourceUtils {
 
         public String getDescription() {
             if (description == null) {
-                if (localFile.isDirectory()) {
-                    return null;
-                } else if (SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    description = SQLUtils.getScriptDescription((IFile) resource);
-                    if (CommonUtils.isEmptyTrimmed(description)) {
-                        description = "<empty>";
-                    }
-                } else {
-                    description = "";
-                }
+                description = getResourceDescription(resource);
             }
-
             return description;
         }
 
         @Override
         public String toString() {
             return resource.getName();
+        }
+    }
+
+    public static String getResourceDescription(IResource resource) {
+        if (resource instanceof IFolder) {
+            return "";
+        } else if (SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
+            String description = SQLUtils.getScriptDescription((IFile) resource);
+            if (CommonUtils.isEmptyTrimmed(description)) {
+                description = "<empty>";
+            }
+            return description;
+        } else {
+            return "";
         }
     }
 

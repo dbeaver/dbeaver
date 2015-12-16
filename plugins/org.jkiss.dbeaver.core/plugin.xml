@@ -179,6 +179,7 @@
         <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.new.folder" name="%command.org.jkiss.dbeaver.core.new.folder.name" description="%command.org.jkiss.dbeaver.core.new.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.migrate.connection" name="%command.org.jkiss.dbeaver.core.migrate.connection.name" description="%command.org.jkiss.dbeaver.core.migrate.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.view.configure" name="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" description="%command.org.jkiss.dbeaver.core.navigator.view.configure.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" description="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="%command.org.jkiss.dbeaver.core.navigator.set.active.name" description="%command.org.jkiss.dbeaver.core.navigator.set.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -266,6 +267,7 @@
         <image commandId="org.jkiss.dbeaver.core.driver.manager" icon="icons/driver_manager.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.connection" icon="icons/database_connect.png"/>
         <image commandId="org.jkiss.dbeaver.core.new.folder" icon="icons/file/folder_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.view.configure" icon="icons/configuration.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="icons/link_to_editor.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="icons/bookmark.png"/>
 
@@ -372,6 +374,11 @@
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">
+            <with variable="activePart">
+                <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.datasource.editor">
             <with variable="activeEditor">
                 <instanceof value="org.jkiss.dbeaver.model.DBPContextProvider"/>
             </with>
@@ -541,6 +548,7 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.view.configure" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerViewConfigure"/>
         <handler commandId="org.jkiss.dbeaver.core.navigator.linkeditor" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerLinkEditor">
             <enabledWhen>
                 <with variable="activeEditor">
@@ -756,7 +764,7 @@
             <activeWhen>
                 <or>
                     <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
-                    <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/>
                 </or>
             </activeWhen>
         </handler>
@@ -1269,7 +1277,14 @@
         </handler>
 
         <!-- Tools menu -->
-        <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsMenuHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.tools.menu" class="org.jkiss.dbeaver.ui.actions.datasource.ToolsMenuHandler">
+            <activeWhen>
+                <or>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/>
+                    <reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/>
+                </or>
+            </activeWhen>
+        </handler>
 
     </extension>
 
@@ -1278,7 +1293,7 @@
         <!-- Database menu -->
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?before=window">
             <menu id="dataSourceMenu" label="%menu.database">
-                <!--<visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>-->
+                <!--<visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>-->
 
                 <separator name="driverGroup" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.core.driver.manager"/>
@@ -1317,19 +1332,19 @@
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="Transactions">
-                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
+                <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 <command commandId="org.jkiss.dbeaver.core.commit" label="Commit" style="push" mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.rollback" label="Rollback" style="push" mode="FORCE_TEXT">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.core.txn.autocommit" icon="icons/sql/txn_auto.png" style="pulldown" id="org.jkiss.dbeaver.core.menu.txn">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </command>
                 <separator name="datasource" visible="true"/>
                 <control class="org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar$ToolbarContribution">
-                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.part"/></visibleWhen>
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.datasource.editor"/></visibleWhen>
                 </control>
                 <separator name="additions" visible="false"/>
             </toolbar>
@@ -1377,6 +1392,7 @@
 
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
+            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll"/>
             <command commandId="org.eclipse.ui.navigate.expandAll"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>

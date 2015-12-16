@@ -42,7 +42,6 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -446,7 +445,7 @@ public final class SQLUtils {
     public static String getScriptDescription(@NotNull IFile sqlScript)
     {
         try {
-            log.debug("Read script '" + sqlScript.getName() + "' description");
+            //log.debug("Read script '" + sqlScript.getName() + "' description");
             StringBuilder sql = new StringBuilder();
             try (BufferedReader is = new BufferedReader(new InputStreamReader(sqlScript.getContents()))) {
                 for (;;) {

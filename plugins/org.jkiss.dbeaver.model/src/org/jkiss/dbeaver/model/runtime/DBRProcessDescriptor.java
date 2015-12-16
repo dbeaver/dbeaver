@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -54,7 +56,8 @@ public class DBRProcessDescriptor
 
     public String getName()
     {
-        return processBuilder.command().get(0);
+        final List<String> command = processBuilder.command();
+        return command.isEmpty() ? "?" : command.get(0);
     }
 
     public DBRShellCommand getCommand()
@@ -94,6 +97,9 @@ public class DBRProcessDescriptor
     {
         if (process != null) {
             throw new DBException("Process " + getName() + " already running");
+        }
+        if (CommonUtils.isEmpty(processBuilder.command())) {
+            throw new DBException("Empty command specified");
         }
         try {
             this.process = processBuilder.start();
