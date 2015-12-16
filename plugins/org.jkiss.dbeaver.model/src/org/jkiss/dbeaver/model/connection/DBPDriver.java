@@ -19,11 +19,9 @@
 package org.jkiss.dbeaver.model.connection;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
@@ -33,31 +31,43 @@ import java.util.Map;
 /**
  * DBPDriver
  */
-public interface DBPDriver extends DBPObject
+public interface DBPDriver extends DBPNamedObject
 {
+    /**
+     * Driver contributor
+     */
+    @NotNull
     DBPDataSourceProvider getDataSourceProvider()
         throws DBException;
 
+    /**
+     * Client manager or null
+     */
+    @Nullable
     DBPClientManager getClientManager();
 
+    @NotNull
     String getId();
 
-    String getName();
-
+    @NotNull
     String getFullName();
 
+    @Nullable
     String getDescription();
 
-    String getNote();
-
+    @NotNull
     DBPImage getIcon();
 
+    @Nullable
     String getDriverClassName();
 
+    @Nullable
     String getDefaultPort();
 
+    @Nullable
     String getSampleURL();
 
+    @Nullable
     String getWebURL();
 
     boolean isClientRequired();
@@ -69,30 +79,40 @@ public interface DBPDriver extends DBPObject
 
     boolean isCustomDriverLoader();
 
+    @Nullable
     DBXTreeNode getNavigatorRoot();
 
+    @NotNull
     Collection<DBPPropertyDescriptor> getConnectionPropertyDescriptors();
 
+    @NotNull
     Map<Object, Object> getDefaultConnectionProperties();
 
+    @NotNull
     Map<Object, Object> getConnectionProperties();
 
+    @NotNull
     Map<Object, Object> getDriverParameters();
 
+    @Nullable
     Object getDriverParameter(String name);
 
     boolean isSupportedByLocalSystem();
 
+    @NotNull
     Collection<String> getClientHomeIds();
 
+    @Nullable
     DBPClientHome getClientHome(String homeId);
 
+    @Nullable
     ClassLoader getClassLoader();
 
     @NotNull
     Collection<? extends DBPDriverLibrary> getDriverLibraries();
 
-    Object getDriverInstance(DBRRunnableContext runnableContext) throws DBException;
+    @NotNull
+    Object getDriverInstance(@NotNull DBRRunnableContext runnableContext) throws DBException;
 
     void loadDriver(DBRRunnableContext runnableContext) throws DBException;
 
