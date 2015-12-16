@@ -309,7 +309,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         } catch (Exception e) {
             log.warn("Can't determine value content length", e);
             // Get file length
-            contentLength = getEditorInput().getFile().getFullPath().toFile().length();
+            contentLength = getEditorInput().getContentFile().length();
         }
         MimeType mimeType = ContentUtils.getMimeType(contentType);
         IEditorPart defaultPage = null, preferredPage = null;

@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.Log;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,8 +28,6 @@ import java.io.*;
  * File content storage
  */
 public class ExternalContentStorage implements DBDContentStorage {
-
-    static final Log log = Log.getLog(ExternalContentStorage.class);
 
     private final DBPApplication application;
     private File file;
@@ -81,17 +76,15 @@ public class ExternalContentStorage implements DBDContentStorage {
         throws IOException
     {
         // Create new local storage
-        IFile tempFile = ContentUtils.createTempContentFile(monitor, application, "copy" + this.hashCode());
+        File tempFile = ContentUtils.createTempContentFile(monitor, application, "copy" + this.hashCode());
         try {
-            InputStream is = new FileInputStream(file);
-            try {
-                tempFile.setContents(is, true, false, monitor.getNestedMonitor());
+            try (InputStream is = new FileInputStream(file)) {
+                try (OutputStream os = new FileOutputStream(tempFile)) {
+                    ContentUtils.copyStreams(is, file.length(), os, monitor);
+                }
             }
-            finally {
-                ContentUtils.close(is);
-            }
-        } catch (CoreException e) {
-            ContentUtils.deleteTempFile(monitor, tempFile);
+        } catch (IOException e) {
+            ContentUtils.deleteTempFile(tempFile);
             throw new IOException(e);
         }
         return new TemporaryContentStorage(application, tempFile);

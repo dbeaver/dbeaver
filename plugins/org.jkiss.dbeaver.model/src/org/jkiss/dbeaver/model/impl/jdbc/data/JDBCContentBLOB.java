@@ -17,10 +17,9 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.eclipse.core.resources.IFile;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -34,11 +33,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
-import org.jkiss.utils.IOUtils;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -100,20 +96,20 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                 }
             } else {
                 // Create new local storage
-                IFile tempFile;
+                File tempFile;
                 try {
                     tempFile = ContentUtils.createTempContentFile(monitor, application, "blob" + blob.hashCode());
                 }
                 catch (IOException e) {
                     throw new DBCException("Can't create temporary file", e);
                 }
-                try {
-                    ContentUtils.copyStreamToFile(monitor, blob.getBinaryStream(), contentLength, tempFile);
+                try (OutputStream os = new FileOutputStream(tempFile)) {
+                    ContentUtils.copyStreams(blob.getBinaryStream(), contentLength, os, monitor);
                 } catch (IOException e) {
-                    ContentUtils.deleteTempFile(monitor, tempFile);
-                    throw new DBCException("IO error whle copying stream", e);
+                    ContentUtils.deleteTempFile(tempFile);
+                    throw new DBCException("IO error while copying stream", e);
                 } catch (SQLException e) {
-                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }
                 this.storage = new TemporaryContentStorage(application, tempFile);
