@@ -17,32 +17,23 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.Log;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.*;
 
 /**
  * File content storage
  */
 public class TemporaryContentStorage implements DBDContentStorageLocal {
 
-    static final Log log = Log.getLog(TemporaryContentStorage.class);
-
     private final DBPApplication application;
-    private IFile file;
+    private File file;
 
-    public TemporaryContentStorage(DBPApplication application, IFile file)
+    public TemporaryContentStorage(DBPApplication application, File file)
     {
         this.application = application;
         this.file = file;
@@ -52,44 +43,26 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     public InputStream getContentStream()
         throws IOException
     {
-        try {
-            return file.getContents();
-        }
-        catch (CoreException e) {
-            throw new IOException(e);
-        }
+        return new FileInputStream(file);
     }
 
     @Override
     public Reader getContentReader()
         throws IOException
     {
-        try {
-            return new InputStreamReader(
-                file.getContents(),
-                file.getCharset());
-        }
-        catch (CoreException e) {
-            throw new IOException(e);
-        }
+        return new FileReader(file);
     }
 
     @Override
     public long getContentLength()
     {
-        return file.getLocation().toFile().length();
+        return file.length();
     }
 
     @Override
     public String getCharset()
     {
-        try {
-            return file.getCharset();
-        }
-        catch (CoreException e) {
-            log.warn(e);
-            return null;
-        }
+        return ContentUtils.DEFAULT_CHARSET;
     }
 
     @Override
@@ -97,17 +70,15 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
         throws IOException
     {
         // Create new local storage
-        IFile tempFile = ContentUtils.createTempContentFile(monitor, application, "copy" + this.hashCode());
+        File tempFile = ContentUtils.createTempContentFile(monitor, application, "copy" + this.hashCode());
         try {
-            InputStream is = file.getContents(true);
-            try {
-                tempFile.setContents(is, true, false, monitor.getNestedMonitor());
+            try (InputStream is = new FileInputStream(file)) {
+                try (OutputStream os = new FileOutputStream(tempFile)) {
+                    ContentUtils.copyStreams(is, file.length(), os, monitor);
+                }
             }
-            finally {
-                ContentUtils.close(is);
-            }
-        } catch (CoreException e) {
-            ContentUtils.deleteTempFile(monitor, tempFile);
+        } catch (IOException e) {
+            ContentUtils.deleteTempFile(tempFile);
             throw new IOException(e);
         }
         return new TemporaryContentStorage(application, tempFile);
@@ -116,16 +87,11 @@ public class TemporaryContentStorage implements DBDContentStorageLocal {
     @Override
     public void release()
     {
-        try {
-            file.delete(true, false, new NullProgressMonitor());
-        }
-        catch (CoreException e) {
-            log.warn(e);
-        }
+        ContentUtils.deleteTempFile(file);
     }
 
     @Override
-    public IFile getDataFile()
+    public File getDataFile()
     {
         return file;
     }

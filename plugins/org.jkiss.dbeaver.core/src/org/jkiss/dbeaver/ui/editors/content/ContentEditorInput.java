@@ -17,12 +17,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IStorage;
-import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
@@ -30,14 +29,17 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDContentStorageLocal;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.LocalFileStorage;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -55,8 +57,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 
     private IValueController valueController;
     private ContentEditorPart[] editorParts;
-    private IFile contentFile;
+    private File contentFile;
     private boolean contentDetached = false;
+    private String fileCharset = ContentUtils.DEFAULT_CHARSET;
 
     public ContentEditorInput(
         IValueController valueController,
@@ -67,6 +70,10 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
         this.valueController = valueController;
         this.editorParts = editorParts;
         this.prepareContent(monitor);
+    }
+
+    public File getContentFile() {
+        return contentFile;
     }
 
     public IValueController getValueController()
@@ -129,6 +136,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     @Override
     public Object getAdapter(Class adapter)
     {
+        if (adapter == IStorage.class) {
+            return new LocalFileStorage(contentFile);
+        }
         return null;
     }
 
@@ -178,11 +188,8 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
             catch (IOException e) {
                 // Delete temp file
                 if (contentFile != null && contentFile.exists()) {
-                    try {
-                        contentFile.delete(true, false, monitor.getNestedMonitor());
-                    }
-                    catch (CoreException e1) {
-                        log.warn("Can't delete temporary content file", e);
+                    if (!contentFile.delete()) {
+                        log.warn("Can't delete temporary content file '" + contentFile.getAbsolutePath() + "'");
                     }
                 }
                 throw new DBException("Can't delete content file", e);
@@ -197,41 +204,26 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 
     private void markReadOnly(boolean readOnly) throws DBException
     {
-        ResourceAttributes attributes = contentFile.getResourceAttributes();
-        if (attributes != null && attributes.isReadOnly() != readOnly) {
-            attributes.setReadOnly(readOnly);
-            try {
-                contentFile.setResourceAttributes(attributes);
-            }
-            catch (CoreException e) {
-                throw new DBException("Can't set content read-only", e);
-            }
+        if (!contentFile.setWritable(!readOnly)) {
+            throw new DBException("Can't set content read-only");
         }
     }
 
     public void release(DBRProgressMonitor monitor)
     {
         if (contentFile != null && !contentDetached) {
-            ContentUtils.deleteTempFile(monitor, contentFile);
+            if (!contentFile.delete()) {
+                log.warn("Can't delete temp file '" + contentFile.getAbsolutePath() + "'");
+            }
             contentDetached = true;
         }
-    }
-
-    public IFile getFile() {
-        return contentFile;
-    }
-
-    public IStorage getStorage()
-        throws CoreException
-    {
-        return contentFile;
     }
 
     @Nullable
     @Override
     public IPath getPath()
     {
-        return contentFile == null ? null : contentFile.getLocation();
+        return contentFile == null ? null : new Path(contentFile.getAbsolutePath());
     }
 
     public boolean isReadOnly() {
@@ -241,9 +233,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     void saveToExternalFile(File file, IProgressMonitor monitor)
         throws CoreException
     {
-        try {
+        try (InputStream is = new FileInputStream(contentFile)) {
             ContentUtils.saveContentToFile(
-                contentFile.getContents(true),
+                is,
                 file,
                 RuntimeUtils.makeMonitor(monitor));
         }
@@ -257,23 +249,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     {
         try {
             try (InputStream inputStream = new FileInputStream(extFile)) {
-/*
-                ResourceAttributes atts = contentFile.getResourceAttributes();
-                atts.setReadOnly(false);
-                contentFile.setResourceAttributes(atts);
-*/
-
-                File intFile = contentFile.getLocation().toFile();
-                try (OutputStream outputStream = new FileOutputStream(intFile)) {
+                try (OutputStream outputStream = new FileOutputStream(contentFile)) {
                     ContentUtils.copyStreams(inputStream, extFile.length(), outputStream, RuntimeUtils.makeMonitor(monitor));
                 }
-
-                // Append zero empty content to trigger content refresh
-                contentFile.appendContents(
-                    new ByteArrayInputStream(new byte[0]),
-                    true,
-                    false,
-                    monitor);
             }
         }
         catch (Throwable e) {
@@ -288,17 +266,15 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 
         markReadOnly(false);
 
-        if (contents.isNull()) {
-            ContentUtils.copyStreamToFile(monitor, new ByteArrayInputStream(new byte[0]), 0, contentFile);
-        } else {
-            if (storage == null) {
-                log.warn("Can't get data from null storage");
-                return;
-            }
-            if (ContentUtils.isTextContent(contents)) {
-                ContentUtils.copyReaderToFile(monitor, storage.getContentReader(), storage.getContentLength(), storage.getCharset(), contentFile);
+        try (OutputStream os = new FileOutputStream(contentFile)) {
+            if (contents.isNull()) {
+                ContentUtils.copyStreams(new ByteArrayInputStream(new byte[0]), 0, os, monitor);
             } else {
-                ContentUtils.copyStreamToFile(monitor, storage.getContentStream(), storage.getContentLength(), contentFile);
+                if (storage == null) {
+                    log.warn("Can't get data from null storage");
+                    return;
+                }
+                ContentUtils.copyStreams(storage.getContentStream(), storage.getContentLength(), os, monitor);
             }
         }
 
@@ -329,5 +305,13 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
     @Override
     public DBCExecutionContext getExecutionContext() {
         return valueController.getExecutionContext();
+    }
+
+    public String getFileCharset() {
+        return fileCharset;
+    }
+
+    public void setFileCharset(String fileCharset) {
+        this.fileCharset = fileCharset;
     }
 }

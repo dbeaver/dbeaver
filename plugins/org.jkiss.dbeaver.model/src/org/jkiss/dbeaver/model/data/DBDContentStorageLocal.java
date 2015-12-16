@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.eclipse.core.resources.IFile;
+import java.io.File;
 
 /**
  * Local content storage.
@@ -28,6 +28,6 @@ import org.eclipse.core.resources.IFile;
  */
 public interface DBDContentStorageLocal extends DBDContentStorage {
 
-    IFile getDataFile();
+    File getDataFile();
 
 }
