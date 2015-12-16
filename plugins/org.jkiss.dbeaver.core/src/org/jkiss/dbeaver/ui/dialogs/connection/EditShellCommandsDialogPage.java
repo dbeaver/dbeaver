@@ -79,6 +79,13 @@ public class EditShellCommandsDialogPage extends ActiveWizardPage<ConnectionWiza
             UIUtils.createControlLabel(eventGroup, CoreMessages.dialog_connection_events_label_event);
             eventTypeTable = new Table(eventGroup, SWT.BORDER | SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION);
             eventTypeTable.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+            eventTypeTable.addListener(SWT.Selection, new Listener() {
+                public void handleEvent(Event event) {
+                    if (event.detail == SWT.CHECK) {
+                        eventTypeTable.select(eventTypeTable.indexOf((TableItem) event.item));
+                    }
+                }
+            });
 
             for (DBPConnectionEventType eventType : DBPConnectionEventType.values()) {
                 DBRShellCommand command = eventsCache.get(eventType);
