@@ -432,9 +432,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     public IStructuredSelection getSelection()
     {
         TableItem[] items = logTable.getSelection();
-        QMMObject[] data = new QMMObject[items.length];
+        QMMetaEvent[] data = new QMMetaEvent[items.length];
         for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-            data[i] = (QMMObject)items[i].getData();
+            data[i] = (QMMetaEvent)items[i].getData();
         }
         return new StructuredSelection(data);
     }
