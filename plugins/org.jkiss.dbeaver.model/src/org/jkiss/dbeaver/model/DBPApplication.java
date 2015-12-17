@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspace;
 import org.jkiss.code.NotNull;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -60,7 +60,7 @@ public interface DBPApplication
     DBPPreferenceStore getPreferenceStore();
 
     @NotNull
-    IFolder getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
+    File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
 
     @NotNull
     DBRRunnableContext getRunnableContext();

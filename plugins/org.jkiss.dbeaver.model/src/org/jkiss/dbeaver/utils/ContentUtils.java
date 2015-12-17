@@ -60,20 +60,21 @@ public class ContentUtils {
     }
 
 
-    public static IFolder getLobFolder(DBRProgressMonitor monitor, DBPApplication application)
+    public static File getLobFolder(DBRProgressMonitor monitor, DBPApplication application)
         throws IOException
     {
         return application.getTempFolder(monitor, LOB_DIR);
     }
 
-    public static IFile createTempContentFile(DBRProgressMonitor monitor, DBPApplication application, String fileName)
+    public static File createTempContentFile(DBRProgressMonitor monitor, DBPApplication application, String fileName)
         throws IOException
     {
-        IFile file = makeTempFile(
+        return makeTempFile(
             monitor,
             getLobFolder(monitor, application),
             fileName,
             "data");
+/*
         try {
             String charset = application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING);
             file.setCharset(charset, monitor.getNestedMonitor());
@@ -81,17 +82,15 @@ public class ContentUtils {
             log.error("Can't set file charset", e);
         }
         return file;
+*/
     }
 
-    public static IFile makeTempFile(DBRProgressMonitor monitor, IFolder folder, String name, String extension)
+    public static File makeTempFile(DBRProgressMonitor monitor, File folder, String name, String extension)
         throws IOException
     {
-        IFile tempFile = folder.getFile(name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
-        try {
-            InputStream contents = new ByteArrayInputStream(new byte[0]);
-            tempFile.create(contents, true, monitor.getNestedMonitor());
-        } catch (CoreException ex) {
-            throw new IOException(MessageFormat.format(ModelMessages.DBeaverCore_error_can_create_temp_file, tempFile.toString(), folder.toString()), ex);
+        File tempFile = new File(folder, name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
+        if (!tempFile.createNewFile()){
+            throw new IOException(MessageFormat.format(ModelMessages.DBeaverCore_error_can_create_temp_file, tempFile.getAbsolutePath(), folder.getAbsoluteFile()));
         }
         return tempFile;
     }
@@ -428,6 +427,12 @@ public class ContentUtils {
     public static boolean isXML(DBDContent content)
     {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
+    }
+
+    public static void deleteTempFile(File tempFile) {
+        if (!tempFile.delete()) {
+            log.warn("Can't delete temp file '" + tempFile.getAbsolutePath() + "'");
+        }
     }
 
 }

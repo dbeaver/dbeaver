@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.content;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.*;
@@ -31,11 +30,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
 import org.eclipse.ui.texteditor.BasicTextEditorActionContributor;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -118,17 +119,13 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
 
         if (this.activeEditor != null) {
             if (encodingCombo != null && !encodingCombo.isDisposed()) {
-                try {
-                    String curCharset = this.activeEditor.getEditorInput().getFile().getCharset();
-                    int charsetCount = encodingCombo.getItemCount();
-                    for (int i = 0; i < charsetCount; i++) {
-                        if (encodingCombo.getItem(i).equals(curCharset)) {
-                            encodingCombo.select(i);
-                            break;
-                        }
+                String curCharset = ContentUtils.DEFAULT_CHARSET;
+                int charsetCount = encodingCombo.getItemCount();
+                for (int i = 0; i < charsetCount; i++) {
+                    if (encodingCombo.getItem(i).equals(curCharset)) {
+                        encodingCombo.select(i);
+                        break;
                     }
-                } catch (CoreException e) {
-                    log.error(e);
                 }
             }
             applyAction.setEnabled(activeEditor.isDirty());
@@ -189,11 +186,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
             {
                 String curCharset = null;
                 if (getEditor() != null) {
-                    try {
-                        curCharset = getEditor().getEditorInput().getFile().getCharset();
-                    } catch (CoreException e) {
-                        log.error(e);
-                    }
+                    curCharset = getEditor().getEditorInput().getFileCharset();
                 }
                 encodingCombo = UIUtils.createEncodingCombo(parent, curCharset);
                 encodingCombo.setToolTipText("Content Encoding");
@@ -205,22 +198,7 @@ public class ContentEditorContributor extends MultiPageEditorActionBarContributo
                             final ContentEditorInput contentEditorInput = contentEditor.getEditorInput();
                             Combo combo = (Combo) e.widget;
                             final String charset = combo.getItem(combo.getSelectionIndex());
-                            try {
-                                contentEditor.getSite().getWorkbenchWindow().run(false, false, new IRunnableWithProgress() {
-                                    @Override
-                                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                                        try {
-                                            contentEditorInput.getFile().setCharset(charset, monitor);
-                                        } catch (CoreException e1) {
-                                            throw new InvocationTargetException(e1);
-                                        }
-                                    }
-                                });
-                            } catch (InvocationTargetException e1) {
-                                log.error(e1.getTargetException());
-                            } catch (InterruptedException e1) {
-                                // do nothing
-                            }
+                            contentEditorInput.setFileCharset(charset);
                         }
 
                     }

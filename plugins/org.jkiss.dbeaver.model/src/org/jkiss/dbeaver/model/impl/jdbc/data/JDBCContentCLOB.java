@@ -17,13 +17,15 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
-import org.eclipse.core.resources.IFile;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -32,12 +34,10 @@ import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.Reader;
+import java.io.*;
 import java.sql.Clob;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -96,20 +96,20 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
                 }
             } else {
                 // Create new local storage
-                IFile tempFile;
+                File tempFile;
                 try {
                     tempFile = ContentUtils.createTempContentFile(monitor, application, "clob" + clob.hashCode());
                 }
                 catch (IOException e) {
                     throw new DBCException("Can't create temp file", e);
                 }
-                try {
-                    ContentUtils.copyReaderToFile(monitor, clob.getCharacterStream(), contentLength, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, tempFile);
+                try (Writer os = new FileWriter(tempFile)) {
+                    ContentUtils.copyStreams(clob.getCharacterStream(), contentLength, os, monitor);
                 } catch (IOException e) {
-                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException("IO error while copying content", e);
                 } catch (SQLException e) {
-                    ContentUtils.deleteTempFile(monitor, tempFile);
+                    ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException(e, dataSource);
                 }
                 this.storage = new TemporaryContentStorage(application, tempFile);

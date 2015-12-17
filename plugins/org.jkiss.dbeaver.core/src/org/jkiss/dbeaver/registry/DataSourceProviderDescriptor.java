@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -154,6 +155,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return icon;
     }
 
+    @NotNull
     public DBPDataSourceProvider getInstance(DriverDescriptor driver)
         throws DBException
     {
