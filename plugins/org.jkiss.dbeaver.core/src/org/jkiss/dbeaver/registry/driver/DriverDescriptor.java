@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry.driver;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -316,6 +317,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.iconError = new DBIconComposite(this.iconPlain, false, null, null, isCustom() ? DBIcon.OVER_LAMP : null, DBIcon.OVER_ERROR);
     }
 
+    @Nullable
     @Override
     public DriverClassLoader getClassLoader()
     {
@@ -338,6 +340,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return providerDescriptor;
     }
 
+    @NotNull
     @Override
     public DBPDataSourceProvider getDataSourceProvider()
         throws DBException
@@ -345,6 +348,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return providerDescriptor.getInstance(this);
     }
 
+    @Nullable
     @Override
     public DBPClientManager getClientManager()
     {
@@ -361,6 +365,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    @NotNull
     @Override
     public String getId()
     {
@@ -378,6 +383,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.category = category;
     }
 
+    @NotNull
     @Override
     @Property(viewable = true, order = 1)
     public String getName()
@@ -402,11 +408,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.description = description;
     }
 
-    public String getNote()
-    {
-        return note;
-    }
-
+    @NotNull
     public String getFullName()
     {
         if (CommonUtils.isEmpty(category)) {
@@ -429,6 +431,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
      * Driver icon, includes overlays for driver conditions (custom, invalid, etc)..
      * @return icon
      */
+    @NotNull
     @Override
     public DBPImage getIcon()
     {
@@ -464,6 +467,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.disabled = disabled;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 2)
     public String getDriverClassName()
@@ -479,8 +483,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    @NotNull
     @Override
-    public Object getDriverInstance(DBRRunnableContext runnableContext)
+    public Object getDriverInstance(@NotNull DBRRunnableContext runnableContext)
         throws DBException
     {
         if (driverInstance == null) {
@@ -516,6 +521,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    @Nullable
     @Override
     public String getDefaultPort()
     {
@@ -527,6 +533,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.driverDefaultPort = driverDefaultPort;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 3)
     public String getSampleURL()
@@ -539,6 +546,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.sampleURL = sampleURL;
     }
 
+    @Nullable
     @Override
     public String getWebURL()
     {
@@ -578,6 +586,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return customDriverLoader;
     }
 
+    @Nullable
     @Override
     public DBXTreeNode getNavigatorRoot() {
         return providerDescriptor.getTreeDescriptor();
@@ -600,6 +609,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             driverClassName.contains("sun.jdbc"); //$NON-NLS-1$
     }
 
+    @NotNull
     @Override
     public Collection<String> getClientHomeIds()
     {
@@ -691,18 +701,21 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return fileSources;
     }
 
+    @NotNull
     @Override
     public List<DBPPropertyDescriptor> getConnectionPropertyDescriptors()
     {
         return connectionPropertyDescriptors;
     }
 
+    @NotNull
     @Override
     public Map<Object, Object> getDefaultConnectionProperties()
     {
         return defaultConnectionProperties;
     }
 
+    @NotNull
     @Override
     public Map<Object, Object> getConnectionProperties()
     {
@@ -725,12 +738,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return defaultParameters;
     }
 
+    @NotNull
     @Override
     public Map<Object, Object> getDriverParameters()
     {
         return customParameters;
     }
 
+    @Nullable
     @Override
     public Object getDriverParameter(String name)
     {
@@ -1141,6 +1156,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
     }
 
+    @Nullable
     @Override
     public DBPClientHome getClientHome(String homeId)
     {

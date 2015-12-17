@@ -140,6 +140,9 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
      */
     boolean reconnect(DBRProgressMonitor monitor) throws DBException;
 
+    @Nullable
+    DBPDataSource getDataSource();
+
     String getFolderPath();
 
     void setFolderPath(String folderPath);

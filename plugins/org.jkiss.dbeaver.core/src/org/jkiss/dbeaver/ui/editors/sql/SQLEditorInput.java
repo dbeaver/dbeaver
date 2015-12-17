@@ -95,10 +95,10 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
             return super.getName();
         }
         return
-            "Script: " + getFile().getName() + " \n" +
-            "Connection: " + dataSourceContainer.getName() + " \n" +
-            "Type: " + (dataSourceContainer.getDriver() == null ? "Unknown" : dataSourceContainer.getDriver().getFullName()) + " \n" +
-            "URL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
+            "Script: " + getFile().getName() +
+            " \nConnection: " + dataSourceContainer.getName() +
+            " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
+            " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
     }
 
     @Override

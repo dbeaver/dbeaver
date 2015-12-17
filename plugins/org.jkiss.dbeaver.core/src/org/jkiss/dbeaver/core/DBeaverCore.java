@@ -18,8 +18,13 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.resources.*;
-import org.eclipse.core.runtime.*;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -44,6 +49,7 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
 
@@ -51,7 +57,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.ProxySelector;
-import java.text.MessageFormat;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -71,8 +77,8 @@ public class DBeaverCore implements DBPApplication {
     private static boolean standalone = false;
     private static volatile boolean isClosing = false;
 
+    private File tempFolder;
     private IWorkspace workspace;
-    private IProject tempProject;
     private OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
@@ -170,6 +176,33 @@ public class DBeaverCore implements DBPApplication {
     {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
+
+        // Temp folder
+        {
+            try {
+                final java.nio.file.Path tempDirectory = Files.createTempDirectory(TEMP_PROJECT_NAME);
+                tempFolder = tempDirectory.toFile();
+            } catch (IOException e) {
+                final String sysTempFolder = System.getProperty("java.io.tmpdir");
+                if (!CommonUtils.isEmpty(sysTempFolder)) {
+                    tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
+                    if (!tempFolder.mkdirs()){
+                        final String sysUserFolder = System.getProperty("user.home");
+                        if (!CommonUtils.isEmpty(sysUserFolder)) {
+                            tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
+                            if (!tempFolder.mkdirs()){
+                                tempFolder = new File(TEMP_PROJECT_NAME);
+                                if (!tempFolder.mkdirs()){
+                                    log.error("Can't create temp directory!");
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+
         // Register properties adapter
         this.workspace = ResourcesPlugin.getWorkspace();
 
@@ -215,30 +248,6 @@ public class DBeaverCore implements DBPApplication {
         } catch (DBException e) {
             log.error("Error loading projects", e);
         }
-
-        try {
-            // Temp project
-            tempProject = workspace.getRoot().getProject(TEMP_PROJECT_NAME);
-            if (tempProject.exists()) {
-                try {
-                    tempProject.delete(true, true, monitor);
-                } catch (CoreException e) {
-                    log.error("Can't delete temp project", e);
-                }
-            }
-            IProjectDescription description = workspace.newProjectDescription(TEMP_PROJECT_NAME);
-            description.setName(TEMP_PROJECT_NAME);
-            description.setComment("Project for DBeaver temporary content");
-            try {
-                tempProject.create(description, IProject.HIDDEN, monitor);
-            } catch (CoreException e) {
-                log.error("Can't create temp project", e);
-            }
-
-            tempProject.open(monitor);
-        } catch (Throwable e) {
-            log.error("Cannot open temp project", e); //$NON-NLS-1$
-        }
     }
 
     public synchronized void dispose()
@@ -272,18 +281,6 @@ public class DBeaverCore implements DBPApplication {
             this.projectRegistry = null;
         }
 
-        // Cleanup temp project
-        IProgressMonitor monitor = new NullProgressMonitor();
-        if (workspace != null) {
-            if (tempProject != null && tempProject.exists()) {
-                try {
-                    tempProject.delete(true, true, monitor);
-                } catch (CoreException e) {
-                    log.warn("Can't cleanup temp project", e);
-                }
-            }
-        }
-
         if (this.qmLogWriter != null) {
             this.queryManager.unregisterMetaListener(qmLogWriter);
             this.qmLogWriter.dispose();
@@ -297,6 +294,7 @@ public class DBeaverCore implements DBPApplication {
 
         if (isStandalone() && workspace != null) {
             try {
+                IProgressMonitor monitor = new NullProgressMonitor();
                 workspace.save(true, monitor);
             } catch (CoreException ex) {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
@@ -375,27 +373,8 @@ public class DBeaverCore implements DBPApplication {
         return projectRegistry;
     }
 
-    public IProject getTempProject() {
-        return tempProject;
-    }
-
     @NotNull
-    public IFolder getTempFolder(DBRProgressMonitor monitor, String name)
-        throws IOException
-    {
-        if (tempProject == null) {
-            throw new IOException("Temp project wasn't initialized properly");
-        }
-        IPath tempPath = tempProject.getProjectRelativePath().append(name);
-        IFolder tempFolder = tempProject.getFolder(tempPath);
-        if (!tempFolder.exists()) {
-            try {
-                tempFolder.create(true, true, monitor.getNestedMonitor());
-                tempFolder.setHidden(true);
-            } catch (CoreException ex) {
-                throw new IOException(MessageFormat.format(CoreMessages.DBeaverCore_error_can_create_temp_dir, tempFolder.toString()), ex);
-            }
-        }
+    public File getTempFolder(DBRProgressMonitor monitor, String name) {
         return tempFolder;
     }
 
