@@ -165,7 +165,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         super.createPresentation(controller, parent);
 
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
-        this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_GRAY);
+        this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
             resultsSash = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -874,6 +874,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 //                control.setBackground(previewBack);
 //            }
         }
+        //this.foregroundDefault = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_FORE);
         this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
         this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
