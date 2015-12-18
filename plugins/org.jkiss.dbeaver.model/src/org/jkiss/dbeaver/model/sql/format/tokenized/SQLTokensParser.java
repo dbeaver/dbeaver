@@ -29,10 +29,12 @@ import java.util.List;
  */
 class SQLTokensParser {
 
-    private SQLFormatterConfiguration configuration;
+    private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()", "!=", ":=", ".*" };
+
+    private final SQLFormatterConfiguration configuration;
+    private final String quoteSymbol;
     private String fBefore;
     private int fPos;
-    private static final String[] twoCharacterSymbol = { "<>", "<=", ">=", "||", "()", "!=", ":=", ".*" };
     private char structSeparator;
     private String catalogSeparator;
 
@@ -40,6 +42,7 @@ class SQLTokensParser {
         this.configuration = configuration;
         this.structSeparator = configuration.getSyntaxManager().getStructSeparator();
         this.catalogSeparator = configuration.getSyntaxManager().getCatalogSeparator();
+        this.quoteSymbol = configuration.getSyntaxManager().getQuoteSymbol();
     }
 
     public static boolean isSpace(final char argChar) {
@@ -176,38 +179,40 @@ class SQLTokensParser {
                     return new FormatterToken(FormatterConstants.COMMENT, s.toString(), start_pos);
                 }
             }
-        } else if (fChar == '\'' || fChar == '\"' || fChar == configuration.getSyntaxManager().getQuoteSymbol().charAt(0)) {
-            fPos++;
-            char quoteChar = fChar;
-            StringBuilder s = new StringBuilder(String.valueOf(quoteChar));
-            for (;;) {
-                fChar = fBefore.charAt(fPos);
-                s.append(fChar);
-                fPos++;
-                if (fChar == quoteChar) {
-                    return new FormatterToken(FormatterConstants.VALUE, s.toString(), start_pos);
-                }
-            }
-        }
-
-        else if (isSymbol(fChar)) {
-            String s = String.valueOf(fChar);
-            fPos++;
-            if (fPos >= fBefore.length()) {
-                return new FormatterToken(FormatterConstants.SYMBOL, s, start_pos);
-            }
-            char ch2 = fBefore.charAt(fPos);
-            for (int i = 0; i < twoCharacterSymbol.length; i++) {
-                if (twoCharacterSymbol[i].charAt(0) == fChar && twoCharacterSymbol[i].charAt(1) == ch2) {
-                    fPos++;
-                    s += ch2;
-                    break;
-                }
-            }
-            return new FormatterToken(FormatterConstants.SYMBOL, s, start_pos);
         } else {
-            fPos++;
-            return new FormatterToken(FormatterConstants.UNKNOWN, String.valueOf(fChar), start_pos);
+            if (fChar == '\'' || fChar == '\"' || (quoteSymbol != null && !quoteSymbol.isEmpty() && fChar == quoteSymbol.charAt(0))) {
+                fPos++;
+                char quoteChar = fChar;
+                StringBuilder s = new StringBuilder(String.valueOf(quoteChar));
+                for (;;) {
+                    fChar = fBefore.charAt(fPos);
+                    s.append(fChar);
+                    fPos++;
+                    if (fChar == quoteChar) {
+                        return new FormatterToken(FormatterConstants.VALUE, s.toString(), start_pos);
+                    }
+                }
+            }
+
+            else if (isSymbol(fChar)) {
+                String s = String.valueOf(fChar);
+                fPos++;
+                if (fPos >= fBefore.length()) {
+                    return new FormatterToken(FormatterConstants.SYMBOL, s, start_pos);
+                }
+                char ch2 = fBefore.charAt(fPos);
+                for (int i = 0; i < twoCharacterSymbol.length; i++) {
+                    if (twoCharacterSymbol[i].charAt(0) == fChar && twoCharacterSymbol[i].charAt(1) == ch2) {
+                        fPos++;
+                        s += ch2;
+                        break;
+                    }
+                }
+                return new FormatterToken(FormatterConstants.SYMBOL, s, start_pos);
+            } else {
+                fPos++;
+                return new FormatterToken(FormatterConstants.UNKNOWN, String.valueOf(fChar), start_pos);
+            }
         }
     }
 
