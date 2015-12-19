@@ -86,7 +86,7 @@ public interface DBDValueHandler
      * @param session execution context
      * @param type attribute type
      * @param object source object
-     * @param copy
+     * @param copy copy object
      * @return initial object value
      * @throws org.jkiss.dbeaver.model.exec.DBCException on error
      */
