@@ -190,6 +190,7 @@ public class ResultSetViewer extends Viewer
         changeMode(false);
     }
 
+    @Override
     @NotNull
     public IResultSetContainer getContainer() {
         return container;
@@ -1150,6 +1151,9 @@ public class ResultSetViewer extends Viewer
     public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException
     {
+        if (getExecutionContext() == null) {
+            throw new DBException("Not connected");
+        }
         DBSEntityAssociation association = null;
         List<DBSEntityReferrer> referrers = attr.getReferrers();
         if (referrers != null) {

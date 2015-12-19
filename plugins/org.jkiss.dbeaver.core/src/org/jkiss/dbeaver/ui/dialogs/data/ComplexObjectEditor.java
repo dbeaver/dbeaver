@@ -312,8 +312,8 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public IValueManager getValueManager() {
             DBSTypedObject valueType = getValueType();
-            return DataManagerRegistry.getInstance().getManager(
-                getExecutionContext().getDataSource(),
+            return DataManagerRegistry.findValueManager(
+                getExecutionContext().getDataSource().getContainer(),
                 valueType.getDataKind(),
                 getValueHandler().getValueObjectType(valueType));
         }

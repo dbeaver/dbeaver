@@ -18,11 +18,14 @@
 package org.jkiss.dbeaver.ui.data.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
-import org.jkiss.dbeaver.registry.*;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.utils.CommonUtils;
@@ -109,11 +112,11 @@ public class DataManagerDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    public boolean supportsType(DBPDataSource dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType)
+    public boolean supportsType(@Nullable DBPDataSourceContainer dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType)
     {
         for (SupportInfo info : supportInfos) {
-            if (info.dataSource != null) {
-                DriverDescriptor driver = (DriverDescriptor) dataSource.getContainer().getDriver();
+            if (dataSource != null && info.dataSource != null) {
+                DriverDescriptor driver = (DriverDescriptor) dataSource.getDriver();
                 if (driver.getProviderDescriptor() != info.dataSource) {
                     continue;
                 }

@@ -22,8 +22,9 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 
@@ -37,8 +38,7 @@ public class DataManagerRegistry {
 
     private static DataManagerRegistry instance = null;
 
-    public synchronized static DataManagerRegistry getInstance()
-    {
+    public synchronized static DataManagerRegistry getInstance() {
         if (instance == null) {
             instance = new DataManagerRegistry(Platform.getExtensionRegistry());
         }
@@ -47,8 +47,7 @@ public class DataManagerRegistry {
 
     private List<DataManagerDescriptor> managers = new ArrayList<>();
 
-    private DataManagerRegistry(IExtensionRegistry registry)
-    {
+    private DataManagerRegistry(IExtensionRegistry registry) {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataManagerDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
@@ -59,7 +58,7 @@ public class DataManagerRegistry {
     }
 
     @NotNull
-    public IValueManager getManager(@NotNull DBPDataSource dataSource, @NotNull DBPDataKind dataKind, @NotNull Class<?> valueType) {
+    public IValueManager getManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBPDataKind dataKind, @NotNull Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
         IValueManager manager = findManager(dataSource, dataKind, valueType, true, true);
         if (manager == null) {
@@ -77,7 +76,7 @@ public class DataManagerRegistry {
         return manager;
     }
 
-    private IValueManager findManager(DBPDataSource dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    private IValueManager findManager(@Nullable DBPDataSourceContainer dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType) {
         for (DataManagerDescriptor manager : managers) {
             if (manager.supportsType(dataSource, dataKind, valueType, checkDataSource, checkType)) {
                 return manager.getInstance();
@@ -85,4 +84,10 @@ public class DataManagerRegistry {
         }
         return null;
     }
+
+    @NotNull
+    public static IValueManager findValueManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBPDataKind dataKind, @NotNull Class<?> valueType) {
+        return getInstance().getManager(dataSource, dataKind, valueType);
+    }
+
 }

@@ -180,4 +180,5 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void refreshPart(Object source, boolean force) {
 
     }
+
 }
