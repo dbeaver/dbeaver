@@ -1709,7 +1709,7 @@
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
-        <key commandId="org.jkiss.dbeaver.core.object.create" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+N"/>
+        <!--<key commandId="org.jkiss.dbeaver.core.object.create" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>-->
         <key commandId="org.jkiss.dbeaver.core.object.goto" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+D"/>
         <key commandId="org.jkiss.dbeaver.core.object.open" contextId="org.jkiss.dbeaver.ui.context.navigator" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
 

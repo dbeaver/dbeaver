@@ -69,23 +69,39 @@ public class DBeaverActivator extends AbstractUIPlugin
         context.addBundleListener(new BundleListener() {
             @Override
             public void bundleChanged(BundleEvent event) {
-                if (event.getType() == BundleEvent.STARTED) {
-                    log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                if (DBeaverCore.isStandalone()) {
+                    if (event.getType() == BundleEvent.STARTED) {
+                        log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                    } else if (event.getType() == BundleEvent.STOPPED) {
+                        log.debug("< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                    }
                 }
             }
         });
+
         super.start(context);
 
-        instance = this;
+        instance=this;
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
-        preferences = new BundlePreferenceStore(bundle);
+        preferences=new
+
+        BundlePreferenceStore(bundle);
+
         DBeaverUI.getInstance();
 
-        try {
+        try
+
+        {
             coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
             pluginResourceBundle = Platform.getResourceBundle(bundle);
-        } catch (MissingResourceException x) {
+        }
+
+        catch(
+        MissingResourceException x
+        )
+
+        {
             coreResourceBundle = null;
         }
     }
