@@ -84,8 +84,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
                     continue;
                 }
 
-                IValueManager manager = DataManagerRegistry.getInstance().getManager(
-                    dataSource,
+                IValueManager manager = DataManagerRegistry.findValueManager(
+                    dataSource.getContainer(),
                     dataType.getDataKind(),
                     Object.class);
 
@@ -413,8 +413,8 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         @Override
         public IValueManager getValueManager() {
             DBSTypedObject valueType = getValueType();
-            return DataManagerRegistry.getInstance().getManager(
-                getExecutionContext().getDataSource(),
+            return DataManagerRegistry.findValueManager(
+                getExecutionContext().getDataSource().getContainer(),
                 valueType.getDataKind(),
                 getValueHandler().getValueObjectType(valueType));
         }

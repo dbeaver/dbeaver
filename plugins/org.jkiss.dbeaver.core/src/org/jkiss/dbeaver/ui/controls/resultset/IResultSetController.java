@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -41,6 +42,9 @@ public interface IResultSetController extends DBPContextProvider {
 
     @NotNull
     IWorkbenchPartSite getSite();
+
+    @NotNull
+    IResultSetContainer getContainer();
 
     @NotNull
     ResultSetModel getModel();
@@ -129,4 +133,5 @@ public interface IResultSetController extends DBPContextProvider {
     void lockActionsByControl(Control lockedBy);
 
     void lockActionsByFocus(Control lockedBy);
+
 }

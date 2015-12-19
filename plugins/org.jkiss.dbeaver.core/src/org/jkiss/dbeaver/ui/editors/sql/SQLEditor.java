@@ -1305,7 +1305,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IDataSourceContainerProvider {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
@@ -1451,6 +1451,11 @@ public class SQLEditor extends SQLEditorBase implements
             return name;
         }
 
+        @Nullable
+        @Override
+        public DBPDataSourceContainer getDataSourceContainer() {
+            return SQLEditor.this.getDataSourceContainer();
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {

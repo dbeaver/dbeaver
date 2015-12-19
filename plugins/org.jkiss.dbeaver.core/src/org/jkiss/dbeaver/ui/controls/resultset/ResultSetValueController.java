@@ -22,7 +22,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -72,7 +74,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     }
 
 
-    @NotNull
+    @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
         return controller.getExecutionContext();
@@ -148,11 +150,21 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         return binding.getValueHandler();
     }
 
+    private DBPDataSourceContainer getDataSourceContainer() {
+        final IResultSetContainer rsContainer = controller.getContainer();
+        if (rsContainer instanceof IDataSourceContainerProvider) {
+            return ((IDataSourceContainerProvider) rsContainer).getDataSourceContainer();
+        } else {
+            final DBCExecutionContext executionContext = getExecutionContext();
+            return executionContext == null ? null : executionContext.getDataSource().getContainer();
+        }
+    }
+
     @Override
     public IValueManager getValueManager() {
         DBSTypedObject valueType = getValueType();
-        return DataManagerRegistry.getInstance().getManager(
-            getExecutionContext().getDataSource(),
+        return DataManagerRegistry.findValueManager(
+            getDataSourceContainer(),
             valueType.getDataKind(),
             getValueHandler().getValueObjectType(valueType));
     }
