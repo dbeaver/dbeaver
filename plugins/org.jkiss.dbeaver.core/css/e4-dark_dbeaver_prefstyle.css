@@ -20,7 +20,7 @@
 
  IEclipsePreferences#org-eclipse-ui-workbench {
         preferences:
-            'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=128,128,128'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=COLOR_BLACK'
             'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=180,128,128'
             'org.jkiss.dbeaver.sql.resultset.color.cell.new.background=128,180,128'
             'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=128,128,180'
