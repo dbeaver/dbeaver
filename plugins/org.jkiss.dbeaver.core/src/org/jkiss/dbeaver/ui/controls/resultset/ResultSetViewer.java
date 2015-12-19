@@ -78,6 +78,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.struct.EditConstraintDialog;
+import org.jkiss.dbeaver.ui.dialogs.struct.EditDictionaryDialog;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
 import org.jkiss.utils.CommonUtils;
@@ -2192,13 +2193,18 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-
+            EditDictionaryDialog dialog = new EditDictionaryDialog(
+                getSite().getShell(),
+                "Edit dictionary",
+                model.getSingleSource());
+            dialog.open();
         }
 
         @Override
         public boolean isEnabled()
         {
-            return false;
+            final DBSEntity singleSource = model.getSingleSource();
+            return singleSource != null;
         }
     }
 

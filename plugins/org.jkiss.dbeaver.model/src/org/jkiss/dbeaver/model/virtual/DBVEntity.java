@@ -234,6 +234,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         throws DBException
     {
         Collection<? extends DBSEntityAttribute> allColumns = keyColumn.getParentObject().getAttributes(monitor);
+        if (allColumns == null || allColumns.isEmpty()) {
+            return null;
+        }
         if (allColumns.size() == 1) {
             return DBUtils.getQuotedIdentifier(keyColumn);
         }
