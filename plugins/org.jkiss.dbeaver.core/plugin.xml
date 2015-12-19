@@ -2039,13 +2039,13 @@
                 value="255,255,225">
             <description>Value editor background</description>
         </colorDefinition>
-        <colorDefinition
+        <!--colorDefinition
             label="Сell foreground"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.cell.foreground"
-            color="COLOR_WIDGET_FOREGROUND">
+            value="COLOR_WIDGET_FOREGROUND">
             <description>Modified cell foreground</description>
-        </colorDefinition>
+        </colorDefinition-->
         <colorDefinition
                 label="Modified cell background"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
