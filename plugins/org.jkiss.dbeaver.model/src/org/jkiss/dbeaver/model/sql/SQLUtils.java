@@ -361,16 +361,11 @@ public final class SQLUtils {
     }
 
     public static String convertValueToSQL(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value) {
-        String strValue;
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
         DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
-        if (valueHandler == null) {
-            strValue = String.valueOf(value);
-        } else {
-            strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
-        }
+        String strValue = valueHandler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE);
         SQLDialect sqlDialect = null;
         if (dataSource instanceof SQLDataSource) {
             sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
