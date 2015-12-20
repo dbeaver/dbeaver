@@ -197,8 +197,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             }
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
-                DBCResultSet dbResult = dbStat.openResultSet();
-                try {
+                try (DBCResultSet dbResult = dbStat.openResultSet()) {
                     List<DBDLabelValuePair> values = new ArrayList<>();
                     List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
                     List<DBDValueHandler> colHandlers = new ArrayList<>(metaColumns.size());
@@ -230,9 +229,6 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                         values.add(new DBDLabelValuePair(keyLabel, keyValue));
                     }
                     return values;
-                }
-                finally {
-                    dbResult.close();
                 }
             } else {
                 return null;
