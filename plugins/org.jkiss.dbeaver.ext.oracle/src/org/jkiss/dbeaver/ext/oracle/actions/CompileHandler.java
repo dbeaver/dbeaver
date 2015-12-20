@@ -232,14 +232,12 @@ public class CompileHandler extends AbstractHandler implements IElementUpdater
                     break;
                 }
                 try {
-                    final DBCStatement dbStat = session.prepareStatement(
+                    try (DBCStatement dbStat = session.prepareStatement(
                         DBCStatementType.QUERY,
                         script,
-                        false, false, false);
-                    try {
+                        false, false, false))
+                    {
                         dbStat.executeStatement();
-                    } finally {
-                        dbStat.close();
                     }
                     action.handleExecute(null);
                 } catch (DBCException e) {

@@ -178,8 +178,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 query.append(" ").append(conditions.get(i));
             }
         }
-        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
-        try {
+        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
             int paramPos = 0;
             if (keyPattern instanceof CharSequence) {
                 // Add % for LIKE operand
@@ -233,9 +232,6 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             } else {
                 return null;
             }
-        }
-        finally {
-            dbStat.close();
         }
     }
 

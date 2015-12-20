@@ -77,11 +77,9 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource>
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
                 for (String query : initQueries) {
                     try {
-                        DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false);
-                        try {
+                        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, false))
+                        {
                             dbStat.executeStatement();
-                        } finally {
-                            dbStat.close();
                         }
                     } catch (Exception e) {
                         String message = "Error executing bootstrap query: " + query;
