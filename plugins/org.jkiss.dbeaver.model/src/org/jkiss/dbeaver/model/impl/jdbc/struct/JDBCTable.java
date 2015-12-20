@@ -153,18 +153,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         statistics.setQueryText(sqlQuery);
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
-        DBCStatement dbStat = DBUtils.prepareStatement(
+
+        try (DBCStatement dbStat = DBUtils.prepareStatement(
             source,
             session,
             DBCStatementType.SCRIPT,
             sqlQuery,
             firstRow,
-            maxRows);
-        try {
+            maxRows))
+        {
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
                 try {
-                    ((JDBCStatement)dbStat).setFetchSize(
-                        maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int)maxRows);
+                    ((JDBCStatement) dbStat).setFetchSize(
+                        maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int) maxRows);
                 } catch (Exception e) {
                     log.warn(e);
                 }
@@ -187,7 +188,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                             for (int i = metaAttributes.size(); i > 0; i--) {
                                 DBCAttributeMetaData attr = metaAttributes.get(i - 1);
                                 if (attrId.equalsIgnoreCase(attr.getName()) && attr instanceof JDBCColumnMetaData) {
-                                    ((JDBCColumnMetaData)attr).setPseudoAttribute(rowIdAttribute);
+                                    ((JDBCColumnMetaData) attr).setPseudoAttribute(rowIdAttribute);
                                     break;
                                 }
                             }
@@ -210,8 +211,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                         }
                         statistics.setFetchTime(System.currentTimeMillis() - startTime);
                         statistics.setRowsFetched(rowCount);
-                    }
-                    finally {
+                    } finally {
                         // First - close cursor
                         try {
                             dbResult.close();
@@ -228,9 +228,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
             }
             return statistics;
-        }
-        finally {
-            dbStat.close();
+        } finally {
             dataReceiver.close();
         }
     }
@@ -260,11 +258,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         query.append(getFullQualifiedName());
         appendQueryConditions(query, null, dataFilter);
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
-        DBCStatement dbStat = session.prepareStatement(
+        try (DBCStatement dbStat = session.prepareStatement(
             DBCStatementType.QUERY,
             query.toString(),
-            false, false, false);
-        try {
+            false, false, false))
+        {
             dbStat.setStatementSource(source);
             if (!dbStat.executeStatement()) {
                 return 0;
@@ -286,13 +284,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 } else {
                     return 0;
                 }
-            }
-            finally {
+            } finally {
                 dbResult.close();
             }
-        }
-        finally {
-            dbStat.close();
         }
     }
 

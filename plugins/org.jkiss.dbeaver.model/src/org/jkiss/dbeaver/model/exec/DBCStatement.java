@@ -20,13 +20,14 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 
 /**
  * DBCStatement
  */
-public interface DBCStatement extends DBPObject, DBRBlockingObject
+public interface DBCStatement extends DBPObject, DBRBlockingObject, DBPCloseableObject
 {
 
     /**
@@ -104,12 +105,6 @@ public interface DBCStatement extends DBPObject, DBRBlockingObject
      * Moves statement to the next result set if it presents.
      */
     boolean nextResults() throws DBCException;
-
-    /**
-     * Close statement.
-     * No exceptions could be thrown from this method. If any error will occur then it'll be logged.
-     */
-    void close();
 
     /**
      * Sets statement result set limitations

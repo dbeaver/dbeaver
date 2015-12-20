@@ -20,13 +20,14 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 
 /**
  * DBCResultSet
  */
-public interface DBCResultSet extends DBPObject, AutoCloseable
+public interface DBCResultSet extends DBPObject, DBPCloseableObject
 {
     DBCSession getSession();
 
@@ -60,5 +61,4 @@ public interface DBCResultSet extends DBPObject, AutoCloseable
     @Nullable
     String getResultSetName() throws DBCException;
 
-    void close();
 }
