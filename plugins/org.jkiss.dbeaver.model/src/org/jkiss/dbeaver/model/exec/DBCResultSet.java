@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDValueMeta;
 /**
  * DBCResultSet
  */
-public interface DBCResultSet extends DBPObject
+public interface DBCResultSet extends DBPObject, AutoCloseable
 {
     DBCSession getSession();
 
