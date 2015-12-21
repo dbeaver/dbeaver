@@ -18,14 +18,16 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
-import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDEnum;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * Enum type
  */
-public class MySQLEnumValue implements DBDValue {
+public class MySQLEnumValue implements DBDEnum {
 
     private MySQLTableColumn column;
     private String value;
@@ -47,9 +49,20 @@ public class MySQLEnumValue implements DBDValue {
         return column;
     }
 
+    @Override
     public String getValue()
     {
         return value;
+    }
+
+    @Override
+    public DBSDataType getElementType() {
+        return column.getDataSource().getDataType(MySQLConstants.TYPE_VARCHAR);
+    }
+
+    @Override
+    public Object[] getEnumElements() {
+        return column.getEnumValues().toArray();
     }
 
     @Override

@@ -18,11 +18,20 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+
 /**
- * Resultset
+ * Enum value
  *
  * @author Serge Rider
  */
 public interface DBDEnum extends DBDValue {
 
+    Object getValue();
+
+    @NotNull
+    DBSDataType getElementType();
+
+    Object[] getEnumElements();
 }
