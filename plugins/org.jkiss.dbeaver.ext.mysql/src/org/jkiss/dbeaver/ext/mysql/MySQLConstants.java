@@ -179,4 +179,5 @@ public class MySQLConstants {
     public static final String COL_CHECK_OPTION = "CHECK_OPTION";
     public static final String COL_VIEW_DEFINITION = "VIEW_DEFINITION";
 
+    public static final String TYPE_VARCHAR = "varchar";
 }
