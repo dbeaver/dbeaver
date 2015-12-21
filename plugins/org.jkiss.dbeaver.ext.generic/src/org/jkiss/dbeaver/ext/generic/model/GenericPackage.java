@@ -149,6 +149,11 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
         procedures.add(procedure);
     }
 
+    public void hasProcedure(GenericProcedure procedure)
+    {
+        procedures.add(procedure);
+    }
+
     public void orderProcedures()
     {
         DBUtils.orderObjects(procedures);

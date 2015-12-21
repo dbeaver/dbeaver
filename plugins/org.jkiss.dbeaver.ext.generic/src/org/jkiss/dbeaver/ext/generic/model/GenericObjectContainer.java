@@ -371,6 +371,17 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         procedures.add(procedure);
     }
 
+    public boolean hasProcedure(String name) {
+        if (procedures != null) {
+            for (GenericProcedure proc : procedures) {
+                if (proc.getName().equals(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void addPackage(GenericPackage procedurePackage) {
         if (packages == null) {
             packages = new ArrayList<>();

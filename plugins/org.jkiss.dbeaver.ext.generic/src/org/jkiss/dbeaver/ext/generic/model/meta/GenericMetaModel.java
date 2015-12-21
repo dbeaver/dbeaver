@@ -194,6 +194,15 @@ public class GenericMetaModel {
                             continue;
                         }
                         String specificName = GenericUtils.safeGetStringTrimmed(procObject, dbResult, JDBCConstants.SPECIFIC_NAME);
+                        if (specificName == null && functionName.indexOf(';') != -1) {
+                            // [JDBC: SQL Server native driver]
+                            specificName = functionName;
+                            functionName = functionName.substring(0, functionName.lastIndexOf(';'));
+                        }
+                        if (container.hasProcedure(functionName)) {
+                            // Seems to be a duplicate
+                            continue;
+                        }
                         int funcTypeNum = GenericUtils.safeGetInt(procObject, dbResult, JDBCConstants.FUNCTION_TYPE);
                         String remarks = GenericUtils.safeGetString(procObject, dbResult, JDBCConstants.REMARKS);
                         GenericFunctionResultType functionResultType;
