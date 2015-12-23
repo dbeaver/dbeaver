@@ -430,6 +430,9 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 {
                     DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
                     String sql = runnable.getResult();
+                    if (sql == null) {
+                        return;
+                    }
                     IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
                     boolean showDialog = true;
                     if (activeEditor instanceof AbstractTextEditor) {
