@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeCache;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -140,7 +140,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
-    public List<PostgreTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<PostgreGenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT trigger_name,event_manipulation,action_order,action_condition,action_statement,action_orientation,action_timing\n" +
@@ -158,7 +158,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                     dbStat.setString(1, table.getSchema().getName());
                     dbStat.setString(2, table.getName());
                 }
-                Map<String, PostgreTrigger> result = new LinkedHashMap<>();
+                Map<String, PostgreGenericTrigger> result = new LinkedHashMap<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
@@ -167,13 +167,13 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                             continue;
                         }
                         String manipulation = JDBCUtils.safeGetString(dbResult, "event_manipulation");
-                        PostgreTrigger trigger = result.get(name);
+                        PostgreGenericTrigger trigger = result.get(name);
                         if (trigger != null) {
                             trigger.addManipulation(manipulation);
                             continue;
                         }
                         String description = "";
-                        trigger = new PostgreTrigger(
+                        trigger = new PostgreGenericTrigger(
                             container,
                             table,
                             name,

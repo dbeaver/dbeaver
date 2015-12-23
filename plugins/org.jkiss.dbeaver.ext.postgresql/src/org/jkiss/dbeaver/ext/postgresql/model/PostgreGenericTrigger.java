@@ -25,16 +25,16 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * PostgreTrigger
+ * PostgreGenericTrigger
  */
-public class PostgreTrigger extends GenericTrigger {
+public class PostgreGenericTrigger extends GenericTrigger {
 
     private String manipulation;
     private String orientation;
     private String timing;
     private String source;
 
-    public PostgreTrigger(GenericStructContainer container, GenericTable table, String name, String description, String manipulation, String orientation, String timing, String statement) {
+    public PostgreGenericTrigger(GenericStructContainer container, GenericTable table, String name, String description, String manipulation, String orientation, String timing, String statement) {
         super(container, table, name, description);
         this.manipulation = manipulation;
         this.orientation = orientation;
