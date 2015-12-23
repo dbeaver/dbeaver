@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -64,7 +64,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider {
         @NotNull DBPDataSourceContainer container)
         throws DBException
     {
-        return new PostgreGenericDataSource(monitor, container, new PostgreMetaModel());
+        return new PostgreDataSource(monitor, container, new PostgreMetaModel());
     }
 
 }
