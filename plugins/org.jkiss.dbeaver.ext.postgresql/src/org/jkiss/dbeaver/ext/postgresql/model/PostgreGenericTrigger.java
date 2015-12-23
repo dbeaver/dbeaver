@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * PostgreGenericTrigger
  */
+@Deprecated
 public class PostgreGenericTrigger extends GenericTrigger {
 
     private String manipulation;
