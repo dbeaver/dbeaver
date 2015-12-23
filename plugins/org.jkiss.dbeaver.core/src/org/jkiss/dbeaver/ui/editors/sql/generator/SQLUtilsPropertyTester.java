@@ -59,13 +59,8 @@ public class SQLUtilsPropertyTester extends PropertyTester
                     // Results
                     return ((IResultSetSelection) structuredSelection).getController().getModel().isSingleSource();
                 } else {
-                    // Table
-                    DBNNode node = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class);
-                    if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSTable) {
-                        return true;
-                    }
+                    return GenerateSQLContributor.hasContributions(structuredSelection);
                 }
-                break;
             case PROP_HAS_TOOLS: {
                 DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
                 return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));

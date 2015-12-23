@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -47,6 +48,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -84,150 +86,151 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             makeResultSetContributions(menu, (IResultSetSelection) structuredSelection);
 
         } else {
-            final DBSTable table =
-                (DBSTable) ((DBNDatabaseNode)RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class)).getObject();
-            makeTableContributions(menu, table);
+            final DBSObject object =
+                ((DBNDatabaseNode)RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBNNode.class)).getObject();
+            makeTableContributions(menu, object);
         }
         return menu.toArray(new IContributionItem[menu.size()]);
     }
 
-    private void makeTableContributions(List<IContributionItem> menu, final DBSTable table)
+    private void makeTableContributions(List<IContributionItem> menu, final DBSObject object)
     {
-        // Table
-        menu.add(makeAction("SELECT ", new TableAnalysisRunner(table) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-            {
-                sql.append("SELECT ");
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr));
-                    hasAttr = true;
+        if (object instanceof DBSTable) {
+            DBSTable table = (DBSTable)object;
+            // Table
+            menu.add(makeAction("SELECT ", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
+                    sql.append("SELECT ");
+                    boolean hasAttr = false;
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                        if (hasAttr) sql.append(", ");
+                        sql.append(DBUtils.getObjectFullName(attr));
+                        hasAttr = true;
+                    }
+                    sql.append("\nFROM ").append(DBUtils.getObjectFullName(object));
+                    sql.append(";\n");
                 }
-                sql.append("\nFROM ").append(DBUtils.getObjectFullName(entity));
-                sql.append(";\n");
-            }
-        }));
-        menu.add(makeAction("INSERT ", new TableAnalysisRunner(table) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-            {
-                sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(entity)).append("\n(");
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr));
-                    hasAttr = true;
-                }
-                sql.append(")\nVALUES(");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                    if (hasAttr) sql.append(", ");
-                    appendDefaultValue(sql, attr);
-                    hasAttr = true;
-                }
-                sql.append(");\n");
-            }
-
-        }));
-        menu.add(makeAction("UPDATE ", new TableAnalysisRunner(table) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-            {
-                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                sql.append("UPDATE ").append(DBUtils.getObjectFullName(entity))
-                    .append("\nSET ");
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
-                    appendDefaultValue(sql, attr);
-                    hasAttr = true;
-                }
-                if (!CommonUtils.isEmpty(keyAttributes)) {
-                    sql.append("\nWHERE ");
+            }));
+            menu.add(makeAction("INSERT ", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
+                    sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object)).append("\n(");
+                    boolean hasAttr = false;
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                        if (hasAttr) sql.append(", ");
+                        sql.append(DBUtils.getObjectFullName(attr));
+                        hasAttr = true;
+                    }
+                    sql.append(")\nVALUES(");
                     hasAttr = false;
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                        if (hasAttr) sql.append(", ");
+                        appendDefaultValue(sql, attr);
+                        hasAttr = true;
+                    }
+                    sql.append(");\n");
+                }
+
+            }));
+            menu.add(makeAction("UPDATE ", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
+                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                    sql.append("UPDATE ").append(DBUtils.getObjectFullName(object))
+                        .append("\nSET ");
+                    boolean hasAttr = false;
+                    for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                        if (hasAttr) sql.append(", ");
+                        sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                        appendDefaultValue(sql, attr);
+                        hasAttr = true;
+                    }
+                    if (!CommonUtils.isEmpty(keyAttributes)) {
+                        sql.append("\nWHERE ");
+                        hasAttr = false;
+                        for (DBSEntityAttribute attr : keyAttributes) {
+                            if (hasAttr) sql.append(" AND ");
+                            sql.append(DBUtils.getObjectFullName(attr)).append("=");
+                            appendDefaultValue(sql, attr);
+                            hasAttr = true;
+                        }
+                    }
+                    sql.append(";\n");
+                }
+            }));
+            menu.add(makeAction("DELETE ", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
+                    sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(object))
+                        .append("\nWHERE ");
+                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                    if (CommonUtils.isEmpty(keyAttributes)) {
+                        keyAttributes = getAllAttributes(monitor);
+                    }
+                    boolean hasAttr = false;
                     for (DBSEntityAttribute attr : keyAttributes) {
                         if (hasAttr) sql.append(" AND ");
                         sql.append(DBUtils.getObjectFullName(attr)).append("=");
                         appendDefaultValue(sql, attr);
                         hasAttr = true;
                     }
+                    sql.append(";\n");
                 }
-                sql.append(";\n");
-            }
-        }));
-        menu.add(makeAction("DELETE ", new TableAnalysisRunner(table) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-            {
-                sql.append("DELETE FROM  ").append(DBUtils.getObjectFullName(entity))
-                    .append("\nWHERE ");
-                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                if (CommonUtils.isEmpty(keyAttributes)) {
-                    keyAttributes = getAllAttributes(monitor);
-                }
-                boolean hasAttr = false;
-                for (DBSEntityAttribute attr : keyAttributes) {
-                    if (hasAttr) sql.append(" AND ");
-                    sql.append(DBUtils.getObjectFullName(attr)).append("=");
-                    appendDefaultValue(sql, attr);
-                    hasAttr = true;
-                }
-                sql.append(";\n");
-            }
-        }));
-        menu.add(makeAction("MERGE", new TableAnalysisRunner(table) {
-            @Override
-            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-            {
-                boolean hasAttr = false;
+            }));
+            menu.add(makeAction("MERGE", new TableAnalysisRunner(table) {
+                @Override
+                public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
+                    boolean hasAttr = false;
 
-                sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(entity)).append(" AS tgt\n");
-                sql.append("USING SOURCE_TABLE AS src\n");
-                Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                if (!CommonUtils.isEmpty(keyAttributes)) {
-                    sql.append("ON (");
-                    for (DBSEntityAttribute attr : keyAttributes) {
-                        if (hasAttr) sql.append(" AND ");
+                    sql.append("MERGE INTO ").append(DBUtils.getObjectFullName(object)).append(" AS tgt\n");
+                    sql.append("USING SOURCE_TABLE AS src\n");
+                    Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
+                    if (!CommonUtils.isEmpty(keyAttributes)) {
+                        sql.append("ON (");
+                        for (DBSEntityAttribute attr : keyAttributes) {
+                            if (hasAttr) sql.append(" AND ");
+                            sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
+                                .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
+                            hasAttr = true;
+                        }
+                        sql.append(")\n");
+                    }
+                    sql.append("WHEN MATCHED\nTHEN UPDATE SET\n");
+                    hasAttr = false;
+                    for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
+                        if (hasAttr) sql.append(", ");
                         sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
                             .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
                         hasAttr = true;
                     }
-                    sql.append(")\n");
+                    sql.append("\nWHEN NOT MATCHED\nTHEN INSERT (");
+                    hasAttr = false;
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                        if (hasAttr) sql.append(", ");
+                        sql.append(DBUtils.getQuotedIdentifier(attr));
+                        hasAttr = true;
+                    }
+                    sql.append(")\nVALUES (");
+                    hasAttr = false;
+                    for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
+                        if (hasAttr) sql.append(", ");
+                        sql.append("src.").append(DBUtils.getQuotedIdentifier(attr));
+                        hasAttr = true;
+                    }
+                    sql.append(");\n");
                 }
-                sql.append("WHEN MATCHED\nTHEN UPDATE SET\n");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append("tgt.").append(DBUtils.getQuotedIdentifier(attr))
-                        .append("=src.").append(DBUtils.getQuotedIdentifier(attr));
-                    hasAttr = true;
-                }
-                sql.append("\nWHEN NOT MATCHED\nTHEN INSERT (");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append(DBUtils.getQuotedIdentifier(attr));
-                    hasAttr = true;
-                }
-                sql.append(")\nVALUES (");
-                hasAttr = false;
-                for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                    if (hasAttr) sql.append(", ");
-                    sql.append("src.").append(DBUtils.getQuotedIdentifier(attr));
-                    hasAttr = true;
-                }
-                sql.append(");\n");
+            }));
+        }
+        if (object instanceof DBPScriptObject) {
+            final DBPScriptObject so = (DBPScriptObject)object;
+            if (menu.size() > 0) {
+                menu.add(new Separator());
             }
-        }));
-        if (table instanceof DBPScriptObject) {
-            menu.add(new Separator());
-            menu.add(makeAction("DDL", new TableAnalysisRunner(table) {
+            menu.add(makeAction("DDL", new SQLGenerator<DBPScriptObject>(so) {
                 @Override
                 public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
-                    String definitionText = ((DBPScriptObject) table).getObjectDefinitionText(monitor);
+                    String definitionText = so.getObjectDefinitionText(monitor);
                     sql.append(definitionText);
                 }
             }));
@@ -259,7 +262,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 sql.append(DBUtils.getObjectFullName(attr));
                                 hasAttr = true;
                             }
-                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(entity));
+                            sql.append("\nFROM ").append(DBUtils.getObjectFullName(object));
                             sql.append("\nWHERE ");
                             hasAttr = false;
                             for (DBSEntityAttribute attr : keyAttributes) {
@@ -284,7 +287,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> allAttributes = getAllAttributes(monitor);
-                            sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(entity));
+                            sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object));
                             sql.append("\n(");
                             boolean hasAttr = false;
                             for (DBSEntityAttribute attr : allAttributes) {
@@ -316,7 +319,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor);
-                            sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(entity));
+                            sql.append("DELETE FROM ").append(DBUtils.getObjectFullName(object));
                             sql.append("\nWHERE ");
                             boolean hasAttr = false;
                             for (DBSEntityAttribute attr : keyAttributes) {
@@ -338,16 +341,52 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }
     }
 
-    private abstract static class TableAnalysisRunner extends DBRRunnableWithResult<String> {
-        final DBSEntity entity;
+    public static boolean hasContributions(IStructuredSelection selection) {
+        // Table
+        DBNNode node = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DBNNode.class);
+        if (node instanceof DBNDatabaseNode) {
+            DBSObject object = ((DBNDatabaseNode) node).getObject();
+            if (object instanceof DBSTable || object instanceof DBPScriptObject) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private abstract static class SQLGenerator<T extends DBPObject> extends DBRRunnableWithResult<String> {
+        final protected T object;
+
+        protected SQLGenerator(T object)
+        {
+            this.object = object;
+        }
+
+        public T getObject() {
+            return object;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+        {
+            StringBuilder sql = new StringBuilder(100);
+            try {
+                generateSQL(monitor, sql);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+            result = sql.toString();
+        }
+
+        protected abstract void generateSQL(DBRProgressMonitor monitor, StringBuilder sql)
+            throws DBException;
+
+    }
+
+    private abstract static class TableAnalysisRunner extends SQLGenerator<DBSEntity> {
 
         protected TableAnalysisRunner(DBSEntity entity)
         {
-            this.entity = entity;
-        }
-
-        private DBSEntity getEntity() {
-            return entity;
+            super(entity);
         }
 
         @Override
@@ -367,12 +406,12 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
         protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor) throws DBException
         {
-            return CommonUtils.safeCollection(entity.getAttributes(monitor));
+            return CommonUtils.safeCollection(object.getAttributes(monitor));
         }
 
         protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor) throws DBException
         {
-            return DBUtils.getBestTableIdentifier(monitor, entity);
+            return DBUtils.getBestTableIdentifier(monitor, object);
         }
 
         protected Collection<? extends DBSEntityAttribute> getValueAttributes(DBRProgressMonitor monitor, Collection<? extends DBSEntityAttribute> keyAttributes) throws DBException
@@ -420,8 +459,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 SQLUtils.convertValueToSQL(dataSource, binding.getAttribute(), value));
         }
     }
-    
-    private static ContributionItem makeAction(String text, final TableAnalysisRunner runnable)
+
+    private static <T extends DBPObject> ContributionItem makeAction(String text, final SQLGenerator<T> runnable)
     {
         return new ActionContributionItem(
             new Action(text, DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT)) {
@@ -452,7 +491,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         showDialog = false;
                     }
                     if (showDialog) {
-                        DBPDataSource dataSource = runnable.getEntity().getDataSource();
+                        DBPDataSource dataSource = null;
+                        if (runnable.getObject() instanceof DBSObject) {
+                            dataSource = ((DBSObject)runnable.getObject()).getDataSource();
+                        }
                         if (dataSource != null) {
                             ViewSQLDialog dialog = new ViewSQLDialog(
                                 DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
