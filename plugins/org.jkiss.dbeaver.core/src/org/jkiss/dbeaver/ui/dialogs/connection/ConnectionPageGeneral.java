@@ -139,9 +139,9 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (connectionNameText != null) {
             ConnectionPageSettings settings = wizard.getPageSettings();
             String newName;
-            if (settings != null && (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged)) {
+            if (settings != null) {
                 DBPConnectionConfiguration connectionInfo = settings.getActiveDataSource().getConnectionConfiguration();
-                newName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
+                newName = dataSourceDescriptor == null ? "" : settings.getActiveDataSource().getName(); //$NON-NLS-1$
                 if (CommonUtils.isEmpty(newName)) {
                     newName = connectionInfo.getDatabaseName();
                     if (CommonUtils.isEmpty(newName)) {
@@ -167,8 +167,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             } else {
                 newName = wizard.getSelectedDriver().getName();
             }
-            connectionNameText.setText(newName);
-            connectionNameChanged = false;
+            if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
+                connectionNameText.setText(newName);
+                connectionNameChanged = false;
+            }
         }
         if (dataSourceDescriptor != null) {
             if (!activated) {
