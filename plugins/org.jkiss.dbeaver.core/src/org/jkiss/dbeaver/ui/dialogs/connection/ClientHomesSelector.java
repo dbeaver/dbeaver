@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -102,21 +103,24 @@ public class ClientHomesSelector extends Composite
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        Set<String> homes = new LinkedHashSet<>(
-            driver.getClientManager().findClientHomeIds());
-        homes.addAll(driver.getClientHomeIds());
+        DBPClientManager clientManager = driver.getClientManager();
+        if (clientManager != null) {
+            Set<String> homes = new LinkedHashSet<>(
+                clientManager.findClientHomeIds());
+            homes.addAll(driver.getClientHomeIds());
 
-        for (String homeId : homes) {
-            DBPClientHome home = driver.getClientHome(homeId);
-            if (home != null) {
-                homesCombo.add(home.getDisplayName());
-                homeIds.add(home.getHomeId());
-                if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
-                    homesCombo.select(homesCombo.getItemCount() - 1);
+            for (String homeId : homes) {
+                DBPClientHome home = driver.getClientHome(homeId);
+                if (home != null) {
+                    homesCombo.add(home.getDisplayName());
+                    homeIds.add(home.getHomeId());
+                    if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
+                        homesCombo.select(homesCombo.getItemCount() - 1);
+                    }
                 }
             }
+            this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
         }
-        this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
         displayClientVersion();
     }
 
