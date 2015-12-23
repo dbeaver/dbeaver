@@ -301,6 +301,14 @@ public class DBeaverCore implements DBPApplication {
             }
         }
 
+        // Remove temp folder
+        if (tempFolder != null) {
+            if (!tempFolder.delete()) {
+                log.warn("Can't delete temp folder '" + tempFolder.getAbsolutePath() + "'");
+            }
+            tempFolder = null;
+        }
+
         DBeaverCore.instance = null;
         DBeaverCore.disposed = true;
 
