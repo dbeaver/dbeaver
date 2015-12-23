@@ -8,7 +8,6 @@
         <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver"/>
     </extension>
 
-<!--
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
         <datasource
                 class="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"
@@ -17,8 +16,8 @@
                 label="PostgreSQL"
                 icon="icons/postgresql_icon.png">
             <tree path="postgresql" label="PostgreSQL data source">
-                <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
-                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                <items label="%tree.database.node.name" path="database" property="databases" icon="#database" optional="true">
+                    <items label="%tree.database.schema.name" path="schema" property="schemas" icon="#schema" optional="true">
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                             <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
@@ -85,23 +84,15 @@
             <drivers managable="true">
 
                 <driver
-                        id="postgresql"
-                        label="PostgreSQL"
-                        icon="icons/postgresql_icon.png"
-                        class="org.postgresql.Driver"
-                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
-                        defaultPort="5432"
-                        webURL="http://jdbc.postgresql.org/"
-                        description="PostgreSQL standard driver">
+                    id="postgres-jdbc"
+                    label="PostgreSQL"
+                    icon="icons/postgresql_icon.png"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    defaultPort="5432"
+                    webURL="http://jdbc.postgresql.org/"
+                    description="PostgreSQL standard driver">
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
-
-                    <property name="loginTimeout" value="10"/>
-
-                    <parameter name="query-get-active-db" value="SHOW search_path"/>
-                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
-                    <parameter name="active-entity-type" value="schema"/>
-                    <parameter name="omit-type-cache" value="true"/>
-                    <parameter name="supports-scroll" value="true"/>
                 </driver>
             </drivers>
 
@@ -123,7 +114,6 @@
             </views>
         </datasource>
     </extension>
--->
 
 
 </plugin>

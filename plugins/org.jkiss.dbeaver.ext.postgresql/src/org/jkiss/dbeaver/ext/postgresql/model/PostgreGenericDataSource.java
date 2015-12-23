@@ -27,12 +27,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * PostgreDataSource
+ * PostgreGenericDataSource
  */
-public class PostgreDataSource extends GenericDataSource
+public class PostgreGenericDataSource extends GenericDataSource
 {
 
-    public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, PostgreMetaModel metaModel) throws DBException {
+    public PostgreGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, PostgreMetaModel metaModel) throws DBException {
         super(monitor, container, metaModel);
     }
 //    public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
