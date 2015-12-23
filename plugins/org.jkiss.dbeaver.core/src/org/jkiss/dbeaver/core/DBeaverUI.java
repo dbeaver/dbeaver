@@ -280,7 +280,7 @@ public class DBeaverUI implements DBUICallback {
                 }
             }, DBeaverActivator.getWorkspace().getRoot());
         } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
+            UIUtils.showErrorDialog(null, null, null, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
