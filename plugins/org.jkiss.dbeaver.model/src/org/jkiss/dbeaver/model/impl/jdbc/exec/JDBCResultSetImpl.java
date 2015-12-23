@@ -320,7 +320,7 @@ public class JDBCResultSetImpl implements JDBCResultSet {
                 log.error("Can't close result set", e);
             }
         }
-        if (fake) {
+        if (fake && statement != null) {
             statement.close();
         }
     }
