@@ -156,7 +156,12 @@ public abstract class DBXTreeNode
 
     private boolean isVisible(DBNNode context)
     {
-        return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
+        try {
+            return visibleIf == null || Boolean.TRUE.equals(visibleIf.evaluate(makeContext(context)));
+        } catch (JexlException e) {
+            log.warn(e);
+            return false;
+        }
     }
 
     public void addChild(DBXTreeNode child)
