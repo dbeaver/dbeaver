@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * MySQL execution plan node
+ * Postgre execution plan node
  */
 public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
 

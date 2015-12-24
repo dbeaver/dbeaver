@@ -20,13 +20,21 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,6 +44,8 @@ import java.util.Collection;
  * PostgreDatabase
  */
 public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
+
+    static final Log log = Log.getLog(PostgreDatabase.class);
 
     private PostgreDataSource dataSource;
     private int oid;
@@ -48,6 +58,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
     private boolean allowConnect;
     private int connectionLimit;
     private int tablespaceId;
+
+    SchemaCache schemaCache = new SchemaCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
@@ -138,23 +150,72 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
     ///////////////////////////////////////////////
     // Object container
 
+    public Collection<PostgreSchema> getSchemas()
+    {
+        return schemaCache.getCachedObjects();
+    }
+
+    public PostgreSchema getSchema(String name)
+    {
+        return schemaCache.getCachedObject(name);
+    }
+
+    PostgreTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
+        throws DBException
+    {
+        if (CommonUtils.isEmpty(catalogName)) {
+            return null;
+        }
+        PostgreSchema schema = getSchema(catalogName);
+        if (schema == null) {
+            log.error("Catalog " + catalogName + " not found");
+            return null;
+        }
+        return schema.getTable(monitor, tableName);
+    }
+    
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
+        return getSchemas();
     }
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
-        return null;
+        return getSchema(childName);
     }
 
     @Override
     public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
+        return PostgreSchema.class;
     }
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+
+    }
+
+    static class SchemaCache extends JDBCObjectCache<PostgreDatabase, PostgreSchema>
+    {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException
+        {
+            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM " + PostgreConstants.META_TABLE_SCHEMATA);
+            DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
+            if (catalogFilters != null) {
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, PostgreConstants.COL_SCHEMA_NAME, true);
+            }
+            JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
+            if (catalogFilters != null) {
+                JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+            }
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        {
+            return new PostgreSchema(owner, resultSet);
+        }
 
     }
 }
