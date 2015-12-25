@@ -68,20 +68,22 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     final ConstraintCache constraintCache = new ConstraintCache();
     final IndexCache indexCache = new IndexCache();
 
-    public PostgreSchema(PostgreDatabase database, ResultSet dbResult)
+    public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException
     {
         this.database = database;
+        this.name = name;
+
         this.loadInfo(dbResult);
     }
 
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.name = JDBCUtils.safeGetString(dbResult, "schema_name");
         this.ownerName = JDBCUtils.safeGetString(dbResult, "schema_owner");
         this.defaultCharset = null;
         this.sqlPath = JDBCUtils.safeGetString(dbResult, "sql_path");
+        this.persisted = true;
     }
 
     @NotNull
