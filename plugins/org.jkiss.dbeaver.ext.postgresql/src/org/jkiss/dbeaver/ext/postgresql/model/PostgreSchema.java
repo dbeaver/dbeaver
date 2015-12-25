@@ -57,9 +57,8 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
 
     private PostgreDatabase database;
     private String name;
-    private String ownerName;
+    private int ownerId;
     private PostgreCharset defaultCharset;
-    private String sqlPath;
     private boolean persisted;
 
     final TableCache tableCache = new TableCache();
@@ -80,9 +79,8 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.ownerName = JDBCUtils.safeGetString(dbResult, "schema_owner");
+        this.ownerId = JDBCUtils.safeGetInt(dbResult, "nspowner");
         this.defaultCharset = null;
-        this.sqlPath = JDBCUtils.safeGetString(dbResult, "sql_path");
         this.persisted = true;
     }
 
@@ -101,8 +99,8 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     }
 
     @Property(viewable = true, order = 4)
-    public String getOwnerName() {
-        return ownerName;
+    public int getOwnerId() {
+        return ownerId;
     }
 
     @NotNull
@@ -244,7 +242,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     @Override
     public boolean isSystem()
     {
-        return PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || PostgreConstants.MYSQL_SCHEMA_NAME.equalsIgnoreCase(getName());
+        return PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(getName());
     }
 
     public class TableCache extends JDBCStructCache<PostgreSchema, PostgreTableBase, PostgreTableColumn> {
@@ -258,19 +256,16 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException
         {
-            return session.prepareStatement("SHOW FULL TABLES FROM " + DBUtils.getQuotedIdentifier(PostgreSchema.this));
+            final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM pg_catalog.pg_tables WHERE schemaname=?");
+            dbStat.setString(1, getName());
+            return dbStat;
         }
 
         @Override
         protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
-            final String tableType = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_TABLE_TYPE);
-            if (tableType.contains("VIEW")) {
-                return new PostgreView(PostgreSchema.this, dbResult);
-            } else {
-                return new PostgreTable(PostgreSchema.this, dbResult);
-            }
+            return new PostgreTable(PostgreSchema.this, dbResult);
         }
 
         @Override

@@ -199,7 +199,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException
         {
-            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM INFORMATION_SCHEMA.SCHEMATA");
+            StringBuilder catalogQuery = new StringBuilder("SELECT * FROM pg_catalog.pg_namespace");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, PostgreConstants.COL_SCHEMA_NAME, true);
@@ -214,7 +214,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         @Override
         protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull ResultSet resultSet) throws SQLException, DBException
         {
-            String name = JDBCUtils.safeGetString(resultSet, "schema_name");
+            String name = JDBCUtils.safeGetString(resultSet, "nspname");
             if (name == null || name.startsWith("pg_toast") || name.startsWith("pg_temp")) {
                 return null;
             }
