@@ -70,12 +70,14 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     final TriggerCache triggerCache = new TriggerCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final IndexCache indexCache = new IndexCache();
+    private final PostgreDataTypeCache dataTypeCache;
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException
     {
         this.database = database;
         this.name = name;
+        this.dataTypeCache = new PostgreDataTypeCache(this);
 
         this.loadInfo(dbResult);
     }
@@ -266,6 +268,10 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public boolean isSystem()
     {
         return PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(getName());
+    }
+
+    public PostgreDataTypeCache getDataTypeCache() {
+        return dataTypeCache;
     }
 
     public class ClassCache extends JDBCStructCache<PostgreSchema, PostgreClass, PostgreAttribute> {

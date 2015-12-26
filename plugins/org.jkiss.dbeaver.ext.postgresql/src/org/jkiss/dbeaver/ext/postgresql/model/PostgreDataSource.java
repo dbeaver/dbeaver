@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -49,10 +49,7 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,7 +61,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     static final Log log = Log.getLog(PostgreDataSource.class);
 
-    private final JDBCBasicDataTypeCache dataTypeCache;
     private final DatabaseCache databaseCache = new DatabaseCache();
     private List<PostgreUser> users;
     private List<PostgreCharset> charsets;
@@ -74,7 +70,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         throws DBException
     {
         super(monitor, container);
-        dataTypeCache = new JDBCBasicDataTypeCache(container);
     }
 
     @Override
@@ -118,13 +113,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     {
         super.initialize(monitor);
 
-        dataTypeCache.getAllObjects(monitor, this);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load basic datasource metadata")) {
-            // Read catalogs
-            databaseCache.getAllObjects(monitor, this);
+        activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
 
-            activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        databaseCache.getAllObjects(monitor, this);
+        final PostgreSchema catalogSchema = getDefaultInstance().getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME);
+        if (catalogSchema != null) {
+            catalogSchema.getDataTypeCache().getAllObjects(monitor, this);
         }
+        // Read catalogs
+        databaseCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -334,25 +331,44 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
-        return dataTypeCache.getCachedObjects();
+        final PostgreSchema catalogSchema = getDefaultInstance().schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
+        if (catalogSchema != null) {
+            return catalogSchema.getDataTypeCache().getCachedObjects();
+        }
+        return Collections.emptyList();
     }
 
     @Override
     public DBSDataType getDataType(String typeName)
     {
-        return dataTypeCache.getCachedObject(typeName);
-    }
-
-    @Nullable
-    @Override
-    public DBSInstance getDefaultInstance() {
+        final PostgreSchema catalogSchema = getDefaultInstance().schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
+        if (catalogSchema != null) {
+            return catalogSchema.getDataTypeCache().getCachedObject(typeName);
+        }
         return null;
     }
 
     @NotNull
     @Override
-    public Collection<DBSInstance> getAvailableInstances() {
-        return null;
+    public PostgreDatabase getDefaultInstance() {
+        PostgreDatabase defDatabase = databaseCache.getCachedObject(activeDatabaseName);
+        if (defDatabase == null) {
+            defDatabase = databaseCache.getCachedObject(PostgreConstants.DEFAULT_DATABASE);
+        }
+        if (defDatabase == null) {
+            final List<PostgreDatabase> allDatabases = databaseCache.getCachedObjects();
+            if (allDatabases.isEmpty()) {
+                throw new IllegalStateException("No default database");
+            }
+            defDatabase = allDatabases.get(0);
+        }
+        return defDatabase;
+    }
+
+    @NotNull
+    @Override
+    public Collection<PostgreDatabase> getAvailableInstances() {
+        return databaseCache.getCachedObjects();
     }
 
     static class DatabaseCache extends JDBCObjectCache<PostgreDataSource, PostgreDatabase>
