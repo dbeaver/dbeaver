@@ -22,10 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -40,46 +38,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * PostgreTableColumn
+ * PostgreAttribute
  */
-public class PostgreTableColumn extends JDBCTableColumn<PostgreTableBase> implements DBSTableColumn, DBPNamedObject2
+public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements DBSTableColumn, DBPNamedObject2
 {
-    static final Log log = Log.getLog(PostgreTableColumn.class);
+    static final Log log = Log.getLog(PostgreAttribute.class);
 
     private static Pattern enumPattern = Pattern.compile("'([^']*)'");
 
-    public enum KeyType implements JDBCColumnKeyType {
-        PRI,
-        UNI,
-        MUL;
-
-        @Override
-        public boolean isInUniqueKey()
-        {
-            return this == PRI || this == UNI;
-        }
-
-        @Override
-        public boolean isInReferenceKey()
-        {
-            return this == MUL;
-        }
-    }
-
     private String comment;
     private long charLength;
-    private KeyType keyType;
     private String extraInfo;
     private String fullTypeName;
 
     private List<String> enumValues;
 
-    public PostgreTableColumn(PostgreTableBase table)
+    public PostgreAttribute(PostgreTableBase table)
     {
         super(table, false);
     }
 
-    public PostgreTableColumn(
+    public PostgreAttribute(
         PostgreTableBase table,
         ResultSet dbResult)
         throws DBException
@@ -95,14 +74,6 @@ public class PostgreTableColumn extends JDBCTableColumn<PostgreTableBase> implem
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         String typeName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_DATA_TYPE);
         assert typeName != null;
-        String keyTypeName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_COLUMN_KEY);
-        if (!CommonUtils.isEmpty(keyTypeName)) {
-            try {
-                keyType = KeyType.valueOf(keyTypeName);
-            } catch (IllegalArgumentException e) {
-                log.debug(e);
-            }
-        }
         setTypeName(typeName);
         //setValueType(PostgreUtils.typeNameToValueType(typeName));
         DBSDataType dataType = getDataSource().getDataType(typeName);
@@ -232,13 +203,6 @@ public class PostgreTableColumn extends JDBCTableColumn<PostgreTableBase> implem
         this.extraInfo = extraInfo;
     }
 
-    @Override
-    @Property(viewable = true, order = 60)
-    public KeyType getKeyType()
-    {
-        return keyType;
-    }
-
     public List<String> getEnumValues()
     {
         return enumValues;
@@ -261,14 +225,14 @@ public class PostgreTableColumn extends JDBCTableColumn<PostgreTableBase> implem
         return getComment();
     }
 
-    public static class CharsetListProvider implements IPropertyValueListProvider<PostgreTableColumn> {
+    public static class CharsetListProvider implements IPropertyValueListProvider<PostgreAttribute> {
         @Override
         public boolean allowCustomValue()
         {
             return false;
         }
         @Override
-        public Object[] getPossibleValues(PostgreTableColumn object)
+        public Object[] getPossibleValues(PostgreAttribute object)
         {
             return object.getDataSource().getCharsets().toArray();
         }

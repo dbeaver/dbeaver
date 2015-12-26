@@ -20,12 +20,14 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
 /**
  * PostgreClass
  */
-public interface PostgreClass extends PostgreObject,DBSObject,DBPNamedObject2,DBPRefreshableObject
+public interface PostgreClass extends PostgreObject,DBSEntity,DBPRefreshableObject
 {
     enum RelKind {
         r,// ordinary table

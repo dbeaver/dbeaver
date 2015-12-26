@@ -28,14 +28,14 @@ import org.jkiss.dbeaver.model.meta.Property;
 public class PostgreTableIndexColumn extends AbstractTableIndexColumn
 {
     private PostgreTableIndex index;
-    private PostgreTableColumn tableColumn;
+    private PostgreAttribute tableColumn;
     private int ordinalPosition;
     private boolean ascending;
     private boolean nullable;
 
     public PostgreTableIndexColumn(
         PostgreTableIndex index,
-        PostgreTableColumn tableColumn,
+        PostgreAttribute tableColumn,
         int ordinalPosition,
         boolean ascending,
         boolean nullable)
@@ -72,7 +72,7 @@ public class PostgreTableIndexColumn extends AbstractTableIndexColumn
 
     @Override
     @Property(id = "name", viewable = true, order = 1)
-    public PostgreTableColumn getTableColumn()
+    public PostgreAttribute getTableColumn()
     {
         return tableColumn;
     }
