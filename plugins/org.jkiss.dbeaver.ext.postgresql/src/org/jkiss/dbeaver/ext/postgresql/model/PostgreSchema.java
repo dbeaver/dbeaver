@@ -299,12 +299,19 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT c.relname,a.* FROM pg_catalog.pg_attribute a,pg_catalog.pg_class c WHERE a.attrelid=c.oid AND c.oid=?");
+            sql.append("SELECT c.relname,a.* FROM pg_catalog.pg_attribute a,pg_catalog.pg_class c WHERE a.attrelid=c.oid");
+            if (forTable != null) {
+                sql.append(" AND c.oid=?");
+            } else {
+                sql.append(" AND c.relnamespace=?");
+            }
             sql.append(" ORDER BY a.attnum");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {
                 dbStat.setInt(1, forTable.getObjectId());
+            } else {
+                dbStat.setInt(1, PostgreSchema.this.getObjectId());
             }
             return dbStat;
         }
