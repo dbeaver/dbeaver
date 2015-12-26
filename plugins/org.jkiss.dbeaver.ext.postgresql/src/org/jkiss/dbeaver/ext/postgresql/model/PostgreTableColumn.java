@@ -91,8 +91,8 @@ public class PostgreTableColumn extends JDBCTableColumn<PostgreTableBase> implem
     private void loadInfo(ResultSet dbResult)
         throws DBException
     {
-        setName(JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_COLUMN_NAME));
-        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, PostgreConstants.COL_ORDINAL_POSITION));
+        setName(JDBCUtils.safeGetString(dbResult, "attname"));
+        setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         String typeName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_DATA_TYPE);
         assert typeName != null;
         String keyTypeName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_COLUMN_KEY);
