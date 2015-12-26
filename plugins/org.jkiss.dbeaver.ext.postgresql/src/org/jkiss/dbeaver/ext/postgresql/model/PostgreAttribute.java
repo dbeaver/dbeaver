@@ -59,7 +59,7 @@ public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements D
     }
 
     public PostgreAttribute(
-        PostgreTableBase table,
+        PostgreClass table,
         ResultSet dbResult)
         throws DBException
     {

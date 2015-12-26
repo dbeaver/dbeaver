@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
@@ -32,6 +34,7 @@ public class PostgreConstants {
     public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
     public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
 
+    public static final DBSEntityType ENTITY_TYPE_SEQENCE = new DBSEntityType("pg_sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
     public static final String CATALOG_SCHEMA_NAME = "pg_catalog";

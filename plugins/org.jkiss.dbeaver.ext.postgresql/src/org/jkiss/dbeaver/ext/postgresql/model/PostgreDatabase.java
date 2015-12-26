@@ -199,7 +199,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException
         {
-            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
+            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, PostgreConstants.COL_SCHEMA_NAME, true);
