@@ -288,12 +288,12 @@ public class PostgreTable extends PostgreTableBase
                         log.warn("Can't find FK table " + fkTableName);
                         continue;
                     }
-                    PostgreTableColumn pkColumn = pkTable.getAttribute(monitor, pkColumnName);
+                    PostgreAttribute pkColumn = pkTable.getAttribute(monitor, pkColumnName);
                     if (pkColumn == null) {
                         log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
                         continue;
                     }
-                    PostgreTableColumn fkColumn = fkTable.getAttribute(monitor, fkColumnName);
+                    PostgreAttribute fkColumn = fkTable.getAttribute(monitor, fkColumnName);
                     if (fkColumn == null) {
                         log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + fkColumnName);
                         continue;

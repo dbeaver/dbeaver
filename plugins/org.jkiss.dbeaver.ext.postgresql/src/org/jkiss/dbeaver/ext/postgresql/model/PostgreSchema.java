@@ -255,7 +255,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(getName());
     }
 
-    public class ClassCache extends JDBCStructCache<PostgreSchema, PostgreTableBase, PostgreTableColumn> {
+    public class ClassCache extends JDBCStructCache<PostgreSchema, PostgreTableBase, PostgreAttribute> {
 
         protected ClassCache()
         {
@@ -317,10 +317,10 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected PostgreTableColumn fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreTableBase table, @NotNull ResultSet dbResult)
+        protected PostgreAttribute fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreTableBase table, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreTableColumn(table, dbResult);
+            return new PostgreAttribute(table, dbResult);
         }
     }
 
@@ -389,7 +389,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, PostgreConstants.COL_COLLATION);
             boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, PostgreConstants.COL_NULLABLE));
 
-            PostgreTableColumn tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
+            PostgreAttribute tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (tableColumn == null) {
                 log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
                 return null;
@@ -460,7 +460,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_COLUMN_NAME);
-            PostgreTableColumn column = parent.getAttribute(session.getProgressMonitor(), columnName);
+            PostgreAttribute column = parent.getAttribute(session.getProgressMonitor(), columnName);
             if (column == null) {
                 log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "'");
                 return null;

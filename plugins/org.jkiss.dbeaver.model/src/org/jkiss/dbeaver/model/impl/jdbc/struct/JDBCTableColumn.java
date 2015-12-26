@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +36,7 @@ import java.util.TreeSet;
 /**
  * JDBC abstract table column
  */
-public abstract class JDBCTableColumn<TABLE_TYPE extends JDBCTable> extends JDBCColumn implements DBSTableColumn, DBPSaveableObject {
+public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBCColumn implements DBSTableColumn, DBPSaveableObject {
 
     private final TABLE_TYPE table;
     private boolean persisted;

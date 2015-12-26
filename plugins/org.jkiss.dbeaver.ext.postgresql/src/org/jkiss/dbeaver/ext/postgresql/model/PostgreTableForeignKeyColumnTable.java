@@ -25,13 +25,13 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
  */
 public class PostgreTableForeignKeyColumnTable extends PostgreTableConstraintColumn implements DBSTableForeignKeyColumn
 {
-    private PostgreTableColumn referencedColumn;
+    private PostgreAttribute referencedColumn;
 
     public PostgreTableForeignKeyColumnTable(
         PostgreTableForeignKey constraint,
-        PostgreTableColumn tableColumn,
+        PostgreAttribute tableColumn,
         int ordinalPosition,
-        PostgreTableColumn referencedColumn)
+        PostgreAttribute referencedColumn)
     {
         super(constraint, tableColumn, ordinalPosition);
         this.referencedColumn = referencedColumn;
@@ -39,7 +39,7 @@ public class PostgreTableForeignKeyColumnTable extends PostgreTableConstraintCol
 
     @Override
     @Property(id = "reference", viewable = true, order = 4)
-    public PostgreTableColumn getReferencedColumn()
+    public PostgreAttribute getReferencedColumn()
     {
         return referencedColumn;
     }

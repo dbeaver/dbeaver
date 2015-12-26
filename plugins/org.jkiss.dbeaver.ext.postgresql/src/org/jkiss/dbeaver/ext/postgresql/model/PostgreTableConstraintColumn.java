@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.model.meta.Property;
 public class PostgreTableConstraintColumn extends AbstractTableConstraintColumn
 {
     private AbstractTableConstraint<PostgreTable> constraint;
-    private PostgreTableColumn tableColumn;
+    private PostgreAttribute tableColumn;
     private int ordinalPosition;
 
-    public PostgreTableConstraintColumn(AbstractTableConstraint<PostgreTable> constraint, PostgreTableColumn tableColumn, int ordinalPosition)
+    public PostgreTableConstraintColumn(AbstractTableConstraint<PostgreTable> constraint, PostgreAttribute tableColumn, int ordinalPosition)
     {
         this.constraint = constraint;
         this.tableColumn = tableColumn;
@@ -50,7 +50,7 @@ public class PostgreTableConstraintColumn extends AbstractTableConstraintColumn
     @NotNull
     @Override
     @Property(id = "name", viewable = true, order = 1)
-    public PostgreTableColumn getAttribute()
+    public PostgreAttribute getAttribute()
     {
         return tableColumn;
     }
