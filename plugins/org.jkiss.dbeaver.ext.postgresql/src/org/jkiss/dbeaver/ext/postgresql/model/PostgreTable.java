@@ -366,7 +366,7 @@ public class PostgreTable extends PostgreTableBase
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        return getDDL(monitor);
+        return "";
     }
 
     @Override

@@ -20,29 +20,24 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.io.UnsupportedEncodingException;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 
 /**
  * PostgreTable base
  */
-public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema>
-    implements DBPNamedObject2,DBPRefreshableObject, PostgreScriptObject
+public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject
 {
     static final Log log = Log.getLog(PostgreTableBase.class);
+
+    private int oid;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -53,13 +48,19 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         PostgreSchema catalog,
         ResultSet dbResult)
     {
-        super(catalog, JDBCUtils.safeGetString(dbResult, 1), true);
+        super(catalog, JDBCUtils.safeGetString(dbResult, "relname"), true);
+        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
     }
 
     @Override
     public JDBCStructCache<PostgreSchema, ? extends JDBCTable, ? extends JDBCTableColumn> getCache()
     {
-        return getContainer().tableCache;
+        return getContainer().classCache;
+    }
+
+    @Override
+    public int getObjectId() {
+        return this.oid;
     }
 
     @NotNull
@@ -75,58 +76,21 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public Collection<PostgreTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
+        return getContainer().classCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
     public PostgreTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().classCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().tableCache.clearChildrenCache(this);
+        getContainer().classCache.clearChildrenCache(this);
         return true;
-    }
-
-    public String getDDL(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (!isPersisted()) {
-            return "";
-        }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Retrieve table DDL")) {
-            try (PreparedStatement dbStat = session.prepareStatement(
-                "SHOW CREATE " + (isView() ? "VIEW" : "TABLE") + " " + getFullQualifiedName())) {
-                try (ResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        byte[] ddl;
-                        if (isView()) {
-                            ddl = dbResult.getBytes("Create View");
-                        } else {
-                            ddl = dbResult.getBytes("Create Table");
-                        }
-                        if (ddl == null) {
-                            return null;
-                        } else {
-                            try {
-                                return new String(ddl, getContainer().getDefaultCharset().getName());
-                            } catch (UnsupportedEncodingException e) {
-                                log.debug(e);
-                                return new String(ddl);
-                            }
-                        }
-                    } else {
-                        return "DDL is not available";
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
-        }
     }
 
 }
