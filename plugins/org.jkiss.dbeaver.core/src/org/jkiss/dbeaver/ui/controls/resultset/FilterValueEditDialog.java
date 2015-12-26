@@ -71,7 +71,14 @@ class FilterValueEditDialog extends BaseDialog {
             attr,
             row,
             IValueController.EditType.INLINE,
-            editorPlaceholder);
+            editorPlaceholder)
+        {
+            @Override
+            public boolean isReadOnly() {
+                // Filter value is never read-only
+                return false;
+            }
+        };
 
         label.setText(valueController.getBinding().getName() + " " + operator.getStringValue() + " :");
         try {
