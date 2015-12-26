@@ -28,10 +28,9 @@ import java.util.Collection;
  */
 public interface DBSInstanceContainer extends DBSObject, DBPCloseableObject
 {
-    @Nullable
     DBSInstance getDefaultInstance();
 
     @NotNull
-    Collection<DBSInstance> getAvailableInstances();
+    Collection<? extends DBSInstance> getAvailableInstances();
 
 }

@@ -20,13 +20,11 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -37,7 +35,7 @@ import java.sql.Types;
 /**
  * PostgreDataTypeCache
  */
-public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
+public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDataSource, PostgreDataType>
 {
     static final Log log = Log.getLog(PostgreDataTypeCache.class);
 
@@ -52,25 +50,29 @@ public class PostgreDataTypeCache extends JDBCBasicDataTypeCache
         "regdictionary",
     };
 
-    public PostgreDataTypeCache(DBPDataSourceContainer owner) {
-        super(owner);
+    private PostgreSchema schema;
+
+    public PostgreDataTypeCache(PostgreSchema schema) {
+        this.schema = schema;
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull JDBCDataSource owner) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
     {
-        return session.prepareStatement(
-            "SELECT t.oid as typid,tn.nspname typnsname,t.* \n" +
-            "FROM pg_catalog.pg_type t , pg_catalog.pg_namespace tn\n" +
-            "WHERE tn.oid=t.typnamespace \n" +
-            "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
-            "ORDER by t.oid");
+        final JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT t.oid,t.* \n" +
+                "FROM pg_catalog.pg_type t\n" +
+                "WHERE t.typnamespace=?\n" +
+                "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
+                "ORDER by t.oid");
+        dbStat.setInt(1, schema.getObjectId());
+        return dbStat;
     }
 
     @Override
-    protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull ResultSet dbResult) throws SQLException, DBException
+    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull ResultSet dbResult) throws SQLException, DBException
     {
-        int typeId = JDBCUtils.safeGetInt(dbResult, "typid");
+        int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
         String ownerSchema = JDBCUtils.safeGetString(dbResult, "typnsname");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {

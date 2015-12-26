@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
 /**
  * PostgreObject
  */
-public interface PostgreObject {
+public interface PostgreObject extends DBSObject {
 
     /**
      * OID

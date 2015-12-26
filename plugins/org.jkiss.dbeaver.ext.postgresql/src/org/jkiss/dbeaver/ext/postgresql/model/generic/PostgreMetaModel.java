@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeCache;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTypeCache;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreGenericTrigger;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgreQueryPlaner;
@@ -75,7 +75,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public JDBCBasicDataTypeCache createDataTypeCache(@NotNull DBPDataSourceContainer container) {
-        return new PostgreDataTypeCache(container);
+        return new PostgreGenericTypeCache(container);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {

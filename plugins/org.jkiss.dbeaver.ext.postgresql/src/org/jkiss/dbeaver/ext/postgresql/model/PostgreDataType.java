@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType
+public class PostgreDataType extends JDBCDataType implements PostgreObject
 {
     private final int typeId;
     private final String ownerSchema;
@@ -39,8 +39,9 @@ public class PostgreDataType extends JDBCDataType
         this.typeCategory = typeCategory;
     }
 
+    @Override
     @Property
-    public int getTypeId() {
+    public int getObjectId() {
         return typeId;
     }
 
@@ -58,4 +59,5 @@ public class PostgreDataType extends JDBCDataType
     public PostgreTypeCategory getTypeCategory() {
         return typeCategory;
     }
+
 }
