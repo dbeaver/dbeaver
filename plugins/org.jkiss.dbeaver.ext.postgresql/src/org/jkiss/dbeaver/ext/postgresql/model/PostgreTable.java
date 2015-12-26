@@ -120,7 +120,7 @@ public class PostgreTable extends PostgreTableBase
 
     @Override
     @Association
-    public synchronized Collection<PostgreTableIndex> getIndexes(DBRProgressMonitor monitor)
+    public synchronized Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
         // Read indexes using cache

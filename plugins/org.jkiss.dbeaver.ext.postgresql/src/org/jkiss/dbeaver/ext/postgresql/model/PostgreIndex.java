@@ -32,24 +32,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * PostgreTableIndex
+ * PostgreIndex
  */
-public class PostgreTableIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
 {
     private boolean nonUnique;
     private String additionalInfo;
     private String indexComment;
     private long cardinality;
-    private List<PostgreTableIndexColumn> columns;
+    private List<PostgreIndexColumn> columns;
 
-    public PostgreTableIndex(
+    public PostgreIndex(
         PostgreTable table,
         DBSIndexType indexType)
     {
         super(table.getContainer(), table, null, indexType, false);
     }
 
-    public PostgreTableIndex(
+    public PostgreIndex(
         PostgreTable table,
         boolean nonUnique,
         String indexName,
@@ -65,7 +65,7 @@ public class PostgreTableIndex extends JDBCTableIndex<PostgreSchema, PostgreTabl
      * Copy constructor
      * @param source source index
      */
-    PostgreTableIndex(PostgreTableIndex source)
+    PostgreIndex(PostgreIndex source)
     {
         super(source);
         this.nonUnique = source.nonUnique;
@@ -74,13 +74,13 @@ public class PostgreTableIndex extends JDBCTableIndex<PostgreSchema, PostgreTabl
         this.additionalInfo = source.additionalInfo;
         if (source.columns != null) {
             this.columns = new ArrayList<>(source.columns.size());
-            for (PostgreTableIndexColumn sourceColumn : source.columns) {
-                this.columns.add(new PostgreTableIndexColumn(this, sourceColumn));
+            for (PostgreIndexColumn sourceColumn : source.columns) {
+                this.columns.add(new PostgreIndexColumn(this, sourceColumn));
             }
         }
     }
 
-    public PostgreTableIndex(PostgreTable parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
+    public PostgreIndex(PostgreTable parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
         super(
             parent.getContainer(),
             parent,
@@ -126,22 +126,22 @@ public class PostgreTableIndex extends JDBCTableIndex<PostgreSchema, PostgreTabl
     }
 
     @Override
-    public List<PostgreTableIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
+    public List<PostgreIndexColumn> getAttributeReferences(DBRProgressMonitor monitor)
     {
         return columns;
     }
 
-    public PostgreTableIndexColumn getColumn(String columnName)
+    public PostgreIndexColumn getColumn(String columnName)
     {
         return DBUtils.findObject(columns, columnName);
     }
 
-    void setColumns(List<PostgreTableIndexColumn> columns)
+    void setColumns(List<PostgreIndexColumn> columns)
     {
         this.columns = columns;
     }
 
-    public void addColumn(PostgreTableIndexColumn column)
+    public void addColumn(PostgreIndexColumn column)
     {
         if (columns == null) {
             columns = new ArrayList<>();

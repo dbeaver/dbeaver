@@ -25,16 +25,16 @@ import org.jkiss.dbeaver.model.meta.Property;
 /**
  * GenericIndexColumn
  */
-public class PostgreTableIndexColumn extends AbstractTableIndexColumn
+public class PostgreIndexColumn extends AbstractTableIndexColumn
 {
-    private PostgreTableIndex index;
+    private PostgreIndex index;
     private PostgreAttribute tableColumn;
     private int ordinalPosition;
     private boolean ascending;
     private boolean nullable;
 
-    public PostgreTableIndexColumn(
-        PostgreTableIndex index,
+    public PostgreIndexColumn(
+        PostgreIndex index,
         PostgreAttribute tableColumn,
         int ordinalPosition,
         boolean ascending,
@@ -47,7 +47,7 @@ public class PostgreTableIndexColumn extends AbstractTableIndexColumn
         this.nullable = nullable;
     }
 
-    PostgreTableIndexColumn(PostgreTableIndex toIndex, PostgreTableIndexColumn source)
+    PostgreIndexColumn(PostgreIndex toIndex, PostgreIndexColumn source)
     {
         this.index = toIndex;
         this.tableColumn = source.tableColumn;
@@ -57,7 +57,7 @@ public class PostgreTableIndexColumn extends AbstractTableIndexColumn
     }
 
     @Override
-    public PostgreTableIndex getIndex()
+    public PostgreIndex getIndex()
     {
         return index;
     }
@@ -105,7 +105,7 @@ public class PostgreTableIndexColumn extends AbstractTableIndexColumn
     }
 
     @Override
-    public PostgreTableIndex getParentObject()
+    public PostgreIndex getParentObject()
     {
         return index;
     }
