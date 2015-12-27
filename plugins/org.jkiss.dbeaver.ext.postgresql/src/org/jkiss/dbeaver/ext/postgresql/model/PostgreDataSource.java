@@ -27,8 +27,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -65,6 +67,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private List<PostgreUser> users;
     private List<PostgreCharset> charsets;
     private String activeDatabaseName;
+    private final Map<String, PostgreDataType> internalTypes = new LinkedHashMap<>();
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -115,11 +118,26 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
 
-        databaseCache.getAllObjects(monitor, this);
-        final PostgreSchema catalogSchema = getDefaultInstance().getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME);
-        if (catalogSchema != null) {
-            catalogSchema.getDataTypeCache().getAllObjects(monitor, catalogSchema);
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read internal data types")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT t.oid,t.* \n" +
+                    "FROM pg_catalog.pg_type t,pg_catalog.pg_namespace n\n" +
+                    "WHERE t.typnamespace=n.oid AND n.nspname='pg_catalog'\n" +
+                    "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
+                    "ORDER by t.oid")) {
+                try (JDBCResultSet rs = dbStat.executeQuery()) {
+                    while (rs.nextRow()) {
+                        final PostgreDataType dataType = PostgreDataType.readDataType(this, rs);
+                        if (dataType != null) {
+                            internalTypes.put(dataType.getName(), dataType);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                log.error("Error reading internal types", e);
+            }
         }
+
         // Read catalogs
         databaseCache.getAllObjects(monitor, this);
     }
@@ -138,22 +156,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         return true;
     }
-
-/*
-    PostgreTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
-        throws DBException
-    {
-        if (CommonUtils.isEmpty(catalogName)) {
-            return null;
-        }
-        PostgreDatabase catalog = getDatabase(catalogName);
-        if (catalog == null) {
-            log.error("Database " + catalogName + " not found");
-            return null;
-        }
-        return catalog.getTable(monitor, tableName);
-    }
-*/
 
     @Override
     public Collection<? extends PostgreDatabase> getChildren(@NotNull DBRProgressMonitor monitor)
@@ -331,21 +333,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Collection<? extends DBSDataType> getDataTypes()
     {
-        final PostgreSchema catalogSchema = getDefaultInstance().schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
-        if (catalogSchema != null) {
-            return catalogSchema.getDataTypeCache().getCachedObjects();
-        }
-        return Collections.emptyList();
+        return internalTypes.values();
     }
 
     @Override
     public DBSDataType getDataType(String typeName)
     {
-        final PostgreSchema catalogSchema = getDefaultInstance().schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
-        if (catalogSchema != null) {
-            return catalogSchema.getDataTypeCache().getCachedObject(typeName);
-        }
-        return null;
+        return internalTypes.get(typeName);
+    }
+
+    @Override
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
+        return PostgreUtils.getDefaultDataTypeName(dataKind);
     }
 
     @NotNull

@@ -42,7 +42,6 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreObject, Postgre
             "SELECT t.oid,t.* \n" +
                 "FROM pg_catalog.pg_type t\n" +
                 "WHERE t.typnamespace=?\n" +
-                "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
                 "ORDER by t.oid");
         dbStat.setInt(1, owner.getObjectId());
         return dbStat;

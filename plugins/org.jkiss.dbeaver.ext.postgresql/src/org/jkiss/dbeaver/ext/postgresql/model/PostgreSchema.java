@@ -22,14 +22,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
-import org.jkiss.dbeaver.model.DBPSystemObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -54,7 +54,7 @@ import java.util.List;
 /**
  * PostgreSchema
  */
-public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, PostgreObject {
+public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, DBPDataTypeProvider, PostgreObject {
 
     static final Log log = Log.getLog(PostgreSchema.class);
 
@@ -270,8 +270,30 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(getName());
     }
 
-    public PostgreDataTypeCache getDataTypeCache() {
-        return dataTypeCache;
+    @NotNull
+    @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int typeID) {
+        return JDBCDataSource.getDataKind(typeName, typeID);
+    }
+
+    @Override
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException {
+        return dataTypeCache.getObject(monitor, this, typeFullName);
+    }
+
+    @Override
+    public Collection<? extends DBSDataType> getDataTypes() {
+        return dataTypeCache.getCachedObjects();
+    }
+
+    @Override
+    public DBSDataType getDataType(String typeName) {
+        return dataTypeCache.getCachedObject(typeName);
+    }
+
+    @Override
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
+        return PostgreUtils.getDefaultDataTypeName(dataKind);
     }
 
     public class ClassCache extends JDBCStructCache<PostgreSchema, PostgreClass, PostgreAttribute> {

@@ -84,7 +84,7 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
         return typeCategory;
     }
 
-    public static PostgreDataType readDataType(@NotNull PostgreObject owner, @NotNull ResultSet dbResult) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull DBSObject owner, @NotNull ResultSet dbResult) throws SQLException, DBException
     {
         int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
         String ownerSchema = JDBCUtils.safeGetString(dbResult, "typnsname");
