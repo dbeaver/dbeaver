@@ -17,15 +17,39 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * PostgreTypeType
  */
 public class PostgreDataType extends JDBCDataType implements PostgreObject
 {
+    static final Log log = Log.getLog(PostgreDataType.class);
+
+    private static String[] OID_TYPES = new String[] {
+        "regproc",
+        "regprocedure",
+        "regoper",
+        "regoperator",
+        "regclass",
+        "regtype",
+        "regconfig",
+        "regdictionary",
+    };
+
+
     private final int typeId;
     private final String ownerSchema;
     private final PostgreTypeType typeType;
@@ -60,4 +84,109 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
         return typeCategory;
     }
 
+    public static PostgreDataType readDataType(@NotNull PostgreObject owner, @NotNull ResultSet dbResult) throws SQLException, DBException
+    {
+        int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
+        String ownerSchema = JDBCUtils.safeGetString(dbResult, "typnsname");
+        String name = JDBCUtils.safeGetString(dbResult, "typname");
+        if (CommonUtils.isEmpty(name)) {
+            return null;
+        }
+        int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
+        PostgreTypeType typeType = PostgreTypeType.b;
+        try {
+            typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
+        } catch (IllegalArgumentException e) {
+            log.debug(e);
+        }
+        PostgreTypeCategory typeCategory = PostgreTypeCategory.X;
+        try {
+            typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
+        } catch (IllegalArgumentException e) {
+            log.debug(e);
+        }
+        int valueType;
+        if (ArrayUtils.contains(OID_TYPES, name) || name.equals("hstore")) {
+            valueType = Types.VARCHAR;
+        } else {
+            switch (typeCategory) {
+                case A:
+                case P:
+                    return null;
+                case B:
+                    valueType = Types.BOOLEAN;
+                    break;
+                case C:
+                    valueType = Types.STRUCT;
+                    break;
+                case D:
+                    if (name.startsWith("timestamp")) {
+                        valueType = Types.TIMESTAMP;
+                    } else if (name.startsWith("date")) {
+                        valueType = Types.DATE;
+                    } else {
+                        valueType = Types.TIME;
+                    }
+                    break;
+                case N:
+                    valueType = Types.NUMERIC;
+                    if (name.startsWith("float")) {
+                        switch (typeLength) {
+                            case 4:
+                                valueType = Types.FLOAT;
+                                break;
+                            case 8:
+                                valueType = Types.DOUBLE;
+                                break;
+                        }
+                    } else {
+                        switch (typeLength) {
+                            case 2:
+                                valueType = Types.SMALLINT;
+                                break;
+                            case 4:
+                                valueType = Types.INTEGER;
+                                break;
+                            case 8:
+                                valueType = Types.BIGINT;
+                                break;
+                        }
+                    }
+                    break;
+                case S:
+                    //                if (name.equals("text")) {
+                    //                    valueType = Types.CLOB;
+                    //                } else {
+                    valueType = Types.VARCHAR;
+                    //                }
+                    break;
+                case U:
+                    switch (name) {
+                        case "bytea":
+                            valueType = Types.BINARY;
+                            break;
+                        case "xml":
+                            valueType = Types.SQLXML;
+                            break;
+                        default:
+                            valueType = Types.OTHER;
+                            break;
+                    }
+                    break;
+                default:
+                    valueType = Types.OTHER;
+                    break;
+            }
+        }
+
+        return new PostgreDataType(
+            owner,
+            valueType,
+            name,
+            typeLength,
+            typeId,
+            ownerSchema,
+            typeType,
+            typeCategory);
+    }
 }

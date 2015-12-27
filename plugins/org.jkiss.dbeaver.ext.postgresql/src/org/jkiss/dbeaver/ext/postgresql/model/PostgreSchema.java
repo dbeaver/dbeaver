@@ -77,7 +77,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     {
         this.database = database;
         this.name = name;
-        this.dataTypeCache = new PostgreDataTypeCache(this);
+        this.dataTypeCache = new PostgreDataTypeCache();
 
         this.loadInfo(dbResult);
     }

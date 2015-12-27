@@ -118,7 +118,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         databaseCache.getAllObjects(monitor, this);
         final PostgreSchema catalogSchema = getDefaultInstance().getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME);
         if (catalogSchema != null) {
-            catalogSchema.getDataTypeCache().getAllObjects(monitor, this);
+            catalogSchema.getDataTypeCache().getAllObjects(monitor, catalogSchema);
         }
         // Read catalogs
         databaseCache.getAllObjects(monitor, this);
