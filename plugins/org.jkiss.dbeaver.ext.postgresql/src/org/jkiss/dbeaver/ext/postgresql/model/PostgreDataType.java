@@ -51,14 +51,12 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
 
 
     private final int typeId;
-    private final String ownerSchema;
     private final PostgreTypeType typeType;
     private final PostgreTypeCategory typeCategory;
 
-    public PostgreDataType(DBSObject owner, int valueType, String name, int length, int typeId, String ownerSchema, PostgreTypeType typeType, PostgreTypeCategory typeCategory) {
+    public PostgreDataType(DBSObject owner, int valueType, String name, int length, int typeId, PostgreTypeType typeType, PostgreTypeCategory typeCategory) {
         super(owner, valueType, name, null, false, true, length, -1, -1);
         this.typeId = typeId;
-        this.ownerSchema = ownerSchema;
         this.typeType = typeType;
         this.typeCategory = typeCategory;
     }
@@ -67,11 +65,6 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     @Property
     public int getObjectId() {
         return typeId;
-    }
-
-    @Property
-    public String getOwnerSchema() {
-        return ownerSchema;
     }
 
     @Property
@@ -87,7 +80,6 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     public static PostgreDataType readDataType(@NotNull DBSObject owner, @NotNull ResultSet dbResult) throws SQLException, DBException
     {
         int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
-        String ownerSchema = JDBCUtils.safeGetString(dbResult, "typnsname");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
@@ -185,7 +177,6 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
             name,
             typeLength,
             typeId,
-            ownerSchema,
             typeType,
             typeCategory);
     }
