@@ -78,7 +78,7 @@
 
             <drivers managable="true">
 
-                <driver
+                <!--driver
                     id="postgres-jdbc"
                     label="PostgreSQL"
                     icon="icons/postgresql_icon.png"
@@ -88,7 +88,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
-                </driver>
+                </driver-->
             </drivers>
 
             <views>
