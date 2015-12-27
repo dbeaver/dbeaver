@@ -18,9 +18,11 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -46,6 +48,19 @@ public class PostgreUtils {
         } catch (Exception e) {
             log.debug(e);
             return null;
+        }
+    }
+
+    public static String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
+        switch (dataKind) {
+            case BOOLEAN: return "bool";
+            case NUMERIC: return "int";
+            case STRING: return "varchar";
+            case DATETIME: return "timestamp";
+            case BINARY: return "bytea";
+            case CONTENT: return "bytea";
+            case ROWID: return "oid";
+            default: return "varchar";
         }
     }
 

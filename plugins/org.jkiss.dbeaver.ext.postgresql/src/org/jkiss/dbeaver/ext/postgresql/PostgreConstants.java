@@ -31,6 +31,7 @@ public class PostgreConstants {
     public static final int DEFAULT_PORT = 5432;
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_DATABASE = "postgres";
+    public static final String DEFAULT_DATA_TYPE = "varchar";
 
     public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
     public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
