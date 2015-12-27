@@ -21,7 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -31,6 +33,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
@@ -196,11 +199,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException
         {
+/*
             // Do not apply filters
             // We need all schemas to have access to types
             return session.prepareStatement(
                 "SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
-/*
+*/
             StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if (catalogFilters != null) {
@@ -211,7 +215,6 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
             return dbStat;
-*/
         }
 
         @Override
