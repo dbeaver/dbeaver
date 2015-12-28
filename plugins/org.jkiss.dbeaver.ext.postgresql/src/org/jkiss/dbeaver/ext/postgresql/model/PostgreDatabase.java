@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,7 +48,7 @@ import java.util.Collection;
 /**
  * PostgreDatabase
  */
-public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
+public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObject, PostgreObject {
 
     static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -154,10 +157,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
 
     @Association
     public Collection<PostgreSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            throw new DBException("Can't access non-default database");
+        }
         return schemaCache.getAllObjects(monitor, this);
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            throw new DBException("Can't access non-default database");
+        }
         return schemaCache.getObject(monitor, this, name);
     }
 
@@ -192,6 +201,20 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, PostgreObject {
 
     @Override
     public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+
+    }
+
+    @Override
+    public DBSObjectState getObjectState() {
+        if (this == dataSource.getDefaultInstance()) {
+            return DBSObjectState.NORMAL;
+        } else {
+            return PostgreConstants.STATE_UNAVAILABLE;
+        }
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
 
     }
 
