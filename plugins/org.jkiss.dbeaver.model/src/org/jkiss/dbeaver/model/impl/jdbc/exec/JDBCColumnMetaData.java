@@ -144,7 +144,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
             int typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
             DBPDataKind dataKind = null;
             if (dataSource instanceof DBPDataTypeProvider) {
-                DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getDataType(typeName);
+                DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
                 if (dataType != null) {
                     typeID = dataType.getTypeID();
                     dataKind = dataType.getDataKind();

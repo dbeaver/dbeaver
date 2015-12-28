@@ -21,11 +21,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -48,7 +48,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreObject, Postgre
     }
 
     @Override
-    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreObject owner, @NotNull ResultSet dbResult) throws SQLException, DBException
+    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreObject owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return PostgreDataType.readDataType(owner, dbResult);
     }

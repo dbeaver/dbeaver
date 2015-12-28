@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -533,13 +532,13 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public Collection<? extends DBSDataType> getDataTypes()
+    public Collection<? extends DBSDataType> getLocalDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getDataType(String typeName)
+    public DBSDataType getLocalDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
     }
@@ -562,7 +561,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         }
 
         @Override
-        protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected MySQLCatalog fetchObject(@NotNull JDBCSession session, @NotNull MySQLDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new MySQLCatalog(owner, resultSet);
         }

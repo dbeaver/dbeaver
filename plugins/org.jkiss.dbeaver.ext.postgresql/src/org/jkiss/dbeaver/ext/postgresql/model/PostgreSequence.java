@@ -20,25 +20,32 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
-import java.sql.ResultSet;
 import java.util.Collection;
 
 /**
- * GenericSequence
+ * PostgreSequence
  */
 public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedObject
 {
+    static final Log log = Log.getLog(PostgreSequence.class);
+
     private PostgreSchema schema;
     private int oid;
     private String name;
@@ -46,11 +53,32 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
     private Number minValue;
     private Number maxValue;
     private Number incrementBy;
+    private String description;
 
-    public PostgreSequence(PostgreSchema schema, ResultSet dbResult) {
+    public PostgreSequence(PostgreSchema schema, JDBCResultSet dbResult) {
         this.schema = schema;
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "relname");
+
+        JDBCSession session = dbResult.getSourceStatement().getConnection();
+        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
+            "SELECT last_value,min_value,max_value,increment_by from " + DBUtils.getQuotedIdentifier(schema) + "." + DBUtils.getQuotedIdentifier(this))) {
+            try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                if (seqResults.next()) {
+                    lastValue = JDBCUtils.safeGetLong(seqResults, 1);
+                    minValue = JDBCUtils.safeGetLong(seqResults, 2);
+                    maxValue = JDBCUtils.safeGetLong(seqResults, 3);
+                    incrementBy = JDBCUtils.safeGetLong(seqResults, 4);
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Error reading sequence values", e);
+        }
+        try {
+            description = PostgreUtils.getObjectComment(session.getProgressMonitor(), getDataSource(), schema.getName(), name);
+        } catch (Exception e) {
+            log.warn("Error reading sequence description", e);
+        }
     }
 
     @NotNull
@@ -74,7 +102,7 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
     @Override
     @Property(viewable = true, order = 10)
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @Nullable

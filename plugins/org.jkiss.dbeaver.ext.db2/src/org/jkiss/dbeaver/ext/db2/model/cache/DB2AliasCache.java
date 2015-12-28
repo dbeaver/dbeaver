@@ -25,11 +25,11 @@ import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -98,7 +98,7 @@ public final class DB2AliasCache extends JDBCObjectCache<DB2Schema, DB2Alias> {
         return dbStat;
     }
 
-    protected DB2Alias fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull ResultSet resultSet) throws SQLException, DBException
+    protected DB2Alias fetchObject(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
     {
         return new DB2Alias(session.getProgressMonitor(), db2Schema, resultSet);
     }

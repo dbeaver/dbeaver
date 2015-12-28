@@ -22,12 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Trigger;
 import org.jkiss.dbeaver.ext.db2.model.DB2TriggerDep;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -49,7 +49,7 @@ public class DB2TriggerDepCache extends JDBCObjectCache<DB2Trigger, DB2TriggerDe
     }
 
     @Override
-    protected DB2TriggerDep fetchObject(@NotNull JDBCSession session, @NotNull DB2Trigger db2Trigger, @NotNull ResultSet resultSet)
+    protected DB2TriggerDep fetchObject(@NotNull JDBCSession session, @NotNull DB2Trigger db2Trigger, @NotNull JDBCResultSet resultSet)
         throws SQLException, DBException
     {
         return new DB2TriggerDep(session.getProgressMonitor(), db2Trigger, resultSet);

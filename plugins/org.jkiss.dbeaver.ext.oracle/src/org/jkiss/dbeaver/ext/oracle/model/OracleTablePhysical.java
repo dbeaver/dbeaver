@@ -203,7 +203,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         @Override
-        protected OracleTablePartition fetchObject(@NotNull JDBCSession session, @NotNull OracleTablePhysical table, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleTablePartition fetchObject(@NotNull JDBCSession session, @NotNull OracleTablePhysical table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleTablePartition(table, false, resultSet);
         }

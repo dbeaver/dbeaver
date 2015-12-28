@@ -43,7 +43,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Driver;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
@@ -828,13 +827,13 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<? extends DBSDataType> getDataTypes()
+    public Collection<? extends DBSDataType> getLocalDataTypes()
     {
         return dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getDataType(String typeName)
+    public DBSDataType getLocalDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
     }
@@ -856,7 +855,7 @@ public class GenericDataSource extends JDBCDataSource
             return session.getMetaData().getTableTypes().getSourceStatement();
         }
         @Override
-        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new GenericTableType(
                 GenericDataSource.this,

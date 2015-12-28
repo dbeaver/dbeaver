@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -331,13 +330,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public Collection<? extends DBSDataType> getDataTypes()
+    public Collection<? extends DBSDataType> getLocalDataTypes()
     {
         return internalTypes.values();
     }
 
     @Override
-    public DBSDataType getDataType(String typeName)
+    public DBSDataType getLocalDataType(String typeName)
     {
         return internalTypes.get(typeName);
     }
@@ -390,7 +389,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
 
         @Override
-        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected PostgreDatabase fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new PostgreDatabase(owner, resultSet);
         }

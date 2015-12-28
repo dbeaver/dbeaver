@@ -22,12 +22,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2ViewBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2ViewBaseDep;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -49,7 +49,7 @@ public class DB2ViewBaseDepCache extends JDBCObjectCache<DB2ViewBase, DB2ViewBas
     }
 
     @Override
-    protected DB2ViewBaseDep fetchObject(@NotNull JDBCSession session, @NotNull DB2ViewBase db2ViewBase, @NotNull ResultSet resultSet)
+    protected DB2ViewBaseDep fetchObject(@NotNull JDBCSession session, @NotNull DB2ViewBase db2ViewBase, @NotNull JDBCResultSet resultSet)
         throws SQLException, DBException
     {
         return new DB2ViewBaseDep(session.getProgressMonitor(), db2ViewBase, resultSet);

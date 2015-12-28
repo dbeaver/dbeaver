@@ -306,7 +306,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public Collection<DB2DataType> getDataTypes()
+    public Collection<DB2DataType> getLocalDataTypes()
     {
         try {
             return getDataTypes(VoidProgressMonitor.INSTANCE);
@@ -317,7 +317,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public DB2DataType getDataType(String typeName)
+    public DB2DataType getLocalDataType(String typeName)
     {
         try {
             return getDataType(VoidProgressMonitor.INSTANCE, typeName);
