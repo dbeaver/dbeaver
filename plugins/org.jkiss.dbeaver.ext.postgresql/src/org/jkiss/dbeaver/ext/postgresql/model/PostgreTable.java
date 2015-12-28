@@ -204,6 +204,7 @@ public class PostgreTable extends PostgreTableBase
             additionalInfo.loaded = true;
             return;
         }
+/*
         PostgreDataSource dataSource = getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -235,6 +236,7 @@ public class PostgreTable extends PostgreTableBase
         } catch (SQLException e) {
             throw new DBCException(e, dataSource);
         }
+*/
     }
 
     private List<PostgreTableForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)

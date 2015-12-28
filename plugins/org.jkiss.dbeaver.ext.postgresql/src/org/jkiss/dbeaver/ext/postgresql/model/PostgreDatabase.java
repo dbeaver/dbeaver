@@ -64,8 +64,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int connectionLimit;
     private int tablespaceId;
 
-    SchemaCache schemaCache = new SchemaCache();
-    PostgreDataTypeCache datatypeCache = new PostgreDataTypeCache();
+    final SchemaCache schemaCache = new SchemaCache();
+    final PostgreDataTypeCache datatypeCache = new PostgreDataTypeCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
@@ -87,6 +87,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
         this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
         this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "dattablespace");
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return this;
     }
 
     @Override
@@ -161,13 +167,21 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
         if (this != dataSource.getDefaultInstance()) {
             throw new DBException("Can't access non-default database");
         }
+        cacheDataTypes(monitor);
+        // Get all schemas
         return schemaCache.getAllObjects(monitor, this);
+    }
+
+    private void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
+        // Cache data types
+        datatypeCache.getAllObjects(monitor, this);
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
         if (this != dataSource.getDefaultInstance()) {
             throw new DBException("Can't access non-default database");
         }
+        cacheDataTypes(monitor);
         return schemaCache.getObject(monitor, this, name);
     }
 

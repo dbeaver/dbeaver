@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -123,6 +122,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
     }
 
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return getParentObject().getDatabase();
+    }
+
     @Override
     public int getObjectId() {
         return typeId;
@@ -141,10 +146,6 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Property(category = CAT_MAIN, viewable = true, order = 12)
     public PostgreDataType getBaseType() {
         return resolveType(baseTypeId);
-    }
-
-    public int getClassId() {
-        return classId;
     }
 
     @Property(category = CAT_MAIN, viewable = true)
@@ -251,7 +252,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         if (typeId <= 0) {
             return null;
         }
-        final PostgreDataType dataType = getParentObject().getDatabase().datatypeCache.getDataType(typeId);
+        final PostgreDataType dataType = getDatabase().datatypeCache.getDataType(typeId);
         if (dataType == null) {
             log.debug("Data type '" + typeId + "' not found");
         }

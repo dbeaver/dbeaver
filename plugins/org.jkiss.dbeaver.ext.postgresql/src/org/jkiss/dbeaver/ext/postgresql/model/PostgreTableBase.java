@@ -57,6 +57,12 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return getContainer().classCache;
     }
 
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return getContainer().getDatabase();
+    }
+
     @Override
     public int getObjectId() {
         return this.oid;

@@ -105,6 +105,12 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
         return name;
     }
 
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return schema.getDatabase();
+    }
+
     @Override
     public int getObjectId() {
         return this.oid;
