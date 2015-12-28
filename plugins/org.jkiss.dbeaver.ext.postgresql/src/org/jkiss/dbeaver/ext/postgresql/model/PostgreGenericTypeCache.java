@@ -71,18 +71,11 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
     @Override
     protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        int typeId = JDBCUtils.safeGetInt(dbResult, "typid");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
-        PostgreTypeType typeType = PostgreTypeType.b;
-        try {
-            typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
-        } catch (IllegalArgumentException e) {
-            log.debug(e);
-        }
         PostgreTypeCategory typeCategory = PostgreTypeCategory.X;
         try {
             typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
@@ -163,14 +156,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
             }
         }
 
-        return new PostgreDataType(
-            owner,
-            valueType,
-            name,
-            typeLength,
-            typeId,
-            typeType,
-            typeCategory);
+        return new JDBCDataType(owner, valueType, name,null,false,true,typeLength,-1,-1);
     }
 
 
