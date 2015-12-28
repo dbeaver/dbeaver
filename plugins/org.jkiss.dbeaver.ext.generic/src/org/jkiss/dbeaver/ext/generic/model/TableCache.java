@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Locale;
@@ -155,7 +154,7 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
     }
 
     @Override
-    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull ResultSet dbResult)
+    protected GenericTableColumn fetchChild(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull GenericTable table, @NotNull JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.COLUMN_NAME);

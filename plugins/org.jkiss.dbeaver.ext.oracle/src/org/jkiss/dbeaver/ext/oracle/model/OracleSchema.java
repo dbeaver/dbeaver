@@ -425,7 +425,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase table, @NotNull ResultSet dbResult)
+        protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableColumn(session.getProgressMonitor(), table, dbResult);
@@ -865,7 +865,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTriggerColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull OracleTrigger parent, @NotNull ResultSet dbResult) throws SQLException, DBException
+        protected OracleTriggerColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull OracleTrigger parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             OracleTableBase refTable = OracleTableBase.findTable(
                 session.getProgressMonitor(),

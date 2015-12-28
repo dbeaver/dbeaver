@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.jkiss.code.NotNull;
@@ -93,7 +92,7 @@ public final class DB2IndexCache extends JDBCStructCache<DB2Schema, DB2Index, DB
 
     @Override
     protected DB2IndexColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Index db2Index,
-        @NotNull ResultSet dbResult) throws SQLException, DBException
+        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return new DB2IndexColumn(session.getProgressMonitor(), db2Index, dbResult);
     }

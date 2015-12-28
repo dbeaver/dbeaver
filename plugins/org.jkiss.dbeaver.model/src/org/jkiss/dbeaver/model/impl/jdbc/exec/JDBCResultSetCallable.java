@@ -41,6 +41,11 @@ public class JDBCResultSetCallable extends LocalResultSet<JDBCCallableStatement>
     }
 
     @Override
+    public JDBCSession getSession() {
+        return (JDBCSession) super.getSession();
+    }
+
+    @Override
     public ResultSet getOriginal() {
         return null;
     }

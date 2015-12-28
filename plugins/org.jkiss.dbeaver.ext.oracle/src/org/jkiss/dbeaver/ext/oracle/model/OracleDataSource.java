@@ -47,7 +47,6 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -763,7 +762,7 @@ public class OracleDataSource extends JDBCDataSource
         }
 
         @Override
-        protected OracleUserProfile.ProfileResource fetchChild(@NotNull JDBCSession session, @NotNull OracleDataSource dataSource, @NotNull OracleUserProfile parent, @NotNull ResultSet dbResult) throws SQLException, DBException
+        protected OracleUserProfile.ProfileResource fetchChild(@NotNull JDBCSession session, @NotNull OracleDataSource dataSource, @NotNull OracleUserProfile parent, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
         {
             return new OracleUserProfile.ProfileResource(parent, dbResult);
         }

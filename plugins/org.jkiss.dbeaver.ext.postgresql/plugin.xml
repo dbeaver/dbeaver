@@ -17,7 +17,7 @@
                 icon="icons/postgresql_icon.png">
             <tree path="postgresql" label="PostgreSQL data source">
                 <items label="%tree.database.node.name" path="database" property="databases" icon="#database">
-                    <items label="%tree.database.schema.name" path="schema" property="schemas" icon="#schema">
+                    <items label="%tree.schema.name" path="schema" property="schemas" icon="#schema">
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="Table columns">
