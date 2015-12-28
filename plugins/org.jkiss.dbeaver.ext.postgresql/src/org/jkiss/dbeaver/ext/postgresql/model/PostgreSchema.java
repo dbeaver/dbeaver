@@ -294,7 +294,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException
         {
-            final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.oid,c.* FROM pg_catalog.pg_class c WHERE c.relnamespace=? AND c.relkind<>'i'");
+            final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.oid,c.* FROM pg_catalog.pg_class c WHERE c.relnamespace=? AND c.relkind not in ('i','c')");
             dbStat.setInt(1, getObjectId());
             return dbStat;
         }
@@ -319,7 +319,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 case S:
                     return new PostgreSequence(PostgreSchema.this, dbResult);
                 default:
-                    log.warn("Unsupported class '" + kind + "'");
+                    log.warn("Unsupported PostgreClass '" + kind + "'");
                     return null;
             }
         }
@@ -330,6 +330,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         {
             StringBuilder sql = new StringBuilder();
             sql.append("SELECT c.relname,a.* FROM pg_catalog.pg_attribute a,pg_catalog.pg_class c WHERE a.attrelid=c.oid");
+            sql.append(" AND a.attnum > 0 AND NOT a.attisdropped");
             if (forTable != null) {
                 sql.append(" AND c.oid=?");
             } else {
@@ -350,7 +351,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected PostgreAttribute fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreClass table, @NotNull ResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreAttribute(table, dbResult);
+            try {
+                return new PostgreAttribute(table, dbResult);
+            } catch (DBException e) {
+                log.warn("Error reading attribute info", e);
+                return null;
+            }
         }
     }
 

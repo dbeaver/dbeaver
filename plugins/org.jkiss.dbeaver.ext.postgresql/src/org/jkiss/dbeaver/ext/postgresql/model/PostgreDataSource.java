@@ -219,17 +219,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
-        if (catalog == null) {
-            log.debug("Null current database");
-            return;
-        }
-        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("use " + DBUtils.getQuotedIdentifier(catalog))) {
-                dbStat.execute();
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, this);
-        }
+
     }
 
     @Override
