@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -39,7 +40,7 @@ public enum PostgreTypeCategory implements DBPNamedObject
     U("User-defined"),
     V("Bit-string"),
     X("Unknown"),
-    R("?");
+    R("Range");
 
     private final String desc;
 
@@ -47,6 +48,7 @@ public enum PostgreTypeCategory implements DBPNamedObject
         this.desc = desc;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return desc;

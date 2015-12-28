@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 /**
  * JDBCDataType
  */
-public class JDBCDataType implements DBSDataType
+public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
 {
-    private final DBSObject owner;
+    private final OWNER owner;
     private int valueType;
     private String name;
     private String remarks;
@@ -44,7 +44,7 @@ public class JDBCDataType implements DBSDataType
     private int maxScale;
 
     public JDBCDataType(
-        DBSObject owner,
+        OWNER owner,
         int valueType,
         String name,
         @Nullable String remarks,
@@ -65,7 +65,7 @@ public class JDBCDataType implements DBSDataType
         this.maxScale = maxScale;
     }
 
-    public JDBCDataType(DBSObject owner, DBSTypedObject typed) {
+    public JDBCDataType(OWNER owner, DBSTypedObject typed) {
         this(owner, typed.getTypeID(), typed.getTypeName(), null, false, false, typed.getPrecision(), typed.getScale(), typed.getScale());
     }
 
@@ -96,7 +96,7 @@ public class JDBCDataType implements DBSDataType
     }
 
     @Override
-    public DBSObject getParentObject()
+    public OWNER getParentObject()
     {
         return owner;
     }

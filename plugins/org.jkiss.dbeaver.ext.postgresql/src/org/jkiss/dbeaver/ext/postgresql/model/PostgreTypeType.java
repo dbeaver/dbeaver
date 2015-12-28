@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
@@ -29,7 +30,7 @@ public enum PostgreTypeType implements DBPNamedObject
     d("Domain"),
     e("Enum type"),
     p("Pseudo-type"),
-    r("?");
+    r("Range");
 
     private final String desc;
 
@@ -37,6 +38,7 @@ public enum PostgreTypeType implements DBPNamedObject
         this.desc = desc;
     }
 
+    @NotNull
     @Override
     public String getName() {
         return desc;

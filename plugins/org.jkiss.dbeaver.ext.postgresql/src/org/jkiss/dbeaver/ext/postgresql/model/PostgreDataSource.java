@@ -117,6 +117,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
 
+        // Read databases
+        databaseCache.getAllObjects(monitor, this);
+
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read internal data types")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT t.oid,t.* \n" +
@@ -126,7 +129,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     "ORDER by t.oid")) {
                 try (JDBCResultSet rs = dbStat.executeQuery()) {
                     while (rs.nextRow()) {
-                        final PostgreDataType dataType = PostgreDataType.readDataType(this, rs);
+                        final PostgreDataType dataType = PostgreDataType.readDataType(getDefaultInstance(), rs);
                         if (dataType != null) {
                             internalTypes.put(dataType.getName(), dataType);
                         }
@@ -136,9 +139,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 log.error("Error reading internal types", e);
             }
         }
-
-        // Read catalogs
-        databaseCache.getAllObjects(monitor, this);
     }
 
     @Override

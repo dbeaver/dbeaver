@@ -34,7 +34,7 @@ import java.sql.Types;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType implements PostgreObject
+public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreObject
 {
     static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -82,7 +82,7 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     private int collationId;
     private String defaultValue;
 
-    public PostgreDataType(DBSObject owner, int valueType, String name, int length, JDBCResultSet dbResult) {
+    public PostgreDataType(@NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) {
         super(owner, valueType, name, null, false, true, length, -1, -1);
 
         this.typeId = JDBCUtils.safeGetInt(dbResult, "oid");
@@ -124,34 +124,32 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     }
 
     @Override
-    @Property(category = CAT_MAIN, viewable = true)
     public int getObjectId() {
         return typeId;
     }
 
-    @Property(category = CAT_MAIN, viewable = true)
+    @Property(category = CAT_MAIN, viewable = true, order = 10)
     public PostgreTypeType getTypeType() {
         return typeType;
     }
 
-    @Property(category = CAT_MAIN, viewable = true)
+    @Property(category = CAT_MAIN, viewable = true, order = 11)
     public PostgreTypeCategory getTypeCategory() {
         return typeCategory;
     }
 
-    @Property(category = CAT_MAIN, viewable = true)
-    public int getBaseTypeId() {
-        return baseTypeId;
+    @Property(category = CAT_MAIN, viewable = true, order = 12)
+    public PostgreDataType getBaseType() {
+        return resolveType(baseTypeId);
     }
 
-    @Property(category = CAT_MAIN, viewable = true)
     public int getClassId() {
         return classId;
     }
 
     @Property(category = CAT_MAIN, viewable = true)
-    public int getElementTypeId() {
-        return elementTypeId;
+    public PostgreDataType getElementType() {
+        return resolveType(elementTypeId);
     }
 
     @Property(category = CAT_MISC)
@@ -240,8 +238,8 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     }
 
     @Property(category = CAT_ARRAY)
-    public int getArrayItemTypeId() {
-        return arrayItemTypeId;
+    public PostgreDataType getArrayItemType() {
+        return resolveType(arrayItemTypeId);
     }
 
     @Property(category = CAT_ARRAY)
@@ -249,8 +247,21 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
         return arrayDim;
     }
 
-    public static PostgreDataType readDataType(@NotNull DBSObject owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    private PostgreDataType resolveType(int typeId) {
+        if (typeId <= 0) {
+            return null;
+        }
+        final PostgreDataType dataType = getParentObject().getDatabase().datatypeCache.getDataType(typeId);
+        if (dataType == null) {
+            log.debug("Data type '" + typeId + "' not found");
+        }
+        return dataType;
+    }
+
+    public static PostgreDataType readDataType(@NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
+        int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
+        final PostgreSchema schema = owner.getSchema(dbResult.getSourceStatement().getConnection().getProgressMonitor(), schemaId);
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
@@ -340,7 +351,7 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
         }
 
         return new PostgreDataType(
-            owner,
+            schema,
             valueType,
             name,
             typeLength,
