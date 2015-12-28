@@ -25,11 +25,15 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -46,39 +50,52 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
 {
     static final Log log = Log.getLog(PostgreSequence.class);
 
+    public static class AdditionalInfo {
+        private volatile boolean loaded = false;
+        private Number lastValue;
+        private Number minValue;
+        private Number maxValue;
+        private Number incrementBy;
+        public String description;
+
+        @Property(viewable = true, editable = true, updatable = true, order = 1)
+        public Number getLastValue() {
+            return lastValue;
+        }
+        @Property(viewable = true, editable = true, updatable = true, order = 2)
+        public Number getMinValue() {
+            return minValue;
+        }
+        @Property(viewable = true, editable = true, updatable = true, order = 3)
+        public Number getMaxValue() {
+            return maxValue;
+        }
+        @Property(viewable = true, editable = true, updatable = true, order = 4)
+        public Number getIncrementBy() {
+            return incrementBy;
+        }
+        @Property(viewable = true, editable = true, updatable = true, order = 10)
+        public String getDescription() {
+            return description;
+        }
+    }
+    public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
+        @Override
+        public boolean isPropertyCached(PostgreSequence object, Object propertyId)
+        {
+            return object.additionalInfo.loaded;
+        }
+    }
+
     private PostgreSchema schema;
     private int oid;
     private String name;
-    private Number lastValue;
-    private Number minValue;
-    private Number maxValue;
-    private Number incrementBy;
-    private String description;
+    private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public PostgreSequence(PostgreSchema schema, JDBCResultSet dbResult) {
         this.schema = schema;
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "relname");
-
-        JDBCSession session = dbResult.getSourceStatement().getConnection();
-        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
-            "SELECT last_value,min_value,max_value,increment_by from " + DBUtils.getQuotedIdentifier(schema) + "." + DBUtils.getQuotedIdentifier(this))) {
-            try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
-                if (seqResults.next()) {
-                    lastValue = JDBCUtils.safeGetLong(seqResults, 1);
-                    minValue = JDBCUtils.safeGetLong(seqResults, 2);
-                    maxValue = JDBCUtils.safeGetLong(seqResults, 3);
-                    incrementBy = JDBCUtils.safeGetLong(seqResults, 4);
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Error reading sequence values", e);
-        }
-        try {
-            description = PostgreUtils.getObjectComment(session.getProgressMonitor(), getDataSource(), schema.getName(), name);
-        } catch (Exception e) {
-            log.warn("Error reading sequence description", e);
-        }
     }
 
     @NotNull
@@ -100,9 +117,8 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 10)
     public String getDescription() {
-        return description;
+        return additionalInfo.description;
     }
 
     @Nullable
@@ -126,32 +142,60 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
             this);
     }
 
+    @PropertyGroup()
+    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    {
+        synchronized (additionalInfo) {
+            if (!additionalInfo.loaded) {
+                loadAdditionalInfo(monitor);
+            }
+            return additionalInfo;
+        }
+    }
+
+    private void loadAdditionalInfo(DBRProgressMonitor monitor) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load sequence additional info")) {
+            try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
+                "SELECT last_value,min_value,max_value,increment_by from " + DBUtils.getQuotedIdentifier(schema) + "." + DBUtils.getQuotedIdentifier(this))) {
+                try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                    if (seqResults.next()) {
+                        additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, 1);
+                        additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, 2);
+                        additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, 3);
+                        additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, 4);
+                    }
+                }
+            }
+            try {
+                additionalInfo.description = PostgreUtils.getObjectComment(session.getProgressMonitor(), getDataSource(), schema.getName(), name);
+            } catch (Exception e) {
+                log.warn("Error reading sequence description", e);
+            }
+            additionalInfo.loaded = true;
+        } catch (Exception e) {
+            log.warn("Error reading sequence values", e);
+        }
+    }
+
     @Override
-    @Property(viewable = true, order = 2)
     public Number getLastValue() {
-        return lastValue;
-    }
-
-    public void setLastValue(Number lastValue) {
-        this.lastValue = lastValue;
+        return additionalInfo.lastValue;
     }
 
     @Override
-    @Property(viewable = true, order = 3)
     public Number getMinValue() {
-        return minValue;
+        return additionalInfo.minValue;
     }
 
     @Override
-    @Property(viewable = true, order = 4)
     public Number getMaxValue() {
-        return maxValue;
+        return additionalInfo.maxValue;
     }
 
     @Override
-    @Property(viewable = true, order = 5)
     public Number getIncrementBy() {
-        return incrementBy;
+        return additionalInfo.incrementBy;
     }
 
     ///////////////////////////////////////////////////////////////////////

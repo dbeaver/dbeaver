@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 /**
  * PostgreClass
  */
-public interface PostgreClass extends PostgreObject,DBSEntity,DBPRefreshableObject
+public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableObject
 {
     enum RelKind {
         r,// ordinary table
