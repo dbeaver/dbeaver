@@ -65,6 +65,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int tablespaceId;
 
     SchemaCache schemaCache = new SchemaCache();
+    PostgreDataTypeCache datatypeCache = new PostgreDataTypeCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
@@ -168,6 +169,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
             throw new DBException("Can't access non-default database");
         }
         return schemaCache.getObject(monitor, this, name);
+    }
+
+    public PostgreSchema getSchema(DBRProgressMonitor monitor, int oid) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            throw new DBException("Can't access non-default database");
+        }
+        for (PostgreSchema schema : schemaCache.getAllObjects(monitor, this)) {
+            if (schema.getObjectId() == oid) {
+                return schema;
+            }
+        }
+        return null;
     }
 
     PostgreTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
