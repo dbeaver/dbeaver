@@ -38,6 +38,12 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
 {
     static final Log log = Log.getLog(PostgreDataType.class);
 
+    private static final String CAT_MAIN = "Main";
+    private static final String CAT_MISC = "Miscellaneous";
+    private static final String CAT_MODIFIERS = "Modifiers";
+    private static final String CAT_FUNCTIONS = "Functions";
+    private static final String CAT_ARRAY = "Array";
+
     private static String[] OID_TYPES = new String[] {
         "regproc",
         "regprocedure",
@@ -67,8 +73,8 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     private String modInFunc;
     private String modOutFunc;
     private String analyzeFunc;
-    private String align;
-    private String storage;
+    private PostgreTypeAlign align = PostgreTypeAlign.c;
+    private PostgreTypeStorage storage = PostgreTypeStorage.p;
     private boolean isNotNull;
     private int baseTypeId;
     private int typeMod;
@@ -107,8 +113,8 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
         this.modInFunc = JDBCUtils.safeGetString(dbResult, "typmodin");
         this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout");
         this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze");
-        this.align = JDBCUtils.safeGetString(dbResult, "typalign");
-        this.storage = JDBCUtils.safeGetString(dbResult, "typstorage");
+        this.align = PostgreTypeAlign.valueOf(JDBCUtils.safeGetString(dbResult, "typalign"));
+        this.storage = PostgreTypeStorage.valueOf(JDBCUtils.safeGetString(dbResult, "typstorage"));
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetInt(dbResult, "typbasetype");
         this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
@@ -118,129 +124,129 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
     }
 
     @Override
-    @Property
+    @Property(category = CAT_MAIN, viewable = true)
     public int getObjectId() {
         return typeId;
     }
 
-    @Property
+    @Property(category = CAT_MAIN, viewable = true)
     public PostgreTypeType getTypeType() {
         return typeType;
     }
 
-    @Property
+    @Property(category = CAT_MAIN, viewable = true)
     public PostgreTypeCategory getTypeCategory() {
         return typeCategory;
     }
 
-    @Property
-    public int getOwnerId() {
-        return ownerId;
-    }
-
-    @Property
-    public boolean isByValue() {
-        return isByValue;
-    }
-
-    @Property
-    public boolean isPreferred() {
-        return isPreferred;
-    }
-
-    @Property
-    public String getArrayDelimiter() {
-        return arrayDelimiter;
-    }
-
-    @Property
-    public int getClassId() {
-        return classId;
-    }
-
-    @Property
-    public int getElementTypeId() {
-        return elementTypeId;
-    }
-
-    @Property
-    public int getArrayItemTypeId() {
-        return arrayItemTypeId;
-    }
-
-    @Property
-    public String getInputFunc() {
-        return inputFunc;
-    }
-
-    @Property
-    public String getOutputFunc() {
-        return outputFunc;
-    }
-
-    @Property
-    public String getReceiveFunc() {
-        return receiveFunc;
-    }
-
-    @Property
-    public String getSendFunc() {
-        return sendFunc;
-    }
-
-    @Property
-    public String getModInFunc() {
-        return modInFunc;
-    }
-
-    @Property
-    public String getModOutFunc() {
-        return modOutFunc;
-    }
-
-    @Property
-    public String getAnalyzeFunc() {
-        return analyzeFunc;
-    }
-
-    @Property
-    public String getAlign() {
-        return align;
-    }
-
-    @Property
-    public String getStorage() {
-        return storage;
-    }
-
-    @Property
-    public boolean isNotNull() {
-        return isNotNull;
-    }
-
-    @Property
+    @Property(category = CAT_MAIN, viewable = true)
     public int getBaseTypeId() {
         return baseTypeId;
     }
 
-    @Property
+    @Property(category = CAT_MAIN, viewable = true)
+    public int getClassId() {
+        return classId;
+    }
+
+    @Property(category = CAT_MAIN, viewable = true)
+    public int getElementTypeId() {
+        return elementTypeId;
+    }
+
+    @Property(category = CAT_MISC)
+    public int getOwnerId() {
+        return ownerId;
+    }
+
+    @Property(category = CAT_MISC)
+    public boolean isByValue() {
+        return isByValue;
+    }
+
+    @Property(category = CAT_MISC)
+    public boolean isPreferred() {
+        return isPreferred;
+    }
+
+    @Property(category = CAT_MISC)
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getInputFunc() {
+        return inputFunc;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getOutputFunc() {
+        return outputFunc;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getReceiveFunc() {
+        return receiveFunc;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getSendFunc() {
+        return sendFunc;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getModInFunc() {
+        return modInFunc;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getModOutFunc() {
+        return modOutFunc;
+    }
+
+    @Property(category = CAT_FUNCTIONS)
+    public String getAnalyzeFunc() {
+        return analyzeFunc;
+    }
+
+    @Property(category = CAT_MODIFIERS)
+    public PostgreTypeAlign getAlign() {
+        return align;
+    }
+
+    @Property(category = CAT_MODIFIERS)
+    public PostgreTypeStorage getStorage() {
+        return storage;
+    }
+
+    @Property(category = CAT_MODIFIERS)
+    public boolean isNotNull() {
+        return isNotNull;
+    }
+
+    @Property(category = CAT_MODIFIERS)
     public int getTypeMod() {
         return typeMod;
     }
 
-    @Property
-    public int getArrayDim() {
-        return arrayDim;
-    }
-
-    @Property
+    @Property(category = CAT_MODIFIERS)
     public int getCollationId() {
         return collationId;
     }
 
-    @Property
-    public String getDefaultValue() {
-        return defaultValue;
+    @Property(category = CAT_ARRAY)
+    public String getArrayDelimiter() {
+        return arrayDelimiter;
+    }
+
+    @Property(category = CAT_ARRAY)
+    public int getArrayItemTypeId() {
+        return arrayItemTypeId;
+    }
+
+    @Property(category = CAT_ARRAY)
+    public int getArrayDim() {
+        return arrayDim;
     }
 
     public static PostgreDataType readDataType(@NotNull DBSObject owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
@@ -262,8 +268,11 @@ public class PostgreDataType extends JDBCDataType implements PostgreObject
         } else {
             switch (typeCategory) {
                 case A:
+                    valueType = Types.ARRAY;
+                    break;
                 case P:
-                    return null;
+                    valueType = Types.OTHER;
+                    break;
                 case B:
                     valueType = Types.BOOLEAN;
                     break;

@@ -20,20 +20,18 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * PostgreTypeType
+ * PostgreTypeStorage
  */
-public enum PostgreTypeType implements DBPNamedObject
+public enum PostgreTypeStorage implements DBPNamedObject
 {
-    b("Base"),
-    c("Composite"),
-    d("Domain"),
-    e("Enum type"),
-    p("Pseudo-type"),
-    r("?");
+    p("p:Plain."),
+    e("e:Secondary"),
+    m("m:Compressed"),
+    x("x:Any");
 
     private final String desc;
 
-    PostgreTypeType(String desc) {
+    PostgreTypeStorage(String desc) {
         this.desc = desc;
     }
 

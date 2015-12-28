@@ -20,20 +20,18 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * PostgreTypeType
+ * PostgreTypeAlign
  */
-public enum PostgreTypeType implements DBPNamedObject
+public enum PostgreTypeAlign implements DBPNamedObject
 {
-    b("Base"),
-    c("Composite"),
-    d("Domain"),
-    e("Enum type"),
-    p("Pseudo-type"),
-    r("?");
+    c("Char"),
+    s("Short"),
+    i("Int"),
+    d("Double");
 
     private final String desc;
 
-    PostgreTypeType(String desc) {
+    PostgreTypeAlign(String desc) {
         this.desc = desc;
     }
 
