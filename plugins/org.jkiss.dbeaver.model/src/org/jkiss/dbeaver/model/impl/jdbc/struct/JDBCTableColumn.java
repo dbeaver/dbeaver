@@ -100,7 +100,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         super.setTypeName(typeName);
         final DBPDataSource dataSource = getDataSource();
         if (dataSource instanceof DBPDataTypeProvider) {
-            DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getDataType(typeName);
+            DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
             if (dataType != null) {
                 this.valueType = dataType.getTypeID();
             }
@@ -158,7 +158,7 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         {
             Set<String> typeNames = new TreeSet<>();
             if (column.getDataSource() instanceof DBPDataTypeProvider) {
-                for (DBSDataType type : ((DBPDataTypeProvider) column.getDataSource()).getDataTypes()) {
+                for (DBSDataType type : ((DBPDataTypeProvider) column.getDataSource()).getLocalDataTypes()) {
                     if (type.getDataKind() != DBPDataKind.UNKNOWN && !CommonUtils.isEmpty(type.getName()) && Character.isLetter(type.getName().charAt(0))) {
                         typeNames.add(type.getName());
                     }

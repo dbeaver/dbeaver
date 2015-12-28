@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -35,7 +36,7 @@ public class PostgreUtils {
 
     static final Log log = Log.getLog(PostgreUtils.class);
 
-    public static String getObjectComment(DBRProgressMonitor monitor, GenericDataSource dataSource, String schema, String object)
+    public static String getObjectComment(DBRProgressMonitor monitor, DBPDataSource dataSource, String schema, String object)
         throws DBException
     {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {

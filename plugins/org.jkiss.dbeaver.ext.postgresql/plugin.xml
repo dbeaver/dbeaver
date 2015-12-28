@@ -72,13 +72,16 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences">
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType" label="%tree.types.node.name" icon="#data_types" description="Data types">
+                            <items label="%tree.type.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                        </folder>
                     </items>
                 </items>
             </tree>
 
             <drivers managable="true">
 
-                <!--driver
+                <driver
                     id="postgres-jdbc"
                     label="PostgreSQL"
                     icon="icons/postgresql_icon.png"
@@ -88,7 +91,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
-                </driver-->
+                </driver>
             </drivers>
 
             <views>

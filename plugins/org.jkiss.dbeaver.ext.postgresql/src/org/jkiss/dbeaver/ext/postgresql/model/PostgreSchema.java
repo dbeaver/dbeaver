@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -281,13 +282,18 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return dataTypeCache.getObject(monitor, this, typeFullName);
     }
 
+    @Property
+    public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
+        return dataTypeCache.getAllObjects(monitor, this);
+    }
+
     @Override
-    public Collection<? extends DBSDataType> getDataTypes() {
+    public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getDataType(String typeName) {
+    public DBSDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
@@ -314,7 +320,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected PostgreClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull ResultSet dbResult)
+        protected PostgreClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
@@ -548,7 +554,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected PostgreProcedure fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull ResultSet dbResult)
+        protected PostgreProcedure fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new PostgreProcedure(PostgreSchema.this, dbResult);
@@ -618,7 +624,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull ResultSet dbResult)
+        protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");

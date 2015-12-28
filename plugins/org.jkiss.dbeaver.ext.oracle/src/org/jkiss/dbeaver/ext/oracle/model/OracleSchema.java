@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -384,7 +385,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, "OBJECT_TYPE");
@@ -659,7 +660,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet resultSet) throws SQLException
+        protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException
         {
             return new OracleDataType(owner, resultSet);
         }
@@ -679,7 +680,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSequence(owner, resultSet);
         }
@@ -704,7 +705,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleProcedureStandalone fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleProcedureStandalone fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleProcedureStandalone(owner, dbResult);
@@ -725,7 +726,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OraclePackage(owner, dbResult);
@@ -751,7 +752,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleSynonym fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleSynonym fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSynonym(owner, resultSet);
         }
@@ -771,7 +772,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleMaterializedView fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleMaterializedView fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleMaterializedView(owner, dbResult);
@@ -793,7 +794,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleDBLink fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleDBLink fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleDBLink(session.getProgressMonitor(), owner, dbResult);
@@ -834,7 +835,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleTrigger fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             OracleTableBase table = null;
             String tableName = JDBCUtils.safeGetString(resultSet, "TABLE_NAME");
@@ -897,7 +898,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleJavaClass fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleJavaClass fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleJavaClass(owner, dbResult);
@@ -923,7 +924,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected OracleRecycledObject fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull ResultSet dbResult)
+        protected OracleRecycledObject fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleRecycledObject(owner, dbResult);

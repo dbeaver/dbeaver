@@ -76,7 +76,7 @@ public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements D
         assert typeName != null;
         setTypeName(typeName);
         //setValueType(PostgreUtils.typeNameToValueType(typeName));
-        DBSDataType dataType = getDataSource().getDataType(typeName);
+        DBSDataType dataType = getDataSource().getLocalDataType(typeName);
         this.charLength = JDBCUtils.safeGetLong(dbResult, PostgreConstants.COL_CHARACTER_MAXIMUM_LENGTH);
         if (this.charLength <= 0) {
             if (dataType != null) {

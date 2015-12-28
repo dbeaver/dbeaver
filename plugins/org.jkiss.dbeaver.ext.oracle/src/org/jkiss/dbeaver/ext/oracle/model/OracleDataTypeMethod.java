@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -148,7 +149,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
         }
 
         @Override
-        protected OracleDataTypeMethodParameter fetchObject(@NotNull JDBCSession session, @NotNull OracleDataTypeMethod owner, @NotNull ResultSet resultSet) throws SQLException, DBException
+        protected OracleDataTypeMethodParameter fetchObject(@NotNull JDBCSession session, @NotNull OracleDataTypeMethod owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleDataTypeMethodParameter(
                 session.getProgressMonitor(),
