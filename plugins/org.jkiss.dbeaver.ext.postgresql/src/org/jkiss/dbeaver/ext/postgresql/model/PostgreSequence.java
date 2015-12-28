@@ -164,7 +164,7 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
 
     @Override
     public DBSEntityType getEntityType() {
-        return PostgreConstants.ENTITY_TYPE_SEQENCE;
+        return PostgreConstants.ENTITY_TYPE_SEQUENCE;
     }
 
     @Nullable
