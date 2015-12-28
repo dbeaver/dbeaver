@@ -688,12 +688,10 @@ public class PropertyTreeViewer extends TreeViewer {
                     final Object propertyValue = getPropertyValue(node);
                     if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
-                    } else if (propertyValue instanceof Boolean) {
-                        return "";//DBUtils.getBooleanString((Boolean) propertyValue);
                     } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
                         return "";
                     }
-                    return CommonUtils.toString(propertyValue);
+                    return ObjectViewerRenderer.getCellString(propertyValue);
                 } else {
                     return ""; //$NON-NLS-1$
                 }
