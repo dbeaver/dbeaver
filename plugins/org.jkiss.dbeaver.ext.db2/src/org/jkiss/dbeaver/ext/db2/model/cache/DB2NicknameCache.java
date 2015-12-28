@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
@@ -87,7 +86,7 @@ public final class DB2NicknameCache extends JDBCStructCache<DB2Schema, DB2Nickna
 
     @Override
     protected DB2TableColumn fetchChild(@NotNull JDBCSession session, @NotNull DB2Schema db2Schema, @NotNull DB2Nickname db2Nickname,
-        @NotNull ResultSet dbResult) throws SQLException, DBException
+        @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableColumn(session.getProgressMonitor(), db2Nickname, dbResult);
     }

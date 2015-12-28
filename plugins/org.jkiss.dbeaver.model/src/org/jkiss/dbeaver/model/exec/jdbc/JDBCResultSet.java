@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.sql.ResultSet;
 
@@ -25,6 +26,8 @@ import java.sql.ResultSet;
  * JDBC statement
  */
 public interface JDBCResultSet extends ResultSet, DBCResultSet {
+
+    JDBCSession getSession();
 
     @Override
     JDBCStatement getSourceStatement();
