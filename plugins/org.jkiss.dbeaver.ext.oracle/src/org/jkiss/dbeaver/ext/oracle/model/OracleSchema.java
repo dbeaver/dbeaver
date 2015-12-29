@@ -447,6 +447,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "CONSTRAINT_NAME");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTableBase forTable)
             throws SQLException
@@ -472,6 +473,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected OracleTableConstraint fetchObject(JDBCSession session, OracleSchema owner, OracleTableBase parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
@@ -479,17 +481,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return new OracleTableConstraint(parent, dbResult);
         }
 
+        @Nullable
         @Override
-        protected OracleTableConstraintColumn fetchObjectRow(
+        protected OracleTableConstraintColumn[] fetchObjectRow(
             JDBCSession session,
             OracleTableBase parent, OracleTableConstraint object, ResultSet dbResult)
             throws SQLException, DBException
         {
             final OracleTableColumn tableColumn = getTableColumn(session, parent, dbResult);
-            return tableColumn == null ? null : new OracleTableConstraintColumn(
+            return tableColumn == null ? null : new OracleTableConstraintColumn[] { new OracleTableConstraintColumn(
                 object,
                 tableColumn,
-                JDBCUtils.safeGetInt(dbResult, "POSITION"));
+                JDBCUtils.safeGetInt(dbResult, "POSITION")) };
         }
 
         @Override
@@ -516,6 +519,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super.loadObjects(monitor, schema, forParent);
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTable forTable)
             throws SQLException
@@ -542,6 +546,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected OracleTableForeignKey fetchObject(JDBCSession session, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
@@ -549,17 +554,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return new OracleTableForeignKey(session.getProgressMonitor(), parent, dbResult);
         }
 
+        @Nullable
         @Override
-        protected OracleTableForeignKeyColumn fetchObjectRow(
+        protected OracleTableForeignKeyColumn[] fetchObjectRow(
             JDBCSession session,
             OracleTable parent, OracleTableForeignKey object, ResultSet dbResult)
             throws SQLException, DBException
         {
             OracleTableColumn column = getTableColumn(session, parent, dbResult);
-            return column == null ? null : new OracleTableForeignKeyColumn(
+            return column == null ? null : new OracleTableForeignKeyColumn[] { new OracleTableForeignKeyColumn(
                 object,
                 column,
-                JDBCUtils.safeGetInt(dbResult, "POSITION"));
+                JDBCUtils.safeGetInt(dbResult, "POSITION")) };
         }
 
         @Override
@@ -580,6 +586,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             super(tableCache, OracleTablePhysical.class, "TABLE_NAME", "INDEX_NAME");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, OracleSchema owner, OracleTablePhysical forTable)
             throws SQLException
@@ -609,6 +616,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
@@ -616,8 +624,9 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             return new OracleTableIndex(owner, parent, indexName, dbResult);
         }
 
+        @Nullable
         @Override
-        protected OracleTableIndexColumn fetchObjectRow(
+        protected OracleTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
             OracleTablePhysical parent, OracleTableIndex object, ResultSet dbResult)
             throws SQLException, DBException
@@ -632,11 +641,11 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 return null;
             }
 
-            return new OracleTableIndexColumn(
+            return new OracleTableIndexColumn[] { new OracleTableIndexColumn(
                 object,
                 tableColumn,
                 ordinalPosition,
-                isAscending);
+                isAscending) };
         }
 
         @Override

@@ -378,6 +378,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             super(classCache, PostgreTableBase.class, "tabrelname", "relname");
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema owner, PostgreTableBase forTable)
             throws SQLException
@@ -403,6 +404,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected PostgreIndex fetchObject(JDBCSession session, PostgreSchema owner, PostgreTableBase parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
@@ -427,8 +429,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 dbResult);
         }
 
+        @Nullable
         @Override
-        protected PostgreIndexColumn fetchObjectRow(
+        protected PostgreIndexColumn[] fetchObjectRow(
             JDBCSession session,
             PostgreTableBase parent, PostgreIndex object, ResultSet dbResult)
             throws SQLException, DBException
@@ -444,12 +447,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 return null;
             }
 
-            return new PostgreIndexColumn(
+            return new PostgreIndexColumn[] { new PostgreIndexColumn(
                 object,
                 tableColumn,
                 ordinalPosition,
                 "A".equalsIgnoreCase(ascOrDesc),
-                nullable);
+                nullable) };
         }
 
         @Override

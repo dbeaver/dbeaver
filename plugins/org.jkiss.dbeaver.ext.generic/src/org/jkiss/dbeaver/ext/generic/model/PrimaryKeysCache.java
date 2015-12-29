@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -52,6 +53,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         pkObject = tableCache.getDataSource().getMetaObject(GenericConstants.OBJECT_PRIMARY_KEY);
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
@@ -78,6 +80,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return parentName.toUpperCase(Locale.ENGLISH) + "_PK";
     }
 
+    @Nullable
     @Override
     protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
         throws SQLException, DBException
@@ -92,7 +95,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericTableConstraintColumn fetchObjectRow(
+    protected GenericTableConstraintColumn[] fetchObjectRow(
         JDBCSession session,
         GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
         throws SQLException, DBException
@@ -115,7 +118,8 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
 
-        return new GenericTableConstraintColumn(object, tableColumn, keySeq);
+        return new GenericTableConstraintColumn[] {
+            new GenericTableConstraintColumn(object, tableColumn, keySeq) };
     }
 
     @Override

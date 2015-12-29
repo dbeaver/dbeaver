@@ -18,6 +18,8 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.cache;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
@@ -87,6 +89,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         super(tableCache, DB2Table.class, "TABNAME", "CONSTNAME");
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, DB2Schema db2Schema, DB2Table forTable)
         throws SQLException
@@ -105,6 +108,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         return dbStat;
     }
 
+    @Nullable
     @Override
     protected DB2TableUniqueKey fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, String indexName,
         ResultSet dbResult) throws SQLException, DBException
@@ -114,9 +118,10 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
         return new DB2TableUniqueKey(session.getProgressMonitor(), db2Table, dbResult, type);
     }
 
+    @Nullable
     @Override
-    protected DB2TableKeyColumn fetchObjectRow(JDBCSession session, DB2Table db2Table, DB2TableUniqueKey object,
-        ResultSet dbResult) throws SQLException, DBException
+    protected DB2TableKeyColumn[] fetchObjectRow(JDBCSession session, DB2Table db2Table, DB2TableUniqueKey object,
+                                                 ResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");
@@ -125,7 +130,8 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
             log.debug("Column '" + colName + "' not found in table '" + db2Table.getFullQualifiedName() + "' ??");
             return null;
         } else {
-            return new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ"));
+            return new DB2TableKeyColumn[] {
+                new DB2TableKeyColumn(object, tableColumn, JDBCUtils.safeGetInt(dbResult, "COLSEQ")) };
         }
     }
 

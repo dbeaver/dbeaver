@@ -75,6 +75,7 @@ public abstract class JDBCCompositeCache<
         this.objectColumnName = objectColumnName;
     }
 
+    @NotNull
     abstract protected JDBCStatement prepareObjectsStatement(JDBCSession session, OWNER owner, PARENT forParent)
         throws SQLException;
 
@@ -83,7 +84,7 @@ public abstract class JDBCCompositeCache<
         throws SQLException, DBException;
 
     @Nullable
-    abstract protected ROW_REF fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, ResultSet resultSet)
+    abstract protected ROW_REF[] fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, ResultSet resultSet)
         throws SQLException, DBException;
 
     protected PARENT getParent(OBJECT object)
@@ -273,15 +274,15 @@ public abstract class JDBCCompositeCache<
                             objectInfo = new ObjectInfo(object);
                             objectMap.put(objectName, objectInfo);
                         }
-                        ROW_REF rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
-                        if (rowRef == null) {
+                        ROW_REF[] rowRef = fetchObjectRow(session, parent, objectInfo.object, dbResult);
+                        if (rowRef == null || rowRef.length == 0) {
                             // At least one of rows is broken.
                             // So entire object is broken, let's just skip it.
                             objectInfo.broken = true;
                             log.debug("Object '" + objectName + "' metadata corrupted - NULL child returned");
                             continue;
                         }
-                        objectInfo.rows.add(rowRef);
+                        Collections.addAll(objectInfo.rows, rowRef);
                     }
                 }
                 finally {
