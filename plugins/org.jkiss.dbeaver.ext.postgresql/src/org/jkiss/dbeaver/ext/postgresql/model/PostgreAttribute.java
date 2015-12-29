@@ -74,6 +74,7 @@ public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements D
             throw new DBException("Attribute data type '" + typeId + "' not found");
         }
         setTypeName(dataType.getTypeName());
+        setValueType(dataType.getTypeID());
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         int maxLength = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         if (maxLength >= 0) {
