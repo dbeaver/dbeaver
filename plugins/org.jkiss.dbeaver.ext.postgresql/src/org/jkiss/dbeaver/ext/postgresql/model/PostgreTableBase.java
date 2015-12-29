@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
@@ -102,13 +103,29 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return constraintCache.getAllObjects(monitor, this);
+        return constraintCache.getTypedObjects(monitor, this, DBSTableConstraint.class);
     }
 
-    public PostgreTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+    public PostgreTableConstraintBase getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
         return constraintCache.getObject(monitor, this, ukName);
+    }
+
+    @Override
+    @Association
+    public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return null;
+    }
+
+    @Association
+    @Override
+    public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return constraintCache.getTypedObjects(monitor, this, PostgreTableForeignKey.class);
     }
 
     @Override
@@ -123,7 +140,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     /**
      * Constraint cache implementation
      */
-    class ConstraintCache extends JDBCObjectCache<PostgreTableBase, PostgreTableConstraint> {
+    class ConstraintCache extends JDBCObjectCache<PostgreTableBase, PostgreTableConstraintBase> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreTableBase owner)
@@ -139,7 +156,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         }
 
         @Override
-        protected PostgreTableConstraint fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected PostgreTableConstraintBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "conname");
             return new PostgreTableConstraint(table, name, resultSet);
         }

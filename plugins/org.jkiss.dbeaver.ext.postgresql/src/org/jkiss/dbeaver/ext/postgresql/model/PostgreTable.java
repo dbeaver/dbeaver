@@ -127,36 +127,6 @@ public class PostgreTable extends PostgreTableBase
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
-    @Override
-    @Association
-    public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return loadForeignKeys(monitor, true);
-    }
-
-    @Override
-    public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (!foreignKeys.isCached()) {
-            List<PostgreTableForeignKey> fkList = loadForeignKeys(monitor, false);
-            foreignKeys.setCache(fkList);
-        }
-        return foreignKeys.getCachedObjects();
-    }
-
-    public PostgreTableForeignKey getAssociation(DBRProgressMonitor monitor, String fkName)
-        throws DBException
-    {
-        return DBUtils.findObject(getAssociations(monitor), fkName);
-    }
-
-    public DBSObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache()
-    {
-        return foreignKeys;
-    }
-
     @Association
     public Collection<PostgreTrigger> getTriggers(DBRProgressMonitor monitor)
         throws DBException
@@ -221,13 +191,6 @@ public class PostgreTable extends PostgreTableBase
             throw new DBCException(e, dataSource);
         }
 */
-    }
-
-    private List<PostgreTableForeignKey> loadForeignKeys(DBRProgressMonitor monitor, boolean references)
-        throws DBException
-    {
-        List<PostgreTableForeignKey> fkList = new ArrayList<>();
-        return fkList;
     }
 
     @Override

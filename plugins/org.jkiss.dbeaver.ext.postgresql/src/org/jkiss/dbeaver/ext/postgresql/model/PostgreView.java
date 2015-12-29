@@ -34,8 +34,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
@@ -140,18 +138,6 @@ public class PostgreView extends PostgreTableBase
 
     @Override
     public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    @Override
-    public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
-    @Override
-    public List<? extends DBSTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
