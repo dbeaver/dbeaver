@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
@@ -128,7 +129,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     @Override
     protected GenericTableIndexColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableIndex object, ResultSet dbResult)
+        GenericTable parent, GenericTableIndex object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         int ordinalPosition = GenericUtils.safeGetInt(indexObject, dbResult, JDBCConstants.ORDINAL_POSITION);

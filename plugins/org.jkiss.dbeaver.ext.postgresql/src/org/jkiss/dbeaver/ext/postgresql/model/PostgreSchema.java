@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -40,12 +41,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Array;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -257,6 +258,10 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             monitor.subTask("Cache table columns");
             classCache.loadChildren(monitor, this, null);
         }
+        if ((scope & STRUCT_ASSOCIATIONS) != 0) {
+            monitor.subTask("Cache constraints");
+            indexCache.getAllObjects(monitor, this);
+        }
     }
 
     @Override
@@ -385,13 +390,16 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.*,c.relname,c.relnamespace,tc.relname as tabrelname" +
-                "\nFROM pg_catalog.pg_index i,pg_catalog.pg_class c,pg_catalog.pg_class tc" +
-                "\nWHERE c.oid=i.indexrelid AND tc.oid=i.indrelid");
+                "SELECT i.*,i.indkey::int[] as keys,c.relname,c.relnamespace,tc.relname as tabrelname,dsc.description" +
+                "\nFROM pg_catalog.pg_index i" +
+                "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +
+                "\nINNER JOIN pg_catalog.pg_class tc ON tc.oid=i.indrelid" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON i.indexrelid=dsc.objoid" +
+                "\nWHERE ");
             if (forTable != null) {
-                sql.append(" AND i.indrelid=?");
+                sql.append(" i.indrelid=?");
             } else {
-                sql.append(" AND c.relnamespace=?");
+                sql.append(" c.relnamespace=?");
             }
             sql.append(" ORDER BY c.relname");
 
@@ -409,23 +417,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected PostgreIndex fetchObject(JDBCSession session, PostgreSchema owner, PostgreTableBase parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
-            String indexTypeName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_INDEX_TYPE);
-            DBSIndexType indexType;
-            if (PostgreConstants.INDEX_TYPE_BTREE.getId().equals(indexTypeName)) {
-                indexType = PostgreConstants.INDEX_TYPE_BTREE;
-            } else if (PostgreConstants.INDEX_TYPE_FULLTEXT.getId().equals(indexTypeName)) {
-                indexType = PostgreConstants.INDEX_TYPE_FULLTEXT;
-            } else if (PostgreConstants.INDEX_TYPE_HASH.getId().equals(indexTypeName)) {
-                indexType = PostgreConstants.INDEX_TYPE_HASH;
-            } else if (PostgreConstants.INDEX_TYPE_RTREE.getId().equals(indexTypeName)) {
-                indexType = PostgreConstants.INDEX_TYPE_RTREE;
-            } else {
-                indexType = DBSIndexType.OTHER;
-            }
             return new PostgreIndex(
                 parent,
                 indexName,
-                indexType,
                 dbResult);
         }
 
@@ -433,26 +427,32 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         @Override
         protected PostgreIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            PostgreTableBase parent, PostgreIndex object, ResultSet dbResult)
+            PostgreTableBase parent, PostgreIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, PostgreConstants.COL_SEQ_IN_INDEX);
-            String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, PostgreConstants.COL_COLUMN_NAME);
-            String ascOrDesc = JDBCUtils.safeGetStringTrimmed(dbResult, PostgreConstants.COL_COLLATION);
-            boolean nullable = "YES".equals(JDBCUtils.safeGetStringTrimmed(dbResult, PostgreConstants.COL_NULLABLE));
-
-            PostgreAttribute tableColumn = parent.getAttribute(session.getProgressMonitor(), columnName);
-            if (tableColumn == null) {
-                log.debug("Column '" + columnName + "' not found in table '" + parent.getName() + "' for index '" + object.getName() + "'");
+            Object keyNumbers = JDBCUtils.safeGetArray(dbResult, "keys");
+            if (keyNumbers == null) {
                 return null;
             }
-
-            return new PostgreIndexColumn[] { new PostgreIndexColumn(
-                object,
-                tableColumn,
-                ordinalPosition,
-                "A".equalsIgnoreCase(ascOrDesc),
-                nullable) };
+            List<PostgreAttribute> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
+            assert attributes != null;
+            int colCount = Array.getLength(keyNumbers);
+            PostgreIndexColumn[] result = new PostgreIndexColumn[colCount];
+            for (int i = 0; i < colCount; i++) {
+                Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
+                if (colNumber.intValue() <= 0 || colNumber.intValue() > attributes.size()) {
+                    log.warn("Bad index attribute index: " + colNumber);
+                } else {
+                    PostgreIndexColumn col = new PostgreIndexColumn(
+                        object,
+                        attributes.get(colNumber.intValue() - 1),
+                        i,
+                        true,
+                        false);
+                    result[i] = col;
+                }
+            }
+            return result;
         }
 
         @Override

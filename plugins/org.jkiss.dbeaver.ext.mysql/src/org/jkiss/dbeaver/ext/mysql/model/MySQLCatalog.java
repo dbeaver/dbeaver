@@ -435,7 +435,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         @Override
         protected MySQLTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            MySQLTable parent, MySQLTableIndex object, ResultSet dbResult)
+            MySQLTable parent, MySQLTableIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SEQ_IN_INDEX);
@@ -513,7 +513,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         @Override
         protected MySQLTableConstraintColumn[] fetchObjectRow(
             JDBCSession session,
-            MySQLTable parent, MySQLTableConstraint object, ResultSet dbResult)
+            MySQLTable parent, MySQLTableConstraint object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_NAME);

@@ -485,7 +485,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         protected OracleTableConstraintColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTableBase parent, OracleTableConstraint object, ResultSet dbResult)
+            OracleTableBase parent, OracleTableConstraint object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final OracleTableColumn tableColumn = getTableColumn(session, parent, dbResult);
@@ -558,7 +558,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         protected OracleTableForeignKeyColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTable parent, OracleTableForeignKey object, ResultSet dbResult)
+            OracleTable parent, OracleTableForeignKey object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             OracleTableColumn column = getTableColumn(session, parent, dbResult);
@@ -628,7 +628,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         protected OracleTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
-            OracleTablePhysical parent, OracleTableIndex object, ResultSet dbResult)
+            OracleTablePhysical parent, OracleTableIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, "COLUMN_NAME");

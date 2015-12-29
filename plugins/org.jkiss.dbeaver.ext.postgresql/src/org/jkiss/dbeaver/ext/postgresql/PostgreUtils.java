@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * postgresql utils
  */
@@ -63,6 +66,29 @@ public class PostgreUtils {
             case ROWID: return "oid";
             default: return "varchar";
         }
+    }
+
+    private static Method getValueMethod;
+
+    public static <T> T extractValue(Object pgObject) {
+        if (pgObject == null) {
+            return null;
+        }
+        if (getValueMethod == null) {
+            try {
+                getValueMethod = pgObject.getClass().getMethod("getValue");
+            } catch (NoSuchMethodException e) {
+                log.debug(e);
+            }
+        }
+        if (getValueMethod != null) {
+            try {
+                return (T)getValueMethod.invoke(pgObject);
+            } catch (Exception e) {
+                log.debug(e);
+            }
+        }
+        return null;
     }
 
 }

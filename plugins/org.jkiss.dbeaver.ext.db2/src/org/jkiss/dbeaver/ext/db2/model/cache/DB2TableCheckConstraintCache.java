@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraintColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableCheckConstraintColUsage;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -117,7 +118,7 @@ public final class DB2TableCheckConstraintCache extends
     @Nullable
     @Override
     protected DB2TableCheckConstraintColumn[] fetchObjectRow(JDBCSession session, DB2Table db2Table,
-                                                             DB2TableCheckConstraint object, ResultSet dbResult) throws SQLException, DBException
+                                                             DB2TableCheckConstraint object, JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");

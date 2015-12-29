@@ -162,7 +162,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     @Override
     protected GenericTableForeignKeyColumnTable[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericTableForeignKey foreignKey, ResultSet dbResult)
+        GenericTable parent, GenericTableForeignKey foreignKey, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);

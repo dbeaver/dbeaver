@@ -84,7 +84,7 @@ public abstract class JDBCCompositeCache<
         throws SQLException, DBException;
 
     @Nullable
-    abstract protected ROW_REF[] fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, ResultSet resultSet)
+    abstract protected ROW_REF[] fetchObjectRow(JDBCSession session, PARENT parent, OBJECT forObject, JDBCResultSet resultSet)
         throws SQLException, DBException;
 
     protected PARENT getParent(OBJECT object)
