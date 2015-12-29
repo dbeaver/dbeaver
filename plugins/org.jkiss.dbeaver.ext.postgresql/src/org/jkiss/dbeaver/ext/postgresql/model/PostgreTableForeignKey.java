@@ -25,14 +25,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -44,6 +43,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     private DBSForeignKeyModifyRule deleteRule;
     private DBSEntityConstraint refConstraint;
     private final List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
+    private final PostgreTableBase refTable;
 
     public PostgreTableForeignKey(
         PostgreTableBase table,
@@ -56,39 +56,13 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
         final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
         final int refTableId = JDBCUtils.safeGetInt(resultSet, "confrelid");
-        PostgreTableBase refTable = table.getDatabase().findTable(
+        refTable = table.getDatabase().findTable(
             monitor,
             table.getSchema().getObjectId(),
             refTableId);
         if (refTable == null) {
             log.warn("Reference table " + refTableId + " not found");
             return;
-        }
-        Object keyNumbers = JDBCUtils.safeGetArray(resultSet, "conkey");
-        Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
-        if (keyNumbers != null && keyRefNumbers != null) {
-            List<PostgreAttribute> attributes = table.getAttributes(monitor);
-            List<PostgreAttribute> refAttributes = refTable.getAttributes(monitor);
-            List<PostgreAttribute> matchedRefAttributes = new ArrayList<>();
-            assert attributes != null && refAttributes != null;
-            int colCount = Array.getLength(keyNumbers);
-            for (int i = 0; i < colCount; i++) {
-                Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
-                Number colRefNumber = (Number) Array.get(keyRefNumbers, i);
-                if (colNumber.intValue() <= 0 || colNumber.intValue() > attributes.size()) {
-                    log.warn("Bad constraint attribute index: " + colNumber);
-                } else {
-                    PostgreAttribute attr = attributes.get(colNumber.intValue() - 1);
-                    PostgreAttribute refAttr = refAttributes.get(colRefNumber.intValue() - 1);
-                    PostgreTableForeignKeyColumn cCol = new PostgreTableForeignKeyColumn(this, attr, i, refAttr);
-                    columns.add(cCol);
-                    matchedRefAttributes.add(refAttr);
-                }
-            }
-            refConstraint = DBUtils.findEntityConstraint(monitor, refTable, matchedRefAttributes);
-            if (refConstraint == null) {
-                log.warn("Can't find reference constraint for foreign key '" + getFullQualifiedName() + "'");
-            }
         }
     }
 
@@ -108,8 +82,8 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     @Override
     @Property(viewable = true)
-    public DBSEntity getAssociatedEntity() {
-        return refConstraint == null ? null : refConstraint.getParentObject();
+    public PostgreTableBase getAssociatedEntity() {
+        return refTable;
     }
 
     @NotNull
@@ -138,4 +112,21 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     public List<PostgreTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
+
+    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children) {
+        columns.clear();
+        columns.addAll((Collection<? extends PostgreTableForeignKeyColumn>) children);
+
+        final List<PostgreAttribute> lst = new ArrayList<>(children.size());
+        for (PostgreTableConstraintColumn c : children) lst.add(((PostgreTableForeignKeyColumn)c).getReferencedColumn());
+        try {
+            refConstraint = DBUtils.findEntityConstraint(monitor, refTable, lst);
+        } catch (DBException e) {
+            log.error("Error finding reference constraint", e);
+        }
+        if (refConstraint == null) {
+            log.warn("Can't find reference constraint for foreign key '" + getFullQualifiedName() + "'");
+        }
+    }
+
 }

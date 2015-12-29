@@ -20,24 +20,15 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -49,7 +40,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     static final Log log = Log.getLog(PostgreTableBase.class);
 
     private int oid;
-    private ConstraintCache constraintCache = new ConstraintCache();
+    //private ConstraintCache constraintCache = new ConstraintCache();
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -112,14 +103,14 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return constraintCache.getTypedObjects(monitor, this, PostgreTableConstraint.class);
+    public Collection<PostgreTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
     }
 
     public PostgreTableConstraintBase getConstraint(DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return constraintCache.getObject(monitor, this, ukName);
+        return getSchema().constraintCache.getObject(monitor, getSchema(), this, ukName);
     }
 
     @Override
@@ -135,21 +126,21 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
-        return constraintCache.getTypedObjects(monitor, this, PostgreTableForeignKey.class);
+        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
 
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().classCache.clearChildrenCache(this);
-        constraintCache.clearCache();
+        getContainer().constraintCache.clearObjectCache(this);
 
         return true;
     }
 
     /**
      * Constraint cache implementation
-     */
+     *
     class ConstraintCache extends JDBCObjectCache<PostgreTableBase, PostgreTableConstraintBase> {
 
         @Override
@@ -192,5 +183,5 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             }
         }
     }
-
+     */
 }

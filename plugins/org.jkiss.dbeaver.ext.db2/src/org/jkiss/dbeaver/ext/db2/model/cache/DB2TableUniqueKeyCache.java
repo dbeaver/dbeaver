@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -112,7 +112,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     @Nullable
     @Override
     protected DB2TableUniqueKey fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table, String indexName,
-        ResultSet dbResult) throws SQLException, DBException
+        JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         DBSEntityConstraintType type = DB2ConstraintType.getConstraintType(JDBCUtils.safeGetString(dbResult, "TYPE"));
@@ -137,7 +137,7 @@ public final class DB2TableUniqueKeyCache extends JDBCCompositeCache<DB2Schema, 
     }
 
     @Override
-    protected void cacheChildren(DB2TableUniqueKey constraint, List<DB2TableKeyColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableUniqueKey constraint, List<DB2TableKeyColumn> rows)
     {
         constraint.setColumns(rows);
     }

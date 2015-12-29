@@ -33,9 +33,9 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -109,7 +109,7 @@ public final class DB2TableCheckConstraintCache extends
     @Nullable
     @Override
     protected DB2TableCheckConstraint fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table,
-        String indexName, ResultSet dbResult) throws SQLException, DBException
+        String indexName, JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         return new DB2TableCheckConstraint(session.getProgressMonitor(), db2Table, dbResult);
@@ -134,7 +134,7 @@ public final class DB2TableCheckConstraintCache extends
     }
 
     @Override
-    protected void cacheChildren(DB2TableCheckConstraint constraint, List<DB2TableCheckConstraintColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableCheckConstraint constraint, List<DB2TableCheckConstraintColumn> rows)
     {
         constraint.setColumns(rows);
     }

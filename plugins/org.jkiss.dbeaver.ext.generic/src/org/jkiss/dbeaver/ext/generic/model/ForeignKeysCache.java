@@ -29,13 +29,13 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -78,7 +78,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String fkName, ResultSet dbResult)
+    protected GenericTableForeignKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String fkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String pkTableCatalog = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKTABLE_CAT);
@@ -192,7 +192,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     @Override
-    protected void cacheChildren(GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
         foreignKey.setColumns(rows);
     }

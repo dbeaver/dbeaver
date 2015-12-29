@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
@@ -82,7 +82,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
 
     @Nullable
     @Override
-    protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String pkName, ResultSet dbResult)
+    protected GenericPrimaryKey fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String pkName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         return new GenericPrimaryKey(
@@ -123,7 +123,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     }
 
     @Override
-    protected void cacheChildren(GenericPrimaryKey primaryKey, List<GenericTableConstraintColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericPrimaryKey primaryKey, List<GenericTableConstraintColumn> rows)
     {
         primaryKey.setColumns(rows);
     }

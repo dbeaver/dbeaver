@@ -28,11 +28,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Locale;
@@ -82,7 +82,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
 
     @Nullable
     @Override
-    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, ResultSet dbResult)
+    protected GenericTableIndex fetchObject(JDBCSession session, GenericStructContainer owner, GenericTable parent, String indexName, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         boolean isNonUnique = GenericUtils.safeGetBoolean(indexObject, dbResult, JDBCConstants.NON_UNIQUE);
@@ -154,7 +154,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
     }
 
     @Override
-    protected void cacheChildren(GenericTableIndex index, List<GenericTableIndexColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, GenericTableIndex index, List<GenericTableIndexColumn> rows)
     {
         index.setColumns(rows);
     }
