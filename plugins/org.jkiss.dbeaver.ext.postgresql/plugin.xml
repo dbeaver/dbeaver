@@ -73,7 +73,11 @@
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType" label="%tree.types.node.name" icon="#data_types" description="Data types">
-                            <items label="%tree.type.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
+                            <items label="%tree.type.node.name" path="dataType" property="dataTypes" icon="#data_type">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.attributes.node.name" icon="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
+                                    <items label="%tree.attribute.node.name" path="attribute" property="attributes" icon="#attribute"/>
+                                </folder>
+                            </items>
                         </folder>
                     </items>
                 </items>

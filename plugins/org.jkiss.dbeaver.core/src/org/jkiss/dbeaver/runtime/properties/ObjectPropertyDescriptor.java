@@ -298,7 +298,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 }
                 if (result == null) {
                     if (type.equals(Property.RESOURCE_TYPE_NAME)) {
-                        log.warn("Resource '" + messageID + "' not found in bundle " + bundle.getSymbolicName());
+                        log.debug("Resource '" + messageID + "' not found in bundle " + bundle.getSymbolicName());
                     }
                     return defaultValue;
                 }

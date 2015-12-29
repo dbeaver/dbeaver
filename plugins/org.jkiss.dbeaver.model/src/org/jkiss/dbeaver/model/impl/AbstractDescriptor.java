@@ -191,6 +191,7 @@ public abstract class AbstractDescriptor {
     }
 
     private String pluginId;
+    private Bundle originBundle;
 
     protected AbstractDescriptor(IConfigurationElement contributorConfig)
     {
@@ -209,7 +210,10 @@ public abstract class AbstractDescriptor {
 
     public Bundle getContributorBundle()
     {
-        return Platform.getBundle(pluginId);
+        if (originBundle == null) {
+            originBundle = Platform.getBundle(pluginId);
+        }
+        return originBundle;
     }
 
     protected DBPImage iconToImage(String icon)

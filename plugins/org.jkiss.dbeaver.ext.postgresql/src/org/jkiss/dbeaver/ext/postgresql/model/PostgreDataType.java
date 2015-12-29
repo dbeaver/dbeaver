@@ -20,20 +20,30 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Collection;
 
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreObject
+public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass
 {
     static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -81,6 +91,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private int collationId;
     private String defaultValue;
 
+    private final AttributeCache attributeCache;
+
     public PostgreDataType(@NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) {
         super(owner, valueType, name, null, false, true, length, -1, -1);
 
@@ -120,6 +132,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims");
         this.collationId = JDBCUtils.safeGetInt(dbResult, "typcollation");
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
+
+        this.attributeCache = hasAttributes() ? new AttributeCache() : null;
+    }
+
+    @Override
+    public PostgreDataSource getDataSource() {
+        return (PostgreDataSource) super.getDataSource();
     }
 
     @NotNull
@@ -248,6 +267,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return arrayDim;
     }
 
+    public boolean hasAttributes() {
+        return typeType == PostgreTypeType.c && classId >= 0;
+    }
+
     private PostgreDataType resolveType(int typeId) {
         if (typeId <= 0) {
             return null;
@@ -358,4 +381,65 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             typeLength,
             dbResult);
     }
+
+    @Override
+    public DBSEntityType getEntityType() {
+        return DBSEntityType.TYPE;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+        return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+        return attributeCache == null ? null : attributeCache.getObject(monitor, this, attributeName);
+    }
+
+    @Override
+    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (attributeCache != null) {
+            attributeCache.clearCache();
+        }
+        return true;
+    }
+
+    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreAttribute> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid) as def_value,dsc.description" +
+                "\nFROM pg_catalog.pg_attribute a" +
+                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+                "\nWHERE a.attnum > 0 AND NOT a.attisdropped AND c.oid=?" +
+                "\nORDER BY a.attnum");
+            dbStat.setInt(1, postgreDataType.classId);
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new PostgreAttribute(postgreDataType, resultSet);
+        }
+    }
+
 }
