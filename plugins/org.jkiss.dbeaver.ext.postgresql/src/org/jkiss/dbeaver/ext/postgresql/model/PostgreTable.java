@@ -47,8 +47,6 @@ import java.util.*;
 public class PostgreTable extends PostgreTableBase
 {
 
-    private static final String INNODB_COMMENT = "InnoDB free";
-
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private long rowCount;
@@ -116,15 +114,6 @@ public class PostgreTable extends PostgreTableBase
     public boolean isView()
     {
         return false;
-    }
-
-    @Override
-    @Association
-    public synchronized Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        // Read indexes using cache
-        return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
     @Association

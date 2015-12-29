@@ -114,7 +114,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 
     @NotNull
     @Override
-    @Property(viewable = true)
+    @Property(id = "reference", viewable = true)
     public DBSEntityConstraint getReferencedConstraint() {
         return refConstraint;
     }

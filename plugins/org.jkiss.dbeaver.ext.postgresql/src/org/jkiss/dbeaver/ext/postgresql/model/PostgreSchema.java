@@ -372,35 +372,39 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     /**
      * Index cache implementation
      */
-    class IndexCache extends JDBCCompositeCache<PostgreSchema, PostgreTable, PostgreIndex, PostgreIndexColumn> {
+    class IndexCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreIndex, PostgreIndexColumn> {
         protected IndexCache()
         {
-            super(classCache, PostgreTable.class, PostgreConstants.COL_TABLE_NAME, PostgreConstants.COL_INDEX_NAME);
+            super(classCache, PostgreTableBase.class, "tabrelname", "relname");
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema owner, PostgreTable forTable)
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema owner, PostgreTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql
-                .append("SELECT * FROM ").append(PostgreConstants.META_TABLE_STATISTICS)
-                .append(" WHERE ").append(PostgreConstants.COL_TABLE_SCHEMA).append("=?");
+            sql.append(
+                "SELECT i.*,c.relname,c.relnamespace,tc.relname as tabrelname" +
+                "\nFROM pg_catalog.pg_index i,pg_catalog.pg_class c,pg_catalog.pg_class tc" +
+                "\nWHERE c.oid=i.indexrelid AND tc.oid=i.indrelid");
             if (forTable != null) {
-                sql.append(" AND ").append(PostgreConstants.COL_TABLE_NAME).append("=?");
+                sql.append(" AND i.indrelid=?");
+            } else {
+                sql.append(" AND c.relnamespace=?");
             }
-            sql.append(" ORDER BY ").append(PostgreConstants.COL_INDEX_NAME).append(",").append(PostgreConstants.COL_SEQ_IN_INDEX);
+            sql.append(" ORDER BY c.relname");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, PostgreSchema.this.getName());
             if (forTable != null) {
-                dbStat.setString(2, forTable.getName());
+                dbStat.setInt(1, forTable.getObjectId());
+            } else {
+                dbStat.setInt(1, PostgreSchema.this.getObjectId());
             }
             return dbStat;
         }
 
         @Override
-        protected PostgreIndex fetchObject(JDBCSession session, PostgreSchema owner, PostgreTable parent, String indexName, ResultSet dbResult)
+        protected PostgreIndex fetchObject(JDBCSession session, PostgreSchema owner, PostgreTableBase parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_INDEX_TYPE);
@@ -426,7 +430,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         @Override
         protected PostgreIndexColumn fetchObjectRow(
             JDBCSession session,
-            PostgreTable parent, PostgreIndex object, ResultSet dbResult)
+            PostgreTableBase parent, PostgreIndex object, ResultSet dbResult)
             throws SQLException, DBException
         {
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, PostgreConstants.COL_SEQ_IN_INDEX);

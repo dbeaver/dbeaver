@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase>
 {
     private boolean nonUnique;
     private String additionalInfo;
@@ -80,7 +80,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTable>
         }
     }
 
-    public PostgreIndex(PostgreTable parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
+    public PostgreIndex(PostgreTableBase parent, String indexName, DBSIndexType indexType, ResultSet dbResult) {
         super(
             parent.getContainer(),
             parent,
