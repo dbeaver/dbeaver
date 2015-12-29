@@ -29,7 +29,7 @@ import java.util.List;
 /**
  * PostgreTableForeignKey
  */
-public class PostgreTableForeignKey extends JDBCTableForeignKey<PostgreTable, PostgreTableConstraint>
+public class PostgreTableForeignKey extends JDBCTableForeignKey<PostgreTableBase, PostgreTableConstraint>
 {
     private List<PostgreTableForeignKeyColumnTable> columns;
 

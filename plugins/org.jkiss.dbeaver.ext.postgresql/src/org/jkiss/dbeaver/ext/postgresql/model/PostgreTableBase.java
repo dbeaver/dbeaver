@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * PostgreTable base
@@ -86,7 +87,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgreAttribute> getAttributes(DBRProgressMonitor monitor)
+    public List<PostgreAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().classCache.getChildren(monitor, getContainer(), this);

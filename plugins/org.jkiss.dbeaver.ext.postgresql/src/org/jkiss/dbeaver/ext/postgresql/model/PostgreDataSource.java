@@ -365,8 +365,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
         {
             StringBuilder catalogQuery = new StringBuilder(
-                "select db.oid,db.*\n" +
-                "from pg_catalog.pg_database db where datistemplate=false AND datallowconn=true");
+                "SELECT db.oid,db.*\n" +
+                "\nFROM pg_catalog.pg_database db where NOT datistemplate AND datallowconn" +
+                "\nORDER BY db.datname");
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
