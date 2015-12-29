@@ -23,11 +23,11 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 /**
  * GenericConstraintColumn
  */
-public class PostgreTableForeignKeyColumnTable extends PostgreTableConstraintColumn implements DBSTableForeignKeyColumn
+public class PostgreTableForeignKeyColumn extends PostgreTableConstraintColumn implements DBSTableForeignKeyColumn
 {
     private PostgreAttribute referencedColumn;
 
-    public PostgreTableForeignKeyColumnTable(
+    public PostgreTableForeignKeyColumn(
         PostgreTableForeignKey constraint,
         PostgreAttribute tableColumn,
         int ordinalPosition,
