@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,23 +34,12 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
     public PostgreTableConstraint(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, constraintType, resultSet);
+    }
 
-        Object keyNumbers = JDBCUtils.safeGetArray(resultSet, "conkey");
-        if (keyNumbers != null) {
-            List<PostgreAttribute> attributes = table.getAttributes(resultSet.getSession().getProgressMonitor());
-            assert attributes != null;
-            int colCount = Array.getLength(keyNumbers);
-            for (int i = 0; i < colCount; i++) {
-                Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
-                if (colNumber.intValue() <= 0 || colNumber.intValue() > attributes.size()) {
-                    log.warn("Bad constraint attribute index: " + colNumber);
-                } else {
-                    PostgreAttribute attr = attributes.get(colNumber.intValue() - 1);
-                    PostgreTableConstraintColumn cCol = new PostgreTableConstraintColumn(this, attr, i);
-                    columns.add(cCol);
-                }
-            }
-        }
+    @Override
+    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children) {
+        columns.clear();
+        columns.addAll(children);
     }
 
     @Override

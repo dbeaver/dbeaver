@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -80,7 +79,7 @@ public abstract class JDBCCompositeCache<
         throws SQLException;
 
     @Nullable
-    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, ResultSet resultSet)
+    abstract protected OBJECT fetchObject(JDBCSession session, OWNER owner, PARENT parent, String childName, JDBCResultSet resultSet)
         throws SQLException, DBException;
 
     @Nullable
@@ -92,7 +91,7 @@ public abstract class JDBCCompositeCache<
         return (PARENT) object.getParentObject();
     }
 
-    abstract protected void cacheChildren(OBJECT object, List<ROW_REF> children);
+    abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children);
 
     @NotNull
     @Override
@@ -107,6 +106,18 @@ public abstract class JDBCCompositeCache<
     {
         loadObjects(monitor, owner, forParent);
         return getCachedObjects(forParent);
+    }
+
+    public <TYPE extends OBJECT> Collection<TYPE > getTypedObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+        throws DBException
+    {
+        List<TYPE> result = new ArrayList<>();
+        for (OBJECT object : getObjects(monitor, owner, forParent)) {
+            if (type.isInstance(object)) {
+                result.add(type.cast(object));
+            }
+        }
+        return result;
     }
 
     public Collection<OBJECT> getCachedObjects(PARENT forParent)
@@ -340,7 +351,7 @@ public abstract class JDBCCompositeCache<
                     ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
                     for (ObjectInfo objectInfo : objectInfos) {
 //                        if (!objectInfo.broken) {
-                            cacheChildren(objectInfo.object, objectInfo.rows);
+                            cacheChildren(monitor, objectInfo.object, objectInfo.rows);
                             objects.add(objectInfo.object);
 //                        }
                     }

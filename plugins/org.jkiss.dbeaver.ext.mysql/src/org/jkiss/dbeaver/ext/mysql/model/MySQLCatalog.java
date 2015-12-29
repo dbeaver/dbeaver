@@ -408,7 +408,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Nullable
         @Override
-        protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
+        protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             String indexTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_INDEX_TYPE);
@@ -458,7 +458,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected void cacheChildren(MySQLTableIndex index, List<MySQLTableIndexColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableIndex index, List<MySQLTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }
@@ -497,7 +497,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
         @Nullable
         @Override
-        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
+        protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             if (constraintName.equals("PRIMARY")) {
@@ -531,7 +531,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected void cacheChildren(MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, MySQLTableConstraint constraint, List<MySQLTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }

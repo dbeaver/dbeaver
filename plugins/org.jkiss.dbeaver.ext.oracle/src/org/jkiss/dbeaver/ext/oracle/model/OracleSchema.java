@@ -475,7 +475,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Nullable
         @Override
-        protected OracleTableConstraint fetchObject(JDBCSession session, OracleSchema owner, OracleTableBase parent, String indexName, ResultSet dbResult)
+        protected OracleTableConstraint fetchObject(JDBCSession session, OracleSchema owner, OracleTableBase parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableConstraint(parent, dbResult);
@@ -496,7 +496,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected void cacheChildren(OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableConstraint constraint, List<OracleTableConstraintColumn> rows)
         {
             constraint.setColumns(rows);
         }
@@ -548,7 +548,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Nullable
         @Override
-        protected OracleTableForeignKey fetchObject(JDBCSession session, OracleSchema owner, OracleTable parent, String indexName, ResultSet dbResult)
+        protected OracleTableForeignKey fetchObject(JDBCSession session, OracleSchema owner, OracleTable parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableForeignKey(session.getProgressMonitor(), parent, dbResult);
@@ -570,7 +570,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void cacheChildren(OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableForeignKey foreignKey, List<OracleTableForeignKeyColumn> rows)
         {
             foreignKey.setColumns((List)rows);
         }
@@ -618,7 +618,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Nullable
         @Override
-        protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, ResultSet dbResult)
+        protected OracleTableIndex fetchObject(JDBCSession session, OracleSchema owner, OracleTablePhysical parent, String indexName, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             return new OracleTableIndex(owner, parent, indexName, dbResult);
@@ -649,7 +649,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected void cacheChildren(OracleTableIndex index, List<OracleTableIndexColumn> rows)
+        protected void cacheChildren(DBRProgressMonitor monitor, OracleTableIndex index, List<OracleTableIndexColumn> rows)
         {
             index.setColumns(rows);
         }

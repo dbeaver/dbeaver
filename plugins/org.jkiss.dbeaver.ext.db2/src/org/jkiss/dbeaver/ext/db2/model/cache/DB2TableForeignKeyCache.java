@@ -32,8 +32,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -109,7 +109,7 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     @Nullable
     @Override
     protected DB2TableForeignKey fetchObject(JDBCSession session, DB2Schema db2Schema, DB2Table db2Table,
-        String constName, ResultSet dbResult) throws SQLException, DBException
+        String constName, JDBCResultSet dbResult) throws SQLException, DBException
     {
         return new DB2TableForeignKey(session.getProgressMonitor(), db2Table, dbResult);
     }
@@ -134,7 +134,7 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     }
 
     @Override
-    protected void cacheChildren(DB2TableForeignKey constraint, List<DB2TableKeyColumn> rows)
+    protected void cacheChildren(DBRProgressMonitor monitor, DB2TableForeignKey constraint, List<DB2TableKeyColumn> rows)
     {
         constraint.setColumns(rows);
     }
