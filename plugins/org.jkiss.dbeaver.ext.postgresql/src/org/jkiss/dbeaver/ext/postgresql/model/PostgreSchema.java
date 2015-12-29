@@ -162,10 +162,22 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return classCache.getTypedObjects(monitor, this, PostgreTable.class);
     }
 
-    public PostgreTable getTable(DBRProgressMonitor monitor, String name)
+    public PostgreTableBase getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return classCache.getObject(monitor, this, name, PostgreTable.class);
+    }
+
+    public PostgreTableBase getTable(DBRProgressMonitor monitor, int tableId)
+        throws DBException
+    {
+        for (PostgreClass table : classCache.getAllObjects(monitor, this)) {
+            if (table.getObjectId() == tableId) {
+                return (PostgreTableBase) table;
+            }
+        }
+
+        return null;
     }
 
     @Association
@@ -541,7 +553,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
-            PostgreTable triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
+            PostgreTableBase triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
             return new PostgreTrigger(PostgreSchema.this, triggerTable, dbResult);
         }
 

@@ -118,7 +118,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     @Override
     public DBSObject getParentObject()
     {
-        return dataSource;
+        return dataSource.getContainer();
     }
 
     @NotNull
@@ -197,7 +197,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
         return null;
     }
 
-    PostgreTable findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
+    PostgreTableBase findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
         throws DBException
     {
         if (CommonUtils.isEmpty(catalogName)) {
@@ -210,7 +210,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
         }
         return schema.getTable(monitor, tableName);
     }
-    
+
+    PostgreTableBase findTable(DBRProgressMonitor monitor, int schemaId, int tableId)
+        throws DBException
+    {
+        PostgreSchema schema = getSchema(monitor, schemaId);
+        if (schema == null) {
+            log.error("Catalog " + schemaId + " not found");
+            return null;
+        }
+        return schema.getTable(monitor, tableId);
+    }
+
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchemas(monitor);

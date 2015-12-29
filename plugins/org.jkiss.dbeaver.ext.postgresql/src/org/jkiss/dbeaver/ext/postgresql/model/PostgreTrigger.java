@@ -38,14 +38,14 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreScriptObje
     static final Log log = Log.getLog(PostgreTrigger.class);
 
     private PostgreSchema schema;
-    private PostgreTable table;
+    private PostgreTableBase table;
     private String body;
     private String charsetClient;
     private String sqlMode;
 
     public PostgreTrigger(
         PostgreSchema schema,
-        PostgreTable table,
+        PostgreTableBase table,
         ResultSet dbResult)
     {
         this.schema = schema;
@@ -66,7 +66,7 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreScriptObje
 
     @Override
     @Property(viewable = true, order = 4)
-    public PostgreTable getTable()
+    public PostgreTableBase getTable()
     {
         return table;
     }

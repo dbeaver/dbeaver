@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -31,6 +32,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.sql.ResultSet;
@@ -87,6 +90,13 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             this);
     }
 
+    @NotNull
+    public PostgreSchema getSchema() {
+        final DBSObject parentObject = super.getParentObject();
+        assert parentObject != null;
+        return (PostgreSchema) parentObject;
+    }
+
     @Override
     public List<PostgreAttribute> getAttributes(DBRProgressMonitor monitor)
         throws DBException
@@ -103,7 +113,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return constraintCache.getTypedObjects(monitor, this, DBSTableConstraint.class);
+        return constraintCache.getTypedObjects(monitor, this, PostgreTableConstraint.class);
     }
 
     public PostgreTableConstraintBase getConstraint(DBRProgressMonitor monitor, String ukName)
@@ -143,7 +153,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     class ConstraintCache extends JDBCObjectCache<PostgreTableBase, PostgreTableConstraintBase> {
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreTableBase owner)
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableBase owner)
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -158,7 +168,28 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         @Override
         protected PostgreTableConstraintBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             String name = JDBCUtils.safeGetString(resultSet, "conname");
-            return new PostgreTableConstraint(table, name, resultSet);
+            String type = JDBCUtils.safeGetString(resultSet, "contype");
+            if (type == null) {
+                log.warn("Null constraint type");
+                return null;
+            }
+            DBSEntityConstraintType constraintType;
+            switch (type) {
+                case "c": constraintType = DBSEntityConstraintType.CHECK; break;
+                case "f": constraintType = DBSEntityConstraintType.FOREIGN_KEY; break;
+                case "p": constraintType = DBSEntityConstraintType.PRIMARY_KEY; break;
+                case "u": constraintType = DBSEntityConstraintType.UNIQUE_KEY; break;
+                case "t": constraintType = PostgreConstants.CONSTRAINT_TRIGGER; break;
+                case "x": constraintType = PostgreConstants.CONSTRAINT_EXCLUSIVE; break;
+                default:
+                    log.warn("Unsupported constraint type");
+                    return null;
+            }
+            if (constraintType == DBSEntityConstraintType.FOREIGN_KEY) {
+                return new PostgreTableForeignKey(table, name, resultSet);
+            } else {
+                return new PostgreTableConstraint(table, name, constraintType, resultSet);
+            }
         }
     }
 
