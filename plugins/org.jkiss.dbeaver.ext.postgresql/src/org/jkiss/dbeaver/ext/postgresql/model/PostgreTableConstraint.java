@@ -19,22 +19,26 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * GenericPrimaryKey
+ * PostgreTableConstraint
  */
-public class PostgreTableConstraint extends JDBCTableConstraint<PostgreTable> {
+public class PostgreTableConstraint extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject {
+    private int oid;
     private List<PostgreTableConstraintColumn> columns;
 
-    public PostgreTableConstraint(PostgreTable table, String name, String remarks, DBSEntityConstraintType constraintType, boolean persisted)
+    public PostgreTableConstraint(PostgreTableBase table, String name, JDBCResultSet resultSet)
     {
-        super(table, name, remarks, constraintType, persisted);
+        super(table, name, null, null, true);
+
+        this.oid = JDBCUtils.safeGetInt(resultSet, "oid");
     }
 
     @Override
@@ -73,4 +77,13 @@ public class PostgreTableConstraint extends JDBCTableConstraint<PostgreTable> {
         return getTable().getDataSource();
     }
 
+    @Override
+    public PostgreDatabase getDatabase() {
+        return getParentObject().getDatabase();
+    }
+
+    @Override
+    public int getObjectId() {
+        return oid;
+    }
 }
