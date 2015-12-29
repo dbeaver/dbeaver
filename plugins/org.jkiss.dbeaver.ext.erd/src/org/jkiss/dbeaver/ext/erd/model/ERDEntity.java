@@ -244,11 +244,16 @@ public class ERDEntity extends ERDObject<DBSEntity>
                     log.warn(e);
                 }
             }
+            Collection<? extends DBSEntityAttribute> idColumns = null;
             try {
-                Collection<? extends DBSEntityAttribute> idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
+                idColumns = DBUtils.getBestTableIdentifier(monitor, entity);
                 if (keyColumns != null) {
                     keyColumns.addAll(idColumns);
                 }
+            } catch (DBException e) {
+                log.error("Error reading table identifier", e);
+            }
+            try {
 
                 Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
                 if (!CommonUtils.isEmpty(attributes)) {
@@ -264,7 +269,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                         }
                         switch (attributeVisibility) {
                             case PRIMARY:
-                                if (!idColumns.contains(attribute)) {
+                                if (idColumns == null || !idColumns.contains(attribute)) {
                                     continue;
                                 }
                                 break;
@@ -276,7 +281,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                             default:
                                 break;
                         }
-                        ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, idColumns.contains(attribute));
+                        ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, idColumns != null && idColumns.contains(attribute));
                         erdEntity.addColumn(c1, false);
                     }
                 }
