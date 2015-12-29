@@ -17,34 +17,50 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
  * PostgreTableForeignKey
  */
-public class PostgreTableForeignKey extends JDBCTableForeignKey<PostgreTableBase, PostgreTableConstraint>
+public class PostgreTableForeignKey extends PostgreTableConstraintBase implements DBSTableForeignKey
 {
     private List<PostgreTableForeignKeyColumnTable> columns;
 
     public PostgreTableForeignKey(
         PostgreTable table,
         String name,
-        String remarks,
-        PostgreTableConstraint referencedKey,
-        DBSForeignKeyModifyRule deleteRule,
-        DBSForeignKeyModifyRule updateRule,
-        boolean persisted)
-    {
-        super(table, name, remarks, referencedKey, deleteRule, updateRule, persisted);
+        JDBCResultSet resultSet) throws DBException {
+        super(table, name, resultSet);
     }
 
+    @Override
+    public DBSEntity getAssociatedEntity() {
+        return null;
+    }
+
+    @Override
+    public DBSTableConstraint getReferencedConstraint() {
+        return null;
+    }
+
+    @Override
+    public DBSForeignKeyModifyRule getDeleteRule() {
+        return null;
+    }
+
+    @Override
+    public DBSForeignKeyModifyRule getUpdateRule() {
+        return null;
+    }
+
+/*
     @Override
     public List<PostgreTableForeignKeyColumnTable> getAttributeReferences(DBRProgressMonitor monitor)
     {
@@ -75,4 +91,5 @@ public class PostgreTableForeignKey extends JDBCTableForeignKey<PostgreTableBase
     {
         return getTable().getDataSource();
     }
+*/
 }

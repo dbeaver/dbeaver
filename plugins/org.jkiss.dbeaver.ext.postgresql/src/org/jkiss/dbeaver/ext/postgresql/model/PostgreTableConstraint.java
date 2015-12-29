@@ -17,94 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * PostgreTableConstraint
  */
-public class PostgreTableConstraint extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject {
-    static final Log log = Log.getLog(PostgreTableConstraint .class);
-
-    private int oid;
-    private List<PostgreTableConstraintColumn> columns = new ArrayList<>();
+public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
     public PostgreTableConstraint(PostgreTableBase table, String name, JDBCResultSet resultSet) throws DBException {
-        super(table, name, null, null, true);
-
-        this.oid = JDBCUtils.safeGetInt(resultSet, "oid");
-        Object keyNumbers = JDBCUtils.safeGetArray(resultSet, "conkey");
-        if (keyNumbers != null) {
-            List<PostgreAttribute> attributes = table.getAttributes(resultSet.getSession().getProgressMonitor());
-            int colCount = Array.getLength(keyNumbers);
-            for (int i = 0; i < colCount; i++) {
-                Number colNumber = (Number) Array.get(keyNumbers, i);
-                if (colNumber.intValue() < 0 || colNumber.intValue() >= attributes.size()) {
-                    log.warn("Bad constraint attribute index: " + colNumber);
-                } else {
-                    PostgreAttribute attr = attributes.get(colNumber.intValue());
-                    PostgreTableConstraintColumn cCol = new PostgreTableConstraintColumn(this, attr, i);
-                    columns.add(cCol);
-                }
-            }
-        }
-    }
-
-    @Override
-    public List<PostgreTableConstraintColumn> getAttributeReferences(DBRProgressMonitor monitor)
-    {
-        return columns;
-    }
-
-    public void addColumn(PostgreTableConstraintColumn column)
-    {
-        if (columns == null) {
-            columns = new ArrayList<>();
-        }
-        this.columns.add(column);
-    }
-
-    void setColumns(List<PostgreTableConstraintColumn> columns)
-    {
-        this.columns = columns;
-    }
-
-    @NotNull
-    @Override
-    public String getFullQualifiedName()
-    {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            getTable().getContainer(),
-            getTable(),
-            this);
-    }
-
-    @NotNull
-    @Override
-    public PostgreDataSource getDataSource()
-    {
-        return getTable().getDataSource();
-    }
-
-    @Override
-    public PostgreDatabase getDatabase() {
-        return getParentObject().getDatabase();
-    }
-
-    @Override
-    public int getObjectId() {
-        return oid;
+        super(table, name, resultSet);
     }
 }
