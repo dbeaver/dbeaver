@@ -180,7 +180,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         if (root instanceof DBSObjectContainer) {
             monitor.beginTask("Load '" + root.getName() + "' content", 3);
             DBSObjectContainer objectContainer = (DBSObjectContainer) root;
-            objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            try {
+                objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
+            } catch (DBException e) {
+                log.error("Error caching structure", e);
+            }
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             for (DBSObject entity : CommonUtils.safeCollection(entities)) {
                 if (entity instanceof DBSEntity) {
