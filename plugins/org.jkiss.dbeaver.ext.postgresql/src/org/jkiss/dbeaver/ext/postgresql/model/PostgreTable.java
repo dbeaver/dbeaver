@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -114,6 +115,11 @@ public class PostgreTable extends PostgreTableBase
     public boolean isView()
     {
         return false;
+    }
+
+    @Override
+    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
+        return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
     @Association

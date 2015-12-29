@@ -384,6 +384,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_INDEX_NAME);
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
@@ -405,6 +406,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected MySQLTableIndex fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String indexName, ResultSet dbResult)
             throws SQLException, DBException
@@ -429,8 +431,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 dbResult);
         }
 
+        @Nullable
         @Override
-        protected MySQLTableIndexColumn fetchObjectRow(
+        protected MySQLTableIndexColumn[] fetchObjectRow(
             JDBCSession session,
             MySQLTable parent, MySQLTableIndex object, ResultSet dbResult)
             throws SQLException, DBException
@@ -446,12 +449,12 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 return null;
             }
 
-            return new MySQLTableIndexColumn(
+            return new MySQLTableIndexColumn[] { new MySQLTableIndexColumn(
                 object,
                 tableColumn,
                 ordinalPosition,
                 "A".equalsIgnoreCase(ascOrDesc),
-                nullable);
+                nullable) };
         }
 
         @Override
@@ -470,6 +473,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             super(tableCache, MySQLTable.class, MySQLConstants.COL_TABLE_NAME, MySQLConstants.COL_CONSTRAINT_NAME);
         }
 
+        @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, MySQLCatalog owner, MySQLTable forTable)
             throws SQLException
@@ -491,6 +495,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             return dbStat;
         }
 
+        @Nullable
         @Override
         protected MySQLTableConstraint fetchObject(JDBCSession session, MySQLCatalog owner, MySQLTable parent, String constraintName, ResultSet dbResult)
             throws SQLException, DBException
@@ -504,8 +509,9 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
         }
 
+        @Nullable
         @Override
-        protected MySQLTableConstraintColumn fetchObjectRow(
+        protected MySQLTableConstraintColumn[] fetchObjectRow(
             JDBCSession session,
             MySQLTable parent, MySQLTableConstraint object, ResultSet dbResult)
             throws SQLException, DBException
@@ -518,10 +524,10 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
             }
             int ordinalPosition = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_ORDINAL_POSITION);
 
-            return new MySQLTableConstraintColumn(
+            return new MySQLTableConstraintColumn[] { new MySQLTableConstraintColumn(
                 object,
                 column,
-                ordinalPosition);
+                ordinalPosition) };
         }
 
         @Override

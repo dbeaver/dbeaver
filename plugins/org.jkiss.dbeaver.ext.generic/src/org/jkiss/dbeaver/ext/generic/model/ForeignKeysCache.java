@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.generic.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
@@ -63,6 +64,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         super.clearCache();
     }
 
+    @NotNull
     @Override
     protected JDBCStatement prepareObjectsStatement(JDBCSession session, GenericStructContainer owner, GenericTable forParent)
         throws SQLException
@@ -156,8 +158,9 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         return new GenericTableForeignKey(parent, fkName, null, pk, deleteRule, updateRule, defferability, true);
     }
 
+    @Nullable
     @Override
-    protected GenericTableForeignKeyColumnTable fetchObjectRow(
+    protected GenericTableForeignKeyColumnTable[] fetchObjectRow(
         JDBCSession session,
         GenericTable parent, GenericTableForeignKey foreignKey, ResultSet dbResult)
         throws SQLException, DBException
@@ -184,7 +187,8 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
             return null;
         }
 
-        return new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getAttribute());
+        return new GenericTableForeignKeyColumnTable[] {
+            new GenericTableForeignKeyColumnTable(foreignKey, fkColumn, keySeq, pkColumn.getAttribute()) };
     }
 
     @Override
