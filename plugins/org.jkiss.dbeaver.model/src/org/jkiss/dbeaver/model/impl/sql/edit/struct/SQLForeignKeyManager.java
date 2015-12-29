@@ -18,17 +18,19 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -101,17 +103,20 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
         } catch (DBException e) {
             log.error("Can't obtain reference attributes", e);
         }
-        decl.append(") REFERENCES ").append(foreignKey.getReferencedConstraint().getParentObject().getFullQualifiedName()).append("("); //$NON-NLS-1$ //$NON-NLS-2$
-        try {
-            boolean firstColumn = true;
-            List<? extends DBSEntityAttributeRef> columns = foreignKey.getReferencedConstraint().getAttributeReferences(VoidProgressMonitor.INSTANCE);
-            for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
-                if (!firstColumn) decl.append(","); //$NON-NLS-1$
-                firstColumn = false;
-                decl.append(constraintColumn.getAttribute().getName());
+        final DBSEntityConstraint refConstraint = foreignKey.getReferencedConstraint();
+        decl.append(") REFERENCES ").append(DBUtils.getObjectFullName(refConstraint.getParentObject())).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+        if (refConstraint instanceof DBSEntityReferrer) {
+            try {
+                boolean firstColumn = true;
+                List<? extends DBSEntityAttributeRef> columns = ((DBSEntityReferrer) refConstraint).getAttributeReferences(VoidProgressMonitor.INSTANCE);
+                for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
+                    if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                    firstColumn = false;
+                    decl.append(constraintColumn.getAttribute().getName());
+                }
+            } catch (DBException e) {
+                log.error("Can't obtain ref constraint reference attributes", e);
             }
-        } catch (DBException e) {
-            log.error("Can't obtain ref constraint reference attributes", e);
         }
         decl.append(")"); //$NON-NLS-1$
         if (foreignKey.getDeleteRule() != null && !CommonUtils.isEmpty(foreignKey.getDeleteRule().getClause())) {
