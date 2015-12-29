@@ -97,7 +97,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 "Rename table",
-                "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                "RENAME " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         };
     }
