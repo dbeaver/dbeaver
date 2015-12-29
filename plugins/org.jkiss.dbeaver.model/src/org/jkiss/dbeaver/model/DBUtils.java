@@ -678,6 +678,48 @@ public final class DBUtils {
         }
     }
 
+    public static DBSEntityConstraint findEntityConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity, @NotNull Collection<? extends DBSEntityAttribute> attributes)
+        throws DBException
+    {
+        // Check constraints
+        Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
+        if (!CommonUtils.isEmpty(constraints)) {
+            for (DBSEntityConstraint constraint : constraints) {
+                if (constraint instanceof DBSEntityReferrer && referrerMatches(monitor, (DBSEntityReferrer)constraint, attributes)) {
+                    return constraint;
+                }
+            }
+        }
+        if (entity instanceof DBSTable) {
+            Collection<? extends DBSTableIndex> indexes = ((DBSTable) entity).getIndexes(monitor);
+            if (!CommonUtils.isEmpty(indexes)) {
+                for (DBSTableIndex index : indexes) {
+                    if (index.isUnique() && referrerMatches(monitor, index, attributes)) {
+                        return index;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    public static boolean referrerMatches(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer referrer, @NotNull Collection<? extends DBSEntityAttribute> attributes) throws DBException {
+        final List<? extends DBSEntityAttributeRef> refs = referrer.getAttributeReferences(monitor);
+        if (refs != null && !refs.isEmpty()) {
+            Iterator<? extends DBSEntityAttribute> attrIterator = attributes.iterator();
+            for (DBSEntityAttributeRef ref : refs) {
+                if (!attrIterator.hasNext()) {
+                    return false;
+                }
+                if (ref.getAttribute() != attrIterator.next()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     @NotNull
     public static List<DBSEntityAttribute> getEntityAttributes(DBRProgressMonitor monitor, DBSEntityReferrer referrer)
     {

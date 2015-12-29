@@ -20,14 +20,15 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 
 import java.lang.reflect.Array;
@@ -41,6 +42,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
 {
     private DBSForeignKeyModifyRule updateRule;
     private DBSForeignKeyModifyRule deleteRule;
+    private DBSEntityConstraint refConstraint;
     private final List<PostgreTableForeignKeyColumn> columns = new ArrayList<>();
 
     public PostgreTableForeignKey(
@@ -52,9 +54,10 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         updateRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confupdtype"));
         deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
 
+        final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
         final int refTableId = JDBCUtils.safeGetInt(resultSet, "confrelid");
         PostgreTableBase refTable = table.getDatabase().findTable(
-            resultSet.getSession().getProgressMonitor(),
+            monitor,
             table.getSchema().getObjectId(),
             refTableId);
         if (refTable == null) {
@@ -64,8 +67,9 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         Object keyNumbers = JDBCUtils.safeGetArray(resultSet, "conkey");
         Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
         if (keyNumbers != null && keyRefNumbers != null) {
-            List<PostgreAttribute> attributes = table.getAttributes(resultSet.getSession().getProgressMonitor());
-            List<PostgreAttribute> refAttributes = refTable.getAttributes(resultSet.getSession().getProgressMonitor());
+            List<PostgreAttribute> attributes = table.getAttributes(monitor);
+            List<PostgreAttribute> refAttributes = refTable.getAttributes(monitor);
+            List<PostgreAttribute> matchedRefAttributes = new ArrayList<>();
             assert attributes != null && refAttributes != null;
             int colCount = Array.getLength(keyNumbers);
             for (int i = 0; i < colCount; i++) {
@@ -78,7 +82,12 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
                     PostgreAttribute refAttr = refAttributes.get(colRefNumber.intValue() - 1);
                     PostgreTableForeignKeyColumn cCol = new PostgreTableForeignKeyColumn(this, attr, i, refAttr);
                     columns.add(cCol);
+                    matchedRefAttributes.add(refAttr);
                 }
+            }
+            refConstraint = DBUtils.findEntityConstraint(monitor, refTable, matchedRefAttributes);
+            if (refConstraint == null) {
+                log.warn("Can't find reference constraint for foreign key '" + getFullQualifiedName() + "'");
             }
         }
     }
@@ -98,30 +107,35 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     }
 
     @Override
+    @Property(viewable = true)
     public DBSEntity getAssociatedEntity() {
-        return null;
-    }
-
-    @Override
-    public DBSTableConstraint getReferencedConstraint() {
-        return null;
+        return refConstraint == null ? null : refConstraint.getParentObject();
     }
 
     @NotNull
     @Override
+    @Property(viewable = true)
+    public DBSEntityConstraint getReferencedConstraint() {
+        return refConstraint;
+    }
+
+    @NotNull
+    @Override
+    @Property(viewable = true)
     public DBSForeignKeyModifyRule getDeleteRule() {
         return deleteRule;
     }
 
     @NotNull
     @Override
+    @Property(viewable = true)
     public DBSForeignKeyModifyRule getUpdateRule() {
         return updateRule;
     }
 
     @Nullable
     @Override
-    public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableForeignKeyColumn> getAttributeReferences(DBRProgressMonitor monitor) throws DBException {
         return columns;
     }
 }
