@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableKeyColumn;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -116,7 +117,7 @@ public final class DB2TableForeignKeyCache extends JDBCCompositeCache<DB2Schema,
     @Nullable
     @Override
     protected DB2TableKeyColumn[] fetchObjectRow(JDBCSession session, DB2Table db2Table, DB2TableForeignKey object,
-                                                 ResultSet dbResult) throws SQLException, DBException
+                                                 JDBCResultSet dbResult) throws SQLException, DBException
     {
 
         String colName = JDBCUtils.safeGetString(dbResult, "COLNAME");

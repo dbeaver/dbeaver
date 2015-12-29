@@ -97,7 +97,7 @@ class PrimaryKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     @Override
     protected GenericTableConstraintColumn[] fetchObjectRow(
         JDBCSession session,
-        GenericTable parent, GenericPrimaryKey object, ResultSet dbResult)
+        GenericTable parent, GenericPrimaryKey object, JDBCResultSet dbResult)
         throws SQLException, DBException
     {
         String columnName = GenericUtils.safeGetStringTrimmed(pkObject, dbResult, JDBCConstants.COLUMN_NAME);
