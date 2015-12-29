@@ -21,12 +21,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -37,6 +44,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     static final Log log = Log.getLog(PostgreTableBase.class);
 
     private int oid;
+    private ConstraintCache constraintCache = new ConstraintCache();
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -92,10 +100,48 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
+    public Collection<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+        return constraintCache.getAllObjects(monitor, this);
+    }
+
+    public PostgreTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
+        throws DBException
+    {
+        return constraintCache.getObject(monitor, this, ukName);
+    }
+
+    @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         getContainer().classCache.clearChildrenCache(this);
+        constraintCache.clearCache();
+
         return true;
+    }
+
+    /**
+     * Constraint cache implementation
+     */
+    class ConstraintCache extends JDBCObjectCache<PostgreTableBase, PostgreTableConstraint> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreTableBase owner)
+            throws SQLException
+        {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.oid,c.*" +
+                "\nFROM pg_catalog.pg_constraint c" +
+                "\nWHERE c.conrelid=?" +
+                "\nORDER BY c.oid");
+            dbStat.setInt(1, owner.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreTableConstraint fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            String name = JDBCUtils.safeGetString(resultSet, "conname");
+            return new PostgreTableConstraint(table, name, resultSet);
+        }
     }
 
 }

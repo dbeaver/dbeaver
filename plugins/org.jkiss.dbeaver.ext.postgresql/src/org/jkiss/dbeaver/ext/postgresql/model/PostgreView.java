@@ -144,13 +144,6 @@ public class PostgreView extends PostgreTableBase
         return null;
     }
 
-    @Nullable
-    @Override
-    public List<? extends DBSTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
-    {
-        return null;
-    }
-
     @Override
     public List<? extends DBSTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
     {

@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
@@ -71,7 +70,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     final ClassCache classCache = new ClassCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
     final TriggerCache triggerCache = new TriggerCache();
-    final ConstraintCache constraintCache = new ConstraintCache();
     final IndexCache indexCache = new IndexCache();
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
@@ -247,10 +245,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             monitor.subTask("Cache table columns");
             classCache.loadChildren(monitor, this, null);
         }
-        if ((scope & STRUCT_ASSOCIATIONS) != 0) {
-            monitor.subTask("Cache table constraints");
-            constraintCache.getAllObjects(monitor, this);
-        }
     }
 
     @Override
@@ -259,7 +253,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     {
         classCache.clearCache();
         indexCache.clearCache();
-        constraintCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
         return true;
@@ -447,76 +440,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected void cacheChildren(PostgreIndex index, List<PostgreIndexColumn> rows)
         {
             index.setColumns(rows);
-        }
-    }
-
-    /**
-     * Constraint cache implementation
-     */
-    class ConstraintCache extends JDBCCompositeCache<PostgreSchema, PostgreTable, PostgreTableConstraint, PostgreTableConstraintColumn> {
-        protected ConstraintCache()
-        {
-            super(classCache, PostgreTable.class, PostgreConstants.COL_TABLE_NAME, PostgreConstants.COL_CONSTRAINT_NAME);
-        }
-
-        @Override
-        protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema owner, PostgreTable forTable)
-            throws SQLException
-        {
-            StringBuilder sql = new StringBuilder(500);
-            sql.append(
-                "SELECT kc.CONSTRAINT_NAME,kc.TABLE_NAME,kc.COLUMN_NAME,kc.ORDINAL_POSITION\n" +
-                    "FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE kc WHERE kc.TABLE_SCHEMA=? AND kc.REFERENCED_TABLE_NAME IS NULL");
-            if (forTable != null) {
-                sql.append(" AND kc.TABLE_NAME=?");
-            }
-            sql.append("\nORDER BY kc.CONSTRAINT_NAME,kc.ORDINAL_POSITION");
-
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, PostgreSchema.this.getName());
-            if (forTable != null) {
-                dbStat.setString(2, forTable.getName());
-            }
-            return dbStat;
-        }
-
-        @Override
-        protected PostgreTableConstraint fetchObject(JDBCSession session, PostgreSchema owner, PostgreTable parent, String constraintName, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            if (constraintName.equals("PRIMARY")) {
-                return new PostgreTableConstraint(
-                    parent, constraintName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
-            } else {
-                return new PostgreTableConstraint(
-                    parent, constraintName, null, DBSEntityConstraintType.UNIQUE_KEY, true);
-            }
-        }
-
-        @Override
-        protected PostgreTableConstraintColumn fetchObjectRow(
-            JDBCSession session,
-            PostgreTable parent, PostgreTableConstraint object, ResultSet dbResult)
-            throws SQLException, DBException
-        {
-            String columnName = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_COLUMN_NAME);
-            PostgreAttribute column = parent.getAttribute(session.getProgressMonitor(), columnName);
-            if (column == null) {
-                log.warn("Column '" + columnName + "' not found in table '" + parent.getFullQualifiedName() + "'");
-                return null;
-            }
-            int ordinalPosition = JDBCUtils.safeGetInt(dbResult, PostgreConstants.COL_ORDINAL_POSITION);
-
-            return new PostgreTableConstraintColumn(
-                object,
-                column,
-                ordinalPosition);
-        }
-
-        @Override
-        protected void cacheChildren(PostgreTableConstraint constraint, List<PostgreTableConstraintColumn> rows)
-        {
-            constraint.setColumns(rows);
         }
     }
 

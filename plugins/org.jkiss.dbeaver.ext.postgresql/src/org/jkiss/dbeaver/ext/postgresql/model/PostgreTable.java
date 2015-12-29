@@ -127,21 +127,6 @@ public class PostgreTable extends PostgreTableBase
         return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
     }
 
-    @Nullable
-    @Override
-    @Association
-    public synchronized Collection<PostgreTableConstraint> getConstraints(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
-    }
-
-    public PostgreTableConstraint getConstraint(DBRProgressMonitor monitor, String ukName)
-        throws DBException
-    {
-        return getContainer().constraintCache.getObject(monitor, getContainer(), this, ukName);
-    }
-
     @Override
     @Association
     public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
@@ -190,7 +175,6 @@ public class PostgreTable extends PostgreTableBase
     {
         super.refreshObject(monitor);
         getContainer().indexCache.clearObjectCache(this);
-        getContainer().constraintCache.clearObjectCache(this);
         foreignKeys.clearCache();
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;
@@ -243,127 +227,7 @@ public class PostgreTable extends PostgreTableBase
         throws DBException
     {
         List<PostgreTableForeignKey> fkList = new ArrayList<>();
-        if (!isPersisted()) {
-            return fkList;
-        }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table relations")) {
-            Map<String, PostgreTableForeignKey> fkMap = new HashMap<>();
-            Map<String, PostgreTableConstraint> pkMap = new HashMap<>();
-            JDBCDatabaseMetaData metaData = session.getMetaData();
-            // Load indexes
-            JDBCResultSet dbResult;
-            if (references) {
-                dbResult = metaData.getExportedKeys(
-                    getContainer().getName(),
-                    null,
-                    getName());
-            } else {
-                dbResult = metaData.getImportedKeys(
-                    getContainer().getName(),
-                    null,
-                    getName());
-            }
-            try {
-                while (dbResult.next()) {
-                    String pkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_CAT);
-                    String pkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKTABLE_NAME);
-                    String pkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PKCOLUMN_NAME);
-                    String fkTableCatalog = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_CAT);
-                    String fkTableName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKTABLE_NAME);
-                    String fkColumnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FKCOLUMN_NAME);
-                    int keySeq = JDBCUtils.safeGetInt(dbResult, JDBCConstants.KEY_SEQ);
-                    int updateRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.UPDATE_RULE);
-                    int deleteRuleNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DELETE_RULE);
-                    String fkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.FK_NAME);
-                    String pkName = JDBCUtils.safeGetString(dbResult, JDBCConstants.PK_NAME);
-
-                    DBSForeignKeyModifyRule deleteRule = JDBCUtils.getCascadeFromNum(deleteRuleNum);
-                    DBSForeignKeyModifyRule updateRule = JDBCUtils.getCascadeFromNum(updateRuleNum);
-
-                    PostgreTable pkTable = getContainer().getDatabase().findTable(monitor, pkTableCatalog, pkTableName);
-                    if (pkTable == null) {
-                        log.warn("Can't find PK table " + pkTableName);
-                        continue;
-                    }
-                    PostgreTable fkTable = getContainer().getDatabase().findTable(monitor, fkTableCatalog, fkTableName);
-                    if (fkTable == null) {
-                        log.warn("Can't find FK table " + fkTableName);
-                        continue;
-                    }
-                    PostgreAttribute pkColumn = pkTable.getAttribute(monitor, pkColumnName);
-                    if (pkColumn == null) {
-                        log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
-                        continue;
-                    }
-                    PostgreAttribute fkColumn = fkTable.getAttribute(monitor, fkColumnName);
-                    if (fkColumn == null) {
-                        log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + fkColumnName);
-                        continue;
-                    }
-
-                    // Find PK
-                    PostgreTableConstraint pk = null;
-                    if (pkName != null) {
-                        pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
-                        if (pk == null) {
-                            log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
-                        }
-                    }
-                    if (pk == null) {
-                        Collection<PostgreTableConstraint> constraints = pkTable.getConstraints(monitor);
-                        if (constraints != null) {
-                            for (PostgreTableConstraint pkConstraint : constraints) {
-                                if (pkConstraint.getConstraintType().isUnique() && DBUtils.getConstraintAttribute(monitor, pkConstraint, pkColumn) != null) {
-                                    pk = pkConstraint;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    if (pk == null) {
-                        log.warn("Can't find primary key for table " + pkTable.getFullQualifiedName());
-                        // Too bad. But we have to create new fake PK for this FK
-                        String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
-                        pk = pkMap.get(pkFullName);
-                        if (pk == null) {
-                            pk = new PostgreTableConstraint(pkTable, pkName, null, DBSEntityConstraintType.PRIMARY_KEY, true);
-                            pk.addColumn(new PostgreTableConstraintColumn(pk, pkColumn, keySeq));
-                            pkMap.put(pkFullName, pk);
-                        }
-                    }
-
-                    // Find (or create) FK
-                    PostgreTableForeignKey fk = null;
-                    if (references) {
-                        fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
-                        if (fk == null) {
-                            log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());
-                            // No choice, we have to create fake foreign key :(
-                        } else {
-                            if (!fkList.contains(fk)) {
-                                fkList.add(fk);
-                            }
-                        }
-                    }
-
-                    if (fk == null) {
-                        fk = fkMap.get(fkName);
-                        if (fk == null) {
-                            fk = new PostgreTableForeignKey(fkTable, fkName, null, pk, deleteRule, updateRule, true);
-                            fkMap.put(fkName, fk);
-                            fkList.add(fk);
-                        }
-                        PostgreTableForeignKeyColumnTable fkColumnInfo = new PostgreTableForeignKeyColumnTable(fk, fkColumn, keySeq, pkColumn);
-                        fk.addColumn(fkColumnInfo);
-                    }
-                }
-            } finally {
-                dbResult.close();
-            }
-            return fkList;
-        } catch (SQLException ex) {
-            throw new DBException(ex, getDataSource());
-        }
+        return fkList;
     }
 
     @Override
