@@ -188,7 +188,13 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
             for (DBSObject entity : CommonUtils.safeCollection(entities)) {
                 if (entity instanceof DBSEntity) {
-                    result.add((DBSEntity) entity);
+                    final DBSEntity entity1 = (DBSEntity) entity;
+                    if (entity1.getEntityType() == DBSEntityType.TABLE ||
+                        entity1.getEntityType() == DBSEntityType.CLASS ||
+                        entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY)
+                    {
+                        result.add(entity1);
+                    }
                 }
             }
             monitor.done();
