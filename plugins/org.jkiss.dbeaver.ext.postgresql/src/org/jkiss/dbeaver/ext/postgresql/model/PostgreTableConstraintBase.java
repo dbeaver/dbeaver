@@ -72,6 +72,6 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return oid;
     }
 
-    abstract void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children);
+    abstract void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass);
 
 }

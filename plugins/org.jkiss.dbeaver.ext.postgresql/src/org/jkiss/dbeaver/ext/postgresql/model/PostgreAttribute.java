@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -42,7 +43,7 @@ import java.util.regex.Pattern;
 /**
  * PostgreAttribute
  */
-public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements DBSTableColumn, DBPNamedObject2
+public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements DBSTableColumn, DBPNamedObject2, DBPHiddenObject
 {
     static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -153,5 +154,10 @@ public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements D
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Override
+    public boolean isHidden() {
+        return getOrdinalPosition() < 0;
     }
 }

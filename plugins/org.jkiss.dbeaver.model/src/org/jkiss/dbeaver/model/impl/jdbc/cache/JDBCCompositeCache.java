@@ -93,6 +93,12 @@ public abstract class JDBCCompositeCache<
 
     abstract protected void cacheChildren(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children);
 
+    // Second cache function. Needed for complex entities which refers to each other (foreign keys)
+    // First cache must cache all unique constraint, second must cache foreign keys references which refers unique keys
+    protected void cacheChildren2(DBRProgressMonitor monitor, OBJECT object, List<ROW_REF> children) {
+
+    }
+
     @NotNull
     @Override
     public Collection<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
@@ -351,7 +357,6 @@ public abstract class JDBCCompositeCache<
                     Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                     ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
                     for (ObjectInfo objectInfo : objectInfos) {
-                        //cacheChildren(monitor, objectInfo.object, objectInfo.rows);
                         objectInfo.needsCaching = true;
                         objects.add(objectInfo.object);
                     }
@@ -373,6 +378,13 @@ public abstract class JDBCCompositeCache<
                 for (ObjectInfo objectInfo : colEntry.getValue().values()) {
                     if (objectInfo.needsCaching) {
                         cacheChildren(monitor, objectInfo.object, objectInfo.rows);
+                    }
+                }
+            }
+            for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                for (ObjectInfo objectInfo : colEntry.getValue().values()) {
+                    if (objectInfo.needsCaching) {
+                        cacheChildren2(monitor, objectInfo.object, objectInfo.rows);
                     }
                 }
             }

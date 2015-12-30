@@ -113,7 +113,10 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         return columns;
     }
 
-    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children) {
+    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
+        if (!secondPass) {
+            return;
+        }
         columns.clear();
         columns.addAll((Collection<? extends PostgreTableForeignKeyColumn>) children);
 

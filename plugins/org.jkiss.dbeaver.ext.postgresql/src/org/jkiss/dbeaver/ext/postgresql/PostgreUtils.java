@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Collection;
 
 /**
  * postgresql utils
@@ -69,6 +71,15 @@ public class PostgreUtils {
     }
 
     private static Method getValueMethod;
+
+    public static PostgreAttribute getAttributeByNum(Collection<PostgreAttribute> attrs, int attNum) {
+        for (PostgreAttribute attr : attrs) {
+            if (attr.getOrdinalPosition() == attNum) {
+                return attr;
+            }
+        }
+        return null;
+    }
 
     public static <T> T extractValue(Object pgObject) {
         if (pgObject == null) {
