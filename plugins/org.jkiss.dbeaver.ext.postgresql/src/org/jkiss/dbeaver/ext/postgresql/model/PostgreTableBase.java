@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -118,7 +119,17 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return null;
+        List<PostgreTableForeignKey> refs = new ArrayList<>();
+        // This is dummy implementation
+        // Get references from this schema only
+        final Collection<PostgreTableForeignKey> allForeignKeys =
+            getContainer().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
+        for (PostgreTableForeignKey constraint : allForeignKeys) {
+            if (constraint.getAssociatedEntity() == this) {
+                refs.add(constraint);
+            }
+        }
+        return refs;
     }
 
     @Association
