@@ -37,7 +37,10 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
     }
 
     @Override
-    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children) {
+    void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
+        if (secondPass) {
+            return;
+        }
         columns.clear();
         columns.addAll(children);
     }

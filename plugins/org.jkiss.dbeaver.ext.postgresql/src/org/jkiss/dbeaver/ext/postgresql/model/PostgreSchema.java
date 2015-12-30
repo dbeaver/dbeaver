@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -346,7 +347,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                "\nWHERE a.attnum > 0 AND NOT a.attisdropped");
+                "\nWHERE NOT a.attisdropped");
             if (forTable != null) {
                 sql.append(" AND c.oid=?");
             } else {
@@ -456,14 +457,18 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 for (int i = 0; i < colCount; i++) {
                     Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
                     Number colRefNumber = (Number) Array.get(keyRefNumbers, i);
-                    if (colNumber.intValue() <= 0 || colNumber.intValue() > attributes.size()) {
-                        log.warn("Bad constraint attribute index: " + colNumber);
-                    } else {
-                        PostgreAttribute attr = attributes.get(colNumber.intValue() - 1);
-                        PostgreAttribute refAttr = refAttributes.get(colRefNumber.intValue() - 1);
-                        PostgreTableForeignKeyColumn cCol = new PostgreTableForeignKeyColumn(foreignKey, attr, i, refAttr);
-                        fkCols[i] = cCol;
+                    final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
+                    final PostgreAttribute refAttr = PostgreUtils.getAttributeByNum(refAttributes, colRefNumber.intValue());
+                    if (attr == null) {
+                        log.warn("Bad foreign key attribute index: " + colNumber);
+                        continue;
                     }
+                    if (refAttr == null) {
+                        log.warn("Bad reference table '" + foreignKey.getAssociatedEntity() + "' attribute index: " + colNumber);
+                        continue;
+                    }
+                    PostgreTableForeignKeyColumn cCol = new PostgreTableForeignKeyColumn(foreignKey, attr, i, refAttr);
+                    fkCols[i] = cCol;
                 }
                 return fkCols;
 
@@ -474,13 +479,13 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 PostgreTableConstraintColumn[] cols = new PostgreTableConstraintColumn[colCount];
                 for (int i = 0; i < colCount; i++) {
                     Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
-                    if (colNumber.intValue() <= 0 || colNumber.intValue() > attributes.size()) {
+                    final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
+                    if (attr == null) {
                         log.warn("Bad constraint attribute index: " + colNumber);
-                    } else {
-                        PostgreAttribute attr = attributes.get(colNumber.intValue() - 1);
-                        PostgreTableConstraintColumn cCol = new PostgreTableConstraintColumn(constraint, attr, i);
-                        cols[i] = cCol;
+                        continue;
                     }
+                    PostgreTableConstraintColumn cCol = new PostgreTableConstraintColumn(constraint, attr, i);
+                    cols[i] = cCol;
                 }
                 return cols;
             }
@@ -488,7 +493,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
 
         @Override
         protected void cacheChildren(DBRProgressMonitor monitor, PostgreTableConstraintBase object, List<PostgreTableConstraintColumn> children) {
-            object.cacheAttributes(monitor, children);
+            object.cacheAttributes(monitor, children, false);
+        }
+
+        @Override
+        protected void cacheChildren2(DBRProgressMonitor monitor, PostgreTableConstraintBase object, List<PostgreTableConstraintColumn> children) {
+            object.cacheAttributes(monitor, children, true);
         }
     }
 
@@ -557,18 +567,19 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             int colCount = Array.getLength(keyNumbers);
             PostgreIndexColumn[] result = new PostgreIndexColumn[colCount];
             for (int i = 0; i < colCount; i++) {
-                Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
-                if (colNumber.intValue() <= 0 || colNumber.intValue() > attributes.size()) {
+                Number colNumber = (Number) Array.get(keyNumbers, i);
+                final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
+                if (attr == null) {
                     log.warn("Bad index attribute index: " + colNumber);
-                } else {
-                    PostgreIndexColumn col = new PostgreIndexColumn(
-                        object,
-                        attributes.get(colNumber.intValue() - 1),
-                        i,
-                        true,
-                        false);
-                    result[i] = col;
+                    continue;
                 }
+                PostgreIndexColumn col = new PostgreIndexColumn(
+                    object,
+                    attr,
+                    i,
+                    true,
+                    false);
+                result[i] = col;
             }
             return result;
         }
