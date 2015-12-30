@@ -194,6 +194,7 @@ public abstract class JDBCCompositeCache<
         final OBJECT object;
         final List<ROW_REF> rows = new ArrayList<>();
         public boolean broken;
+        public boolean needsCaching;
 
         public ObjectInfo(OBJECT object)
         {
@@ -350,10 +351,9 @@ public abstract class JDBCCompositeCache<
                     Collection<ObjectInfo> objectInfos = colEntry.getValue().values();
                     ArrayList<OBJECT> objects = new ArrayList<>(objectInfos.size());
                     for (ObjectInfo objectInfo : objectInfos) {
-//                        if (!objectInfo.broken) {
-                            cacheChildren(monitor, objectInfo.object, objectInfo.rows);
-                            objects.add(objectInfo.object);
-//                        }
+                        //cacheChildren(monitor, objectInfo.object, objectInfo.rows);
+                        objectInfo.needsCaching = true;
+                        objects.add(objectInfo.object);
                     }
                     objectCache.put(colEntry.getKey(), objects);
                 }
@@ -366,6 +366,14 @@ public abstract class JDBCCompositeCache<
                     }
                 } else if (!parentObjectMap.containsKey(forParent) && !objectCache.containsKey(forParent)) {
                     objectCache.put(forParent, new ArrayList<OBJECT>());
+                }
+            }
+            // Cache children lists (we do it in the end because children caching may operate with other model objects)
+            for (Map.Entry<PARENT, Map<String, ObjectInfo>> colEntry : parentObjectMap.entrySet()) {
+                for (ObjectInfo objectInfo : colEntry.getValue().values()) {
+                    if (objectInfo.needsCaching) {
+                        cacheChildren(monitor, objectInfo.object, objectInfo.rows);
+                    }
                 }
             }
         }

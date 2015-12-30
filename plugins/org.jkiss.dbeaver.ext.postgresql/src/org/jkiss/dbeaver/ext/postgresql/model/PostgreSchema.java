@@ -261,8 +261,8 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache constraints");
-            constraintCache.getAllObjects(monitor, this);
             indexCache.getAllObjects(monitor, this);
+            constraintCache.getAllObjects(monitor, this);
         }
     }
 
