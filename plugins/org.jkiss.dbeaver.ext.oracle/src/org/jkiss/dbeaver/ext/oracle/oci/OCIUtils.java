@@ -192,9 +192,7 @@ public class OCIUtils
                         }
                     }
                 }
-            } catch (IllegalAccessException e) {
-                log.warn("Error reading Windows registry", e);
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 log.warn("Error reading Windows registry", e);
             }
         }
@@ -215,9 +213,7 @@ public class OCIUtils
                         }
                     }
                 }
-            } catch (IllegalAccessException e) {
-                log.warn("Error reading Windows registry", e);
-            } catch (InvocationTargetException e) {
+            } catch (Exception e) {
                 log.warn("Error reading Windows registry", e);
             }
         }
