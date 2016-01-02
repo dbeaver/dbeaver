@@ -176,7 +176,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT x.oid,x.* FROM pg_catalog.pg_trigger x WHERE x.tgrelid=" + owner.getObjectId());
+                "SELECT x.oid,x.* FROM pg_catalog.pg_trigger x" +
+                "\nWHERE x.tgrelid=" + owner.getObjectId() + " AND NOT x.tgisinternal");
         }
 
         @Override
