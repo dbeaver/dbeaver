@@ -122,19 +122,6 @@ public class PostgreTable extends PostgreTableBase
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
     }
 
-    @Association
-    public Collection<PostgreTrigger> getTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        List<PostgreTrigger> triggers = new ArrayList<>();
-        for (PostgreTrigger trigger : getContainer().triggerCache.getAllObjects(monitor, getContainer())) {
-            if (trigger.getTable() == this) {
-                triggers.add(trigger);
-            }
-        }
-        return triggers;
-    }
-
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {

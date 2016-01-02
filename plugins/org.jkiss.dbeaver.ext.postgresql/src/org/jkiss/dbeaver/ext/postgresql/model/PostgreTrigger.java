@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -37,26 +36,17 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreScriptObje
 {
     static final Log log = Log.getLog(PostgreTrigger.class);
 
-    private PostgreSchema schema;
     private PostgreTableBase table;
     private String body;
-    private String charsetClient;
-    private String sqlMode;
 
     public PostgreTrigger(
-        PostgreSchema schema,
         PostgreTableBase table,
         ResultSet dbResult)
     {
-        this.schema = schema;
         this.table = table;
 
-        setName(JDBCUtils.safeGetString(dbResult, "Trigger"));
-        setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, "Event")));
-        setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, "Timing")));
-        this.body = JDBCUtils.safeGetString(dbResult, "Statement");
-        this.charsetClient = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_TRIGGER_CHARACTER_SET_CLIENT);
-        this.sqlMode = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_TRIGGER_SQL_MODE);
+        setName(JDBCUtils.safeGetString(dbResult, "tgname"));
+        this.body = JDBCUtils.safeGetString(dbResult, "tgqual");
     }
 
     public String getBody()
@@ -71,29 +61,17 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreScriptObje
         return table;
     }
 
-    @Property(order = 5)
-    public String getCharsetClient()
-    {
-        return charsetClient;
-    }
-
-    @Property(order = 6)
-    public String getSqlMode()
-    {
-        return sqlMode;
-    }
-
     @Override
-    public PostgreSchema getParentObject()
+    public PostgreTableBase getParentObject()
     {
-        return schema;
+        return table;
     }
 
     @NotNull
     @Override
     public PostgreDataSource getDataSource()
     {
-        return schema.getDataSource();
+        return table.getDataSource();
     }
 
     @Override
