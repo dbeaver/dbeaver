@@ -21,14 +21,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -41,6 +47,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     static final Log log = Log.getLog(PostgreTableBase.class);
 
     private int oid;
+    final TriggerCache triggerCache = new TriggerCache();
     //private ConstraintCache constraintCache = new ConstraintCache();
 
     protected PostgreTableBase(PostgreSchema catalog)
@@ -145,54 +152,40 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         getContainer().classCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
+        triggerCache.clearCache();
 
         return true;
     }
 
-    /**
-     * Constraint cache implementation
-     *
-    class ConstraintCache extends JDBCObjectCache<PostgreTableBase, PostgreTableConstraintBase> {
+    @Association
+    public Collection<PostgreTrigger> getTriggers(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return triggerCache.getAllObjects(monitor, this);
+    }
 
+    public PostgreTrigger getTrigger(DBRProgressMonitor monitor, String name)
+        throws DBException
+    {
+        return triggerCache.getObject(monitor, this, name);
+    }
+
+    class TriggerCache extends JDBCObjectCache<PostgreTableBase, PostgreTrigger> {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableBase owner)
             throws SQLException
         {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.oid,c.*" +
-                "\nFROM pg_catalog.pg_constraint c" +
-                "\nWHERE c.conrelid=?" +
-                "\nORDER BY c.oid");
-            dbStat.setInt(1, owner.getObjectId());
-            return dbStat;
+            return session.prepareStatement(
+                "SELECT x.oid,x.* FROM pg_catalog.pg_trigger x WHERE x.tgrelid=" + owner.getObjectId());
         }
 
         @Override
-        protected PostgreTableConstraintBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase table, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            String name = JDBCUtils.safeGetString(resultSet, "conname");
-            String type = JDBCUtils.safeGetString(resultSet, "contype");
-            if (type == null) {
-                log.warn("Null constraint type");
-                return null;
-            }
-            DBSEntityConstraintType constraintType;
-            switch (type) {
-                case "c": constraintType = DBSEntityConstraintType.CHECK; break;
-                case "f": constraintType = DBSEntityConstraintType.FOREIGN_KEY; break;
-                case "p": constraintType = DBSEntityConstraintType.PRIMARY_KEY; break;
-                case "u": constraintType = DBSEntityConstraintType.UNIQUE_KEY; break;
-                case "t": constraintType = PostgreConstants.CONSTRAINT_TRIGGER; break;
-                case "x": constraintType = PostgreConstants.CONSTRAINT_EXCLUSIVE; break;
-                default:
-                    log.warn("Unsupported constraint type");
-                    return null;
-            }
-            if (constraintType == DBSEntityConstraintType.FOREIGN_KEY) {
-                return new PostgreTableForeignKey(table, name, resultSet);
-            } else {
-                return new PostgreTableConstraint(table, name, constraintType, resultSet);
-            }
+        protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreTrigger(owner, dbResult);
         }
+
     }
-     */
+
 }

@@ -72,7 +72,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     final ClassCache classCache = new ClassCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
-    final TriggerCache triggerCache = new TriggerCache();
     final IndexCache indexCache = new IndexCache();
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
@@ -216,19 +215,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return proceduresCache.getObject(monitor, this, procName);
     }
 
-    @Association
-    public Collection<PostgreTrigger> getTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return triggerCache.getAllObjects(monitor, this);
-    }
-
-    public PostgreTrigger getTrigger(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return triggerCache.getObject(monitor, this, name);
-    }
-
     @Override
     public Collection<PostgreClass> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -274,7 +260,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         classCache.clearCache();
         indexCache.clearCache();
         proceduresCache.clearCache();
-        triggerCache.clearCache();
         return true;
     }
 
@@ -673,26 +658,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 scale, precision, notNull,
                 parameterType);
         }
-    }
-
-    class TriggerCache extends JDBCObjectCache<PostgreSchema, PostgreTrigger> {
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
-            throws SQLException
-        {
-            return session.prepareStatement(
-                "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(PostgreSchema.this));
-        }
-
-        @Override
-        protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
-            String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
-            PostgreTableBase triggerTable = CommonUtils.isEmpty(tableName) ? null : getTable(session.getProgressMonitor(), tableName);
-            return new PostgreTrigger(PostgreSchema.this, triggerTable, dbResult);
-        }
-
     }
 
 }
