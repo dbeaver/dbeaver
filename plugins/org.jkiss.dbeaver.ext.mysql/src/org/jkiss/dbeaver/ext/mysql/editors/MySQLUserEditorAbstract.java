@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
-import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;

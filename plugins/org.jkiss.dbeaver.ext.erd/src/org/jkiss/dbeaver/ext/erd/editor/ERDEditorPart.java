@@ -79,7 +79,7 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;

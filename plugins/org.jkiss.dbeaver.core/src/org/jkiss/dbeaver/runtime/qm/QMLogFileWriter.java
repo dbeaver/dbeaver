@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMMetaListener;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;

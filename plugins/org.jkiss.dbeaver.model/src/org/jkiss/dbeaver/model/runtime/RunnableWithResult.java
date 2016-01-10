@@ -15,25 +15,18 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.editors.sql.handlers;
 
-import org.eclipse.core.commands.AbstractHandler;
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+package org.jkiss.dbeaver.model.runtime;
 
-public class ExplainPlanHandler extends AbstractHandler
-{
+/**
+ * Runnable which stores some result
+ */
+public abstract class RunnableWithResult<RESULT_TYPE> implements Runnable {
 
-    @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
+    protected RESULT_TYPE result;
+
+    public RESULT_TYPE getResult()
     {
-        SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
-        if (editor != null) {
-            editor.explainQueryPlan();
-        }
-        return null;
+        return result;
     }
 }

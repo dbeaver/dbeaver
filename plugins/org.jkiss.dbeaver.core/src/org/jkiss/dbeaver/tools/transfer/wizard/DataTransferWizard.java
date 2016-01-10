@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -156,10 +155,9 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
         // Start consumers
         try {
-            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         for (DataTransferPipe pipe : settings.getDataPipes()) {
                             pipe.getConsumer().startTransfer(monitor);

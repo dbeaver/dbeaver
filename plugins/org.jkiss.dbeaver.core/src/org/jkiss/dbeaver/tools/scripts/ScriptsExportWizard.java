@@ -27,9 +27,9 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -70,10 +70,9 @@ public class ScriptsExportWizard extends Wizard implements IExportWizard {
 	public boolean performFinish() {
         final ScriptsExportData exportData = mainPage.getExportData();
         try {
-            RuntimeUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         exportScripts(monitor, exportData);
                     } catch (Exception e) {

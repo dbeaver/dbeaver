@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMMetaListener;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 
 import java.util.*;
 

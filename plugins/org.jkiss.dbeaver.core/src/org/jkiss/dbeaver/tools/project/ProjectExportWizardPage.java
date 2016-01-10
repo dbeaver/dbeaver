@@ -34,7 +34,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;

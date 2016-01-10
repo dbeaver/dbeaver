@@ -24,7 +24,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;

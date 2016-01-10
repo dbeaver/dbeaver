@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.utils.ArrayUtils;
 

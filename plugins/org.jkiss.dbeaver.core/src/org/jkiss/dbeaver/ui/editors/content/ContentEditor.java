@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;

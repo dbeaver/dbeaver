@@ -8,7 +8,7 @@ import org.eclipse.search.ui.ISearchQuery;
 import org.eclipse.search.ui.ISearchResult;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 import org.jkiss.dbeaver.utils.GeneralUtils;

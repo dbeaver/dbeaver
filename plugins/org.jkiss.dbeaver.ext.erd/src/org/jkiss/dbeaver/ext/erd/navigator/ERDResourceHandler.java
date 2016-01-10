@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;

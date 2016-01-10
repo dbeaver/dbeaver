@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.Spreadsheet;
