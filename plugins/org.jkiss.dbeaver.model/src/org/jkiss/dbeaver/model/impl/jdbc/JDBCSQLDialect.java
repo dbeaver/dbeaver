@@ -264,7 +264,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     @Override
     public boolean validUnquotedCharacter(char c)
     {
-        return Character.isLetter(c) || Character.isDigit(c) || c == '_' || validCharacters.indexOf(c) != -1;
+        return Character.isLetter(c) || Character.isDigit(c) || validCharacters.indexOf(c) != -1;
     }
 
     @Override
