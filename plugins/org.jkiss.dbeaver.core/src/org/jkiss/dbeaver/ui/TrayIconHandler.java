@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;

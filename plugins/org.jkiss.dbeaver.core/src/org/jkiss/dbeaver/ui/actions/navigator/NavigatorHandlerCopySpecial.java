@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public class NavigatorHandlerCopySpecial extends NavigatorHandlerCopyAbstract {
 

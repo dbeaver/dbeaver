@@ -21,7 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
@@ -214,7 +215,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             return;
         }
         String pomURL = getRemotePOMLocation();
-        try (InputStream is = RuntimeUtils.openConnectionStream(pomURL)) {
+        try (InputStream is = WebUtils.openConnectionStream(pomURL)) {
             File folder = localPOM.getParentFile();
             if (!folder.exists() && !folder.mkdirs()) {
                 throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");

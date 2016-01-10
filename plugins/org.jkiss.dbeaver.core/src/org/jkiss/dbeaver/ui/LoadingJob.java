@@ -22,10 +22,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
 
 import java.lang.reflect.InvocationTargetException;
 

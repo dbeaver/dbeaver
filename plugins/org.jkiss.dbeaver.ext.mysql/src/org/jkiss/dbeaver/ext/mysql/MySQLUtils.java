@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.mysql;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.io.IOException;

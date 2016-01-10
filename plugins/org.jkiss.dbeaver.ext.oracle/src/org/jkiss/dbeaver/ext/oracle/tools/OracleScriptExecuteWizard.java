@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 
 import java.io.File;

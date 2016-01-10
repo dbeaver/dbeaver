@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ext.mysql.controls.PrivilegeTableControl;
 import org.jkiss.dbeaver.ext.mysql.edit.MySQLCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
-import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
