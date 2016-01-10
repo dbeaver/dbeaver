@@ -274,7 +274,7 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
     {
         monitor.subTask(project.getName());
         // Refresh project
-        project.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
+        project.refreshLocal(IResource.DEPTH_INFINITE, RuntimeUtils.getNestedMonitor(monitor));
 
         // Write meta info
         exportData.meta.startElement(ExportConstants.TAG_PROJECT);

@@ -38,8 +38,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -153,7 +153,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
                         allVersions.addAll(
-                            dependencyNode.library.getAvailableVersions(new DefaultProgressMonitor(monitor)));
+                            dependencyNode.library.getAvailableVersions(RuntimeUtils.makeMonitor(monitor)));
                     } catch (IOException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -205,7 +205,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 @Override
                 public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        DBPDriverLibrary newVersion = library.createVersion(new DefaultProgressMonitor(monitor), version);
+                        DBPDriverLibrary newVersion = library.createVersion(RuntimeUtils.makeMonitor(monitor), version);
                         DriverDescriptor driver = getWizard().getDriver();
                         driver.removeDriverLibrary(library);
                         driver.addDriverLibrary(newVersion);

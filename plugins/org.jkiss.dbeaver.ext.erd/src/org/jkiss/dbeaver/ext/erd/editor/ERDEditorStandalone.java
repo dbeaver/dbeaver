@@ -28,16 +28,15 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -94,7 +93,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
     {
         try {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            DiagramLoader.save(new DefaultProgressMonitor(monitor), getDiagramPart(), getDiagram(), false, buffer);
+            DiagramLoader.save(RuntimeUtils.makeMonitor(monitor), getDiagramPart(), getDiagram(), false, buffer);
 
             final IFile file = getEditorFile();
             file.setContents(new ByteArrayInputStream(buffer.toByteArray()), true, true, monitor);

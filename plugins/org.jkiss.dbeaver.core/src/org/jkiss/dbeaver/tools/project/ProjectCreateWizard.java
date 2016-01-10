@@ -92,14 +92,14 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
         if (project.exists()) {
             throw new DBException(NLS.bind(CoreMessages.dialog_project_create_wizard_error_already_exists, data.getName()));
         }
-        project.create(monitor.getNestedMonitor());
+        project.create(RuntimeUtils.getNestedMonitor(monitor));
 
-        project.open(monitor.getNestedMonitor());
+        project.open(RuntimeUtils.getNestedMonitor(monitor));
 
         if (!CommonUtils.isEmpty(data.getDescription())) {
             final IProjectDescription description = workspace.newProjectDescription(project.getName());
             description.setComment(data.getDescription());
-            project.setDescription(description, monitor.getNestedMonitor());
+            project.setDescription(description, RuntimeUtils.getNestedMonitor(monitor));
         }
     }
 

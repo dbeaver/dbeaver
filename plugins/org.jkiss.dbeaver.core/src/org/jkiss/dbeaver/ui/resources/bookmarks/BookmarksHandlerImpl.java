@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -166,7 +167,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                         if (currentNode instanceof DBNDatabaseNode) {
                             // Update bookmark image
                             storage.setImage(currentNode.getNodeIconDefault());
-                            file.setContents(storage.serialize(), true, false, monitor.getNestedMonitor());
+                            file.setContents(storage.serialize(), true, false, RuntimeUtils.getNestedMonitor(monitor));
 
                             // Open entity editor
                             final DBNDatabaseNode databaseNode = (DBNDatabaseNode) currentNode;

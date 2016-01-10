@@ -1400,7 +1400,7 @@ public class UIUtils {
             }
             switch (choice) {
                 case ISaveablePart2.YES: //yes
-                    saveable.doSave(monitor.getNestedMonitor());
+                    saveable.doSave(RuntimeUtils.getNestedMonitor(monitor));
                     result = !saveable.isDirty();
                     break;
                 case ISaveablePart2.NO: //no
