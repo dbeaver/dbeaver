@@ -212,7 +212,7 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public boolean validUnquotedCharacter(char c)
     {
-        return Character.isLetter(c) || Character.isDigit(c) || c == '_';
+        return Character.isLetter(c) || Character.isDigit(c);
     }
 
     @Override
