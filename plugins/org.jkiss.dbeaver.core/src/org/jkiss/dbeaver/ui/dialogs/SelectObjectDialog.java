@@ -26,9 +26,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
@@ -89,7 +88,7 @@ public class SelectObjectDialog<T> extends Dialog {
             @Override
             protected LoadingJob<Collection<T>> createLoadService()
             {
-                return RuntimeUtils.createService(
+                return LoadingJob.createService(
                     new AbstractLoadService<Collection<T>>() {
                         @Override
                         public Collection<T> evaluate() throws InvocationTargetException, InterruptedException {

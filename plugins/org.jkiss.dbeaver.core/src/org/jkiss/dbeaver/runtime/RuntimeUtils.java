@@ -30,9 +30,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.runtime.load.ILoadService;
-import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -244,13 +241,6 @@ public class RuntimeUtils {
             }
         }
         return monitoringTask.finished;
-    }
-
-    public static <RESULT> LoadingJob<RESULT> createService(
-        ILoadService<RESULT> loadingService,
-        ILoadVisualizer<RESULT> visualizer)
-    {
-        return new LoadingJob<RESULT>(loadingService, visualizer);
     }
 
     public static boolean isPlatformMacOS() {
