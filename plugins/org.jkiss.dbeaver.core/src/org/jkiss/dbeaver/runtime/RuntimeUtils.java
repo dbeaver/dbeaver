@@ -60,6 +60,9 @@ public class RuntimeUtils {
 
     public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor)
     {
+        if (monitor instanceof DBRProgressMonitor) {
+            return (DBRProgressMonitor) monitor;
+        }
         return new DefaultProgressMonitor(monitor);
     }
 
