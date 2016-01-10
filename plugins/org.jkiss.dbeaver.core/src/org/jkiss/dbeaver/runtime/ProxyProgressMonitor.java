@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 /**
  * Progress monitor default implementation
  */
-public class ProxyProgressMonitor implements DBRProgressMonitor {
+public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonitor {
 
     private DBRProgressMonitor original;
 
@@ -87,4 +87,21 @@ public class ProxyProgressMonitor implements DBRProgressMonitor {
         return original.getActiveBlock();
     }
 
+    //////////////////////////////////////////
+    // IProgressMonitor
+
+    @Override
+    public void internalWorked(double work) {
+
+    }
+
+    @Override
+    public void setCanceled(boolean value) {
+
+    }
+
+    @Override
+    public void setTaskName(String name) {
+
+    }
 }
