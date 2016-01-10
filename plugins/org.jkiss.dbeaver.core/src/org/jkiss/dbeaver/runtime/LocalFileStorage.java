@@ -67,7 +67,7 @@ public class LocalFileStorage implements IStorage, IPersistentStorage {
     @Override
     public void setContents(IProgressMonitor monitor, InputStream stream) throws CoreException {
         try (OutputStream os = new FileOutputStream(file)) {
-            ContentUtils.copyStreams(stream, 0, os, new DefaultProgressMonitor(monitor));
+            ContentUtils.copyStreams(stream, 0, os, RuntimeUtils.makeMonitor(monitor));
         } catch (IOException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

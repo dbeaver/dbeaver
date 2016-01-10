@@ -66,6 +66,14 @@ public class RuntimeUtils {
         return new DefaultProgressMonitor(monitor);
     }
 
+    public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor)
+    {
+        if (monitor instanceof IProgressMonitor) {
+            return (IProgressMonitor) monitor;
+        }
+        return monitor.getNestedMonitor();
+    }
+
     public static void run(
         IRunnableContext runnableContext,
         boolean fork,

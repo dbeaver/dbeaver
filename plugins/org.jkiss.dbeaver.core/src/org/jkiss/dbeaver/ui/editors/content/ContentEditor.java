@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -454,7 +455,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
             {
                 try {
-                    getEditorInput().updateContentFromFile(monitor.getNestedMonitor());
+                    getEditorInput().updateContentFromFile(RuntimeUtils.getNestedMonitor(monitor));
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }

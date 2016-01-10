@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -372,7 +373,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             localDataSources = CommonUtils.copyList(dataSources);
         }
-        IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
+        final IProgressMonitor progressMonitor = new NullProgressMonitor();
         PasswordEncrypter encrypter = new SimpleStringEncrypter();
         IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
         saveInProgress = true;

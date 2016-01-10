@@ -149,7 +149,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             if (targetFile.exists()) {
 				if (importData.isOverwriteFiles()) {
 	                log.warn("Overwriting file '" + targetFile.getFullPath() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-					targetFile.delete(true, true, monitor.getNestedMonitor());
+					targetFile.delete(true, true, RuntimeUtils.getNestedMonitor(monitor));
 				} else {
 	                log.warn("File '" + targetFile.getFullPath() + "' already exists - skipped"); //$NON-NLS-1$ //$NON-NLS-2$
 	                imported--;

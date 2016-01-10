@@ -41,7 +41,7 @@ public class RunnableContextDelegate implements DBRRunnableContext {
         delegate.run(fork, cancelable, new IRunnableWithProgress() {
             @Override
             public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                runnable.run(new DefaultProgressMonitor(monitor));
+                runnable.run(RuntimeUtils.makeMonitor(monitor));
             }
         });
     }

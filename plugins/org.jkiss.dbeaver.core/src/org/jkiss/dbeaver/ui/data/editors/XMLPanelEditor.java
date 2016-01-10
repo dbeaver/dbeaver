@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -94,9 +95,9 @@ public class XMLPanelEditor extends ContentPanelEditor {
                         monitor.beginTask("Read XML value", 1);
                         try {
                             monitor.subTask("Read XML value");
-                            editor.doSave(monitor.getNestedMonitor());
+                            editor.doSave(RuntimeUtils.getNestedMonitor(monitor));
 
-                            editorInput.updateContentFromFile(monitor.getNestedMonitor());
+                            editorInput.updateContentFromFile(RuntimeUtils.getNestedMonitor(monitor));
                         } catch (Exception e) {
                             throw new InvocationTargetException(e);
                         } finally {
