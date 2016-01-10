@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model.impl.sql;
 
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
@@ -59,7 +61,7 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
             String testQuery = query.getQuery().toUpperCase().trim();
             plainSelect = testQuery.startsWith("SELECT") && !testQuery.contains("LIMIT") && !testQuery.contains("INTO");
         }
-        if (!plainSelect) {
+        if (!plainSelect || ((PlainSelect)((Select) query.getStatement()).getSelectBody()).isForUpdate()) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
             limitSet = false;
             newQuery = query.getQuery();
