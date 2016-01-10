@@ -80,6 +80,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     private final List<DataSourceDescriptor> dataSources = new ArrayList<>();
     private final List<DBPEventListener> dataSourceListeners = new ArrayList<>();
+    private volatile boolean saveInProgress = false;
 
     public DataSourceRegistry(DBPApplication application, IProject project)
     {
@@ -238,7 +239,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     @Override
     public void refreshConfig() {
-        this.loadDataSources(true);
+        if (!saveInProgress) {
+            this.loadDataSources(true);
+        }
     }
 
     @Override
@@ -372,6 +375,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         IProgressMonitor progressMonitor = VoidProgressMonitor.INSTANCE.getNestedMonitor();
         PasswordEncrypter encrypter = new SimpleStringEncrypter();
         IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
+        saveInProgress = true;
         try {
             if (localDataSources.isEmpty()) {
                 configFile.delete(true, false, progressMonitor);
@@ -403,6 +407,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             }
         } catch (CoreException ex) {
             log.error("Error saving datasources configuration", ex);
+        } finally {
+            saveInProgress = false;
         }
     }
 
