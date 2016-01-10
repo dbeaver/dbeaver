@@ -192,7 +192,7 @@ public class DataSourceHandler
             dataSourceContainer.getConnectionConfiguration().setUserPassword(authInfo.getUserPassword());
             dataSourceContainer.setSavePassword(authInfo.isSavePassword());
         }
-        if (dataSourceContainer.isSavePassword()) {
+        if (authInfo.isSavePassword()) {
             // Update connection properties
             dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
         }
