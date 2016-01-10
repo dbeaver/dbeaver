@@ -23,8 +23,8 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.ui.LoadingJob;
 
 /**
  * TreeLoadVisualizer
@@ -96,7 +96,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         TreeLoadNode placeHolder = TreeLoadNode.createPlaceHolder(parent);
         if (placeHolder != null && TreeLoadNode.canBeginLoading(parent)) {
             TreeLoadVisualizer visualizer = new TreeLoadVisualizer(viewer, placeHolder, parent);
-            RuntimeUtils.createService(service, visualizer).schedule();
+            LoadingJob.createService(service, visualizer).schedule();
             return new Object[]{placeHolder};
         }
         return EMPTY_ELEMENT_ARRAY;

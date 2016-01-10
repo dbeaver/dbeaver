@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.runtime.load.jobs;
+package org.jkiss.dbeaver.ui;
 
 import org.jkiss.dbeaver.Log;
 import org.eclipse.core.runtime.IStatus;
@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.load.ILoadService;
 import org.jkiss.dbeaver.runtime.load.ILoadVisualizer;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -35,6 +34,13 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     static final Log log = Log.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
+
+    public static <RESULT> LoadingJob<RESULT> createService(
+        ILoadService<RESULT> loadingService,
+        ILoadVisualizer<RESULT> visualizer)
+    {
+        return new LoadingJob<RESULT>(loadingService, visualizer);
+    }
 
     private ILoadService<RESULT> loadingService;
     private ILoadVisualizer<RESULT> visualizer;
@@ -122,6 +128,60 @@ public class LoadingJob<RESULT>  extends AbstractJob {
                     null,
                     innerError);
             }
+        }
+    }
+
+    static class LoadingUIJob<RESULT> extends AbstractUIJob {
+        static final Log log = Log.getLog(LoadingUIJob.class);
+
+        private static final long DELAY = 200;
+
+        private ILoadService<RESULT> loadService;
+        private ILoadVisualizer<RESULT> visualizer;
+        private DBRProgressMonitor mainMonitor;
+
+        LoadingUIJob(LoadingJob<RESULT> loadingJob, DBRProgressMonitor mainMonitor)
+        {
+            super(loadingJob.getName());
+            this.loadService = loadingJob.getLoadingService();
+            this.visualizer = loadingJob.getVisualizer();
+            this.mainMonitor = mainMonitor;
+            setSystem(true);
+        }
+
+        @Override
+        public IStatus runInUIThread(DBRProgressMonitor monitor)
+        {
+    /*
+            if (mainMonitor.isCanceled()) {
+                // Try to cancel current load service
+                try {
+                    loadService.cancel();
+                }
+                catch (InvocationTargetException e) {
+                    log.warn("Error while canceling service", e.getTargetException());
+                }
+                return Status.CANCEL_STATUS;
+            } else {
+    */
+                if (!visualizer.isCompleted()) {
+                    visualizer.visualizeLoading();
+                    schedule(DELAY);
+                }
+            //}
+            return Status.OK_STATUS;
+        }
+
+        @Override
+        public boolean belongsTo(Object family)
+        {
+            return family == LOADING_FAMILY;
+        }
+
+        @Override
+        protected void canceling()
+        {
+            super.canceling();
         }
     }
 }

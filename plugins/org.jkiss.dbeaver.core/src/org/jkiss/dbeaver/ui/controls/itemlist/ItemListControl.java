@@ -30,9 +30,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.load.DatabaseLoadService;
-import org.jkiss.dbeaver.runtime.load.jobs.LoadingJob;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -110,7 +109,7 @@ public class ItemListControl extends NodeListControl
     @Override
     protected LoadingJob<Collection<DBNNode>> createLoadService()
     {
-        return RuntimeUtils.createService(
+        return LoadingJob.createService(
             new ItemLoadService(getNodeMeta()),
             new ObjectsLoadVisualizer());
     }

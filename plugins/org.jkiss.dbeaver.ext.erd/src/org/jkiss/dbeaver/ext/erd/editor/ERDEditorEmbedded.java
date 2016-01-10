@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.runtime.RuntimeUtils;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -118,7 +118,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             // Do not start new one while old is running
             return;
         }
-        diagramLoadingJob = RuntimeUtils.createService(
+        diagramLoadingJob = LoadingJob.createService(
             new DatabaseLoadService<EntityDiagram>("Load diagram '" + object.getName() + "'", object.getDataSource()) {
                 @Override
                 public EntityDiagram evaluate()
