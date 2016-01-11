@@ -445,7 +445,7 @@ public class SQLEditor extends SQLEditorBase implements
                     curQueryProcessor = resultsProvider.queryProcessor;
                     ResultSetViewer rsv = resultsProvider.getResultSetViewer();
                     if (rsv != null) {
-                        rsv.getActivePresentation().getControl().setFocus();
+                        //rsv.getActivePresentation().getControl().setFocus();
                     }
                 } else if (data == outputViewer) {
                     ((CTabItem) e.item).setImage(IMG_OUTPUT);
