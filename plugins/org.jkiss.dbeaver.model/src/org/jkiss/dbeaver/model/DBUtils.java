@@ -147,11 +147,15 @@ public final class DBUtils {
         }
 
         // Check for bad characters
-        if (!hasBadChars) {
-            for (int i = 0; i < str.length(); i++) {
-                if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
-                    hasBadChars = true;
-                    break;
+        if (!hasBadChars && !str.isEmpty()) {
+            if (str.charAt(0) == '_') {
+                hasBadChars = true;
+            } else {
+                for (int i = 0; i < str.length(); i++) {
+                    if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
+                        hasBadChars = true;
+                        break;
+                    }
                 }
             }
         }
