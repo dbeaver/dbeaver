@@ -491,10 +491,15 @@ public class PropertyTreeViewer extends TreeViewer {
                                     }
                                 }
                             }
-                            manager.add(new Separator());
-
-                            contributeContextMenu(manager, object, prop.category != null ? prop.category : prop.property.getCategory(), prop.property);
                         }
+                        manager.add(new Separator());
+                        contributeContextMenu(
+                            manager,
+                            object,
+                            prop.category != null ?
+                                prop.category :
+                                (prop.property == null ? null : prop.property.getCategory()),
+                            prop.property);
                     }
                 }
             });
