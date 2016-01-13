@@ -91,6 +91,7 @@ public class PostgreView extends PostgreTableBase
         }
     }
 
+    private String source;
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public PostgreView(PostgreSchema catalog)
@@ -195,7 +196,14 @@ public class PostgreView extends PostgreTableBase
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
-        return getAdditionalInfo(monitor).getDefinition();
+        if (source == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
+                source = JDBCUtils.queryString(session, "SELECT definition FROM pg_views WHERE schemaname=? AND viewname=?", getSchema().getName(), getName());
+            } catch (SQLException e) {
+                throw new DBException("Error reading view definition", e);
+            }
+        }
+        return source;
     }
 
     @Override
