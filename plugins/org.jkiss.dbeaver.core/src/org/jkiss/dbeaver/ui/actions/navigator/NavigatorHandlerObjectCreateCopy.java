@@ -115,6 +115,8 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
                     break;
                 }
             }
+        } else if (targetFolder.findMember(targetName) != null) {
+            throw new IOException("Target resource '" + targetName + "' already exists");
         }
         if (resource instanceof IFile) {
             // Copy single file
