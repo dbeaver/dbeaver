@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -47,8 +49,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     static final Log log = Log.getLog(PostgreTableBase.class);
 
     private int oid;
+    private String description;
     final TriggerCache triggerCache = new TriggerCache();
-    //private ConstraintCache constraintCache = new ConstraintCache();
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -61,6 +63,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         super(catalog, JDBCUtils.safeGetString(dbResult, "relname"), true);
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @Override
@@ -78,6 +81,18 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public int getObjectId() {
         return this.oid;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 10)
+    @Nullable
+    @Override
+    public String getDescription()
+    {
+        return this.description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @NotNull
