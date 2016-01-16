@@ -292,7 +292,10 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
             throws SQLException
         {
-            final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.oid,c.* FROM pg_catalog.pg_class c WHERE c.relnamespace=? AND c.relkind not in ('i','c')");
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.oid,c.*,d.description FROM pg_catalog.pg_class c\n" +
+                "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n" +
+                "WHERE c.relnamespace=? AND c.relkind not in ('i','c')");
             dbStat.setInt(1, getObjectId());
             return dbStat;
         }
