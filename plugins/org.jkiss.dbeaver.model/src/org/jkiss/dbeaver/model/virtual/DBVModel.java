@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -144,6 +147,13 @@ public class DBVModel extends DBVContainer {
                 xml.endElement();
             }
         }
+        // Attributes
+        for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.entityAttributes)) {
+            xml.startElement(TAG_ATTRIBUTE);
+            xml.addAttribute(ATTR_NAME, attr.getName());
+            xml.endElement();
+        }
+        // Constraints
         for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.entityConstraints)) {
             if (c.hasAttributes()) {
                 xml.startElement(TAG_CONSTRAINT);
@@ -173,6 +183,7 @@ public class DBVModel extends DBVContainer {
     {
         private DBVContainer curContainer = null;
         private DBVEntity curEntity = null;
+        private DBVEntityAttribute curAttribute = null;
         private DBVEntityConstraint curConstraint;
 
         @Override
@@ -212,6 +223,9 @@ public class DBVModel extends DBVContainer {
             } else if (localName.equals(TAG_ATTRIBUTE)) {
                 if (curConstraint != null) {
                     curConstraint.addAttribute(atts.getValue(ATTR_NAME));
+                } else if (curEntity != null) {
+                    curAttribute = new DBVEntityAttribute(curEntity, atts.getValue(ATTR_NAME));
+                    curEntity.addAttribute(curAttribute);
                 }
             }
         }
@@ -227,6 +241,8 @@ public class DBVModel extends DBVContainer {
                 curEntity = null;
             } else if (localName.equals(TAG_CONSTRAINT)) {
                 curConstraint = null;
+            } else if (localName.equals(TAG_ATTRIBUTE)) {
+                curAttribute = null;
             }
 
         }

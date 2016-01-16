@@ -36,6 +36,11 @@ public class DBVEntityConstraintColumn implements DBSEntityAttributeRef {
         this.attributeName = attributeName;
     }
 
+    public DBVEntityConstraintColumn(DBVEntityConstraint constraint, DBVEntityConstraintColumn copy) {
+        this.constraint = constraint;
+        this.attributeName = copy.attributeName;
+    }
+
     @NotNull
     @Override
     public DBSEntityAttribute getAttribute()
