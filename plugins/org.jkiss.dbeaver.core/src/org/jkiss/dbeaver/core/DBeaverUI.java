@@ -83,7 +83,7 @@ public class DBeaverUI implements DBUICallback {
         }
     }
 
-    public static ISharedTextColors getSharedTextColors()
+    public static SharedTextColors getSharedTextColors()
     {
         return getInstance().sharedTextColors;
     }

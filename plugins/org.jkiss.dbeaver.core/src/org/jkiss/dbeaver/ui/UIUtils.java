@@ -1422,7 +1422,7 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbString)) {
             return null;
         }
-        Color connectionColor = DBeaverUI.getSharedTextColors().getColor(StringConverter.asRGB(rgbString));
+        Color connectionColor = DBeaverUI.getSharedTextColors().getColor(rgbString);
         if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
             // For white color return just null to avoid explicit color set.
             // It is important for dark themes
