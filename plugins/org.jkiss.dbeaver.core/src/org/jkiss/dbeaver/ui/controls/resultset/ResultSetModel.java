@@ -712,6 +712,7 @@ public class ResultSetModel {
     void updateDataFilter(DBDDataFilter filter)
     {
         this.visibleAttributes.clear();
+        Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
             DBDAttributeConstraint filterConstraint = this.dataFilter.getConstraint(constraint.getAttribute(), true);
             if (filterConstraint == null) {
@@ -729,11 +730,8 @@ public class ResultSetModel {
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
             filterConstraint.setVisualPosition(constraint.getVisualPosition());
-            if (constraint.isVisible() && constraint.getAttribute() instanceof DBDAttributeBinding) {
-                final DBDAttributeBinding binding = (DBDAttributeBinding) constraint.getAttribute();
-                if (binding.getParentObject() == null) {
-                    visibleAttributes.add(binding);
-                }
+            if (!constraint.isVisible() && constraint.getAttribute() instanceof DBDAttributeBinding) {
+                visibleAttributes.remove((DBDAttributeBinding) constraint.getAttribute());
             }
         }
 
