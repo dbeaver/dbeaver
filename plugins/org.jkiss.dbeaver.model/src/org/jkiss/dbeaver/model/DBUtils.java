@@ -1281,10 +1281,10 @@ public final class DBUtils {
         }
     }
 
-    public static DBCLogicalOperator[] getDefaultOperators(DBSAttributeBase attribute) {
+    public static DBCLogicalOperator[] getDefaultOperators(DBSTypedObject attribute) {
         List<DBCLogicalOperator> operators = new ArrayList<>();
         DBPDataKind dataKind = attribute.getDataKind();
-        if (!attribute.isRequired()) {
+        if (attribute instanceof DBSAttributeBase && !((DBSAttributeBase)attribute).isRequired()) {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }
