@@ -112,6 +112,12 @@ public interface DBDValueHandler
     @NotNull
     String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format);
 
-    DBCLogicalOperator[] getSupportedOperators(@NotNull DBDAttributeBinding attribute);
+    /**
+     * List of logical operation supported by underlying values
+     * @param attribute    attribute
+     * @return operations
+     */
+    @NotNull
+    DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute);
 
 }

@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 /**
- * standard JDBC data types provider
+ * Standard JDBC data types handler provider
  */
 public class JDBCStandardValueHandlerProvider implements DBDValueHandlerProvider {
 
