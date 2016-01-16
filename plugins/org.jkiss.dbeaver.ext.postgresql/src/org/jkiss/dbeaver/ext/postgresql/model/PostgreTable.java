@@ -20,27 +20,21 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
 
 /**
  * PostgreTable
@@ -50,29 +44,16 @@ public class PostgreTable extends PostgreTableBase
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
-        private long rowCount;
-        private long autoIncrement;
-        private String description;
-        private Date createTime;
-        private PostgreCharset charset;
-        private PostgreCollation collation;
-        private long avgRowLength;
-        private long dataLength;
+        private String tablespaceName;
 
-        @Property(viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
-        @Property(viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 5) public PostgreCharset getCharset() { return charset; }
-        @Property(viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
+        @Property(viewable = false, editable = true, updatable = true, order = 5)
+        public String getTablespaceName() {
+            return tablespaceName;
+        }
 
-        @Property(category = "Statistics", viewable = true, order = 10) public long getRowCount() { return rowCount; }
-        @Property(category = "Statistics", viewable = true, order = 11) public long getAvgRowLength() { return avgRowLength; }
-        @Property(category = "Statistics", viewable = true, order = 12) public long getDataLength() { return dataLength; }
-        @Property(category = "Statistics", viewable = false, order = 13) public Date getCreateTime() { return createTime; }
-
-        public void setAutoIncrement(long autoIncrement) { this.autoIncrement = autoIncrement; }
-        public void setDescription(String description) { this.description = description; }
-
-        public void setCharset(PostgreCharset charset) { this.charset = charset; this.collation = charset == null ? null : charset.getDefaultCollation(); }
-        public void setCollation(PostgreCollation collation) { this.collation = collation; }
+        public void setTablespaceName(String tablespaceName) {
+            this.tablespaceName = tablespaceName;
+        }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreTable> {
@@ -101,7 +82,7 @@ public class PostgreTable extends PostgreTableBase
 
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         synchronized (additionalInfo) {
             if (!additionalInfo.loaded) {
@@ -134,45 +115,29 @@ public class PostgreTable extends PostgreTableBase
         return true;
     }
 
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBCException
+    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
         }
-/*
+
         PostgreDataSource dataSource = getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
+                "SELECT * FROM pg_catalog.pg_tables t WHERE t.schemaname=? AND t.tablename=?")) {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        // filer table description (for INNODB it contains some system information)
-                        String desc = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_TABLE_COMMENT);
-                        if (desc != null) {
-                            if (desc.startsWith(INNODB_COMMENT)) {
-                                desc = "";
-                            } else if (!CommonUtils.isEmpty(desc)) {
-                                int divPos = desc.indexOf("; " + INNODB_COMMENT);
-                                if (divPos != -1) {
-                                    desc = desc.substring(0, divPos);
-                                }
-                            }
-                            additionalInfo.description = desc;
-                        }
-                        additionalInfo.rowCount = JDBCUtils.safeGetLong(dbResult, PostgreConstants.COL_TABLE_ROWS);
-                        additionalInfo.autoIncrement = JDBCUtils.safeGetLong(dbResult, PostgreConstants.COL_AUTO_INCREMENT);
-                        additionalInfo.createTime = JDBCUtils.safeGetTimestamp(dbResult, PostgreConstants.COL_CREATE_TIME);
-                        additionalInfo.avgRowLength = JDBCUtils.safeGetLong(dbResult, PostgreConstants.COL_AVG_ROW_LENGTH);
-                        additionalInfo.dataLength = JDBCUtils.safeGetLong(dbResult, PostgreConstants.COL_DATA_LENGTH);
+                        additionalInfo.tablespaceName = JDBCUtils.safeGetString(dbResult, "tablespace");
                     }
-                    additionalInfo.loaded = true;
                 }
             }
         } catch (SQLException e) {
             throw new DBCException(e, dataSource);
         }
-*/
+        additionalInfo.loaded = true;
     }
 
     @Override
@@ -183,26 +148,6 @@ public class PostgreTable extends PostgreTableBase
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         throw new DBException("Table DDL is read-only");
-    }
-
-    @Nullable
-    @Override
-    public String getDescription()
-    {
-        return additionalInfo.description;
-    }
-
-    public static class CharsetListProvider implements IPropertyValueListProvider<PostgreTable> {
-        @Override
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        @Override
-        public Object[] getPossibleValues(PostgreTable object)
-        {
-            return object.getDataSource().getCharsets().toArray();
-        }
     }
 
 }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.compare;
 
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -39,6 +40,8 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 public class CompareObjectsExecutor {
+
+    static final Log log = Log.getLog(CompareObjectsExecutor.class);
 
     private final Object PROPS_LOCK = new Object();
 
@@ -267,7 +270,12 @@ public class CompareObjectsExecutor {
             if (node.getObject() instanceof DBSObjectContainer) {
                 ((DBSObjectContainer) node.getObject()).cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
             }
-            allChildren.add(CommonUtils.safeList(node.getChildren(monitor)));
+            try {
+                List<DBNDatabaseNode> children = node.getChildren(monitor);
+                allChildren.add(CommonUtils.safeList(children));
+            } catch (Exception e) {
+                log.warn("Error reading child nodes for compare", e);
+            }
         }
 
         Set<String> allChildNames = new LinkedHashSet<>();
