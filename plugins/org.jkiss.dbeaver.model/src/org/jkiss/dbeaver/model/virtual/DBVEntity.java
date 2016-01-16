@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
@@ -78,7 +79,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (!CommonUtils.isEmpty(copy.entityAttributes)) {
             this.entityAttributes = new ArrayList<>(copy.entityAttributes.size());
             for (DBVEntityAttribute attribute : copy.entityAttributes) {
-                this.entityAttributes.add(new DBVEntityAttribute(this, attribute));
+                this.entityAttributes.add(new DBVEntityAttribute(this, null, attribute));
             }
         }
         if (!CommonUtils.isEmpty(copy.properties)) {
@@ -167,15 +168,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
         DBSEntity realEntity = getRealEntity(monitor);
-        if (realEntity == null) {
-            return entityAttributes;
+        if (realEntity != null) {
+            final Collection<? extends DBSEntityAttribute> realAttributes = realEntity.getAttributes(monitor);
+            if (!CommonUtils.isEmpty(realAttributes)) {
+                return realAttributes;
+            }
         }
-        final Collection<? extends DBSEntityAttribute> realAttributes = realEntity.getAttributes(monitor);
-        if (CommonUtils.isEmpty(realAttributes)) {
-            return entityAttributes;
-        }
+        return Collections.emptyList();
+/*
         // Merge with virtual attributes
-        final List<DBSEntityAttribute> attributes = new ArrayList<>(realAttributes);
         for (DBVEntityAttribute va : entityAttributes) {
             boolean found = false;
             for (int i = 0; i < attributes.size(); i++) {
@@ -191,6 +192,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
         }
         return attributes;
+*/
     }
 
     @Nullable
@@ -206,10 +208,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Nullable
-    public DBSEntityAttribute getVirtualAttribute(String attributeName)
+    public DBSEntityAttribute getVirtualAttribute(DBDAttributeBinding binding)
     {
+        DBUtils.getObjectPath(binding, true);
         for (DBVEntityAttribute attr : entityAttributes) {
-            if (attr.getName().equals(attributeName)) {
+            if (attr.getName().equals(binding.getName())) {
                 return attr;
             }
         }

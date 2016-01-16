@@ -19,14 +19,13 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,34 +34,45 @@ import java.util.Map;
 public class DBVEntityAttribute implements DBSEntityAttribute
 {
     private final DBVEntity entity;
+    private final DBVEntityAttribute parent;
+    private final List<DBVEntityAttribute> children = new ArrayList<>();
     private String name;
     private Map<String, String> valueColors = new LinkedHashMap<>();
     private String defaultValue;
     private String description;
+    private String transformer;
     private String presentationManager;
     private Map<String, String> presentationProperties;
 
-    public DBVEntityAttribute(DBVEntity entity, String name) {
+    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
+        this.parent = parent;
         this.name = name;
     }
 
-    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute copy) {
+    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, DBVEntityAttribute copy) {
         this.entity = entity;
+        this.parent = parent;
         this.name = copy.name;
-    }
-
-    @Nullable
-    public DBSEntityAttribute getRealAttribute(DBRProgressMonitor monitor) throws DBException
-    {
-        final DBSEntity realEntity = entity.getRealEntity(monitor);
-        return realEntity == null ? null : realEntity.getAttribute(monitor, getName());
+        for (DBVEntityAttribute child : copy.children) {
+            this.children.add(new DBVEntityAttribute(entity, this, child));
+        }
     }
 
     @NotNull
     @Override
-    public DBSEntity getParentObject() {
+    public DBVEntity getParentObject() {
         return entity;
+    }
+
+    @NotNull
+    public DBVEntity getEntity() {
+        return entity;
+    }
+
+    @Nullable
+    public DBVEntityAttribute getParent() {
+        return parent;
     }
 
     @NotNull
@@ -159,6 +169,10 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     public void setValueColors(@NotNull Map<String, String> valueColors) {
         this.valueColors = new LinkedHashMap<>(valueColors);
+    }
+
+    public void addChild(DBVEntityAttribute child) {
+        this.children.add(child);
     }
 
 }
