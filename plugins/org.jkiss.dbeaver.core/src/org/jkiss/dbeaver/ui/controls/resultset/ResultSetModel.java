@@ -718,10 +718,13 @@ public class ResultSetModel {
                 //log.warn("Constraint for attribute [" + constraint.getAttribute().getName() + "] not found");
                 continue;
             }
-            filterConstraint.setOperator(constraint.getOperator());
-            filterConstraint.setReverseOperator(constraint.isReverseOperator());
-            filterConstraint.setValue(constraint.getValue());
-            filterConstraint.setCriteria(constraint.getCriteria());
+            if (constraint.getOperator() != null) {
+                filterConstraint.setOperator(constraint.getOperator());
+                filterConstraint.setReverseOperator(constraint.isReverseOperator());
+                filterConstraint.setValue(constraint.getValue());
+            } else {
+                filterConstraint.setCriteria(constraint.getCriteria());
+            }
             filterConstraint.setOrderPosition(constraint.getOrderPosition());
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
