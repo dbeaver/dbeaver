@@ -599,13 +599,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
                             UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
                         } else {
-                            int[] columnIndexes = new int[selectedColumns.size()];
                             for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                                columnIndexes[i] = model.getVisibleAttributeIndex((DBDAttributeBinding) selectedColumns.get(i));
-                            }
-                            Arrays.sort(columnIndexes);
-                            for (int i = columnIndexes.length; i > 0; i--) {
-                                model.setAttributeVisibility(model.getVisibleAttribute(columnIndexes[i - 1]), false);
+                                model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
                             }
                             refreshData(true, false);
                         }
@@ -1168,8 +1163,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     case STRUCT:
                     case DOCUMENT:
                     case ANY:
-                        if (binding.getNestedBindings() != null) {
-                            return binding.getNestedBindings().toArray();
+                        final List<DBDAttributeBinding> children = controller.getModel().getVisibleAttributes(binding);
+                        if (children != null) {
+                            return children.toArray();
                         }
                         break;
                 }

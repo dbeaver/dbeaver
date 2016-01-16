@@ -373,6 +373,16 @@ public class UIUtils {
         return null;
     }
 
+    public static TreeItem getNextTreeItem(Tree tree, TreeItem item) {
+        TreeItem[] items = tree.getItems();
+        for (int i = 0; i < items.length - 1; i++) {
+            if (items[i] == item) {
+                return items[i + 1];
+            }
+        }
+        return null;
+    }
+
     public static void dispose(Widget widget)
     {
         if (widget != null && !widget.isDisposed()) {

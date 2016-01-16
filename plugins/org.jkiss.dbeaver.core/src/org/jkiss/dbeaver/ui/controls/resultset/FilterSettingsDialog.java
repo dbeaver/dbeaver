@@ -22,15 +22,18 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -39,12 +42,13 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.CustomTreeEditor;
+import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 
@@ -54,7 +58,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     private final ResultSetViewer resultSetViewer;
 
-    private CheckboxTableViewer columnsViewer;
+    private CheckboxTreeViewer columnsViewer;
     private DBDDataFilter dataFilter;
     private Text whereText;
     private Text orderText;
@@ -93,38 +97,52 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         TabFolder tabFolder = new TabFolder(composite, SWT.NONE);
         tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        TableColumn criteriaColumn;
+        TreeColumn criteriaColumn;
         {
             Composite columnsGroup = UIUtils.createPlaceholder(tabFolder, 1);
 
-            columnsViewer = CheckboxTableViewer.newCheckList(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
-            columnsViewer.setContentProvider(new ListContentProvider());
+            columnsViewer = new CheckboxTreeViewer(columnsGroup, SWT.SINGLE | SWT.FULL_SELECTION | SWT.CHECK);
+            columnsViewer.setContentProvider(new TreeContentProvider() {
+                @Override
+                public Object[] getChildren(Object parentElement) {
+                    final java.util.List<DBDAttributeBinding> nestedBindings = ((DBDAttributeBinding) parentElement).getNestedBindings();
+                    return nestedBindings == null || nestedBindings.isEmpty() ?
+                        null :
+                        nestedBindings.toArray(new DBDAttributeBinding[nestedBindings.size()]);
+                }
+
+                @Override
+                public boolean hasChildren(Object element) {
+                    final java.util.List<DBDAttributeBinding> nestedBindings = ((DBDAttributeBinding) element).getNestedBindings();
+                    return nestedBindings != null && !nestedBindings.isEmpty();
+                }
+            });
             columnsViewer.setLabelProvider(new ColumnLabelProvider());
             columnsViewer.setCheckStateProvider(new CheckStateProvider());
-            final Table columnsTable = columnsViewer.getTable();
+            final Tree columnsTree = columnsViewer.getTree();
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 300;
             //gd.heightHint = 300;
-            columnsTable.setLayoutData(gd);
-            columnsTable.setHeaderVisible(true);
-            columnsTable.setLinesVisible(true);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_name);
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, "#");
-            UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
-            criteriaColumn = UIUtils.createTableColumn(columnsTable, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
+            columnsTree.setLayoutData(gd);
+            columnsTree.setHeaderVisible(true);
+            columnsTree.setLinesVisible(true);
+            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, CoreMessages.controls_resultset_filter_column_name);
+            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, "#");
+            UIUtils.createTreeColumn(columnsTree, SWT.LEFT, CoreMessages.controls_resultset_filter_column_order);
+            criteriaColumn = UIUtils.createTreeColumn(columnsTree, SWT.LEFT, CoreMessages.controls_resultset_filter_column_criteria);
 
-            new CustomTableEditor(columnsTable) {
+            new CustomTreeEditor(columnsTree) {
                 {
                     firstTraverseIndex = 3;
                     lastTraverseIndex = 3;
                 }
                 @Override
-                protected Control createEditor(Table table, int index, TableItem item) {
+                protected Control createEditor(Tree table, int index, TreeItem item) {
                     if (index == 2) {
                         toggleColumnOrder(item);
                         return null;
                     } else if (index == 3 && resultSetViewer.supportsDataFilter()) {
-                        Text text = new Text(columnsTable, SWT.BORDER);
+                        Text text = new Text(columnsTree, SWT.BORDER);
                         text.setText(item.getText(index));
                         text.selectAll();
                         return text;
@@ -132,10 +150,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     return null;
                 }
                 @Override
-                protected void saveEditorValue(Control control, int index, TableItem item) {
+                protected void saveEditorValue(Control control, int index, TreeItem item) {
                     Text text = (Text) control;
                     String criteria = text.getText().trim();
-                    DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
+                    DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
                     if (CommonUtils.isEmpty(criteria)) {
                         constraint.setCriteria(null);
                     } else {
@@ -143,9 +161,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     }
                     item.setText(3, criteria);
                 }
-                private void toggleColumnOrder(TableItem item)
+                private void toggleColumnOrder(TreeItem item)
                 {
-                    DBDAttributeConstraint constraint = (DBDAttributeConstraint) item.getData();
+                    DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) item.getData());
                     if (constraint.getOrderPosition() == 0) {
                         // Add new ordered column
                         constraint.setOrderPosition(dataFilter.getMaxOrderingPosition() + 1);
@@ -154,11 +172,13 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                         constraint.setOrderDescending(true);
                     } else {
                         // Remove ordered column
+/*
                         for (DBDAttributeConstraint con2 : dataFilter.getConstraints()) {
                             if (con2.getOrderPosition() > constraint.getOrderPosition()) {
                                 con2.setOrderPosition(con2.getOrderPosition() - 1);
                             }
                         }
+*/
                         constraint.setOrderPosition(0);
                         constraint.setOrderDescending(false);
                     }
@@ -169,7 +189,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             columnsViewer.addCheckStateListener(new ICheckStateListener() {
                 @Override
                 public void checkStateChanged(CheckStateChangedEvent event) {
-                    ((DBDAttributeConstraint) event.getElement()).setVisible(event.getChecked());
+                    DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) event.getElement());
+                    constraint.setVisible(event.getChecked());
                 }
             });
 
@@ -184,7 +205,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        int selectionIndex = columnsViewer.getTable().getSelectionIndex();
+                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                         moveColumn(selectionIndex, selectionIndex - 1);
                     }
                 });
@@ -194,7 +215,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void widgetSelected(SelectionEvent e)
                     {
-                        int selectionIndex = columnsViewer.getTable().getSelectionIndex();
+                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                         moveColumn(selectionIndex, selectionIndex + 1);
                     }
                 });
@@ -228,7 +249,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     {
                         dataFilter.reset();
                         constraints = new ArrayList<>(dataFilter.getConstraints());
-                        columnsViewer.setInput(constraints);
+                        refreshData();
                         //columnsViewer.refresh();
                         orderText.setText(""); //$NON-NLS-1$
                         whereText.setText(""); //$NON-NLS-1$
@@ -237,12 +258,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
                 columnsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
                     @Override
-                    public void selectionChanged(SelectionChangedEvent event)
-                    {
-                        int selectionIndex = columnsViewer.getTable().getSelectionIndex();
+                    public void selectionChanged(SelectionChangedEvent event) {
+                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                         moveUpButton.setEnabled(selectionIndex > 0);
-                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < columnsViewer.getTable().getItemCount() - 1);
+                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < columnsViewer.getTree().getItemCount() - 1);
                     }
+
                 });
 
             }
@@ -255,10 +276,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         createCustomFilters(tabFolder);
 
         // Fill columns
-        columnsViewer.setInput(constraints);
+        refreshData();
 
         // Pack UI
-        UIUtils.packColumns(columnsViewer.getTable());
+        UIUtils.packColumns(columnsViewer.getTree());
         //UIUtils.packColumns(filterViewer.getTable());
 
         if (criteriaColumn.getWidth() < 200) {
@@ -273,6 +294,19 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
 
         return parent;
+    }
+
+    private void refreshData() {
+        columnsViewer.setInput(Arrays.asList(resultSetViewer.getModel().getAttributes()));
+        columnsViewer.expandAll();
+    }
+
+    private int getSelectionIndex(Tree tree) {
+        final TreeItem[] selection = tree.getSelection();
+        if (selection.length == 0) {
+            return 0;
+        }
+        return tree.indexOf(selection[0]);
     }
 
     private void moveColumn(int curIndex, int newIndex)
@@ -340,7 +374,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         boolean hasVisibleColumns = false;
         for (DBDAttributeConstraint constraint : dataFilter.getConstraints()) {
             // Set correct visible position
-            constraint.setVisualPosition(this.constraints.indexOf(constraint));
+//            constraint.setVisualPosition(this.constraints.indexOf(constraint));
             if (constraint.isVisible()) {
                 hasVisibleColumns = true;
             }
@@ -361,7 +395,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
         resultSetViewer.setDataFilter(
             dataFilter,
-            !dataFilter.equalFilters(resultSetViewer.getModel().getDataFilter()));
+            !dataFilter.equals(resultSetViewer.getModel().getDataFilter()));
         super.okPressed();
     }
 
@@ -371,11 +405,16 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         @Override
         public Image getColumnImage(Object element, int columnIndex)
         {
-            DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
-            if (columnIndex == 0 && constraint.getAttribute() instanceof DBPImageProvider) {
-                return DBeaverIcons.getImage(((DBPImageProvider) constraint.getAttribute()).getObjectImage());
+            DBDAttributeBinding binding = (DBDAttributeBinding) element;
+            if (columnIndex == 0) {
+                if (binding.getMetaAttribute() instanceof DBPImageProvider) {
+                    return DBeaverIcons.getImage(((DBPImageProvider) binding.getMetaAttribute()).getObjectImage());
+                } else {
+                    return null;
+                }
             }
             if (columnIndex == 2) {
+                DBDAttributeConstraint constraint = getBindingConstraint(binding);
                 if (constraint.getOrderPosition() > 0) {
                     return DBeaverIcons.getImage(constraint.isOrderDescending() ? UIIcon.SORT_DECREASE : UIIcon.SORT_INCREASE);
                 }
@@ -386,7 +425,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         @Override
         public String getColumnText(Object element, int columnIndex)
         {
-            DBDAttributeConstraint constraint = (DBDAttributeConstraint) element;
+            DBDAttributeBinding binding = (DBDAttributeBinding) element;
+            DBDAttributeConstraint constraint = getBindingConstraint(binding);
             switch (columnIndex) {
                 case 0: return constraint.getAttribute().getName();
                 case 1: return String.valueOf(constraint.getOriginalVisualPosition() + 1);
@@ -413,12 +453,22 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     }
 
+    @NotNull
+    private DBDAttributeConstraint getBindingConstraint(DBDAttributeBinding binding) {
+        for (DBDAttributeConstraint constraint : constraints) {
+            if (constraint.matches(binding, true)) {
+                return constraint;
+            }
+        }
+        throw new IllegalStateException("Can't find constraint for binding " + binding);
+    }
+
     class CheckStateProvider implements ICheckStateProvider {
 
         @Override
         public boolean isChecked(Object element)
         {
-            return ((DBDAttributeConstraint)element).isVisible();
+            return getBindingConstraint(((DBDAttributeBinding)element)).isVisible();
         }
 
         @Override
