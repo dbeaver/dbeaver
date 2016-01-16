@@ -35,19 +35,20 @@ import java.util.List;
  */
 public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferrer
 {
+    @NotNull
     private final DBVEntity entity;
     private final List<DBVEntityConstraintColumn> attributes = new ArrayList<>();
     private DBSEntityConstraintType type;
     private String name;
 
-    public DBVEntityConstraint(DBVEntity entity, DBSEntityConstraintType type, String name)
+    public DBVEntityConstraint(@NotNull DBVEntity entity, DBSEntityConstraintType type, String name)
     {
         this.entity = entity;
         this.type = type;
         this.name = (name == null ? type.getName() : name);
     }
 
-    public DBVEntityConstraint(DBVEntity entity, DBVEntityConstraint copy) {
+    public DBVEntityConstraint(@NotNull DBVEntity entity, DBVEntityConstraint copy) {
         this.entity = entity;
         this.type = copy.type;
         this.name = copy.name;
@@ -73,6 +74,11 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
     @Override
     public DBVEntity getParentObject()
     {
+        return entity;
+    }
+
+    @NotNull
+    public DBVEntity getEntity() {
         return entity;
     }
 

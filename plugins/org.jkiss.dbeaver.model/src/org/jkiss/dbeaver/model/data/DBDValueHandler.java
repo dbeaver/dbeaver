@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  * DBD Value Handler.
  * Extract, edit and bind database values.
  */
-public interface DBDValueHandler 
+public interface DBDValueHandler extends DBDValueRenderer
 {
     /**
      * Gets value object's type.
@@ -100,17 +100,6 @@ public interface DBDValueHandler
      * @param value value
      */
     void releaseValueObject(@Nullable Object value);
-
-    /**
-     * Converts value to human readable format
-     *
-     * @param column column
-     * @param value value
-     * @param format string format
-     * @return formatted string
-     */
-    @NotNull
-    String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format);
 
     /**
      * List of logical operation supported by underlying values

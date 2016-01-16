@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -161,13 +162,10 @@ public class DBNModel implements IResourceChangeListener {
         if (node != null) {
             return node;
         }
-        List<DBSObject> path = new ArrayList<>();
-        for (DBSObject item = object; item != null; item = item.getParentObject()) {
-            path.add(0, item);
-        }
-        for (int i = 0; i < path.size() - 1; i++) {
-            DBSObject item = path.get(i);
-            DBSObject nextItem = path.get(i + 1);
+        DBSObject[] path = DBUtils.getObjectPath(object, true);
+        for (int i = 0; i < path.length - 1; i++) {
+            DBSObject item = path[i];
+            DBSObject nextItem = path[i + 1];
             node = getNodeByObject(item);
             if (node == null) {
                 log.warn("Can't find tree node for object " + item.getName() + " (" + item.getClass().getName() + ")");
@@ -284,12 +282,9 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
         }
-        List<DBSObject> path = new ArrayList<>();
-        for (DBSObject item = object.getParentObject(); item != null; item = item.getParentObject()) {
-            path.add(0, item);
-        }
-        for (int i = 0; i < path.size(); i++) {
-            DBSObject item = path.get(i);
+        DBSObject[] path = DBUtils.getObjectPath(object, false);
+        for (int i = 0; i < path.length; i++) {
+            DBSObject item = path[i];
             node = getNodeByObject(item);
             if (node == null) {
                 // Parent node read

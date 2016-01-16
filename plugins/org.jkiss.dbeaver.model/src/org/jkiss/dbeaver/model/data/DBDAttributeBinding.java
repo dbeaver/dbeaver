@@ -218,12 +218,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     @NotNull
     public DBDAttributeBinding getTopParent() {
-        for (DBDAttributeBinding binding = this; binding != null ;binding = binding.parent) {
+        for (DBDAttributeBinding binding = this; ; binding = binding.parent) {
             if (binding.parent == null) {
                 return binding;
             }
         }
-        return this;
     }
 
     /**

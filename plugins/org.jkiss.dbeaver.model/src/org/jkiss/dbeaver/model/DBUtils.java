@@ -444,11 +444,16 @@ public final class DBUtils {
      * @return object path
      */
     @NotNull
-    public static List<DBSObject> getObjectPath(DBSObject object, boolean includeSelf)
+    public static DBSObject[] getObjectPath(DBSObject object, boolean includeSelf)
     {
-        List<DBSObject> path = new ArrayList<>();
-        for (DBSObject obj = includeSelf ? object : object.getParentObject(); obj != null; obj = obj.getParentObject()) {
-            path.add(0, obj);
+        int depth = 0;
+        final DBSObject root = includeSelf ? object : object.getParentObject();
+        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            depth++;
+        }
+        DBSObject[] path = new DBSObject[depth];
+        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            path[depth-- - 1] = obj;
         }
         return path;
     }

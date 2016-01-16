@@ -194,4 +194,8 @@ public class DBVContainer extends DBVObject implements DBSObjectContainer {
         // do nothing
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }
