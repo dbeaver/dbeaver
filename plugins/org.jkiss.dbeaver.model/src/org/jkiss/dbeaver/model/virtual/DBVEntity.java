@@ -55,12 +55,35 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     private String description;
     private String descriptionColumnNames;
     List<DBVEntityConstraint> entityConstraints;
+    List<DBVEntityAttribute> entityAttributes;
     Map<String, String> properties;
 
     public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
         this.container = container;
         this.name = name;
         this.descriptionColumnNames = descriptionColumnNames;
+    }
+
+    public DBVEntity(DBVContainer container, DBVEntity copy) {
+        this.container = container;
+        this.name = copy.name;
+        this.descriptionColumnNames = copy.descriptionColumnNames;
+
+        if (!CommonUtils.isEmpty(copy.entityConstraints)) {
+            this.entityConstraints = new ArrayList<>(copy.entityConstraints.size());
+            for (DBVEntityConstraint c : copy.entityConstraints) {
+                this.entityConstraints.add(new DBVEntityConstraint(this, c));
+            }
+        }
+        if (!CommonUtils.isEmpty(copy.entityAttributes)) {
+            this.entityAttributes = new ArrayList<>(copy.entityAttributes.size());
+            for (DBVEntityAttribute attribute : copy.entityAttributes) {
+                this.entityAttributes.add(new DBVEntityAttribute(this, attribute));
+            }
+        }
+        if (!CommonUtils.isEmpty(copy.properties)) {
+            this.properties = new LinkedHashMap<>(copy.properties);
+        }
     }
 
     @Nullable
@@ -139,14 +162,35 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
+    @NotNull
     @Override
     public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
     {
         DBSEntity realEntity = getRealEntity(monitor);
         if (realEntity == null) {
-            return Collections.emptyList();
+            return entityAttributes;
         }
-        return realEntity.getAttributes(monitor);
+        final Collection<? extends DBSEntityAttribute> realAttributes = realEntity.getAttributes(monitor);
+        if (CommonUtils.isEmpty(realAttributes)) {
+            return entityAttributes;
+        }
+        // Merge with virtual attributes
+        final List<DBSEntityAttribute> attributes = new ArrayList<>(realAttributes);
+        for (DBVEntityAttribute va : entityAttributes) {
+            boolean found = false;
+            for (int i = 0; i < attributes.size(); i++) {
+                DBSEntityAttribute attr = attributes.get(i);
+                if (va.getName().equals(attr.getName())) {
+                    attributes.set(i, va);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                attributes.add(va);
+            }
+        }
+        return attributes;
     }
 
     @Nullable
@@ -159,6 +203,13 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             log.error("Can't obtain real entity's attributes", e);
             return null;
         }
+    }
+
+    void addAttribute(DBVEntityAttribute attribute) {
+        if (entityAttributes == null) {
+            entityAttributes = new ArrayList<>();
+        }
+        entityAttributes.add(attribute);
     }
 
     @Nullable
@@ -176,10 +227,15 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (entityConstraints.isEmpty()) {
             entityConstraints.add(new DBVEntityConstraint(this, DBSEntityConstraintType.VIRTUAL_KEY, "PRIMARY"));
         }
+        for (DBVEntityConstraint constraint : entityConstraints) {
+            if (constraint.getConstraintType().isUnique()) {
+                return constraint;
+            }
+        }
         return entityConstraints.get(0);
     }
 
-    public void addConstraint(DBVEntityConstraint constraint)
+    void addConstraint(DBVEntityConstraint constraint)
     {
         if (entityConstraints == null) {
             entityConstraints = new ArrayList<>();
@@ -216,14 +272,16 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         if (CommonUtils.isEmpty(descriptionColumnNames)) {
             return Collections.emptyList();
         }
-        java.util.List<DBSEntityAttribute> result = new ArrayList<>();
+        List<DBSEntityAttribute> result = new ArrayList<>();
         Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-        StringTokenizer st = new StringTokenizer(descriptionColumnNames, ",");
-        while (st.hasMoreTokens()) {
-            String colName = st.nextToken();
-            for (DBSEntityAttribute attr : attributes) {
-                if (colName.equalsIgnoreCase(attr.getName())) {
-                    result.add(attr);
+        if (!CommonUtils.isEmpty(attributes)) {
+            StringTokenizer st = new StringTokenizer(descriptionColumnNames, ",");
+            while (st.hasMoreTokens()) {
+                String colName = st.nextToken();
+                for (DBSEntityAttribute attr : attributes) {
+                    if (colName.equalsIgnoreCase(attr.getName())) {
+                        result.add(attr);
+                    }
                 }
             }
         }
@@ -233,6 +291,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public static String getDefaultDescriptionColumn(DBRProgressMonitor monitor, DBSEntityAttribute keyColumn)
         throws DBException
     {
+        assert keyColumn.getParentObject() != null;
+
         Collection<? extends DBSEntityAttribute> allColumns = keyColumn.getParentObject().getAttributes(monitor);
         if (allColumns == null || allColumns.isEmpty()) {
             return null;
@@ -283,21 +343,6 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return false;
     }
 
-    public void copyFrom(DBVEntity copy)
-    {
-        if (!CommonUtils.isEmpty(copy.entityConstraints)) {
-            this.entityConstraints = new ArrayList<>(copy.entityConstraints.size());
-            for (DBVEntityConstraint c : copy.entityConstraints) {
-                DBVEntityConstraint constraint = new DBVEntityConstraint(this, c.getConstraintType(), c.getName());
-                constraint.copyFrom(c);
-                this.entityConstraints.add(constraint);
-            }
-        }
-        if (!CommonUtils.isEmpty(copy.properties)) {
-            this.properties = new LinkedHashMap<>(copy.properties);
-        }
-    }
-
     @NotNull
     @Override
     public String getFullQualifiedName()
@@ -306,4 +351,5 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             container,
             this);
     }
+
 }

@@ -47,6 +47,15 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         this.name = (name == null ? type.getName() : name);
     }
 
+    public DBVEntityConstraint(DBVEntity entity, DBVEntityConstraint copy) {
+        this.entity = entity;
+        this.type = copy.type;
+        this.name = copy.name;
+        for (DBVEntityConstraintColumn col : copy.attributes) {
+            this.attributes.add(new DBVEntityConstraintColumn(this, col));
+        }
+    }
+
     @Override
     public List<DBVEntityConstraintColumn> getAttributeReferences(@Nullable DBRProgressMonitor monitor)
     {
@@ -117,11 +126,4 @@ public class DBVEntityConstraint implements DBSEntityConstraint, DBSEntityReferr
         attributes.add(new DBVEntityConstraintColumn(this, name));
     }
 
-    void copyFrom(DBVEntityConstraint constraint)
-    {
-        this.attributes.clear();
-        for (DBVEntityConstraintColumn col : constraint.attributes) {
-            this.attributes.add(new DBVEntityConstraintColumn(this, col.getAttributeName()));
-        }
-    }
 }

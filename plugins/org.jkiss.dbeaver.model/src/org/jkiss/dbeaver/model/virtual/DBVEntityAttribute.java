@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
+import java.util.Map;
+
 /**
  * Virtual attribute
  */
@@ -36,9 +38,16 @@ public class DBVEntityAttribute extends AbstractAttribute implements DBSEntityAt
 {
     private final DBVEntity entity;
     private String name;
+    private Map<String, Long> valueColors;
 
     public DBVEntityAttribute(DBVEntity entity, String name) {
         this.entity = entity;
+        this.name = name;
+    }
+
+    public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute copy) {
+        this.entity = entity;
+        this.name = copy.name;
     }
 
     @Nullable
