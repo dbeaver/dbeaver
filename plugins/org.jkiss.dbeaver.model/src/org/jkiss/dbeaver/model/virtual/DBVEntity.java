@@ -205,11 +205,26 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         }
     }
 
-    void addAttribute(DBVEntityAttribute attribute) {
+    @Nullable
+    public DBSEntityAttribute getVirtualAttribute(String attributeName)
+    {
+        for (DBVEntityAttribute attr : entityAttributes) {
+            if (attr.getName().equals(attributeName)) {
+                return attr;
+            }
+        }
+        return null;
+    }
+
+    void addVirtualAttribute(DBVEntityAttribute attribute) {
         if (entityAttributes == null) {
             entityAttributes = new ArrayList<>();
         }
         entityAttributes.add(attribute);
+    }
+
+    void resetVirtualAttribute(DBVEntityAttribute attribute) {
+        entityAttributes.remove(attribute);
     }
 
     @Nullable

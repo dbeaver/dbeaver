@@ -225,7 +225,7 @@ public class DBVModel extends DBVContainer {
                     curConstraint.addAttribute(atts.getValue(ATTR_NAME));
                 } else if (curEntity != null) {
                     curAttribute = new DBVEntityAttribute(curEntity, atts.getValue(ATTR_NAME));
-                    curEntity.addAttribute(curAttribute);
+                    curEntity.addVirtualAttribute(curAttribute);
                 }
             }
         }
