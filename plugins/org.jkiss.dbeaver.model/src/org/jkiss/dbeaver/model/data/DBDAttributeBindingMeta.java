@@ -37,6 +37,8 @@ import java.util.List;
  */
 public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     @NotNull
+    private final DBPDataSource dataSource;
+    @NotNull
     private final DBCAttributeMetaData metaAttribute;
     @Nullable
     private DBSEntityAttribute entityAttribute;
@@ -49,8 +51,21 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
         @NotNull DBPDataSource dataSource,
         @NotNull DBCAttributeMetaData metaAttribute)
     {
-        super(dataSource, null, DBUtils.findValueHandler(dataSource, metaAttribute));
+        super(DBUtils.findValueHandler(dataSource, metaAttribute));
+        this.dataSource = dataSource;
         this.metaAttribute = metaAttribute;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
+    @Nullable
+    @Override
+    public DBDAttributeBinding getParentObject() {
+        return null;
     }
 
     /**
@@ -170,7 +185,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
         this.entityAttribute = entityAttribute;
         if (entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
-            valueRenderer = valueHandler = DBUtils.findValueHandler(dataSource, entityAttribute);
+            valueRenderer = valueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
             return true;
         }
         return false;
