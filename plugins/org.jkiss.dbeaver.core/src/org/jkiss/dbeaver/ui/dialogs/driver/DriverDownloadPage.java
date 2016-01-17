@@ -25,7 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDrivers;
 import org.jkiss.utils.CommonUtils;
@@ -62,7 +62,7 @@ abstract class DriverDownloadPage extends WizardPage {
                 new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        RuntimeUtils.openWebBrowser(driver.getWebURL());
+                        WebUtils.openWebBrowser(driver.getWebURL());
                     }
                 });
             link.setToolTipText(driver.getWebURL());

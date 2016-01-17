@@ -268,7 +268,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 Link urlLabel = UIUtils.createLink(infoGroup, "<a>" + driver.getWebURL() + "</a>", new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        RuntimeUtils.launchProgram(driver.getWebURL());
+                        UIUtils.launchProgram(driver.getWebURL());
                     }
                 });
                 urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));

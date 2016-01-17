@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.swt.program.Program;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -155,20 +154,6 @@ public class RuntimeUtils {
         long min = sec / 60;
         sec -= min * 60;
         return String.valueOf(min) + " min " + String.valueOf(sec) + " sec";
-    }
-
-    public static void launchProgram(String path)
-    {
-        Program.launch(path);
-    }
-
-    public static void openWebBrowser(String url)
-    {
-        url = url.trim();
-        if (!url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith("ftp://")) {
-            url = "http://" + url;
-        }
-        Program.launch(url);
     }
 
     public static File getPlatformFile(String platformURL) throws IOException

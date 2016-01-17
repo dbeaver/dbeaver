@@ -158,20 +158,10 @@ public class ResultSetModel {
         return attributes;
     }
 
-    public int getAttributeCount()
-    {
-        return attributes.length;
-    }
-
     @NotNull
     public DBDAttributeBinding getAttribute(int index)
     {
         return attributes[index];
-    }
-
-    public int getVisibleAttributeIndex(@NotNull DBDAttributeBinding attribute)
-    {
-        return visibleAttributes.indexOf(attribute);
     }
 
     @NotNull
@@ -399,7 +389,6 @@ public class ResultSetModel {
     /**
      * Sets new metadata of result set
      * @param newAttributes attributes metadata
-     * @return true if new metadata differs from old one, false otherwise
      */
     public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes)
     {

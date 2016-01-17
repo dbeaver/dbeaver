@@ -43,6 +43,7 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextService;
@@ -1356,6 +1357,11 @@ public class UIUtils {
         Rectangle bounds = control.getBounds();
         Point ext = e.gc.textExtent(message);
         e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
+    }
+
+    public static void launchProgram(String path)
+    {
+        Program.launch(path);
     }
 
     private static class SaveRunner implements Runnable {
