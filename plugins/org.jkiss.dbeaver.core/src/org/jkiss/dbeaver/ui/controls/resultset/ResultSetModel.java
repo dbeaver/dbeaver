@@ -46,8 +46,6 @@ public class ResultSetModel {
     private DBDAttributeBinding documentAttribute = null;
     private DBDDataFilter dataFilter;
     private boolean singleSourceCells;
-    //private boolean refreshDynamicMeta;
-
 
     // Data
     private List<ResultSetRow> curRows = new ArrayList<>();
@@ -61,6 +59,23 @@ public class ResultSetModel {
     private transient boolean metadataChanged;
     private transient boolean sourceChanged;
     private transient boolean metadataDynamic;
+
+    private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
+        @Override
+        public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
+            final DBDAttributeConstraint c1 = dataFilter.getConstraint(o1);
+            final DBDAttributeConstraint c2 = dataFilter.getConstraint(o2);
+            if (c1 == null) {
+                log.debug("Missing constraint for " + o1);
+                return -1;
+            }
+            if (c2 == null) {
+                log.debug("Missing constraint for " + o2);
+                return 1;
+            }
+            return c1.getVisualPosition() - c2.getVisualPosition();
+        }
+    };
 
     public ResultSetModel()
     {
@@ -490,6 +505,7 @@ public class ResultSetModel {
             this.dataFilter = createDataFilter();
             updateDataFilter(prevFilter);
         }
+        Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
         if (metadataChanged) {
             // Check single source flag
@@ -547,17 +563,6 @@ public class ResultSetModel {
     public boolean isDirty()
     {
         return changesCount != 0;
-    }
-
-    private void fillVisibleAttributes() {
-        this.visibleAttributes.clear();
-        for (DBDAttributeBinding binding : this.attributes) {
-            DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
-            if (pseudoAttribute == null) {
-                // Make visible "real" attributes
-                this.visibleAttributes.add(binding);
-            }
-        }
     }
 
     public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute)
@@ -723,6 +728,7 @@ public class ResultSetModel {
                 visibleAttributes.remove((DBDAttributeBinding) constraint.getAttribute());
             }
         }
+        Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
         this.dataFilter.setWhere(filter.getWhere());
         this.dataFilter.setOrder(filter.getOrder());
@@ -774,6 +780,17 @@ public class ResultSetModel {
         });
         for (int i = 0; i < curRows.size(); i++) {
             curRows.get(i).setVisualNumber(i);
+        }
+    }
+
+    private void fillVisibleAttributes() {
+        this.visibleAttributes.clear();
+        for (DBDAttributeBinding binding : this.attributes) {
+            DBDPseudoAttribute pseudoAttribute = binding.getMetaAttribute().getPseudoAttribute();
+            if (pseudoAttribute == null) {
+                // Make visible "real" attributes
+                this.visibleAttributes.add(binding);
+            }
         }
     }
 

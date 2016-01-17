@@ -47,10 +47,8 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.*;
+import java.util.List;
 
 class FilterSettingsDialog extends HelpEnabledDialog {
 
@@ -66,6 +64,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     };
 
     private final ResultSetViewer resultSetViewer;
+    private final List<DBDAttributeBinding> attributes;
 
     private CheckboxTreeViewer columnsViewer;
     private DBDDataFilter dataFilter;
@@ -80,13 +79,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
         this.constraints = new ArrayList<>(dataFilter.getConstraints());
-        Collections.sort(this.constraints, new Comparator<DBDAttributeConstraint>() {
-            @Override
-            public int compare(DBDAttributeConstraint o1, DBDAttributeConstraint o2)
-            {
-                return o1.getVisualPosition() - o2.getVisualPosition();
-            }
-        });
+        this.attributes = Arrays.asList(resultSetViewer.getModel().getAttributes());
     }
 
     @Override
@@ -288,6 +281,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         createCustomFilters(tabFolder);
 
         // Fill columns
+        columnsViewer.setInput(attributes);
         refreshData();
 
         // Pack UI
@@ -309,9 +303,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     private void refreshData() {
-        final java.util.List<DBDAttributeBinding> attrs = Arrays.asList(resultSetViewer.getModel().getAttributes());
-        Collections.sort(attrs, POSITION_SORTER);
-        columnsViewer.setInput(attrs);
+        Collections.sort(attributes, POSITION_SORTER);
+        columnsViewer.refresh();
         columnsViewer.expandAll();
     }
 
