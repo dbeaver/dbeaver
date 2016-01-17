@@ -31,4 +31,7 @@ public interface DBDValueHandlerRegistry
     @Nullable
     DBDValueHandlerProvider getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject);
 
+    @Nullable
+    DBDAttributeTransformer[] findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject);
+
 }

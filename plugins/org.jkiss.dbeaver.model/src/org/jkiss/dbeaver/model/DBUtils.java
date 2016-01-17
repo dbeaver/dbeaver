@@ -507,6 +507,12 @@ public final class DBUtils {
         return typeHandler;
     }
 
+    @Nullable
+    public static DBDAttributeTransformer[] findAttributeTransformers(DBPDataSource dataSource, DBSTypedObject column)
+    {
+        return dataSource.getContainer().getApplication().getValueHandlerRegistry().findTransformers(dataSource, column);
+    }
+
     /**
      * Identifying association is an association which associated entity's attributes are included into owner entity primary key. I.e. they
      * identifies entity.

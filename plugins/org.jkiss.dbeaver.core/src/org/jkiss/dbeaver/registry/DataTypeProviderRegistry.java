@@ -24,6 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -96,6 +98,10 @@ public class DataTypeProviderRegistry implements DBDValueHandlerRegistry
                 return dtProvider.getInstance();
             }
         }
+        return null;
+    }
+
+    public DBDAttributeTransformer[] findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject) {
         return null;
     }
 

@@ -443,7 +443,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             DBDAttributeBinding column = (DBDAttributeBinding)(!recordMode ?  cell.col : cell.row);
             ResultSetRow row = (ResultSetRow) (!recordMode ?  cell.row : cell.col);
             Object value = controller.getModel().getCellValue(column, row);
-            String cellText = column.getValueHandler().getValueDisplayString(
+            String cellText = column.getValueRenderer().getValueDisplayString(
                 column.getAttribute(),
                 value,
                 format);
@@ -1266,7 +1266,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                         return "[" + ((DBDStructure) value).getDataType().getName() + "]";
                     }
                 }
-                return attr.getValueHandler().getValueDisplayString(
+                return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
                     DBDDisplayFormat.UI);

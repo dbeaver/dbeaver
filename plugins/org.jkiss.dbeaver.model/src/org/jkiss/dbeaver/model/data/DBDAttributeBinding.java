@@ -44,6 +44,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     protected final DBDAttributeBinding parent;
     @NotNull
     protected DBDValueHandler valueHandler;
+    @NotNull
+    protected DBDValueRenderer valueRenderer;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 
@@ -55,6 +57,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         this.dataSource = dataSource;
         this.parent = parent;
         this.valueHandler = valueHandler;
+        this.valueRenderer = valueHandler;
     }
 
     @NotNull
@@ -115,6 +118,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     @NotNull
+    public DBDValueRenderer getValueRenderer() {
+        return valueRenderer;
+    }
+
+    @NotNull
     public DBSAttributeBase getAttribute()
     {
         DBSEntityAttribute attr = getEntityAttribute();
@@ -151,6 +159,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public boolean hasNestedBindings() {
         return nestedBindings != null;
+    }
+
+    public void setNestedBindings(@NotNull List<DBDAttributeBinding> nestedBindings) {
+        this.nestedBindings = nestedBindings;
     }
 
     @Nullable
@@ -242,6 +254,12 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSAttributeBase attribute = getAttribute();
+        final DBDAttributeTransformer[] transformers = DBUtils.findAttributeTransformers(session.getDataSource(), attribute);
+        if (transformers != null) {
+            for (DBDAttributeTransformer transformer : transformers) {
+                transformer.transformAttribute(session, this, rows);
+            }
+        }
         switch (attribute.getDataKind()) {
             case STRUCT:
             case DOCUMENT:
