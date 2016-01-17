@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ProgramInfo;
 
 /**
@@ -74,7 +74,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public void openResource(IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
-            RuntimeUtils.launchProgram(resource.getLocation().toFile().getAbsolutePath());
+            UIUtils.launchProgram(resource.getLocation().toFile().getAbsolutePath());
         }
     }
 

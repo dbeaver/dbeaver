@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class VersionUpdateDialog extends Dialog {
@@ -125,7 +124,7 @@ public class VersionUpdateDialog extends Dialog {
     {
         if (buttonId == INFO_ID) {
             if (newVersion != null) {
-                RuntimeUtils.launchProgram(newVersion.getBaseURL());
+                UIUtils.launchProgram(newVersion.getBaseURL());
             }
         }
         close();

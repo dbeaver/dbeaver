@@ -96,7 +96,7 @@ class MySQLDatabaseExportWizard extends AbstractToolWizard<MySQLCatalog> impleme
                 MySQLMessages.tools_db_export_wizard_title,
                 NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getDatabaseObject().getName()),
                 SWT.ICON_INFORMATION);
-        RuntimeUtils.launchProgram(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
+        UIUtils.launchProgram(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override

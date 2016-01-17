@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -170,7 +169,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
             } finally {
                 ContentUtils.close(outputStream);
             }
-            RuntimeUtils.launchProgram(reportFile.getAbsolutePath());
+            UIUtils.launchProgram(reportFile.getAbsolutePath());
         } catch (IOException e) {
             showError(e.getMessage());
             log.error(e);

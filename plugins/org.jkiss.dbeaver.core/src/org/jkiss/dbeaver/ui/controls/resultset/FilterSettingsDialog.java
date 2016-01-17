@@ -56,6 +56,15 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
 
+    public final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
+        @Override
+        public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
+            final DBDAttributeConstraint c1 = getBindingConstraint(o1);
+            final DBDAttributeConstraint c2 = getBindingConstraint(o2);
+            return c1.getVisualPosition() - c2.getVisualPosition();
+        }
+    };
+
     private final ResultSetViewer resultSetViewer;
 
     private CheckboxTreeViewer columnsViewer;
@@ -106,9 +115,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 @Override
                 public Object[] getChildren(Object parentElement) {
                     final java.util.List<DBDAttributeBinding> nestedBindings = ((DBDAttributeBinding) parentElement).getNestedBindings();
-                    return nestedBindings == null || nestedBindings.isEmpty() ?
-                        null :
-                        nestedBindings.toArray(new DBDAttributeBinding[nestedBindings.size()]);
+                    if (nestedBindings == null || nestedBindings.isEmpty()) {
+                        return null;
+                    }
+                    final DBDAttributeBinding[] res = nestedBindings.toArray(new DBDAttributeBinding[nestedBindings.size()]);
+                    Arrays.sort(res, POSITION_SORTER);
+                    return res;
                 }
 
                 @Override
@@ -297,7 +309,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     private void refreshData() {
-        columnsViewer.setInput(Arrays.asList(resultSetViewer.getModel().getAttributes()));
+        final java.util.List<DBDAttributeBinding> attrs = Arrays.asList(resultSetViewer.getModel().getAttributes());
+        Collections.sort(attrs, POSITION_SORTER);
+        columnsViewer.setInput(attrs);
         columnsViewer.expandAll();
     }
 
@@ -311,10 +325,17 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     private void moveColumn(int curIndex, int newIndex)
     {
-        DBDAttributeConstraint constraint = constraints.remove(curIndex);
-        constraints.add(newIndex, constraint);
-        columnsViewer.refresh();
-        columnsViewer.setSelection(columnsViewer.getSelection());
+        final DBDAttributeConstraint c1 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(curIndex).getData());
+        final DBDAttributeConstraint c2 = getBindingConstraint((DBDAttributeBinding) columnsViewer.getTree().getItem(newIndex).getData());
+        final int vp2 = c2.getVisualPosition();
+        c2.setVisualPosition(c1.getVisualPosition());
+        c1.setVisualPosition(vp2);
+        refreshData();
+        //columnsViewer.sh
+//        DBDAttributeConstraint constraint = constraints.remove(curIndex);
+//        constraints.add(newIndex, constraint);
+//        columnsViewer.refresh();
+//        columnsViewer.setSelection(columnsViewer.getSelection());
     }
 
     private void createCustomFilters(TabFolder tabFolder)

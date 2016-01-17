@@ -24,7 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverFileSource;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -112,7 +112,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         UIUtils.runInDetachedUI(getShell(), new Runnable() {
             @Override
             public void run() {
-                RuntimeUtils.openWebBrowser(fileSource.getUrl());
+                WebUtils.openWebBrowser(fileSource.getUrl());
             }
         });
         DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());

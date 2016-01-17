@@ -40,7 +40,6 @@ import org.eclipse.ui.handlers.IHandlerService;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.Activator;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -155,7 +154,7 @@ public class AboutBoxDialog extends Dialog
         Link siteLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_WEBSITE)), new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                RuntimeUtils.launchProgram(e.text);
+                UIUtils.launchProgram(e.text);
             }
         });
         siteLink.setBackground(background);
@@ -166,7 +165,7 @@ public class AboutBoxDialog extends Dialog
         Link emailLink = UIUtils.createLink(group, UIUtils.makeAnchor(product.getProperty(PRODUCT_PROP_EMAIL)), new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                RuntimeUtils.launchProgram("mailto:" + e.text); //$NON-NLS-1$
+                UIUtils.launchProgram("mailto:" + e.text); //$NON-NLS-1$
             }
         });
         emailLink.setBackground(background);

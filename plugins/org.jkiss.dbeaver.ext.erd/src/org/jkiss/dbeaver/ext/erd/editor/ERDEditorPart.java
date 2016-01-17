@@ -79,7 +79,6 @@ import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -711,7 +710,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } finally {
                 ContentUtils.close(fos);
             }
-            RuntimeUtils.launchProgram(filePath);
+            UIUtils.launchProgram(filePath);
             //UIUtils.showMessageBox(shell, "Save ERD", "Diagram has been exported to " + filePath, SWT.ICON_INFORMATION);
         } catch (Exception e) {
             UIUtils.showErrorDialog(getSite().getShell(), "Save ERD as image", null, e);
