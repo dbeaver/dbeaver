@@ -19,29 +19,17 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPQualifiedObject;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
+import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Nested attribute binding
  */
-public abstract class DBDAttributeBindingNested extends DBDAttributeBinding {
-    protected DBDAttributeBindingNested(@NotNull DBPDataSource dataSource, @Nullable DBDAttributeBinding parent, @NotNull DBDValueHandler valueHandler) {
-        super(dataSource, parent, valueHandler);
-    }
-/*
+public abstract class DBDAttributeBindingNested extends DBDAttributeBinding implements DBCAttributeMetaData {
     @NotNull
     protected final DBDAttributeBinding parent;
 
@@ -57,349 +45,55 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding {
 
     @NotNull
     public DBPDataSource getDataSource() {
-        return dataSource;
-    }
-
-    */
-/**
-     * Attribute index in result set
-     * @return attribute index (zero based)
-     *//*
-
-    @Override
-    public abstract int getOrdinalPosition();
-
-    */
-/**
-     * Attribute label
-     *//*
-
-    @NotNull
-    public abstract String getLabel();
-
-    */
-/**
-     * Attribute name
-     *//*
-
-    @NotNull
-    public abstract String getName();
-
-    */
-/**
-     * Meta attribute (obtained from result set)
-     *//*
-
-    @NotNull
-    public abstract DBCAttributeMetaData getMetaAttribute();
-
-    */
-/**
-     * Entity attribute (may be null)
-     *//*
-
-    @Nullable
-    public abstract DBSEntityAttribute getEntityAttribute();
-
-    */
-/**
-     * Row identifier (may be null)
-     *//*
-
-    @Nullable
-    public abstract DBDRowIdentifier getRowIdentifier();
-
-    @Nullable
-    public abstract List<DBSEntityReferrer> getReferrers();
-
-    @Nullable
-    public abstract Object extractNestedValue(@NotNull Object ownerValue)
-        throws DBCException;
-
-    */
-/**
-     * Attribute value handler
-     *//*
-
-    @NotNull
-    public DBDValueHandler getValueHandler() {
-        return valueHandler;
-    }
-
-    @NotNull
-    public DBDValueRenderer getValueRenderer() {
-        return valueRenderer;
-    }
-
-    @NotNull
-    public DBSAttributeBase getAttribute()
-    {
-        DBSEntityAttribute attr = getEntityAttribute();
-        return attr == null ? getMetaAttribute() : attr;
-    }
-
-    public boolean matches(DBSAttributeBase attr, boolean searchByName) {
-        if (attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr)) {
-            return true;
-        }
-        if (searchByName) {
-            if (attr instanceof DBDAttributeBindingNested) {
-                if (getLevel() != ((DBDAttributeBindingNested) attr).getLevel()) {
-                    return false;
-                }
-                // Match all hierarchy names
-                for (DBDAttributeBindingNested a1 = (DBDAttributeBindingNested) attr, a2 = this; a1 != null && a2 != null; a1 = a1.getParentObject(), a2 = a2.getParentObject()) {
-                    if (!attr.getName().equals(this.getName())) {
-                        return false;
-                    }
-                }
-                return true;
-            } else if (attr != null) {
-                return attr.getName().equals(this.getName());
-            }
-        }
-        return false;
+        return parent.getDataSource();
     }
 
     @Nullable
-    public List<DBDAttributeBindingNested> getNestedBindings() {
-        return nestedBindings;
-    }
-
-    public boolean hasNestedBindings() {
-        return nestedBindings != null;
-    }
-
-    public void setNestedBindings(@NotNull List<DBDAttributeBindingNested> nestedBindings) {
-        this.nestedBindings = nestedBindings;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        DBSEntityAttribute attr = getEntityAttribute();
-        return attr == null ? null : attr.getDescription();
-    }
-
-    @Nullable
-    public DBDAttributeBindingNested getParentObject() {
+    public DBDAttributeBinding getParentObject() {
         return parent;
     }
 
+    /**
+     * Meta attribute (obtained from result set)
+     */
     @NotNull
-    @Override
-    public String getFullQualifiedName() {
-        if (parent == null) {
-            return DBUtils.getQuotedIdentifier(dataSource, getName());
-        }
-        StringBuilder query = new StringBuilder();
-        boolean hasPrevIdentifier = false;
-        for (DBDAttributeBindingNested attribute = this; attribute != null; attribute = attribute.parent) {
-            if (attribute.isPseudoAttribute()) {
-                // Skip pseudo attributes (e.g. Mongo root document)
-                continue;
-            }
-            if (hasPrevIdentifier) {
-                query.insert(0, '.');
-            }
-            query.insert(0, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
-            hasPrevIdentifier = true;
-        }
-
-        return query.toString();
+    public DBCAttributeMetaData getMetaAttribute() {
+        return this;
     }
 
     @Override
-    public boolean isPersisted() {
-        return false;
+    public boolean isReadOnly() {
+        assert parent != null;
+        return parent.getMetaAttribute().isReadOnly();
     }
-
-    @Override
-    public String toString() {
-        return getName() + " [" + getOrdinalPosition() + "]";
-    }
-
-    */
-/**
-     * Get parent by level.
-     * @param grand 0 - self, 1 - direct parent, 2 - grand parent, etc
-     * @return parent or null
-     *//*
 
     @Nullable
-    public DBDAttributeBindingNested getParent(int grand) {
-        if (grand == 0) {
-            return this;
-        }
-        DBDAttributeBindingNested p = this;
-        for (int i = 0; i < grand; i++) {
-            assert p != null;
-            p = p.parent;
-        }
-        return p;
+    @Override
+    public DBDPseudoAttribute getPseudoAttribute() {
+        return null;
     }
 
-    @NotNull
-    public DBDAttributeBindingNested getTopParent() {
-        for (DBDAttributeBindingNested binding = this; ; binding = binding.parent) {
-            if (binding.parent == null) {
-                return binding;
-            }
-        }
+    @Nullable
+    @Override
+    public DBCEntityMetaData getEntityMetaData() {
+        assert parent != null;
+        return parent.getMetaAttribute().getEntityMetaData();
     }
 
-    */
-/**
-     * Attribute level. Zero based
-     * @return attribute level (depth)
-     *//*
-
-    public int getLevel() {
-        if (parent == null) {
-            return 0;
-        }
-        int level = 0;
-        for (DBDAttributeBindingNested binding = parent; binding != null; binding = binding.parent) {
-            level++;
-        }
-        return level;
+    /**
+     * Row identifier (may be null)
+     */
+    @Nullable
+    public DBDRowIdentifier getRowIdentifier() {
+        assert parent != null;
+        return parent.getRowIdentifier();
     }
 
-    public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
-        DBSAttributeBase attribute = getAttribute();
-        final DBDAttributeTransformer[] transformers = DBUtils.findAttributeTransformers(session.getDataSource(), attribute);
-        if (transformers != null) {
-            for (DBDAttributeTransformer transformer : transformers) {
-                transformer.transformAttribute(session, this, rows);
-            }
-        }
-        switch (attribute.getDataKind()) {
-            case STRUCT:
-            case DOCUMENT:
-            case OBJECT:
-                DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
-                if (dataType instanceof DBSEntity) {
-                    createNestedTypeBindings(session, (DBSEntity) dataType, rows);
-                    return;
-                }
-                // Data type was not resolved - let's threat it as ANY
-            case ANY:
-                // Nested binding must be resolved for each value
-                // Analyse all read values
-                resolveMapsFromData(session, rows);
-                break;
-            case ARRAY:
-                //
-                DBSDataType collectionType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
-                if (collectionType != null) {
-                    DBSDataType componentType = collectionType.getComponentType(session.getProgressMonitor());
-                    if (componentType instanceof DBSEntity) {
-                        createNestedTypeBindings(session, (DBSEntity) componentType, rows);
-                        return;
-                    }
-                }
-                // No component type found.
-                // Array items should be resolved in a lazy mode
-                resolveMapsFromData(session, rows);
-                break;
-        }
-
+    @Nullable
+    @Override
+    public List<DBSEntityReferrer> getReferrers() {
+        return null;
     }
 
-    private void resolveMapsFromData(DBCSession session, List<Object[]> rows) throws DBException {
-        // Analyse rows and extract meta information from values
-        List<Pair<DBSAttributeBase, Object[]>> valueAttributes = new ArrayList<>();
-        for (int i = 0; i < rows.size(); i++) {
-            Object value = rows.get(i)[getOrdinalPosition()];
-            if (value instanceof DBDCollection) {
-                // Use first element to discover structure
-                DBDCollection collection = (DBDCollection) value;
-                if (collection.getItemCount() > 0) {
-                    value = collection.getItem(0);
-                }
-            }
 
-            if (value instanceof DBDStructure) {
-                DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
-                for (DBSAttributeBase attr : attributes) {
-                    Pair<DBSAttributeBase, Object[]> attrValue = null;
-                    for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
-                        if (pair.getFirst().getName().equals(attr.getName())) {
-                            attrValue = pair;
-                            break;
-                        }
-                    }
-                    if (attrValue != null) {
-                        // Update attr value
-                        attrValue.getSecond()[i] = ((DBDStructure) value).getAttributeValue(attr);
-                    } else {
-                        Object[] valueList = new Object[rows.size()];
-                        valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
-                        valueAttributes.add(
-                            new Pair<>(
-                                attr,
-                                valueList));
-                    }
-                }
-            }
-        }
-        if (!valueAttributes.isEmpty()) {
-            createNestedMapBindings(session, valueAttributes);
-        }
-    }
-
-    private void createNestedMapBindings(DBCSession session, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes) throws DBException {
-        int maxPosition = 0;
-        for (Pair<DBSAttributeBase, Object[]> attr : nestedAttributes) {
-            maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
-        }
-        if (nestedBindings == null) {
-            nestedBindings = new ArrayList<>();
-        } else {
-            for (DBDAttributeBindingNested binding : nestedBindings) {
-                maxPosition = Math.max(maxPosition, binding.getOrdinalPosition());
-            }
-        }
-        Object[] fakeRow = new Object[maxPosition + 1];
-
-        List<Object[]> fakeRows = Collections.singletonList(fakeRow);
-        for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
-            DBSAttributeBase attribute = nestedAttr.getFirst();
-            Object[] values = nestedAttr.getSecond();
-            DBDAttributeBindingNested nestedBinding = null;
-            for (DBDAttributeBindingNested binding : nestedBindings) {
-                if (binding.getName().equals(attribute.getName())) {
-                    nestedBinding = binding;
-                    break;
-                }
-            }
-            if (nestedBinding == null) {
-                nestedBinding = new DBDAttributeBindingType(this, attribute);
-                nestedBindings.add(nestedBinding);
-            }
-            if (attribute.getDataKind().isComplex()) {
-                // Make late binding for each row value
-                for (int i = 0; i < values.length; i++) {
-                    if (DBUtils.isNullValue(values[i])) {
-                        continue;
-                    }
-                    fakeRow[nestedBinding.getOrdinalPosition()] = values[i];
-                    nestedBinding.lateBinding(session, fakeRows);
-                }
-            }
-        }
-    }
-
-    private void createNestedTypeBindings(DBCSession session, DBSEntity type, List<Object[]> rows) throws DBException {
-        if (nestedBindings == null) {
-            nestedBindings = new ArrayList<>();
-        }
-        for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(type.getAttributes(session.getProgressMonitor()))) {
-            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, nestedAttr);
-            nestedBinding.lateBinding(session, rows);
-            nestedBindings.add(nestedBinding);
-        }
-    }
-
-*/
 }

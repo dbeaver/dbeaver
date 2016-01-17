@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * Collection element binding info
  */
-public class DBDAttributeBindingElement extends DBDAttributeBinding implements DBCAttributeMetaData, DBPImageProvider {
+public class DBDAttributeBindingElement extends DBDAttributeBindingNested implements DBPImageProvider {
     @NotNull
     private final DBDCollection collection;
     private final int index;
@@ -44,7 +44,7 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
         @NotNull DBDCollection collection,
         int index)
     {
-        super(parent.getDataSource(), parent, collection.getComponentValueHandler());
+        super(parent, collection.getComponentValueHandler());
         this.collection = collection;
         this.index = index;
     }
@@ -95,24 +95,6 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
         return null;
     }
 
-    @Override
-    public boolean isReadOnly() {
-        return false;
-    }
-
-    @Nullable
-    @Override
-    public DBDPseudoAttribute getPseudoAttribute() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBCEntityMetaData getEntityMetaData() {
-        assert parent != null;
-        return parent.getMetaAttribute().getEntityMetaData();
-    }
-
     /**
      * Attribute name
      */
@@ -123,34 +105,11 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
     }
 
     /**
-     * Meta attribute (obtained from result set)
-     */
-    @NotNull
-    public DBCAttributeMetaData getMetaAttribute() {
-        return this;
-    }
-
-    /**
      * Entity attribute
      */
     @Nullable
     public DBSEntityAttribute getEntityAttribute()
     {
-        return null;
-    }
-
-    /**
-     * Row identifier (may be null)
-     */
-    @Nullable
-    public DBDRowIdentifier getRowIdentifier() {
-        assert parent != null;
-        return parent.getRowIdentifier();
-    }
-
-    @Nullable
-    @Override
-    public List<DBSEntityReferrer> getReferrers() {
         return null;
     }
 
@@ -163,21 +122,6 @@ public class DBDAttributeBindingElement extends DBDAttributeBinding implements D
         }
         return collection.getItem(index);
     }
-
-/*
-    @Override
-    public boolean hasNestedBindings() {
-        assert parent != null;
-        return parent.hasNestedBindings();
-    }
-
-    @Nullable
-    @Override
-    public List<DBDAttributeBinding> getNestedBindings() {
-        assert parent != null;
-        return parent.getNestedBindings();
-    }
-*/
 
     @Override
     public String getTypeName() {

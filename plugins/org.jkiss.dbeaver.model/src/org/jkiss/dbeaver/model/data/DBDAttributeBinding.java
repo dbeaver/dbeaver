@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -39,31 +38,21 @@ import java.util.List;
  */
 public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
     @NotNull
-    protected final DBPDataSource dataSource;
-    @Nullable
-    protected final DBDAttributeBinding parent;
-    @NotNull
     protected DBDValueHandler valueHandler;
     @NotNull
     protected DBDValueRenderer valueRenderer;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 
-    protected DBDAttributeBinding(
-        @NotNull DBPDataSource dataSource,
-        @Nullable DBDAttributeBinding parent,
-        @NotNull DBDValueHandler valueHandler)
+    protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
-        this.dataSource = dataSource;
-        this.parent = parent;
         this.valueHandler = valueHandler;
         this.valueRenderer = valueHandler;
     }
 
-    @NotNull
-    public DBPDataSource getDataSource() {
-        return dataSource;
-    }
+    @Nullable
+    @Override
+    public abstract DBDAttributeBinding getParentObject();
 
     /**
      * Attribute index in result set
@@ -172,20 +161,15 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return attr == null ? null : attr.getDescription();
     }
 
-    @Nullable
-    public DBDAttributeBinding getParentObject() {
-        return parent;
-    }
-
     @NotNull
     @Override
     public String getFullQualifiedName() {
-        if (parent == null) {
-            return DBUtils.getQuotedIdentifier(dataSource, getName());
+        if (getParentObject() == null) {
+            return DBUtils.getQuotedIdentifier(getDataSource(), getName());
         }
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
-        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.parent) {
+        for (DBDAttributeBinding attribute = this; attribute != null; attribute = attribute.getParentObject()) {
             if (attribute.isPseudoAttribute()) {
                 // Skip pseudo attributes (e.g. Mongo root document)
                 continue;
@@ -193,7 +177,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             if (hasPrevIdentifier) {
                 query.insert(0, '.');
             }
-            query.insert(0, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
+            query.insert(0, DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName()));
             hasPrevIdentifier = true;
         }
 
@@ -223,15 +207,15 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         DBDAttributeBinding p = this;
         for (int i = 0; i < grand; i++) {
             assert p != null;
-            p = p.parent;
+            p = p.getParentObject();
         }
         return p;
     }
 
     @NotNull
     public DBDAttributeBinding getTopParent() {
-        for (DBDAttributeBinding binding = this; ; binding = binding.parent) {
-            if (binding.parent == null) {
+        for (DBDAttributeBinding binding = this; ; binding = binding.getParentObject()) {
+            if (binding.getParentObject() == null) {
                 return binding;
             }
         }
@@ -242,11 +226,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
      * @return attribute level (depth)
      */
     public int getLevel() {
-        if (parent == null) {
+        if (getParentObject() == null) {
             return 0;
         }
         int level = 0;
-        for (DBDAttributeBinding binding = parent; binding != null; binding = binding.parent) {
+        for (DBDAttributeBinding binding = getParentObject(); binding != null; binding = binding.getParentObject()) {
             level++;
         }
         return level;

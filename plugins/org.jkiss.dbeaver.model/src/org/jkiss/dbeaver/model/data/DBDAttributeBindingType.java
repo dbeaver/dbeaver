@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * Type attribute value binding info
  */
-public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCAttributeMetaData, DBPImageProvider {
+public class DBDAttributeBindingType extends DBDAttributeBindingNested implements DBPImageProvider {
     @NotNull
     private final DBSAttributeBase attribute;
 
@@ -41,7 +41,7 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
         @NotNull DBDAttributeBinding parent,
         @NotNull DBSAttributeBase attribute)
     {
-        super(parent.getDataSource(), parent, DBUtils.findValueHandler(parent.getDataSource(), attribute));
+        super(parent, DBUtils.findValueHandler(parent.getDataSource(), attribute));
         this.attribute = attribute;
     }
 
@@ -98,25 +98,6 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
         return null;
     }
 
-    @Override
-    public boolean isReadOnly() {
-        assert parent != null;
-        return parent.getMetaAttribute().isReadOnly();
-    }
-
-    @Nullable
-    @Override
-    public DBDPseudoAttribute getPseudoAttribute() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBCEntityMetaData getEntityMetaData() {
-        assert parent != null;
-        return parent.getMetaAttribute().getEntityMetaData();
-    }
-
     /**
      * Attribute name
      */
@@ -124,14 +105,6 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
     public String getName()
     {
         return attribute.getName();
-    }
-
-    /**
-     * Meta attribute (obtained from result set)
-     */
-    @NotNull
-    public DBCAttributeMetaData getMetaAttribute() {
-        return this;
     }
 
     /**
@@ -143,21 +116,6 @@ public class DBDAttributeBindingType extends DBDAttributeBinding implements DBCA
         if (attribute instanceof DBSEntityAttribute) {
             return (DBSEntityAttribute) attribute;
         }
-        return null;
-    }
-
-    /**
-     * Row identifier (may be null)
-     */
-    @Nullable
-    public DBDRowIdentifier getRowIdentifier() {
-        assert parent != null;
-        return parent.getRowIdentifier();
-    }
-
-    @Nullable
-    @Override
-    public List<DBSEntityReferrer> getReferrers() {
         return null;
     }
 
