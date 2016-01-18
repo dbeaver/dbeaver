@@ -2309,6 +2309,36 @@
             <type standard="SQLXML"/>
 
         </provider>
+
+        <transformer
+            class="org.jkiss.dbeaver.model.impl.data.transformers.ComplexTypeAttributeTransformer"
+            id="org.jkiss.dbeaver.core.ComplexTypeAttributeTransformer"
+            name="Complex type"
+            description="Shows complex type attributes as separate columns"
+            applyByDefault="true">
+            <type kind="STRUCT"/>
+            <type kind="DOCUMENT"/>
+            <type kind="OBJECT"/>
+        </transformer>
+        <transformer
+            class="org.jkiss.dbeaver.model.impl.data.transformers.MapAttributeTransformer"
+            id="org.jkiss.dbeaver.core.MapAttributeTransformer"
+            name="Map"
+            description="Evaluate structure/map as a set of separate columns"
+            applyByDefault="true">
+            <type kind="STRUCT"/>
+            <type kind="DOCUMENT"/>
+            <type kind="OBJECT"/>
+            <type kind="ANY"/>
+        </transformer>
+        <transformer
+            class="org.jkiss.dbeaver.model.impl.data.transformers.ArrayAttributeTransformer"
+            id="org.jkiss.dbeaver.core.ArrayAttributeTransformer"
+            name="Array"
+            description="Evaluate complex array elements as a set of separate columns"
+            applyByDefault="true">
+            <type kind="ARRAY"/>
+        </transformer>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">

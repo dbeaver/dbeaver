@@ -24,7 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
@@ -34,9 +33,14 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * DataTypeProviderRegistry
+ */
 public class DataTypeProviderRegistry implements DBDValueHandlerRegistry
 {
     static final Log log = Log.getLog(DataTypeProviderRegistry.class);
+
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider"; //$NON-NLS-1$
 
     private static DataTypeProviderRegistry instance = null;
 
@@ -59,10 +63,14 @@ public class DataTypeProviderRegistry implements DBDValueHandlerRegistry
     {
         // Load data type providers from external plugins
         {
-            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(DataTypeProviderDescriptor.EXTENSION_ID);
+            IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
-                DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(ext);
-                dataTypeProviders.add(provider);
+                if ("provider".equals(ext.getName())) {
+                    DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(ext);
+                    dataTypeProviders.add(provider);
+                } else if ("transformer".equals(ext.getName())) {
+
+                }
             }
         }
     }
