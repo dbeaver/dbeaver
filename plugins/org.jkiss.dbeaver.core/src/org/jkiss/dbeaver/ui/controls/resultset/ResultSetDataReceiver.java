@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -39,7 +38,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
     private ResultSetViewer resultSetViewer;
     private int columnsCount;
-    private DBDAttributeBinding[] metaColumns;
+    private DBDAttributeBindingMeta[] metaColumns;
     private List<Object[]> rows = new ArrayList<>();
     private boolean hasMoreData;
     private boolean nextSegmentRead;
