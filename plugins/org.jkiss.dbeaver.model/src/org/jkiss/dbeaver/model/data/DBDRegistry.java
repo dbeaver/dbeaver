@@ -34,4 +34,7 @@ public interface DBDRegistry
     @Nullable
     DBDRegistryDescriptor<DBDAttributeTransformer>[] findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject);
 
+    @Nullable
+    DBDRegistryDescriptor<DBDValueRenderer>[] findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject);
+
 }
