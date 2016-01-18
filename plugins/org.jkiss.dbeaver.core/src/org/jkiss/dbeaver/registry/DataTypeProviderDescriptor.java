@@ -29,12 +29,10 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * EntityEditorDescriptor
+ * DataTypeProviderDescriptor
  */
 public class DataTypeProviderDescriptor extends AbstractDescriptor
 {
-    public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider"; //$NON-NLS-1$
-
     static final Log log = Log.getLog(DataTypeProviderDescriptor.class);
 
     private static final String ALL_TYPES_PATTERN = "*";
@@ -61,19 +59,27 @@ public class DataTypeProviderDescriptor extends AbstractDescriptor
             } else {
                 typeName = typeElement.getAttribute(RegistryConstants.ATTR_STANDARD);
                 if (typeName == null) {
-                    log.warn("Type element without name or standard type reference"); //$NON-NLS-1$
-                    continue;
-                }
-                try {
-                    Field typeField = java.sql.Types.class.getField(typeName);
-                    int typeNumber = typeField.getInt(null);
-                    supportedTypes.add(typeNumber);
-                }
-                catch (NoSuchFieldException e) {
-                    log.warn("Standard type '" + typeName + "' not found in " + java.sql.Types.class.getName(), e); //$NON-NLS-1$
-                }
-                catch (IllegalAccessException e) {
-                    log.warn("Standard type '" + typeName + "' cannot be accessed", e); //$NON-NLS-1$
+                    typeName = typeElement.getAttribute(RegistryConstants.ATTR_ID);
+                    if (typeName == null) {
+                        log.warn("Type element without name or standard type reference"); //$NON-NLS-1$
+                        continue;
+                    }
+                    try {
+                        int typeNumber = Integer.parseInt(typeName);
+                        supportedTypes.add(typeNumber);
+                    } catch (NumberFormatException e) {
+                        log.warn("Type ID must be an integer while '" + typeName + "' was specified"); //$NON-NLS-1$
+                    }
+                } else {
+                    try {
+                        Field typeField = java.sql.Types.class.getField(typeName);
+                        int typeNumber = typeField.getInt(null);
+                        supportedTypes.add(typeNumber);
+                    } catch (NoSuchFieldException e) {
+                        log.warn("Standard type '" + typeName + "' not found in " + java.sql.Types.class.getName(), e); //$NON-NLS-1$
+                    } catch (IllegalAccessException e) {
+                        log.warn("Standard type '" + typeName + "' cannot be accessed", e); //$NON-NLS-1$
+                    }
                 }
             }
         }
