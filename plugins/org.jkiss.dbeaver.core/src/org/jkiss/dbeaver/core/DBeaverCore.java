@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPProjectManager;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerRegistry;
+import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataTypeProviderRegistry;
+import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
@@ -360,7 +360,7 @@ public class DBeaverCore implements DBPApplication {
 
     @NotNull
     @Override
-    public DBDValueHandlerRegistry getValueHandlerRegistry() {
+    public DBDRegistry getValueHandlerRegistry() {
         return DataTypeProviderRegistry.getInstance();
     }
 
