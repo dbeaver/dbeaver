@@ -15,14 +15,16 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.registry;
+package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.data.DBDRegistryDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -30,24 +32,32 @@ import java.util.Locale;
 import java.util.Set;
 
 /**
- * DataTypeTransformerDescriptor
+ * DataTypeAbstractDescriptor
  */
-public class DataTypeTransformerDescriptor extends AbstractDescriptor
+public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDescriptor implements DBDRegistryDescriptor<DESCRIPTOR>
 {
-    static final Log log = Log.getLog(DataTypeTransformerDescriptor.class);
+    private static final Log log = Log.getLog(DataTypeProviderDescriptor.class);
 
-    private String id;
+    public static final String ALL_TYPES_PATTERN = "*";
+
+    private final Class<DESCRIPTOR> instanceType;
+    private final String id;
+    private final String name;
+    private final String description;
     private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<>();
     private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<>();
 
-    private DBDAttributeTransformer instance;
+    protected DESCRIPTOR instance;
 
-    public DataTypeTransformerDescriptor(IConfigurationElement config)
+    public DataTypeAbstractDescriptor(IConfigurationElement config, Class<DESCRIPTOR> instanceType)
     {
         super(config);
+        this.instanceType = instanceType;
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
 
         IConfigurationElement[] typeElements = config.getChildren(RegistryConstants.TAG_TYPE);
@@ -99,19 +109,31 @@ public class DataTypeTransformerDescriptor extends AbstractDescriptor
         }
     }
 
+    @Override
     public String getId()
     {
         return id;
     }
 
-    public DBDAttributeTransformer getInstance()
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public DESCRIPTOR getInstance()
     {
         if (instance == null && implType != null) {
             try {
-                this.instance = implType.createInstance(DBDAttributeTransformer.class);
+                this.instance = implType.createInstance(instanceType);
             }
             catch (Exception e) {
-                log.error("Can't instantiate attribute transformer '" + this.id + "'", e); //$NON-NLS-1$
+                log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
             }
         }
         return instance;
@@ -123,7 +145,7 @@ public class DataTypeTransformerDescriptor extends AbstractDescriptor
         return
             supportedTypes.contains(typedObject.getTypeID()) ||
             (typeName != null && supportedTypes.contains(typeName.toLowerCase(Locale.ENGLISH))) ||
-            supportedTypes.contains(typedObject.getDataKind());
+            supportedTypes.contains(ALL_TYPES_PATTERN);
     }
 
     public Set<Object> getSupportedTypes()
