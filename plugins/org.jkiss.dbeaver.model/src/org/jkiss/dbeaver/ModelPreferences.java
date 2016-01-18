@@ -98,7 +98,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, NET_TUNNEL_PORT_MAX, 60000);
 
         // ResultSet
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS_USE_SQL, true);
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS_USE_SQL, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
 
