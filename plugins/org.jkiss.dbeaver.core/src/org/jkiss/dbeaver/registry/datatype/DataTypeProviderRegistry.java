@@ -24,8 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.model.data.DBDRegistry;
-import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -115,10 +114,37 @@ public class DataTypeProviderRegistry implements DBDRegistry
 
     @Override
     public DataTypeTransformerDescriptor[] findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject) {
-        for (DataTypeTransformerDescriptor descriptor : dataTypeTransformers) {
-            //descriptor.supportsDataSource()
+        List<DataTypeTransformerDescriptor> result = findDescriptors(dataTypeTransformers, dataSource, typedObject);
+        return result == null ? null : result.toArray(new DataTypeTransformerDescriptor[result.size()]);
+    }
+
+    @Override
+    public DataTypeRendererDescriptor[] findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject) {
+        List<DataTypeRendererDescriptor> result = findDescriptors(dataTypeRenderers, dataSource, typedObject);
+        return result == null ? null : result.toArray(new DataTypeRendererDescriptor[result.size()]);
+    }
+
+    private static <TYPE extends DataTypeAbstractDescriptor> List<TYPE> findDescriptors(List<TYPE> descriptors, DBPDataSource dataSource, DBSTypedObject typedObject) {
+        DBPDriver driver = dataSource.getContainer().getDriver();
+        if (!(driver instanceof DriverDescriptor)) {
+            log.warn("Bad datasource specified (driver is not recognized by registry) - " + dataSource);
+            return null;
         }
-        return null;
+        DataSourceProviderDescriptor dsProvider = ((DriverDescriptor) driver).getProviderDescriptor();
+
+        // Find in default providers
+        List<TYPE> result = null;
+        for (TYPE descriptor : descriptors) {
+            if (!descriptor.isDefault() && descriptor.supportsDataSource(dsProvider) && descriptor.supportsType(typedObject) ||
+                descriptor.isDefault() && descriptor.supportsType(typedObject))
+            {
+                if (result == null) {
+                    result = new ArrayList<>();
+                }
+                result.add(descriptor);
+            }
+        }
+        return result;
     }
 
 }
