@@ -126,7 +126,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     {
         if (!nextSegmentRead) {
             // Read locators' metadata
-            ResultSetUtils.findValueLocators(session, resultSet, metaColumns, rows);
+            ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
         }
 
         final List<Object[]> tmpRows = rows;
