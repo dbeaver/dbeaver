@@ -25,12 +25,6 @@ public interface DBDRegistryDescriptor<TYPE>
 {
     String getId();
 
-    String getName();
-
-    String getDescription();
-
-    boolean isApplicableByDefault();
-
     TYPE getInstance();
 
 }

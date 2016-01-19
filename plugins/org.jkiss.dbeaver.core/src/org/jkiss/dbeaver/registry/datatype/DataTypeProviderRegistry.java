@@ -54,7 +54,6 @@ public class DataTypeProviderRegistry implements DBDRegistry
 
     private final List<ValueHandlerDescriptor> dataTypeProviders = new ArrayList<>();
     private final List<AttributeTransformerDescriptor> dataTypeTransformers = new ArrayList<>();
-    private final List<ValueRendererDescriptor> dataTypeRenderers = new ArrayList<>();
 
     private DataTypeProviderRegistry()
     {
@@ -71,8 +70,6 @@ public class DataTypeProviderRegistry implements DBDRegistry
                     dataTypeProviders.add(provider);
                 } else if ("transformer".equals(ext.getName())) {
                     dataTypeTransformers.add(new AttributeTransformerDescriptor(ext));
-                } else if ("renderer".equals(ext.getName())) {
-                    dataTypeRenderers.add(new ValueRendererDescriptor(ext));
                 }
             }
         }
@@ -115,11 +112,6 @@ public class DataTypeProviderRegistry implements DBDRegistry
     @Override
     public List<AttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject) {
         return findDescriptors(dataTypeTransformers, dataSource, typedObject);
-    }
-
-    @Override
-    public List<ValueRendererDescriptor> findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject) {
-        return findDescriptors(dataTypeRenderers, dataSource, typedObject);
     }
 
     private static <TYPE extends DataTypeAbstractDescriptor> List<TYPE> findDescriptors(List<TYPE> descriptors, DBPDataSource dataSource, DBSTypedObject typedObject) {
