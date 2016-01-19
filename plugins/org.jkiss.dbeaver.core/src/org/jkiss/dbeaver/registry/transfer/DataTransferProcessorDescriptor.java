@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.DBPRegistryDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -34,7 +35,7 @@ import java.util.List;
 /**
  * DataTransferProcessorDescriptor
  */
-public class DataTransferProcessorDescriptor extends AbstractDescriptor
+public class DataTransferProcessorDescriptor extends AbstractDescriptor implements DBPRegistryDescriptor<IDataTransferProcessor>
 {
     private final DataTransferNodeDescriptor node;
     private final String id;
@@ -101,14 +102,14 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor
         return false;
     }
 
-    public IDataTransferProcessor createProcessor() throws DBException
+    public IDataTransferProcessor getInstance()
     {
-        processorType.checkObjectClass(IDataTransferProcessor.class);
         try {
+            processorType.checkObjectClass(IDataTransferProcessor.class);
             Class<? extends IDataTransferProcessor> clazz = processorType.getObjectClass(IDataTransferProcessor.class);
             return clazz.newInstance();
         } catch (Exception e) {
-            throw new DBException("Can't instantiate data exporter", e);
+            throw new RuntimeException("Can't instantiate data exporter", e);
         }
     }
 
