@@ -89,12 +89,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             IDataTransferProcessor processor = null;
             if (settings.getProcessor() != null) {
                 // Processor is optional
-                try {
-                    processor = settings.getProcessor().createProcessor();
-                } catch (DBException e) {
-                    log.error("Can't create processor", e);
-                    continue;
-                }
+                processor = settings.getProcessor().getInstance();
             }
             pipe.getConsumer().initTransfer(
                 pipe.getProducer().getSourceObject(),

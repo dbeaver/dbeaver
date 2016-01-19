@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.DBPRegistryDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 import java.util.List;
@@ -25,7 +26,7 @@ import java.util.List;
 /**
  * DBDAttributeTransformerDescriptor
  */
-public interface DBDAttributeTransformerDescriptor extends DBDRegistryDescriptor<DBDAttributeTransformer>
+public interface DBDAttributeTransformerDescriptor extends DBPRegistryDescriptor<DBDAttributeTransformer>
 {
     String getName();
 

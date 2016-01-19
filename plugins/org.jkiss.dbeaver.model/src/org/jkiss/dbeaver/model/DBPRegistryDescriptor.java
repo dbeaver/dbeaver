@@ -16,12 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model.data;
+package org.jkiss.dbeaver.model;
 
 /**
- * DBDRegistryDescriptor
+ * DBPRegistryDescriptor
  */
-public interface DBDRegistryDescriptor<TYPE>
+public interface DBPRegistryDescriptor<TYPE>
 {
     String getId();
 
