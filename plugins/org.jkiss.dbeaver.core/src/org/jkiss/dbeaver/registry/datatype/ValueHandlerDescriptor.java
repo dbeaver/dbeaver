@@ -21,11 +21,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 
 /**
- * DataTypeProviderDescriptor
+ * ValueHandlerDescriptor
  */
-public class DataTypeProviderDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider>
+public class ValueHandlerDescriptor extends DataTypeAbstractDescriptor<DBDValueHandlerProvider>
 {
-    public DataTypeProviderDescriptor(IConfigurationElement config)
+    public ValueHandlerDescriptor(IConfigurationElement config)
     {
         super(config, DBDValueHandlerProvider.class);
     }

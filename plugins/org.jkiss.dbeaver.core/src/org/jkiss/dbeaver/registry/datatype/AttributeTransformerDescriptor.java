@@ -22,12 +22,12 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 /**
- * DataTypeTransformerDescriptor
+ * AttributeTransformerDescriptor
  */
-public class DataTypeTransformerDescriptor extends DataTypeAbstractDescriptor<DBDAttributeTransformer>
+public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<DBDAttributeTransformer>
 {
 
-    public DataTypeTransformerDescriptor(IConfigurationElement config)
+    public AttributeTransformerDescriptor(IConfigurationElement config)
     {
         super(config, DBDAttributeTransformer.class);
     }

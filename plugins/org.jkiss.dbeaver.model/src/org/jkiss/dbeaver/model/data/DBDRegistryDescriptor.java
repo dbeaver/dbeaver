@@ -29,6 +29,8 @@ public interface DBDRegistryDescriptor<TYPE>
 
     String getDescription();
 
+    boolean isApplicableByDefault();
+
     TYPE getInstance();
 
 }
