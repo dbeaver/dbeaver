@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.impl.data.transformers;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -42,15 +41,19 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows) throws DBException {
         DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
         if (dataType instanceof DBSEntity) {
-            List<DBDAttributeBinding> nestedBindings = new ArrayList<>();
-            for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(((DBSEntity)dataType).getAttributes(session.getProgressMonitor()))) {
-                DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(attribute, nestedAttr);
-                nestedBinding.lateBinding(session, rows);
-                nestedBindings.add(nestedBinding);
-            }
-            if (!nestedBindings.isEmpty()) {
-                attribute.setNestedBindings(nestedBindings);
-            }
+            createNestedTypeBindings(session, attribute, rows, (DBSEntity) dataType);
+        }
+    }
+
+    static void createNestedTypeBindings(DBCSession session, DBDAttributeBinding attribute, List<Object[]> rows, DBSEntity dataType) throws DBException {
+        List<DBDAttributeBinding> nestedBindings = new ArrayList<>();
+        for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(dataType.getAttributes(session.getProgressMonitor()))) {
+            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(attribute, nestedAttr);
+            nestedBinding.lateBinding(session, rows);
+            nestedBindings.add(nestedBinding);
+        }
+        if (!nestedBindings.isEmpty()) {
+            attribute.setNestedBindings(nestedBindings);
         }
     }
 
