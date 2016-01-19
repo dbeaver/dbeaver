@@ -18,22 +18,23 @@
 
 package org.jkiss.dbeaver.model.data;
 
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
 import java.util.List;
 
 /**
- * DBDValueHandlerRegistry
+ * DBDAttributeTransformerDescriptor
  */
-public interface DBDRegistry
+public interface DBDAttributeTransformerDescriptor extends DBDRegistryDescriptor<DBDAttributeTransformer>
 {
+    String getName();
 
-    @Nullable
-    DBDValueHandlerProvider getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject);
+    String getDescription();
 
-    @Nullable
-    List<? extends DBDAttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject);
+    boolean isApplicableByDefault();
+
+    boolean isCustom();
+
+    List<DBPPropertyDescriptor> getProperties();
 
 }

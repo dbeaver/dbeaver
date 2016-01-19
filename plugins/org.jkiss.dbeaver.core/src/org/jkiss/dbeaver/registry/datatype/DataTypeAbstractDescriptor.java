@@ -43,9 +43,6 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
 
     private final Class<DESCRIPTOR> instanceType;
     private final String id;
-    private final String name;
-    private final String description;
-    private boolean applyByDefault;
     private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<>();
     private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<>();
@@ -60,9 +57,6 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         this.instanceType = instanceType;
 
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
-        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
-        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.applyByDefault = "true".equals(config.getAttribute("applyByDefault"));
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
 
         IConfigurationElement[] typeElements = config.getChildren(RegistryConstants.TAG_TYPE);
@@ -133,21 +127,6 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     public String getId()
     {
         return id;
-    }
-
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public boolean isApplicableByDefault() {
-        return applyByDefault;
     }
 
     @Override

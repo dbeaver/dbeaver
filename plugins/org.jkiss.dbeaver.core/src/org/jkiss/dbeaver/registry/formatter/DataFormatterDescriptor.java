@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry.formatter;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterSample;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -41,7 +42,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
     private String id;
     private String name;
     private String description;
-    private List<PropertyDescriptor> properties = new ArrayList<>();
+    private List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private DBDDataFormatterSample sample;
     private ObjectType formatterType;
 
@@ -86,7 +87,7 @@ public class DataFormatterDescriptor extends AbstractDescriptor
         return sample;
     }
 
-    public List<PropertyDescriptor> getProperties() {
+    public List<DBPPropertyDescriptor> getProperties() {
         return properties;
     }
 

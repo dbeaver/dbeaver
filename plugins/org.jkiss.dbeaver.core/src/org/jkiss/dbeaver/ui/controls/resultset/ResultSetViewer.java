@@ -1087,20 +1087,11 @@ public class ResultSetViewer extends Viewer
             }
             {
                 MenuManager viewMenu = new MenuManager(
-                    "View ...",
+                    "View",
                     null,
                     "view"); //$NON-NLS-1$
-                MenuManager rendererMenu = new MenuManager("Renderer");
-                rendererMenu.setRemoveAllWhenShown(true);
-                rendererMenu.addMenuListener(new IMenuListener() {
-                    @Override
-                    public void menuAboutToShow(IMenuManager manager) {
-                        fillAttributeRendererMenu(manager, attr);
-                    }
-                });
-                viewMenu.add(rendererMenu);
 
-                MenuManager transformersMenu = new MenuManager("Transformers");
+                MenuManager transformersMenu = new MenuManager("Customize");
                 transformersMenu.setRemoveAllWhenShown(true);
                 transformersMenu.addMenuListener(new IMenuListener() {
                     @Override
@@ -1109,10 +1100,10 @@ public class ResultSetViewer extends Viewer
                     }
                 });
                 viewMenu.add(transformersMenu);
-                viewMenu.add(new Action("Set colors") {
+                viewMenu.add(new Action("Set colors ...") {
 
                 });
-                viewMenu.add(new Action("Data formats") {
+                viewMenu.add(new Action("Data formats ...") {
 
                 });
                 manager.add(viewMenu);
@@ -1145,34 +1136,26 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillAttributeRendererMenu(IMenuManager manager, DBDAttributeBinding attr) {
-/*
-        DBPDataSource dataSource = getDataContainer().getDataSource();
+    private void fillAttributeTransformersMenu(IMenuManager manager, DBDAttributeBinding attr) {
+        final DBSDataContainer dataContainer = getDataContainer();
+        if (dataContainer == null) {
+            return;
+        }
+        DBPDataSource dataSource = dataContainer.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
-        List<? extends DBDRegistryDescriptor<DBDAttributeTransformer>> tdList =
+        List<? extends DBDAttributeTransformerDescriptor> tdList =
             container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, attr.getAttribute());
         if (tdList != null) {
-            for (final DBDRegistryDescriptor descriptor : tdList) {
+            for (final DBDAttributeTransformerDescriptor descriptor : tdList) {
+                if (descriptor.isCustom()) {
+                    continue;
+                }
                 manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
                     @Override
-                    public boolean isChecked() {
-                        return descriptor.isApplicableByDefault();
-                    }
-                });
-            }
-        }
-        DBUtils.findAttributeTransformers(attr);
-*/
-    }
+                    public void run() {
 
-    private void fillAttributeTransformersMenu(IMenuManager manager, DBDAttributeBinding attr) {
-        DBPDataSource dataSource = getDataContainer().getDataSource();
-        DBPDataSourceContainer container = dataSource.getContainer();
-        List<? extends DBDRegistryDescriptor<DBDAttributeTransformer>> tdList =
-            container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, attr.getAttribute());
-        if (tdList != null) {
-            for (final DBDRegistryDescriptor descriptor : tdList) {
-                manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
+                    }
+
                     @Override
                     public boolean isChecked() {
                         return descriptor.isApplicableByDefault();
@@ -2056,7 +2039,7 @@ public class ResultSetViewer extends Viewer
     private class ShowFiltersAction extends Action {
         public ShowFiltersAction()
         {
-            super(CoreMessages.controls_resultset_viewer_action_order_filter, DBeaverIcons.getImageDescriptor(UIIcon.FILTER));
+            super("Customize ...", DBeaverIcons.getImageDescriptor(UIIcon.FILTER));
         }
 
         @Override

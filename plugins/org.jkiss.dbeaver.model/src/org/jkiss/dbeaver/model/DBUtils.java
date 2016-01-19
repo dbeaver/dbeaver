@@ -518,7 +518,7 @@ public final class DBUtils {
     {
         DBPDataSource dataSource = binding.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
-        List<? extends DBDRegistryDescriptor<DBDAttributeTransformer>> tdList =
+        List<? extends DBDAttributeTransformerDescriptor> tdList =
             container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, binding.getAttribute());
         if (tdList == null || tdList.isEmpty()) {
             return null;

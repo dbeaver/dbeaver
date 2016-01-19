@@ -18,18 +18,60 @@
 package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+
+import java.util.List;
 
 /**
  * AttributeTransformerDescriptor
  */
-public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<DBDAttributeTransformer>
+public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<DBDAttributeTransformer> implements DBDAttributeTransformerDescriptor
 {
+    private final String name;
+    private final String description;
+    private boolean applyByDefault;
+    private boolean custom;
+    private List<DBPPropertyDescriptor> properties;
 
     public AttributeTransformerDescriptor(IConfigurationElement config)
     {
         super(config, DBDAttributeTransformer.class);
+
+        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.applyByDefault = "true".equals(config.getAttribute("applyByDefault"));
+        this.custom = "true".equals(config.getAttribute("custom"));
+
+        properties = PropertyDescriptor.extractProperties(config);
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
+
+    @Override
+    public boolean isApplicableByDefault() {
+        return applyByDefault;
+    }
+
+    @Override
+    public boolean isCustom() {
+        return custom;
+    }
+
+    @Override
+    public List<DBPPropertyDescriptor> getProperties() {
+        return properties;
     }
 
 }
