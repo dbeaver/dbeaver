@@ -1071,18 +1071,52 @@ public class ResultSetViewer extends Viewer
         if (attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             // Export and other utility methods
             manager.add(new Separator());
-            MenuManager filtersMenu = new MenuManager(
-                CoreMessages.controls_resultset_viewer_action_order_filter,
-                DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
-                "filters"); //$NON-NLS-1$
-            filtersMenu.setRemoveAllWhenShown(true);
-            filtersMenu.addMenuListener(new IMenuListener() {
-                @Override
-                public void menuAboutToShow(IMenuManager manager) {
-                    fillFiltersMenu(attr, manager);
-                }
-            });
-            manager.add(filtersMenu);
+            {
+                MenuManager filtersMenu = new MenuManager(
+                    CoreMessages.controls_resultset_viewer_action_order_filter,
+                    DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
+                    "filters"); //$NON-NLS-1$
+                filtersMenu.setRemoveAllWhenShown(true);
+                filtersMenu.addMenuListener(new IMenuListener() {
+                    @Override
+                    public void menuAboutToShow(IMenuManager manager) {
+                        fillFiltersMenu(attr, manager);
+                    }
+                });
+                manager.add(filtersMenu);
+            }
+            {
+                MenuManager viewMenu = new MenuManager(
+                    "View ...",
+                    null,
+                    "view"); //$NON-NLS-1$
+                MenuManager rendererMenu = new MenuManager("Renderer");
+                rendererMenu.setRemoveAllWhenShown(true);
+                rendererMenu.addMenuListener(new IMenuListener() {
+                    @Override
+                    public void menuAboutToShow(IMenuManager manager) {
+                        fillAttributeRendererMenu(manager, attr);
+                    }
+                });
+                viewMenu.add(rendererMenu);
+
+                MenuManager transformersMenu = new MenuManager("Transformers");
+                transformersMenu.setRemoveAllWhenShown(true);
+                transformersMenu.addMenuListener(new IMenuListener() {
+                    @Override
+                    public void menuAboutToShow(IMenuManager manager) {
+                        fillAttributeTransformersMenu(manager, attr);
+                    }
+                });
+                viewMenu.add(transformersMenu);
+                viewMenu.add(new Action("Set colors") {
+
+                });
+                viewMenu.add(new Action("Data formats") {
+
+                });
+                manager.add(viewMenu);
+            }
         }
 
         // Fill general menu
@@ -1108,6 +1142,43 @@ public class ResultSetViewer extends Viewer
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
+        }
+    }
+
+    private void fillAttributeRendererMenu(IMenuManager manager, DBDAttributeBinding attr) {
+/*
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        DBPDataSourceContainer container = dataSource.getContainer();
+        List<? extends DBDRegistryDescriptor<DBDAttributeTransformer>> tdList =
+            container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, attr.getAttribute());
+        if (tdList != null) {
+            for (final DBDRegistryDescriptor descriptor : tdList) {
+                manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
+                    @Override
+                    public boolean isChecked() {
+                        return descriptor.isApplicableByDefault();
+                    }
+                });
+            }
+        }
+        DBUtils.findAttributeTransformers(attr);
+*/
+    }
+
+    private void fillAttributeTransformersMenu(IMenuManager manager, DBDAttributeBinding attr) {
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        DBPDataSourceContainer container = dataSource.getContainer();
+        List<? extends DBDRegistryDescriptor<DBDAttributeTransformer>> tdList =
+            container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, attr.getAttribute());
+        if (tdList != null) {
+            for (final DBDRegistryDescriptor descriptor : tdList) {
+                manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
+                    @Override
+                    public boolean isChecked() {
+                        return descriptor.isApplicableByDefault();
+                    }
+                });
+            }
         }
     }
 
