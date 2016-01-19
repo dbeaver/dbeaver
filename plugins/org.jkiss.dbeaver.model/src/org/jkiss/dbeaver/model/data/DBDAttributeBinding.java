@@ -25,12 +25,11 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.Pair;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -241,134 +240,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         final DBDAttributeTransformer[] transformers = DBUtils.findAttributeTransformers(this);
         if (transformers != null) {
             for (DBDAttributeTransformer transformer : transformers) {
-                //transformer.transformAttribute(session, this, rows);
+                transformer.transformAttribute(session, this, rows);
             }
-        }
-        switch (attribute.getDataKind()) {
-            case STRUCT:
-            case DOCUMENT:
-            case OBJECT:
-                DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
-                if (dataType instanceof DBSEntity) {
-                    createNestedTypeBindings(session, (DBSEntity) dataType, rows);
-                    return;
-                }
-                // Data type was not resolved - let's threat it as ANY
-            case ANY:
-                // Nested binding must be resolved for each value
-                // Analyse all read values
-                resolveMapsFromData(session, rows);
-                break;
-            case ARRAY:
-                //
-                DBSDataType collectionType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
-                if (collectionType != null) {
-                    DBSDataType componentType = collectionType.getComponentType(session.getProgressMonitor());
-                    if (componentType instanceof DBSEntity) {
-                        createNestedTypeBindings(session, (DBSEntity) componentType, rows);
-                        return;
-                    }
-                }
-                // No component type found.
-                // Array items should be resolved in a lazy mode
-                resolveMapsFromData(session, rows);
-                break;
-        }
-
-    }
-
-    private void resolveMapsFromData(DBCSession session, List<Object[]> rows) throws DBException {
-        // Analyse rows and extract meta information from values
-        List<Pair<DBSAttributeBase, Object[]>> valueAttributes = new ArrayList<>();
-        for (int i = 0; i < rows.size(); i++) {
-            Object value = rows.get(i)[getOrdinalPosition()];
-            if (value instanceof DBDCollection) {
-                // Use first element to discover structure
-                DBDCollection collection = (DBDCollection) value;
-                if (collection.getItemCount() > 0) {
-                    value = collection.getItem(0);
-                }
-            }
-
-            if (value instanceof DBDStructure) {
-                DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
-                for (DBSAttributeBase attr : attributes) {
-                    Pair<DBSAttributeBase, Object[]> attrValue = null;
-                    for (Pair<DBSAttributeBase, Object[]> pair : valueAttributes) {
-                        if (pair.getFirst().getName().equals(attr.getName())) {
-                            attrValue = pair;
-                            break;
-                        }
-                    }
-                    if (attrValue != null) {
-                        // Update attr value
-                        attrValue.getSecond()[i] = ((DBDStructure) value).getAttributeValue(attr);
-                    } else {
-                        Object[] valueList = new Object[rows.size()];
-                        valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
-                        valueAttributes.add(
-                            new Pair<>(
-                                attr,
-                                valueList));
-                    }
-                }
-            }
-        }
-        if (!valueAttributes.isEmpty()) {
-            createNestedMapBindings(session, valueAttributes);
-        }
-    }
-
-    private void createNestedMapBindings(DBCSession session, List<Pair<DBSAttributeBase, Object[]>> nestedAttributes) throws DBException {
-        int maxPosition = 0;
-        for (Pair<DBSAttributeBase, Object[]> attr : nestedAttributes) {
-            maxPosition = Math.max(maxPosition, attr.getFirst().getOrdinalPosition());
-        }
-        if (nestedBindings == null) {
-            nestedBindings = new ArrayList<>();
-        } else {
-            for (DBDAttributeBinding binding : nestedBindings) {
-                maxPosition = Math.max(maxPosition, binding.getOrdinalPosition());
-            }
-        }
-        Object[] fakeRow = new Object[maxPosition + 1];
-
-        List<Object[]> fakeRows = Collections.singletonList(fakeRow);
-        for (Pair<DBSAttributeBase, Object[]> nestedAttr : nestedAttributes) {
-            DBSAttributeBase attribute = nestedAttr.getFirst();
-            Object[] values = nestedAttr.getSecond();
-            DBDAttributeBinding nestedBinding = null;
-            for (DBDAttributeBinding binding : nestedBindings) {
-                if (binding.getName().equals(attribute.getName())) {
-                    nestedBinding = binding;
-                    break;
-                }
-            }
-            if (nestedBinding == null) {
-                nestedBinding = new DBDAttributeBindingType(this, attribute);
-                nestedBindings.add(nestedBinding);
-            }
-            if (attribute.getDataKind().isComplex()) {
-                // Make late binding for each row value
-                for (int i = 0; i < values.length; i++) {
-                    if (DBUtils.isNullValue(values[i])) {
-                        continue;
-                    }
-                    fakeRow[nestedBinding.getOrdinalPosition()] = values[i];
-                    nestedBinding.lateBinding(session, fakeRows);
-                }
-            }
-        }
-    }
-
-    private void createNestedTypeBindings(DBCSession session, DBSEntity type, List<Object[]> rows) throws DBException {
-        if (nestedBindings == null) {
-            nestedBindings = new ArrayList<>();
-        }
-        for (DBSEntityAttribute nestedAttr : CommonUtils.safeCollection(type.getAttributes(session.getProgressMonitor()))) {
-            DBDAttributeBindingType nestedBinding = new DBDAttributeBindingType(this, nestedAttr);
-            nestedBinding.lateBinding(session, rows);
-            nestedBindings.add(nestedBinding);
         }
     }
 

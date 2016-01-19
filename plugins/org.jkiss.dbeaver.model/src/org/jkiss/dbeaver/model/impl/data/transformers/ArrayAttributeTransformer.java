@@ -39,6 +39,17 @@ public class ArrayAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows) throws DBException {
+        DBSDataType collectionType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+        if (collectionType != null) {
+            DBSDataType componentType = collectionType.getComponentType(session.getProgressMonitor());
+            if (componentType instanceof DBSEntity) {
+                ComplexTypeAttributeTransformer.createNestedTypeBindings(session, attribute, rows, (DBSEntity) componentType);
+                return;
+            }
+        }
+        // No component type found.
+        // Array items should be resolved in a lazy mode
+        MapAttributeTransformer.resolveMapsFromData(session, attribute, rows);
     }
 
 }
