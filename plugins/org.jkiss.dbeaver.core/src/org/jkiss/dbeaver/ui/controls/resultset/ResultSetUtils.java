@@ -53,7 +53,7 @@ public class ResultSetUtils
 {
     static final Log log = Log.getLog(ResultSetUtils.class);
 
-    public static void findValueLocators(
+    public static void bindAttributes(
         DBCSession session,
         DBCResultSet resultSet,
         DBDAttributeBindingMeta[] bindings,
