@@ -34,6 +34,8 @@ public interface DBDRegistry
     DBDValueHandlerProvider getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject);
 
     @Nullable
-    List<? extends DBDAttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject);
+    List<? extends DBDAttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject, Boolean custom);
+
+    DBDAttributeTransformerDescriptor getTransformer(String id);
 
 }

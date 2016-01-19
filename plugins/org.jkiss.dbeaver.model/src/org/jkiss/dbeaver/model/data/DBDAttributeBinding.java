@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
 import java.util.List;
 
@@ -237,7 +238,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSAttributeBase attribute = getAttribute();
-        final DBDAttributeTransformer[] transformers = DBUtils.findAttributeTransformers(this);
+        final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, false);
         if (transformers != null) {
             for (DBDAttributeTransformer transformer : transformers) {
                 transformer.transformAttribute(session, this, rows);

@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
-import org.jkiss.dbeaver.model.virtual.DBVEntityAttribute;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -511,45 +509,6 @@ public final class DBUtils {
             }
         }
         return typeHandler;
-    }
-
-    @Nullable
-    public static DBDAttributeTransformer[] findAttributeTransformers(DBDAttributeBinding binding)
-    {
-        DBPDataSource dataSource = binding.getDataSource();
-        DBPDataSourceContainer container = dataSource.getContainer();
-        List<? extends DBDAttributeTransformerDescriptor> tdList =
-            container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, binding.getAttribute());
-        if (tdList == null || tdList.isEmpty()) {
-            return null;
-        }
-        boolean filtered = false;
-        DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
-        if (entityAttribute != null) {
-            DBVEntity vEntity = container.getVirtualModel().findEntity(entityAttribute.getParentObject(), false);
-            if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding);
-                if (vAttr != null) {
-                    filtered = true;
-                }
-            }
-        }
-
-        if (!filtered) {
-            // Leave only default transformers
-            for (int i = 0; i < tdList.size();) {
-                if (!tdList.get(i).isApplicableByDefault()) {
-                    tdList.remove(i);
-                } else {
-                    i++;
-                }
-            }
-        }
-        DBDAttributeTransformer[] result = new DBDAttributeTransformer[tdList.size()];
-        for (int i = 0; i < tdList.size(); i++) {
-            result[i] = tdList.get(i).getInstance();
-        }
-        return result;
     }
 
     /**
@@ -1074,7 +1033,7 @@ public final class DBUtils {
                 String name1 = o1.getName();
                 String name2 = o2.getName();
                 return name1 == name2 ? 0 :
-                    (name1== null ? -1 :
+                    (name1 == null ? -1 :
                         (name2 == null ? 1 : name1.compareTo(name2)));
             }
         });

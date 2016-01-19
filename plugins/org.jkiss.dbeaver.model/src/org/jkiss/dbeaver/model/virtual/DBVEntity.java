@@ -364,6 +364,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
                 }
             }
         }
+        if (!CommonUtils.isEmpty(entityAttributes)) {
+            return true;
+        }
         return false;
     }
 

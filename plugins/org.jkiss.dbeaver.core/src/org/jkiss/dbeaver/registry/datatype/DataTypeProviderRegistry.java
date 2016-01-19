@@ -110,11 +110,7 @@ public class DataTypeProviderRegistry implements DBDRegistry
     }
 
     @Override
-    public List<AttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject) {
-        return findDescriptors(dataTypeTransformers, dataSource, typedObject);
-    }
-
-    private static <TYPE extends DataTypeAbstractDescriptor> List<TYPE> findDescriptors(List<TYPE> descriptors, DBPDataSource dataSource, DBSTypedObject typedObject) {
+    public List<AttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject, Boolean custom) {
         DBPDriver driver = dataSource.getContainer().getDriver();
         if (!(driver instanceof DriverDescriptor)) {
             log.warn("Bad datasource specified (driver is not recognized by registry) - " + dataSource);
@@ -123,10 +119,12 @@ public class DataTypeProviderRegistry implements DBDRegistry
         DataSourceProviderDescriptor dsProvider = ((DriverDescriptor) driver).getProviderDescriptor();
 
         // Find in default providers
-        List<TYPE> result = null;
-        for (TYPE descriptor : descriptors) {
-            if (!descriptor.isGlobal() && descriptor.supportsDataSource(dsProvider) && descriptor.supportsType(typedObject) ||
-                descriptor.isGlobal() && descriptor.supportsType(typedObject))
+        List<AttributeTransformerDescriptor> result = null;
+        for (AttributeTransformerDescriptor descriptor : dataTypeTransformers) {
+
+            if ((custom == null || custom == descriptor.isCustom()) &&
+                ((!descriptor.isGlobal() && descriptor.supportsDataSource(dsProvider) && descriptor.supportsType(typedObject)) ||
+                (descriptor.isGlobal() && descriptor.supportsType(typedObject))))
             {
                 if (result == null) {
                     result = new ArrayList<>();
@@ -135,6 +133,16 @@ public class DataTypeProviderRegistry implements DBDRegistry
             }
         }
         return result;
+    }
+
+    @Override
+    public DBDAttributeTransformerDescriptor getTransformer(String id) {
+        for (AttributeTransformerDescriptor descriptor : dataTypeTransformers) {
+            if (id.equals(descriptor.getId())) {
+                return descriptor;
+            }
+        }
+        return null;
     }
 
 }
