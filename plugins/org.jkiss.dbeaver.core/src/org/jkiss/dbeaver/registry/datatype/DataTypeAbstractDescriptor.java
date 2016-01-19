@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDRegistryDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -36,7 +37,7 @@ import java.util.Set;
  */
 public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDescriptor implements DBDRegistryDescriptor<DESCRIPTOR>
 {
-    private static final Log log = Log.getLog(DataTypeProviderDescriptor.class);
+    private static final Log log = Log.getLog(ValueHandlerDescriptor.class);
 
     public static final String ALL_TYPES_PATTERN = "*";
 
@@ -44,9 +45,12 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     private final String id;
     private final String name;
     private final String description;
+    private boolean applyByDefault;
     private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<>();
     private Set<DataSourceProviderDescriptor> supportedDataSources = new HashSet<>();
+
+    private boolean hasAll, hasTypeIds, hasDataKinds, hasTypeNames;
 
     protected DESCRIPTOR instance;
 
@@ -58,36 +62,52 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.applyByDefault = "true".equals(config.getAttribute("applyByDefault"));
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
 
         IConfigurationElement[] typeElements = config.getChildren(RegistryConstants.TAG_TYPE);
         for (IConfigurationElement typeElement : typeElements) {
             String typeName = typeElement.getAttribute(RegistryConstants.ATTR_NAME);
             if (typeName != null) {
-                supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
-            } else {
-                typeName = typeElement.getAttribute(RegistryConstants.ATTR_STANDARD);
-                if (typeName == null) {
-                    typeName = typeElement.getAttribute(RegistryConstants.ATTR_ID);
-                    if (typeName == null) {
-                        log.warn("Type element without name or standard type reference"); //$NON-NLS-1$
-                        continue;
-                    }
-                    try {
-                        int typeNumber = Integer.parseInt(typeName);
-                        supportedTypes.add(typeNumber);
-                    } catch (NumberFormatException e) {
-                        log.warn("Type ID must be an integer while '" + typeName + "' was specified"); //$NON-NLS-1$
-                    }
+                if (typeName.equals(ALL_TYPES_PATTERN)) {
+                    hasAll = true;
                 } else {
+                    supportedTypes.add(typeName.toLowerCase(Locale.ENGLISH));
+                    hasTypeNames = true;
+                }
+            } else {
+                typeName = typeElement.getAttribute("kind");
+                if (typeName != null) {
                     try {
-                        Field typeField = java.sql.Types.class.getField(typeName);
-                        int typeNumber = typeField.getInt(null);
-                        supportedTypes.add(typeNumber);
-                    } catch (NoSuchFieldException e) {
-                        log.warn("Standard type '" + typeName + "' not found in " + java.sql.Types.class.getName(), e); //$NON-NLS-1$
-                    } catch (IllegalAccessException e) {
-                        log.warn("Standard type '" + typeName + "' cannot be accessed", e); //$NON-NLS-1$
+                        supportedTypes.add(DBPDataKind.valueOf(typeName));
+                    } catch (IllegalArgumentException e) {
+                        log.warn(e);
+                    }
+                    hasDataKinds = true;
+                } else {
+                    typeName = typeElement.getAttribute(RegistryConstants.ATTR_STANDARD);
+                    if (typeName == null) {
+                        typeName = typeElement.getAttribute(RegistryConstants.ATTR_ID);
+                        if (typeName == null) {
+                            log.warn("Type element without name or standard type reference"); //$NON-NLS-1$
+                            continue;
+                        }
+                        try {
+                            int typeNumber = Integer.parseInt(typeName);
+                            supportedTypes.add(typeNumber);
+                            hasTypeIds = true;
+                        } catch (NumberFormatException e) {
+                            log.warn("Type ID must be an integer while '" + typeName + "' was specified"); //$NON-NLS-1$
+                        }
+                    } else {
+                        try {
+                            Field typeField = java.sql.Types.class.getField(typeName);
+                            int typeNumber = typeField.getInt(null);
+                            supportedTypes.add(typeNumber);
+                            hasTypeIds = true;
+                        } catch (Exception e) {
+                            log.warn("Standard type '" + typeName + "' cannot be accessed", e); //$NON-NLS-1$
+                        }
                     }
                 }
             }
@@ -126,6 +146,11 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     }
 
     @Override
+    public boolean isApplicableByDefault() {
+        return applyByDefault;
+    }
+
+    @Override
     public DESCRIPTOR getInstance()
     {
         if (instance == null && implType != null) {
@@ -133,19 +158,23 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
                 this.instance = implType.createInstance(instanceType);
             }
             catch (Exception e) {
-                log.error("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
+                throw new IllegalStateException("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
             }
         }
         return instance;
     }
 
-    public boolean supportsType(DBSTypedObject typedObject)
-    {
-        String typeName = typedObject.getTypeName();
-        return
-            supportedTypes.contains(typedObject.getTypeID()) ||
-            (typeName != null && supportedTypes.contains(typeName.toLowerCase(Locale.ENGLISH))) ||
-            supportedTypes.contains(ALL_TYPES_PATTERN);
+    public boolean supportsType(DBSTypedObject typedObject) {
+        if (hasAll || (hasTypeIds && supportedTypes.contains(typedObject.getTypeID()))) {
+            return true;
+        }
+        if (hasTypeNames) {
+            String typeName = typedObject.getTypeName();
+            if (typeName != null && supportedTypes.contains(typeName.toLowerCase(Locale.ENGLISH))) {
+                return true;
+            }
+        }
+        return hasDataKinds && supportedTypes.contains(typedObject.getDataKind());
     }
 
     public Set<Object> getSupportedTypes()
@@ -153,7 +182,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedTypes;
     }
 
-    public boolean isDefault()
+    public boolean isGlobal()
     {
         return supportedDataSources.isEmpty();
     }
@@ -168,4 +197,8 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedDataSources;
     }
 
+    @Override
+    public String toString() {
+        return getId();
+    }
 }

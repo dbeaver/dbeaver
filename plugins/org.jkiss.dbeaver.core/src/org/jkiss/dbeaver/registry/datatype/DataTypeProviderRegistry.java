@@ -52,9 +52,9 @@ public class DataTypeProviderRegistry implements DBDRegistry
         return instance;
     }
 
-    private final List<DataTypeProviderDescriptor> dataTypeProviders = new ArrayList<>();
-    private final List<DataTypeTransformerDescriptor> dataTypeTransformers = new ArrayList<>();
-    private final List<DataTypeRendererDescriptor> dataTypeRenderers = new ArrayList<>();
+    private final List<ValueHandlerDescriptor> dataTypeProviders = new ArrayList<>();
+    private final List<AttributeTransformerDescriptor> dataTypeTransformers = new ArrayList<>();
+    private final List<ValueRendererDescriptor> dataTypeRenderers = new ArrayList<>();
 
     private DataTypeProviderRegistry()
     {
@@ -67,12 +67,12 @@ public class DataTypeProviderRegistry implements DBDRegistry
             IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
                 if ("provider".equals(ext.getName())) {
-                    DataTypeProviderDescriptor provider = new DataTypeProviderDescriptor(ext);
+                    ValueHandlerDescriptor provider = new ValueHandlerDescriptor(ext);
                     dataTypeProviders.add(provider);
                 } else if ("transformer".equals(ext.getName())) {
-                    dataTypeTransformers.add(new DataTypeTransformerDescriptor(ext));
+                    dataTypeTransformers.add(new AttributeTransformerDescriptor(ext));
                 } else if ("renderer".equals(ext.getName())) {
-                    dataTypeRenderers.add(new DataTypeRendererDescriptor(ext));
+                    dataTypeRenderers.add(new ValueRendererDescriptor(ext));
                 }
             }
         }
@@ -97,15 +97,15 @@ public class DataTypeProviderRegistry implements DBDRegistry
         DataSourceProviderDescriptor dsProvider = ((DriverDescriptor) driver).getProviderDescriptor();
 
         // First try to find type provider for specific datasource type
-        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (!dtProvider.isDefault() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typedObject)) {
+        for (ValueHandlerDescriptor dtProvider : dataTypeProviders) {
+            if (!dtProvider.isGlobal() && dtProvider.supportsDataSource(dsProvider) && dtProvider.supportsType(typedObject)) {
                 return dtProvider.getInstance();
             }
         }
 
-        // Find in default providers
-        for (DataTypeProviderDescriptor dtProvider : dataTypeProviders) {
-            if (dtProvider.isDefault() && dtProvider.supportsType(typedObject)) {
+        // Find in global providers
+        for (ValueHandlerDescriptor dtProvider : dataTypeProviders) {
+            if (dtProvider.isGlobal() && dtProvider.supportsType(typedObject)) {
                 return dtProvider.getInstance();
             }
         }
@@ -113,15 +113,13 @@ public class DataTypeProviderRegistry implements DBDRegistry
     }
 
     @Override
-    public DataTypeTransformerDescriptor[] findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject) {
-        List<DataTypeTransformerDescriptor> result = findDescriptors(dataTypeTransformers, dataSource, typedObject);
-        return result == null ? null : result.toArray(new DataTypeTransformerDescriptor[result.size()]);
+    public List<AttributeTransformerDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject) {
+        return findDescriptors(dataTypeTransformers, dataSource, typedObject);
     }
 
     @Override
-    public DataTypeRendererDescriptor[] findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject) {
-        List<DataTypeRendererDescriptor> result = findDescriptors(dataTypeRenderers, dataSource, typedObject);
-        return result == null ? null : result.toArray(new DataTypeRendererDescriptor[result.size()]);
+    public List<ValueRendererDescriptor> findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject) {
+        return findDescriptors(dataTypeRenderers, dataSource, typedObject);
     }
 
     private static <TYPE extends DataTypeAbstractDescriptor> List<TYPE> findDescriptors(List<TYPE> descriptors, DBPDataSource dataSource, DBSTypedObject typedObject) {
@@ -135,8 +133,8 @@ public class DataTypeProviderRegistry implements DBDRegistry
         // Find in default providers
         List<TYPE> result = null;
         for (TYPE descriptor : descriptors) {
-            if (!descriptor.isDefault() && descriptor.supportsDataSource(dsProvider) && descriptor.supportsType(typedObject) ||
-                descriptor.isDefault() && descriptor.supportsType(typedObject))
+            if (!descriptor.isGlobal() && descriptor.supportsDataSource(dsProvider) && descriptor.supportsType(typedObject) ||
+                descriptor.isGlobal() && descriptor.supportsType(typedObject))
             {
                 if (result == null) {
                     result = new ArrayList<>();

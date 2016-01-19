@@ -208,13 +208,19 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Nullable
-    public DBSEntityAttribute getVirtualAttribute(DBDAttributeBinding binding)
+    public DBVEntityAttribute getVirtualAttribute(DBDAttributeBinding binding)
     {
-        DBUtils.getObjectPath(binding, true);
-        for (DBVEntityAttribute attr : entityAttributes) {
-            if (attr.getName().equals(binding.getName())) {
-                return attr;
+        if (entityAttributes != null) {
+            DBSObject[] path = DBUtils.getObjectPath(binding, true);
+            DBVEntityAttribute topAttribute = DBUtils.findObject(entityAttributes, path[0].getName());
+            for (int i = 1; i < path.length; i++) {
+                topAttribute = topAttribute.getChild(path[i].getName());
+                if (topAttribute == null) {
+                    log.debug("Can't find hierarchical attribute '" + binding + "'");
+                    return null;
+                }
             }
+            return topAttribute;
         }
         return null;
     }

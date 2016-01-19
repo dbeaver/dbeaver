@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.util.List;
+
 /**
  * DBDValueHandlerRegistry
  */
@@ -32,9 +34,9 @@ public interface DBDRegistry
     DBDValueHandlerProvider getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject);
 
     @Nullable
-    DBDRegistryDescriptor<DBDAttributeTransformer>[] findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject);
+    List<? extends DBDRegistryDescriptor<DBDAttributeTransformer>> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject);
 
     @Nullable
-    DBDRegistryDescriptor<DBDValueRenderer>[] findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject);
+    List<? extends DBDRegistryDescriptor<DBDValueRenderer>> findRenderers(DBPDataSource dataSource, DBSTypedObject typedObject);
 
 }

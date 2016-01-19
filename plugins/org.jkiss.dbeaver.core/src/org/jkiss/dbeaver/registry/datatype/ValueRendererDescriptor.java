@@ -24,13 +24,13 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 /**
  * DataTypeRendererDescriptor
  */
-public class DataTypeRendererDescriptor extends DataTypeAbstractDescriptor<DBDValueRenderer>
+public class ValueRendererDescriptor extends DataTypeAbstractDescriptor<DBDValueRenderer>
 {
 
     private String name;
     private String description;
 
-    public DataTypeRendererDescriptor(IConfigurationElement config)
+    public ValueRendererDescriptor(IConfigurationElement config)
     {
         super(config, DBDValueRenderer.class);
 

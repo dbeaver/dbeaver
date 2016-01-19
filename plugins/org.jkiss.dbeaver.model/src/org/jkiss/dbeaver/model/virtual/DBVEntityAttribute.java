@@ -21,12 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Virtual attribute
@@ -40,9 +38,9 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private Map<String, String> valueColors = new LinkedHashMap<>();
     private String defaultValue;
     private String description;
-    private String transformer;
-    private String presentationManager;
-    private Map<String, String> presentationProperties;
+    private Set<String> excludedTransformers, includedTransformers;
+    private String customRenderer;
+    private Map<String, String> rendererProperties;
 
     public DBVEntityAttribute(DBVEntity entity, DBVEntityAttribute parent, String name) {
         this.entity = entity;
@@ -171,8 +169,31 @@ public class DBVEntityAttribute implements DBSEntityAttribute
         this.valueColors = new LinkedHashMap<>(valueColors);
     }
 
+    public List<DBVEntityAttribute> getChildren() {
+        return children;
+    }
+
+    public DBVEntityAttribute getChild(String name) {
+        return DBUtils.findObject(children, name);
+    }
+
     public void addChild(DBVEntityAttribute child) {
         this.children.add(child);
     }
 
+    public Set<String> getExcludedTransformers() {
+        return excludedTransformers;
+    }
+
+    public Set<String> getIncludedTransformers() {
+        return includedTransformers;
+    }
+
+    public String getCustomRenderer() {
+        return customRenderer;
+    }
+
+    public Map<String, String> getRendererProperties() {
+        return rendererProperties;
+    }
 }
