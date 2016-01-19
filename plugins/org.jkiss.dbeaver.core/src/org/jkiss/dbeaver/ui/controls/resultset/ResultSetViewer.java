@@ -63,6 +63,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVConstants;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
+import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -1011,6 +1013,8 @@ public class ResultSetViewer extends Viewer
     @Override
     public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row)
     {
+        final DBPDataSource dataSource = getDataContainer() == null ? null : getDataContainer().getDataSource();
+
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         // Custom oldValue items
         if (attr != null && row != null) {
@@ -1068,7 +1072,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        if (attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
+        if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             // Export and other utility methods
             manager.add(new Separator());
             {
@@ -1091,15 +1095,24 @@ public class ResultSetViewer extends Viewer
                     null,
                     "view"); //$NON-NLS-1$
 
-                MenuManager transformersMenu = new MenuManager("Customize");
-                transformersMenu.setRemoveAllWhenShown(true);
-                transformersMenu.addMenuListener(new IMenuListener() {
-                    @Override
-                    public void menuAboutToShow(IMenuManager manager) {
-                        fillAttributeTransformersMenu(manager, attr);
-                    }
-                });
-                viewMenu.add(transformersMenu);
+                List<? extends DBDAttributeTransformerDescriptor> transformers =
+                    dataSource.getContainer().getApplication().getValueHandlerRegistry().findTransformers(
+                        dataSource, attr, null);
+                if (!CommonUtils.isEmpty(transformers)) {
+                    MenuManager transformersMenu = new MenuManager("Customize");
+                    transformersMenu.setRemoveAllWhenShown(true);
+                    transformersMenu.addMenuListener(new IMenuListener() {
+                        @Override
+                        public void menuAboutToShow(IMenuManager manager) {
+                            fillAttributeTransformersMenu(manager, attr);
+                        }
+                    });
+                    viewMenu.add(transformersMenu);
+                } else {
+                    final Action customizeAction = new Action("Customize") {};
+                    customizeAction.setEnabled(false);
+                    viewMenu.add(customizeAction);
+                }
                 viewMenu.add(new Action("Set colors ...") {
 
                 });
@@ -1142,11 +1155,31 @@ public class ResultSetViewer extends Viewer
             return;
         }
         DBPDataSource dataSource = dataContainer.getDataSource();
-        DBPDataSourceContainer container = dataSource.getContainer();
-        List<? extends DBDAttributeTransformerDescriptor> tdList =
-            container.getApplication().getValueHandlerRegistry().findTransformers(dataSource, attr.getAttribute());
-        if (tdList != null) {
-            for (final DBDAttributeTransformerDescriptor descriptor : tdList) {
+        final DBDRegistry registry = dataSource.getContainer().getApplication().getValueHandlerRegistry();
+        final DBVTransformSettings transformSettings = DBVUtils.getTransformSettings(attr);
+        DBDAttributeTransformerDescriptor customTransformer = null;
+        if (transformSettings != null && transformSettings.getCustomTransformer() != null) {
+            customTransformer = registry.getTransformer(transformSettings.getCustomTransformer());
+        }
+        List<? extends DBDAttributeTransformerDescriptor> customTransformers =
+            registry.findTransformers(dataSource, attr, true);
+
+        if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
+            MenuManager customTransformerMenu = new MenuManager(
+                customTransformer == null ? attr.getDataKind().name() : customTransformer.getName(),
+                DBeaverIcons.getImageDescriptor(customTransformer == null ? DBUtils.getTypeImage(attr) : customTransformer.getIcon()),
+                null);
+            manager.add(customTransformerMenu);
+            manager.add(new Action("Settings ...") {
+
+            });
+        }
+        manager.add(new Separator());
+
+        List<? extends DBDAttributeTransformerDescriptor> applicableTransformers =
+            registry.findTransformers(dataSource, attr, false);
+        if (applicableTransformers != null) {
+            for (final DBDAttributeTransformerDescriptor descriptor : applicableTransformers) {
                 if (descriptor.isCustom()) {
                     continue;
                 }

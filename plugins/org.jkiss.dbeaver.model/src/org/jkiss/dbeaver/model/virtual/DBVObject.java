@@ -27,12 +27,22 @@ public abstract class DBVObject implements DBSObject {
 
     static final Log log = Log.getLog(DBVObject.class);
 
+    private DBVTransformSettings transformSettings;
+
     @Override
     public abstract DBVContainer getParentObject();
 
     @Override
     public boolean isPersisted() {
         return true;
+    }
+
+    public DBVTransformSettings getTransformSettings() {
+        return transformSettings;
+    }
+
+    public void setTransformSettings(DBVTransformSettings transformSettings) {
+        this.transformSettings = transformSettings;
     }
 
     abstract public boolean hasValuableData();

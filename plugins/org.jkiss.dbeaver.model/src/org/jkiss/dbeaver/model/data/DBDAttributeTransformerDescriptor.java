@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.data;
 
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPRegistryDescriptor;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 
@@ -38,4 +39,5 @@ public interface DBDAttributeTransformerDescriptor extends DBPRegistryDescriptor
 
     List<DBPPropertyDescriptor> getProperties();
 
+    DBPImage getIcon();
 }
