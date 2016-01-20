@@ -89,7 +89,12 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             IDataTransferProcessor processor = null;
             if (settings.getProcessor() != null) {
                 // Processor is optional
-                processor = settings.getProcessor().getInstance();
+                try {
+                    processor = settings.getProcessor().getInstance();
+                } catch (Throwable e) {
+                    log.error("Can't create processor", e);
+                    continue;
+                }
             }
             pipe.getConsumer().initTransfer(
                 pipe.getProducer().getSourceObject(),
@@ -100,7 +105,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                     settings.getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
             item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getSourceObject()));
-            if (settings.getProducer().getIcon() != null) {
+            if (settings.getProducer() != null && settings.getProducer().getIcon() != null) {
                 item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }
             item.setText(1, pipe.getConsumer().getTargetName());
