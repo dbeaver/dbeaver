@@ -106,7 +106,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             item.setText(1, pipe.getConsumer().getTargetName());
             if (settings.getProcessor() != null && settings.getProcessor().getIcon() != null) {
                 item.setImage(1, DBeaverIcons.getImage(settings.getProcessor().getIcon()));
-            } else if (settings.getConsumer().getIcon() != null) {
+            } else if (settings.getConsumer() != null && settings.getConsumer().getIcon() != null) {
                 item.setImage(1, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
             }
         }

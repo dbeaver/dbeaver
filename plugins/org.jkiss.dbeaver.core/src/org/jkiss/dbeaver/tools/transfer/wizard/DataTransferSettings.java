@@ -359,7 +359,7 @@ public class DataTransferSettings {
         // Load nodes' settings
         for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
             IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
-            entry.getValue().settings.loadSettings(runnableContext, nodeSection);
+            entry.getValue().settings.loadSettings(runnableContext, this, nodeSection);
         }
         IDialogSettings processorsSection = dialogSettings.getSection("processors");
         if (processorsSection != null) {
