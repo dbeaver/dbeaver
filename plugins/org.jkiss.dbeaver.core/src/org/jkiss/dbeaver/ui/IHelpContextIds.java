@@ -29,6 +29,7 @@ public interface IHelpContextIds
     public static final String CTX_SQL_EDITOR = "sql-editor"; //$NON-NLS-1$
     public static final String CTX_RESULT_SET_VIEWER  = "result-set-viewer"; //$NON-NLS-1$
     public static final String CTX_DATA_FILTER = "data-filter"; //$NON-NLS-1$
+    public static final String CTX_ROW_COLORS = "row-colors"; //$NON-NLS-1$
 
     public static final String CTX_ENTITY_EDITOR = "entity-editor"; //$NON-NLS-1$
     public static final String CTX_DATABASE_NAVIGATOR = "view-database-navigator"; //$NON-NLS-1$

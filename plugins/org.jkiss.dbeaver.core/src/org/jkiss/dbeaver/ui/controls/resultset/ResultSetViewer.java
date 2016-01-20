@@ -65,6 +65,7 @@ import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -1113,11 +1114,15 @@ public class ResultSetViewer extends Viewer
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
-                viewMenu.add(new Action("Set colors ...") {
-
-                });
+                viewMenu.add(new CustomizeColorsAction(attr));
                 viewMenu.add(new Action("Data formats ...") {
-
+                    @Override
+                    public void run() {
+                        UIUtils.showPreferencesFor(
+                            getControl().getShell(),
+                            null,
+                            PrefPageDataFormat.PAGE_ID);
+                    }
                 });
                 manager.add(viewMenu);
             }
@@ -1231,7 +1236,7 @@ public class ResultSetViewer extends Viewer
         }
         filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
-        filtersMenu.add(new ShowFiltersAction());
+        filtersMenu.add(new ShowFiltersAction(true));
     }
 
     @Override
@@ -2014,7 +2019,8 @@ public class ResultSetViewer extends Viewer
         public Menu getMenu(Control parent)
         {
             MenuManager menuManager = new MenuManager();
-            menuManager.add(new ShowFiltersAction());
+            menuManager.add(new ShowFiltersAction(false));
+            menuManager.add(new CustomizeColorsAction());
             menuManager.add(new Separator());
             menuManager.add(new VirtualKeyEditAction(true));
             menuManager.add(new VirtualKeyEditAction(false));
@@ -2070,9 +2076,9 @@ public class ResultSetViewer extends Viewer
     }
 
     private class ShowFiltersAction extends Action {
-        public ShowFiltersAction()
+        public ShowFiltersAction(boolean context)
         {
-            super("Customize ...", DBeaverIcons.getImageDescriptor(UIIcon.FILTER));
+            super(context ? "Customize ..." : "Order/Filter ...", DBeaverIcons.getImageDescriptor(UIIcon.FILTER));
         }
 
         @Override
@@ -2235,6 +2241,24 @@ public class ResultSetViewer extends Viewer
                 constraint.setCriteria(null);
                 setDataFilter(dataFilter, true);
             }
+        }
+    }
+
+    private class CustomizeColorsAction extends Action {
+        private final DBDAttributeBinding curAttribute;
+        public CustomizeColorsAction() {
+            this(null);
+        }
+
+        public CustomizeColorsAction(DBDAttributeBinding curAttribute) {
+            super("Row colors ...");
+            this.curAttribute = curAttribute;
+        }
+
+        @Override
+        public void run() {
+            ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, curAttribute);
+            dialog.open();
         }
     }
 
