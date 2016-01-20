@@ -32,14 +32,18 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -161,7 +165,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IRunnableContext runnableContext, IDialogSettings dialogSettings)
+    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings)
     {
         containerNodePath = dialogSettings.get("container");
         if (dialogSettings.get("openNewConnections") != null) {
@@ -175,6 +179,17 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         }
         if (dialogSettings.get("openTableOnFinish") != null) {
             openTableOnFinish = dialogSettings.getBoolean("openTableOnFinish");
+        }
+        if (CommonUtils.isEmpty(containerNodePath)) {
+            List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
+            if (!dataPipes.isEmpty()) {
+                IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
+                if (consumer instanceof DatabaseTransferConsumer) {
+                    containerNode = DBeaverCore.getInstance().getNavigatorModel().findNode(
+                        ((DatabaseTransferConsumer) consumer).getTargetObject().getParentObject()
+                    );
+                }
+            }
         }
     }
 
