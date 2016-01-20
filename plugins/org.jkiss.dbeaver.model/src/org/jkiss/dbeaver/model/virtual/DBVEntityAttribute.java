@@ -35,7 +35,6 @@ public class DBVEntityAttribute implements DBSEntityAttribute
     private final DBVEntityAttribute parent;
     private final List<DBVEntityAttribute> children = new ArrayList<>();
     private String name;
-    private Map<String, String> valueColors = new LinkedHashMap<>();
     private String defaultValue;
     private String description;
     private DBVTransformSettings transformSettings;
@@ -156,15 +155,6 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    @NotNull
-    public Map<String, String> getValueColors() {
-        return valueColors;
-    }
-
-    public void setValueColors(@NotNull Map<String, String> valueColors) {
-        this.valueColors = new LinkedHashMap<>(valueColors);
     }
 
     public List<DBVEntityAttribute> getChildren() {
