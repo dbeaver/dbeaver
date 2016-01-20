@@ -58,6 +58,7 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     List<DBVEntityConstraint> entityConstraints;
     List<DBVEntityAttribute> entityAttributes;
     Map<String, String> properties;
+    List<DBVColorOverride> colorOverrides;
 
     public DBVEntity(DBVContainer container, String name, String descriptionColumnNames) {
         this.container = container;
@@ -352,6 +353,14 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         return DBUtils.getQuotedIdentifier(stringColumns.values().iterator().next());
     }
 
+    public List<DBVColorOverride> getColorOverrides() {
+        return colorOverrides;
+    }
+
+    public void setColorOverrides(List<DBVColorOverride> colorOverrides) {
+        this.colorOverrides = colorOverrides;
+    }
+
     @Override
     public boolean hasValuableData() {
         if (!CommonUtils.isEmpty(descriptionColumnNames) || !CommonUtils.isEmpty(properties)) {
@@ -365,6 +374,9 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
         }
         if (!CommonUtils.isEmpty(entityAttributes)) {
+            return true;
+        }
+        if (!CommonUtils.isEmpty(colorOverrides)) {
             return true;
         }
         return false;

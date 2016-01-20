@@ -20,8 +20,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Table;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -61,6 +66,31 @@ class ColorSettingsDialog extends HelpEnabledDialog {
         getShell().setText("Customize row coloring");
 
         Composite composite = (Composite) super.createDialogArea(parent);
+        Composite mainGroup = new Composite(composite, SWT.NONE);
+        mainGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
+        mainGroup.setLayout(new GridLayout(2, false));
+
+        {
+            Group colorsGroup = new Group(mainGroup, SWT.NONE);
+            colorsGroup.setText("Colors");
+            colorsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
+            colorsGroup.setLayout(new GridLayout(1, false));
+            Table colorsTable = new Table(colorsGroup, SWT.BORDER);
+            colorsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+
+        {
+            Group settingsGroup = new Group(mainGroup, SWT.NONE);
+            settingsGroup.setText("Settings");
+            settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
+            settingsGroup.setLayout(new GridLayout(2, false));
+            UIUtils.createLabelText(settingsGroup, "Title", "");
+            UIUtils.createLabelCombo(settingsGroup, "Attribute", SWT.READ_ONLY | SWT.DROP_DOWN);
+            UIUtils.createLabelCombo(settingsGroup, "Criteria", SWT.READ_ONLY | SWT.DROP_DOWN);
+            UIUtils.createLabelText(settingsGroup, "Value", "");
+            UIUtils.createLabelCombo(settingsGroup, "Foreground", SWT.READ_ONLY | SWT.DROP_DOWN);
+            UIUtils.createLabelCombo(settingsGroup, "Background", SWT.READ_ONLY | SWT.DROP_DOWN);
+        }
 
 
         return parent;
