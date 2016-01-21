@@ -19,15 +19,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -79,6 +77,14 @@ class ColorSettingsDialog extends HelpEnabledDialog {
 
             colorsViewer = CheckboxTableViewer.newCheckList(colorsGroup, SWT.SINGLE | SWT.BORDER);
             colorsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            ToolBar toolbar = new ToolBar(colorsGroup, SWT.FLAT | SWT.HORIZONTAL);
+            final ToolItem newButton = new ToolItem(toolbar, SWT.NONE);
+            newButton.setText("Add");
+            newButton.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
+            final ToolItem deleteButton = new ToolItem(toolbar, SWT.NONE);
+            deleteButton.setText("Delete");
+            deleteButton.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
         }
 
         {
@@ -90,8 +96,10 @@ class ColorSettingsDialog extends HelpEnabledDialog {
             UIUtils.createLabelCombo(settingsGroup, "Attribute", SWT.READ_ONLY | SWT.DROP_DOWN);
             UIUtils.createLabelCombo(settingsGroup, "Criteria", SWT.READ_ONLY | SWT.DROP_DOWN);
             UIUtils.createLabelText(settingsGroup, "Value", "");
-            UIUtils.createLabelCombo(settingsGroup, "Foreground", SWT.READ_ONLY | SWT.DROP_DOWN);
-            UIUtils.createLabelCombo(settingsGroup, "Background", SWT.READ_ONLY | SWT.DROP_DOWN);
+            UIUtils.createControlLabel(settingsGroup, "Foreground");
+            new ColorSelector(settingsGroup);
+            UIUtils.createControlLabel(settingsGroup, "Background");
+            new ColorSelector(settingsGroup);
         }
 
 
