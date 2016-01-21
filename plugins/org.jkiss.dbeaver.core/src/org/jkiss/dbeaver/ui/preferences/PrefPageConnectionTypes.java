@@ -34,6 +34,8 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
@@ -55,7 +57,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     private ColorSelector colorPicker;
     private Button autocommitCheck;
     private Button confirmCheck;
-    private Button deleteButton;
+    private ToolItem deleteButton;
     private DBPConnectionType selectedType;
 
     private Map<DBPConnectionType, DBPConnectionType> changedInfo = new HashMap<>();
@@ -85,11 +87,13 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                 }
             });
 
-            Composite tableGroup = UIUtils.createPlaceholder(composite, 2, 5);
-            tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            Button newButton = new Button(tableGroup, SWT.PUSH);
-            newButton.setText("New");
+            ToolBar toolbar = new ToolBar(composite, SWT.FLAT | SWT.HORIZONTAL);
+            final ToolItem newButton = new ToolItem(toolbar, SWT.NONE);
+            newButton.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
+            deleteButton = new ToolItem(toolbar, SWT.NONE);
+            deleteButton.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
+
             newButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -122,18 +126,14 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                 }
             });
 
-            deleteButton = new Button(tableGroup, SWT.PUSH);
-            deleteButton.setText("Delete");
-            deleteButton.addSelectionListener(new SelectionAdapter() {
+            this.deleteButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     DBPConnectionType connectionType = getSelectedType();
                     if (!UIUtils.confirmAction(
-                        deleteButton.getShell(),
+                        getShell(),
                         "Delete connection type", "Are you sure you want to delete connection type '" + connectionType.getName() + "'?\n" +
-                        "All connections of this type will be reset to default type (" + DBPConnectionType.DEFAULT_TYPE.getName() + ")"))
-                    {
+                            "All connections of this type will be reset to default type (" + DBPConnectionType.DEFAULT_TYPE.getName() + ")")) {
                         return;
                     }
                     changedInfo.remove(connectionType);

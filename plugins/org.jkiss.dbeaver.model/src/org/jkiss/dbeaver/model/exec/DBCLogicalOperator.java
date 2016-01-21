@@ -21,21 +21,21 @@ package org.jkiss.dbeaver.model.exec;
 /**
  * Logical operator
  */
-public class DBCLogicalOperator {
+public enum DBCLogicalOperator {
 
-    public static final DBCLogicalOperator EQUALS = new DBCLogicalOperator("=", 1);
-    public static final DBCLogicalOperator NOT_EQUALS = new DBCLogicalOperator("<>", 1);
-    public static final DBCLogicalOperator GREATER = new DBCLogicalOperator(">", 1);
-    public static final DBCLogicalOperator GREATER_EQUALS = new DBCLogicalOperator(">=", 1);
-    public static final DBCLogicalOperator LESS = new DBCLogicalOperator("<", 1);
-    public static final DBCLogicalOperator LESS_EQUALS = new DBCLogicalOperator("<=", 1);
-    public static final DBCLogicalOperator IS_NULL = new DBCLogicalOperator("IS NULL", 0);
-    public static final DBCLogicalOperator IS_NOT_NULL = new DBCLogicalOperator("IS NOT NULL", 0);
-    public static final DBCLogicalOperator BETWEEN = new DBCLogicalOperator("BETWEEN", 2);
-    public static final DBCLogicalOperator IN = new DBCLogicalOperator("IN", -1);
-    public static final DBCLogicalOperator LIKE = new DBCLogicalOperator("LIKE", 1);
-    public static final DBCLogicalOperator REGEX = new DBCLogicalOperator("REGEX", 1);
-    public static final DBCLogicalOperator SOUNDS = new DBCLogicalOperator("SOUNDS", 1);
+    EQUALS("=", 1),
+    NOT_EQUALS("<>", 1),
+    GREATER(">", 1),
+    GREATER_EQUALS(">=", 1),
+    LESS("<", 1),
+    LESS_EQUALS("<=", 1),
+    IS_NULL("IS NULL", 0),
+    IS_NOT_NULL("IS NOT NULL", 0),
+    BETWEEN("BETWEEN", 2),
+    IN("IN", -1),
+    LIKE("LIKE", 1),
+    REGEX("REGEX", 1),
+    SOUNDS("SOUNDS", 1);
 
     private final String stringValue;
     private final int argumentCount;
