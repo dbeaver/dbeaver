@@ -19,12 +19,14 @@
 package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -33,7 +35,6 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
 
@@ -47,12 +48,11 @@ import java.util.Map;
 public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.connectionTypes"; //$NON-NLS-1$
-    public static final String COLOR_TEXT = "";
 
     private Table typeTable;
     private Text typeName;
     private Text typeDescription;
-    private CImageCombo colorPicker;
+    private ColorSelector colorPicker;
     private Button autocommitCheck;
     private Button confirmCheck;
     private Button deleteButton;
@@ -172,19 +172,19 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
             {
                 UIUtils.createControlLabel(groupSettings, "Color");
-                Composite colorGroup = UIUtils.createPlaceholder(groupSettings, 2, 5);
-                colorGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+//                Composite colorGroup = UIUtils.createPlaceholder(groupSettings, 2, 5);
+//                colorGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-                colorPicker = new CImageCombo(colorGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-                colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                colorPicker.addSelectionListener(new SelectionAdapter() {
+                colorPicker = new ColorSelector(groupSettings);
+//                colorPicker.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                colorPicker.addListener(new IPropertyChangeListener() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
-                        getSelectedType().setColor(StringConverter.asString(colorPicker.getItem(colorPicker.getSelectionIndex()).getBackground().getRGB()));
+                    public void propertyChange(PropertyChangeEvent event) {
+                        getSelectedType().setColor(StringConverter.asString(colorPicker.getColorValue()));
                         updateTableInfo();
                     }
                 });
+/*
                 Button pickerButton = new Button(colorGroup, SWT.PUSH);
                 pickerButton.setText("...");
                 pickerButton.addSelectionListener(new SelectionAdapter() {
@@ -199,15 +199,15 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                             Color color = null;
                             int count = colorPicker.getItemCount();
                             for (int i = 0; i < count; i++) {
-                                TableItem item = colorPicker.getItem(i);
-                                if (item.getBackground() != null && item.getBackground().getRGB().equals(rgb)) {
-                                    color = item.getBackground();
+                                Color item = colorPicker.getColorItem(i);
+                                if (item != null && item.getRGB().equals(rgb)) {
+                                    color = item;
                                     break;
                                 }
                             }
                             if (color == null) {
                                 color = new Color(colorPicker.getDisplay(), rgb);
-                                colorPicker.add(null, COLOR_TEXT, color, color);
+                                colorPicker.addColor(color);
                             }
                             colorPicker.select(color);
                             getSelectedType().setColor(StringConverter.asString(color.getRGB()));
@@ -215,6 +215,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                         }
                     }
                 });
+*/
             }
 
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -252,7 +253,11 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
 
     private void showSelectedType(DBPConnectionType connectionType)
     {
-        colorPicker.select(UIUtils.getConnectionTypeColor(connectionType));
+        final Color connectionTypeColor = UIUtils.getConnectionTypeColor(connectionType);
+        if (connectionTypeColor != null) {
+            colorPicker.setColorValue(connectionTypeColor.getRGB());
+        }
+
         typeName.setText(connectionType.getName());
         typeDescription.setText(connectionType.getDescription());
         autocommitCheck.setSelection(connectionType.isAutocommit());
@@ -280,7 +285,7 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
     protected void performDefaults()
     {
         typeTable.removeAll();
-        colorPicker.removeAll();
+        //colorPicker.loadStandardColors();
         for (DBPConnectionType source : DataSourceProviderRegistry.getInstance().getConnectionTypes()) {
             addTypeToTable(source, new DBPConnectionType(source));
         }
@@ -292,15 +297,6 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
                     break;
                 }
             }
-        }
-        // Ad predefined colors
-        int[] colorList = { SWT.COLOR_WHITE, SWT.COLOR_BLACK, SWT.COLOR_RED, SWT.COLOR_DARK_RED,
-        SWT.COLOR_GREEN, SWT.COLOR_DARK_GREEN, SWT.COLOR_YELLOW, SWT.COLOR_DARK_YELLOW,
-        SWT.COLOR_BLUE, SWT.COLOR_DARK_BLUE, SWT.COLOR_MAGENTA, SWT.COLOR_DARK_MAGENTA,
-        SWT.COLOR_CYAN, SWT.COLOR_DARK_CYAN, SWT.COLOR_GRAY, SWT.COLOR_DARK_GRAY };
-        for (int colorCode : colorList) {
-            Color color = colorPicker.getShell().getDisplay().getSystemColor(colorCode);
-            colorPicker.add(null, COLOR_TEXT, color, color);
         }
         showSelectedType(getSelectedType());
 
@@ -324,7 +320,9 @@ public class PrefPageConnectionTypes extends PreferencePage implements IWorkbenc
             Color connectionColor = UIUtils.getConnectionTypeColor(connectionType);
             item.setBackground(0, connectionColor);
             item.setBackground(1, connectionColor);
-            colorPicker.add(null, COLOR_TEXT, connectionColor, connectionColor);
+            if (connectionColor != null) {
+                colorPicker.setColorValue(connectionColor.getRGB());
+            }
         }
         item.setData(connectionType);
     }
