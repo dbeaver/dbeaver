@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -45,7 +46,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
     private final ResultSetViewer resultSetViewer;
     private final List<DBDAttributeBinding> attributes;
 
-    private CheckboxTreeViewer columnsViewer;
+    private CheckboxTableViewer colorsViewer;
 
     public ColorSettingsDialog(ResultSetViewer resultSetViewer, DBDAttributeBinding curAttribute)
     {
@@ -75,8 +76,9 @@ class ColorSettingsDialog extends HelpEnabledDialog {
             colorsGroup.setText("Colors");
             colorsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_BOTH));
             colorsGroup.setLayout(new GridLayout(1, false));
-            Table colorsTable = new Table(colorsGroup, SWT.BORDER);
-            colorsTable.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            colorsViewer = CheckboxTableViewer.newCheckList(colorsGroup, SWT.SINGLE | SWT.BORDER);
+            colorsViewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
         {
@@ -97,8 +99,7 @@ class ColorSettingsDialog extends HelpEnabledDialog {
     }
 
     private void refreshData() {
-        columnsViewer.refresh();
-        columnsViewer.expandAll();
+        colorsViewer.refresh();
     }
 
     @Override
