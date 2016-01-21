@@ -1,1 +1,2 @@
 instructions.configure=org.eclipse.equinox.p2.touchpoint.natives.remove(path:${installFolder}/eclipsec.exe);
+instructions.configure=org.eclipse.equinox.p2.touchpoint.natives.copy(source:../packaging/content/,target:${installFolder},overwrite:true);
