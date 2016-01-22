@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -24,10 +25,16 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -54,11 +61,47 @@ public class ResultSetModel {
     // Flag saying that edited values update is in progress
     private volatile boolean updateInProgress = false;
 
+    // Coloring
+    private Map<DBDAttributeBinding, AttributeColorSettings> colorMapping = new HashMap<>();
+
     // Edited rows and cells
     private DBCStatistics statistics;
     private transient boolean metadataChanged;
     private transient boolean sourceChanged;
     private transient boolean metadataDynamic;
+
+    public static class AttributeColorSettings {
+        private DBCLogicalOperator operator;
+        private String[] attributeValues;
+        private Color colorForeground;
+        private Color colorBackground;
+
+        public AttributeColorSettings(DBDAttributeBinding binding, DBVColorOverride co) {
+            this.operator = co.getOperator();
+            this.colorForeground = UIUtils.getSharedColor(co.getColorForeground());
+            this.colorBackground = UIUtils.getSharedColor(co.getColorBackground());
+            this.attributeValues = co.getAttributeValues();
+//            for (int i = 0; i < this.attributeValues.length; i++) {
+//                this.attributeValues[i] = binding.getValueHandler().getValueFromObject(session, binding, co.getAttributeValues()[i], false);
+//            }
+        }
+
+        public DBCLogicalOperator getOperator() {
+            return operator;
+        }
+
+        public String[] getAttributeValues() {
+            return attributeValues;
+        }
+
+        public Color getColorForeground() {
+            return colorForeground;
+        }
+
+        public Color getColorBackground() {
+            return colorBackground;
+        }
+    }
 
     private final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
         @Override
@@ -512,6 +555,9 @@ public class ResultSetModel {
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
             for (DBDAttributeBinding attribute : visibleAttributes) {
+                if (attribute.isPseudoAttribute()) {
+                    continue;
+                }
                 DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
                 if (rowIdentifier != null) {
                     if (sourceTable == null) {
@@ -527,11 +573,32 @@ public class ResultSetModel {
                     //break;
                 }
             }
+            updateColorMapping();
         }
 
         hasData = true;
         metadataChanged = false;
         sourceChanged = false;
+    }
+
+    private void updateColorMapping() {
+        colorMapping.clear();
+        DBSEntity entity = getSingleSource();
+        if (entity == null) {
+            return;
+        }
+        DBVEntity virtualEntity = DBVUtils.findVirtualEntity(entity, false);
+        if (virtualEntity != null) {
+            List<DBVColorOverride> coList = virtualEntity.getColorOverrides();
+            if (!CommonUtils.isEmpty(coList)) {
+                for (DBVColorOverride co : coList) {
+                    DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
+                    if (binding != null) {
+                        colorMapping.put(binding, new AttributeColorSettings(binding, co));
+                    }
+                }
+            }
+        }
     }
 
     public void appendData(@NotNull List<Object[]> rows)

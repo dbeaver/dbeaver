@@ -18,10 +18,9 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -108,8 +108,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         if (keyColumn.getParentObject() != this.getTable()) {
             throw new IllegalArgumentException("Bad key column argument");
         }
-        DBPDataSource dataSource = session.getDataSource();
-        DBVEntity dictionary = dataSource.getContainer().getVirtualModel().findEntity(getTable(), false);
+        DBVEntity dictionary = DBVUtils.findVirtualEntity(getTable(), false);
         if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
             // Try to use dictionary description
             try {

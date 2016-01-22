@@ -21,11 +21,11 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -42,15 +42,22 @@ class ColorSettingsDialog extends HelpEnabledDialog {
     private static final String DIALOG_ID = "DBeaver.ColorSettingsDialog";//$NON-NLS-1$
 
     private final ResultSetViewer resultSetViewer;
+    @Nullable
     private final List<DBDAttributeBinding> attributes;
+    @Nullable
+    private final ResultSetRow row;
 
     private CheckboxTableViewer colorsViewer;
 
-    public ColorSettingsDialog(ResultSetViewer resultSetViewer, DBDAttributeBinding curAttribute)
+    public ColorSettingsDialog(
+        ResultSetViewer resultSetViewer,
+        @Nullable final DBDAttributeBinding attr,
+        @Nullable final ResultSetRow row)
     {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_ROW_COLORS);
         this.resultSetViewer = resultSetViewer;
         this.attributes = Arrays.asList(resultSetViewer.getModel().getAttributes());
+        this.row = row;
     }
 
     @Override

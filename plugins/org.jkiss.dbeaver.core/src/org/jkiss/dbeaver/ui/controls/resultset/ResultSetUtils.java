@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -257,7 +258,7 @@ public class ResultSetUtils
         if (CommonUtils.isEmpty(identifiers)) {
             // No physical identifiers
             // Make new or use existing virtual identifier
-            DBVEntity virtualEntity = table.getDataSource().getContainer().getVirtualModel().findEntity(table, true);
+            DBVEntity virtualEntity = DBVUtils.findVirtualEntity(table, true);
             identifiers.add(virtualEntity.getBestIdentifier());
         }
         if (!CommonUtils.isEmpty(identifiers)) {
