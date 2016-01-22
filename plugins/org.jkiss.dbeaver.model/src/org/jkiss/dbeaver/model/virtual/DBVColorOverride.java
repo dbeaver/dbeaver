@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 public class DBVColorOverride {
     private String attributeName;
     private DBCLogicalOperator operator;
-    private String attributeValue;
+    private String[] attributeValues;
     private String colorForeground;
     private String colorBackground;
 
@@ -45,12 +45,12 @@ public class DBVColorOverride {
         this.operator = operator;
     }
 
-    public String getAttributeValue() {
-        return attributeValue;
+    public String[] getAttributeValues() {
+        return attributeValues;
     }
 
-    public void setAttributeValue(String attributeValue) {
-        this.attributeValue = attributeValue;
+    public void setAttributeValues(String[] attributeValues) {
+        this.attributeValues = attributeValues;
     }
 
     public String getColorForeground() {

@@ -1430,6 +1430,14 @@ public class UIUtils {
         }
     }
 
+    @Nullable
+    public static Color getSharedColor(@Nullable String rgbString) {
+        if (CommonUtils.isEmpty(rgbString)) {
+            return null;
+        }
+        return DBeaverUI.getSharedTextColors().getColor(rgbString);
+    }
+
     public static Color getConnectionColor(DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {

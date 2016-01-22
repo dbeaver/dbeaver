@@ -23,12 +23,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Virtual model utils
@@ -38,7 +36,7 @@ public abstract class DBVUtils {
     public static DBVTransformSettings getTransformSettings(DBDAttributeBinding binding) {
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
         if (entityAttribute != null) {
-            DBVEntity vEntity = binding.getDataSource().getContainer().getVirtualModel().findEntity(entityAttribute.getParentObject(), false);
+            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
             if (vEntity != null) {
                 DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding);
                 if (vAttr != null) {
@@ -62,6 +60,12 @@ public abstract class DBVUtils {
     }
 
     @Nullable
+    public static DBVEntity findVirtualEntity(DBSEntity source, boolean create)
+    {
+        return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
+    }
+
+    @Nullable
     public static DBDAttributeTransformer[] findAttributeTransformers(DBDAttributeBinding binding, boolean custom)
     {
         DBPDataSource dataSource = binding.getDataSource();
@@ -74,7 +78,7 @@ public abstract class DBVUtils {
         boolean filtered = false;
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
         if (entityAttribute != null) {
-            DBVEntity vEntity = container.getVirtualModel().findEntity(entityAttribute.getParentObject(), false);
+            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
             if (vEntity != null) {
                 DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding);
                 if (vAttr != null) {

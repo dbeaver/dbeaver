@@ -1114,7 +1114,7 @@ public class ResultSetViewer extends Viewer
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
-                viewMenu.add(new CustomizeColorsAction(attr));
+                viewMenu.add(new CustomizeColorsAction(attr, row));
                 viewMenu.add(new Action("Data formats ...") {
                     @Override
                     public void run() {
@@ -2246,18 +2246,21 @@ public class ResultSetViewer extends Viewer
 
     private class CustomizeColorsAction extends Action {
         private final DBDAttributeBinding curAttribute;
+        private final ResultSetRow row;
+
         public CustomizeColorsAction() {
-            this(null);
+            this(null, null);
         }
 
-        public CustomizeColorsAction(DBDAttributeBinding curAttribute) {
+        public CustomizeColorsAction(DBDAttributeBinding curAttribute, ResultSetRow row) {
             super("Row colors ...");
             this.curAttribute = curAttribute;
+            this.row = row;
         }
 
         @Override
         public void run() {
-            ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, curAttribute);
+            ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, curAttribute, row);
             dialog.open();
         }
     }

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -55,7 +56,7 @@ public class EditDictionaryDialog extends AttributesSelectorDialog {
     {
         super(shell, title, entity);
         this.entity = entity;
-        this.dictionary = entity.getDataSource().getContainer().getVirtualModel().findEntity(entity, true);
+        this.dictionary = DBVUtils.findVirtualEntity(entity, true);
         DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor)
