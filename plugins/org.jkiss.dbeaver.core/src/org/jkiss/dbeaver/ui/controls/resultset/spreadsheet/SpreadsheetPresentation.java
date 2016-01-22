@@ -1302,6 +1302,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public Color getCellForeground(Object colElement, Object rowElement)
         {
+            ResultSetRow row = (ResultSetRow) (!controller.isRecordMode() ?  rowElement : colElement);
+            if (row.foreground != null) {
+                return row.foreground;
+            }
+
             Object value = getCellValue(colElement, rowElement, false);
             if (DBUtils.isNullValue(value)) {
                 return foregroundNull;
@@ -1321,7 +1326,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);
             DBDAttributeBinding attribute = (DBDAttributeBinding)(!recordMode ?  colElement : rowElement);
             boolean odd = row.getVisualNumber() % 2 == 0;
-
+            if (row.background != null) {
+                return row.background;
+            }
             if (row.getState() == ResultSetRow.STATE_ADDED) {
                 return backgroundAdded;
             }

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -50,6 +51,7 @@ public class ResultSetRow {
     private byte state;
     @Nullable
     public Map<DBDValue, CollectionElementData> collections;
+    public Color foreground, background;
 
     ResultSetRow(int rowNumber, @NotNull Object[] values) {
         this.rowNumber = rowNumber;
