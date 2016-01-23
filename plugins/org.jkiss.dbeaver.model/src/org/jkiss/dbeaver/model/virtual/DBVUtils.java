@@ -38,7 +38,7 @@ public abstract class DBVUtils {
         if (entityAttribute != null) {
             DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
             if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding);
+                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
                 if (vAttr != null) {
                     return getTransformSettings(vAttr);
                 }
@@ -80,7 +80,7 @@ public abstract class DBVUtils {
         if (entityAttribute != null) {
             DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
             if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding);
+                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
                 if (vAttr != null) {
                     final DBVTransformSettings transformSettings = getTransformSettings(vAttr);
                     if (transformSettings != null) {

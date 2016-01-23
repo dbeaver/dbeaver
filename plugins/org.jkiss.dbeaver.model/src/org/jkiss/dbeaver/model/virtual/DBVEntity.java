@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -209,18 +210,27 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     }
 
     @Nullable
-    public DBVEntityAttribute getVirtualAttribute(DBDAttributeBinding binding)
+    public DBVEntityAttribute getVirtualAttribute(DBDAttributeBinding binding, boolean create)
     {
-        if (entityAttributes != null) {
+        if (entityAttributes != null || create) {
+            if (entityAttributes == null) {
+                entityAttributes = new ArrayList<>();
+            }
             DBSObject[] path = DBUtils.getObjectPath(binding, true);
             DBVEntityAttribute topAttribute = DBUtils.findObject(entityAttributes, path[0].getName());
-            for (int i = 1; i < path.length; i++) {
-                topAttribute = topAttribute.getChild(path[i].getName());
-                if (topAttribute == null) {
-                    log.debug("Can't find hierarchical attribute '" + binding + "'");
-                    return null;
+            if (topAttribute != null) {
+                for (int i = 1; i < path.length; i++) {
+                    topAttribute = topAttribute.getChild(path[i].getName());
+                    if (topAttribute == null) {
+                        log.debug("Can't find hierarchical attribute '" + binding + "'");
+                        return null;
+                    }
                 }
             }
+            if (create) {
+
+            }
+
             return topAttribute;
         }
         return null;
@@ -359,6 +369,10 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
 
     public void setColorOverrides(List<DBVColorOverride> colorOverrides) {
         this.colorOverrides = colorOverrides;
+    }
+
+    public void setColorOverride(DBDAttributeBinding attribute, Object value, RGB color) {
+
     }
 
     @Override

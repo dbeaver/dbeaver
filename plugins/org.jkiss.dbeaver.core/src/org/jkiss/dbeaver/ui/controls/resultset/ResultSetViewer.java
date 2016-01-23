@@ -36,6 +36,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -62,11 +63,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.virtual.DBVConstants;
-import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.model.virtual.DBVTransformSettings;
-import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -1020,8 +1018,9 @@ public class ResultSetViewer extends Viewer
 
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         // Custom oldValue items
+        final ResultSetValueController valueController;
         if (attr != null && row != null) {
-            final ResultSetValueController valueController = new ResultSetValueController(
+            valueController = new ResultSetValueController(
                 this,
                 attr,
                 row,
@@ -1073,6 +1072,8 @@ public class ResultSetViewer extends Viewer
                 resetValueAction.setAccelerator(SWT.ESC);
                 manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, resetValueAction);
             }
+        } else {
+            valueController = null;
         }
 
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
@@ -1117,7 +1118,9 @@ public class ResultSetViewer extends Viewer
                     viewMenu.add(customizeAction);
                 }
                 if (getModel().isSingleSource()) {
-                    viewMenu.add(new SetRowColorAction(attr));
+                    if (valueController != null) {
+                        viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
+                    }
                     viewMenu.add(new CustomizeColorsAction(attr, row));
                     viewMenu.add(new Separator());
                 }
@@ -2251,19 +2254,34 @@ public class ResultSetViewer extends Viewer
     }
 
     private class SetRowColorAction extends Action {
-        public SetRowColorAction(DBDAttributeBinding attr) {
+        private final DBDAttributeBinding attribute;
+        private final Object value;
+        public SetRowColorAction(DBDAttributeBinding attr, Object value) {
             super("Color by " + attr.getName());
+            this.attribute = attr;
+            this.value = value;
         }
 
         @Override
         public void run() {
+            RGB color;
             final Shell shell = UIUtils.createCenteredShell(getControl().getShell());
             try {
                 ColorDialog cd = new ColorDialog(shell);
-                cd.open();
+                color = cd.open();
+                if (color == null) {
+                    return;
+                }
             } finally {
                 shell.dispose();
             }
+            final DBSEntity entity = getModel().getSingleSource();
+            assert entity != null;
+            final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
+            assert vEntity != null;
+            vEntity.setColorOverride(attribute, value, color);
+            //final DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attribute, true);
+
         }
     }
 
