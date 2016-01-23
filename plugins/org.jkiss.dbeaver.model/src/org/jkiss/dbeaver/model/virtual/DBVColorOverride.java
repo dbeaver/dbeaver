@@ -17,7 +17,13 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Arrays;
 
 /**
  * Color override settings
@@ -28,6 +34,14 @@ public class DBVColorOverride {
     private String[] attributeValues;
     private String colorForeground;
     private String colorBackground;
+
+    public DBVColorOverride(String attributeName, DBCLogicalOperator operator, String[] attributeValues, String colorForeground, String colorBackground) {
+        this.attributeName = attributeName;
+        this.operator = operator;
+        this.attributeValues = attributeValues;
+        this.colorForeground = colorForeground;
+        this.colorBackground = colorBackground;
+    }
 
     public String getAttributeName() {
         return attributeName;
@@ -67,6 +81,13 @@ public class DBVColorOverride {
 
     public void setColorBackground(String colorBackground) {
         this.colorBackground = colorBackground;
+    }
+
+    public boolean matches(@NotNull String attrName, @NotNull DBCLogicalOperator operator, @Nullable String[] stringValue) {
+        return
+            attrName.equals(this.attributeName) &&
+            operator == this.operator &&
+            Arrays.equals(this.attributeValues, stringValue);
     }
 }
 

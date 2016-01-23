@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.graphics.RGB;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -26,8 +27,11 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -371,8 +375,27 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         this.colorOverrides = colorOverrides;
     }
 
-    public void setColorOverride(DBDAttributeBinding attribute, Object value, RGB color) {
+    public void setColorOverride(DBDAttributeBinding attribute, Object value, String foreground, String background) {
+        final String attrName = attribute.getName();
+        final String[] stringValue = value == null ? null : new String[]{attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE)};
+        final DBVColorOverride co = new DBVColorOverride(
+            attrName,
+            DBCLogicalOperator.EQUALS,
+            stringValue,
+            foreground,
+            background);
 
+        if (colorOverrides == null) {
+            colorOverrides = new ArrayList<>();
+        } else {
+            for (Iterator<DBVColorOverride> iterator = colorOverrides.iterator(); iterator.hasNext(); ) {
+                DBVColorOverride c = iterator.next();
+                if (c.matches(attrName, DBCLogicalOperator.EQUALS, stringValue)) {
+                    iterator.remove();
+                }
+            }
+        }
+        colorOverrides.add(co);
     }
 
     @Override

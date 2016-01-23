@@ -581,7 +581,7 @@ public class ResultSetModel {
         sourceChanged = false;
     }
 
-    private void updateColorMapping() {
+    void updateColorMapping() {
         colorMapping.clear();
         DBSEntity entity = getSingleSource();
         if (entity == null) {
