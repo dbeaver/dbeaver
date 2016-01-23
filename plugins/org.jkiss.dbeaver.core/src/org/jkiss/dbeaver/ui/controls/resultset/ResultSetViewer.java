@@ -25,6 +25,7 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -66,6 +67,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
@@ -2279,9 +2281,8 @@ public class ResultSetViewer extends Viewer
             assert entity != null;
             final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
             assert vEntity != null;
-            vEntity.setColorOverride(attribute, value, color);
-            //final DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(attribute, true);
-
+            vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
+            model.updateColorMapping();
         }
     }
 
