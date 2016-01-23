@@ -423,4 +423,8 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             this);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
 }

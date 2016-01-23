@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -34,7 +36,9 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
@@ -51,18 +55,22 @@ public class DBVModel extends DBVContainer {
     private static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     private static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     private static final String ATTR_TYPE = "type"; //$NON-NLS-1$
+    private static final String TAG_COLORS = "colors";
+    private static final String TAG_COLOR = "color";
+    private static final String ATTR_OPERATOR = "operator";
+    private static final String ATTR_FOREGROUND = "foreground";
+    private static final String ATTR_BACKGROUND = "background";
+    private static final String TAG_VALUE = "value";
 
     private DBPDataSourceContainer dataSourceContainer;
 
-    public DBVModel(DBPDataSourceContainer dataSourceContainer)
-    {
+    public DBVModel(DBPDataSourceContainer dataSourceContainer) {
         super(null, "model");
         this.dataSourceContainer = dataSourceContainer;
     }
 
     @Override
-    public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException
-    {
+    public DBSObjectContainer getRealContainer(DBRProgressMonitor monitor) throws DBException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (dataSource instanceof DBSObjectContainer) {
             return (DBSObjectContainer) dataSource;
@@ -73,20 +81,18 @@ public class DBVModel extends DBVContainer {
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource()
-    {
+    public DBPDataSource getDataSource() {
         return dataSourceContainer.getDataSource();
     }
 
     /**
      * Search for virtual entity descriptor
      *
-     * @param entity entity
-     * @param createNew    create new entity if missing
+     * @param entity    entity
+     * @param createNew create new entity if missing
      * @return entity virtual entity
      */
-    public DBVEntity findEntity(DBSEntity entity, boolean createNew)
-    {
+    public DBVEntity findEntity(DBSEntity entity, boolean createNew) {
         DBSObject[] path = DBUtils.getObjectPath(entity, false);
         if (path.length == 0) {
             log.warn("Empty entity path");
@@ -166,11 +172,47 @@ public class DBVModel extends DBVContainer {
                 xml.endElement();
             }
         }
+        // Colors
+        if (!CommonUtils.isEmpty(entity.colorOverrides)) {
+            xml.startElement(TAG_COLORS);
+            for (DBVColorOverride color : entity.colorOverrides) {
+                xml.startElement(TAG_COLOR);
+                xml.addAttribute(ATTR_NAME, color.getAttributeName());
+                xml.addAttribute(ATTR_OPERATOR, color.getOperator().name());
+                if (color.getColorForeground() != null) {
+                    xml.addAttribute(ATTR_FOREGROUND, color.getColorForeground());
+                }
+                if (color.getColorBackground() != null) {
+                    xml.addAttribute(ATTR_BACKGROUND, color.getColorBackground());
+                }
+                if (!ArrayUtils.isEmpty(color.getAttributeValues())) {
+                    for (Object value : color.getAttributeValues()) {
+                        if (value == null) {
+                            continue;
+                        }
+                        xml.startElement(TAG_VALUE);
+                        try {
+                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                            try (ObjectOutputStream os = new ObjectOutputStream(baos)) {
+                                os.writeObject(value);
+                            }
+                            String encoded = Base64.encode(baos.toByteArray());
+                            xml.addText(encoded);
+                        } catch (Throwable e) {
+                            log.warn("Error saving colors configuration for " + entity, e);
+                        }
+                        xml.endElement();
+                    }
+                }
+                xml.endElement();
+            }
+            xml.endElement();
+        }
+
         xml.endElement();
     }
 
-    public SAXListener getModelParser()
-    {
+    public SAXListener getModelParser() {
         return new ModelParser();
     }
 
@@ -178,8 +220,7 @@ public class DBVModel extends DBVContainer {
         super.copyFrom(model);
     }
 
-    class ModelParser implements SAXListener
-    {
+    class ModelParser implements SAXListener {
         private DBVContainer curContainer = null;
         private DBVEntity curEntity = null;
         private DBVEntityAttribute curAttribute = null;
@@ -187,8 +228,7 @@ public class DBVModel extends DBVContainer {
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-            throws XMLException
-        {
+            throws XMLException {
             switch (localName) {
                 case TAG_CONTAINER:
                     if (curContainer == null) {
@@ -240,7 +280,8 @@ public class DBVModel extends DBVContainer {
         }
 
         @Override
-        public void saxText(SAXReader reader, String data) {}
+        public void saxText(SAXReader reader, String data) {
+        }
 
         @Override
         public void saxEndElement(SAXReader reader, String namespaceURI, String localName) {
