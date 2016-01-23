@@ -633,6 +633,7 @@ public class ResultSetModel {
                 new ResultSetRow(firstRowNum + i, rows.get(i)));
         }
         curRows.addAll(newRows);
+        updateRowColors(newRows);
     }
 
     void clearData()
