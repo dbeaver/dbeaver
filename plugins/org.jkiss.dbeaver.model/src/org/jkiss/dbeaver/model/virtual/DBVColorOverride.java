@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
-import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 
@@ -31,11 +29,11 @@ import java.util.Arrays;
 public class DBVColorOverride {
     private String attributeName;
     private DBCLogicalOperator operator;
-    private String[] attributeValues;
+    private Object[] attributeValues;
     private String colorForeground;
     private String colorBackground;
 
-    public DBVColorOverride(String attributeName, DBCLogicalOperator operator, String[] attributeValues, String colorForeground, String colorBackground) {
+    public DBVColorOverride(String attributeName, DBCLogicalOperator operator, Object[] attributeValues, String colorForeground, String colorBackground) {
         this.attributeName = attributeName;
         this.operator = operator;
         this.attributeValues = attributeValues;
@@ -59,7 +57,7 @@ public class DBVColorOverride {
         this.operator = operator;
     }
 
-    public String[] getAttributeValues() {
+    public Object[] getAttributeValues() {
         return attributeValues;
     }
 
@@ -83,11 +81,11 @@ public class DBVColorOverride {
         this.colorBackground = colorBackground;
     }
 
-    public boolean matches(@NotNull String attrName, @NotNull DBCLogicalOperator operator, @Nullable String[] stringValue) {
+    public boolean matches(@NotNull String attrName, @NotNull DBCLogicalOperator operator, @Nullable Object[] values) {
         return
             attrName.equals(this.attributeName) &&
             operator == this.operator &&
-            Arrays.equals(this.attributeValues, stringValue);
+            Arrays.equals(this.attributeValues, values);
     }
 }
 

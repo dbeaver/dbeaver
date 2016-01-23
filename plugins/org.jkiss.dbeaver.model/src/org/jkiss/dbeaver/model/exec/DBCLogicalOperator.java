@@ -18,24 +18,94 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+
 /**
  * Logical operator
  */
 public enum DBCLogicalOperator {
 
-    EQUALS("=", 1),
-    NOT_EQUALS("<>", 1),
-    GREATER(">", 1),
-    GREATER_EQUALS(">=", 1),
-    LESS("<", 1),
-    LESS_EQUALS("<=", 1),
-    IS_NULL("IS NULL", 0),
-    IS_NOT_NULL("IS NOT NULL", 0),
-    BETWEEN("BETWEEN", 2),
-    IN("IN", -1),
-    LIKE("LIKE", 1),
-    REGEX("REGEX", 1),
-    SOUNDS("SOUNDS", 1);
+    EQUALS("=", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return CommonUtils.equalObjects(srcValue, arguments[0]);
+        }
+    },
+    NOT_EQUALS("<>", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return !CommonUtils.equalObjects(srcValue, arguments[0]);
+        }
+    },
+    GREATER(">", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return compare(srcValue, arguments) > 0;
+        }
+    },
+    GREATER_EQUALS(">=", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return compare(srcValue, arguments) >= 0;
+        }
+    },
+    LESS("<", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return compare(srcValue, arguments) < 0;
+        }
+    },
+    LESS_EQUALS("<=", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return compare(srcValue, arguments) <= 0;
+        }
+    },
+    IS_NULL("IS NULL", 0) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return srcValue == null;
+        }
+    },
+    IS_NOT_NULL("IS NOT NULL", 0) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return srcValue != null;
+        }
+    },
+    BETWEEN("BETWEEN", 2) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return false;
+        }
+    },
+    IN("IN", -1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return false;
+        }
+    },
+    LIKE("LIKE", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return srcValue != null && !ArrayUtils.isEmpty(arguments) &&
+                SQLUtils.matchesLike(srcValue.toString(), arguments[0].toString());
+        }
+    },
+    REGEX("REGEX", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return false;
+        }
+    },
+    SOUNDS("SOUNDS", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return false;
+        }
+    };
 
     private final String stringValue;
     private final int argumentCount;
@@ -52,4 +122,17 @@ public enum DBCLogicalOperator {
     public int getArgumentCount() {
         return argumentCount;
     }
+
+    public abstract boolean evaluate(Object srcValue, Object[] arguments);
+
+    private static int compare(Object srcValue, Object[] arguments) {
+        if (srcValue == null && (arguments == null || arguments.length == 0 || arguments[0] == null)) {
+            return 0;
+        }
+        if (srcValue instanceof Comparable) {
+            return ((Comparable<Object>)srcValue).compareTo(arguments[0]);
+        }
+        return 0;
+    }
+
 }

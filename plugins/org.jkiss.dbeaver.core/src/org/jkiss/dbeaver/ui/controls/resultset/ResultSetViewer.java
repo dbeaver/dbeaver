@@ -2283,6 +2283,7 @@ public class ResultSetViewer extends Viewer
             assert vEntity != null;
             vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
             model.updateColorMapping();
+            redrawData(false);
         }
     }
 
