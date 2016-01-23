@@ -18,9 +18,9 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.swt.graphics.Color;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -72,25 +71,22 @@ public class ResultSetModel {
 
     public static class AttributeColorSettings {
         private DBCLogicalOperator operator;
-        private String[] attributeValues;
+        private Object[] attributeValues;
         private Color colorForeground;
         private Color colorBackground;
 
-        public AttributeColorSettings(DBDAttributeBinding binding, DBVColorOverride co) {
+        public AttributeColorSettings(DBVColorOverride co) {
             this.operator = co.getOperator();
             this.colorForeground = UIUtils.getSharedColor(co.getColorForeground());
             this.colorBackground = UIUtils.getSharedColor(co.getColorBackground());
             this.attributeValues = co.getAttributeValues();
-//            for (int i = 0; i < this.attributeValues.length; i++) {
-//                this.attributeValues[i] = binding.getValueHandler().getValueFromObject(session, binding, co.getAttributeValues()[i], false);
-//            }
         }
 
         public DBCLogicalOperator getOperator() {
             return operator;
         }
 
-        public String[] getAttributeValues() {
+        public Object[] getAttributeValues() {
             return attributeValues;
         }
 
@@ -100,6 +96,10 @@ public class ResultSetModel {
 
         public Color getColorBackground() {
             return colorBackground;
+        }
+
+        public boolean evaluate(Object cellValue) {
+            return operator.evaluate(cellValue, attributeValues);
         }
     }
 
@@ -594,7 +594,29 @@ public class ResultSetModel {
                 for (DBVColorOverride co : coList) {
                     DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
                     if (binding != null) {
-                        colorMapping.put(binding, new AttributeColorSettings(binding, co));
+                        colorMapping.put(binding, new AttributeColorSettings(co));
+                    }
+                }
+            }
+        }
+        updateRowColors(curRows);
+    }
+
+    private void updateRowColors(List<ResultSetRow> rows) {
+        if (colorMapping.isEmpty()) {
+            for (ResultSetRow row : rows) {
+                row.foreground = null;
+                row.background = null;
+            }
+        } else {
+            for (Map.Entry<DBDAttributeBinding, AttributeColorSettings> entry : colorMapping.entrySet()) {
+                for (ResultSetRow row : rows) {
+                    final DBDAttributeBinding binding = entry.getKey();
+                    final Object cellValue = getCellValue(binding, row);
+                    //final String cellStringValue = binding.getValueHandler().getValueDisplayString(binding, cellValue, DBDDisplayFormat.NATIVE);
+                    if (entry.getValue().evaluate(cellValue)) {
+                        row.foreground = entry.getValue().colorForeground;
+                        row.background = entry.getValue().colorBackground;
                     }
                 }
             }
