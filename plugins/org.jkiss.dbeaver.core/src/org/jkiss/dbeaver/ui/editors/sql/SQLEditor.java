@@ -1069,7 +1069,9 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void reloadSyntaxRules() {
         super.reloadSyntaxRules();
-        outputViewer.refreshStyles();
+        if (outputViewer != null) {
+            outputViewer.refreshStyles();
+        }
     }
 
     private QueryProcessor createQueryProcessor(boolean setSelection)

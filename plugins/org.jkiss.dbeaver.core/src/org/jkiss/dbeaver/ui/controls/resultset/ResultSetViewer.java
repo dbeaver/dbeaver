@@ -23,12 +23,14 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.preference.ColorSelector;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.oomph.ui.UIUtil;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -1114,7 +1116,11 @@ public class ResultSetViewer extends Viewer
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
-                viewMenu.add(new CustomizeColorsAction(attr, row));
+                if (getModel().isSingleSource()) {
+                    viewMenu.add(new SetRowColorAction(attr));
+                    viewMenu.add(new CustomizeColorsAction(attr, row));
+                    viewMenu.add(new Separator());
+                }
                 viewMenu.add(new Action("Data formats ...") {
                     @Override
                     public void run() {
@@ -2244,6 +2250,23 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private class SetRowColorAction extends Action {
+        public SetRowColorAction(DBDAttributeBinding attr) {
+            super("Color by " + attr.getName());
+        }
+
+        @Override
+        public void run() {
+            final Shell shell = UIUtils.createCenteredShell(getControl().getShell());
+            try {
+                ColorDialog cd = new ColorDialog(shell);
+                cd.open();
+            } finally {
+                shell.dispose();
+            }
+        }
+    }
+
     private class CustomizeColorsAction extends Action {
         private final DBDAttributeBinding curAttribute;
         private final ResultSetRow row;
@@ -2262,6 +2285,11 @@ public class ResultSetViewer extends Viewer
         public void run() {
             ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, curAttribute, row);
             dialog.open();
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return false;
         }
     }
 
