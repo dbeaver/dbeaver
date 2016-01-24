@@ -21,13 +21,14 @@ package org.jkiss.dbeaver.utils;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
@@ -362,7 +363,8 @@ public class GeneralUtils {
         return null;
     }
 
-    public static String getExceptionMessage(Throwable ex)
+    @NotNull
+    public static String getExceptionMessage(@NotNull Throwable ex)
     {
         StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);
         msg.append(ex.getClass().getSimpleName());
@@ -371,4 +373,32 @@ public class GeneralUtils {
         }
         return msg.toString().trim();
     }
+
+    @NotNull
+    public static String serializeObject(@NotNull Object object) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            try (ObjectOutputStream os = new ObjectOutputStream(baos)) {
+                os.writeObject(object);
+            }
+            return Base64.encode(baos.toByteArray());
+        } catch (Throwable e) {
+            log.warn("Error serializing object [" + object + "]", e);
+            return "";
+        }
+    }
+
+    public static Object deserializeObject(String text) {
+        try {
+            final byte[] bytes = Base64.decode(text);
+            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+            try (ObjectInputStream is = new ObjectInputStream(bais)) {
+                return is.readObject();
+            }
+        } catch (Throwable e) {
+            log.warn("Error deserializing object [" + text + "]", e);
+            return null;
+        }
+    }
+
 }

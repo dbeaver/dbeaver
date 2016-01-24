@@ -22,13 +22,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -36,9 +37,7 @@ import org.jkiss.utils.xml.XMLBuilder;
 import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.util.Map;
 
 /**
@@ -191,16 +190,7 @@ public class DBVModel extends DBVContainer {
                             continue;
                         }
                         xml.startElement(TAG_VALUE);
-                        try {
-                            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                            try (ObjectOutputStream os = new ObjectOutputStream(baos)) {
-                                os.writeObject(value);
-                            }
-                            String encoded = Base64.encode(baos.toByteArray());
-                            xml.addText(encoded);
-                        } catch (Throwable e) {
-                            log.warn("Error saving colors configuration for " + entity, e);
-                        }
+                        xml.addText(GeneralUtils.serializeObject(value));
                         xml.endElement();
                     }
                 }
@@ -225,6 +215,8 @@ public class DBVModel extends DBVContainer {
         private DBVEntity curEntity = null;
         private DBVEntityAttribute curAttribute = null;
         private DBVEntityConstraint curConstraint;
+        private DBVColorOverride curColor;
+        private boolean colorValue = false;
 
         @Override
         public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
@@ -276,11 +268,35 @@ public class DBVModel extends DBVContainer {
                         curEntity.addVirtualAttribute(curAttribute);
                     }
                     break;
+                case TAG_COLOR:
+                    if (curEntity != null) {
+                        try {
+                            curColor = new DBVColorOverride(
+                                atts.getValue(ATTR_NAME),
+                                DBCLogicalOperator.valueOf(atts.getValue(ATTR_OPERATOR)),
+                                null,
+                                atts.getValue(ATTR_FOREGROUND),
+                                atts.getValue(ATTR_BACKGROUND)
+                            );
+                            curEntity.addColorOverride(curColor);
+                        } catch (Throwable e) {
+                            log.warn("Error reading color settings", e);
+                        }
+                    }
+                    break;
+                case TAG_VALUE:
+                    if (curColor != null) {
+                        colorValue = true;
+                    }
+                    break;
             }
         }
 
         @Override
         public void saxText(SAXReader reader, String data) {
+            if (colorValue) {
+                curColor.addAttributeValue(GeneralUtils.deserializeObject(data));
+            }
         }
 
         @Override
@@ -298,6 +314,14 @@ public class DBVModel extends DBVContainer {
                 case TAG_ATTRIBUTE:
                     if (curAttribute != null) {
                         curAttribute = curAttribute.getParent();
+                    }
+                    break;
+                case TAG_COLOR:
+                    curColor = null;
+                    break;
+                case TAG_VALUE:
+                    if (curColor != null) {
+                        colorValue = false;
                     }
                     break;
             }

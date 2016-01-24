@@ -393,6 +393,12 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         colorOverrides.add(co);
     }
 
+    public void addColorOverride(DBVColorOverride color) {
+        if (colorOverrides == null) {
+            colorOverrides = new ArrayList<>();
+        }
+        colorOverrides.add(color);
+    }
 
     public void removeColorOverride(DBDAttributeBinding attribute) {
         if (colorOverrides == null) {
