@@ -61,8 +61,15 @@ public class DBVColorOverride {
         return attributeValues;
     }
 
-    public void setAttributeValues(String[] attributeValues) {
-        this.attributeValues = attributeValues;
+    public void addAttributeValue(Object value) {
+        if (this.attributeValues == null) {
+            this.attributeValues = new Object[] { value };
+        } else {
+            Object[] newValue = new Object[this.attributeValues.length + 1];
+            System.arraycopy(attributeValues, 0, newValue, 0, attributeValues.length);
+            newValue[newValue.length - 1] = value;
+            attributeValues = newValue;
+        }
     }
 
     public String getColorForeground() {
