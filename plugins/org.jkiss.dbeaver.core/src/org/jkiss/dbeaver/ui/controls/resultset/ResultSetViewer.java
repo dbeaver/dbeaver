@@ -1122,6 +1122,9 @@ public class ResultSetViewer extends Viewer
                 if (getModel().isSingleSource()) {
                     if (valueController != null) {
                         viewMenu.add(new SetRowColorAction(attr, valueController.getValue()));
+                        if (getModel().hasColorMapping(attr)) {
+                            viewMenu.add(new ResetRowColorAction(attr, valueController.getValue()));
+                        }
                     }
                     viewMenu.add(new CustomizeColorsAction(attr, row));
                     viewMenu.add(new Separator());
@@ -2255,7 +2258,27 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private class SetRowColorAction extends Action {
+    private abstract class ColorAction extends Action {
+        protected ColorAction(String name) {
+            super(name);
+        }
+        @NotNull
+        protected DBVEntity getVirtualEntity(DBDAttributeBinding binding) {
+            final DBSEntity entity = getModel().getSingleSource();
+            assert entity != null;
+            final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
+            assert vEntity != null;
+            return vEntity;
+        }
+
+        protected void updateColors(DBVEntity entity) {
+            model.updateColorMapping();
+            redrawData(false);
+            entity.getDataSource().getContainer().persistConfiguration();
+        }
+    }
+
+    private class SetRowColorAction extends ColorAction {
         private final DBDAttributeBinding attribute;
         private final Object value;
         public SetRowColorAction(DBDAttributeBinding attr, Object value) {
@@ -2277,18 +2300,28 @@ public class ResultSetViewer extends Viewer
             } finally {
                 shell.dispose();
             }
-            final DBSEntity entity = getModel().getSingleSource();
-            assert entity != null;
-            final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
-            assert vEntity != null;
+            final DBVEntity vEntity = getVirtualEntity(attribute);
             vEntity.setColorOverride(attribute, value, null, StringConverter.asString(color));
-            model.updateColorMapping();
-            redrawData(false);
-            entity.getDataSource().getContainer().persistConfiguration();
+            updateColors(vEntity);
         }
     }
 
-    private class CustomizeColorsAction extends Action {
+    private class ResetRowColorAction extends ColorAction {
+        private final DBDAttributeBinding attribute;
+        public ResetRowColorAction(DBDAttributeBinding attr, Object value) {
+            super("Reset color by " + attr.getName());
+            this.attribute = attr;
+        }
+
+        @Override
+        public void run() {
+            final DBVEntity vEntity = getVirtualEntity(attribute);
+            vEntity.removeColorOverride(attribute);
+            updateColors(vEntity);
+        }
+    }
+
+    private class CustomizeColorsAction extends ColorAction {
         private final DBDAttributeBinding curAttribute;
         private final ResultSetRow row;
 
@@ -2305,7 +2338,12 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run() {
             ColorSettingsDialog dialog = new ColorSettingsDialog(ResultSetViewer.this, curAttribute, row);
-            dialog.open();
+            if (dialog.open() != IDialogConstants.OK_ID) {
+                return;
+            }
+            final DBVEntity vEntity = getVirtualEntity(curAttribute);
+            //vEntity.removeColorOverride(attribute);
+            updateColors(vEntity);
         }
 
         @Override

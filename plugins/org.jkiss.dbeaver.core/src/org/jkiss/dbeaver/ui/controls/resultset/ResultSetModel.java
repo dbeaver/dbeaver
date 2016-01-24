@@ -581,6 +581,10 @@ public class ResultSetModel {
         sourceChanged = false;
     }
 
+    boolean hasColorMapping(DBDAttributeBinding binding) {
+        return colorMapping.containsKey(binding);
+    }
+
     void updateColorMapping() {
         colorMapping.clear();
         DBSEntity entity = getSingleSource();

@@ -393,6 +393,20 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
         colorOverrides.add(co);
     }
 
+
+    public void removeColorOverride(DBDAttributeBinding attribute) {
+        if (colorOverrides == null) {
+            return;
+        }
+        final String attrName = attribute.getName();
+        for (Iterator<DBVColorOverride> iterator = colorOverrides.iterator(); iterator.hasNext(); ) {
+            DBVColorOverride c = iterator.next();
+            if (c.getAttributeName().equals(attrName)) {
+                iterator.remove();
+            }
+        }
+    }
+
     @Override
     public boolean hasValuableData() {
         if (!CommonUtils.isEmpty(descriptionColumnNames) || !CommonUtils.isEmpty(properties)) {
@@ -427,4 +441,5 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public String toString() {
         return name;
     }
+
 }
