@@ -60,15 +60,18 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         filesGroup.setLayoutData(gd);
 
         final Combo sourceCombo = new Combo(filesGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        sourceCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectFileSource(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()));
-            }
-        });
         for (DriverFileSource source : driver.getDriverFileSources()) {
             sourceCombo.add(source.getName());
         }
+        final Link driverLink = new Link(filesGroup, SWT.NONE);
+        driverLink.setText("<a>" + driver.getDriverFileSources().get(0).getUrl() + "</a>");
+        driverLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        driverLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                WebUtils.openWebBrowser(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl());
+            }
+        });
 
         filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
         filesTable.setHeaderVisible(true);
@@ -76,6 +79,14 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
         UIUtils.createTableColumn(filesTable, SWT.LEFT, "Required");
         UIUtils.createTableColumn(filesTable, SWT.LEFT, "Description");
+
+        sourceCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectFileSource(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()));
+                driverLink.setText("<a>" + driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl() + "</a>");
+            }
+        });
 
         sourceCombo.select(0);
         selectFileSource(driver.getDriverFileSources().get(0));
