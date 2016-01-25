@@ -100,8 +100,7 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
 
     @Override
     public boolean performFinish() {
-        downloadPage.performFinish();
-        return true;
+        return downloadPage.performFinish();
     }
 
     public String getFinishText() {

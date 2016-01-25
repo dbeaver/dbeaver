@@ -108,15 +108,16 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     }
 
     @Override
-    void performFinish() {
+    boolean performFinish() {
         UIUtils.runInDetachedUI(getShell(), new Runnable() {
             @Override
             public void run() {
                 WebUtils.openWebBrowser(fileSource.getUrl());
             }
         });
-        DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());
-        dialog.open();
+        return false;
+//        DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());
+//        dialog.open();
     }
 
 }
