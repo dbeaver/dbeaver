@@ -102,13 +102,13 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
         public void run()
         {
             try {
-                InputStream scriptStream = new ProgressStreamReader(
+                try (InputStream scriptStream = new ProgressStreamReader(
                     monitor,
                     new FileInputStream(inputFile),
-                    inputFile.length());
-                try {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream));
-                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(output));
+                    inputFile.length()))
+                {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(scriptStream, getInputCharset()));
+                    PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, getOutputCharset()));
                     while (!monitor.isCanceled()) {
 //                        int count = scriptStream.read(buffer);
 //                        if (count <= 0) {
@@ -129,7 +129,6 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
                     }
                     output.flush();
                 } finally {
-                    IOUtils.close(scriptStream);
                     IOUtils.close(output);
                 }
             } catch (IOException e) {
@@ -139,6 +138,14 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
                 monitor.done();
             }
         }
+    }
+
+    protected String getInputCharset() {
+        return "UTF-8";
+    }
+
+    protected String getOutputCharset() {
+        return "UTF-8";
     }
 
     private class ProgressStreamReader extends InputStream {
