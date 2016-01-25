@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -88,6 +89,7 @@ public class ContentUtils {
     public static File makeTempFile(DBRProgressMonitor monitor, File folder, String name, String extension)
         throws IOException
     {
+        name = CommonUtils.escapeFileName(name);
         File tempFile = new File(folder, name + "-" + System.currentTimeMillis() + "." + extension);  //$NON-NLS-1$ //$NON-NLS-2$
         if (!tempFile.createNewFile()){
             throw new IOException(MessageFormat.format(ModelMessages.DBeaverCore_error_can_create_temp_file, tempFile.getAbsolutePath(), folder.getAbsoluteFile()));

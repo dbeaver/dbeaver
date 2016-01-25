@@ -88,7 +88,6 @@
 
             <drivers managable="true">
 
-<!--
                 <driver
                     id="postgres-jdbc"
                     label="PostgreSQL"
@@ -100,7 +99,6 @@
                     description="PostgreSQL standard driver">
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
                 </driver>
--->
             </drivers>
 
             <views>
