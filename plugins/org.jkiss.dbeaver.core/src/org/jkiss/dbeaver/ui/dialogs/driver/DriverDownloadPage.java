@@ -42,7 +42,7 @@ abstract class DriverDownloadPage extends WizardPage {
 
     abstract void resolveLibraries();
 
-    abstract void performFinish();
+    abstract boolean performFinish();
 
     protected void createLinksPanel(Composite composite) {
         final DriverDescriptor driver = getWizard().getDriver();

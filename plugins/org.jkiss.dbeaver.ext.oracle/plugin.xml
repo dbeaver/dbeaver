@@ -293,6 +293,9 @@
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
+                    <fileSource url="http://www.oracle.com/technetwork/database/index-100632.html" name="Oracle XML Developers Kit">
+                        <file name="xmlparserv2.jar " description="XML Parser"/>
+                    </fileSource>
                 </driver>
             </drivers>
             <views>

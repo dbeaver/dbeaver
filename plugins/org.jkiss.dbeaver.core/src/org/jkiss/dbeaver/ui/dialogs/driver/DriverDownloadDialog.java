@@ -113,10 +113,10 @@ public class DriverDownloadDialog extends WizardDialog
 
     @Override
     protected void finishPressed() {
-        Button editButton = getButton(EDIT_DRIVER_BUTTON_ID);
-        if (editButton != null) {
-            editButton.setEnabled(false);
-        }
+//        Button editButton = getButton(EDIT_DRIVER_BUTTON_ID);
+//        if (editButton != null) {
+//            editButton.setEnabled(false);
+//        }
         doDownload = true;
         super.finishPressed();
     }

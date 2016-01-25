@@ -317,8 +317,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     }
 
     @Override
-    void performFinish() {
+    boolean performFinish() {
         downloadLibraryFiles(new RunnableContextDelegate(getContainer()));
+        return true;
     }
 
     private void downloadLibraryFiles(DBRRunnableContext runnableContext)
