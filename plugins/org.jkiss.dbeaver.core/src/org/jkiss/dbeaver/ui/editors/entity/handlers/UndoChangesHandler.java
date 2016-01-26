@@ -53,7 +53,7 @@ public class UndoChangesHandler extends AbstractHandler implements IElementUpdat
         if (activeEditor instanceof EntityEditor) {
             final DBECommandContext commandContext = ((EntityEditor) activeEditor).getCommandContext();
             String text = "Undo";
-            if (commandContext.getUndoCommand() != null) {
+            if (commandContext != null && commandContext.getUndoCommand() != null) {
                 text += " " + commandContext.getUndoCommand().getTitle();
             }
             element.setText(text);

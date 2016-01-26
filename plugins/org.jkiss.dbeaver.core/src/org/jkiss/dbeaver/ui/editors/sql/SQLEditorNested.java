@@ -163,11 +163,16 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void doSave(IProgressMonitor progressMonitor) {
+    public void doSave(final IProgressMonitor progressMonitor) {
         if (lazyInput != null) {
             return;
         }
-        super.doSave(progressMonitor);
+        UIUtils.runInUI(null, new Runnable() {
+            @Override
+            public void run() {
+                SQLEditorNested.super.doSave(progressMonitor);
+            }
+        });
     }
 
     @Override
