@@ -64,8 +64,9 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int connectionLimit;
     private int tablespaceId;
 
+    final LanguageCache languageCache = new LanguageCache();
     final SchemaCache schemaCache = new SchemaCache();
-    final PostgreDataTypeCache datatypeCache = new PostgreDataTypeCache();
+    final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
@@ -160,6 +161,14 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     }
 
     ///////////////////////////////////////////////
+    // Languages
+
+    @Association
+    public Collection<PostgreLanguage> getLanguages(DBRProgressMonitor monitor) throws DBException {
+        return languageCache.getAllObjects(monitor, this);
+    }
+
+    ///////////////////////////////////////////////
     // Object container
 
     @Association
@@ -174,7 +183,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
 
     private void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
         // Cache data types
-        datatypeCache.getAllObjects(monitor, this);
+        dataTypeCache.getAllObjects(monitor, this);
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
@@ -254,6 +263,30 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
 
+    }
+
+    /**
+     * Procedures cache implementation
+     */
+    class LanguageCache extends JDBCObjectCache<PostgreDatabase, PostgreLanguage> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT l.oid,l.* FROM pg_catalog.pg_language l " +
+                    "\nORDER BY l.oid"
+            );
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreLanguage fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreLanguage(owner, dbResult);
+        }
     }
 
     static class SchemaCache extends JDBCObjectCache<PostgreDatabase, PostgreSchema>

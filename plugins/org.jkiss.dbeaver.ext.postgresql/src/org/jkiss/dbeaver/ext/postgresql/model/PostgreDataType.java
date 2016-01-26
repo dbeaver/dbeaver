@@ -275,7 +275,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         if (typeId <= 0) {
             return null;
         }
-        final PostgreDataType dataType = getDatabase().datatypeCache.getDataType(typeId);
+        final PostgreDataType dataType = getDatabase().dataTypeCache.getDataType(typeId);
         if (dataType == null) {
             log.debug("Data type '" + typeId + "' not found");
         }
