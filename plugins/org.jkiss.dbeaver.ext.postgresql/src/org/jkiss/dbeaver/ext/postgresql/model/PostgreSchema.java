@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -43,12 +42,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -272,7 +268,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     @Property
     public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         List<PostgreDataType> types = new ArrayList<>();
-        for (PostgreDataType dt : database.datatypeCache.getAllObjects(monitor, database)) {
+        for (PostgreDataType dt : database.dataTypeCache.getAllObjects(monitor, database)) {
             if (dt.getParentObject() == this) {
                 types.add(dt);
             }
@@ -594,7 +590,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM pg_catalog.pg_proc p " +
+                "SELECT p.oid,p.* FROM pg_catalog.pg_proc p " +
                     "\nWHERE p.pronamespace=?" +
                     "\nORDER BY p.proname"
             );
