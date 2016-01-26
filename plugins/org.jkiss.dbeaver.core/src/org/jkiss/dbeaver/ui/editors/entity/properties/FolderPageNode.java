@@ -58,7 +58,9 @@ class FolderPageNode extends FolderPage implements ISearchContextProvider, IRefr
 
     public void setFocus()
     {
-        itemControl.setFocus();
+        if (itemControl != null) {
+            itemControl.setFocus();
+        }
     }
 
     @Override

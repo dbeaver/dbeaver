@@ -85,6 +85,7 @@ public class PostgreAccessMethod extends PostgreInformation implements PostgreOb
         return name;
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return database;

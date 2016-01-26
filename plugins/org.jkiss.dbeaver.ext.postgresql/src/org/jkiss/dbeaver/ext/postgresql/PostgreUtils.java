@@ -19,16 +19,22 @@
 package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAuthId;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -102,4 +108,19 @@ public class PostgreUtils {
         return null;
     }
 
+    @Nullable
+    public static <OWNER extends DBSObject, OBJECT extends PostgreObject> OBJECT getObjectById(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCObjectCache<OWNER,OBJECT> cache,
+        @NotNull OWNER owner,
+        int objectId)
+        throws DBException
+    {
+        for (OBJECT object : cache.getAllObjects(monitor, owner)) {
+            if (object.getObjectId() == objectId) {
+                return object;
+            }
+        }
+        return null;
+    }
 }

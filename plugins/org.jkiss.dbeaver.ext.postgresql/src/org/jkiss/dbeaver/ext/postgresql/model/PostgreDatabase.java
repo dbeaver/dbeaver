@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -64,6 +65,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int connectionLimit;
     private int tablespaceId;
 
+    final AuthIdCache authIdCache = new AuthIdCache();
     final AccessMethodCache accessMethodCache = new AccessMethodCache();
     final LanguageCache languageCache = new LanguageCache();
     final SchemaCache schemaCache = new SchemaCache();
@@ -135,8 +137,15 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     }
 
     ///////////////////////////////////////////////////
-    // Instance methods
+    // Properties
 
+    @Property(viewable = false, order = 3)
+    public PostgreAuthId getDBA(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, authIdCache, this, ownerId);
+    }
+
+    ///////////////////////////////////////////////////
+    // Instance methods
 
     @NotNull
     @Override
@@ -163,6 +172,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
 
     ///////////////////////////////////////////////
     // Infos
+
+    @Association
+    public Collection<PostgreAuthId> getAuthIds(DBRProgressMonitor monitor) throws DBException {
+        return authIdCache.getAllObjects(monitor, this);
+    }
 
     @Association
     public Collection<PostgreAccessMethod> getAccessMethods(DBRProgressMonitor monitor) throws DBException {
@@ -269,6 +283,26 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
 
+    }
+
+    class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT a.oid,a.* FROM pg_catalog.pg_authid a " +
+                    "\nORDER BY a.oid"
+            );
+        }
+
+        @Override
+        protected PostgreAuthId fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreAuthId(owner, dbResult);
+        }
     }
 
     class AccessMethodCache extends JDBCObjectCache<PostgreDatabase, PostgreAccessMethod> {
