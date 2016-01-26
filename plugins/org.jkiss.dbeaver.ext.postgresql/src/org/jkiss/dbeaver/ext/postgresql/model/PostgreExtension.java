@@ -28,15 +28,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * PostgreCollation
+ * PostgreExtension
  */
-public class PostgreCollation implements PostgreObject {
+public class PostgreExtension implements PostgreObject {
 
     private PostgreSchema schema;
     private int oid;
     private String name;
+    private String version;
 
-    public PostgreCollation(PostgreSchema schema, ResultSet dbResult)
+    public PostgreExtension(PostgreSchema schema, ResultSet dbResult)
         throws SQLException
     {
         this.schema = schema;
@@ -47,7 +48,8 @@ public class PostgreCollation implements PostgreObject {
         throws SQLException
     {
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
-        this.name = JDBCUtils.safeGetString(dbResult, "collname");
+        this.name = JDBCUtils.safeGetString(dbResult, "extname");
+        this.version = JDBCUtils.safeGetString(dbResult, "extversion");
     }
 
     @NotNull
@@ -67,6 +69,11 @@ public class PostgreCollation implements PostgreObject {
     @Override
     public int getObjectId() {
         return oid;
+    }
+
+    @Property(viewable = true, order = 4)
+    public String getVersion() {
+        return version;
     }
 
     @Nullable

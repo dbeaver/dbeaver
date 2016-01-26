@@ -66,6 +66,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     private boolean persisted;
 
     final CollationCache collationCache = new CollationCache();
+    final ExtensionCache extensionCache = new ExtensionCache();
     final ClassCache classCache = new ClassCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
@@ -155,6 +156,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return collationCache.getAllObjects(monitor, this);
     }
 
+    @Association
+    public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return extensionCache.getAllObjects(monitor, this);
+    }
 
     @Association
     public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
@@ -306,6 +313,29 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             return new PostgreCollation(owner, dbResult);
+        }
+    }
+
+    class ExtensionCache extends JDBCObjectCache<PostgreSchema, PostgreExtension> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
+            throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT e.oid,e.* FROM pg_catalog.pg_extension e " +
+                    "\nWHERE e.extnamespace=?" +
+                    "\nORDER BY e.oid"
+            );
+            dbStat.setInt(1, PostgreSchema.this.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreExtension fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreExtension(owner, dbResult);
         }
     }
 
