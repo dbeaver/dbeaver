@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ErrorEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.MultiPageDatabaseEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -856,7 +857,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             } catch (Throwable e) {
                 finished = false;
                 log.error(e);
-                return Status.CANCEL_STATUS;
+                return GeneralUtils.makeExceptionStatus(e);
             } finally {
                 if (finished == null) {
                     finished = true;
