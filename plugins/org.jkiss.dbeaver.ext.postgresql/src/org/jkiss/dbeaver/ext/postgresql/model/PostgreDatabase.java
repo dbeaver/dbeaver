@@ -64,6 +64,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int connectionLimit;
     private int tablespaceId;
 
+    final AccessMethodCache accessMethodCache = new AccessMethodCache();
     final LanguageCache languageCache = new LanguageCache();
     final SchemaCache schemaCache = new SchemaCache();
     final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
@@ -161,7 +162,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     }
 
     ///////////////////////////////////////////////
-    // Languages
+    // Infos
+
+    @Association
+    public Collection<PostgreAccessMethod> getAccessMethods(DBRProgressMonitor monitor) throws DBException {
+        return accessMethodCache.getAllObjects(monitor, this);
+    }
 
     @Association
     public Collection<PostgreLanguage> getLanguages(DBRProgressMonitor monitor) throws DBException {
@@ -265,20 +271,36 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
 
     }
 
-    /**
-     * Procedures cache implementation
-     */
+    class AccessMethodCache extends JDBCObjectCache<PostgreDatabase, PostgreAccessMethod> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT am.oid,am.* FROM pg_catalog.pg_am am " +
+                    "\nORDER BY am.oid"
+            );
+        }
+
+        @Override
+        protected PostgreAccessMethod fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreAccessMethod(owner, dbResult);
+        }
+    }
+
     class LanguageCache extends JDBCObjectCache<PostgreDatabase, PostgreLanguage> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException
         {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
+            return session.prepareStatement(
                 "SELECT l.oid,l.* FROM pg_catalog.pg_language l " +
                     "\nORDER BY l.oid"
             );
-            return dbStat;
         }
 
         @Override
