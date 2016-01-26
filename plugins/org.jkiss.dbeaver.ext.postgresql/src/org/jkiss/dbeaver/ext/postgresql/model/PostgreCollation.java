@@ -34,7 +34,6 @@ public class PostgreCollation implements DBSObject {
 
     private PostgreSchema schema;
     private String name;
-    private String pad;
 
     public PostgreCollation(PostgreSchema schema, ResultSet dbResult)
         throws SQLException
@@ -46,8 +45,7 @@ public class PostgreCollation implements DBSObject {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.name = JDBCUtils.safeGetString(dbResult, "collation_name");
-        this.pad = JDBCUtils.safeGetString(dbResult, "pad_attribute");
+        this.name = JDBCUtils.safeGetString(dbResult, "collname");
     }
 
     @NotNull
@@ -62,11 +60,6 @@ public class PostgreCollation implements DBSObject {
     public String getName()
     {
         return name;
-    }
-
-    @Property(viewable = true, order = 3)
-    public String getPad() {
-        return pad;
     }
 
     @Nullable
