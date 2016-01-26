@@ -36,7 +36,7 @@ import java.util.Collection;
 import java.util.Locale;
 
 /**
- * GenericProcedure
+ * PostgreProcedure
  */
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreScriptObject
 {
@@ -50,15 +50,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private transient String clientBody;
     private String charset;
 
-    public PostgreProcedure(PostgreSchema catalog)
-    {
-        super(catalog, false);
-        this.procedureType = DBSProcedureType.PROCEDURE;
-        this.bodyType = "SQL";
-        this.resultType = "";
-        this.deterministic = false;
-    }
-
     public PostgreProcedure(
         PostgreSchema catalog,
         ResultSet dbResult)
@@ -69,9 +60,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     private void loadInfo(ResultSet dbResult)
     {
-        setName(JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_NAME));
+        setName(JDBCUtils.safeGetString(dbResult, "proname"));
         setDescription(JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_COMMENT));
-        this.procedureType = DBSProcedureType.valueOf(JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_TYPE).toUpperCase(Locale.ENGLISH));
+        this.procedureType = DBSProcedureType.PROCEDURE;
         this.resultType = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_DTD_IDENTIFIER);
         this.bodyType = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_BODY);
         this.body = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_DEFINITION);
@@ -195,7 +186,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public Collection<PostgreProcedureParameter> getParameters(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().proceduresCache.getChildren(monitor, getContainer(), this);
+        return null;
     }
 
     @NotNull

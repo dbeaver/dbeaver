@@ -582,11 +582,11 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     /**
      * Procedures cache implementation
      */
-    class ProceduresCache extends JDBCStructCache<PostgreSchema, PostgreProcedure, PostgreProcedureParameter> {
+    class ProceduresCache extends JDBCObjectCache<PostgreSchema, PostgreProcedure> {
 
         ProceduresCache()
         {
-            super(JDBCConstants.PROCEDURE_NAME);
+            super();
         }
 
         @Override
@@ -594,11 +594,11 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + PostgreConstants.META_TABLE_ROUTINES +
-                    " WHERE " + PostgreConstants.COL_ROUTINE_SCHEMA + "=?" +
-                    " ORDER BY " + PostgreConstants.COL_ROUTINE_NAME
+                "SELECT * FROM pg_catalog.pg_proc p " +
+                    "\nWHERE p.pronamespace=?" +
+                    "\nORDER BY p.proname"
             );
-            dbStat.setString(1, getName());
+            dbStat.setInt(1, getObjectId());
             return dbStat;
         }
 
@@ -607,59 +607,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException, DBException
         {
             return new PostgreProcedure(PostgreSchema.this, dbResult);
-        }
-
-        @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure procedure)
-            throws SQLException
-        {
-            // Load procedure columns through Postgre metadata
-            // There is no metadata table about proc/func columns -
-            // it should be parsed from SHOW CREATE PROCEDURE/FUNCTION query
-            // Lets driver do it instead of me
-            return session.getMetaData().getProcedureColumns(
-                getName(),
-                null,
-                procedure.getName(),
-                null).getSourceStatement();
-        }
-
-        @Override
-        protected PostgreProcedureParameter fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreProcedure parent, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
-            String columnName = JDBCUtils.safeGetString(dbResult, JDBCConstants.COLUMN_NAME);
-            int columnTypeNum = JDBCUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_TYPE);
-            int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
-            String typeName = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
-            int position = JDBCUtils.safeGetInt(dbResult, JDBCConstants.ORDINAL_POSITION);
-            long columnSize = JDBCUtils.safeGetLong(dbResult, JDBCConstants.LENGTH);
-            boolean notNull = JDBCUtils.safeGetInt(dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.procedureNoNulls;
-            int scale = JDBCUtils.safeGetInt(dbResult, JDBCConstants.SCALE);
-            int precision = JDBCUtils.safeGetInt(dbResult, JDBCConstants.PRECISION);
-            //int radix = JDBCUtils.safeGetInt(dbResult, JDBCConstants.RADIX);
-            //DBSDataType dataType = getDataSourceContainer().getInfo().getSupportedDataType(typeName);
-            DBSProcedureParameterKind parameterType;
-            switch (columnTypeNum) {
-                case DatabaseMetaData.procedureColumnIn: parameterType = DBSProcedureParameterKind.IN; break;
-                case DatabaseMetaData.procedureColumnInOut: parameterType = DBSProcedureParameterKind.INOUT; break;
-                case DatabaseMetaData.procedureColumnOut: parameterType = DBSProcedureParameterKind.OUT; break;
-                case DatabaseMetaData.procedureColumnReturn: parameterType = DBSProcedureParameterKind.RETURN; break;
-                case DatabaseMetaData.procedureColumnResult: parameterType = DBSProcedureParameterKind.RESULTSET; break;
-                default: parameterType = DBSProcedureParameterKind.UNKNOWN; break;
-            }
-            if (CommonUtils.isEmpty(columnName) && parameterType == DBSProcedureParameterKind.RETURN) {
-                columnName = "RETURN";
-            }
-            return new PostgreProcedureParameter(
-                parent,
-                columnName,
-                typeName,
-                valueType,
-                position,
-                columnSize,
-                scale, precision, notNull,
-                parameterType);
         }
     }
 
