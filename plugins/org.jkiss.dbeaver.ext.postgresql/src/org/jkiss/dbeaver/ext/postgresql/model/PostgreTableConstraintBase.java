@@ -62,6 +62,7 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return getParentObject().getDatabase();

@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -150,6 +151,9 @@ public abstract class DBXTreeNode
                 }
                 return filteredChildren;
             }
+        }
+        if (children == null) {
+            return Collections.emptyList();
         }
         return children;
     }

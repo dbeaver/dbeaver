@@ -68,6 +68,7 @@ public class PostgreLanguage extends PostgreInformation implements PostgreObject
         return name;
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return database;

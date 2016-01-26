@@ -65,6 +65,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     private PostgreCharset defaultCharset;
     private boolean persisted;
 
+    final CollationCache collationCache = new CollationCache();
     final ClassCache classCache = new ClassCache();
     final ConstraintCache constraintCache = new ConstraintCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
@@ -107,9 +108,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return this.oid;
     }
 
-    @Property(viewable = true, order = 4)
-    public int getOwnerId() {
-        return ownerId;
+    @Property(order = 4)
+    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, database.authIdCache, database, ownerId);
     }
 
     @NotNull
@@ -145,6 +146,15 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public void setPersisted(boolean persisted) {
         this.persisted = persisted;
     }
+
+
+    @Association
+    public Collection<PostgreCollation> getCollations(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return collationCache.getAllObjects(monitor, this);
+    }
+
 
     @Association
     public Collection<PostgreIndex> getIndexes(DBRProgressMonitor monitor)
@@ -274,6 +284,29 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             }
         }
         return types;
+    }
+
+    class CollationCache extends JDBCObjectCache<PostgreSchema, PostgreCollation> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner)
+            throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.oid,c.* FROM pg_catalog.pg_collation c " +
+                    "\nWHERE c.collnamespace=?" +
+                    "\nORDER BY c.oid"
+            );
+            dbStat.setInt(1, PostgreSchema.this.getObjectId());
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreCollation fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreCollation(owner, dbResult);
+        }
     }
 
     public class ClassCache extends JDBCStructCache<PostgreSchema, PostgreClass, PostgreAttribute> {
