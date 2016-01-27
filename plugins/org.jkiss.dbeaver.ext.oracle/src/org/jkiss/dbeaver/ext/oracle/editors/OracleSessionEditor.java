@@ -52,7 +52,9 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
     @Override
     public void dispose()
     {
-        sessionsViewer.dispose();
+        if (sessionsViewer != null) {
+            sessionsViewer.dispose();
+        }
         super.dispose();
     }
 
@@ -60,7 +62,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
     public void createPartControl(Composite parent) {
         killSessionAction = new DisconnectSessionAction(true);
         disconnectSessionAction = new DisconnectSessionAction(false);
-        sessionsViewer = new SessionManagerViewer(this, parent, new OracleServerSessionManager((OracleDataSource) getExecutionContext())) {
+        sessionsViewer = new SessionManagerViewer(this, parent, new OracleServerSessionManager(getExecutionContext())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
             {
