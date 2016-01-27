@@ -105,6 +105,9 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAccessMethod" label="%tree.accessMethods.node.name" icon="#languages" description="Access methods">
                             <items label="%tree.accessMethod.node.name" path="accessMethod" property="accessMethods" icon="#accessMethod"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset" label="%tree.encodings.node.name" icon="#encodings" description="Encodings">
+                            <items label="%tree.encoding.node.name" path="encoding" property="encodings" icon="#encoding"/>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage" label="%tree.languages.node.name" icon="#languages" description="Languages">
                             <items label="%tree.language.node.name" path="language" property="languages" icon="#language"/>
                         </folder>
