@@ -18,8 +18,11 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,26 +30,24 @@ import java.sql.SQLException;
 /**
  * PostgreCharset
  */
-public class PostgreCharset extends PostgreInformation {
+public class PostgreCharset implements PostgreObject {
 
+    private final PostgreDatabase database;
+    private int encodingId;
     private String name;
-    private String repertoire;
-    private String formOfUse;
-    private PostgreCollation defaultCollation;
 
-    public PostgreCharset(PostgreDataSource dataSource, ResultSet dbResult)
+    public PostgreCharset(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
-        super(dataSource);
+        this.database = database;
         this.loadInfo(dbResult);
     }
 
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.name = JDBCUtils.safeGetString(dbResult, "character_set_name");
-        this.repertoire = JDBCUtils.safeGetString(dbResult, "character_repertoire");
-        this.formOfUse = JDBCUtils.safeGetString(dbResult, "form_of_use");
+        this.name = JDBCUtils.safeGetString(dbResult, "encname");
+        this.encodingId = JDBCUtils.safeGetInt(dbResult, "encid");
     }
 
     @NotNull
@@ -57,18 +58,37 @@ public class PostgreCharset extends PostgreInformation {
         return name;
     }
 
-    @Property(viewable = true, order = 3)
-    public String getRepertoire() {
-        return repertoire;
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return database;
     }
 
-    @Property(viewable = true, order = 4)
-    public String getFormOfUse() {
-        return formOfUse;
+    @Override
+    public int getObjectId() {
+        return encodingId;
     }
 
-    @Property(viewable = true, order = 5)
-    public PostgreCollation getDefaultCollation() {
-        return defaultCollation;
+    @Nullable
+    @Override
+    public String getDescription() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public DBSObject getParentObject() {
+        return database;
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSource getDataSource() {
+        return database.getDataSource();
+    }
+
+    @Override
+    public boolean isPersisted() {
+        return true;
     }
 }

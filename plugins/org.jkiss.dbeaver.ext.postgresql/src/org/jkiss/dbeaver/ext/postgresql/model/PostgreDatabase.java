@@ -68,6 +68,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     final AuthIdCache authIdCache = new AuthIdCache();
     final AccessMethodCache accessMethodCache = new AccessMethodCache();
     final LanguageCache languageCache = new LanguageCache();
+    final EncodingCache encodingCache = new EncodingCache();
     final TablespaceCache tablespaceCache = new TablespaceCache();
     final SchemaCache schemaCache = new SchemaCache();
     final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
@@ -150,7 +151,36 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
         return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
     }
 
-    ///////////////////////////////////////////////////
+    @Property(viewable = false, order = 5)
+    public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, encodingCache, this, encodingId);
+    }
+
+    @Property(viewable = false, order = 10)
+    public String getCollate() {
+        return collate;
+    }
+
+    @Property(viewable = false, order = 11)
+    public String getCtype() {
+        return ctype;
+    }
+
+    @Property(viewable = false, order = 12)
+    public boolean isTemplate() {
+        return isTemplate;
+    }
+
+    @Property(viewable = false, order = 13)
+    public boolean isAllowConnect() {
+        return allowConnect;
+    }
+
+    @Property(viewable = false, order = 14)
+    public int getConnectionLimit() {
+        return connectionLimit;
+    }
+///////////////////////////////////////////////////
     // Instance methods
 
     @NotNull
@@ -192,6 +222,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     @Association
     public Collection<PostgreLanguage> getLanguages(DBRProgressMonitor monitor) throws DBException {
         return languageCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreCharset> getEncodings(DBRProgressMonitor monitor) throws DBException {
+        return encodingCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -333,6 +368,28 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
             throws SQLException, DBException
         {
             return new PostgreAccessMethod(owner, dbResult);
+        }
+    }
+
+    class EncodingCache extends JDBCObjectCache<PostgreDatabase, PostgreCharset> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT c.contoencoding as encid,pg_catalog.pg_encoding_to_char(c.contoencoding) as encname\n" +
+                "FROM pg_catalog.pg_conversion c\n" +
+                "GROUP BY c.contoencoding\n" +
+                "ORDER BY 2\n"
+            );
+        }
+
+        @Override
+        protected PostgreCharset fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreCharset(owner, dbResult);
         }
     }
 
