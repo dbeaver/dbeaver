@@ -48,4 +48,8 @@ public class OracleSourceDefinitionEditor extends SQLEditorNested<OracleSourceOb
             sourceText);
     }
 
+    @Override
+    protected boolean isReadOnly() {
+        return false;
+    }
 }
