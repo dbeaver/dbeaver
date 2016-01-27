@@ -40,7 +40,7 @@ public class PostgreTablespace implements PostgreObject {
     private int oid;
     private String name;
     private int ownerId;
-    private String[] options;
+    private Object[] options;
 
     public PostgreTablespace(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
@@ -55,7 +55,7 @@ public class PostgreTablespace implements PostgreObject {
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "spcname");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "spcowner");
-        this.options = (String[]) JDBCUtils.safeGetArray(dbResult, "spcoptions");
+        this.options = (Object[]) JDBCUtils.safeGetArray(dbResult, "spcoptions");
     }
 
     @Nullable
@@ -106,7 +106,7 @@ public class PostgreTablespace implements PostgreObject {
     }
 
     @Property(order = 100)
-    public String[] getOptions() {
+    public Object[] getOptions() {
         return options;
     }
 }
