@@ -62,7 +62,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     private int oid;
     private String name;
     private int ownerId;
-    private PostgreCharset defaultCharset;
     private boolean persisted;
 
     final CollationCache collationCache = new CollationCache();
@@ -86,7 +85,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     {
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "nspowner");
-        this.defaultCharset = null;
         this.persisted = true;
     }
 
@@ -112,11 +110,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     @Property(order = 4)
     public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, database.authIdCache, database, ownerId);
-    }
-
-    @NotNull
-    public PostgreCharset getDefaultCharset() {
-        return defaultCharset;
     }
 
     @Nullable
