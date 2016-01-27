@@ -19,36 +19,58 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
-import java.util.Locale;
 
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreScriptObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject
 {
     //static final Log log = Log.getLog(PostgreProcedure.class);
 
-    private DBSProcedureType procedureType;
-    private String resultType;
-    private String bodyType;
+    enum ProcedureVolatile {
+        i,
+        s,
+        v,
+    }
+
+    private int oid;
     private String body;
-    private boolean deterministic;
-    private transient String clientBody;
-    private String charset;
+    private int ownerId;
+    private int languageId;
+    private float execCost;
+    private float estRows;
+    private int varArrayType;
+    private String procTransform;
+    private boolean isAggregate;
+    private boolean isWindow;
+    private boolean isSecurityDefiner;
+    private boolean leakproof;
+    private boolean isStrict;
+    private boolean returnsSet;
+    private ProcedureVolatile procVolatile;
+    private int argCount;
+    private int argDefCount;
+    private int returnType;
+    private int[] inArgTypes;
+    private int[] allArgTypes;
+    private char[] argModes;
+    private String[] argNames;
+    private Object[] argDefaults;
+    private int[] transformTypes;
+    private String[] config;
 
     public PostgreProcedure(
         PostgreSchema catalog,
@@ -60,126 +82,33 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     private void loadInfo(ResultSet dbResult)
     {
+        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
-        setDescription(JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_COMMENT));
-        this.procedureType = DBSProcedureType.PROCEDURE;
-        this.resultType = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_DTD_IDENTIFIER);
-        this.bodyType = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_BODY);
-        this.body = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_DEFINITION);
-        this.charset = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_CHARACTER_SET_CLIENT);
-        this.deterministic = JDBCUtils.safeGetBoolean(dbResult, PostgreConstants.COL_IS_DETERMINISTIC, "YES");
-        this.description = JDBCUtils.safeGetString(dbResult, PostgreConstants.COL_ROUTINE_COMMENT);
+        this.ownerId = JDBCUtils.safeGetInt(dbResult, "proowner");
+        this.languageId = JDBCUtils.safeGetInt(dbResult, "prolang");
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return container.getDatabase();
     }
 
     @Override
-    @Property(order = 2)
+    public int getObjectId() {
+        return oid;
+    }
+
+    @Override
     public DBSProcedureType getProcedureType()
     {
-        return procedureType ;
-    }
-
-    public void setProcedureType(DBSProcedureType procedureType)
-    {
-        this.procedureType = procedureType;
-    }
-
-    @Property(order = 2)
-    public String getResultType()
-    {
-        return resultType;
-    }
-
-    @Property(order = 3)
-    public String getBodyType()
-    {
-        return bodyType;
+        return DBSProcedureType.PROCEDURE;
     }
 
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getBody()
     {
-        if (this.body == null && !persisted) {
-            this.body = "BEGIN" + GeneralUtils.getDefaultLineSeparator() + "END";
-            if (procedureType == DBSProcedureType.FUNCTION) {
-                body = "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() + body;
-            }
-        }
         return body;
-    }
-
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getClientBody(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (clientBody == null) {
-            StringBuilder cb = new StringBuilder(getBody().length() + 100);
-            cb.append("CREATE ").append(procedureType).append(' ').append(getFullQualifiedName()).append(" (");
-
-            int colIndex = 0;
-            for (PostgreProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    continue;
-                }
-                if (colIndex > 0) {
-                    cb.append(", ");
-                }
-                if (getProcedureType() == DBSProcedureType.PROCEDURE) {
-                    cb.append(column.getParameterKind()).append(' ');
-                }
-                cb.append(column.getName()).append(' ');
-                appendParameterType(cb, column);
-                colIndex++;
-            }
-            cb.append(")").append(GeneralUtils.getDefaultLineSeparator());
-            for (PostgreProcedureParameter column : CommonUtils.safeCollection(getParameters(monitor))) {
-                if (column.getParameterKind() == DBSProcedureParameterKind.RETURN) {
-                    cb.append("RETURNS ");
-                    appendParameterType(cb, column);
-                    cb.append(GeneralUtils.getDefaultLineSeparator());
-                }
-            }
-            if (deterministic) {
-                cb.append("DETERMINISTIC").append(GeneralUtils.getDefaultLineSeparator());
-            }
-            cb.append(getBody());
-            clientBody = cb.toString();
-        }
-        return clientBody;
-    }
-
-    @Property(editable = true, updatable = true, order = 3)
-    public boolean isDeterministic()
-    {
-        return deterministic;
-    }
-
-    public void setDeterministic(boolean deterministic)
-    {
-        this.deterministic = deterministic;
-    }
-
-    private static void appendParameterType(StringBuilder cb, PostgreProcedureParameter column)
-    {
-        cb.append(column.getTypeName());
-        if (column.getDataKind() == DBPDataKind.STRING && column.getMaxLength() > 0) {
-            cb.append('(').append(column.getMaxLength()).append(')');
-        }
-    }
-
-    public String getClientBody()
-    {
-        return clientBody;
-    }
-
-    public void setClientBody(String clientBody)
-    {
-        this.clientBody = clientBody;
-    }
-
-    //@Property(name = "Client Charset", order = 4)
-    public String getCharset()
-    {
-        return charset;
     }
 
     @Override
@@ -202,12 +131,29 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
-        return getClientBody(monitor);
+        if (body == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
+            } catch (SQLException e) {
+                throw new DBException("Error reading procedure body", e);
+            }
+        }
+        return body;
     }
 
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException
     {
-        setClientBody(sourceText);
+        body = sourceText;
+    }
+
+    @Property(order = 10)
+    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, container.getDatabase().authIdCache, container.getDatabase(), ownerId);
+    }
+
+    @Property(viewable = true, order = 11)
+    public PostgreLanguage getLanguage(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, container.getDatabase().languageCache, container.getDatabase(), languageId);
     }
 }
