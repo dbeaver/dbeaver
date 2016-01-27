@@ -22,10 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAuthId;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -36,7 +33,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Collection;
 
@@ -125,15 +121,25 @@ public class PostgreUtils {
     }
 
     public static Long[] getIdVector(Object pgObject) {
-        final String vector = extractValue(pgObject);
-        if (vector == null || vector.isEmpty()) {
+        Object pgVector = extractValue(pgObject);
+        if (pgVector == null) {
             return null;
         }
-        final String[] strings = vector.split(" ");
-        final Long[] ids = new Long[strings.length];
-        for (int i = 0; i < strings.length; i++) {
-            ids[i] = new Long(strings[i]);
+        if (pgVector instanceof String) {
+            final String vector = (String) pgVector;
+            if (vector.isEmpty()) {
+                return null;
+            }
+            final String[] strings = vector.split(" ");
+            final Long[] ids = new Long[strings.length];
+            for (int i = 0; i < strings.length; i++) {
+                ids[i] = new Long(strings[i]);
+            }
+            return ids;
+        } else if (pgVector instanceof Long[]) {
+            return (Long[]) pgVector;
+        } else {
+            throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
-        return ids;
     }
 }
