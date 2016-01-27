@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -27,7 +28,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
+import org.jkiss.utils.ArrayUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -36,9 +39,9 @@ import java.util.Collection;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBSObjectUnique
 {
-    //static final Log log = Log.getLog(PostgreProcedure.class);
+    static final Log log = Log.getLog(PostgreProcedure.class);
 
     enum ProcedureVolatile {
         i,
@@ -64,13 +67,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private int argCount;
     private int argDefCount;
     private int returnType;
-    private int[] inArgTypes;
-    private int[] allArgTypes;
+    private Long[] inArgTypes;
+    private Long[] allArgTypes;
     private char[] argModes;
     private String[] argNames;
     private Object[] argDefaults;
     private int[] transformTypes;
     private String[] config;
+
+    private String uniqueName;
 
     public PostgreProcedure(
         PostgreSchema catalog,
@@ -86,6 +91,35 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "proowner");
         this.languageId = JDBCUtils.safeGetInt(dbResult, "prolang");
+
+        this.inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"));
+        this.allArgTypes = JDBCUtils.safeGetArray(dbResult, "proallargtypes");
+        this.argNames = JDBCUtils.safeGetArray(dbResult, "proargnames");
+
+        if (!ArrayUtils.isEmpty(inArgTypes)) {
+            StringBuilder params = new StringBuilder(64);
+            params.append("(");
+            for (int i = 0; i < inArgTypes.length; i++) {
+                if (i > 0) params.append(',');
+                Long paramType = inArgTypes[i];
+                final PostgreDataType dataType = container.getDatabase().dataTypeCache.getDataType(paramType.intValue());
+                if (dataType == null) {
+                    log.warn("Parameter data type [" + paramType + "] not found");
+                } else {
+                    params.append(dataType.getName());
+                }
+            }
+            params.append(")");
+            this.uniqueName = this.name + params.toString();
+        } else {
+            this.uniqueName = null;
+        }
+    }
+
+    @NotNull
+    @Override
+    public String getName() {
+        return uniqueName == null ? super.getName() : uniqueName;
     }
 
     @NotNull
@@ -127,6 +161,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             this);
     }
 
+    @NotNull
+    @Override
+    public String getUniqueName() {
+        return uniqueName;
+    }
+
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
@@ -155,5 +195,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(viewable = true, order = 11)
     public PostgreLanguage getLanguage(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, container.getDatabase().languageCache, container.getDatabase(), languageId);
+    }
+
+    @Override
+    public String toString() {
+        return getUniqueName();
     }
 }

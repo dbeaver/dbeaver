@@ -123,4 +123,17 @@ public class PostgreUtils {
         }
         return null;
     }
+
+    public static Long[] getIdVector(Object pgObject) {
+        final String vector = extractValue(pgObject);
+        if (vector == null || vector.isEmpty()) {
+            return null;
+        }
+        final String[] strings = vector.split(" ");
+        final Long[] ids = new Long[strings.length];
+        for (int i = 0; i < strings.length; i++) {
+            ids[i] = new Long(strings[i]);
+        }
+        return ids;
+    }
 }
