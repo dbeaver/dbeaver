@@ -41,4 +41,8 @@ public class OracleSourceDeclarationEditor extends SQLSourceViewer<OracleSourceO
             sourceText);
     }
 
+    @Override
+    protected boolean isReadOnly() {
+        return false;
+    }
 }
