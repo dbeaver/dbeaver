@@ -68,6 +68,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     final AuthIdCache authIdCache = new AuthIdCache();
     final AccessMethodCache accessMethodCache = new AccessMethodCache();
     final LanguageCache languageCache = new LanguageCache();
+    final TablespaceCache tablespaceCache = new TablespaceCache();
     final SchemaCache schemaCache = new SchemaCache();
     final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
@@ -144,6 +145,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
         return PostgreUtils.getObjectById(monitor, authIdCache, this, ownerId);
     }
 
+    @Property(viewable = false, order = 4)
+    public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
+    }
+
     ///////////////////////////////////////////////////
     // Instance methods
 
@@ -186,6 +192,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     @Association
     public Collection<PostgreLanguage> getLanguages(DBRProgressMonitor monitor) throws DBException {
         return languageCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
+        return tablespaceCache.getAllObjects(monitor, this);
     }
 
     ///////////////////////////////////////////////
@@ -342,6 +353,26 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
             throws SQLException, DBException
         {
             return new PostgreLanguage(owner, dbResult);
+        }
+    }
+
+    class TablespaceCache extends JDBCObjectCache<PostgreDatabase, PostgreTablespace> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT t.oid,t.* FROM pg_catalog.pg_tablespace t " +
+                    "\nORDER BY t.oid"
+            );
+        }
+
+        @Override
+        protected PostgreTablespace fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreTablespace(owner, dbResult);
         }
     }
 
