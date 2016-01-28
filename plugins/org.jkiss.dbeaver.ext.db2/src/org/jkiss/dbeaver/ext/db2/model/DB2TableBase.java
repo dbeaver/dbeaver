@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -17,6 +17,11 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jkiss.dbeaver.ext.db2.model;
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -38,13 +43,8 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Collections;
-
 /**
- * Super class for DB2 Tables and Views
+ * Super class for DB2 Tables, Views, Nicknames
  * 
  * @author Denis Forveille
  */
@@ -53,17 +53,17 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
 
-    private String             owner;
-    private DB2OwnerType       ownerType;
+    private String owner;
+    private DB2OwnerType ownerType;
 
-    private Integer            tableId;
+    private Integer tableId;
 
-    private Timestamp          createTime;
-    private Timestamp          alterTime;
-    private Timestamp          invalidateTime;
-    private Timestamp          lastRegenTime;
+    private Timestamp createTime;
+    private Timestamp alterTime;
+    private Timestamp invalidateTime;
+    private Timestamp lastRegenTime;
 
-    private String             remarks;
+    private String remarks;
 
     // -----------------
     // Constructors
@@ -163,7 +163,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         if (this instanceof DB2View) {
             return getContainer().getViewCache().getChild(monitor, getContainer(), (DB2View) this, attributeName);
         }
-        
+
         // Other kinds don't have columns..
         throw new DBException("Unknown object with columns encountered");
     }
