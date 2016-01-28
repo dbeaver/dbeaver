@@ -283,6 +283,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 types.add(dt);
             }
         }
+        DBUtils.orderObjects(types);
         return types;
     }
 
