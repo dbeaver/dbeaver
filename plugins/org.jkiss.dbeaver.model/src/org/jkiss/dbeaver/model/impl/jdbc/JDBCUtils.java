@@ -201,6 +201,26 @@ public class JDBCUtils {
         }
     }
 
+    public static float safeGetFloat(ResultSet dbResult, String columnName)
+    {
+        try {
+            return dbResult.getFloat(columnName);
+        } catch (SQLException e) {
+            debugColumnRead(columnName, e);
+            return 0;
+        }
+    }
+
+    public static float safeGetFloat(ResultSet dbResult, int columnIndex)
+    {
+        try {
+            return dbResult.getFloat(columnIndex);
+        } catch (SQLException e) {
+            debugColumnRead(columnIndex, e);
+            return 0;
+        }
+    }
+
     @Nullable
     public static BigDecimal safeGetBigDecimal(ResultSet dbResult, String columnName)
     {
