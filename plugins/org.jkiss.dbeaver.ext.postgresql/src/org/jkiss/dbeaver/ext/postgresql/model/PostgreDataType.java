@@ -264,6 +264,11 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return resolveType(arrayItemTypeId);
     }
 
+    // Plain type
+    public boolean isPlainType() {
+        return arrayItemTypeId != 0;
+    }
+
     @Property(category = CAT_ARRAY)
     public int getArrayDim() {
         return arrayDim;
