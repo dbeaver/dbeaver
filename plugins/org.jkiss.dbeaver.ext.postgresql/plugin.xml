@@ -153,6 +153,19 @@
         </datasource>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.postgresql.model.data.PostgreValueHandlerProvider"
+                description="PostgreSQL data types provider"
+                id="org.jkiss.dbeaver.ext.postgresql.model.data.PostgreValueHandlerProvider"
+                label="PostgreSQL data types provider">
+
+            <datasource id="postgresql"/>
+
+            <type standard="ARRAY"/>
+        </provider>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.databaseEditor">
 <!--
         <manager

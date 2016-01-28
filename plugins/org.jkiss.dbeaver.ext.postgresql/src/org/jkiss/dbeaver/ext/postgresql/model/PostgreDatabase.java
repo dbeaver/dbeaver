@@ -65,13 +65,13 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int connectionLimit;
     private int tablespaceId;
 
-    final AuthIdCache authIdCache = new AuthIdCache();
-    final AccessMethodCache accessMethodCache = new AccessMethodCache();
-    final LanguageCache languageCache = new LanguageCache();
-    final EncodingCache encodingCache = new EncodingCache();
-    final TablespaceCache tablespaceCache = new TablespaceCache();
-    final SchemaCache schemaCache = new SchemaCache();
-    final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
+    public final AuthIdCache authIdCache = new AuthIdCache();
+    public final AccessMethodCache accessMethodCache = new AccessMethodCache();
+    public final LanguageCache languageCache = new LanguageCache();
+    public final EncodingCache encodingCache = new EncodingCache();
+    public final TablespaceCache tablespaceCache = new TablespaceCache();
+    public final SchemaCache schemaCache = new SchemaCache();
+    public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
