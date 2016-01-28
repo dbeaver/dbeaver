@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPOverloadedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -39,7 +40,7 @@ import java.util.Collection;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBSObjectUnique
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBSObjectUnique, DBPOverloadedObject
 {
     static final Log log = Log.getLog(PostgreProcedure.class);
 
@@ -75,7 +76,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private int[] transformTypes;
     private String[] config;
 
-    private String uniqueName;
+    private String overloadedName;
 
     public PostgreProcedure(
         PostgreSchema catalog,
@@ -110,16 +111,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 }
             }
             params.append(")");
-            this.uniqueName = this.name + params.toString();
+            this.overloadedName = this.name + params.toString();
         } else {
-            this.uniqueName = null;
+            this.overloadedName = this.name;
         }
-    }
-
-    @NotNull
-    @Override
-    public String getName() {
-        return uniqueName == null ? super.getName() : uniqueName;
     }
 
     @NotNull
@@ -163,8 +158,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @NotNull
     @Override
+    public String getOverloadedName() {
+        return overloadedName;
+    }
+
+    @NotNull
+    @Override
     public String getUniqueName() {
-        return uniqueName;
+        return overloadedName;
     }
 
     @Override
