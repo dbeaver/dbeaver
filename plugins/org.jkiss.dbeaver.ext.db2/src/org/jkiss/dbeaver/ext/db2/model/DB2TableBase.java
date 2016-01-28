@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StatefulObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -131,6 +132,9 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChildren(monitor, getContainer(), (DB2Table) this);
         }
+        if (this instanceof DB2Nickname) {
+            return getContainer().getNicknameCache().getChildren(monitor, getContainer(), (DB2Nickname) this);
+        }
         if (this instanceof DB2MaterializedQueryTable) {
             return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(),
                 (DB2MaterializedQueryTable) this);
@@ -148,6 +152,9 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     {
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChild(monitor, getContainer(), (DB2Table) this, attributeName);
+        }
+        if (this instanceof DB2Nickname) {
+            return getContainer().getNicknameCache().getChild(monitor, getContainer(), (DB2Nickname) this, attributeName);
         }
         if (this instanceof DB2MaterializedQueryTable) {
             return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(),
