@@ -33,7 +33,7 @@ public enum DB2TableAccessMode implements DBPNamedObject {
 
     N("No access"),
 
-    R(" Read-only access");
+    R("Read-only access");
 
     private String name;
 

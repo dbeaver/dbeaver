@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -18,9 +18,14 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Collection;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2SourceObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2ViewBaseDepCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2ViewStatus;
@@ -33,9 +38,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.util.Collection;
-
 /**
  * Base class for view-like objects (Views, MQT)
  * 
@@ -45,9 +47,13 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
 
     protected final DB2ViewBaseDepCache viewBaseDepCache = new DB2ViewBaseDepCache();
 
-    private DB2ViewStatus               valid;
-    private String                      text;
-    private String                      funcPath;
+    private Timestamp alterTime;
+    private Timestamp invalidateTime;
+    private Timestamp lastRegenTime;
+
+    private DB2ViewStatus valid;
+    private String text;
+    private String funcPath;
 
     // -----------------
     // Constructors
@@ -62,6 +68,12 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
         this.valid = CommonUtils.valueOf(DB2ViewStatus.class, JDBCUtils.safeGetString(dbResult, "VALID"));
         this.text = JDBCUtils.safeGetString(dbResult, "TEXT");
         this.funcPath = JDBCUtils.safeGetString(dbResult, "FUNC_PATH");
+
+        this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
+        this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
+        if (getDataSource().isAtLeastV9_5()) {
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+        }
     }
 
     // -----------------
@@ -145,6 +157,24 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
     public String getFuncPath()
     {
         return funcPath;
+    }
+
+    @Property(viewable = false, editable = false, order = 101, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getAlterTime()
+    {
+        return alterTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 102, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getInvalidateTime()
+    {
+        return invalidateTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 103, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getLastRegenTime()
+    {
+        return lastRegenTime;
     }
 
 }
