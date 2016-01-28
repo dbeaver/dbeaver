@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -17,6 +17,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jkiss.dbeaver.ext.db2.model;
+
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Collection;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -52,10 +56,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Collection;
-
 /**
  * DB2 Table
  * 
@@ -64,38 +64,42 @@ import java.util.Collection;
 public class DB2Table extends DB2TableBase
     implements DBPNamedObject2, DBPRefreshableObject, DB2SourceObject, DBDPseudoAttributeContainer {
 
-    private static final String                         LINE_SEPARATOR    = GeneralUtils.getDefaultLineSeparator();
+    private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
-    private static final String                         C_PT              = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+    private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
 
-    private DB2TableTriggerCache                        tableTriggerCache = new DB2TableTriggerCache();
+    private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
 
     // Dependent of DB2 Version. OK because the folder is hidden in plugin.xml
     private DBSObjectCache<DB2Table, DB2TablePartition> partitionCache;
 
-    private DB2TableStatus                              status;
-    private DB2TableType                                type;
+    private DB2TableStatus status;
+    private DB2TableType type;
 
-    private Object                                      tablespace;
-    private Object                                      indexTablespace;
-    private Object                                      longTablespace;
+    private Object tablespace;
+    private Object indexTablespace;
+    private Object longTablespace;
 
-    private String                                      dataCapture;
-    private String                                      constChecked;
-    private DB2TablePartitionMode                       partitionMode;
-    private Boolean                                     append;
-    private DB2TableLockSize                            lockSize;
-    private String                                      volatileMode;
-    private DB2TableCompressionMode                     compression;
-    private DB2TableAccessMode                          accessMode;
-    private Boolean                                     mdcClustered;
-    private DB2TableDropRule                            dropRule;
+    private String dataCapture;
+    private String constChecked;
+    private DB2TablePartitionMode partitionMode;
+    private Boolean append;
+    private DB2TableLockSize lockSize;
+    private String volatileMode;
+    private DB2TableCompressionMode compression;
+    private DB2TableAccessMode accessMode;
+    private Boolean mdcClustered;
+    private DB2TableDropRule dropRule;
 
-    private Timestamp                                   statsTime;
-    private Long                                        card;
-    private Long                                        nPages;
-    private Long                                        fPages;
-    private Long                                        overFLow;
+    private Timestamp alterTime;
+    private Timestamp invalidateTime;
+    private Timestamp lastRegenTime;
+
+    private Timestamp statsTime;
+    private Long card;
+    private Long nPages;
+    private Long fPages;
+    private Long overFLow;
 
     // -----------------
     // Constructors
@@ -122,6 +126,12 @@ public class DB2Table extends DB2TableBase
         this.nPages = JDBCUtils.safeGetLongNullable(dbResult, "NPAGES");
         this.fPages = JDBCUtils.safeGetLongNullable(dbResult, "FPAGES");
         this.overFLow = JDBCUtils.safeGetLongNullable(dbResult, "OVERFLOW");
+
+        this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
+        this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
+        if (getDataSource().isAtLeastV9_5()) {
+            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
+        }
 
         String lockSizeString = JDBCUtils.safeGetString(dbResult, "LOCKSIZE");
         if (CommonUtils.isNotEmpty(lockSizeString)) {
@@ -414,6 +424,24 @@ public class DB2Table extends DB2TableBase
     public String getConstChecked()
     {
         return constChecked;
+    }
+
+    @Property(viewable = false, editable = false, order = 101, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getAlterTime()
+    {
+        return alterTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 102, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getInvalidateTime()
+    {
+        return invalidateTime;
+    }
+
+    @Property(viewable = false, editable = false, order = 103, category = DB2Constants.CAT_DATETIME)
+    public Timestamp getLastRegenTime()
+    {
+        return lastRegenTime;
     }
 
     @Override

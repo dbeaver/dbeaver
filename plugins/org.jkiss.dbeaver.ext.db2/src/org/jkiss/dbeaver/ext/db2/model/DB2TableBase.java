@@ -59,9 +59,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     private Integer tableId;
 
     private Timestamp createTime;
-    private Timestamp alterTime;
-    private Timestamp invalidateTime;
-    private Timestamp lastRegenTime;
 
     private String remarks;
 
@@ -79,13 +76,10 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.tableId = JDBCUtils.safeGetInteger(dbResult, "TABLEID");
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
-        this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
             this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         }
     }
@@ -225,24 +219,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     public Timestamp getCreateTime()
     {
         return createTime;
-    }
-
-    @Property(viewable = false, editable = false, order = 101, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getAlterTime()
-    {
-        return alterTime;
-    }
-
-    @Property(viewable = false, editable = false, order = 102, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getInvalidateTime()
-    {
-        return invalidateTime;
-    }
-
-    @Property(viewable = false, editable = false, order = 103, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getLastRegenTime()
-    {
-        return lastRegenTime;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)
