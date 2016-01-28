@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -136,6 +137,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;
     }
 
+    @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return (PostgreDataSource) super.getDataSource();
@@ -167,14 +169,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return resolveType(baseTypeId);
     }
 
-    @Property(category = CAT_MAIN, viewable = true)
+    @Property(category = CAT_MAIN, viewable = true, order = 13)
     public PostgreDataType getElementType() {
         return resolveType(elementTypeId);
     }
 
-    @Property(category = CAT_MISC)
-    public int getOwnerId() {
-        return ownerId;
+    @Property(category = CAT_MAIN, order = 15)
+    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
     }
 
     @Property(category = CAT_MISC)
