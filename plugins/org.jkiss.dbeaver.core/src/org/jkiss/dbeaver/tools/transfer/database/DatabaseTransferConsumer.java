@@ -96,6 +96,9 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (columnMapping.targetAttr == null) {
                 throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
             }
+            if (columnMapping.targetAttr.getTarget() == null) {
+                throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
+            }
             columnMapping.sourceValueHandler = DBUtils.findValueHandler(session, columnMapping.sourceAttr);
             columnMapping.targetValueHandler = DBUtils.findValueHandler(session, columnMapping.targetAttr.getTarget());
             columnMappings[i] = columnMapping;
@@ -185,9 +188,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (rowsExported > 0) {
             insertBatch(true);
         }
-
-        executeBatch.close();
-        executeBatch = null;
+        if (executeBatch != null) {
+            executeBatch.close();
+            executeBatch = null;
+        }
 
         closeExporter();
     }
