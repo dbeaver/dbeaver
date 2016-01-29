@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry.datatype;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPRegistryDescriptor;
@@ -143,7 +144,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return instance;
     }
 
-    public boolean supportsType(DBSTypedObject typedObject) {
+    public boolean supportsType(@NotNull DBSTypedObject typedObject) {
         if (hasAll || (hasTypeIds && supportedTypes.contains(typedObject.getTypeID()))) {
             return true;
         }
