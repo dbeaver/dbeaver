@@ -90,9 +90,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         String trustStorePath = System.getProperty("user.home") + "/.keystore";
 
         System.setProperty("javax.net.ssl.keyStore", trustStorePath);
-        System.setProperty("javax.net.ssl.keyStorePassword", "password");
+        System.setProperty("javax.net.ssl.keyStorePassword", "changeit");
         System.setProperty("javax.net.ssl.trustStore", trustStorePath);
-        System.setProperty("javax.net.ssl.trustStorePassword", "password");
+        System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
 
         StringBuilder url = new StringBuilder();
         url.append("jdbc:mysql://")
