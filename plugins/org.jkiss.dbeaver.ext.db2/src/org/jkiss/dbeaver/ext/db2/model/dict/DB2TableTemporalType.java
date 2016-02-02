@@ -22,41 +22,27 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 /**
- * DB2 Column Hidden Status
+ * DB2 Table Temporal Type
  * 
  * @author Denis Forveille
  */
-public enum DB2ColumnHiddenState implements DBPNamedObject {
-    I("Implicitely hidden", false),
+public enum DB2TableTemporalType implements DBPNamedObject {
+    A("Application-period temporal table"),
 
-    S("System managed hidden", true);
+    B("Bitemporal table"),
+
+    N("Not a temporal table"),
+
+    S("System-period temporal table");
 
     private String name;
-    private Boolean hidden;
 
-    // -----------
+    // -----------------
     // Constructor
-    // -----------
-
-    private DB2ColumnHiddenState(String name, Boolean hidden)
+    // -----------------
+    private DB2TableTemporalType(String name)
     {
         this.name = name;
-        this.hidden = hidden;
-    }
-
-    // ----------------
-    // Static Helpers
-    // ----------------
-
-    public static Boolean isHidden(String hiddenChar)
-    {
-        if (hiddenChar == null) {
-            return false;
-        }
-        if (hiddenChar.trim().length() == 0) {
-            return false;
-        }
-        return DB2ColumnHiddenState.valueOf(hiddenChar).isHidden();
     }
 
     // -----------------------
@@ -76,10 +62,5 @@ public enum DB2ColumnHiddenState implements DBPNamedObject {
     public String getName()
     {
         return name;
-    }
-
-    public Boolean isHidden()
-    {
-        return hidden;
     }
 }

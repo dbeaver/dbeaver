@@ -68,6 +68,9 @@
                                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablePartition" label="%tree.partitions.node.name" icon="#partitions" description="Partitions" >
                                     <items label="%tree.partition.node.name" path="partition" property="partitions" icon="#partition" />
                                 </folder>
+                                <folder type="org.jkiss.dbeaver.ext.db2.model.DB2TablePeriod" label="%tree.periods.node.name" icon="#periods" description="Periods" >
+                                    <items label="%tree.period.node.name" path="period" property="periods" icon="#partition" />
+                                </folder>
                                 <folder type="org.jkiss.dbeaver.ext.db2.model.DB2Trigger" label="%tree.triggers.node.name" icon="#triggers" description="Triggers">
                                     <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger" >
                                        <items label="%tree.triggerdeps.node.name" path="triggerdep" property="triggerDeps" icon="#triggerdep"/>

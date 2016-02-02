@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableDropRule;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableLockSize;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TablePartitionMode;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableStatus;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableTemporalType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2TableType;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -67,11 +68,13 @@ public class DB2Table extends DB2TableBase
     private static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
     private static final String C_PT = "SELECT * FROM SYSCAT.DATAPARTITIONS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY SEQNO WITH UR";
+    private static final String C_PE = "SELECT * FROM SYSCAT.PERIODS WHERE TABSCHEMA = ? AND TABNAME = ? ORDER BY PERIODNAME WITH UR";
 
     private DB2TableTriggerCache tableTriggerCache = new DB2TableTriggerCache();
 
     // Dependent of DB2 Version. OK because the folder is hidden in plugin.xml
     private DBSObjectCache<DB2Table, DB2TablePartition> partitionCache;
+    private DBSObjectCache<DB2Table, DB2TablePeriod> periodCache;
 
     private DB2TableStatus status;
     private DB2TableType type;
@@ -90,6 +93,7 @@ public class DB2Table extends DB2TableBase
     private DB2TableAccessMode accessMode;
     private Boolean mdcClustered;
     private DB2TableDropRule dropRule;
+    private DB2TableTemporalType temporalType;
 
     private Timestamp alterTime;
     private Timestamp invalidateTime;
@@ -132,6 +136,9 @@ public class DB2Table extends DB2TableBase
         if (getDataSource().isAtLeastV9_5()) {
             this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
         }
+        if (getDataSource().isAtLeastV10_1()) {
+            this.temporalType = CommonUtils.valueOf(DB2TableTemporalType.class, JDBCUtils.safeGetString(dbResult, "TEMPORALTYPE"));
+        }
 
         String lockSizeString = JDBCUtils.safeGetString(dbResult, "LOCKSIZE");
         if (CommonUtils.isNotEmpty(lockSizeString)) {
@@ -143,6 +150,7 @@ public class DB2Table extends DB2TableBase
         this.longTablespace = JDBCUtils.safeGetString(dbResult, "LONG_TBSPACE");
 
         this.partitionCache = new JDBCObjectSimpleCache<>(DB2TablePartition.class, C_PT, schema.getName(), getName());
+        this.periodCache = new JDBCObjectSimpleCache<>(DB2TablePeriod.class, C_PE, schema.getName(), getName());
 
     }
 
@@ -179,6 +187,9 @@ public class DB2Table extends DB2TableBase
         tableTriggerCache.clearCache();
         if (partitionCache != null) {
             partitionCache.clearCache();
+        }
+        if (periodCache != null) {
+            periodCache.clearCache();
         }
 
         getContainer().getConstraintCache().clearObjectCache(this);
@@ -228,6 +239,17 @@ public class DB2Table extends DB2TableBase
             return null;
         } else {
             return partitionCache.getAllObjects(monitor, this);
+        }
+    }
+
+    @Association
+    public Collection<DB2TablePeriod> getPeriods(DBRProgressMonitor monitor) throws DBException
+    {
+        // TODO DF: beurk: Consequences of "Integrated cache" that can not be created in class def= NPE with managers
+        if (periodCache == null) {
+            return null;
+        } else {
+            return periodCache.getAllObjects(monitor, this);
         }
     }
 
@@ -424,6 +446,12 @@ public class DB2Table extends DB2TableBase
     public String getConstChecked()
     {
         return constChecked;
+    }
+
+    @Property(viewable = false, editable = false, order = 120, category = DB2Constants.CAT_TEMPORAL)
+    public DB2TableTemporalType getTemporalType()
+    {
+        return temporalType;
     }
 
     @Property(viewable = false, editable = false, order = 101, category = DB2Constants.CAT_DATETIME)
