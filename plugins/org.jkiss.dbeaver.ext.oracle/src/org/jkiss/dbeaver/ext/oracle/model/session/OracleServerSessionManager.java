@@ -18,13 +18,13 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,17 +40,17 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     public static final String PROP_KILL_SESSION = "killSession";
     public static final String PROP_IMMEDIATE = "immediate";
 
-    private final OracleDataSource dataSource;
+    private final DBCExecutionContext executionContext;
 
-    public OracleServerSessionManager(OracleDataSource dataSource)
+    public OracleServerSessionManager(DBCExecutionContext executionContext)
     {
-        this.dataSource = dataSource;
+        this.executionContext = executionContext;
     }
 
     @Override
     public DBPDataSource getDataSource()
     {
-        return dataSource;
+        return executionContext.getDataSource();
     }
 
     @Override

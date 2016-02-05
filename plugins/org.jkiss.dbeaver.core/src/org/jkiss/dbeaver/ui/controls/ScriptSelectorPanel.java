@@ -262,7 +262,9 @@ public class ScriptSelectorPanel {
                     UIUtils.runInDetachedUI(popup, new Runnable() {
                         @Override
                         public void run() {
-                            item.setText(2, ri.getDescription());
+                            if (!item.isDisposed()) {
+                                item.setText(2, ri.getDescription());
+                            }
                         }
                     });
                 }

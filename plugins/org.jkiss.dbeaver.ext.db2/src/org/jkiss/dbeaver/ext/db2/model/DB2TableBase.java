@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -18,6 +18,11 @@
  */
 package org.jkiss.dbeaver.ext.db2.model;
 
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -25,6 +30,7 @@ import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StatefulObject;
 import org.jkiss.dbeaver.ext.db2.model.cache.DB2TableIndexCache;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2OwnerType;
+import org.jkiss.dbeaver.ext.db2.model.fed.DB2Nickname;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -37,13 +43,8 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.Collection;
-import java.util.Collections;
-
 /**
- * Super class for DB2 Tables and Views
+ * Super class for DB2 Tables, Views, Nicknames
  * 
  * @author Denis Forveille
  */
@@ -52,17 +53,14 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
     private DB2TableIndexCache tableIndexCache = new DB2TableIndexCache();
 
-    private String             owner;
-    private DB2OwnerType       ownerType;
+    private String owner;
+    private DB2OwnerType ownerType;
 
-    private Integer            tableId;
+    private Integer tableId;
 
-    private Timestamp          createTime;
-    private Timestamp          alterTime;
-    private Timestamp          invalidateTime;
-    private Timestamp          lastRegenTime;
+    private Timestamp createTime;
 
-    private String             remarks;
+    private String remarks;
 
     // -----------------
     // Constructors
@@ -78,13 +76,10 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         this.owner = JDBCUtils.safeGetString(dbResult, "OWNER");
         this.tableId = JDBCUtils.safeGetInteger(dbResult, "TABLEID");
         this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATE_TIME");
-        this.invalidateTime = JDBCUtils.safeGetTimestamp(dbResult, "INVALIDATE_TIME");
-        this.lastRegenTime = JDBCUtils.safeGetTimestamp(dbResult, "LAST_REGEN_TIME");
 
         this.remarks = JDBCUtils.safeGetString(dbResult, "REMARKS");
 
         if (db2DataSource.isAtLeastV9_5()) {
-            this.alterTime = JDBCUtils.safeGetTimestamp(dbResult, "ALTER_TIME");
             this.ownerType = CommonUtils.valueOf(DB2OwnerType.class, JDBCUtils.safeGetString(dbResult, "OWNERTYPE"));
         }
     }
@@ -131,6 +126,9 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChildren(monitor, getContainer(), (DB2Table) this);
         }
+        if (this instanceof DB2Nickname) {
+            return getContainer().getNicknameCache().getChildren(monitor, getContainer(), (DB2Nickname) this);
+        }
         if (this instanceof DB2MaterializedQueryTable) {
             return getContainer().getMaterializedQueryTableCache().getChildren(monitor, getContainer(),
                 (DB2MaterializedQueryTable) this);
@@ -149,6 +147,9 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChild(monitor, getContainer(), (DB2Table) this, attributeName);
         }
+        if (this instanceof DB2Nickname) {
+            return getContainer().getNicknameCache().getChild(monitor, getContainer(), (DB2Nickname) this, attributeName);
+        }
         if (this instanceof DB2MaterializedQueryTable) {
             return getContainer().getMaterializedQueryTableCache().getChild(monitor, getContainer(),
                 (DB2MaterializedQueryTable) this, attributeName);
@@ -156,7 +157,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
         if (this instanceof DB2View) {
             return getContainer().getViewCache().getChild(monitor, getContainer(), (DB2View) this, attributeName);
         }
-        
+
         // Other kinds don't have columns..
         throw new DBException("Unknown object with columns encountered");
     }
@@ -218,24 +219,6 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     public Timestamp getCreateTime()
     {
         return createTime;
-    }
-
-    @Property(viewable = false, editable = false, order = 101, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getAlterTime()
-    {
-        return alterTime;
-    }
-
-    @Property(viewable = false, editable = false, order = 102, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getInvalidateTime()
-    {
-        return invalidateTime;
-    }
-
-    @Property(viewable = false, editable = false, order = 103, category = DB2Constants.CAT_DATETIME)
-    public Timestamp getLastRegenTime()
-    {
-        return lastRegenTime;
     }
 
     @Property(viewable = false, editable = false, category = DB2Constants.CAT_OWNER)

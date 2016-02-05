@@ -19,24 +19,30 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Date;
 
 /**
- * PostgreCharset
+ * PostgreTablespace
  */
-public class PostgreCharset implements PostgreObject {
+public class PostgreTablespace implements PostgreObject {
 
     private final PostgreDatabase database;
-    private int encodingId;
+    private int oid;
     private String name;
+    private int ownerId;
+    private Object[] options;
 
-    public PostgreCharset(PostgreDatabase database, ResultSet dbResult)
+    public PostgreTablespace(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
         this.database = database;
@@ -46,27 +52,10 @@ public class PostgreCharset implements PostgreObject {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.name = JDBCUtils.safeGetString(dbResult, "encname");
-        this.encodingId = JDBCUtils.safeGetInt(dbResult, "encid");
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName()
-    {
-        return name;
-    }
-
-    @NotNull
-    @Override
-    public PostgreDatabase getDatabase() {
-        return database;
-    }
-
-    @Override
-    public int getObjectId() {
-        return encodingId;
+        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.name = JDBCUtils.safeGetString(dbResult, "spcname");
+        this.ownerId = JDBCUtils.safeGetInt(dbResult, "spcowner");
+        this.options = (Object[]) JDBCUtils.safeGetArray(dbResult, "spcoptions");
     }
 
     @Nullable
@@ -91,4 +80,34 @@ public class PostgreCharset implements PostgreObject {
     public boolean isPersisted() {
         return true;
     }
+
+    @NotNull
+    @Override
+    @Property(viewable = true, order = 1)
+    public String getName()
+    {
+        return name;
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return database;
+    }
+
+    @Override
+    public int getObjectId() {
+        return oid;
+    }
+
+    @Property(order = 2)
+    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, database.authIdCache, database, ownerId);
+    }
+
+    @Property(order = 100)
+    public Object[] getOptions() {
+        return options;
+    }
 }
+

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -17,6 +17,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 package org.jkiss.dbeaver.ext.db2.model.security;
+
+import java.sql.SQLException;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -44,8 +46,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.SQLException;
-
 /**
  * Cache for DB2 Authorisations
  * 
@@ -68,7 +68,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         sb.append("     , '").append(DB2ObjectType.TABLE.name()).append("' AS OBJ_TYPE");
         sb.append("     , TABSCHEMA AS OBJ_SCHEMA, TABNAME AS OBJ_NAME");
         sb.append("     , CONTROLAUTH, ALTERAUTH, DELETEAUTH, INDEXAUTH, INSERTAUTH, REFAUTH, SELECTAUTH, UPDATEAUTH");
-        sb.append("     , NULL AS USAGEAUTH, NULL AS ALTERINAUTH, NULL AS CREATEINAUTH, NULL AS DROPINAUTH, NULL AS BINDAUTH, NULL AS EXECUTEAUTH");
+        sb.append(
+            "     , NULL AS USAGEAUTH, NULL AS ALTERINAUTH, NULL AS CREATEINAUTH, NULL AS DROPINAUTH, NULL AS BINDAUTH, NULL AS EXECUTEAUTH");
         sb.append("  FROM SYSCAT.TABAUTH");
         sb.append(" WHERE GRANTEETYPE = ?"); // 1
         sb.append("   AND GRANTEE = ?"); // 2
@@ -199,7 +200,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee)
+        throws SQLException
     {
         String userType = db2Grantee.getType().name();
         String userName = db2Grantee.getName();
@@ -223,8 +225,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
     }
 
     @Override
-    protected DB2AuthBase fetchObject(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee, @NotNull JDBCResultSet resultSet) throws SQLException,
-        DBException
+    protected DB2AuthBase fetchObject(@NotNull JDBCSession session, @NotNull DB2Grantee db2Grantee,
+        @NotNull JDBCResultSet resultSet) throws SQLException, DBException
     {
         DB2DataSource db2DataSource = db2Grantee.getDataSource();
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -237,7 +239,7 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
         switch (objectType) {
         case COLUMN:
             String columnName = JDBCUtils.safeGetStringTrimmed(resultSet, "USAGEAUTH");
-            DB2TableColumn db2TableColumn = DB2Utils.findColumnxBySchemaNameAndTableNameAndName(monitor, db2DataSource,
+            DB2TableColumn db2TableColumn = DB2Utils.findColumnBySchemaNameAndTableNameAndName(monitor, db2DataSource,
                 objectSchemaName, objectName, columnName);
             return new DB2AuthColumn(monitor, db2Grantee, db2TableColumn, resultSet);
 
@@ -278,8 +280,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             return new DB2AuthSchema(monitor, db2Grantee, db2Schema, resultSet);
 
         case SEQUENCE:
-            DB2Sequence db2Sequence = DB2Utils
-                .findSequenceBySchemaNameAndName(monitor, db2DataSource, objectSchemaName, objectName);
+            DB2Sequence db2Sequence = DB2Utils.findSequenceBySchemaNameAndName(monitor, db2DataSource, objectSchemaName,
+                objectName);
             return new DB2AuthSequence(monitor, db2Grantee, db2Sequence, resultSet);
 
         case TABLE:
@@ -311,8 +313,8 @@ public final class DB2GranteeAuthCache extends JDBCObjectCache<DB2Grantee, DB2Au
             return new DB2AuthXMLSchema(monitor, db2Grantee, db2XmlSchema, resultSet);
 
         default:
-            throw new DBException("Programming error: " + objectType
-                + " is not supported yet and the SELECT statement must exclude it");
+            throw new DBException(
+                "Programming error: " + objectType + " is not supported yet and the SELECT statement must exclude it");
         }
     }
 }

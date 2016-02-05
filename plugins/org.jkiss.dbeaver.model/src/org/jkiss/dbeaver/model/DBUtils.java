@@ -468,31 +468,31 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Object makeNullValue(DBCSession session, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
+    public static Object makeNullValue(@NotNull DBCSession session, @NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type) throws DBCException
     {
         return valueHandler.getValueFromObject(session, type, null, false);
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta getAttributeBinding(DBCSession session, DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
         return new DBDAttributeBindingMeta(session.getDataSource(), attributeMeta);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(DBCSession session, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@NotNull DBCSession session, @NotNull DBSTypedObject column)
     {
         return findValueHandler(session.getDataSource(), session, column);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column)
     {
         return findValueHandler(dataSource, dataSource.getContainer(), column);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
 
@@ -515,7 +515,7 @@ public final class DBUtils {
      * Identifying association is an association which associated entity's attributes are included into owner entity primary key. I.e. they
      * identifies entity.
      */
-    public static boolean isIdentifyingAssociation(DBRProgressMonitor monitor, DBSEntityAssociation association) throws DBException
+    public static boolean isIdentifyingAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException
     {
         if (!(association instanceof DBSEntityReferrer)) {
             return false;

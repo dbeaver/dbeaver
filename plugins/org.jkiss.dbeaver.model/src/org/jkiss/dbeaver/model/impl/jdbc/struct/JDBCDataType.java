@@ -95,6 +95,7 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
         return remarks;
     }
 
+    @NotNull
     @Override
     public OWNER getParentObject()
     {

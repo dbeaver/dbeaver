@@ -180,7 +180,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         if (dialogSettings.get("openTableOnFinish") != null) {
             openTableOnFinish = dialogSettings.getBoolean("openTableOnFinish");
         }
-        if (CommonUtils.isEmpty(containerNodePath)) {
+        {
             List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
             if (!dataPipes.isEmpty()) {
                 IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
