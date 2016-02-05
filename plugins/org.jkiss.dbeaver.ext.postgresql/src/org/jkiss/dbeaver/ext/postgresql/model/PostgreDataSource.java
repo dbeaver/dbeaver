@@ -64,7 +64,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private final DatabaseCache databaseCache = new DatabaseCache();
     private List<PostgreUser> users;
-    private List<PostgreCharset> charsets;
     private String activeDatabaseName;
     private final Map<String, PostgreDataType> internalTypes = new LinkedHashMap<>();
 
@@ -275,21 +274,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         } catch (SQLException ex) {
             throw new DBException(ex, this);
         }
-    }
-
-    public Collection<PostgreCharset> getCharsets()
-    {
-        return charsets;
-    }
-
-    public PostgreCharset getCharset(String name)
-    {
-        for (PostgreCharset charset : charsets) {
-            if (charset.getName().equals(name)) {
-                return charset;
-            }
-        }
-        return null;
     }
 
     @Override

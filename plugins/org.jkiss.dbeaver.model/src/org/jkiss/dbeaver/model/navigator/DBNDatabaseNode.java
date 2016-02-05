@@ -88,7 +88,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (object == null) {
             return DBConstants.NULL_VALUE_LABEL;
         }
-        String objectName = object.getName();
+        String objectName;
+        if (object instanceof DBPOverloadedObject) {
+            objectName = ((DBPOverloadedObject) object).getOverloadedName();
+        } else {
+            objectName = object.getName();
+        }
         if (CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {

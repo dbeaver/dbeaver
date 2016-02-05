@@ -60,4 +60,5 @@ public class PostgreConstants {
     public static final String COL_DEFINER = "DEFINER";
     public static final String COL_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
 
+    public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
 }

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry.datatype;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -84,7 +85,7 @@ public class DataTypeProviderRegistry implements DBDRegistry
     // DataType providers
 
     @Nullable
-    public DBDValueHandlerProvider getDataTypeProvider(DBPDataSource dataSource, DBSTypedObject typedObject)
+    public DBDValueHandlerProvider getDataTypeProvider(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject typedObject)
     {
         DBPDriver driver = dataSource.getContainer().getDriver();
         if (!(driver instanceof DriverDescriptor)) {
