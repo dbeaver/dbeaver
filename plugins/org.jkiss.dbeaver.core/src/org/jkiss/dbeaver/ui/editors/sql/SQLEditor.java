@@ -239,7 +239,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else if (curDataSource != dataSource) {
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                if (getActivePreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                if (curDataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
                     final OpenContextJob job = new OpenContextJob(dataSource);
                     job.addJobChangeListener(new JobChangeAdapter() {
                         @Override
