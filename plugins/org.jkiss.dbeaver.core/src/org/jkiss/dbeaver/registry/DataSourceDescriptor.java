@@ -543,7 +543,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected()
     {
-        return dataSource != null && dataSource.getDefaultContext(false).isConnected();
+        return dataSource != null/* && dataSource.getDefaultContext(false).isConnected()*/;
     }
 
     @Override
