@@ -91,7 +91,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             {
                 FileDialog fd = new FileDialog(composite.getShell(), SWT.OPEN | SWT.SINGLE);
                 fd.setText(CoreMessages.model_ssh_configurator_dialog_choose_private_key);
-                String[] filterExt = {"*.*", "*.ssh"}; //$NON-NLS-1$ //$NON-NLS-2$
+                String[] filterExt = {"*.*", "*.ssh", "*.pem", "*"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = DialogUtils.openFileDialog(fd);
                 if (selected != null) {
