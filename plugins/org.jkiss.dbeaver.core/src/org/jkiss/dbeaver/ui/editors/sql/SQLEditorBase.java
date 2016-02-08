@@ -443,7 +443,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
         ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
         String selText = selection.getText();
-        if (CommonUtils.isEmpty(selText) && selection.getOffset() >= 0) {
+        if (CommonUtils.isEmpty(selText) && selection.getOffset() >= 0 && selection.getOffset() < document.getLength()) {
             try {
                 IRegion lineRegion = document.getLineInformationOfOffset(selection.getOffset());
                 selText = document.get(lineRegion.getOffset(), lineRegion.getLength());
