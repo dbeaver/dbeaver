@@ -81,6 +81,10 @@ public class PostgreTable extends PostgreTableBase
         super(catalog, dbResult);
     }
 
+    public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {
+        return foreignKeys;
+    }
+
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException

@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -69,7 +68,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public JDBCStructCache<PostgreSchema, ? extends PostgreClass, ? extends PostgreAttribute> getCache()
     {
-        return getContainer().classCache;
+        return getContainer().tableCache;
     }
 
     @NotNull
@@ -112,17 +111,17 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public List<PostgreAttribute> getAttributes(DBRProgressMonitor monitor)
+    public List<PostgreTableColumn> getAttributes(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().classCache.getChildren(monitor, getContainer(), this);
+        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
-    public PostgreAttribute getAttribute(DBRProgressMonitor monitor, String attributeName)
+    public PostgreTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
         throws DBException
     {
-        return getContainer().classCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
@@ -165,7 +164,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().classCache.clearChildrenCache(this);
+        getContainer().tableCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
         triggerCache.clearCache();
 

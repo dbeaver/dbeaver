@@ -74,8 +74,8 @@ public class PostgreUtils {
 
     private static Method getValueMethod;
 
-    public static PostgreAttribute getAttributeByNum(Collection<PostgreAttribute> attrs, int attNum) {
-        for (PostgreAttribute attr : attrs) {
+    public static <T extends PostgreAttribute> T getAttributeByNum(Collection<T> attrs, int attNum) {
+        for (T attr : attrs) {
             if (attr.getOrdinalPosition() == attNum) {
                 return attr;
             }
