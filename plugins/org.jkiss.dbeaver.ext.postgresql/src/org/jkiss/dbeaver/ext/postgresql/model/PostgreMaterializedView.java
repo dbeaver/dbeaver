@@ -17,27 +17,18 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.List;
 
 /**
- * PostgreView
+ * PostgreMaterializedView
  */
-public class PostgreMaterializedView extends PostgreTableBase
+public class PostgreMaterializedView extends PostgreView
 {
-    private String source;
-
     public PostgreMaterializedView(
         PostgreSchema catalog,
         ResultSet dbResult)
@@ -45,46 +36,10 @@ public class PostgreMaterializedView extends PostgreTableBase
         super(catalog, dbResult);
     }
 
-    @NotNull
-    @Property(viewable = true, editable = true, valueTransformer = DBObjectNameCaseTransformer.class, order = 1)
-    @Override
-    public String getName()
-    {
-        return super.getName();
-    }
-
-    @Override
-    public boolean isView()
-    {
-        return true;
-    }
-
     @Override
     public List<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException
     {
         return null;
-    }
-
-    @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
-    {
-        source = null;
-        super.refreshObject(monitor);
-        return true;
-    }
-
-    @Override
-    @Property(hidden = true, editable = true, updatable = true, order = -1)
-    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
-    {
-        if (source == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?)", getObjectId());
-            } catch (SQLException e) {
-                throw new DBException("Error reading materialized view definition", e);
-            }
-        }
-        return source;
     }
 
     @Override

@@ -85,7 +85,7 @@ public class PostgreView extends PostgreTableBase
     {
         if (source == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                source = JDBCUtils.queryString(session, "SELECT definition FROM pg_views WHERE schemaname=? AND viewname=?", getSchema().getName(), getName());
+                source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?)", getObjectId());
             } catch (SQLException e) {
                 throw new DBException("Error reading view definition", e);
             }
