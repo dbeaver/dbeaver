@@ -18,14 +18,14 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.*;
@@ -67,6 +67,7 @@ public class PostgreTable extends PostgreTableBase
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private Long rowCount;
 
     public PostgreTable(PostgreSchema catalog)
     {
@@ -92,6 +93,30 @@ public class PostgreTable extends PostgreTableBase
         }
     }
 
+    @Property(viewable = false, expensive = true, order = 21)
+    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    {
+        if (rowCount != null) {
+            return rowCount;
+        }
+        if (!isPersisted()) {
+            // Do not count rows for views
+            return null;
+        }
+
+        // Query row count
+        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
+            rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
+        } catch (DBException e) {
+            log.debug("Can't fetch row count", e);
+        }
+        if (rowCount == null) {
+            rowCount = -1L;
+        }
+
+        return rowCount;
+    }
+
     @Override
     public boolean isView()
     {
@@ -112,6 +137,7 @@ public class PostgreTable extends PostgreTableBase
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;
         }
+        rowCount = null;
         return true;
     }
 

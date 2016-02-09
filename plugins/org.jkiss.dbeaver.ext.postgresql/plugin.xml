@@ -62,6 +62,14 @@
                                     </folder>
                                 </items>
                             </folder>
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView" label="%tree.mviews.node.name" icon="#folder_view" description="Materizlized views">
+                                <items label="%tree.mview.node.name" path="view" property="materializedViews" icon="#view">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                        <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                        </items>
+                                    </folder>
+                                </items>
+                            </folder>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes">
                                 <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
                                     <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">

@@ -82,6 +82,12 @@ public class BasicSQLDialect implements SQLDialect {
         allKeywords.put(keyword, DBPKeywordType.KEYWORD);
     }
 
+    public void removeSQLKeyword(String keyword)
+    {
+        reservedWords.remove(keyword);
+        allKeywords.remove(keyword);
+    }
+
     public void addKeywords(Collection<String> set, DBPKeywordType type)
     {
         if (set != null) {

@@ -196,6 +196,13 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     }
 
     @Association
+    public Collection<PostgreMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return classCache.getTypedObjects(monitor, this, PostgreMaterializedView.class);
+    }
+
+    @Association
     public Collection<PostgreSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException
     {
@@ -370,6 +377,8 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                     return new PostgreTable(PostgreSchema.this, dbResult);
                 case v:
                     return new PostgreView(PostgreSchema.this, dbResult);
+                case m:
+                    return new PostgreMaterializedView(PostgreSchema.this, dbResult);
                 case S:
                     return new PostgreSequence(PostgreSchema.this, dbResult);
                 default:
