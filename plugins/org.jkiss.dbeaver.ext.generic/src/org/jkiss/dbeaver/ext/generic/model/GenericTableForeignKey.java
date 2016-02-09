@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDefferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,9 +79,28 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         this.columns.add(column);
     }
 
-    void setColumns(List<GenericTableForeignKeyColumnTable> columns)
+    void setColumns(DBRProgressMonitor monitor, List<GenericTableForeignKeyColumnTable> columns)
     {
         this.columns = columns;
+        final List<GenericTableConstraintColumn> refColumns = referencedKey.getAttributeReferences(monitor);
+        if (refColumns != null && this.columns.size() > refColumns.size()) {
+            // [JDBC: Progress bug. All FK columns are duplicated]
+            for (int i = 0; i < this.columns.size(); ) {
+                boolean duplicate = false;
+                String colName = this.columns.get(i).getName();
+                for (int k = i + 1; k < this.columns.size(); k++) {
+                    String colName2 = this.columns.get(k).getName();
+                    if (CommonUtils.equalObjects(colName, colName2)) {
+                        this.columns.remove(k);
+                        duplicate = true;
+                        break;
+                    }
+                }
+                if (!duplicate) {
+                    i++;
+                }
+            }
+        }
     }
 
     @NotNull

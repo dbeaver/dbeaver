@@ -194,7 +194,7 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
     @Override
     protected void cacheChildren(DBRProgressMonitor monitor, GenericTableForeignKey foreignKey, List<GenericTableForeignKeyColumnTable> rows)
     {
-        foreignKey.setColumns(rows);
+        foreignKey.setColumns(monitor, rows);
     }
 
     @Override
