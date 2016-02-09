@@ -253,7 +253,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 // do nothing
                             }
                         }
-                        if (parentNode.getChildNodes() != null) {
+                        if (parentNode.getChildNodes() != null && !parentNode.hasChildItem(event.getObject())) {
+                            // Add only if object wasn't yet added (e.g. by create new object command)
                             parentNode.addChildItem(event.getObject());
                         }
                     }
