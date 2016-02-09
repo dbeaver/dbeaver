@@ -175,39 +175,34 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
-<!--
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLUserManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLUser"/>
-        <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLCatalogManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"
             label="%manager.catalog.name"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTable"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTableColumnManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLConstraintManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableConstraint"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLForeignKeyManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableForeignKey"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreForeignKeyManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableForeignKey"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLIndexManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreIndexManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLViewManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLView"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreView"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLTriggerManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger"/>
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTriggerManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger"/>
         <manager
-            class="org.jkiss.dbeaver.ext.mysql.edit.MySQLProcedureManager"
-            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure"/>
--->
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
 
         <editor id="postgresql.source.view" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="Source" description="Source code" icon="#sql_text" position="additions_middle"

@@ -367,7 +367,7 @@ public class MySQLTable extends MySQLTableBase
                             fkMap.put(fkName, fk);
                             fkList.add(fk);
                         }
-                        MySQLTableForeignKeyColumnTable fkColumnInfo = new MySQLTableForeignKeyColumnTable(fk, fkColumn, keySeq, pkColumn);
+                        MySQLTableForeignKeyColumn fkColumnInfo = new MySQLTableForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
                         fk.addColumn(fkColumnInfo);
                     }
                 }

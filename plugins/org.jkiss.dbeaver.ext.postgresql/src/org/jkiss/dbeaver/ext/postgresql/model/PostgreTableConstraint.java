@@ -36,6 +36,10 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
         super(table, name, constraintType, resultSet);
     }
 
+    public PostgreTableConstraint(PostgreTableBase table, DBSEntityConstraintType constraintType) {
+        super(table, constraintType);
+    }
+
     @Override
     void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass) {
         if (secondPass) {
@@ -51,4 +55,7 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
         return columns;
     }
 
+    public void addColumn(PostgreTableConstraintColumn column) {
+        this.columns.add(column);
+    }
 }

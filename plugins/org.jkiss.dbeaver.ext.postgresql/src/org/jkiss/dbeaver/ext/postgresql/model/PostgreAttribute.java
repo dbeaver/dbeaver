@@ -43,6 +43,12 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private int inheritorsCount;
     private String description;
 
+    protected PostgreAttribute(
+        OWNER table)
+    {
+        super(table, false);
+    }
+
     public PostgreAttribute(
         OWNER table,
         JDBCResultSet dbResult)
@@ -50,6 +56,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     {
         super(table, true);
         loadInfo(dbResult);
+    }
+
+    public PostgreDatabase getDatabase() {
+        return getTable().getDatabase();
     }
 
     private void loadInfo(JDBCResultSet dbResult)
@@ -148,5 +158,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public boolean isHidden() {
         return getOrdinalPosition() < 0;
+    }
+
+    public String getFullTypeName() {
+        return dataType.getTypeName();
     }
 }

@@ -51,6 +51,10 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
+    public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType) {
+        super(parent.getContainer(), parent, name, indexType, false);
+    }
+
     @NotNull
     @Override
     public PostgreDataSource getDataSource()

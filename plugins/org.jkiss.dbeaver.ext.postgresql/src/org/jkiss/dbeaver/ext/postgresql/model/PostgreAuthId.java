@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -88,7 +87,7 @@ public class PostgreAuthId implements PostgreObject {
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public PostgreDataSource getDataSource() {
         return database.getDataSource();
     }
 

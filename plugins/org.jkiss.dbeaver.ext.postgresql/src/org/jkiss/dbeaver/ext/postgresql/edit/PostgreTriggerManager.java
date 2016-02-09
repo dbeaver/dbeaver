@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -15,21 +16,23 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+package org.jkiss.dbeaver.ext.postgresql.edit;
+
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTrigger;
+import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 
 /**
- * PostgreTableColumn
+ * PostgreTriggerManager
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
-{
-    public PostgreTableColumn(PostgreTableBase table) {
-        super(table);
-    }
+public class PostgreTriggerManager extends AbstractObjectManager<PostgreTrigger> {
 
-    public PostgreTableColumn(PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        super(table, dbResult);
+/*
+    @Override
+    protected JDBCAbstractCache<PostgreSchema, PostgreTrigger> getObjectsCache(PostgreTrigger object)
+    {
+        return object.getContainer().getProceduresCache();
     }
+*/
 }
+
