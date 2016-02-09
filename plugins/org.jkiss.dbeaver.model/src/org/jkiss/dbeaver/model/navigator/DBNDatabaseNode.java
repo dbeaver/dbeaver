@@ -206,6 +206,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return childNodes;
     }
 
+    boolean hasChildItem(DBSObject object)
+    {
+        if (childNodes != null) {
+            for (DBNDatabaseNode child : childNodes) {
+                if (child.getObject() == object) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     void addChildItem(DBSObject object)
     {
         DBXTreeItem metaChildren = getItemsMeta();
