@@ -1289,7 +1289,11 @@ public class ResultSetViewer extends Viewer
         // Set conditions
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
-        assert ownAttrs.size() == refAttrs.size();
+        if (ownAttrs.size() != refAttrs.size()) {
+            throw new DBException(
+                "Entity [" + DBUtils.getObjectFullName(targetEntity) + "] association [" + association.getName() +
+                    "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
+        }
         for (int i = 0; i < ownAttrs.size(); i++) {
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
