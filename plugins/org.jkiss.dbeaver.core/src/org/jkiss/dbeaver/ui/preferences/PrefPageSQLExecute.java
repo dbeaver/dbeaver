@@ -146,7 +146,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
             statementDelimiterText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            statementDelimiterText.setTextLimit(1);
+            //statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
         }
 
