@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -567,7 +568,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             if (propValue == null) {
                 continue;
             }
-            String propString = propValue.toString();
+            String propString;
+            if (propValue instanceof DBPNamedObject) {
+                propString = ((DBPNamedObject) propValue).getName();
+            } else {
+                propString = DBUtils.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
+            }
             info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
             info.append(propString);
             info.append("<br>");
