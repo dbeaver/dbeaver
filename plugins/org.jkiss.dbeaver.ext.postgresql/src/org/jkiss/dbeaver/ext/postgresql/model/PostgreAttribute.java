@@ -27,12 +27,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 /**
  * PostgreAttribute
  */
-public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements DBSTableColumn, DBPNamedObject2, DBPHiddenObject
+public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBPNamedObject2, DBPHiddenObject
 {
     static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -44,7 +44,7 @@ public class PostgreAttribute extends JDBCTableColumn<PostgreClass> implements D
     private String description;
 
     public PostgreAttribute(
-        PostgreClass table,
+        OWNER table,
         JDBCResultSet dbResult)
         throws DBException
     {

@@ -40,13 +40,14 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.util.Collection;
 
 /**
  * PostgreSequence
  */
-public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedObject
+public class PostgreSequence extends PostgreTableBase implements DBSSequence, DBPQualifiedObject
 {
     static final Log log = Log.getLog(PostgreSequence.class);
 
@@ -56,7 +57,6 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
         private Number minValue;
         private Number maxValue;
         private Number incrementBy;
-        public String description;
 
         @Property(viewable = true, editable = true, updatable = true, order = 1)
         public Number getLastValue() {
@@ -74,10 +74,6 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
         public Number getIncrementBy() {
             return incrementBy;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 10)
-        public String getDescription() {
-            return description;
-        }
     }
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
         @Override
@@ -87,65 +83,10 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
         }
     }
 
-    private PostgreSchema schema;
-    private int oid;
-    private String name;
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
 
     public PostgreSequence(PostgreSchema schema, JDBCResultSet dbResult) {
-        this.schema = schema;
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
-        this.name = JDBCUtils.safeGetString(dbResult, "relname");
-    }
-
-    @NotNull
-    @Override
-    @Property(viewable = true, order = 1)
-    public String getName() {
-        return name;
-    }
-
-    @NotNull
-    @Override
-    public PostgreDatabase getDatabase() {
-        return schema.getDatabase();
-    }
-
-    @Override
-    public int getObjectId() {
-        return this.oid;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return additionalInfo.description;
-    }
-
-    @Nullable
-    @Override
-    public PostgreSchema getParentObject() {
-        return schema;
-    }
-
-    @NotNull
-    @Override
-    public PostgreDataSource getDataSource() {
-        return schema.getDataSource();
-    }
-
-    @NotNull
-    @Override
-    public String getFullQualifiedName() {
-        return DBUtils.getFullQualifiedName(getDataSource(),
-            schema.getDatabase(),
-            schema,
-            this);
+        super(schema, dbResult);
     }
 
     @PropertyGroup()
@@ -163,7 +104,7 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
     private void loadAdditionalInfo(DBRProgressMonitor monitor) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load sequence additional info")) {
             try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
-                "SELECT last_value,min_value,max_value,increment_by from " + DBUtils.getQuotedIdentifier(schema) + "." + DBUtils.getQuotedIdentifier(this))) {
+                "SELECT last_value,min_value,max_value,increment_by from " + getFullQualifiedName())) {
                 try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                     if (seqResults.next()) {
                         additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, 1);
@@ -172,11 +113,6 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
                         additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, 4);
                     }
                 }
-            }
-            try {
-                additionalInfo.description = PostgreUtils.getObjectComment(session.getProgressMonitor(), getDataSource(), schema.getName(), name);
-            } catch (Exception e) {
-                log.warn("Error reading sequence description", e);
             }
             additionalInfo.loaded = true;
         } catch (Exception e) {
@@ -217,33 +153,24 @@ public class PostgreSequence implements PostgreClass, DBSSequence, DBPQualifiedO
         return PostgreConstants.ENTITY_TYPE_SEQUENCE;
     }
 
-    @Nullable
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+    public boolean isView() {
+        return false;
+    }
+
+    @Override
+    public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
-    @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
 }

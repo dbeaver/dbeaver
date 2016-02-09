@@ -64,12 +64,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     private int ownerId;
     private boolean persisted;
 
-    final CollationCache collationCache = new CollationCache();
-    final ExtensionCache extensionCache = new ExtensionCache();
-    final ClassCache classCache = new ClassCache();
-    final ConstraintCache constraintCache = new ConstraintCache();
-    final ProceduresCache proceduresCache = new ProceduresCache();
-    final IndexCache indexCache = new IndexCache();
+    public final CollationCache collationCache = new CollationCache();
+    public final ExtensionCache extensionCache = new ExtensionCache();
+    public final TableCache tableCache = new TableCache();
+    public final ConstraintCache constraintCache = new ConstraintCache();
+    public final ProceduresCache proceduresCache = new ProceduresCache();
+    public final IndexCache indexCache = new IndexCache();
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException
@@ -167,19 +167,19 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public Collection<PostgreTable> getTables(DBRProgressMonitor monitor)
         throws DBException
     {
-        return classCache.getTypedObjects(monitor, this, PostgreTable.class);
+        return tableCache.getTypedObjects(monitor, this, PostgreTable.class);
     }
 
     public PostgreTableBase getTable(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return classCache.getObject(monitor, this, name, PostgreTable.class);
+        return tableCache.getObject(monitor, this, name, PostgreTable.class);
     }
 
     public PostgreTableBase getTable(DBRProgressMonitor monitor, int tableId)
         throws DBException
     {
-        for (PostgreClass table : classCache.getAllObjects(monitor, this)) {
+        for (PostgreClass table : tableCache.getAllObjects(monitor, this)) {
             if (table.getObjectId() == tableId) {
                 return (PostgreTableBase) table;
             }
@@ -192,27 +192,27 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public Collection<PostgreView> getViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return classCache.getTypedObjects(monitor, this, PostgreView.class);
+        return tableCache.getTypedObjects(monitor, this, PostgreView.class);
     }
 
     @Association
     public Collection<PostgreMaterializedView> getMaterializedViews(DBRProgressMonitor monitor)
         throws DBException
     {
-        return classCache.getTypedObjects(monitor, this, PostgreMaterializedView.class);
+        return tableCache.getTypedObjects(monitor, this, PostgreMaterializedView.class);
     }
 
     @Association
     public Collection<PostgreSequence> getSequences(DBRProgressMonitor monitor)
         throws DBException
     {
-        return classCache.getTypedObjects(monitor, this, PostgreSequence.class);
+        return tableCache.getTypedObjects(monitor, this, PostgreSequence.class);
     }
 
     public PostgreSequence getSequence(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return classCache.getObject(monitor, this, name, PostgreSequence.class);
+        return tableCache.getObject(monitor, this, name, PostgreSequence.class);
     }
 
     @Association
@@ -229,17 +229,17 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public Collection<PostgreClass> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<PostgreTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return classCache.getAllObjects(monitor, this);
+        return tableCache.getAllObjects(monitor, this);
     }
 
     @Override
     public PostgreClass getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
-        return classCache.getObject(monitor, this, childName);
+        return tableCache.getObject(monitor, this, childName);
     }
 
     @Override
@@ -254,10 +254,10 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         throws DBException
     {
         monitor.subTask("Cache tables");
-        classCache.getAllObjects(monitor, this);
+        tableCache.getAllObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
             monitor.subTask("Cache table columns");
-            classCache.loadChildren(monitor, this, null);
+            tableCache.loadChildren(monitor, this, null);
         }
         if ((scope & STRUCT_ASSOCIATIONS) != 0) {
             monitor.subTask("Cache constraints");
@@ -270,7 +270,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        classCache.clearCache();
+        tableCache.clearCache();
         indexCache.clearCache();
         proceduresCache.clearCache();
         return true;
@@ -340,12 +340,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    public class ClassCache extends JDBCStructCache<PostgreSchema, PostgreClass, PostgreAttribute> {
+    public class TableCache extends JDBCStructCache<PostgreSchema, PostgreTableBase, PostgreTableColumn> {
 
-        protected ClassCache()
+        protected TableCache()
         {
             super("relname");
-            setListOrderComparator(DBUtils.<PostgreClass>nameComparator());
+            setListOrderComparator(DBUtils.<PostgreTableBase>nameComparator());
         }
 
         @Override
@@ -361,7 +361,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected PostgreClass fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
+        protected PostgreTableBase fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
@@ -388,7 +388,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreClass forTable)
+        protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreTableBase forTable)
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
@@ -415,11 +415,11 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         @Override
-        protected PostgreAttribute fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreClass table, @NotNull JDBCResultSet dbResult)
+        protected PostgreTableColumn fetchChild(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull PostgreTableBase table, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             try {
-                return new PostgreAttribute(table, dbResult);
+                return new PostgreTableColumn(table, dbResult);
             } catch (DBException e) {
                 log.warn("Error reading attribute info", e);
                 return null;
@@ -432,7 +432,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
      */
     class ConstraintCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreTableConstraintBase, PostgreTableConstraintColumn> {
         protected ConstraintCache() {
-            super(classCache, PostgreTableBase.class, "tabrelname", "conname");
+            super(tableCache, PostgreTableBase.class, "tabrelname", "conname");
         }
 
         @NotNull
@@ -499,16 +499,16 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             if (constraint instanceof PostgreTableForeignKey) {
                 final PostgreTableForeignKey foreignKey = (PostgreTableForeignKey) constraint;
                 Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
-                List<PostgreAttribute> attributes = table.getAttributes(monitor);
-                List<PostgreAttribute> refAttributes = foreignKey.getAssociatedEntity().getAttributes(monitor);
+                List<PostgreTableColumn> attributes = table.getAttributes(monitor);
+                List<PostgreTableColumn> refAttributes = foreignKey.getAssociatedEntity().getAttributes(monitor);
                 assert attributes != null && refAttributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
                 for (int i = 0; i < colCount; i++) {
                     Number colNumber = (Number) Array.get(keyNumbers, i); // Column number - 1-based
                     Number colRefNumber = (Number) Array.get(keyRefNumbers, i);
-                    final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
-                    final PostgreAttribute refAttr = PostgreUtils.getAttributeByNum(refAttributes, colRefNumber.intValue());
+                    final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
+                    final PostgreTableColumn refAttr = PostgreUtils.getAttributeByNum(refAttributes, colRefNumber.intValue());
                     if (attr == null) {
                         log.warn("Bad foreign key attribute index: " + colNumber);
                         continue;
@@ -523,7 +523,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 return fkCols;
 
             } else {
-                List<PostgreAttribute> attributes = table.getAttributes(monitor);
+                List<PostgreTableColumn> attributes = table.getAttributes(monitor);
                 assert attributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableConstraintColumn[] cols = new PostgreTableConstraintColumn[colCount];
@@ -558,7 +558,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     class IndexCache extends JDBCCompositeCache<PostgreSchema, PostgreTableBase, PostgreIndex, PostgreIndexColumn> {
         protected IndexCache()
         {
-            super(classCache, PostgreTableBase.class, "tabrelname", "relname");
+            super(tableCache, PostgreTableBase.class, "tabrelname", "relname");
         }
 
         @NotNull
@@ -612,7 +612,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             if (keyNumbers == null) {
                 return null;
             }
-            List<PostgreAttribute> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
+            List<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
             int colCount = Array.getLength(keyNumbers);
             PostgreIndexColumn[] result = new PostgreIndexColumn[colCount];

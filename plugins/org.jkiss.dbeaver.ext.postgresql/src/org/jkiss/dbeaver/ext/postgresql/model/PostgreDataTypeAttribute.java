@@ -17,24 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 
 /**
- * PostgreObject
+ * PostgreDataTypeAttribute
  */
-public interface PostgreObject extends DBSObject {
-
-    @Override
-    @NotNull
-    PostgreDataSource getDataSource();
-
-    @NotNull
-    PostgreDatabase getDatabase();
-
-    /**
-     * OID
-     */
-    int getObjectId();
-
+public class PostgreDataTypeAttribute extends PostgreAttribute<PostgreDataType>
+{
+    public PostgreDataTypeAttribute(PostgreDataType dataType, JDBCResultSet dbResult) throws DBException {
+        super(dataType, dbResult);
+    }
 }

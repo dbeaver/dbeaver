@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.utils.ArrayUtils;
@@ -395,12 +394,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreDataTypeAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
         return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public PostgreDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
         return attributeCache == null ? null : attributeCache.getObject(monitor, this, attributeName);
     }
 
@@ -427,7 +426,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return true;
     }
 
-    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreAttribute> {
+    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
@@ -444,8 +443,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         @Override
-        protected PostgreAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new PostgreAttribute(postgreDataType, resultSet);
+        protected PostgreDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new PostgreDataTypeAttribute(postgreDataType, resultSet);
         }
     }
 
