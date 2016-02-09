@@ -84,7 +84,7 @@ public class PostgreCollation implements PostgreObject {
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public PostgreDataSource getDataSource() {
         return schema.getDataSource();
     }
 

@@ -21,13 +21,13 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
 /**
- * GenericConstraintColumn
+ * MySQLTableForeignKeyColumn
  */
-public class MySQLTableForeignKeyColumnTable extends MySQLTableConstraintColumn implements DBSTableForeignKeyColumn
+public class MySQLTableForeignKeyColumn extends MySQLTableConstraintColumn implements DBSTableForeignKeyColumn
 {
     private MySQLTableColumn referencedColumn;
 
-    public MySQLTableForeignKeyColumnTable(
+    public MySQLTableForeignKeyColumn(
         MySQLTableForeignKey constraint,
         MySQLTableColumn tableColumn,
         int ordinalPosition,

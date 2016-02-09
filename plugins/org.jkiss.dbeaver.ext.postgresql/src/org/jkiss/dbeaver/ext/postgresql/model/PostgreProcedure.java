@@ -95,11 +95,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private String overloadedName;
     private List<PostgreProcedureParameter> params = new ArrayList<>();
 
+    public PostgreProcedure(PostgreSchema schema) {
+        super(schema, false);
+    }
+
     public PostgreProcedure(
-        PostgreSchema catalog,
+        PostgreSchema schema,
         ResultSet dbResult)
     {
-        super(catalog, true);
+        super(schema, true);
         loadInfo(dbResult);
     }
 

@@ -74,7 +74,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
         int colIndex = 1;
         for (EditForeignKeyDialog.FKColumnInfo tableColumn : editDialog.getColumns()) {
             foreignKey.addColumn(
-                new MySQLTableForeignKeyColumnTable(
+                new MySQLTableForeignKeyColumn(
                     foreignKey,
                     (MySQLTableColumn) tableColumn.getOwnColumn(),
                     colIndex++,

@@ -79,6 +79,10 @@ public class PostgreView extends PostgreTableBase
         return true;
     }
 
+    public String getSource() {
+        return source;
+    }
+
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException

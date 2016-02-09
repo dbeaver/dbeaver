@@ -25,12 +25,10 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCArray;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,7 +63,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             PostgreDataType itemType = null;
             if (type instanceof PostgreAttribute) {
-                final PostgreDataType arrayType = ((PostgreAttribute) type).getTable().getDatabase().dataTypeCache.getCachedObject(type.getTypeName());
+                final PostgreDataType arrayType = ((PostgreAttribute) type).getDatabase().dataTypeCache.getCachedObject(type.getTypeName());
                 if (arrayType != null) {
                     itemType = arrayType.getElementType();
                 }

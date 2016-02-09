@@ -45,6 +45,10 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         this.oid = JDBCUtils.safeGetInt(resultSet, "oid");
     }
 
+    public PostgreTableConstraintBase(PostgreTableBase table, DBSEntityConstraintType constraintType) {
+        super(table, null, null, constraintType, false);
+    }
+
     @NotNull
     @Override
     public String getFullQualifiedName()

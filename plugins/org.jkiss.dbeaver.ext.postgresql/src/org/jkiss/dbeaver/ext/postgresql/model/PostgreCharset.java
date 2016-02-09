@@ -83,7 +83,7 @@ public class PostgreCharset implements PostgreObject {
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public PostgreDataSource getDataSource() {
         return database.getDataSource();
     }
 
