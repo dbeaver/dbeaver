@@ -37,7 +37,7 @@ import java.util.Map;
 /**
  * JDBC object editor
  */
-public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
+public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE extends DBSObject>
     extends AbstractObjectManager<OBJECT_TYPE>
     implements
         DBEObjectEditor<OBJECT_TYPE>,
@@ -193,7 +193,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
 
     }
 
-    protected static abstract class NestedObjectCommand<OBJECT_TYPE extends DBSObject & DBPSaveableObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>> extends DBECommandComposite<OBJECT_TYPE, HANDLER_TYPE> {
+    protected static abstract class NestedObjectCommand<OBJECT_TYPE extends DBSObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>> extends DBECommandComposite<OBJECT_TYPE, HANDLER_TYPE> {
 
         protected NestedObjectCommand(OBJECT_TYPE object, String title)
         {
@@ -253,7 +253,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject & DBPSaveabl
             super.updateModel();
             OBJECT_TYPE object = getObject();
             if (!object.isPersisted()) {
-                object.setPersisted(true);
+                if (object instanceof DBPSaveableObject) {
+                    ((DBPSaveableObject)object).setPersisted(true);
+                }
                 DBUtils.fireObjectUpdate(object);
             }
         }
