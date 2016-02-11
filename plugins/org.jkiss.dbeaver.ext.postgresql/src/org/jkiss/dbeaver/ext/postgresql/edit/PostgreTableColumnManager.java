@@ -46,6 +46,17 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         @Override
         public void appendModifier(PostgreTableColumn column, StringBuilder sql, DBECommandAbstract<PostgreTableColumn> command) {
             sql.append(' ').append(column.getFullTypeName());
+            switch (column.getDataType().getTypeID()) {
+                case Types.VARCHAR:
+                    final long length = column.getMaxLength();
+                    if (length > 0) {
+                        sql.append('(').append(length).append(')');
+                    }
+                    break;
+                case Types.NUMERIC:
+                    sql.append('(').append(column.getPrecision()).append(',').append(column.getScale()).append(')');
+                    break;
+            }
         }
     };
 

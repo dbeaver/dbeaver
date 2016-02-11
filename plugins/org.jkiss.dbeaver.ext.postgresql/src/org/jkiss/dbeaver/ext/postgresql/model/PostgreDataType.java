@@ -331,7 +331,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     break;
                 case N:
                     valueType = Types.NUMERIC;
-                    if (name.startsWith("float")) {
+                    if (name.equals("numeric")) {
+                        valueType = Types.NUMERIC;
+                    } else if (name.startsWith("float")) {
                         switch (typeLength) {
                             case 4:
                                 valueType = Types.FLOAT;
