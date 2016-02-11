@@ -579,6 +579,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             } else {
                 sql.append(" c.relnamespace=?");
             }
+            //sql.append(" AND NOT i.indisprimary");
             sql.append(" ORDER BY c.relname");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());

@@ -70,6 +70,7 @@ public class PostgreTable extends PostgreTableBase
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private long rowCountEstimate;
     private Long rowCount;
 
     public PostgreTable(PostgreSchema catalog)
@@ -82,6 +83,8 @@ public class PostgreTable extends PostgreTableBase
         ResultSet dbResult)
     {
         super(catalog, dbResult);
+
+        this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
     }
 
     public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {
@@ -100,7 +103,12 @@ public class PostgreTable extends PostgreTableBase
         }
     }
 
-    @Property(viewable = false, expensive = true, order = 21)
+    @Property(viewable = true, order = 22)
+    public long getRowCountEstimate() {
+        return rowCountEstimate;
+    }
+
+    @Property(viewable = false, expensive = true, order = 23)
     public synchronized Long getRowCount(DBRProgressMonitor monitor)
     {
         if (rowCount != null) {

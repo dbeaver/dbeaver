@@ -27,7 +27,7 @@ import java.util.List;
 /**
  * PostgreMaterializedView
  */
-public class PostgreMaterializedView extends PostgreView
+public class PostgreMaterializedView extends PostgreViewBase
 {
     public PostgreMaterializedView(
         PostgreSchema catalog,
