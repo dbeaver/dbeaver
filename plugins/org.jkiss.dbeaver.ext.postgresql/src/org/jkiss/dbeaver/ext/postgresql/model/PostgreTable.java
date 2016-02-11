@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -28,7 +30,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.*;
+import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
@@ -172,7 +177,9 @@ public class PostgreTable extends PostgreTableBase
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        return "";
+        PostgreTableManager tableManager = new PostgreTableManager();
+        DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, this);
+        return DBUtils.generateScript(ddlActions, true);
     }
 
     @Override

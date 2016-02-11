@@ -18,15 +18,24 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -128,6 +137,71 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
                 return tableName;
             }
         }
+    }
+
+    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, OBJECT_TYPE table) throws DBException
+    {
+        final DBERegistry editorsRegistry = table.getDataSource().getContainer().getApplication().getEditorsRegistry();
+        SQLObjectEditor<DBSEntityAttribute, OBJECT_TYPE> tcm = getObjectEditor(editorsRegistry, DBSEntityAttribute.class);
+        SQLObjectEditor<DBSTableConstraint, OBJECT_TYPE> pkm = getObjectEditor(editorsRegistry, DBSTableConstraint.class);
+        SQLObjectEditor<DBSTableForeignKey, OBJECT_TYPE> fkm = getObjectEditor(editorsRegistry, DBSTableForeignKey.class);
+        SQLObjectEditor<DBSTableIndex, OBJECT_TYPE> im = getObjectEditor(editorsRegistry, DBSTableIndex.class);
+
+        StructCreateCommand command = makeCreateCommand(table);
+        if (tcm != null) {
+            // Aggregate nested column, constraint and index commands
+            for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+                if (column.isPseudoAttribute() || (column instanceof DBPHiddenObject && ((DBPHiddenObject) column).isHidden())) {
+                    continue;
+                }
+                command.aggregateCommand(tcm.makeCreateCommand(column));
+            }
+        }
+        if (pkm != null) {
+            try {
+                for (DBSTableConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
+                    command.aggregateCommand(pkm.makeCreateCommand(constraint));
+                }
+            } catch (DBException e) {
+                // Ignore primary keys
+                log.debug(e);
+            }
+        }
+        if (fkm != null) {
+            try {
+                for (DBSTableForeignKey foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
+                    command.aggregateCommand(fkm.makeCreateCommand(foreignKey));
+                }
+            } catch (DBException e) {
+                // Ignore primary keys
+                log.debug(e);
+            }
+        }
+        if (im != null) {
+            try {
+                for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+                    command.aggregateCommand(im.makeCreateCommand(index));
+                }
+            } catch (DBException e) {
+                // Ignore indexes
+                log.debug(e);
+            }
+        }
+        return command.getPersistActions();
+    }
+
+    protected  <T extends DBSObject> SQLObjectEditor<T, OBJECT_TYPE> getObjectEditor(DBERegistry editorsRegistry, Class<T> type) {
+        final Class<? extends T> childType = getChildType(type);
+        return childType == null ? null : editorsRegistry.getObjectManager(childType, SQLObjectEditor.class);
+    }
+
+    protected <T> Class<? extends T> getChildType(Class<T> type) {
+        for (Class<?> childType : getChildTypes()) {
+            if (type.isAssignableFrom(childType)) {
+                return (Class<? extends T>) childType;
+            }
+        }
+        return null;
     }
 
 }

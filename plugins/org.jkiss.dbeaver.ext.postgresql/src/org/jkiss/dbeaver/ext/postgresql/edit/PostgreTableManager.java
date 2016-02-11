@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 public class PostgreTableManager extends SQLTableManager<PostgreTableBase, PostgreSchema> implements DBEObjectRenamer<PostgreTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
-        PostgreAttribute.class,
+        PostgreTableColumn.class,
         PostgreTableConstraint.class,
         PostgreTableForeignKey.class,
         PostgreIndex.class
