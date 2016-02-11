@@ -304,7 +304,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public Collection<? extends DBSDataType> getLocalDataTypes()
+    public Collection<PostgreDataType> getLocalDataTypes()
     {
         return internalTypes.values();
     }

@@ -21,13 +21,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Comparator;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * PostgreAttribute
@@ -76,10 +86,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
-        int maxLength = JDBCUtils.safeGetInt(dbResult, "atttypmod");
+        int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
+        int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
+        if (maxLength == 0) {
+            maxLength = PostgreUtils.getDisplaySize(typeId, typeMod);
+        }
         if (maxLength >= 0) {
             setMaxLength(maxLength);
         }
+        setPrecision(maxLength);
+        setScale(PostgreUtils.getScale(typeId, typeMod));
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
@@ -94,9 +110,13 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getTable().getDataSource();
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 20)
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public PostgreDataType getDataType() {
         return dataType;
+    }
+
+    public void setDataType(PostgreDataType dataType) {
+        this.dataType = dataType;
     }
 
     @Override
@@ -162,5 +182,29 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     public String getFullTypeName() {
         return dataType.getTypeName();
+    }
+
+    public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute> {
+
+        @Override
+        public boolean allowCustomValue()
+        {
+            return true;
+        }
+
+        @Override
+        public Object[] getPossibleValues(PostgreAttribute column)
+        {
+            Set<PostgreDataType> types = new TreeSet<>(new Comparator<PostgreDataType>() {
+                @Override
+                public int compare(PostgreDataType o1, PostgreDataType o2) {
+                    return o1.getTypeName().compareTo(o2.getTypeName());
+                }
+            });
+            for (PostgreDataType type : column.getDataSource().getLocalDataTypes()) {
+                types.add(type);
+            }
+            return types.toArray(new PostgreDataType[types.size()]);
+        }
     }
 }
