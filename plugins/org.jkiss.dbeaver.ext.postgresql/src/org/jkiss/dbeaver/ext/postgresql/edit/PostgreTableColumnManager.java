@@ -54,7 +54,21 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                     break;
                 case Types.NUMERIC:
-                    sql.append('(').append(column.getPrecision()).append(',').append(column.getScale()).append(')');
+                    final int precision = column.getPrecision();
+                    final int scale = column.getScale();
+                    if (scale > 0 || precision > 0) {
+                        sql.append('(');
+                        if (precision > 0) {
+                            sql.append(precision);
+                        }
+                        if (scale > 0) {
+                            if (precision > 0) {
+                                sql.append(',');
+                            }
+                            sql.append(scale);
+                        }
+                        sql.append(')');
+                    }
                     break;
             }
         }
