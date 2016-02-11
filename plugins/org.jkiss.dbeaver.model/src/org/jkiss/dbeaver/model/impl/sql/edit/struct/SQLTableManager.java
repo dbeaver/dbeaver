@@ -160,6 +160,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (pkm != null) {
             try {
                 for (DBSTableConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
+                    if (constraint instanceof DBPHiddenObject && ((DBPHiddenObject) constraint).isHidden()) {
+                        continue;
+                    }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint));
                 }
             } catch (DBException e) {
@@ -170,6 +173,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (fkm != null) {
             try {
                 for (DBSTableForeignKey foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
+                    if (foreignKey instanceof DBPHiddenObject && ((DBPHiddenObject) foreignKey).isHidden()) {
+                        continue;
+                    }
                     command.aggregateCommand(fkm.makeCreateCommand(foreignKey));
                 }
             } catch (DBException e) {
@@ -180,6 +186,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (im != null) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+                    if (index instanceof DBPHiddenObject && ((DBPHiddenObject) index).isHidden()) {
+                        continue;
+                    }
                     command.aggregateCommand(im.makeCreateCommand(index));
                 }
             } catch (DBException e) {

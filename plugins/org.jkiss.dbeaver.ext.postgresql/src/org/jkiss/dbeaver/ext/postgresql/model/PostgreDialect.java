@@ -29,6 +29,8 @@ class PostgreDialect extends JDBCSQLDialect {
         super(dataSource, "PostgreSQL", metaData);
 
         removeSQLKeyword("PUBLIC");
+        removeSQLKeyword("LENGTH");
+        removeSQLKeyword("LANGUAGE");
     }
 
 /*

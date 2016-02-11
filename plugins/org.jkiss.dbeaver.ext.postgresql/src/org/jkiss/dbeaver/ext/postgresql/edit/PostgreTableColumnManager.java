@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -45,8 +46,15 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = new ColumnModifier<PostgreTableColumn>() {
         @Override
         public void appendModifier(PostgreTableColumn column, StringBuilder sql, DBECommandAbstract<PostgreTableColumn> command) {
-            sql.append(' ').append(column.getFullTypeName());
-            switch (column.getDataType().getTypeID()) {
+            sql.append(' ');
+            final PostgreDataType dataType = column.getDataType();
+            final PostgreDataType rawType = dataType.getElementType();
+            if (rawType != null) {
+                sql.append(rawType.getTypeName());
+            } else {
+                sql.append(dataType.getTypeName());
+            }
+            switch (dataType.getTypeID()) {
                 case Types.VARCHAR:
                     final long length = column.getMaxLength();
                     if (length > 0) {
@@ -71,6 +79,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     }
                     break;
             }
+            if (rawType != null) {
+                sql.append("[]");
+            }
         }
     };
 
@@ -83,7 +94,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers()
     {
-        return new ColumnModifier[] {PostgreDataTypeModifier, DefaultModifier, NullNotNullModifier};
+        return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, DefaultModifier};
     }
 
     @Override

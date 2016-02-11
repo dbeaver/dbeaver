@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -33,18 +32,18 @@ import java.sql.SQLException;
 import java.util.List;
 
 /**
- * PostgreView
+ * PostgreViewBase
  */
-public class PostgreView extends PostgreViewBase
+public abstract class PostgreViewBase extends PostgreTableBase
 {
     private String source;
 
-    public PostgreView(PostgreSchema catalog)
+    public PostgreViewBase(PostgreSchema catalog)
     {
         super(catalog);
     }
 
-    public PostgreView(
+    public PostgreViewBase(
         PostgreSchema catalog,
         ResultSet dbResult)
     {

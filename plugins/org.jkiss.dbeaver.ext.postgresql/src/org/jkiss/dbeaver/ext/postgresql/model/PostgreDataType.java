@@ -170,7 +170,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @Property(category = CAT_MAIN, viewable = true, order = 13)
     public PostgreDataType getElementType() {
-        return resolveType(elementTypeId);
+        return elementTypeId == 0 ? null : resolveType(elementTypeId);
     }
 
     @Property(category = CAT_MAIN, order = 15)
@@ -260,7 +260,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @Property(category = CAT_ARRAY)
     public PostgreDataType getArrayItemType() {
-        return resolveType(arrayItemTypeId);
+        return arrayItemTypeId == 0 ? null : resolveType(arrayItemTypeId);
     }
 
     // Plain type
