@@ -17,12 +17,20 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -728,6 +736,17 @@ public class JDBCUtils {
         } catch (Throwable e) {
             throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17, e);
         }
+    }
+
+    public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull JDBCTable table, boolean addComments) throws DBException {
+        final DBERegistry editorsRegistry = table.getDataSource().getContainer().getApplication().getEditorsRegistry();
+        final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
+        if (entityEditor instanceof SQLTableManager) {
+            DBEPersistAction[] ddlActions = ((SQLTableManager) entityEditor).getTableDDL(monitor, table);
+            return DBUtils.generateScript(ddlActions, addComments);
+        }
+        log.debug("Table editor not found for " + table.getClass().getName());
+        return "-- Can't generate DDL: table editor not found for " + table.getClass().getName();
     }
 
 }
