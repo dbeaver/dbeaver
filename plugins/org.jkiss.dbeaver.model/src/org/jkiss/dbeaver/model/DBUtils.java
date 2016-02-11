@@ -1173,11 +1173,11 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String generateScript(DBEPersistAction[] persistActions, boolean existingObject)
+    public static String generateScript(DBEPersistAction[] persistActions, boolean addComments)
     {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(64);
-        if (existingObject) {
+        if (addComments) {
             script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }

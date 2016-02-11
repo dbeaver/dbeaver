@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -177,9 +175,7 @@ public class PostgreTable extends PostgreTableBase
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
-        PostgreTableManager tableManager = new PostgreTableManager();
-        DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, this);
-        return DBUtils.generateScript(ddlActions, true);
+        return JDBCUtils.generateTableDDL(monitor, this, false);
     }
 
     @Override
