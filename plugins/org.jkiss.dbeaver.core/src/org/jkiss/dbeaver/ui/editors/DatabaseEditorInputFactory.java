@@ -178,6 +178,10 @@ public class DatabaseEditorInputFactory implements IElementFactory
             // Detached - nothing to save
             return;
         }
+        if (!input.getDatabaseObject().isPersisted()) {
+            return;
+        }
+
         DBNDatabaseNode node = input.getNavigatorNode();
         memento.putString(TAG_CLASS, input.getClass().getName());
         memento.putString(TAG_DATA_SOURCE, context.getDataSource().getContainer().getId());

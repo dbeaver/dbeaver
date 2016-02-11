@@ -200,7 +200,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
-        this.anonymousAccess = this.embedded || CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
+        this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
         this.custom = false;
         this.isLoaded = false;
 
