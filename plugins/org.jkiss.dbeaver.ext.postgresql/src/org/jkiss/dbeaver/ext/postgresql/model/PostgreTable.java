@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -42,7 +45,7 @@ import java.util.Collection;
 /**
  * PostgreTable
  */
-public class PostgreTable extends PostgreTableReal
+public class PostgreTable extends PostgreTableReal implements DBDPseudoAttributeContainer
 {
 
     public static class AdditionalInfo {
@@ -72,6 +75,7 @@ public class PostgreTable extends PostgreTableReal
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private long rowCountEstimate;
     private Long rowCount;
+    private boolean hasOids;
 
     public PostgreTable(PostgreSchema catalog)
     {
@@ -85,6 +89,7 @@ public class PostgreTable extends PostgreTableReal
         super(catalog, dbResult);
 
         this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
+        this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
     }
 
     public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {
@@ -138,6 +143,11 @@ public class PostgreTable extends PostgreTableReal
         return false;
     }
 
+    @Property(viewable = false, order = 40)
+    public boolean isHasOids() {
+        return hasOids;
+    }
+
     @Override
     public Collection<? extends DBSTableIndex> getIndexes(DBRProgressMonitor monitor) throws DBException {
         return getSchema().indexCache.getObjects(monitor, getSchema(), this);
@@ -189,6 +199,15 @@ public class PostgreTable extends PostgreTableReal
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException {
         throw new DBException("Table DDL is read-only");
+    }
+
+    @Override
+    public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
+        if (this.hasOids) {
+            return new DBDPseudoAttribute[]{PostgreConstants.PSEUDO_ATTR_OID};
+        } else {
+            return null;
+        }
     }
 
 }
