@@ -200,7 +200,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                     return o1.getTypeName().compareTo(o2.getTypeName());
                 }
             });
-            for (PostgreDataType type : column.getDataSource().getLocalDataTypes()) {
+            for (PostgreDataType type : column.getDatabase().dataTypeCache.getCachedObjects()) {
                 types.add(type);
             }
             return types.toArray(new PostgreDataType[types.size()]);

@@ -89,7 +89,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
         this.typeName = typeName;
     }
 
-    @Property(viewable = true, order = 30)
+    @Property(viewable = true, order = 0)
     public int getOrdinalPosition()
     {
         return ordinalPosition;
