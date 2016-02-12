@@ -169,7 +169,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 return null;
             }
         }
-        if (isLocalLazy()) {
+        if (isLazy()) {
             // Lazy (probably cached)
             if (isLazy(object, true) && progressMonitor == null && !supportsPreview()) {
                 throw new IllegalAccessException("Lazy property can't be read with null progress monitor");

@@ -125,7 +125,7 @@ public class PropertySourceCollection implements DBPPropertySource {
         }
 
         @Override
-        public boolean isLazy() {
+        public boolean isRemote() {
             return false;
         }
 

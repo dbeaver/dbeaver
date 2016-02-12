@@ -112,12 +112,12 @@ public abstract class ObjectAttributeDescriptor {
         return getter;
     }
 
-    public boolean isLazy()
+    public boolean isRemote()
     {
-        return isLazy || parent != null && parent.isLazy();
+        return isLazy || parent != null && parent.isRemote();
     }
 
-    public boolean isLocalLazy()
+    public boolean isLazy()
     {
         return isLazy;
     }

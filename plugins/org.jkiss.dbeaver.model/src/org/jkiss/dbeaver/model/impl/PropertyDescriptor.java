@@ -197,7 +197,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     }
 
     @Override
-    public boolean isLazy() {
+    public boolean isRemote() {
         return false;
     }
 
