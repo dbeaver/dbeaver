@@ -114,6 +114,11 @@ public abstract class ObjectAttributeDescriptor {
 
     public boolean isLazy()
     {
+        return isLazy || parent != null && parent.isLazy();
+    }
+
+    public boolean isLocalLazy()
+    {
         return isLazy;
     }
 

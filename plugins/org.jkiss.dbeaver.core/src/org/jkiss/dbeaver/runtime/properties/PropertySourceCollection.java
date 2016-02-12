@@ -125,6 +125,11 @@ public class PropertySourceCollection implements DBPPropertySource {
         }
 
         @Override
+        public boolean isLazy() {
+            return false;
+        }
+
+        @Override
         public Object getDefaultValue() {
             return null;
         }

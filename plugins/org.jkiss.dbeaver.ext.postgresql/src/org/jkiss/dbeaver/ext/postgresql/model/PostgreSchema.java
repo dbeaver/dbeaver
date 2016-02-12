@@ -229,17 +229,17 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public Collection<PostgreTableBase> getChildren(@NotNull DBRProgressMonitor monitor)
+    public Collection<PostgreTableReal> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return tableCache.getAllObjects(monitor, this);
+        return tableCache.getTypedObjects(monitor, this, PostgreTableReal.class);
     }
 
     @Override
-    public PostgreClass getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+    public PostgreTableReal getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
     {
-        return tableCache.getObject(monitor, this, childName);
+        return tableCache.getObject(monitor, this, childName, PostgreTableReal.class);
     }
 
     @Override

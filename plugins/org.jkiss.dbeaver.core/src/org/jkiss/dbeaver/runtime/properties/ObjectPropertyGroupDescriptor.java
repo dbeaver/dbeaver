@@ -75,7 +75,7 @@ public class ObjectPropertyGroupDescriptor extends ObjectAttributeDescriptor
                 throw new IllegalAccessException("Can't read lazy properties with null progress monitor");
             }
         }
-        if (isLazy()) {
+        if (isLocalLazy()) {
             return getGetter().invoke(object, progressMonitor);
         } else {
             return getGetter().invoke(object);

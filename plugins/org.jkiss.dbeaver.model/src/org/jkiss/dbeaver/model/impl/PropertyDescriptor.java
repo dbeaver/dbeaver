@@ -197,6 +197,11 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     }
 
     @Override
+    public boolean isLazy() {
+        return false;
+    }
+
+    @Override
     public boolean allowCustomValue()
     {
         return ArrayUtils.isEmpty(validValues);
