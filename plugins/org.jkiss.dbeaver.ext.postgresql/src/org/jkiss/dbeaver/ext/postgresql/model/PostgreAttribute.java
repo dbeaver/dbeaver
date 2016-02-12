@@ -114,6 +114,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     public void setDataType(@NotNull PostgreDataType dataType) {
         this.dataType = dataType;
+        setTypeName(dataType.getTypeName());
+        setValueType(dataType.getTypeID());
     }
 
     @Override

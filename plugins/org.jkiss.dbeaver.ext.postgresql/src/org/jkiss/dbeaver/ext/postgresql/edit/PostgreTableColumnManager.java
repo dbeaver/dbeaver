@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -129,12 +126,10 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
         final PostgreTableColumn column = new PostgreTableColumn(parent);
         column.setName(getNewColumnName(context, parent));
-        final String typeName = columnType == null ? "integer" : columnType.getName().toLowerCase();
-        column.setTypeName(typeName); //$NON-NLS-1$
+        final PostgreDataType dataType = parent.getDatabase().dataTypeCache.getDataType(PostgreOid.VARCHAR);
+        column.setDataType(dataType); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
         column.setOrdinalPosition(-1);
-        //column.setFullTypeName(typeName + CommonUtils.notEmpty(SQLUtils.getColumnTypeModifiers(column, typeName, column.getDataKind())));
         return column;
     }
 
@@ -146,7 +141,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 "Modify column",
-                "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " MODIFY COLUMN " + getNestedDeclaration((PostgreTableBase) column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " ALTER COLUMN " + getNestedDeclaration((PostgreTableBase) column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override
