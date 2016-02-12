@@ -30,14 +30,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableObject
 {
     enum RelKind {
-        r,// ordinary table
-        i, // index
-        S, // sequence
-        v, // view
-        m, // materialized view
-        c, // composite type
-        t, // TOAST table
-        f, // = foreign table
+        r,  // ordinary table
+        i,  // index
+        S,  // sequence
+        v,  // view
+        m,  // materialized view
+        c,  // composite type
+        t,  // TOAST table
+        f,  // = foreign table
     }
 
     @NotNull

@@ -63,6 +63,8 @@ public interface DBPPropertyDescriptor {
 
     boolean isRequired();
 
+    boolean isLazy();
+
     @Nullable
     Object getDefaultValue();
 

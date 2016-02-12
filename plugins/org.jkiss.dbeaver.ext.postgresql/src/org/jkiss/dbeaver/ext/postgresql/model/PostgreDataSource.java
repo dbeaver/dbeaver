@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -287,10 +286,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Object getAdapter(Class adapter)
     {
-/*
         if (adapter == DBSStructureAssistant.class) {
             return new PostgreStructureAssistant(this);
-        } else if (adapter == DBAServerSessionManager.class) {
+        }
+/*
+        else if (adapter == DBAServerSessionManager.class) {
             return new PostgreSessionManager(this);
         }
 */

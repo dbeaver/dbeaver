@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -35,6 +36,7 @@ public class RelationalObjectType implements DBSObjectType {
     public static final DBSObjectType TYPE_CONSTRAINT = new RelationalObjectType("Constraint", "Table constraint", DBIcon.TREE_CONSTRAINT, DBSTableConstraint.class);
     public static final DBSObjectType TYPE_PROCEDURE = new RelationalObjectType("Procedure", "Procedure or function", DBIcon.TREE_PROCEDURE, DBSProcedure.class);
     public static final DBSObjectType TYPE_TRIGGER = new RelationalObjectType("Trigger", "Trigger", DBIcon.TREE_TRIGGER, DBSTrigger.class);
+    public static final DBSObjectType TYPE_DATA_TYPE = new RelationalObjectType("Data type", "Data type", DBIcon.TREE_DATA_TYPE, DBSDataType.class);
 
     private final String typeName;
     private final String description;

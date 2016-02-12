@@ -42,14 +42,14 @@ import java.util.Collection;
 /**
  * PostgreTable
  */
-public class PostgreTable extends PostgreTableBase
+public class PostgreTable extends PostgreTableReal
 {
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;
         private String tablespaceName;
 
-        @Property(viewable = false, editable = true, updatable = true, order = 5)
+        @Property(viewable = false, editable = true, updatable = false, order = 5)
         public String getTablespaceName() {
             return tablespaceName;
         }

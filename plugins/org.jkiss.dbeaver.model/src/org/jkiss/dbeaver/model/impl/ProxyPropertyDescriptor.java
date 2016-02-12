@@ -63,6 +63,11 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     }
 
     @Override
+    public boolean isLazy() {
+        return original.isLazy();
+    }
+
+    @Override
     public Object getDefaultValue() {
         return original.getDefaultValue();
     }

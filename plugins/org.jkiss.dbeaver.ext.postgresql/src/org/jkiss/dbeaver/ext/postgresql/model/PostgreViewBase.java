@@ -34,7 +34,7 @@ import java.util.List;
 /**
  * PostgreViewBase
  */
-public abstract class PostgreViewBase extends PostgreTableBase
+public abstract class PostgreViewBase extends PostgreTableReal
 {
     private String source;
 
