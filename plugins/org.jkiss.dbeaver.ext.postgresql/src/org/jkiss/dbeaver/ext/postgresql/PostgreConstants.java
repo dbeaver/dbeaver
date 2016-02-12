@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -45,20 +47,9 @@ public class PostgreConstants {
     public static final String INFO_SCHEMA_NAME = "information_schema";
     public static final String CATALOG_SCHEMA_NAME = "pg_catalog";
 
-    public static final String META_TABLE_ROUTINES = INFO_SCHEMA_NAME + ".ROUTINES";
-
-    public static final String COL_SCHEMA_NAME = "SCHEMA_NAME";
-
-    public static final String COL_ROUTINE_SCHEMA = "ROUTINE_SCHEMA";
-    public static final String COL_ROUTINE_NAME = "ROUTINE_NAME";
-    public static final String COL_ROUTINE_TYPE = "ROUTINE_TYPE";
-    public static final String COL_DTD_IDENTIFIER = "DTD_IDENTIFIER";
-    public static final String COL_ROUTINE_BODY = "ROUTINE_BODY";
-    public static final String COL_ROUTINE_DEFINITION = "ROUTINE_DEFINITION";
-    public static final String COL_IS_DETERMINISTIC = "IS_DETERMINISTIC";
-    public static final String COL_ROUTINE_COMMENT = "ROUTINE_COMMENT";
-    public static final String COL_DEFINER = "DEFINER";
-    public static final String COL_CHARACTER_SET_CLIENT = "CHARACTER_SET_CLIENT";
-
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";
+
+    public static final DBDPseudoAttribute PSEUDO_ATTR_OID = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID, "oid",
+        "oid", "oid", "Row identifier", false);
+
 }

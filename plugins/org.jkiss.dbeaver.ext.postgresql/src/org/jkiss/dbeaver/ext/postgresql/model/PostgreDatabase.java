@@ -444,11 +444,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
             return session.prepareStatement(
                 "SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
 */
-            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
+            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, PostgreConstants.COL_SCHEMA_NAME, true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
             }
+            catalogQuery.append(" ORDER BY nspname");
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
