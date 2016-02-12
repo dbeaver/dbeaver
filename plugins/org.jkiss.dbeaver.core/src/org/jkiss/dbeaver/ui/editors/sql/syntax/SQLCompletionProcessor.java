@@ -50,7 +50,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -564,7 +563,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         PropertyCollector collector = new PropertyCollector(object, false);
         collector.collectProperties();
         for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
-            if (descriptor.isLazy()) {
+            if (descriptor.isRemote()) {
                 // Skip lazy properties
                 continue;
             }

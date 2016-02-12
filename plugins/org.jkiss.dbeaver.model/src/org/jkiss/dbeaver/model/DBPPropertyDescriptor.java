@@ -63,7 +63,12 @@ public interface DBPPropertyDescriptor {
 
     boolean isRequired();
 
-    boolean isLazy();
+    /**
+     * Remote property.
+     * Means that model will has to perform server roundtrip to obtain value of this property.
+     * @return true for remote
+     */
+    boolean isRemote();
 
     @Nullable
     Object getDefaultValue();

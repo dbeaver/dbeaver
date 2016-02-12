@@ -225,7 +225,7 @@ public class CompareObjectsExecutor {
             firstNode.getObject().getClass(),
             getDataSourceFilter(firstNode));
         for (ObjectPropertyDescriptor prop : properties) {
-            if (prop.isLocalLazy()) {
+            if (prop.isLazy()) {
                 compareLazyProperties = true;
                 break;
             }

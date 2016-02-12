@@ -63,8 +63,8 @@ public class ProxyPropertyDescriptor implements DBPPropertyDescriptor
     }
 
     @Override
-    public boolean isLazy() {
-        return original.isLazy();
+    public boolean isRemote() {
+        return original.isRemote();
     }
 
     @Override
