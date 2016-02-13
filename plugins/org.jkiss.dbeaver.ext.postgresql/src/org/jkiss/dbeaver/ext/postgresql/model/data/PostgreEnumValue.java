@@ -15,12 +15,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.mysql.data;
+package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
 import org.jkiss.dbeaver.model.data.DBDEnum;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
@@ -28,26 +28,26 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Enum type
  */
-public class MySQLEnumValue implements DBDEnum {
+public class PostgreEnumValue implements DBDEnum {
 
-    private MySQLTableColumn column;
+    private PostgreAttribute attribute;
     private String value;
 
-    public MySQLEnumValue(MySQLEnumValue source)
+    public PostgreEnumValue(PostgreEnumValue source)
     {
-        this.column = source.column;
+        this.attribute = source.attribute;
         this.value = source.value;
     }
 
-    public MySQLEnumValue(MySQLTableColumn column, @Nullable String value)
+    public PostgreEnumValue(PostgreAttribute attribute, @Nullable String value)
     {
-        this.column = column;
+        this.attribute = attribute;
         this.value = value;
     }
 
-    public MySQLTableColumn getColumn()
+    public PostgreAttribute getAttribute()
     {
-        return column;
+        return attribute;
     }
 
     @Override
@@ -59,12 +59,12 @@ public class MySQLEnumValue implements DBDEnum {
     @NotNull
     @Override
     public DBSDataType getElementType() {
-        return column.getDataSource().getLocalDataType(MySQLConstants.TYPE_VARCHAR);
+        return attribute.getDatabase().dataTypeCache.getDataType(PostgreOid.VARCHAR);
     }
 
     @Override
     public Object[] getEnumElements() {
-        return column.getEnumValues().toArray();
+        return attribute.getDataType().getEnumValues();
     }
 
     @Override
@@ -94,6 +94,7 @@ public class MySQLEnumValue implements DBDEnum {
     public boolean equals(Object obj)
     {
         return this == obj ||
-            (obj instanceof MySQLEnumValue && CommonUtils.equalObjects(((MySQLEnumValue) obj).getValue(), value));
+            (obj instanceof PostgreEnumValue && CommonUtils.equalObjects(((PostgreEnumValue) obj).getValue(), value));
     }
+
 }
