@@ -35,27 +35,36 @@ import java.util.List;
 public class PostgreTableInheritance extends PostgreTableConstraintBase implements DBSEntityAssociation
 {
     private final PostgreTableBase superTable;
+    private int sequenceNum;
 
     public PostgreTableInheritance(
         @NotNull PostgreTableBase table,
         @NotNull PostgreTableBase superTable,
+        int sequenceNum,
         boolean persisted)
     {
         super(table, DBSEntityConstraintType.INHERITANCE);
         this.setName(table.getFullQualifiedName() + "->" + superTable.getFullQualifiedName());
         this.setPersisted(persisted);
         this.superTable = superTable;
+        this.sequenceNum = sequenceNum;
     }
 
     @NotNull
     @Override
     public DBSEntityConstraint getReferencedConstraint() {
-        return null;
+        return this;
     }
 
     @Override
+    @Property(viewable = true)
     public DBSEntity getAssociatedEntity() {
         return this.superTable;
+    }
+
+    @Property(viewable = true)
+    public int getSequenceNum() {
+        return sequenceNum;
     }
 
     @Nullable

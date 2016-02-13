@@ -256,7 +256,7 @@ public class DB2Table extends DB2TableBase
     @Nullable
     @Override
     @Association
-    public Collection<DB2TableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getContainer().getConstraintCache().getObjects(monitor, getContainer(), this);
     }
@@ -268,7 +268,7 @@ public class DB2Table extends DB2TableBase
 
     @Override
     @Association
-    public Collection<DB2TableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getContainer().getAssociationCache().getObjects(monitor, getContainer(), this);
     }
@@ -280,7 +280,7 @@ public class DB2Table extends DB2TableBase
 
     @Override
     @Association
-    public Collection<DB2TableReference> getReferences(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableReference> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return getContainer().getReferenceCache().getObjects(monitor, getContainer(), this);
     }

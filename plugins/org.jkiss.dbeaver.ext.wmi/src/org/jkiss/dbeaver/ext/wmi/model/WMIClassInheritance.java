@@ -90,7 +90,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
     @Override
     public DBSEntityConstraint getReferencedConstraint()
     {
-        return null;
+        return this;
     }
 
 }

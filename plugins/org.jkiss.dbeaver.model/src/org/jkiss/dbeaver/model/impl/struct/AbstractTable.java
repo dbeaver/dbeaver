@@ -52,6 +52,7 @@ public abstract class AbstractTable<
         return container;
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType()
     {

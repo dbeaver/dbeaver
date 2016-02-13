@@ -390,33 +390,34 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             dbResult);
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType() {
         return DBSEntityType.TYPE;
     }
 
     @Override
-    public Collection<PostgreDataTypeAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public PostgreDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public PostgreDataTypeAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
         return attributeCache == null ? null : attributeCache.getObject(monitor, this, attributeName);
     }
 
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

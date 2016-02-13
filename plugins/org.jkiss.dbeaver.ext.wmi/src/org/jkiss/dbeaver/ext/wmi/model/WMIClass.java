@@ -184,6 +184,7 @@ public class WMIClass extends WMIContainer
         return getName().startsWith("__");
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType()
     {
@@ -206,7 +207,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public Collection<WMIClassAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException
+    public Collection<WMIClassAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (attributes == null) {
             readAttributes(monitor);
@@ -216,7 +217,7 @@ public class WMIClass extends WMIContainer
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         List<WMIClassConstraint> constraints = null;
         for (WMIClassAttribute attr : getAllAttributes(monitor)) {
@@ -231,7 +232,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public WMIClassAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
+    public WMIClassAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException
     {
         return DBUtils.findObject(getAttributes(monitor), attributeName);
     }
@@ -342,7 +343,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public List<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         // Read attributes and references
         getAttributes(monitor);
@@ -360,7 +361,7 @@ public class WMIClass extends WMIContainer
     }
 
     @Override
-    public List<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
+    public List<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         List<DBSEntityAssociation> references = new ArrayList<>();
         if (subClasses != null) {

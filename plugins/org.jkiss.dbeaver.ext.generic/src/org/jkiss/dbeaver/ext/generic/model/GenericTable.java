@@ -139,14 +139,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized Collection<GenericTableColumn> getAttributes(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
     }
 
     @Override
-    public GenericTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
+    public GenericTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
         return this.getContainer().getTableCache().getChild(monitor, getContainer(), this, attributeName);
@@ -162,7 +162,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized Collection<GenericPrimaryKey> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         // ensure all columns are already cached
@@ -175,14 +175,14 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public Collection<GenericTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return loadReferences(monitor);
     }
 
     @Override
-    public synchronized Collection<GenericTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public synchronized Collection<GenericTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsReferentialIntegrity()) {
