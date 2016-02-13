@@ -112,7 +112,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
                 for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
-                    decl.append(constraintColumn.getAttribute().getName());
+                    decl.append(DBUtils.getQuotedIdentifier(constraintColumn.getAttribute()));
                 }
             } catch (DBException e) {
                 log.error("Can't obtain ref constraint reference attributes", e);
