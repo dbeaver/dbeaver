@@ -125,7 +125,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
     public void setFocus()
     {
         createResultSetView();
-        if (resultSetView != null) {
+        if (resultSetView != null && !resultSetView.getActivePresentation().getControl().isDisposed()) {
             resultSetView.getActivePresentation().getControl().setFocus();
         }
 

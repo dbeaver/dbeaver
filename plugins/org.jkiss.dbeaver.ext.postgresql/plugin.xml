@@ -107,6 +107,7 @@
                     </folder>
 
                     <folder label="%tree.administer.node.name" icon="#folder_admin" description="Administer">
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"/>
                     </folder>
 
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
@@ -216,6 +217,15 @@
                 label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+        </editor>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors">
+        <editor
+                name="%editor.session_manager.name"
+                icon="#sessions"
+                class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"
+                id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor">
         </editor>
     </extension>
 
