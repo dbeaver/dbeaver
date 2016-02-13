@@ -59,6 +59,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
         return null;
     }
 
+    @NotNull
     @Override
     public WMIClass getParentObject()
     {
