@@ -25,19 +25,28 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.util.Map;
 
@@ -47,9 +56,13 @@ import java.util.Map;
 public class SessionManagerViewer
 {
     private SessionListControl sessionTable;
-    private Text sessionInfo;
+    //private Text sessionInfo;
+    private IEditorSite subSite;
+    private SQLEditorBase sqlViewer;
+
     private Font boldFont;
     private PropertyTreeViewer sessionProps;
+    private DBAServerSession curSession;
 
     public void dispose()
     {
@@ -59,6 +72,7 @@ public class SessionManagerViewer
 
     public SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager sessionManager) {
 
+        this.subSite = new SubEditorSite(part.getSite());
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
@@ -81,9 +95,33 @@ public class SessionManagerViewer
             SashForm infoSash = UIUtils.createPartDivider(part, sash, SWT.HORIZONTAL | SWT.SMOOTH);
             infoSash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP);
-            sessionInfo.setEditable(false);
-            sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+//            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP);
+//            sessionInfo.setEditable(false);
+//            sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
+            sqlViewer = new SQLEditorBase() {
+                @Override
+                public DBCExecutionContext getExecutionContext() {
+                    return sessionManager.getDataSource().getDefaultContext(false);
+                }
+            };
+            updateSQL();
+            sqlViewer.createPartControl(infoSash);
+            Object text = sqlViewer.getAdapter(Control.class);
+            if (text instanceof StyledText) {
+                ((StyledText) text).setWordWrap(true);
+            }
+
+            sqlViewer.reloadSyntaxRules();
+
+            parent.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e)
+                {
+                    sqlViewer.dispose();
+                }
+            });
+
 
             sessionProps = new PropertyTreeViewer(infoSash, SWT.BORDER);
 
@@ -95,14 +133,11 @@ public class SessionManagerViewer
 
     protected void onSessionSelect(DBAServerSession session)
     {
+        curSession = session;
+        updateSQL();
         if (session == null) {
-            sessionInfo.setText("");
-
             sessionProps.clearProperties();
         } else {
-            final String activeQuery = session.getActiveQuery();
-            sessionInfo.setText(CommonUtils.notEmpty(activeQuery));
-
             PropertyCollector propCollector = new PropertyCollector(session, true);
             propCollector.collectProperties();
             sessionProps.loadProperties(propCollector);
@@ -134,6 +169,20 @@ public class SessionManagerViewer
         sessionTable.createAlterService(session, options).schedule();
     }
 
+    protected void updateSQL()
+    {
+        try {
+            String text = curSession == null ? "" : curSession.getActiveQuery();
+            StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, ContentUtils.DEFAULT_CHARSET);
+            sqlViewer.init(subSite, sqlInput);
+            if (sqlViewer.getTextViewer() != null) {
+                sqlViewer.reloadSyntaxRules();
+            }
+        } catch (PartInitException e) {
+            UIUtils.showErrorDialog(sessionTable.getShell(), sessionTable.getShell().getText(), null, e);
+        }
+    }
+
     private class SessionListControl extends SessionTable {
         private final DBAServerSessionManager sessionManager;
 
@@ -155,4 +204,5 @@ public class SessionManagerViewer
             });
         }
     }
+
 }
