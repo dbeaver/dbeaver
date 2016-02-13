@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -71,7 +72,6 @@ public class SessionManagerViewer
     }
 
     public SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager sessionManager) {
-
         this.subSite = new SubEditorSite(part.getSite());
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -169,10 +169,9 @@ public class SessionManagerViewer
         sessionTable.createAlterService(session, options).schedule();
     }
 
-    protected void updateSQL()
-    {
+    protected void updateSQL() {
         try {
-            String text = curSession == null ? "" : curSession.getActiveQuery();
+            String text = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
             StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, ContentUtils.DEFAULT_CHARSET);
             sqlViewer.init(subSite, sqlInput);
             if (sqlViewer.getTextViewer() != null) {
