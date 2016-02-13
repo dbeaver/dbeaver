@@ -25,16 +25,15 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
-import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
-import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 
 import java.util.HashMap;
@@ -43,26 +42,21 @@ import java.util.Map;
 /**
  * OracleSessionEditor
  */
-public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public class OracleSessionEditor extends AbstractSessionEditor
 {
-    private SessionManagerViewer sessionsViewer;
     private DisconnectSessionAction killSessionAction;
     private DisconnectSessionAction disconnectSessionAction;
-
-    @Override
-    public void dispose()
-    {
-        if (sessionsViewer != null) {
-            sessionsViewer.dispose();
-        }
-        super.dispose();
-    }
 
     @Override
     public void createPartControl(Composite parent) {
         killSessionAction = new DisconnectSessionAction(true);
         disconnectSessionAction = new DisconnectSessionAction(false);
-        sessionsViewer = new SessionManagerViewer(this, parent, new OracleServerSessionManager(getExecutionContext())) {
+        super.createPartControl(parent);
+    }
+
+    @Override
+    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+        return new SessionManagerViewer(this, parent, new OracleServerSessionManager(getExecutionContext())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
             {
@@ -79,14 +73,6 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
                 disconnectSessionAction.setEnabled(session != null);
             }
         };
-
-        sessionsViewer.refreshSessions();
-    }
-
-    @Override
-    public void refreshPart(Object source, boolean force)
-    {
-        sessionsViewer.refreshSessions();
     }
 
     private class DisconnectSessionAction extends Action {
@@ -102,7 +88,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
         @Override
         public void run()
         {
-            final DBAServerSession session = sessionsViewer.getSelectedSession();
+            final DBAServerSession session = getSessionsViewer().getSelectedSession();
             final String action = (kill ? OracleMessages.editors_oracle_session_editor_action_kill : OracleMessages.editors_oracle_session_editor_action_disconnect) + OracleMessages.editors_oracle_session_editor_action__session;
             ConfirmationDialog dialog = new ConfirmationDialog(
                 getSite().getShell(),
@@ -122,7 +108,7 @@ public class OracleSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdito
                 if (dialog.getToggleState()) {
                     options.put(OracleServerSessionManager.PROP_IMMEDIATE, true);
                 }
-                sessionsViewer.alterSession(session, options);
+                getSessionsViewer().alterSession(session, options);
             }
         }
     }

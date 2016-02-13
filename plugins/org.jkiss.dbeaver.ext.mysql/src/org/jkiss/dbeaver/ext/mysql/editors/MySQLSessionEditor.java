@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.editors;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
@@ -26,16 +25,17 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,26 +44,23 @@ import java.util.Collections;
 /**
  * MySQLSessionEditor
  */
-public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public class MySQLSessionEditor extends AbstractSessionEditor
 {
     static final Log log = Log.getLog(MySQLSessionEditor.class);
 
-    private SessionManagerViewer sessionsViewer;
     private KillSessionAction killSessionAction;
     private KillSessionAction terminateQueryAction;
-
-    @Override
-    public void dispose()
-    {
-        sessionsViewer.dispose();
-        super.dispose();
-    }
 
     @Override
     public void createPartControl(Composite parent) {
         killSessionAction = new KillSessionAction(false);
         terminateQueryAction = new KillSessionAction(true);
-        sessionsViewer = new SessionManagerViewer(this, parent, new MySQLSessionManager((MySQLDataSource) getExecutionContext().getDataSource())) {
+        super.createPartControl(parent);
+    }
+
+    @Override
+    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+        return new SessionManagerViewer(this, parent, new MySQLSessionManager((MySQLDataSource) executionContext.getDataSource())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
             {
@@ -80,14 +77,6 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
                 terminateQueryAction.setEnabled(session != null && !CommonUtils.isEmpty(session.getActiveQuery()));
             }
         };
-
-        sessionsViewer.refreshSessions();
-    }
-
-    @Override
-    public void refreshPart(Object source, boolean force)
-    {
-        sessionsViewer.refreshSessions();
     }
 
     private class KillSessionAction extends Action {
@@ -105,14 +94,14 @@ public class MySQLSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditor
         @Override
         public void run()
         {
-            final DBAServerSession session = sessionsViewer.getSelectedSession();
+            final DBAServerSession session = getSessionsViewer().getSelectedSession();
             if (session != null && UIUtils.confirmAction(getSite().getShell(),
                 this.getText(),
                 NLS.bind(MySQLMessages.editors_session_editor_confirm, getText(), session)))
             {
-                sessionsViewer.alterSession(
-                    sessionsViewer.getSelectedSession(),
-                    Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, (Object)killQuery));
+                getSessionsViewer().alterSession(
+                    getSessionsViewer().getSelectedSession(),
+                    Collections.singletonMap(MySQLSessionManager.PROP_KILL_QUERY, (Object) killQuery));
             }
         }
     }

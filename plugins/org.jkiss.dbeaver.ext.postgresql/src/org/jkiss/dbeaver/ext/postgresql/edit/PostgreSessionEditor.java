@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -25,38 +24,32 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
+import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreSessionEditor
  */
-public class PostgreSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public class PostgreSessionEditor extends AbstractSessionEditor
 {
-    static final Log log = Log.getLog(PostgreSessionEditor.class);
-
-    private SessionManagerViewer sessionsViewer;
     private KillSessionAction terminateQueryAction;
-
-    @Override
-    public void dispose()
-    {
-        sessionsViewer.dispose();
-        super.dispose();
-    }
 
     @Override
     public void createPartControl(Composite parent) {
         terminateQueryAction = new KillSessionAction();
-        sessionsViewer = new SessionManagerViewer(this, parent, new PostgreSessionManager((PostgreDataSource) getExecutionContext().getDataSource())) {
+        super.createPartControl(parent);
+    }
+
+    @Override
+    protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
+        return new SessionManagerViewer(this, parent, new PostgreSessionManager((PostgreDataSource) executionContext.getDataSource())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
             {
@@ -71,15 +64,8 @@ public class PostgreSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdit
                 terminateQueryAction.setEnabled(session != null && !CommonUtils.isEmpty(session.getActiveQuery()));
             }
         };
-
-        sessionsViewer.refreshSessions();
     }
 
-    @Override
-    public void refreshPart(Object source, boolean force)
-    {
-        sessionsViewer.refreshSessions();
-    }
 
     private class KillSessionAction extends Action {
         public KillSessionAction()
@@ -92,13 +78,13 @@ public class PostgreSessionEditor extends SinglePageDatabaseEditor<IDatabaseEdit
         @Override
         public void run()
         {
-            final DBAServerSession session = sessionsViewer.getSelectedSession();
+            final DBAServerSession session = getSessionsViewer().getSelectedSession();
             if (session != null && UIUtils.confirmAction(getSite().getShell(),
                 this.getText(),
                 NLS.bind("Teminate session?", getText(), session)))
             {
-                sessionsViewer.alterSession(
-                    sessionsViewer.getSelectedSession(),
+                getSessionsViewer().alterSession(
+                    getSessionsViewer().getSelectedSession(),
                     null);
             }
         }
