@@ -72,17 +72,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<PostgreTableForeignKey> refs = new ArrayList<>();
-        // This is dummy implementation
-        // Get references from this schema only
-        final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
-        for (PostgreTableForeignKey constraint : allForeignKeys) {
-            if (constraint.getAssociatedEntity() == this) {
-                refs.add(constraint);
-            }
-        }
-        return refs;
+        return null;
     }
 
     @Association
@@ -90,7 +80,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
         throws DBException
     {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
+        return null;
     }
 
     @Override

@@ -31,16 +31,15 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
-import org.jkiss.dbeaver.model.meta.LazyProperty;
-import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.meta.PropertyGroup;
+import org.jkiss.dbeaver.model.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * PostgreTable
@@ -76,6 +75,8 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
     private long rowCountEstimate;
     private Long rowCount;
     private boolean hasOids;
+    private List<PostgreTableInheritance> superTables;
+    private List<PostgreTableInheritance> subTables;
 
     public PostgreTable(PostgreSchema catalog)
     {
@@ -208,6 +209,29 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
         } else {
             return null;
         }
+    }
+
+    @Association
+    @Override
+    public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
+    }
+
+    @Override
+    public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException {
+        List<PostgreTableForeignKey> refs = new ArrayList<>();
+        // This is dummy implementation
+        // Get references from this schema only
+        final Collection<PostgreTableForeignKey> allForeignKeys =
+            getContainer().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
+        for (PostgreTableForeignKey constraint : allForeignKeys) {
+            if (constraint.getAssociatedEntity() == this) {
+                refs.add(constraint);
+            }
+        }
+        return refs;
     }
 
 }
