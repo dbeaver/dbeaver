@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
@@ -72,6 +73,14 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
                     colIndex++));
         }
         return constraint;
+    }
+
+    @NotNull
+    protected String getAddConstraintTypeClause(PostgreTableConstraintBase constraint) {
+        if (constraint.getConstraintType() == DBSEntityConstraintType.UNIQUE_KEY) {
+            return "UNIQUE"; //$NON-NLS-1$
+        }
+        return super.getAddConstraintTypeClause(constraint);
     }
 
     @Override

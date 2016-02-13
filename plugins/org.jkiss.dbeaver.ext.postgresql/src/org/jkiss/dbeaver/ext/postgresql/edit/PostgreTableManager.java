@@ -25,9 +25,14 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * Postgre table manager
@@ -77,11 +82,22 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     @Override
     protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl)
     {
-/*
         if (tableBase instanceof PostgreTable) {
+            final VoidProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
             PostgreTable table =(PostgreTable)tableBase;
             try {
-                final PostgreTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(VoidProgressMonitor.INSTANCE);
+                final List<PostgreTableInheritance> superTables = table.getSuperTables(monitor);
+                if (!CommonUtils.isEmpty(superTables)) {
+                    ddl.append("\nINHERITS (");
+                    for (int i = 0; i < superTables.size(); i++) {
+                        if (i > 0) ddl.append(",");
+                        ddl.append(superTables.get(i).getAssociatedEntity().getFullQualifiedName());
+                    }
+                    ddl.append(")");
+                }
+                ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE").append("\n)");
+/*
+                final PostgreTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
                 if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
                     ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
                 }
@@ -97,11 +113,11 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                 if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
                     ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
                 }
-            } catch (DBCException e) {
+*/
+            } catch (DBException e) {
                 log.error(e);
             }
         }
-*/
     }
 
     @Override

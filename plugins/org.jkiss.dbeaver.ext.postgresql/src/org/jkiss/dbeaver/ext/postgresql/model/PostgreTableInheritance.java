@@ -58,7 +58,7 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase implemen
 
     @Override
     @Property(viewable = true)
-    public DBSEntity getAssociatedEntity() {
+    public PostgreTableBase getAssociatedEntity() {
         return this.superTable;
     }
 
