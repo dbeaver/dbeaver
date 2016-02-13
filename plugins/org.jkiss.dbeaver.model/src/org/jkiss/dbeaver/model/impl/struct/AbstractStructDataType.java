@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -39,7 +40,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
 
     @Nullable
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
         Collection<? extends DBSEntityAttribute> attributes = getAttributes(monitor);
         if (attributes != null && !attributes.isEmpty()) {
             for (DBSEntityAttribute attr : attributes) {
@@ -56,7 +57,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
      */
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -65,7 +66,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
      */
     @Nullable
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -74,7 +75,7 @@ public abstract class AbstractStructDataType<DS extends DBPDataSource> extends A
      */
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 

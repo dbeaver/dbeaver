@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,6 +33,7 @@ public interface DBSEntity extends DBSObject
      * Entity type
      * @return entity type
      */
+    @NotNull
     DBSEntityType getEntityType();
 
     /**
@@ -41,7 +43,7 @@ public interface DBSEntity extends DBSObject
      * @param monitor progress monitor
      */
     @Nullable
-    Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Retrieve attribute by it's name (case insensitive)
@@ -50,7 +52,7 @@ public interface DBSEntity extends DBSObject
      * @throws DBException on any DB error
      */
     @Nullable
-    DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException;
+    DBSEntityAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException;
 
     /**
      * Gets this entity constraints
@@ -59,7 +61,7 @@ public interface DBSEntity extends DBSObject
      * @param monitor progress monitor
      */
     @Nullable
-    Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets this entity associations
@@ -68,7 +70,7 @@ public interface DBSEntity extends DBSObject
      * @param monitor progress monitor
      */
     @Nullable
-    Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     /**
      * Gets associations which refers this entity
@@ -77,6 +79,6 @@ public interface DBSEntity extends DBSObject
      * @param monitor progress monitor
      */
     @Nullable
-    Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException;
+    Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

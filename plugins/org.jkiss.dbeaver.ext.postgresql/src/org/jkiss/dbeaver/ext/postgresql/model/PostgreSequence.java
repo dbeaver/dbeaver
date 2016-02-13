@@ -148,6 +148,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         return false;
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType() {
         return PostgreConstants.ENTITY_TYPE_SEQUENCE;

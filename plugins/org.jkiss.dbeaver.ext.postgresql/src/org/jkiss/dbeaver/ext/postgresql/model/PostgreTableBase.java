@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
@@ -104,25 +105,25 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public List<PostgreTableColumn> getAttributes(DBRProgressMonitor monitor)
+    public List<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
-    public PostgreTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
+    public PostgreTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
         return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
-    public Collection<PostgreTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
-    public PostgreTableConstraintBase getConstraint(DBRProgressMonitor monitor, String ukName)
+    public PostgreTableConstraintBase getConstraint(@NotNull DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
         return null;
@@ -130,7 +131,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     @Association
-    public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;
@@ -138,7 +139,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Association
     @Override
-    public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return null;

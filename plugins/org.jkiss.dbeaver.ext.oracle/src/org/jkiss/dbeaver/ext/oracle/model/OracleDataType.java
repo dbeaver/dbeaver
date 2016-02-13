@@ -422,6 +422,7 @@ public class OracleDataType extends OracleObject<DBSObject>
         return flagInstantiable;
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType()
     {
@@ -430,7 +431,7 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Override
     @Association
-    public Collection<OracleDataTypeAttribute> getAttributes(DBRProgressMonitor monitor)
+    public Collection<OracleDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return attributeCache != null ? attributeCache.getAllObjects(monitor, this) : null;
@@ -438,13 +439,13 @@ public class OracleDataType extends OracleObject<DBSObject>
 
     @Nullable
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public OracleDataTypeAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
+    public OracleDataTypeAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException
     {
         return attributeCache != null ? attributeCache.getObject(monitor, this, attributeName) : null;
     }
@@ -458,13 +459,13 @@ public class OracleDataType extends OracleObject<DBSObject>
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

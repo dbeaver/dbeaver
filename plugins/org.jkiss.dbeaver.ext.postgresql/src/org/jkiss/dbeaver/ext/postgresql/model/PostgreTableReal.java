@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -57,30 +58,14 @@ public abstract class PostgreTableReal extends PostgreTableBase
     }
 
     @Override
-    public Collection<PostgreTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
     }
 
-    public PostgreTableConstraintBase getConstraint(DBRProgressMonitor monitor, String ukName)
+    public PostgreTableConstraintBase getConstraint(@NotNull DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
         return getSchema().constraintCache.getObject(monitor, getSchema(), this, ukName);
-    }
-
-    @Override
-    @Association
-    public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return null;
-    }
-
-    @Association
-    @Override
-    public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return null;
     }
 
     @Override

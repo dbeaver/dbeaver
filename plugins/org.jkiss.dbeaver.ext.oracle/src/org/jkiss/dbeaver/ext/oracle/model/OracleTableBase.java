@@ -196,14 +196,14 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public Collection<OracleTableColumn> getAttributes(DBRProgressMonitor monitor)
+    public Collection<OracleTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
-    public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName)
+    public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
         return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
@@ -234,7 +234,7 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     @Nullable
     @Override
     @Association
-    public synchronized Collection<OracleTableConstraint> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<OracleTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
@@ -252,13 +252,13 @@ public abstract class OracleTableBase extends JDBCTable<OracleDataSource, Oracle
     }
 
     @Override
-    public Collection<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }
 
     @Override
-    public Collection<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor) throws DBException
+    public Collection<OracleTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return null;
     }

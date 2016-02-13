@@ -138,7 +138,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     }
 
     @Override
-    public OracleTableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public OracleTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
 /*
         // Fake XML attribute handle
         if (tableType != null && tableType.getName().equals(OracleConstants.TYPE_NAME_XML) && OracleConstants.XML_COLUMN_NAME.equals(attributeName)) {
@@ -162,7 +162,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
 
     @Override
-    public Collection<OracleTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<OracleTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<OracleTableForeignKey> refs = new ArrayList<>();
@@ -180,7 +180,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
 
     @Override
     @Association
-    public Collection<OracleTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public Collection<OracleTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().foreignKeyCache.getObjects(monitor, getContainer(), this);

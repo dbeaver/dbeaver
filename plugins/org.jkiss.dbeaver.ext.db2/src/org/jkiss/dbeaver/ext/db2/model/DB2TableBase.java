@@ -121,7 +121,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     // -----------------
 
     @Override
-    public Collection<DB2TableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableColumn> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChildren(monitor, getContainer(), (DB2Table) this);
@@ -142,7 +142,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
     }
 
     @Override
-    public DB2TableColumn getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException
+    public DB2TableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException
     {
         if (this instanceof DB2Table) {
             return getContainer().getTableCache().getChild(monitor, getContainer(), (DB2Table) this, attributeName);
@@ -179,19 +179,19 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
     @Nullable
     @Override
-    public Collection<DB2TableUniqueKey> getConstraints(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableUniqueKey> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<DB2TableForeignKey> getAssociations(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<DB2TableReference> getReferences(DBRProgressMonitor monitor) throws DBException
+    public Collection<DB2TableReference> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException
     {
         return Collections.emptyList();
     }

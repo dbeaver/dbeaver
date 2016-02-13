@@ -216,6 +216,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
             return DBPDataKind.STRUCT;
         }
 
+        @NotNull
         @Override
         public DBSEntityType getEntityType() {
             return DBSEntityType.TYPE;
@@ -223,7 +224,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
 
         @Nullable
         @Override
-        public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) {
+        public Collection<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) {
             return Arrays.asList(attributes);
         }
     }
