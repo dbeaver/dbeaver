@@ -21,6 +21,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -38,7 +40,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * PostgreTypeType
@@ -92,8 +96,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private String defaultValue;
 
     private final AttributeCache attributeCache;
+    private Object[] enumValues;
 
-    public PostgreDataType(@NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) {
+    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
 
         this.typeId = JDBCUtils.safeGetInt(dbResult, "oid");
@@ -134,6 +139,28 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
 
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;
+
+        if (typeCategory == PostgreTypeCategory.E) {
+            readEnumValues(monitor);
+        }
+    }
+
+    private void readEnumValues(JDBCSession session) throws DBException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT e.enumlabel \n" +
+                "FROM pg_catalog.pg_enum e\n" +
+                "WHERE e.enumtypid=?")) {
+            dbStat.setInt(1, getObjectId());
+            try (JDBCResultSet rs = dbStat.executeQuery()) {
+                List<String> values = new ArrayList<>();
+                while (rs.nextRow()) {
+                    values.add(JDBCUtils.safeGetString(rs, 1));
+                }
+                enumValues = values.toArray();
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error reading enum values", e, getDataSource());
+        }
     }
 
     @NotNull
@@ -146,6 +173,21 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public PostgreDatabase getDatabase() {
         return getParentObject().getDatabase();
+    }
+
+    @Override
+    public DBPDataKind getDataKind()
+    {
+        switch (typeCategory) {
+            case A: return DBPDataKind.ARRAY;
+            case B: return DBPDataKind.BOOLEAN;
+            case C: return DBPDataKind.STRUCT;
+            case D: return DBPDataKind.DATETIME;
+            case E: return DBPDataKind.OBJECT;
+            case N: return DBPDataKind.NUMERIC;
+            case S: return DBPDataKind.STRING;
+        }
+        return super.getDataKind();
     }
 
     @Override
@@ -288,7 +330,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return dataType;
     }
 
-    public static PostgreDataType readDataType(@NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
         final PostgreSchema schema = owner.getSchema(dbResult.getSourceStatement().getConnection().getProgressMonitor(), schemaId);
@@ -383,6 +425,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         return new PostgreDataType(
+            session,
             schema,
             valueType,
             name,
@@ -426,7 +469,16 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         if (attributeCache != null) {
             attributeCache.clearCache();
         }
+        if (typeCategory == PostgreTypeCategory.E) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Refresh enum values")) {
+                readEnumValues(session);
+            }
+        }
         return true;
+    }
+
+    public Object[] getEnumValues() {
+        return enumValues;
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {

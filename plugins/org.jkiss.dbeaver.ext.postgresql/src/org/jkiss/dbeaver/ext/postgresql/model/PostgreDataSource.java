@@ -127,7 +127,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     "ORDER by t.oid")) {
                 try (JDBCResultSet rs = dbStat.executeQuery()) {
                     while (rs.nextRow()) {
-                        final PostgreDataType dataType = PostgreDataType.readDataType(getDefaultInstance(), rs);
+                        final PostgreDataType dataType = PostgreDataType.readDataType(session, getDefaultInstance(), rs);
                         if (dataType != null) {
                             internalTypes.put(dataType.getName(), dataType);
                         }

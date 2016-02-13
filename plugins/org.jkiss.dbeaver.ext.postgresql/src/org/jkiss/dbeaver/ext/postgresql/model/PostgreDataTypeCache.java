@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
@@ -79,7 +78,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
     @Override
     protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return PostgreDataType.readDataType(owner, dbResult);
+        return PostgreDataType.readDataType(session, owner, dbResult);
     }
 
     public PostgreDataType getDataType(int oid) {
