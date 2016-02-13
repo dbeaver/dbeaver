@@ -102,6 +102,7 @@ public class ResultSetPropertyTester extends PropertyTester
             case PROP_CAN_TOGGLE:
                 return
                     !actionsDisabled &&
+                        !rsv.getActivePresentation().getControl().isDisposed() &&
                         rsv.getActivePresentation().getControl().isFocusControl();
             case PROP_CAN_SWITCH_PRESENTATION:
                 return
