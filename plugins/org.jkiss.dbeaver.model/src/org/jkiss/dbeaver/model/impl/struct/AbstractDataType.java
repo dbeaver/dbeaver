@@ -92,6 +92,12 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
 
     @Nullable
     @Override
+    public Object geTypeExtension() {
+        return null;
+    }
+
+    @Nullable
+    @Override
     public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return null;
     }

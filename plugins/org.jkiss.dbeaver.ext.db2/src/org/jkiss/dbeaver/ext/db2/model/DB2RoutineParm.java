@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +41,7 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject {
+public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DBSTypedObjectEx {
 
     private final DB2Routine procedure;
     private String name;
@@ -169,6 +170,7 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject {
         return dataTypeSchema;
     }
 
+    @Override
     @Property(viewable = true, order = 3)
     public DB2DataType getDataType()
     {

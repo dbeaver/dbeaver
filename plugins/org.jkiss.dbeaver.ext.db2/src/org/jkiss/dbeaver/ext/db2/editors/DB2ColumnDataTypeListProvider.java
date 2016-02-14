@@ -43,8 +43,8 @@ public class DB2ColumnDataTypeListProvider implements IPropertyValueListProvider
     public Object[] getPossibleValues(DB2TableColumn column)
     {
         List<DBSDataType> dataTypes = new ArrayList<DBSDataType>(column.getTable().getDataSource().getLocalDataTypes());
-        if (!dataTypes.contains(column.getType())) {
-            dataTypes.add(column.getType());
+        if (!dataTypes.contains(column.getDataType())) {
+            dataTypes.add(column.getDataType());
         }
         return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
     }

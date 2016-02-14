@@ -145,6 +145,12 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
 
     @Nullable
     @Override
+    public Object geTypeExtension() {
+        return null;
+    }
+
+    @Nullable
+    @Override
     public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
         return null;
     }

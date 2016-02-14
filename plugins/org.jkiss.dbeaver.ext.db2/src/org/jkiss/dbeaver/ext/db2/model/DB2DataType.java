@@ -247,6 +247,12 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @Nullable
     @Override
+    public Object geTypeExtension() {
+        return metaType;
+    }
+
+    @Nullable
+    @Override
     public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException
     {
         return null;

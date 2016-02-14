@@ -153,7 +153,7 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     @Nullable
     private OracleTableColumn getXMLColumn(DBRProgressMonitor monitor) throws DBException {
         for (OracleTableColumn col : CommonUtils.safeCollection(getAttributes(monitor))) {
-            if (col.getType() == tableType) {
+            if (col.getDataType() == tableType) {
                 return col;
             }
         }

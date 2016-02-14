@@ -60,7 +60,7 @@ public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer,
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, remoteServer.getName());
         // dbStat.setString(2, remoteServer.getDb2Wrapper().getName());
-        // dbStat.setString(3, remoteServer.getType());
+        // dbStat.setString(3, remoteServer.getDataType());
         // dbStat.setString(4, remoteServer.getVersion());
         return dbStat;
     }

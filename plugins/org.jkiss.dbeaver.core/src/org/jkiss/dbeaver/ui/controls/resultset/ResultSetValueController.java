@@ -165,7 +165,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         DBSTypedObject valueType = getValueType();
         return DataManagerRegistry.findValueManager(
             getDataSourceContainer(),
-            valueType.getDataKind(),
+            valueType,
             getValueHandler().getValueObjectType(valueType));
     }
 

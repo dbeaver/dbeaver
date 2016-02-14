@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBSDataType extends DBSObject, DBSTypedObject
 {
+    @Nullable
+    Object geTypeExtension();
+
     /**
      * For collection types returns element type
      * @return component type or null
