@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -46,6 +49,7 @@ public class DataManagerDescriptor extends AbstractDescriptor
     private static final String ATTR_KIND = "kind";
     private static final String ATTR_TYPE = "type";
     private static final String ATTR_DATA_SOURCE = "dataSource";
+    private static final String ATTR_EXTENSION = "extension";
 
     private String id;
     private ObjectType implType;
@@ -54,6 +58,7 @@ public class DataManagerDescriptor extends AbstractDescriptor
     private static class SupportInfo {
         DBPDataKind dataKind;
         ObjectType valueType;
+        String extension;
         DataSourceProviderDescriptor dataSource;
     }
 
@@ -70,8 +75,9 @@ public class DataManagerDescriptor extends AbstractDescriptor
         for (IConfigurationElement typeElement : typeElements) {
             String kindName = typeElement.getAttribute(ATTR_KIND);
             String typeName = typeElement.getAttribute(ATTR_TYPE);
+            String ext = typeElement.getAttribute(ATTR_EXTENSION);
             String dspId = typeElement.getAttribute(ATTR_DATA_SOURCE);
-            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(kindName)) {
+            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(ext)) {
                 SupportInfo info = new SupportInfo();
                 if (!CommonUtils.isEmpty(kindName)) {
                     try {
@@ -82,6 +88,9 @@ public class DataManagerDescriptor extends AbstractDescriptor
                 }
                 if (!CommonUtils.isEmpty(typeName)) {
                     info.valueType = new ObjectType(typeName);
+                }
+                if (!CommonUtils.isEmpty(ext)) {
+                    info.extension = ext;
                 }
                 if (!CommonUtils.isEmpty(dspId)) {
                     info.dataSource = DataSourceProviderRegistry.getInstance().getDataSourceProvider(dspId);
@@ -112,8 +121,9 @@ public class DataManagerDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    public boolean supportsType(@Nullable DBPDataSourceContainer dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType)
+    public boolean supportsType(@Nullable DBPDataSourceContainer dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType)
     {
+        final DBPDataKind dataKind = typedObject.getDataKind();
         for (SupportInfo info : supportInfos) {
             if (dataSource != null && info.dataSource != null) {
                 DriverDescriptor driver = (DriverDescriptor) dataSource.getDriver();
@@ -133,6 +143,19 @@ public class DataManagerDescriptor extends AbstractDescriptor
 
             if (info.dataKind != null && info.dataKind == dataKind) {
                 return true;
+            }
+            if (info.extension != null) {
+                DBSDataType dataType;
+                if (typedObject instanceof DBSDataType) {
+                    dataType = (DBSDataType) typedObject;
+                } else if (typedObject instanceof DBSTypedObjectEx) {
+                    dataType = ((DBSTypedObjectEx) typedObject).getDataType();
+                } else {
+                    dataType = null;
+                }
+                if (dataType != null && CommonUtils.equalObjects(info.extension, CommonUtils.toString(dataType.geTypeExtension()))) {
+                    return true;
+                }
             }
         }
         return false;

@@ -86,7 +86,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
                 IValueManager manager = DataManagerRegistry.findValueManager(
                     dataSource.getContainer(),
-                    dataType.getDataKind(),
+                    dataType,
                     Object.class);
 
                 if (ArrayUtils.contains(manager.getSupportedEditTypes(), IValueController.EditType.INLINE)) {
@@ -415,7 +415,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             DBSTypedObject valueType = getValueType();
             return DataManagerRegistry.findValueManager(
                 getExecutionContext().getDataSource().getContainer(),
-                valueType.getDataKind(),
+                valueType,
                 getValueHandler().getValueObjectType(valueType));
         }
 

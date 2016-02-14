@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
 
@@ -58,7 +59,7 @@ public class DataManagerRegistry {
     }
 
     @NotNull
-    public IValueManager getManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBPDataKind dataKind, @NotNull Class<?> valueType) {
+    public IValueManager getManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBSTypedObject dataKind, @NotNull Class<?> valueType) {
         // Check starting from most restrictive to less restrictive
         IValueManager manager = findManager(dataSource, dataKind, valueType, true, true);
         if (manager == null) {
@@ -76,9 +77,9 @@ public class DataManagerRegistry {
         return manager;
     }
 
-    private IValueManager findManager(@Nullable DBPDataSourceContainer dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType) {
+    private IValueManager findManager(@Nullable DBPDataSourceContainer dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType) {
         for (DataManagerDescriptor manager : managers) {
-            if (manager.supportsType(dataSource, dataKind, valueType, checkDataSource, checkType)) {
+            if (manager.supportsType(dataSource, typedObject, valueType, checkDataSource, checkType)) {
                 return manager.getInstance();
             }
         }
@@ -86,8 +87,8 @@ public class DataManagerRegistry {
     }
 
     @NotNull
-    public static IValueManager findValueManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBPDataKind dataKind, @NotNull Class<?> valueType) {
-        return getInstance().getManager(dataSource, dataKind, valueType);
+    public static IValueManager findValueManager(@Nullable DBPDataSourceContainer dataSource, @NotNull DBSTypedObject typedObject, @NotNull Class<?> valueType) {
+        return getInstance().getManager(dataSource, typedObject, valueType);
     }
 
 }

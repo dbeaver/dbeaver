@@ -30,8 +30,8 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
  */
 public interface DBDStructure extends DBDComplexValue {
 
-    public static final DBSEntityAttribute[] EMPTY_ATTRIBUTE = new DBSEntityAttribute[0];
-    public static final Object[] EMPTY_VALUES = new Object[0];
+    DBSEntityAttribute[] EMPTY_ATTRIBUTE = new DBSEntityAttribute[0];
+    Object[] EMPTY_VALUES = new Object[0];
 
     DBSDataType getDataType();
 

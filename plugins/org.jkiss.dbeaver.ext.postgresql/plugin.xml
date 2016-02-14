@@ -229,4 +229,10 @@
         </editor>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
+            <supports dataSource="postgresql" extension="E"/>
+        </manager>
+    </extension>
+
 </plugin>

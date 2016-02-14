@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 
@@ -41,7 +42,7 @@ import java.util.List;
 /**
  * OracleTableColumn
  */
-public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBPHiddenObject, DBPNamedObject2
+public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2
 {
     static final Log log = Log.getLog(OracleTableColumn.class);
 
@@ -96,8 +97,9 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         return getTable().getDataSource();
     }
 
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = ColumnDataTypeListProvider.class)
-    public OracleDataType getType()
+    public OracleDataType getDataType()
     {
         return type;
     }
@@ -216,8 +218,8 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         public Object[] getPossibleValues(OracleTableColumn column)
         {
             List<DBSDataType> dataTypes = new ArrayList<>(column.getTable().getDataSource().getLocalDataTypes());
-            if (!dataTypes.contains(column.getType())) {
-                dataTypes.add(column.getType());
+            if (!dataTypes.contains(column.getDataType())) {
+                dataTypes.add(column.getDataType());
             }
             return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
         }

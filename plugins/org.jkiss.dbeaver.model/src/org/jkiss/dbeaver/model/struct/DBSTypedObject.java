@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPObject;
 
@@ -61,4 +62,5 @@ public interface DBSTypedObject extends DBPObject
      * @return max length
      */
     long getMaxLength();
+
 }

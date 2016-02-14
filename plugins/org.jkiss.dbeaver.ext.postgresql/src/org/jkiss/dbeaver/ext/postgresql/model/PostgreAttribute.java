@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
 import java.util.Comparator;
 import java.util.Set;
@@ -38,7 +39,7 @@ import java.util.TreeSet;
 /**
  * PostgreAttribute
  */
-public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBPNamedObject2, DBPHiddenObject
+public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject
 {
     static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -107,6 +108,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @NotNull
+    @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
     public PostgreDataType getDataType() {
         return dataType;
