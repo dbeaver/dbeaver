@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -40,33 +41,14 @@ import java.util.StringTokenizer;
 public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
     public static final PostgreArrayValueHandler INSTANCE = new PostgreArrayValueHandler();
 
-/*
-    protected Object fetchColumnValue(
-        DBCSession session,
-        JDBCResultSet resultSet,
-        DBSTypedObject type,
-        int index)
-        throws DBCException, SQLException
-    {
-        try {
-            Object value = resultSet.getArray(index);
-            return getValueFromObject(session, type, value, false);
-        } catch (Throwable e) {
-            return super.fetchColumnValue(session, resultSet, type, index);
-        }
-    }
-*/
-
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             PostgreDataType itemType = null;
-            if (type instanceof PostgreAttribute) {
-                final PostgreDataType arrayType = ((PostgreAttribute) type).getDatabase().dataTypeCache.getCachedObject(type.getTypeName());
-                if (arrayType != null) {
-                    itemType = arrayType.getElementType();
-                }
+            final PostgreDataType arrayType = PostgreUtils.findDataType((PostgreDataSource) session.getDataSource(), type);
+            if (arrayType != null) {
+                itemType = arrayType.getElementType();
             }
 
             final Object value = PostgreUtils.extractValue(object);
@@ -74,7 +56,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 return null;
             } else if (value instanceof String && itemType != null) {
                 return convertStringToArray(session, itemType, (String)value);
-            } else {
+            } else if (itemType != null) {
                 // Can't parse
                 return new JDBCArray(itemType, DBUtils.findValueHandler(session, itemType), new Object[] { value } );
             }
@@ -90,18 +72,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         }
         Object[] contents = new Object[strings.size()];
         for (int i = 0; i < strings.size(); i++) {
-            switch (itemType.getTypeID()) {
-                case Types.BOOLEAN: contents[i] = Boolean.valueOf(strings.get(i)); break;
-                case Types.TINYINT: contents[i] = Byte.parseByte(strings.get(i)); break;
-                case Types.SMALLINT: contents[i] = Short.parseShort(strings.get(i)); break;
-                case Types.INTEGER: contents[i] = Integer.parseInt(strings.get(i)); break;
-                case Types.BIGINT: contents[i] = Long.parseLong(strings.get(i)); break;
-                case Types.FLOAT: contents[i] = Float.parseFloat(strings.get(i)); break;
-                case Types.REAL:
-                case Types.DOUBLE: contents[i] = Double.parseDouble(strings.get(i)); break;
-                default:
-                    contents[i] = strings.get(i); break;
-            }
+            contents[i] = PostgreUtils.convertStringToValue(itemType, strings.get(i), false);
         }
         return new JDBCArray(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }

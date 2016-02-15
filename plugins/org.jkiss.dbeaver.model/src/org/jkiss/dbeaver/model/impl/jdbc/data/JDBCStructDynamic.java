@@ -143,7 +143,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
     {
         int position = attribute.getOrdinalPosition();
         if (position >= values.length) {
-            log.warn("Attribute index is out of range (" + position + ">=" + values.length + ")");
+            log.debug("Attribute index is out of range (" + position + ">=" + values.length + ")");
             return null;
         }
         return values[position];
