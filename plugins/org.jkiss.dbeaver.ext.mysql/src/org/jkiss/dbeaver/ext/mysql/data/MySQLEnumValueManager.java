@@ -24,8 +24,10 @@ import org.eclipse.swt.widgets.List;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
@@ -55,9 +57,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             {
-                final MySQLEnumValue value = (MySQLEnumValue) controller.getValue();
-                assert value != null;
-                if (value.getColumn().isTypeSet()) {
+                if (controller.getValueType().getTypeName().equalsIgnoreCase(MySQLConstants.TYPE_NAME_SET)) {
                     return null;
                 }
                 return new EnumInlineEditor(controller);
@@ -84,8 +84,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
         @Override
         public void primeEditorValue(@Nullable Object value) throws DBException
         {
-            MySQLEnumValue enumValue = (MySQLEnumValue) value;
-            control.setText(DBUtils.isNullValue(enumValue) ? "" : enumValue.getValue());
+            control.setText(DBUtils.isNullValue(value) ? "" : DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
         }
 
         @Override
@@ -93,9 +92,9 @@ public class MySQLEnumValueManager extends BaseValueManager {
         {
             int selIndex = control.getSelectionIndex();
             if (selIndex < 0) {
-                return new MySQLEnumValue(getColumn(), null);
+                return null;
             } else {
-                return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
+                return control.getItem(selIndex);
             }
         }
 
@@ -117,7 +116,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
 
         private MySQLTableColumn getColumn()
         {
-            return ((MySQLEnumValue) controller.getValue()).getColumn();
+            return ((MySQLTableColumn) controller.getValueType());
         }
     }
 
@@ -132,17 +131,16 @@ public class MySQLEnumValueManager extends BaseValueManager {
         @Override
         public void primeEditorValue(@Nullable Object value) throws DBException
         {
-            assert value != null;
-            MySQLEnumValue enumValue = (MySQLEnumValue) value;
-            if (enumValue.getColumn().isTypeSet()) {
-                fillSetList(control, enumValue);
+            final MySQLTableColumn column = getColumn();
+            if (column.isTypeSet()) {
+                fillSetList(control, column, value);
             } else {
-                if (enumValue.isNull()) {
+                if (value == null) {
                     control.setSelection(-1);
                 }
                 int itemCount = control.getItemCount();
                 for (int i = 0; i < itemCount; i++) {
-                    if (control.getItem(i).equals(enumValue.getValue())) {
+                    if (control.getItem(i).equals(value)) {
                         control.setSelection(i);
                         break;
                     }
@@ -159,13 +157,13 @@ public class MySQLEnumValueManager extends BaseValueManager {
                     if (setString.length() > 0) setString.append(',');
                     setString.append(sel);
                 }
-                return new MySQLEnumValue(getColumn(), setString.toString());
+                return setString.toString();
             } else {
                 int selIndex = control.getSelectionIndex();
                 if (selIndex < 0) {
-                    return new MySQLEnumValue(getColumn(), null);
+                    return null;
                 } else {
-                    return new MySQLEnumValue(getColumn(), control.getItem(selIndex));
+                    return control.getItem(selIndex);
                 }
             }
         }
@@ -173,9 +171,7 @@ public class MySQLEnumValueManager extends BaseValueManager {
         @Override
         protected List createControl(Composite editPlaceholder)
         {
-            final MySQLEnumValue enumValue = (MySQLEnumValue) controller.getValue();
-            assert enumValue != null;
-            final MySQLTableColumn column = enumValue.getColumn();
+            final MySQLTableColumn column = getColumn();
             int style = SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL;
             if (column.isTypeSet()) {
                 style |= SWT.MULTI;
@@ -200,15 +196,15 @@ public class MySQLEnumValueManager extends BaseValueManager {
 
         private MySQLTableColumn getColumn()
         {
-            return ((MySQLEnumValue) controller.getValue()).getColumn();
+            return (MySQLTableColumn) controller.getValueType();
         }
     }
 
-    static void fillSetList(org.eclipse.swt.widgets.List editor, MySQLEnumValue value)
+    static void fillSetList(org.eclipse.swt.widgets.List editor, MySQLTableColumn column, Object value)
     {
         editor.removeAll();
-        java.util.List<String> enumValues = value.getColumn().getEnumValues();
-        String setString = value.getValue();
+        java.util.List<String> enumValues = column.getEnumValues();
+        String setString = DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.UI);
         java.util.List<String> setValues = new ArrayList<String>();
         if (!CommonUtils.isEmpty(setString)) {
             StringTokenizer st = new StringTokenizer(setString, ",");

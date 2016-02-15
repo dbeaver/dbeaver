@@ -48,6 +48,7 @@ public class DataManagerDescriptor extends AbstractDescriptor
     public static final String TAG_SUPPORTS = "supports"; //$NON-NLS-1$
     private static final String ATTR_KIND = "kind";
     private static final String ATTR_TYPE = "type";
+    private static final String ATTR_TYPE_NAME = "typeName";
     private static final String ATTR_DATA_SOURCE = "dataSource";
     private static final String ATTR_EXTENSION = "extension";
 
@@ -56,6 +57,7 @@ public class DataManagerDescriptor extends AbstractDescriptor
     private final List<SupportInfo> supportInfos = new ArrayList<>();
 
     private static class SupportInfo {
+        String typeName;
         DBPDataKind dataKind;
         ObjectType valueType;
         String extension;
@@ -74,10 +76,11 @@ public class DataManagerDescriptor extends AbstractDescriptor
         IConfigurationElement[] typeElements = config.getChildren(TAG_SUPPORTS);
         for (IConfigurationElement typeElement : typeElements) {
             String kindName = typeElement.getAttribute(ATTR_KIND);
-            String typeName = typeElement.getAttribute(ATTR_TYPE);
+            String typeName = typeElement.getAttribute(ATTR_TYPE_NAME);
+            String className = typeElement.getAttribute(ATTR_TYPE);
             String ext = typeElement.getAttribute(ATTR_EXTENSION);
             String dspId = typeElement.getAttribute(ATTR_DATA_SOURCE);
-            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(ext)) {
+            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(className) || !CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(ext)) {
                 SupportInfo info = new SupportInfo();
                 if (!CommonUtils.isEmpty(kindName)) {
                     try {
@@ -87,7 +90,10 @@ public class DataManagerDescriptor extends AbstractDescriptor
                     }
                 }
                 if (!CommonUtils.isEmpty(typeName)) {
-                    info.valueType = new ObjectType(typeName);
+                    info.typeName = typeName;
+                }
+                if (!CommonUtils.isEmpty(className)) {
+                    info.valueType = new ObjectType(className);
                 }
                 if (!CommonUtils.isEmpty(ext)) {
                     info.extension = ext;
@@ -132,6 +138,11 @@ public class DataManagerDescriptor extends AbstractDescriptor
                 }
             } else if (checkDataSource) {
                 continue;
+            }
+            if (info.typeName != null) {
+                if (info.typeName.equalsIgnoreCase(typedObject.getTypeName())) {
+                    return true;
+                }
             }
             if (info.valueType != null) {
                 if (info.valueType.matchesType(valueType) && info.dataKind == null || info.dataKind == dataKind) {
