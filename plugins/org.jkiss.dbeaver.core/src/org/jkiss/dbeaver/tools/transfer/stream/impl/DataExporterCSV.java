@@ -142,7 +142,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cs.getContentReader());
                     } else {
-                        getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
+                        out.write(quoteChar);
+                        getSite().writeBinaryData(cs);
+                        out.write(quoteChar);
                     }
                 }
                 finally {

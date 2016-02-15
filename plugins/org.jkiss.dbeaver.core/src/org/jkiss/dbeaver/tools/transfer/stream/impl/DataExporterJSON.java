@@ -113,10 +113,12 @@ public class DataExporterJSON extends StreamExporterAbstract {
                 DBDContent content = (DBDContent) cellValue;
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
-                    if (ContentUtils.isTextContent(content)) {
-                        writeCellValue(cs.getContentReader());
-                    } else {
-                        getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
+                    if (cs != null) {
+                        if (ContentUtils.isTextContent(content)) {
+                            writeCellValue(cs.getContentReader());
+                        } else {
+                            getSite().writeBinaryData(cs);
+                        }
                     }
                 }
                 finally {
