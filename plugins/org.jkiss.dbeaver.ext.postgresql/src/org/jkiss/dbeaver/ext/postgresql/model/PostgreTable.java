@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
@@ -49,35 +50,12 @@ import java.util.List;
  */
 public class PostgreTable extends PostgreTableReal implements DBDPseudoAttributeContainer
 {
-
-    public static class AdditionalInfo {
-        private volatile boolean loaded = false;
-        private String tablespaceName;
-
-        @Property(viewable = false, editable = true, updatable = false, order = 5)
-        public String getTablespaceName() {
-            return tablespaceName;
-        }
-
-        public void setTablespaceName(String tablespaceName) {
-            this.tablespaceName = tablespaceName;
-        }
-    }
-
-    public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreTable> {
-        @Override
-        public boolean isPropertyCached(PostgreTable object, Object propertyId)
-        {
-            return object.additionalInfo.loaded;
-        }
-    }
-
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
-    private final AdditionalInfo additionalInfo = new AdditionalInfo();
     private long rowCountEstimate;
     private Long rowCount;
     private boolean hasOids;
+    private int tablespaceId;
     private List<PostgreTableInheritance> superTables;
     private List<PostgreTableInheritance> subTables;
 
@@ -94,22 +72,19 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
 
         this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
+        this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "reltablespace");
     }
 
     public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {
         return foreignKeys;
     }
 
-    @PropertyGroup()
-    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
-    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException
-    {
-        synchronized (additionalInfo) {
-            if (!additionalInfo.loaded) {
-                loadAdditionalInfo(monitor);
-            }
-            return additionalInfo;
+    @Property(viewable = true, order = 20)
+    public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
+        if (tablespaceId == 0) {
+            return null;
         }
+        return PostgreUtils.getObjectById(monitor, getDatabase().tablespaceCache, getDatabase(), tablespaceId);
     }
 
     @Property(viewable = true, order = 22)
@@ -163,38 +138,10 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
         super.refreshObject(monitor);
         getContainer().indexCache.clearObjectCache(this);
         foreignKeys.clearCache();
-        synchronized (additionalInfo) {
-            additionalInfo.loaded = false;
-        }
         superTables = null;
         subTables = null;
         rowCount = null;
         return true;
-    }
-
-    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
-    {
-        if (!isPersisted()) {
-            additionalInfo.loaded = true;
-            return;
-        }
-
-        PostgreDataSource dataSource = getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load table status")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM pg_catalog.pg_tables t WHERE t.schemaname=? AND t.tablename=?")) {
-                dbStat.setString(1, getSchema().getName());
-                dbStat.setString(2, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        additionalInfo.tablespaceName = JDBCUtils.safeGetString(dbResult, "tablespace");
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, dataSource);
-        }
-        additionalInfo.loaded = true;
     }
 
     @Override

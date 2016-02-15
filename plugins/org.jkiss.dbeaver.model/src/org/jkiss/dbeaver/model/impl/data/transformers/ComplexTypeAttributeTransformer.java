@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -39,7 +40,12 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows) throws DBException {
-        DBSDataType dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+        DBSDataType dataType;
+        if (attribute.getAttribute() instanceof DBSTypedObjectEx) {
+            dataType = ((DBSTypedObjectEx) attribute.getAttribute()).getDataType();
+        } else {
+            dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+        }
         if (dataType instanceof DBSEntity) {
             createNestedTypeBindings(session, attribute, rows, (DBSEntity) dataType);
         }
