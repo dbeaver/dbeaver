@@ -21,22 +21,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCArray;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Struct;
-import java.sql.Types;
-import java.util.*;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.StringTokenizer;
 
 /**
  * PostgreArrayValueHandler
@@ -47,21 +45,18 @@ public class PostgreStructValueHandler extends JDBCArrayValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
-            PostgreDataType structType = PostgreUtils.findDataType((PostgreDataSource)session.getDataSource(), type);
-
-            final Object value = PostgreUtils.extractValue(object);
-            if (value == null) {
-                return null;
-            } else if (value instanceof String && structType != null) {
-                try {
-                    return convertStringToStruct(session, structType, (String) value);
-                } catch (DBException e) {
-                    throw new DBCException("Error converting string to composite type", e, session.getDataSource());
-                }
+        PostgreDataType structType = PostgreUtils.findDataType((PostgreDataSource)session.getDataSource(), type);
+        try {
+            Object value;
+            if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                value = PostgreUtils.extractValue(object);
+            } else {
+                value = "";
             }
+            return convertStringToStruct(session, structType, (String) value);
+        } catch (DBException e) {
+            throw new DBCException("Error converting string to composite type", e, session.getDataSource());
         }
-        return super.getValueFromObject(session, type, object, copy);
     }
 
     private JDBCStructStatic convertStringToStruct(@NotNull DBCSession session, @NotNull PostgreDataType compType, @NotNull String value) throws DBException {
@@ -89,8 +84,6 @@ public class PostgreStructValueHandler extends JDBCArrayValueHandler {
 */
         if (value.startsWith("(") && value.endsWith(")")) {
             value = value.substring(1, value.length() - 1);
-        } else {
-            throw new DBException("Incorrect PGObject format for composite type '" + compType.getTypeName() + "': " + value);
         }
         final Collection<PostgreDataTypeAttribute> attributes = compType.getAttributes(session.getProgressMonitor());
         if (attributes == null) {
