@@ -178,7 +178,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
             // Detached - nothing to save
             return;
         }
-        if (!input.getDatabaseObject().isPersisted()) {
+        if (input.getDatabaseObject() != null && !input.getDatabaseObject().isPersisted()) {
             return;
         }
 
