@@ -943,6 +943,11 @@ public class ResultSetViewer extends Viewer
         applyChanges(RuntimeUtils.makeMonitor(monitor));
     }
 
+    public void doSave(DBRProgressMonitor monitor)
+    {
+        applyChanges(monitor);
+    }
+
     @Override
     public void doSaveAs()
     {
