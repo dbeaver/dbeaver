@@ -166,6 +166,8 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
         synchronized (additionalInfo) {
             additionalInfo.loaded = false;
         }
+        superTables = null;
+        subTables = null;
         rowCount = null;
         return true;
     }
@@ -219,20 +221,23 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
     public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        final List<PostgreTableInheritance> superTables = getSuperTables(monitor);
+        final List<PostgreTableInheritance> superTables = getSuperInheritance(monitor);
         final Collection<PostgreTableForeignKey> foreignKeys = getForeignKeys(monitor);
         if (CommonUtils.isEmpty(superTables)) {
             return foreignKeys;
         } else if (CommonUtils.isEmpty(foreignKeys)) {
             return superTables;
         }
-        return foreignKeys;
+        List<DBSEntityAssociation> agg = new ArrayList<>(superTables.size() + foreignKeys.size());
+        agg.addAll(superTables);
+        agg.addAll(foreignKeys);
+        return agg;
     }
 
     @Override
     public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         List<DBSEntityAssociation> refs = new ArrayList<>();
-        refs.addAll(getSubTables(monitor));
+        refs.addAll(getSubInheritance(monitor));
         // This is dummy implementation
         // Get references from this schema only
         final Collection<PostgreTableForeignKey> allForeignKeys =
@@ -249,8 +254,36 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
         return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
     }
 
+    @Property(viewable = false, order = 30)
+    public List<PostgreTableBase> getSuperTables(DBRProgressMonitor monitor) throws DBException {
+        final List<PostgreTableInheritance> si = getSuperInheritance(monitor);
+        if (si.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<PostgreTableBase> result = new ArrayList<>(si.size());
+        for (int i1 = 0; i1 < si.size(); i1++) {
+            result.add(si.get(i1).getAssociatedEntity());
+
+        }
+        return result;
+    }
+
+    @Property(viewable = false, order = 31)
+    public List<PostgreTableBase> getSubTables(DBRProgressMonitor monitor) throws DBException {
+        final List<PostgreTableInheritance> si = getSubInheritance(monitor);
+        if (si.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<PostgreTableBase> result = new ArrayList<>(si.size());
+        for (int i1 = 0; i1 < si.size(); i1++) {
+            result.add(si.get(i1).getParentObject());
+
+        }
+        return result;
+    }
+
     @NotNull
-    public List<PostgreTableInheritance> getSuperTables(DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table inheritance info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -296,7 +329,7 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
     }
 
     @NotNull
-    public List<PostgreTableInheritance> getSubTables(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (subTables == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table inheritance info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -307,7 +340,7 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             final int subSchemaId = JDBCUtils.safeGetInt(dbResult, "relnamespace");
-                            final int subTableId = JDBCUtils.safeGetInt(dbResult, "inhparent");
+                            final int subTableId = JDBCUtils.safeGetInt(dbResult, "inhrelid");
                             PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find sub-table's schema '" + subSchemaId + "'");

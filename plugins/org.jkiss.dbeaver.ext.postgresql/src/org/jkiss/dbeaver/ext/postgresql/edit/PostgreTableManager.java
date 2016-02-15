@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
@@ -85,7 +84,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
             final VoidProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
             PostgreTable table =(PostgreTable)tableBase;
             try {
-                final List<PostgreTableInheritance> superTables = table.getSuperTables(monitor);
+                final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
                 if (!CommonUtils.isEmpty(superTables)) {
                     ddl.append("\nINHERITS (");
                     for (int i = 0; i < superTables.size(); i++) {
