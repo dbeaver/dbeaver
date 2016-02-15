@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Array;
 import java.text.Collator;
 import java.util.*;
 import java.util.List;
@@ -694,7 +695,24 @@ public class PropertyTreeViewer extends TreeViewer {
                     if (propertyValue == null || renderer.isHyperlink(propertyValue)) {
                         return ""; //$NON-NLS-1$
                     } else if (BeanUtils.isCollectionType(propertyValue.getClass())) {
-                        return "";
+                        StringBuilder str = new StringBuilder();
+                        str.append("[");
+                        if (propertyValue instanceof Collection) {
+                            int i = 0;
+                            for (Object item : (Collection) propertyValue) {
+                                if (i > 0) str.append(",");
+                                str.append(GeneralUtils.makeDisplayString(item));
+                                i++;
+                            }
+                        } else {
+                            int size = Array.getLength(propertyValue);
+                            for (int i = 0; i < size; i++) {
+                                if (i > 0) str.append(",");
+                                str.append(GeneralUtils.makeDisplayString(Array.get(propertyValue, i)));
+                            }
+                        }
+                        str.append("]");
+                        return str.toString();
                     }
                     return ObjectViewerRenderer.getCellString(propertyValue);
                 } else {
