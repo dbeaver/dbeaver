@@ -139,6 +139,7 @@
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
+                    <replace provider="generic" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
                 </driver>
             </drivers>
