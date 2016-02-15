@@ -354,14 +354,13 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
                 @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
-                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            doSave(RuntimeUtils.getNestedMonitor(monitor));
-                        }
-                    });
-
+//                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
+//                        @Override
+//                        public void run()
+//                        {
+//                            doSave(RuntimeUtils.getNestedMonitor(monitor));
+//                        }
+//                    });
                     try {
                         ContentUtils.saveContentToFile(new StringReader(document.get()), saveFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
                     } catch (Exception e) {
@@ -382,6 +381,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
                 IFolder scriptsFolder = ResourceUtils.getScriptsFolder(curFile.getProject(), true);
                 IFile newFile = scriptsFolder.getFile(location.lastSegment());
                 newFile.createLink(location, IResource.NONE, null);
+                newFile.setPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID, curFile.getPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID));
 
                 SQLEditorInput newInput = new SQLEditorInput(newFile);
                 init(getEditorSite(), newInput);
