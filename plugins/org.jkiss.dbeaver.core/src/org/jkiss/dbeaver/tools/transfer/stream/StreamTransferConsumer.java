@@ -454,7 +454,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     }
                     default:
                         // Binary stream
-                        IOUtils.copyStream(stream, outputStream, 5000);
+                        IOUtils.copyText(new InputStreamReader(stream), writer, 5000);
                         break;
                 }
             } finally {
