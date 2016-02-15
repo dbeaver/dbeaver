@@ -155,10 +155,12 @@ public class DataExporterSQL extends StreamExporterAbstract {
                 DBDContent content = (DBDContent)row[i];
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
-                    if (ContentUtils.isTextContent(content)) {
-                        writeStringValue(cs.getContentReader());
-                    } else {
-                        getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
+                    if (cs != null) {
+                        if (ContentUtils.isTextContent(content)) {
+                            writeStringValue(cs.getContentReader());
+                        } else {
+                            getSite().writeBinaryData(cs);
+                        }
                     }
                 }
                 finally {

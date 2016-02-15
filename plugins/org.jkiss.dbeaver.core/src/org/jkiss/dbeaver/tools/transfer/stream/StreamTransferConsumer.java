@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -429,14 +430,14 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public void writeBinaryData(InputStream stream, long streamLength) throws IOException
+        public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException
         {
-            try {
+            try (final InputStream stream = cs.getContentStream()) {
                 exportSite.flush();
                 switch (settings.getLobEncoding()) {
                     case BASE64:
                     {
-                        Base64.encode(stream, streamLength, writer);
+                        Base64.encode(stream, cs.getContentLength(), writer);
                         break;
                     }
                     case HEX:
@@ -454,11 +455,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     }
                     default:
                         // Binary stream
-                        IOUtils.copyText(new InputStreamReader(stream), writer, 5000);
+                        IOUtils.copyText(
+                            new InputStreamReader(stream, cs.getCharset()),
+                            writer,
+                            5000);
                         break;
                 }
-            } finally {
-                ContentUtils.close(stream);
             }
         }
     }

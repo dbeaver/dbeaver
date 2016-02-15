@@ -106,10 +106,12 @@ public class DataExporterHTML extends StreamExporterAbstract {
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
                     out.write("<td>");
-                    if (ContentUtils.isTextContent(content)) {
-                        writeCellValue(cs.getContentReader());
-                    } else {
-                        getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
+                    if (cs != null) {
+                        if (ContentUtils.isTextContent(content)) {
+                            writeCellValue(cs.getContentReader());
+                        } else {
+                            getSite().writeBinaryData(cs);
+                        }
                     }
                     out.write("</td>");
                 }

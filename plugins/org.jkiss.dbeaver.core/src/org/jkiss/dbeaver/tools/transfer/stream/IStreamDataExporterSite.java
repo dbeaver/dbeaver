@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 
 import java.io.IOException;
@@ -47,6 +49,6 @@ public interface IStreamDataExporterSite {
 
     void flush() throws IOException;
 
-    void writeBinaryData(InputStream stream, long streamLength) throws IOException;
+    void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException;
 
 }
