@@ -52,8 +52,12 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
 
     @Override
     public void cacheObject(@NotNull PostgreDataType object) {
-        super.cacheObject(object);
-        dataTypeMap.put(object.getObjectId(), object);
+        if (getCachedObject(object.getName()) != null) {
+
+        } else {
+            super.cacheObject(object);
+            dataTypeMap.put(object.getObjectId(), object);
+        }
     }
 
     @Override

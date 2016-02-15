@@ -96,11 +96,12 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
     {
         JDBCContentLOB copy = createNewContent();
         DBDContentStorage storage = getContents(monitor);
-        try {
-            copy.updateContents(monitor, storage.cloneStorage(monitor));
-        }
-        catch (IOException e) {
-            throw new DBCException("IO error while clone content", e);
+        if (storage != null) {
+            try {
+                copy.updateContents(monitor, storage.cloneStorage(monitor));
+            } catch (IOException e) {
+                throw new DBCException("IO error while clone content", e);
+            }
         }
         return copy;
     }
