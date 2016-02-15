@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -39,7 +40,12 @@ public class ArrayAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows) throws DBException {
-        DBSDataType collectionType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+        DBSDataType collectionType;
+        if (attribute.getAttribute() instanceof DBSTypedObjectEx) {
+            collectionType = ((DBSTypedObjectEx) attribute.getAttribute()).getDataType();
+        } else {
+            collectionType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), attribute.getTypeName());
+        }
         if (collectionType != null) {
             DBSDataType componentType = collectionType.getComponentType(session.getProgressMonitor());
             if (componentType instanceof DBSEntity) {
