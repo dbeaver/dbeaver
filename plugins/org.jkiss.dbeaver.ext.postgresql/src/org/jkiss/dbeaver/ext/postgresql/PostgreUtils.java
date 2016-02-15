@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
+import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,16 +27,16 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.Collection;
@@ -350,5 +351,17 @@ public class PostgreUtils {
                 return string; 
         }
     }
-    
+
+    public static String[] parseObjectString(String string) throws DBCException {
+        if (string.isEmpty()) {
+            return new String[0];
+        }
+        try {
+            return new CSVReader(new StringReader(string)).readNext();
+        } catch (IOException e) {
+            throw new DBCException("Error parsing PGObject", e);
+        }
+    }
+
+
 }

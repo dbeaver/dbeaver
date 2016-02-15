@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -40,6 +41,7 @@ import java.util.StringTokenizer;
  * PostgreArrayValueHandler
  */
 public class PostgreStructValueHandler extends JDBCArrayValueHandler {
+    static final Log log = Log.getLog(PostgreStructValueHandler.class);
     public static final PostgreStructValueHandler INSTANCE = new PostgreStructValueHandler();
 
     @Override
@@ -60,28 +62,6 @@ public class PostgreStructValueHandler extends JDBCArrayValueHandler {
     }
 
     private JDBCStructStatic convertStringToStruct(@NotNull DBCSession session, @NotNull PostgreDataType compType, @NotNull String value) throws DBException {
-/*
-        List<String> strings = new ArrayList<>(10);
-        StringTokenizer st = new StringTokenizer(value, " ");
-        while (st.hasMoreTokens()) {
-            strings.add(st.nextToken());
-        }
-        Object[] contents = new Object[strings.size()];
-        for (int i = 0; i < strings.size(); i++) {
-            switch (itemType.getTypeID()) {
-                case Types.BOOLEAN: contents[i] = Boolean.valueOf(strings.get(i)); break;
-                case Types.TINYINT: contents[i] = Byte.parseByte(strings.get(i)); break;
-                case Types.SMALLINT: contents[i] = Short.parseShort(strings.get(i)); break;
-                case Types.INTEGER: contents[i] = Integer.parseInt(strings.get(i)); break;
-                case Types.BIGINT: contents[i] = Long.parseLong(strings.get(i)); break;
-                case Types.FLOAT: contents[i] = Float.parseFloat(strings.get(i)); break;
-                case Types.REAL:
-                case Types.DOUBLE: contents[i] = Double.parseDouble(strings.get(i)); break;
-                default:
-                    contents[i] = strings.get(i); break;
-            }
-        }
-*/
         if (value.startsWith("(") && value.endsWith(")")) {
             value = value.substring(1, value.length() - 1);
         }
@@ -89,15 +69,16 @@ public class PostgreStructValueHandler extends JDBCArrayValueHandler {
         if (attributes == null) {
             throw new DBException("Composite type '" + compType.getTypeName() + "' has no attributes");
         }
+        String[] parsedValues = PostgreUtils.parseObjectString(value);
+        if (parsedValues.length != attributes.size()) {
+            log.debug("Number o attributes (" + attributes.size() + ") doesn't match actual number of parsed strings (" + parsedValues.length + ")");
+        }
         Object[] attrValues = new Object[attributes.size()];
 
-        StringTokenizer st = new StringTokenizer(value, ",");
         Iterator<PostgreDataTypeAttribute> attrIter = attributes.iterator();
-        int index = 0;
-        while (st.hasMoreTokens() && attrIter.hasNext()) {
+        for (int i = 0; i < parsedValues.length && attrIter.hasNext(); i++) {
             final PostgreDataTypeAttribute itemAttr = attrIter.next();
-            attrValues[index] = PostgreUtils.convertStringToValue(itemAttr, st.nextToken(), true);
-            index++;
+            attrValues[i] = PostgreUtils.convertStringToValue(itemAttr, parsedValues[i], true);
         }
 
         Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues);

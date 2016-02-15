@@ -98,9 +98,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 detectCaseSensitivity(object);
                 this.objectList.add(object);
                 if (this.objectMap != null) {
-                    String name = caseSensitive ?
-                        object.getName() :
-                        object.getName().toUpperCase();
+                    String name = getObjectName(object);
                     checkDuplicateName(name, object);
                     this.objectMap.put(name, object);
                 }
@@ -116,9 +114,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 detectCaseSensitivity(object);
                 this.objectList.remove(object);
                 if (this.objectMap != null) {
-                    this.objectMap.remove(caseSensitive ?
-                        object.getName() :
-                        object.getName().toUpperCase());
+                    this.objectMap.remove(getObjectName(object));
                 }
             }
         }
@@ -161,9 +157,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         if (objectMap == null) {
             this.objectMap = new HashMap<>();
             for (OBJECT object : objectList) {
-                String name = caseSensitive ?
-                    object.getName() :
-                    object.getName().toUpperCase();
+                String name = getObjectName(object);
                 checkDuplicateName(name, object);
                 this.objectMap.put(name, object);
             }
@@ -193,6 +187,13 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     }
 
+    @NotNull
+    protected String getObjectName(@NotNull OBJECT object) {
+        return caseSensitive ?
+            object.getName() :
+            object.getName().toUpperCase();
+    }
+
     protected class CacheIterator implements Iterator<OBJECT> {
         private Iterator<OBJECT> listIterator = objectList.iterator();
         private OBJECT curObject;
@@ -217,7 +218,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         {
             listIterator.remove();
             if (objectMap != null) {
-                objectMap.remove(caseSensitive ? curObject.getName() : curObject.getName().toUpperCase());
+                objectMap.remove(getObjectName(curObject));
             }
         }
     }
