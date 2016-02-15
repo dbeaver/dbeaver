@@ -15,22 +15,39 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+package org.jkiss.dbeaver.model.impl.jdbc;
+
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Struct;
+import java.util.Map;
 
 /**
- * PostgreDataTypeAttribute
+ * JDBCStructImpl
  */
-public class PostgreDataTypeAttribute extends PostgreAttribute<PostgreDataType>
-{
-    public PostgreDataTypeAttribute(PostgreDataType dataType, JDBCResultSet dbResult) throws DBException {
-        super(dataType, dbResult);
+public class JDBCStructImpl implements Struct {
+
+    private final String typeName;
+    private final Object[] attributes;
+
+    public JDBCStructImpl(String typeName, Object[] attributes) {
+        this.typeName = typeName;
+        this.attributes = attributes;
     }
 
     @Override
-    public int getOrdinalPosition() {
-        return super.getOrdinalPosition() - 1;
+    public String getSQLTypeName() throws SQLException {
+        return typeName;
+    }
+
+    @Override
+    public Object[] getAttributes() throws SQLException {
+        return attributes;
+    }
+
+    @Override
+    public Object[] getAttributes(Map<String, Class<?>> map) throws SQLException {
+        throw new SQLFeatureNotSupportedException();
     }
 }

@@ -173,6 +173,7 @@
             <datasource id="postgresql"/>
 
             <type standard="ARRAY"/>
+            <type standard="STRUCT"/>
         </provider>
     </extension>
 

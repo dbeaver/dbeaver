@@ -47,6 +47,8 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
         //|| typedObject.getTypeName().equals("int2vector")
         if (typeID == Types.ARRAY) {
             return PostgreArrayValueHandler.INSTANCE;
+        } else if (typeID == Types.STRUCT) {
+            return PostgreStructValueHandler.INSTANCE;
         } else {
             return null;
         }

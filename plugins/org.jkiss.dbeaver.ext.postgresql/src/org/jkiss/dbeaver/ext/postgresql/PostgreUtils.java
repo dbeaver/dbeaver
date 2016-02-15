@@ -22,9 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,9 +32,12 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.lang.reflect.Method;
+import java.sql.Types;
 import java.util.Collection;
 
 /**
@@ -326,4 +327,28 @@ public class PostgreUtils {
         }
     }
 
+    public static PostgreDataType findDataType(PostgreDataSource dataSource, DBSTypedObject type) {
+        if (type instanceof PostgreAttribute) {
+            return  ((PostgreAttribute) type).getDataType();
+        } else {
+            String typeName = type.getTypeName();
+            return dataSource.getLocalDataType(typeName);
+        }
+    }
+    
+    public static Object convertStringToValue(DBSTypedObject itemType, String string, boolean unescape) {
+        switch (itemType.getTypeID()) {
+            case Types.BOOLEAN: return Boolean.valueOf(string); 
+            case Types.TINYINT: return Byte.parseByte(string); 
+            case Types.SMALLINT: return Short.parseShort(string); 
+            case Types.INTEGER: return Integer.parseInt(string); 
+            case Types.BIGINT: return Long.parseLong(string); 
+            case Types.FLOAT: return Float.parseFloat(string); 
+            case Types.REAL:
+            case Types.DOUBLE: return Double.parseDouble(string); 
+            default:
+                return string; 
+        }
+    }
+    
 }
