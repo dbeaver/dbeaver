@@ -55,10 +55,12 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
@@ -948,22 +950,30 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public void doSave(IProgressMonitor progressMonitor) {
-        for (QueryProcessor queryProcessor : queryProcessors) {
-            for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
-                ResultSetViewer rsv = resultsProvider.getResultSetViewer();
-                if (rsv != null && rsv.isDirty()) {
-                    rsv.doSave(progressMonitor);
+    public void doSave(IProgressMonitor monitor) {
+        monitor.beginTask("Save data changes...", 1);
+        try {
+            monitor.subTask("Save '" + getPartName() + "' changes...");
+            SaveJob saveJob = new SaveJob();
+            saveJob.schedule();
+
+            // Wait until job finished
+            Display display = Display.getCurrent();
+            while (saveJob.finished == null) {
+                if (!display.readAndDispatch()) {
+                    display.sleep();
                 }
             }
-        }
-        if (ownContext && executionContext != null) {
-            if (DataSourceHandler.isContextTransactionAffected(executionContext)) {
-                DataSourceHandler.closeActiveTransaction(RuntimeUtils.makeMonitor(progressMonitor), executionContext, true);
+            display.update();
+            if (!saveJob.finished) {
+                monitor.setCanceled(true);
+                return;
             }
-//            releaseExecutionContext();
+        } finally {
+            monitor.done();
         }
-        super.doSave(progressMonitor);
+
+        super.doSave(monitor);
     }
 
     @Override
@@ -1704,4 +1714,41 @@ public class SQLEditor extends SQLEditorBase implements
         });
     }
 
+    private class SaveJob extends AbstractJob {
+        private transient Boolean finished = null;
+
+        public SaveJob() {
+            super("Save '" + getPartName() + "' data changes...");
+            setUser(true);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            try {
+                for (QueryProcessor queryProcessor : queryProcessors) {
+                    for (QueryResultsContainer resultsProvider : queryProcessor.getResultProviders()) {
+                        ResultSetViewer rsv = resultsProvider.getResultSetViewer();
+                        if (rsv != null && rsv.isDirty()) {
+                            rsv.doSave(monitor);
+                        }
+                    }
+                }
+                if (ownContext && executionContext != null) {
+                    if (DataSourceHandler.isContextTransactionAffected(executionContext)) {
+                        DataSourceHandler.closeActiveTransaction(monitor, executionContext, true);
+                    }
+                }
+                finished = true;
+                return Status.OK_STATUS;
+            } catch (Throwable e) {
+                finished = false;
+                log.error(e);
+                return GeneralUtils.makeExceptionStatus(e);
+            } finally {
+                if (finished == null) {
+                    finished = true;
+                }
+            }
+        }
+    }
 }
