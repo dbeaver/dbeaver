@@ -337,7 +337,7 @@ public class ResultSetViewer extends Viewer
 
     private boolean checkDoubleLock(Control lockedBy) {
         if (actionsDisabled) {
-            log.error("Double-lock actions by [" + lockedBy + "]");
+            log.error("Internal error: actions double-lock by [" + lockedBy + "]");
             return true;
         }
         return false;
