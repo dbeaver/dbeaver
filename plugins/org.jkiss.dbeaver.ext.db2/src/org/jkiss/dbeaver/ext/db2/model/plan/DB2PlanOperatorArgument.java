@@ -18,14 +18,13 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * DB2 EXPLAIN_ARGUMENT table
@@ -53,6 +52,28 @@ public class DB2PlanOperatorArgument implements DBPNamedValueObject {
         }
     }
 
+    // -----------------
+    // Business contract
+    // -----------------
+    @NotNull
+    @Override
+    public String getName()
+    {
+        String desc = ARGUMENT_TYPES.get(argumentType);
+        if (desc == null) {
+            return argumentType;
+        } else {
+            return desc;
+        }
+    }
+
+    @NotNull
+    @Override
+    public Object getObjectValue()
+    {
+        return argumentValue;
+    }
+
     @Override
     public String toString()
     {
@@ -71,18 +92,6 @@ public class DB2PlanOperatorArgument implements DBPNamedValueObject {
     public String getArgumentType()
     {
         return argumentType;
-    }
-
-    @NotNull
-    @Override
-    public String getName()
-    {
-        String desc = ARGUMENT_TYPES.get(argumentType);
-        if (desc == null) {
-            return argumentType;
-        } else {
-            return desc;
-        }
     }
 
     static {
@@ -219,9 +228,4 @@ public class DB2PlanOperatorArgument implements DBPNamedValueObject {
         ARGUMENT_TYPES.put("XPHYID", "Physical ix associated with an index over XML data");
     }
 
-    @NotNull
-    @Override
-    public Object getObjectValue() {
-        return argumentValue;
-    }
 }
