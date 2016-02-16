@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanOperatorPredicate implements DBPNamedObject {
+public class DB2PlanOperatorPredicate implements DBPNamedValueObject {
 
     private DB2PlanOperator db2Operator;
 
@@ -63,17 +63,28 @@ public class DB2PlanOperatorPredicate implements DBPNamedObject {
         displayName = sb.toString();
     }
 
-    @Override
-    public String toString()
-    {
-        return predicateText;
-    }
+    // -----------------
+    // Business contract
+    // -----------------
 
     @NotNull
     @Override
     public String getName()
     {
         return displayName;
+    }
+
+    @NotNull
+    @Override
+    public Object getObjectValue()
+    {
+        return predicateText;
+    }
+
+    @Override
+    public String toString()
+    {
+        return predicateText;
     }
 
     // ----------------
