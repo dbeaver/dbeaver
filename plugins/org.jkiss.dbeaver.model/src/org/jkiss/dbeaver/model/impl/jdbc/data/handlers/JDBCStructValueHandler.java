@@ -22,19 +22,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStruct;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructStatic;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructUnknown;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Struct;
+import java.sql.Types;
 
 /**
  * JDBC Struct value handler.
@@ -81,7 +85,18 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
         Object value)
         throws DBCException, SQLException
     {
-        throw new DBCException("Struct update not supported");
+        if (value == null) {
+            statement.setNull(paramIndex, Types.STRUCT);
+        } else if (value instanceof DBDStructure) {
+            DBDStructure struct = (DBDStructure) value;
+            if (struct.isNull()) {
+                statement.setNull(paramIndex, Types.STRUCT);
+            } else {
+                statement.setObject(paramIndex, struct.getRawValue(), Types.STRUCT);
+            }
+        } else {
+            throw new DBCException("Struct parameter type '" + value.getClass().getName() + "' not supported");
+        }
     }
 
     @Override
@@ -107,18 +122,17 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
             if (object instanceof Struct) {
                 return new JDBCStructDynamic(session, (Struct) object, null);
             } else {
-                return new JDBCStructDynamic(session, object);
+                return new JDBCStructUnknown(object);
             }
         }
         if (object == null) {
-            return new JDBCStructStatic(session, dataType, null);
+            return new JDBCStructStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null));
         } else if (object instanceof JDBCStructStatic) {
             return copy ? ((JDBCStructStatic) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
             return new JDBCStructStatic(session, dataType, (Struct) object);
         } else {
-//            log.warn("Unsupported struct type: " + object.getClass().getName());
-            return new JDBCStructDynamic(session, object);
+            return new JDBCStructUnknown(object);
         }
     }
 

@@ -22,17 +22,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Struct;
 import java.util.*;
@@ -41,18 +45,9 @@ import java.util.*;
  * Static struct holder.
  * Attributes described by static data type.
  */
-public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
+public class JDBCStructStatic extends JDBCStruct {
 
     static final Log log = Log.getLog(JDBCStructStatic.class);
-
-    @NotNull
-    private DBSDataType type;
-    @Nullable
-    private Struct contents;
-    @NotNull
-    private DBSEntityAttribute[] attributes;
-    @NotNull
-    private Object[] values;
 
     private JDBCStructStatic()
     {
@@ -61,7 +56,6 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
     public JDBCStructStatic(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException
     {
         this.type = type;
-        this.contents = contents;
 
         // Extract structure data
         try {
@@ -98,75 +92,20 @@ public class JDBCStructStatic implements JDBCStruct, DBDValueCloneable {
         }
     }
 
-    @Nullable
-    public Struct getValue() throws DBCException
-    {
-        return contents;
-    }
-
-    @Override
-    public Object getRawValue() {
-        return contents;
-    }
-
-    @Override
-    public boolean isNull()
-    {
-        return contents == null;
-    }
-
-    @Override
-    public void release()
-    {
-        contents = null;
-    }
-
-    @NotNull
-    public String getTypeName()
-    {
-        return type.getTypeName();
-    }
-
-    public String getStringRepresentation()
-    {
-        return getTypeName();
-    }
-
-    @Override
-    public DBSDataType getDataType()
-    {
-        return type;
-    }
-
-    @NotNull
-    @Override
-    public DBSAttributeBase[] getAttributes()
-    {
-        return attributes;
-    }
-
-    @Nullable
-    @Override
-    public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
-    {
-        int ordinalPosition = attribute.getOrdinalPosition();
-        return ordinalPosition >= values.length ? null : values[ordinalPosition];
-    }
-
-    @Override
-    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
-    {
-        values[attribute.getOrdinalPosition()] = value;
-    }
-
     @Override
     public JDBCStructStatic cloneValue(DBRProgressMonitor monitor) throws DBCException
     {
         JDBCStructStatic copyStruct = new JDBCStructStatic();
         copyStruct.type = this.type;
-        copyStruct.contents = null;
         copyStruct.attributes = Arrays.copyOf(this.attributes, this.attributes.length);
-        copyStruct.values = Arrays.copyOf(this.values, this.values.length);
+        copyStruct.values = new Object[this.values.length];
+        for (int i = 0; i < this.values.length; i++) {
+            Object value = this.values[i];
+            if (value instanceof DBDValueCloneable) {
+                value = ((DBDValueCloneable)value).cloneValue(monitor);
+            }
+            copyStruct.values[i] = value;
+        }
         return copyStruct;
     }
 
