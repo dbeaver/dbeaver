@@ -387,8 +387,8 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public Object[] getChildren(Object parent)
         {
-            if (parent instanceof DBDStructure) {
-                DBDStructure structure = (DBDStructure)parent;
+            if (parent instanceof DBDComposite) {
+                DBDComposite structure = (DBDComposite)parent;
                 try {
                     DBSAttributeBase[] attributes = structure.getAttributes();
                     Object[] children = new Object[attributes.length];
@@ -454,7 +454,7 @@ public class ComplexObjectEditor extends TreeViewer {
         public boolean hasChildren(Object parent)
         {
             return
-                parent instanceof DBDStructure ||
+                parent instanceof DBDComposite ||
                 parent instanceof DBDCollection ||
                 parent instanceof DBDReference ||
                 (parent instanceof FieldInfo && hasChildren(((FieldInfo) parent).value)) ||
@@ -492,8 +492,8 @@ public class ComplexObjectEditor extends TreeViewer {
         {
             if (value instanceof DBDCollection) {
                 return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
-            } else if (value instanceof DBDStructure) {
-                return "[" + ((DBDStructure) value).getDataType().getName() + "]";
+            } else if (value instanceof DBDComposite) {
+                return "[" + ((DBDComposite) value).getDataType().getName() + "]";
             } else if (value instanceof DBDReference) {
                 return "--> [" + ((DBDReference) value).getReferencedType().getName() + "]";
             } else {

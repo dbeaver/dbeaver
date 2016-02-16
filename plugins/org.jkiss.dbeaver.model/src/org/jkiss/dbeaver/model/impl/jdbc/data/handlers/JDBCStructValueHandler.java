@@ -21,18 +21,18 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDStructure;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStruct;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructDynamic;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructStatic;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructUnknown;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeUnknown;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -59,11 +59,11 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
     @Override
     public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof JDBCStruct) {
+        if (value instanceof JDBCComposite) {
             if (format == DBDDisplayFormat.UI) {
 
             }
-            return ((JDBCStruct) value).getStringRepresentation();
+            return ((JDBCComposite) value).getStringRepresentation();
         } else {
             return String.valueOf(value);
         }
@@ -71,9 +71,9 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
 
     @NotNull
     @Override
-    public Class<JDBCStruct> getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<JDBCComposite> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
-        return JDBCStruct.class;
+        return JDBCComposite.class;
     }
 
     @Override
@@ -87,12 +87,14 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
     {
         if (value == null) {
             statement.setNull(paramIndex, Types.STRUCT);
-        } else if (value instanceof DBDStructure) {
-            DBDStructure struct = (DBDStructure) value;
+        } else if (value instanceof DBDComposite) {
+            DBDComposite struct = (DBDComposite) value;
             if (struct.isNull()) {
                 statement.setNull(paramIndex, Types.STRUCT);
+            } else if (struct instanceof JDBCComposite) {
+                statement.setObject(paramIndex, ((JDBCComposite) struct).getStructValue(), Types.STRUCT);
             } else {
-                statement.setObject(paramIndex, struct.getRawValue(), Types.STRUCT);
+                statement.setObject(paramIndex, struct.getRawValue());
             }
         } else {
             throw new DBCException("Struct parameter type '" + value.getClass().getName() + "' not supported");
@@ -120,19 +122,19 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
         }
         if (dataType == null) {
             if (object instanceof Struct) {
-                return new JDBCStructDynamic(session, (Struct) object, null);
+                return new JDBCCompositeDynamic(session, (Struct) object, null);
             } else {
-                return new JDBCStructUnknown(session, object);
+                return new JDBCCompositeUnknown(session, object);
             }
         }
         if (object == null) {
-            return new JDBCStructStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null));
-        } else if (object instanceof JDBCStructStatic) {
-            return copy ? ((JDBCStructStatic) object).cloneValue(session.getProgressMonitor()) : object;
+            return new JDBCCompositeStatic(session, dataType, new JDBCStructImpl(dataType.getTypeName(), null));
+        } else if (object instanceof JDBCCompositeStatic) {
+            return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Struct) {
-            return new JDBCStructStatic(session, dataType, (Struct) object);
+            return new JDBCCompositeStatic(session, dataType, (Struct) object);
         } else {
-            return new JDBCStructUnknown(session, object);
+            return new JDBCCompositeUnknown(session, object);
         }
     }
 

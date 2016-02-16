@@ -1262,8 +1262,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (recordMode) {
                     if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
                         return "[" + ((DBDCollection) value).getItemCount() + "]";
-                    } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDStructure) {
-                        return "[" + ((DBDStructure) value).getDataType().getName() + "]";
+                    } else if (attr.getDataKind() == DBPDataKind.STRUCT && value instanceof DBDComposite) {
+                        return "[" + ((DBDComposite) value).getDataType().getName() + "]";
                     }
                 }
                 return attr.getValueRenderer().getValueDisplayString(

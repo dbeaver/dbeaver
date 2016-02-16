@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
 /**
- * Reference to another object (usually DBDStructure).
+ * Reference to another object (usually DBDComposite).
  */
 public interface DBDReference extends DBDComplexValue {
 

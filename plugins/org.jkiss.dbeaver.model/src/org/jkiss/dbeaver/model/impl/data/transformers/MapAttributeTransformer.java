@@ -53,8 +53,8 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                 }
             }
 
-            if (value instanceof DBDStructure) {
-                DBSAttributeBase[] attributes = ((DBDStructure) value).getAttributes();
+            if (value instanceof DBDComposite) {
+                DBSAttributeBase[] attributes = ((DBDComposite) value).getAttributes();
                 for (DBSAttributeBase attr : attributes) {
                     Pair<DBSAttributeBase, Object[]> attrValue = null;
                     if (valueAttributes != null) {
@@ -67,10 +67,10 @@ public class MapAttributeTransformer implements DBDAttributeTransformer {
                     }
                     if (attrValue != null) {
                         // Update attr value
-                        attrValue.getSecond()[i] = ((DBDStructure) value).getAttributeValue(attr);
+                        attrValue.getSecond()[i] = ((DBDComposite) value).getAttributeValue(attr);
                     } else {
                         Object[] valueList = new Object[rows.size()];
-                        valueList[i] = ((DBDStructure) value).getAttributeValue(attr);
+                        valueList[i] = ((DBDComposite) value).getAttributeValue(attr);
                         if (valueAttributes == null) {
                             valueAttributes = new ArrayList<>();
                         }
