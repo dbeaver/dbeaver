@@ -43,7 +43,7 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
     public static final String PROP_CATEGORY_COLUMN = "Column";
 
     private final int ordinalPosition;
-    private final boolean notNull;
+    private boolean notNull;
     private long displaySize;
     private final String label;
     private final String name;
@@ -51,10 +51,10 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
     private int scale;
     private final String tableName;
     private final int typeID;
-    private final String typeName;
-    private final boolean readOnly;
-    private final boolean writable;
-    private final boolean sequence;
+    private String typeName;
+    private boolean readOnly;
+    private boolean writable;
+    private boolean sequence;
     private final DBPDataKind dataKind;
     private JDBCTableMetaData tableMetaData;
     private DBDPseudoAttribute pseudoAttribute;
@@ -90,7 +90,12 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
         // TODO: some drivers (DB2) always mark all columns as read only. Dunno why. So let's ignore this property
         // read-only connections are detected separately.
         this.readOnly = false;//resultSetMeta.isReadOnly(ordinalPosition + 1);
-        this.writable = resultSetMeta.isWritable(ordinalPosition + 1);
+
+        try {
+            this.writable = resultSetMeta.isWritable(ordinalPosition + 1);
+        } catch (SQLException e) {
+            log.debug(e);
+        }
 
         String fetchedTableName = null;
         try {
@@ -133,13 +138,23 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
             }
         }
 
-        this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
+        try {
+            this.notNull = resultSetMeta.isNullable(ordinalPosition + 1) == ResultSetMetaData.columnNoNulls;
+        } catch (SQLException e) {
+            this.notNull = false;
+            log.debug(e);
+        }
         try {
             this.displaySize = resultSetMeta.getColumnDisplaySize(ordinalPosition + 1);
         } catch (SQLException e) {
             this.displaySize = 0;
         }
-        this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
+        try {
+            this.typeName = resultSetMeta.getColumnTypeName(ordinalPosition + 1);
+        } catch (SQLException e) {
+            log.debug(e);
+            this.typeName = "unknown";
+        }
         {
             int typeID = resultSetMeta.getColumnType(ordinalPosition + 1);
             DBPDataKind dataKind = null;
@@ -157,7 +172,12 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvide
             this.dataKind = dataKind;
         }
 
-        this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
+        try {
+            this.sequence = resultSetMeta.isAutoIncrement(ordinalPosition + 1);
+        } catch (SQLException e) {
+            this.sequence = false;
+            log.debug(e);
+        }
         try {
             this.precision = resultSetMeta.getPrecision(ordinalPosition + 1);
         } catch (Exception e) {
