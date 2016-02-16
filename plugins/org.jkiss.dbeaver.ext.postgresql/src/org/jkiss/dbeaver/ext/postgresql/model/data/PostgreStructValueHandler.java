@@ -25,14 +25,20 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
+import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.SQLException;
 import java.sql.Struct;
+import java.sql.Types;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -42,6 +48,31 @@ import java.util.Iterator;
 public class PostgreStructValueHandler extends JDBCStructValueHandler {
     static final Log log = Log.getLog(PostgreStructValueHandler.class);
     public static final PostgreStructValueHandler INSTANCE = new PostgreStructValueHandler();
+
+    @Override
+    protected void bindParameter(
+        JDBCSession session,
+        JDBCPreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
+        throws DBCException, SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex, Types.STRUCT);
+        } else if (value instanceof DBDComposite) {
+            DBDComposite struct = (DBDComposite) value;
+            if (struct.isNull()) {
+                statement.setNull(paramIndex, Types.STRUCT);
+            } else if (struct instanceof JDBCComposite) {
+                final Object[] values = ((JDBCComposite) struct).getValues();
+                final String string = PostgreUtils.generateObjectString(values);
+                statement.setObject(paramIndex, string, Types.OTHER);
+            }
+        } else {
+            throw new DBCException("Struct parameter type '" + value.getClass().getName() + "' not supported");
+        }
+    }
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
