@@ -44,6 +44,16 @@ public class TextUtils {
         return str.trim().length() == 0;
     }
 
+    public static int getOffsetOf(IDocument document, int line, String pattern)
+        throws BadLocationException {
+        IRegion region = document.getLineInformation(line);
+        if (region == null || region.getLength() == 0) {
+            return -1;
+        }
+        String str = document.get(region.getOffset(), region.getLength());
+        return str.indexOf(pattern);
+    }
+
     /**
      * Shortens a supplied string so that it fits within the area specified by
      * the width argument. Strings that have been shorted have an "..." attached

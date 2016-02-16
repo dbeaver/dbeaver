@@ -495,27 +495,46 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 currentPos++;
             }
         }
-
+        //document.get
         // Extract part of document between empty lines
         int startPos = 0;
         int endPos = document.getLength();
+        boolean useBlankLines = syntaxManager.isBlankLineDelimiter();
+        final Set<String> statementDelimiters = syntaxManager.getStatementDelimiters();
+
         try {
             int currentLine = document.getLineOfOffset(currentPos);
             int lineOffset = document.getLineOffset(currentLine);
             int linesCount = document.getNumberOfLines();
             int firstLine = currentLine, lastLine = currentLine;
             while (firstLine > 0) {
-                if (TextUtils.isEmptyLine(document, firstLine)) {
-                    if (isDefaultPartition(partitioner, document.getLineOffset(firstLine))) {
+                if (useBlankLines) {
+                    if (TextUtils.isEmptyLine(document, firstLine) &&
+                        isDefaultPartition(partitioner, document.getLineOffset(firstLine))) {
                         break;
+                    }
+                } else {
+                    for (String delim : statementDelimiters) {
+                        final int offset = TextUtils.getOffsetOf(document, firstLine, delim);
+                        if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
+                            break;
+                        }
                     }
                 }
                 firstLine--;
             }
             while (lastLine < linesCount) {
-                if (TextUtils.isEmptyLine(document, lastLine)) {
-                    if (isDefaultPartition(partitioner, document.getLineOffset(lastLine))) {
+                if (useBlankLines) {
+                    if (TextUtils.isEmptyLine(document, lastLine) &&
+                        isDefaultPartition(partitioner, document.getLineOffset(lastLine))) {
                         break;
+                    }
+                } else {
+                    for (String delim : statementDelimiters) {
+                        final int offset = TextUtils.getOffsetOf(document, lastLine, delim);
+                        if (offset >= 0 && isDefaultPartition(partitioner, offset)) {
+                            break;
+                        }
                     }
                 }
                 lastLine++;
