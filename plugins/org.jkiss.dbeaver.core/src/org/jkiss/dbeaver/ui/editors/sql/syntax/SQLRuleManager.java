@@ -53,7 +53,7 @@ public class SQLRuleManager extends RuleBasedScanner {
     private Set<SQLScriptPosition> addedPositions = new HashSet<>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<>();
 
-    public SQLRuleManager(SQLSyntaxManager syntaxManager)
+    public SQLRuleManager(@NotNull SQLSyntaxManager syntaxManager)
     {
         this.syntaxManager = syntaxManager;
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
@@ -220,11 +220,13 @@ public class SQLRuleManager extends RuleBasedScanner {
         private final SQLParameterToken parameterToken;
         private final StringBuilder buffer;
         private final char anonymousParameterMark;
+        private final char namedParameterPrefix;
 
         public ParametersRule(SQLParameterToken parameterToken) {
             this.parameterToken = parameterToken;
             buffer = new StringBuilder();
             anonymousParameterMark = syntaxManager.getAnonymousParameterMark();
+            namedParameterPrefix = syntaxManager.getNamedParameterPrefix();
         }
 
         @Override
@@ -237,12 +239,12 @@ public class SQLRuleManager extends RuleBasedScanner {
             scanner.unread();
             int prevChar = scanner.read();
             if (Character.isJavaIdentifierPart(prevChar) ||
-                prevChar == SQLConstants.PARAMETER_PREFIX || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
+                prevChar == namedParameterPrefix || prevChar == anonymousParameterMark || prevChar == '\\' || prevChar == '/')
             {
                 return Token.UNDEFINED;
             }
             int c = scanner.read();
-            if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == SQLConstants.PARAMETER_PREFIX)) {
+            if (c != ICharacterScanner.EOF && (c == anonymousParameterMark || c == namedParameterPrefix)) {
                 buffer.setLength(0);
                 do {
                     buffer.append((char) c);
@@ -257,7 +259,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                     }
                 }
                 if (syntaxManager.isParametersEnabled()) {
-                    if (buffer.charAt(0) == SQLConstants.PARAMETER_PREFIX && buffer.length() > 1) {
+                    if (buffer.charAt(0) == namedParameterPrefix && buffer.length() > 1) {
                         boolean validChars = true;
                         for (int i = 1; i < buffer.length(); i++) {
                             if (!Character.isLetterOrDigit(buffer.charAt(i))) {

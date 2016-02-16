@@ -44,6 +44,7 @@ public class SQLSyntaxManager {
     private boolean parametersEnabled;
     private boolean anonymousParametersEnabled;
     private char anonymousParameterMark;
+    private char namedParameterPrefix;
     @NotNull
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
@@ -99,6 +100,10 @@ public class SQLSyntaxManager {
         return anonymousParameterMark;
     }
 
+    public char getNamedParameterPrefix() {
+        return namedParameterPrefix;
+    }
+
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
         this.statementDelimiters.clear();
@@ -125,6 +130,12 @@ public class SQLSyntaxManager {
             this.anonymousParameterMark = SQLConstants.DEFAULT_PARAMETER_MARK;
         } else {
             this.anonymousParameterMark = markString.charAt(0);
+        }
+        String paramPrefixString = preferenceStore.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
+        if (CommonUtils.isEmpty(paramPrefixString)) {
+            this.namedParameterPrefix = SQLConstants.DEFAULT_PARAMETER_PREFIX;
+        } else {
+            this.namedParameterPrefix = paramPrefixString.charAt(0);
         }
     }
 

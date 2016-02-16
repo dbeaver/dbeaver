@@ -51,6 +51,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button enableSQLParameters;
     private Button enableSQLAnonymousParameters;
     private Text anonymousParameterMarkText;
+    private Text namedParameterPrefixText;
 
     public PrefPageSQLExecute()
     {
@@ -72,7 +73,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
             store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
-            store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK)
+            store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
+            store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
         ;
     }
 
@@ -109,6 +111,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
             anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             anonymousParameterMarkText.setTextLimit(1);
+            namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            namedParameterPrefixText.setTextLimit(1);
         }
 
         // Scripts
@@ -169,6 +173,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
             enableSQLAnonymousParameters.setSelection(store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
             anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
+            namedParameterPrefixText.setText(store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -190,6 +195,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED, enableSQLAnonymousParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, anonymousParameterMarkText.getText());
+            store.setValue(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, namedParameterPrefixText.getText());
         } catch (Exception e) {
             log.warn(e);
         }
