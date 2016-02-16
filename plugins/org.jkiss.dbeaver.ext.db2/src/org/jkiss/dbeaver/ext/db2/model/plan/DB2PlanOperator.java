@@ -18,16 +18,16 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.CommonUtils;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * DB2 EXPLAIN_OPERATOR table
@@ -51,6 +51,7 @@ public class DB2PlanOperator extends DB2PlanNode {
         sb.append("   AND STMTNO = ?");// 7
         sb.append("   AND SECTNO = ?");// 8
         sb.append("   AND OPERATOR_ID = ?");// 9
+        sb.append(" ORDER BY %s");// 9
         sb.append(" WITH UR");
         SEL_BASE_SELECT = sb.toString();
     }
@@ -171,8 +172,8 @@ public class DB2PlanOperator extends DB2PlanNode {
     {
 
         listArguments = new ArrayList<>();
-        JDBCPreparedStatement sqlStmt = session.prepareStatement(String
-            .format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT"));
+        JDBCPreparedStatement sqlStmt = session
+            .prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_ARGUMENT", "ARGUMENT_TYPE"));
         try {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
@@ -185,7 +186,7 @@ public class DB2PlanOperator extends DB2PlanNode {
         }
 
         listPredicates = new ArrayList<>();
-        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE"));
+        sqlStmt = session.prepareStatement(String.format(SEL_BASE_SELECT, planTableSchema, "EXPLAIN_PREDICATE", "PREDICATE_ID"));
         try {
             setQueryParameters(sqlStmt);
             try (JDBCResultSet res = sqlStmt.executeQuery()) {
