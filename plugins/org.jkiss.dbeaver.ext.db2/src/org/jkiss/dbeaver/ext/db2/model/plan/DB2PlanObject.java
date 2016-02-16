@@ -18,12 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
+import java.sql.Timestamp;
+
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
-
-import java.sql.Timestamp;
 
 /**
  * DB2 EXPLAIN_OBJECT table
@@ -73,7 +73,7 @@ public class DB2PlanObject extends DB2PlanNode {
     private Long numRIDsDeleted;
     private Long numEmptyLeafs;
     private Long activeBlocks;
-    private Integer numDataPart;
+    private Integer numDataParts;
     private String nullKeys;
 
     // ------------
@@ -120,7 +120,7 @@ public class DB2PlanObject extends DB2PlanNode {
         this.numRIDsDeleted = JDBCUtils.safeGetLong(dbResult, "NUMRIDS_DELETED");
         this.numEmptyLeafs = JDBCUtils.safeGetLong(dbResult, "NUM_EMPTY_LEAFS");
         this.activeBlocks = JDBCUtils.safeGetLong(dbResult, "ACTIVE_BLOCKS");
-        this.numDataPart = JDBCUtils.safeGetInteger(dbResult, "NUM_DATA_PART");
+        this.numDataParts = JDBCUtils.safeGetInteger(dbResult, "NUM_DATA_PARTS");
         this.nullKeys = JDBCUtils.safeGetString(dbResult, "NULLKEYS");
 
         this.nodeName = buildName(objectSchema, objectName);
@@ -130,7 +130,7 @@ public class DB2PlanObject extends DB2PlanNode {
 
     DB2PlanObject(DB2PlanObject copy)
     {
-//        super(copy);
+        // super(copy);
 
         this.displayName = copy.getDisplayName();
         this.nodeName = copy.getNodeName();
@@ -171,10 +171,9 @@ public class DB2PlanObject extends DB2PlanNode {
         this.numRIDsDeleted = copy.getNumRIDsDeleted();
         this.numEmptyLeafs = copy.getNumEmptyLeafs();
         this.activeBlocks = copy.getActiveBlocks();
-        this.numDataPart = copy.getNumDataPart();
+        this.numDataParts = copy.getNumDataParts();
         this.nullKeys = copy.getNullKeys();
     }
-
 
     // -----------------
     // Business Contract
@@ -427,9 +426,9 @@ public class DB2PlanObject extends DB2PlanNode {
     }
 
     @Property(editable = false, viewable = false)
-    public Integer getNumDataPart()
+    public Integer getNumDataParts()
     {
-        return numDataPart;
+        return numDataParts;
     }
 
     @Property(editable = false, viewable = false)

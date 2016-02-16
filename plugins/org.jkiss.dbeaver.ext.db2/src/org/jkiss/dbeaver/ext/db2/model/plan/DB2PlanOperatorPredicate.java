@@ -34,7 +34,7 @@ public class DB2PlanOperatorPredicate implements DBPNamedValueObject {
 
     private Integer predicateId;
     private String howApplied;
-    private String whenApplied;
+    private String whenEvaluated;
     private String predicateText;
 
     private String displayName;
@@ -49,14 +49,14 @@ public class DB2PlanOperatorPredicate implements DBPNamedValueObject {
 
         this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
         this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
-        this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
+        this.whenEvaluated = JDBCUtils.safeGetString(dbResult, "WHEN_EVALUATED");
         this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
 
         StringBuilder sb = new StringBuilder(32);
         sb.append(predicateId);
-        if (whenApplied != null) {
+        if (whenEvaluated != null) {
             sb.append(" - ");
-            sb.append(whenApplied);
+            sb.append(whenEvaluated);
         }
         sb.append(" ");
         sb.append(howApplied);
@@ -101,9 +101,9 @@ public class DB2PlanOperatorPredicate implements DBPNamedValueObject {
         return howApplied;
     }
 
-    public String getWhenApplied()
+    public String getWhenEvaluated()
     {
-        return whenApplied;
+        return whenEvaluated;
     }
 
     public String getPredicateText()
