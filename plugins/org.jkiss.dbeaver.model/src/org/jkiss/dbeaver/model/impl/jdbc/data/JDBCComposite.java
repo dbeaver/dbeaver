@@ -100,6 +100,11 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
         return getTypeName();
     }
 
+    @NotNull
+    public Object[] getValues() {
+        return values;
+    }
+
     public Struct getStructValue() throws DBCException {
         Object[] attrs = new Object[values.length];
         for (int i = 0; i < values.length; i++) {

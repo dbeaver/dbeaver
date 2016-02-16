@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.postgresql;
 
 import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.sql.Types;
 import java.util.Collection;
@@ -361,6 +363,23 @@ public class PostgreUtils {
         } catch (IOException e) {
             throw new DBCException("Error parsing PGObject", e);
         }
+    }
+
+    public static String generateObjectString(Object[] values) throws DBCException {
+        String[] line = new String[values.length];
+        for (int i = 0; i < values.length; i++) {
+            final Object value = values[i];
+            line[i] = value == null ? "NULL" : value.toString();
+        }
+        StringWriter out = new StringWriter();
+        final CSVWriter writer = new CSVWriter(out);
+        writer.writeNext(line);
+        try {
+            writer.flush();
+        } catch (IOException e) {
+            log.warn(e);
+        }
+        return "(" + out.toString().trim() + ")";
     }
 
 
