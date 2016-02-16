@@ -423,9 +423,9 @@ public class ResultSetModel {
                 }
             }
             if (ownerValue != null) {
-                if (ownerValue instanceof DBDStructure) {
+                if (ownerValue instanceof DBDComposite) {
                     try {
-                        ((DBDStructure) ownerValue).setAttributeValue(attr.getAttribute(), value);
+                        ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
                     } catch (DBCException e) {
                         log.error("Error setting [" + attr.getName() + "] value", e);
                     }

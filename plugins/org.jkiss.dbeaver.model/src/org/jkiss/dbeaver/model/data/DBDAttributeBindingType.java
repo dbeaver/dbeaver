@@ -133,8 +133,8 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
                 }
             }
         }
-        if (ownerValue instanceof DBDStructure) {
-            return ((DBDStructure) ownerValue).getAttributeValue(attribute);
+        if (ownerValue instanceof DBDComposite) {
+            return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         }
         throw new DBCException("Unsupported value type: " + ownerValue.getClass().getName());
     }

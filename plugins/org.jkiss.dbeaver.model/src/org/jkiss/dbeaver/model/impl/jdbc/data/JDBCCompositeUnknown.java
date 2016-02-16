@@ -24,28 +24,26 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
-import java.util.Arrays;
-
 /**
  * Unknown struct.
  */
-public class JDBCStructUnknown extends JDBCStruct {
+public class JDBCCompositeUnknown extends JDBCComposite {
 
-    public JDBCStructUnknown(@NotNull JDBCStruct struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
+    public JDBCCompositeUnknown(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
         super(struct, monitor);
     }
 
-    public JDBCStructUnknown(@NotNull DBCSession session, @Nullable Object structData)
+    public JDBCCompositeUnknown(@NotNull DBCSession session, @Nullable Object structData)
     {
         this.type = new StructType(session.getDataSource());
-        this.attributes = new DBSEntityAttribute[] { new StructAttribute(type, 0, structData) };
+        this.attributes = new DBSEntityAttribute[0];// { new StructAttribute(type, 0, structData) };
         this.values = new Object[] { structData };
     }
 
     @Override
-    public JDBCStructUnknown cloneValue(DBRProgressMonitor monitor) throws DBCException
+    public JDBCCompositeUnknown cloneValue(DBRProgressMonitor monitor) throws DBCException
     {
-        return new JDBCStructUnknown(this, monitor);
+        return new JDBCCompositeUnknown(this, monitor);
     }
 
     public String getStringRepresentation() {

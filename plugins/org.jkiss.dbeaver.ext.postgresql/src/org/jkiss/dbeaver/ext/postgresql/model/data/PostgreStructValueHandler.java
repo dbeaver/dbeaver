@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructStatic;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -52,9 +52,9 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         try {
             if (object == null) {
-                return new JDBCStructStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null));
-            } else if (object instanceof JDBCStructStatic) {
-                return copy ? ((JDBCStructStatic) object).cloneValue(session.getProgressMonitor()) : object;
+                return new JDBCCompositeStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null));
+            } else if (object instanceof JDBCCompositeStatic) {
+                return copy ? ((JDBCCompositeStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {
                 Object value;
                 if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
@@ -69,7 +69,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
     }
 
-    private JDBCStructStatic convertStringToStruct(@NotNull DBCSession session, @NotNull PostgreDataType compType, @NotNull String value) throws DBException {
+    private JDBCCompositeStatic convertStringToStruct(@NotNull DBCSession session, @NotNull PostgreDataType compType, @NotNull String value) throws DBException {
         if (value.startsWith("(") && value.endsWith(")")) {
             value = value.substring(1, value.length() - 1);
         }
@@ -90,7 +90,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
 
         Struct contents = new JDBCStructImpl(compType.getTypeName(), attrValues);
-        return new JDBCStructStatic(session, compType, contents);
+        return new JDBCCompositeStatic(session, compType, contents);
     }
 
 }
