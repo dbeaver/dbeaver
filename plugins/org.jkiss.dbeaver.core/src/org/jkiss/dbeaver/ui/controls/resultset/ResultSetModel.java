@@ -516,6 +516,7 @@ public class ResultSetModel {
                     documentAttribute = realAttr;
                 }
             }
+            updateColorMapping();
         }
     }
 
