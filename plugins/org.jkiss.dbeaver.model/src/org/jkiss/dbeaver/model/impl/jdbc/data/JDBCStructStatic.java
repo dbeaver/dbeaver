@@ -49,8 +49,8 @@ public class JDBCStructStatic extends JDBCStruct {
 
     static final Log log = Log.getLog(JDBCStructStatic.class);
 
-    private JDBCStructStatic()
-    {
+    public JDBCStructStatic(@NotNull JDBCStruct struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
+        super(struct, monitor);
     }
 
     public JDBCStructStatic(DBCSession session, @NotNull DBSDataType type, @Nullable Struct contents) throws DBCException
@@ -95,18 +95,7 @@ public class JDBCStructStatic extends JDBCStruct {
     @Override
     public JDBCStructStatic cloneValue(DBRProgressMonitor monitor) throws DBCException
     {
-        JDBCStructStatic copyStruct = new JDBCStructStatic();
-        copyStruct.type = this.type;
-        copyStruct.attributes = Arrays.copyOf(this.attributes, this.attributes.length);
-        copyStruct.values = new Object[this.values.length];
-        for (int i = 0; i < this.values.length; i++) {
-            Object value = this.values[i];
-            if (value instanceof DBDValueCloneable) {
-                value = ((DBDValueCloneable)value).cloneValue(monitor);
-            }
-            copyStruct.values[i] = value;
-        }
-        return copyStruct;
+        return new JDBCStructStatic(this, monitor);
     }
 
 }

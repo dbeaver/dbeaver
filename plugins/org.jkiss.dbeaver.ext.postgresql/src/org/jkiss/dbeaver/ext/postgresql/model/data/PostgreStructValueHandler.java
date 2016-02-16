@@ -29,18 +29,17 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCStructStatic;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Struct;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 
 /**
  * PostgreArrayValueHandler
  */
-public class PostgreStructValueHandler extends JDBCArrayValueHandler {
+public class PostgreStructValueHandler extends JDBCStructValueHandler {
     static final Log log = Log.getLog(PostgreStructValueHandler.class);
     public static final PostgreStructValueHandler INSTANCE = new PostgreStructValueHandler();
 

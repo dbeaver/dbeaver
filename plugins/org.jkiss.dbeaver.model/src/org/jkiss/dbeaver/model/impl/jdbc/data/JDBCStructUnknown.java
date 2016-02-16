@@ -17,9 +17,12 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
 import java.util.Arrays;
 
@@ -28,38 +31,25 @@ import java.util.Arrays;
  */
 public class JDBCStructUnknown extends JDBCStruct {
 
-    @Nullable
-    private Object structData;
-
-    private JDBCStructUnknown()
-    {
+    public JDBCStructUnknown(@NotNull JDBCStruct struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
+        super(struct, monitor);
     }
 
-    public JDBCStructUnknown(@Nullable Object structData)
+    public JDBCStructUnknown(@NotNull DBCSession session, @Nullable Object structData)
     {
-        this.structData = structData;
-        this.attributes = EMPTY_ATTRIBUTE;
-        this.values = EMPTY_VALUES;
+        this.type = new StructType(session.getDataSource());
+        this.attributes = new DBSEntityAttribute[] { new StructAttribute(type, 0, structData) };
+        this.values = new Object[] { structData };
     }
 
     @Override
     public JDBCStructUnknown cloneValue(DBRProgressMonitor monitor) throws DBCException
     {
-        JDBCStructUnknown copyStruct = new JDBCStructUnknown();
-        copyStruct.structData = structData;
-        copyStruct.attributes = Arrays.copyOf(this.attributes, this.attributes.length);
-        copyStruct.values = Arrays.copyOf(this.values, this.values.length);
-        return copyStruct;
-    }
-
-    @Override
-    public void release()
-    {
-        structData = null;
+        return new JDBCStructUnknown(this, monitor);
     }
 
     public String getStringRepresentation() {
-        return String.valueOf(structData);
+        return String.valueOf(values[0]);
     }
 
 }
