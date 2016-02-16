@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -44,11 +45,12 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         int typeID = typedObject.getTypeID();
-        //|| typedObject.getTypeName().equals("int2vector")
         if (typeID == Types.ARRAY) {
             return PostgreArrayValueHandler.INSTANCE;
         } else if (typeID == Types.STRUCT) {
             return PostgreStructValueHandler.INSTANCE;
+        } else if (typedObject.getTypeName().equalsIgnoreCase(PostgreConstants.TYPE_HSTORE)) {
+            return PostgreHStoreValueHandler.INSTANCE;
         } else {
             return null;
         }

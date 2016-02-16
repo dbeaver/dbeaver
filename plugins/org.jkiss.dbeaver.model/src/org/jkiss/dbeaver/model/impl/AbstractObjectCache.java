@@ -167,7 +167,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     private void checkDuplicateName(String name, OBJECT object) {
         if (this.objectMap.containsKey(name)) {
-            log.warn("Duplicate object name '" + name + "' in cache " + this.getClass().getSimpleName() + ". Last value: " + DBUtils.getObjectFullName(object));
+            log.debug("Duplicate object name '" + name + "' in cache " + this.getClass().getSimpleName() + ". Last value: " + DBUtils.getObjectFullName(object));
         }
     }
 
