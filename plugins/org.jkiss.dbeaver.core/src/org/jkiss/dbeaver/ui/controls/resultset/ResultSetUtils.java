@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSelectItem;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -196,7 +197,13 @@ public class ResultSetUtils
                 // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
                 entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
             } else {
-                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
+                if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && scChildType != null && DBSCatalog.class.isAssignableFrom(scChildType)) {
+                    // Catalog specified instead of schema. This may happen if metadata provided by SQL query parser
+                    // which doesn't know a difference between catalogs and schemas
+                    entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, schemaName, null, entityName);
+                } else {
+                    entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
+                }
             }
             if (entityObject == null) {
                 log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
