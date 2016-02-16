@@ -48,6 +48,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Button fetchResultSetsCheck;
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
+    private Button blankLineDelimiter;
     private Button enableSQLParameters;
     private Button enableSQLAnonymousParameters;
     private Text anonymousParameterMarkText;
@@ -71,6 +72,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS) ||
             store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
             store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
+            store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK) ||
             store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
@@ -103,16 +105,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 executeTimeoutText.setMinimum(1);
                 executeTimeoutText.setMaximum(100000);
             }
-        }
-
-        {
-            Composite paramsGroup = UIUtils.createControlGroup(composite, "Parameters", 2, GridData.FILL_HORIZONTAL, 0);
-            enableSQLParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, true);
-            enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
-            anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            anonymousParameterMarkText.setTextLimit(1);
-            namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
-            namedParameterPrefixText.setTextLimit(1);
         }
 
         // Scripts
@@ -149,9 +141,25 @@ public class PrefPageSQLExecute extends TargetPrefPage
             }
 
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
-            statementDelimiterText = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+        }
+        // Parameters
+        {
+            Composite paramsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_parameters, 2, GridData.FILL_HORIZONTAL, 0);
+            enableSQLParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_parameters, true);
+            enableSQLAnonymousParameters = UIUtils.createLabelCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_checkbox_enable_sql_anonymous_parameters, false);
+            anonymousParameterMarkText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_anonymous_parameter_mark, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            anonymousParameterMarkText.setTextLimit(1);
+            namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
+            namedParameterPrefixText.setTextLimit(1);
+        }
+
+        // Delimiters
+        {
+            Composite delimGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL, 0);
+            statementDelimiterText = UIUtils.createLabelText(delimGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             //statementDelimiterText.setTextLimit(1);
-            ignoreNativeDelimiter = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
+            ignoreNativeDelimiter = UIUtils.createLabelCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
+            blankLineDelimiter = UIUtils.createLabelCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, false);
         }
 
         return composite;
@@ -170,6 +178,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
+            blankLineDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
             enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
             enableSQLAnonymousParameters.setSelection(store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
             anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
@@ -192,6 +201,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
+            store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK, blankLineDelimiter.getSelection());
             store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED, enableSQLAnonymousParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, anonymousParameterMarkText.getText());
