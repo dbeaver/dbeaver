@@ -51,6 +51,7 @@ public class SQLSyntaxManager {
     private Set<String> statementDelimiters = new LinkedHashSet<>();//SQLConstants.DEFAULT_STATEMENT_DELIMITER;
 
     private char escapeChar;
+    private boolean blankLineDelimiter;
 
     public SQLSyntaxManager()
     {
@@ -76,6 +77,10 @@ public class SQLSyntaxManager {
     public Set<String> getStatementDelimiters()
     {
         return statementDelimiters;
+    }
+
+    public boolean isBlankLineDelimiter() {
+        return blankLineDelimiter;
     }
 
     @Nullable
@@ -122,6 +127,7 @@ public class SQLSyntaxManager {
         while (st.hasMoreTokens()) {
             this.statementDelimiters.add(st.nextToken());
         }
+        blankLineDelimiter = preferenceStore.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
 
         this.parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
         this.anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
