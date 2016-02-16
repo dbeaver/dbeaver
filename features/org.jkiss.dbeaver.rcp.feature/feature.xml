@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.rcp.feature"
         label="RCP"
-        version="2.0.12">
+        version="2.0.13">
 
     <description>
         Feature for standalone DBeaver RCP
