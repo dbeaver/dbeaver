@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  */
 public class DB2PlanOperatorArgument implements DBPNamedValueObject {
 
-    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(128); // See init below
+    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(256); // See init below
 
     private String argumentType;
     private String argumentValue;
@@ -164,7 +164,7 @@ public class DB2PlanOperatorArgument implements DBPNamedValueObject {
         ARGUMENT_TYPES.put("PTABLOCK", "Positioning scan table lock intent");
         ARGUMENT_TYPES.put("RAND ACC", "Regular TEMP tbl allows random access?");
         ARGUMENT_TYPES.put("REOPT", "Statement is optimized using bind-in values");
-        ARGUMENT_TYPES.put("RMTQTEXT", "Remote Query Text");
+        ARGUMENT_TYPES.put("RMTQTXT", "Remote Query Text");
         ARGUMENT_TYPES.put("RNG_PROD", "Range producing function");
         ARGUMENT_TYPES.put("ROWLOCK", "Row Lock Intent");
         ARGUMENT_TYPES.put("ROWWIDTH", "Width of row to be sorted");
