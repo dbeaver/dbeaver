@@ -1102,7 +1102,8 @@ public class SQLEditor extends SQLEditorBase implements
             event.getProperty().equals(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
             event.getProperty().equals(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
             event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
-            event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED))
+            event.getProperty().equals(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
+            event.getProperty().equals(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX))
         {
             reloadSyntaxRules();
         }
