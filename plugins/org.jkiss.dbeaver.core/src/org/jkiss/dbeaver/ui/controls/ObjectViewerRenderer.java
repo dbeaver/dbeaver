@@ -27,7 +27,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -117,7 +117,7 @@ public abstract class ObjectViewerRenderer {
             return null;
         }
         Object cellValue = getCellValue(selectedItem.getData(), selectedColumn);
-        return getCellString(cellValue);
+        return getCellString(cellValue, false);
     }
 
     protected ColumnViewer getItemsViewer()
@@ -312,20 +312,24 @@ public abstract class ObjectViewerRenderer {
         linkStyle.underline = true;
         linkStyle.underlineStyle = SWT.UNDERLINE_LINK;
 
-        String text = getCellString(cellValue);
+        String text = getCellString(cellValue, false);
         linkLayout.setText(text);
         linkLayout.setIndent(0);
         linkLayout.setStyle(linkStyle, 0, text.length());
     }
 
-    public static String getCellString(@Nullable Object value)
+    public static String getCellString(@Nullable Object value, boolean nameColumn)
     {
         if (value == null) {
             return "";
-        } else if (value instanceof DBPNamedObject) {
-            value = ((DBPNamedObject)value).getName();
         } else if (value instanceof Boolean) {
             value = "";//DBUtils.getBooleanString((Boolean) value);
+        } else {
+            if (!nameColumn && value instanceof DBPNamedValueObject) {
+                value = ((DBPNamedValueObject) value).getObjectValue();
+            } else if (value instanceof DBPNamedObject) {
+                value = ((DBPNamedObject) value).getName();
+            }
         }
         return GeneralUtils.makeDisplayString(value).toString();
     }

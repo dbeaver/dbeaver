@@ -714,7 +714,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         str.append("]");
                         return str.toString();
                     }
-                    return ObjectViewerRenderer.getCellString(propertyValue);
+                    return ObjectViewerRenderer.getCellString(propertyValue, isName);
                 } else {
                     return ""; //$NON-NLS-1$
                 }

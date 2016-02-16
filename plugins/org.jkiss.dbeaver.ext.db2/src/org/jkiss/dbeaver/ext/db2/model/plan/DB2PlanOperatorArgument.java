@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
@@ -31,7 +32,7 @@ import java.util.Map;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanOperatorArgument implements DBPNamedObject {
+public class DB2PlanOperatorArgument implements DBPNamedValueObject {
 
     private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(128); // See init below
 
@@ -216,5 +217,11 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         ARGUMENT_TYPES.put("XLOGID", "Index over XML data chosen by the optimizer");
         ARGUMENT_TYPES.put("XPATH", "Evaluation of an XPATH expression");
         ARGUMENT_TYPES.put("XPHYID", "Physical ix associated with an index over XML data");
+    }
+
+    @NotNull
+    @Override
+    public Object getObjectValue() {
+        return argumentValue;
     }
 }
