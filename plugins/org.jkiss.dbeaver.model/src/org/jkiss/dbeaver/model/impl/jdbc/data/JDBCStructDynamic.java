@@ -20,18 +20,19 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
 import org.jkiss.dbeaver.model.impl.struct.AbstractStructDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSetMetaData;
@@ -45,40 +46,21 @@ import java.util.Date;
 /**
  * Dynamic struct. Self contained entity.
  */
-public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
-
-    static final Log log = Log.getLog(JDBCStructDynamic.class);
+public class JDBCStructDynamic extends JDBCStruct {
 
     //public static final int MAX_ITEMS_IN_STRING = 100;
 
     @NotNull
     private DBPDataSource dataSource;
-    @Nullable
-    private Struct contents;
-    @NotNull
-    private DBSEntityAttribute[] attributes;
-    @NotNull
-    private Object[] values;
-    @Nullable
-    private Object structData;
-    private StructType structType = new StructType();
 
     private JDBCStructDynamic()
     {
     }
 
-    public JDBCStructDynamic(DBCSession session, @Nullable Object structData)
-    {
-        this.dataSource = session.getDataSource();
-        this.structData = structData;
-        this.attributes = EMPTY_ATTRIBUTE;
-        this.values = EMPTY_VALUES;
-    }
-
     public JDBCStructDynamic(DBCSession session, @Nullable Struct contents, @Nullable ResultSetMetaData metaData) throws DBCException
     {
         this.dataSource = session.getDataSource();
-        this.contents = contents;
+        this.type = new StructType();
 
         // Extract structure data
         try {
@@ -124,75 +106,16 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
     @Override
     public DBSDataType getDataType()
     {
-        if (structType == null) {
-            structType = new StructType();
-        }
-        return structType;
-    }
-
-    @NotNull
-    @Override
-    public DBSAttributeBase[] getAttributes()
-    {
-        return attributes;
-    }
-
-    @Nullable
-    @Override
-    public Object getAttributeValue(@NotNull DBSAttributeBase attribute) throws DBCException
-    {
-        int position = attribute.getOrdinalPosition();
-        if (position >= values.length) {
-            log.debug("Attribute index is out of range (" + position + ">=" + values.length + ")");
-            return null;
-        }
-        return values[position];
-    }
-
-    @Override
-    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
-    {
-        values[attribute.getOrdinalPosition()] = value;
+        return type;
     }
 
     @Override
     public JDBCStructDynamic cloneValue(DBRProgressMonitor monitor) throws DBCException
     {
         JDBCStructDynamic copyStruct = new JDBCStructDynamic();
-        copyStruct.contents = null;
         copyStruct.attributes = Arrays.copyOf(this.attributes, this.attributes.length);
         copyStruct.values = Arrays.copyOf(this.values, this.values.length);
         return copyStruct;
-    }
-
-    @Nullable
-    public Struct getValue() throws DBCException
-    {
-        return contents;
-    }
-
-    @Override
-    public Object getRawValue() {
-        return contents;
-    }
-
-    @Override
-    public boolean isNull()
-    {
-        return contents == null && structData == null;
-    }
-
-    @Override
-    public void release()
-    {
-        contents = null;
-    }
-
-    public String getStringRepresentation() {
-        if (structData != null) {
-            return String.valueOf(structData);
-        }
-        return structType.getTypeName();
     }
 
     private class StructType extends AbstractStructDataType<DBPDataSource> implements DBSEntity {
@@ -307,7 +230,7 @@ public class JDBCStructDynamic implements JDBCStruct, DBDValueCloneable {
         @NotNull
         @Override
         public DBSEntity getParentObject() {
-            return structType;
+            return (StructType) type;
         }
 
         @NotNull

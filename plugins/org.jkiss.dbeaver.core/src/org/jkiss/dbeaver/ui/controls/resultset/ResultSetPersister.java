@@ -537,7 +537,9 @@ class ResultSetPersister {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
             if (txnManager != null) {
                 try {
-                    txnManager.rollback(session, savepoint);
+                    if (!txnManager.isAutoCommit()) {
+                        txnManager.rollback(session, savepoint);
+                    }
                 } catch (Throwable e) {
                     log.debug("Error during transaction rollback", e);
                 }

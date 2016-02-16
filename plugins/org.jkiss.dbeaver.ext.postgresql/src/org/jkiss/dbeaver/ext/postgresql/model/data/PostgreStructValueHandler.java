@@ -48,14 +48,23 @@ public class PostgreStructValueHandler extends JDBCArrayValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         PostgreDataType structType = PostgreUtils.findDataType((PostgreDataSource)session.getDataSource(), type);
+        if (structType == null) {
+            throw new DBCException("Can't resolve struct type '" + type.getTypeName() + "'");
+        }
         try {
-            Object value;
-            if (object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
-                value = PostgreUtils.extractValue(object);
+            if (object == null) {
+                return new JDBCStructStatic(session, structType, new JDBCStructImpl(structType.getTypeName(), null));
+            } else if (object instanceof JDBCStructStatic) {
+                return copy ? ((JDBCStructStatic) object).cloneValue(session.getProgressMonitor()) : object;
             } else {
-                value = "";
+                Object value;
+                if (object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+                    value = PostgreUtils.extractValue(object);
+                } else {
+                    value = "";
+                }
+                return convertStringToStruct(session, structType, (String) value);
             }
-            return convertStringToStruct(session, structType, (String) value);
         } catch (DBException e) {
             throw new DBCException("Error converting string to composite type", e, session.getDataSource());
         }
