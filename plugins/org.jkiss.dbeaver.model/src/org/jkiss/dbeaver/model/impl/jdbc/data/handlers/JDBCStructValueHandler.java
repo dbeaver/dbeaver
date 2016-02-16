@@ -116,13 +116,13 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
         try {
             dataType = DBUtils.resolveDataType(session.getProgressMonitor(), session.getDataSource(), typeName);
         } catch (DBException e) {
-            log.error("Error resolving data type '" + typeName + "'", e);
+            log.debug("Error resolving data type '" + typeName + "'", e);
         }
         if (dataType == null) {
             if (object instanceof Struct) {
                 return new JDBCStructDynamic(session, (Struct) object, null);
             } else {
-                return new JDBCStructUnknown(object);
+                return new JDBCStructUnknown(session, object);
             }
         }
         if (object == null) {
@@ -132,7 +132,7 @@ public class JDBCStructValueHandler extends JDBCComplexValueHandler implements D
         } else if (object instanceof Struct) {
             return new JDBCStructStatic(session, dataType, (Struct) object);
         } else {
-            return new JDBCStructUnknown(object);
+            return new JDBCStructUnknown(session, object);
         }
     }
 
