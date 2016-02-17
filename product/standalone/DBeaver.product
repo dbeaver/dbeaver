@@ -34,8 +34,8 @@
       <linux icon="/icons/dbeaver.xpm"/>
       <macosx icon="/icons/dbeaver.icns"/>
       <solaris/>
-      <win useIco="false">
-         <ico path="/icons/dbeaver-256x256x32.ico"/>
+      <win useIco="true">
+         <ico path="/icons/dbeaver.ico"/>
          <bmp
             winSmallHigh="/icons/dbeaver-16x16x32.bmp"
             winSmallLow="/icons/dbeaver-16x16x8.bmp"
