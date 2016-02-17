@@ -201,6 +201,9 @@ public class ResultSetUtils
                     // Catalog specified instead of schema. This may happen if metadata provided by SQL query parser
                     // which doesn't know a difference between catalogs and schemas
                     entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, schemaName, null, entityName);
+                    if (entityObject == null) {
+                        entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+                    }
                 } else {
                     entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
                 }
