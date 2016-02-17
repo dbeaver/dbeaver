@@ -688,7 +688,7 @@
 
                 <!-- AWS -->
                 <driver
-                    id="aws-redshift"
+                    id="aws_redshift"
                     label="Redshift"
                     class="com.amazon.redshift.jdbc41.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
