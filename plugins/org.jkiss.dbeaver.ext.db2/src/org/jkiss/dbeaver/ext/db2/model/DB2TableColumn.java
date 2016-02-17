@@ -46,7 +46,8 @@ import org.jkiss.utils.CommonUtils;
  * 
  * @author Denis Forveille
  */
-public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2 {
+public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
+    implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2 {
 
     private DB2DataType dataType;
     private DB2Schema dataTypeSchema;
@@ -300,7 +301,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase> implements DBS
         return identity;
     }
 
-    @Property(viewable = true, order = 46)
+    @Property(viewable = false, order = 46)
     public DB2TableColumnGenerated getGenerated()
     {
         return generated;
