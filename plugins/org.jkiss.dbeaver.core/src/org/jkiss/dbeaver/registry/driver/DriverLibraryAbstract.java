@@ -54,7 +54,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         } else if (path.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
             return new DriverLibraryMavenArtifact(driver, type, path);
         } else {
-            return new DriverLibraryLocal(driver, type, path);
+            if (DriverLibraryRemote.supportsURL(path)) {
+                return new DriverLibraryRemote(driver, type, path);
+            } else {
+                return new DriverLibraryLocal(driver, type, path);
+            }
         }
     }
 
@@ -69,7 +73,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         } else if (path.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
             return new DriverLibraryMavenArtifact(driver, config);
         } else {
-            return new DriverLibraryLocal(driver, config);
+            if (DriverLibraryRemote.supportsURL(path)) {
+                return new DriverLibraryRemote(driver, config);
+            } else {
+                return new DriverLibraryLocal(driver, config);
+            }
         }
     }
 
