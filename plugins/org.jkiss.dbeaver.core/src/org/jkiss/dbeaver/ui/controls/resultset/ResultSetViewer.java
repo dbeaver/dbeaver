@@ -333,6 +333,12 @@ public class ResultSetViewer extends Viewer
                 actionsDisabled = false;
             }
         });
+        lockedBy.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                actionsDisabled = false;
+            }
+        });
     }
 
     private boolean checkDoubleLock(Control lockedBy) {
