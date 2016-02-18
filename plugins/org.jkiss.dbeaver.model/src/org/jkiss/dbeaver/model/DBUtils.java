@@ -1297,11 +1297,10 @@ public final class DBUtils {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }
-        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID) {
+        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID || dataKind == DBPDataKind.OBJECT) {
             operators.add(DBCLogicalOperator.EQUALS);
             operators.add(DBCLogicalOperator.NOT_EQUALS);
-        }
-        if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.STRING) {
+        } else if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.STRING) {
             operators.add(DBCLogicalOperator.EQUALS);
             operators.add(DBCLogicalOperator.NOT_EQUALS);
             operators.add(DBCLogicalOperator.GREATER);
