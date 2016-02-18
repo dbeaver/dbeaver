@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -95,13 +95,23 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         if (url != null) {
             try {
                 url = FileLocator.toFileURL(url);
-            }
-            catch (IOException ex) {
+            } catch (IOException ex) {
                 log.warn(ex);
             }
-        }
-        if (url != null) {
-            return new File(url.getFile());
+            if (url != null) {
+                return new File(url.getFile());
+            }
+        } else {
+            try {
+                url = FileLocator.toFileURL(new URL(localFilePath));
+                File urlFile = new File(url.getFile());
+                if (urlFile.exists()) {
+                    platformFile = urlFile;
+                }
+            }
+            catch (IOException ex) {
+                // ignore
+            }
         }
 
         // Nothing fits - just return plain url

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -42,7 +42,7 @@ abstract class DriverDownloadPage extends WizardPage {
 
     abstract void resolveLibraries();
 
-    abstract void performFinish();
+    abstract boolean performFinish();
 
     protected void createLinksPanel(Composite composite) {
         final DriverDescriptor driver = getWizard().getDriver();

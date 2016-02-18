@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -468,31 +468,31 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Object makeNullValue(DBCSession session, DBDValueHandler valueHandler, DBSTypedObject type) throws DBCException
+    public static Object makeNullValue(@NotNull DBCSession session, @NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type) throws DBCException
     {
         return valueHandler.getValueFromObject(session, type, null, false);
     }
 
     @NotNull
-    public static DBDAttributeBindingMeta getAttributeBinding(DBCSession session, DBCAttributeMetaData attributeMeta)
+    public static DBDAttributeBindingMeta getAttributeBinding(@NotNull DBCSession session, @NotNull DBCAttributeMetaData attributeMeta)
     {
         return new DBDAttributeBindingMeta(session.getDataSource(), attributeMeta);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(DBCSession session, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@NotNull DBCSession session, @NotNull DBSTypedObject column)
     {
         return findValueHandler(session.getDataSource(), session, column);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column)
     {
         return findValueHandler(dataSource, dataSource.getContainer(), column);
     }
 
     @NotNull
-    public static DBDValueHandler findValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject column)
+    public static DBDValueHandler findValueHandler(@NotNull DBPDataSource dataSource, @Nullable DBDPreferences preferences, @NotNull DBSTypedObject column)
     {
         DBDValueHandler typeHandler = null;
 
@@ -515,7 +515,7 @@ public final class DBUtils {
      * Identifying association is an association which associated entity's attributes are included into owner entity primary key. I.e. they
      * identifies entity.
      */
-    public static boolean isIdentifyingAssociation(DBRProgressMonitor monitor, DBSEntityAssociation association) throws DBException
+    public static boolean isIdentifyingAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association) throws DBException
     {
         if (!(association instanceof DBSEntityReferrer)) {
             return false;
@@ -1173,11 +1173,11 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String generateScript(DBEPersistAction[] persistActions, boolean existingObject)
+    public static String generateScript(DBEPersistAction[] persistActions, boolean addComments)
     {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder script = new StringBuilder(64);
-        if (existingObject) {
+        if (addComments) {
             script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
@@ -1297,11 +1297,10 @@ public final class DBUtils {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }
-        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID) {
+        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID || dataKind == DBPDataKind.OBJECT) {
             operators.add(DBCLogicalOperator.EQUALS);
             operators.add(DBCLogicalOperator.NOT_EQUALS);
-        }
-        if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.STRING) {
+        } else if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.STRING) {
             operators.add(DBCLogicalOperator.EQUALS);
             operators.add(DBCLogicalOperator.NOT_EQUALS);
             operators.add(DBCLogicalOperator.GREATER);

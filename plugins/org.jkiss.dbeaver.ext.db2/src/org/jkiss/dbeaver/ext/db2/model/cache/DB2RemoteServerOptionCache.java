@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -60,7 +60,7 @@ public class DB2RemoteServerOptionCache extends JDBCObjectCache<DB2RemoteServer,
         final JDBCPreparedStatement dbStat = session.prepareStatement(SQL);
         dbStat.setString(1, remoteServer.getName());
         // dbStat.setString(2, remoteServer.getDb2Wrapper().getName());
-        // dbStat.setString(3, remoteServer.getType());
+        // dbStat.setString(3, remoteServer.getDataType());
         // dbStat.setString(4, remoteServer.getVersion());
         return dbStat;
     }

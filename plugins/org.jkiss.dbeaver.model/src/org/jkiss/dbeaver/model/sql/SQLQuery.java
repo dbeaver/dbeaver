@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -92,10 +92,11 @@ public class SQLQuery {
                     {
                         Table fromItem = (Table) plainSelect.getFromItem();
                         Database database = fromItem.getDatabase();
+                        String catalogName = database == null ? null : database.getDatabaseName();
                         String schemaName = fromItem.getSchemaName();
                         String tableName = fromItem.getName();
                         singleTableMeta = new SingleTableMeta(
-                            unquoteIdentifier(database == null ? null : database.getDatabaseName()),
+                            unquoteIdentifier(catalogName),
                             unquoteIdentifier(schemaName),
                             unquoteIdentifier(tableName));
                     }

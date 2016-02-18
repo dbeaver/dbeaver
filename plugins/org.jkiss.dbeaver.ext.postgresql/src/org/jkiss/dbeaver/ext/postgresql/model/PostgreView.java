@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * PostgreView
  */
-public class PostgreView extends PostgreTableBase
+public class PostgreView extends PostgreViewBase
 {
     private String source;
 
@@ -79,13 +79,17 @@ public class PostgreView extends PostgreTableBase
         return true;
     }
 
+    public String getSource() {
+        return source;
+    }
+
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (source == null) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
-                source = JDBCUtils.queryString(session, "SELECT definition FROM pg_views WHERE schemaname=? AND viewname=?", getSchema().getName(), getName());
+                source = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?)", getObjectId());
             } catch (SQLException e) {
                 throw new DBException("Error reading view definition", e);
             }

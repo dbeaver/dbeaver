@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -22,22 +22,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -50,7 +44,6 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     private int oid;
     private String description;
-    final TriggerCache triggerCache = new TriggerCache();
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -69,7 +62,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     @Override
     public JDBCStructCache<PostgreSchema, ? extends PostgreClass, ? extends PostgreAttribute> getCache()
     {
-        return getContainer().classCache;
+        return getContainer().tableCache;
     }
 
     @NotNull
@@ -112,96 +105,53 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public List<PostgreAttribute> getAttributes(DBRProgressMonitor monitor)
+    public List<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getContainer().classCache.getChildren(monitor, getContainer(), this);
+        return getContainer().tableCache.getChildren(monitor, getContainer(), this);
     }
 
     @Override
-    public PostgreAttribute getAttribute(DBRProgressMonitor monitor, String attributeName)
+    public PostgreTableColumn getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName)
         throws DBException
     {
-        return getContainer().classCache.getChild(monitor, getContainer(), this, attributeName);
+        return getContainer().tableCache.getChild(monitor, getContainer(), this, attributeName);
     }
 
     @Override
-    public Collection<PostgreTableConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableConstraint.class);
+    public Collection<PostgreTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
     }
 
-    public PostgreTableConstraintBase getConstraint(DBRProgressMonitor monitor, String ukName)
+    public PostgreTableConstraintBase getConstraint(@NotNull DBRProgressMonitor monitor, String ukName)
         throws DBException
     {
-        return getSchema().constraintCache.getObject(monitor, getSchema(), this, ukName);
+        return null;
     }
 
     @Override
     @Association
-    public Collection<PostgreTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        List<PostgreTableForeignKey> refs = new ArrayList<>();
-        // This is dummy implementation
-        // Get references from this schema only
-        final Collection<PostgreTableForeignKey> allForeignKeys =
-            getContainer().constraintCache.getTypedObjects(monitor, getContainer(), PostgreTableForeignKey.class);
-        for (PostgreTableForeignKey constraint : allForeignKeys) {
-            if (constraint.getAssociatedEntity() == this) {
-                refs.add(constraint);
-            }
-        }
-        return refs;
+        return null;
     }
 
     @Association
     @Override
-    public synchronized Collection<PostgreTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public synchronized Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return getSchema().constraintCache.getTypedObjects(monitor, getSchema(), this, PostgreTableForeignKey.class);
+        return null;
     }
 
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        getContainer().classCache.clearChildrenCache(this);
+        getContainer().tableCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
-        triggerCache.clearCache();
 
         return true;
-    }
-
-    @Association
-    public Collection<PostgreTrigger> getTriggers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return triggerCache.getAllObjects(monitor, this);
-    }
-
-    public PostgreTrigger getTrigger(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return triggerCache.getObject(monitor, this, name);
-    }
-
-    class TriggerCache extends JDBCObjectCache<PostgreTableBase, PostgreTrigger> {
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreTableBase owner)
-            throws SQLException
-        {
-            return session.prepareStatement(
-                "SELECT x.oid,x.* FROM pg_catalog.pg_trigger x" +
-                "\nWHERE x.tgrelid=" + owner.getObjectId() + " AND NOT x.tgisinternal");
-        }
-
-        @Override
-        protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableBase owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
-            return new PostgreTrigger(owner, dbResult);
-        }
-
     }
 
 }

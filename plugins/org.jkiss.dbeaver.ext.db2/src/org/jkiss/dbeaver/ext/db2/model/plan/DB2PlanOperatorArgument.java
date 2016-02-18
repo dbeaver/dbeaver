@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -18,22 +18,22 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-
 import java.util.HashMap;
 import java.util.Map;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPNamedValueObject;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 /**
  * DB2 EXPLAIN_ARGUMENT table
  * 
  * @author Denis Forveille
  */
-public class DB2PlanOperatorArgument implements DBPNamedObject {
+public class DB2PlanOperatorArgument implements DBPNamedValueObject {
 
-    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(128); // See init below
+    private static final Map<String, String> ARGUMENT_TYPES = new HashMap<>(256); // See init below
 
     private String argumentType;
     private String argumentValue;
@@ -50,6 +50,28 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         if (argumentValue == null) {
             this.argumentValue = JDBCUtils.safeGetString(dbResult, "LONG_ARGUMENT_VALUE");
         }
+    }
+
+    // -----------------
+    // Business contract
+    // -----------------
+    @NotNull
+    @Override
+    public String getName()
+    {
+        String desc = ARGUMENT_TYPES.get(argumentType);
+        if (desc == null) {
+            return argumentType;
+        } else {
+            return desc;
+        }
+    }
+
+    @NotNull
+    @Override
+    public Object getObjectValue()
+    {
+        return argumentValue;
     }
 
     @Override
@@ -70,18 +92,6 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
     public String getArgumentType()
     {
         return argumentType;
-    }
-
-    @NotNull
-    @Override
-    public String getName()
-    {
-        String desc = ARGUMENT_TYPES.get(argumentType);
-        if (desc == null) {
-            return argumentType;
-        } else {
-            return desc;
-        }
     }
 
     static {
@@ -154,7 +164,7 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         ARGUMENT_TYPES.put("PTABLOCK", "Positioning scan table lock intent");
         ARGUMENT_TYPES.put("RAND ACC", "Regular TEMP tbl allows random access?");
         ARGUMENT_TYPES.put("REOPT", "Statement is optimized using bind-in values");
-        ARGUMENT_TYPES.put("RMTQTEXT", "Remote Query Text");
+        ARGUMENT_TYPES.put("RMTQTXT", "Remote Query Text");
         ARGUMENT_TYPES.put("RNG_PROD", "Range producing function");
         ARGUMENT_TYPES.put("ROWLOCK", "Row Lock Intent");
         ARGUMENT_TYPES.put("ROWWIDTH", "Width of row to be sorted");
@@ -217,4 +227,5 @@ public class DB2PlanOperatorArgument implements DBPNamedObject {
         ARGUMENT_TYPES.put("XPATH", "Evaluation of an XPATH expression");
         ARGUMENT_TYPES.put("XPHYID", "Physical ix associated with an index over XML data");
     }
+
 }

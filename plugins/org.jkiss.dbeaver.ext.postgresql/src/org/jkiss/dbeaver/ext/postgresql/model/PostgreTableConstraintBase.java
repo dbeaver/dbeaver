@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -45,6 +45,10 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         this.oid = JDBCUtils.safeGetInt(resultSet, "oid");
     }
 
+    public PostgreTableConstraintBase(PostgreTableBase table, DBSEntityConstraintType constraintType) {
+        super(table, null, null, constraintType, false);
+    }
+
     @NotNull
     @Override
     public String getFullQualifiedName()
@@ -62,6 +66,7 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return getTable().getDataSource();
     }
 
+    @NotNull
     @Override
     public PostgreDatabase getDatabase() {
         return getParentObject().getDatabase();

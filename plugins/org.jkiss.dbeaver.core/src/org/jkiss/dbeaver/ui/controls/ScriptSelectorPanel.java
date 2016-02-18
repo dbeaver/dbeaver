@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -262,7 +262,9 @@ public class ScriptSelectorPanel {
                     UIUtils.runInDetachedUI(popup, new Runnable() {
                         @Override
                         public void run() {
-                            item.setText(2, ri.getDescription());
+                            if (!item.isDisposed()) {
+                                item.setText(2, ri.getDescription());
+                            }
                         }
                     });
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -64,9 +63,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private final DatabaseCache databaseCache = new DatabaseCache();
     private List<PostgreUser> users;
-    private List<PostgreCharset> charsets;
     private String activeDatabaseName;
-    private final Map<String, PostgreDataType> internalTypes = new LinkedHashMap<>();
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -119,26 +116,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         // Read databases
         databaseCache.getAllObjects(monitor, this);
-
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read internal data types")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT t.oid,t.* \n" +
-                    "FROM pg_catalog.pg_type t,pg_catalog.pg_namespace n\n" +
-                    "WHERE t.typnamespace=n.oid AND n.nspname='pg_catalog'\n" +
-                    "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
-                    "ORDER by t.oid")) {
-                try (JDBCResultSet rs = dbStat.executeQuery()) {
-                    while (rs.nextRow()) {
-                        final PostgreDataType dataType = PostgreDataType.readDataType(getDefaultInstance(), rs);
-                        if (dataType != null) {
-                            internalTypes.put(dataType.getName(), dataType);
-                        }
-                    }
-                }
-            } catch (SQLException e) {
-                log.error("Error reading internal types", e);
-            }
-        }
+        final PostgreDatabase defaultInstance = getDefaultInstance();
+        getDefaultInstance().dataTypeCache.getAllObjects(monitor, defaultInstance);
     }
 
     @Override
@@ -277,21 +256,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    public Collection<PostgreCharset> getCharsets()
-    {
-        return charsets;
-    }
-
-    public PostgreCharset getCharset(String name)
-    {
-        for (PostgreCharset charset : charsets) {
-            if (charset.getName().equals(name)) {
-                return charset;
-            }
-        }
-        return null;
-    }
-
     @Override
     public DBCPlan planQueryExecution(DBCSession session, String query) throws DBCException
     {
@@ -303,10 +267,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Object getAdapter(Class adapter)
     {
-/*
         if (adapter == DBSStructureAssistant.class) {
             return new PostgreStructureAssistant(this);
-        } else if (adapter == DBAServerSessionManager.class) {
+        }
+/*
+        else if (adapter == DBAServerSessionManager.class) {
             return new PostgreSessionManager(this);
         }
 */
@@ -320,15 +285,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public Collection<? extends DBSDataType> getLocalDataTypes()
+    public Collection<PostgreDataType> getLocalDataTypes()
     {
-        return internalTypes.values();
+        return getDefaultInstance().dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName)
+    public PostgreDataType getLocalDataType(String typeName)
     {
-        return internalTypes.get(typeName);
+        return getDefaultInstance().dataTypeCache.getCachedObject(typeName);
     }
 
     @Override

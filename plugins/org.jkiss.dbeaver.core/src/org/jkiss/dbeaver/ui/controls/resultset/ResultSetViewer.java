@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -337,7 +337,7 @@ public class ResultSetViewer extends Viewer
 
     private boolean checkDoubleLock(Control lockedBy) {
         if (actionsDisabled) {
-            log.error("Double-lock actions by [" + lockedBy + "]");
+            log.error("Internal error: actions double-lock by [" + lockedBy + "]");
             return true;
         }
         return false;
@@ -943,6 +943,11 @@ public class ResultSetViewer extends Viewer
         applyChanges(RuntimeUtils.makeMonitor(monitor));
     }
 
+    public void doSave(DBRProgressMonitor monitor)
+    {
+        applyChanges(monitor);
+    }
+
     @Override
     public void doSaveAs()
     {
@@ -1289,7 +1294,11 @@ public class ResultSetViewer extends Viewer
         // Set conditions
         List<? extends DBSEntityAttributeRef> ownAttrs = CommonUtils.safeList(((DBSEntityReferrer) association).getAttributeReferences(monitor));
         List<? extends DBSEntityAttributeRef> refAttrs = CommonUtils.safeList(((DBSEntityReferrer) refConstraint).getAttributeReferences(monitor));
-        assert ownAttrs.size() == refAttrs.size();
+        if (ownAttrs.size() != refAttrs.size()) {
+            throw new DBException(
+                "Entity [" + DBUtils.getObjectFullName(targetEntity) + "] association [" + association.getName() +
+                    "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
+        }
         for (int i = 0; i < ownAttrs.size(); i++) {
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
             DBSEntityAttributeRef refAttr = refAttrs.get(i);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -133,7 +133,7 @@ public class MySQLTable extends MySQLTableBase
     @Nullable
     @Override
     @Association
-    public synchronized Collection<MySQLTableConstraint> getConstraints(DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableConstraint> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return getContainer().constraintCache.getObjects(monitor, getContainer(), this);
@@ -147,14 +147,14 @@ public class MySQLTable extends MySQLTableBase
 
     @Override
     @Association
-    public Collection<MySQLTableForeignKey> getReferences(DBRProgressMonitor monitor)
+    public Collection<MySQLTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return loadForeignKeys(monitor, true);
     }
 
     @Override
-    public synchronized Collection<MySQLTableForeignKey> getAssociations(DBRProgressMonitor monitor)
+    public synchronized Collection<MySQLTableForeignKey> getAssociations(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (!foreignKeys.isCached()) {
@@ -367,7 +367,7 @@ public class MySQLTable extends MySQLTableBase
                             fkMap.put(fkName, fk);
                             fkList.add(fk);
                         }
-                        MySQLTableForeignKeyColumnTable fkColumnInfo = new MySQLTableForeignKeyColumnTable(fk, fkColumn, keySeq, pkColumn);
+                        MySQLTableForeignKeyColumn fkColumnInfo = new MySQLTableForeignKeyColumn(fk, fkColumn, keySeq, pkColumn);
                         fk.addColumn(fkColumnInfo);
                     }
                 }

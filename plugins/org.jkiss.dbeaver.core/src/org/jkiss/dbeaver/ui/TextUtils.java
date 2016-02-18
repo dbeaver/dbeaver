@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -42,6 +42,16 @@ public class TextUtils {
         }
         String str = document.get(region.getOffset(), region.getLength());
         return str.trim().length() == 0;
+    }
+
+    public static int getOffsetOf(IDocument document, int line, String pattern)
+        throws BadLocationException {
+        IRegion region = document.getLineInformation(line);
+        if (region == null || region.getLength() == 0) {
+            return -1;
+        }
+        String str = document.get(region.getOffset(), region.getLength());
+        return str.indexOf(pattern);
     }
 
     /**

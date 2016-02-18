@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="3.5.9" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="3.6.0" useFeatures="true" includeLaunchers="true">
 
    <aboutInfo>
       <text>
@@ -23,7 +23,7 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <windowImages i16="/icons/dbeaver-16x16x32.png" i32="/icons/dbeaver-32x32x32.png" i48="/icons/dbeaver-48x48x32.png" i64="/icons/dbeaver-64x64x32.png" i128="/icons/dbeaver-128x128x32.png" i256="/icons/dbeaver-256x256x32.png"/>
+   <!--<windowImages i16="/icons/dbeaver-16x16x32.png" i32="/icons/dbeaver-32x32x32.png" i48="/icons/dbeaver-48x48x32.png" i64="/icons/dbeaver-64x64x32.png" i128="/icons/dbeaver-128x128x32.png" i256="/icons/dbeaver-256x256x32.png"/>-->
 
    <splash
       location="org.jkiss.dbeaver.core.application"
@@ -35,7 +35,7 @@
       <macosx icon="/icons/dbeaver.icns"/>
       <solaris/>
       <win useIco="false">
-         <ico path="/icons/dbeaver-256x256x32.ico"/>
+         <ico path="/icons/dbeaver.ico"/>
          <bmp
             winSmallHigh="/icons/dbeaver-16x16x32.bmp"
             winSmallLow="/icons/dbeaver-16x16x8.bmp"
@@ -54,7 +54,7 @@
         <url>http://dbeaver.jkiss.org/about/</url>
         <text>
    DBeaver - Universal Database Manager
-    Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+    Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License (version 2)

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -88,6 +88,12 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
     @Override
     public long getMaxLength() {
         return 0;
+    }
+
+    @Nullable
+    @Override
+    public Object geTypeExtension() {
+        return null;
     }
 
     @Nullable

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -87,6 +87,8 @@ public class DB2Constants {
     public static final String CAT_OWNER = "Owner";
     public static final String CAT_SOURCE = "Source";
     public static final String CAT_PERFORMANCE = "Performance";
+    public static final String CAT_REMOTE = "Remote";
+    public static final String CAT_TEMPORAL = "Temporal";
     public static final String CAT_STATS = "Statistics";
     public static final String CAT_TABLESPACE = "Tablespace";
 

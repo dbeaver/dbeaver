@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  * Copyright (C) 2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -113,10 +113,12 @@ public class DataExporterJSON extends StreamExporterAbstract {
                 DBDContent content = (DBDContent) cellValue;
                 try {
                     DBDContentStorage cs = content.getContents(monitor);
-                    if (ContentUtils.isTextContent(content)) {
-                        writeCellValue(cs.getContentReader());
-                    } else {
-                        getSite().writeBinaryData(cs.getContentStream(), cs.getContentLength());
+                    if (cs != null) {
+                        if (ContentUtils.isTextContent(content)) {
+                            writeCellValue(cs.getContentReader());
+                        } else {
+                            getSite().writeBinaryData(cs);
+                        }
                     }
                 }
                 finally {

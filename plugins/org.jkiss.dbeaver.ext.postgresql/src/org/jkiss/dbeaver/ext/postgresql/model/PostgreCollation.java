@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -30,11 +30,11 @@ import java.sql.SQLException;
 /**
  * PostgreCollation
  */
-public class PostgreCollation implements DBSObject {
+public class PostgreCollation implements PostgreObject {
 
     private PostgreSchema schema;
+    private int oid;
     private String name;
-    private String pad;
 
     public PostgreCollation(PostgreSchema schema, ResultSet dbResult)
         throws SQLException
@@ -46,8 +46,8 @@ public class PostgreCollation implements DBSObject {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.name = JDBCUtils.safeGetString(dbResult, "collation_name");
-        this.pad = JDBCUtils.safeGetString(dbResult, "pad_attribute");
+        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.name = JDBCUtils.safeGetString(dbResult, "collname");
     }
 
     @NotNull
@@ -64,9 +64,9 @@ public class PostgreCollation implements DBSObject {
         return name;
     }
 
-    @Property(viewable = true, order = 3)
-    public String getPad() {
-        return pad;
+    @Override
+    public int getObjectId() {
+        return oid;
     }
 
     @Nullable
@@ -84,13 +84,19 @@ public class PostgreCollation implements DBSObject {
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public PostgreDataSource getDataSource() {
         return schema.getDataSource();
     }
 
     @Override
     public boolean isPersisted() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return schema.getDatabase();
     }
 
 }

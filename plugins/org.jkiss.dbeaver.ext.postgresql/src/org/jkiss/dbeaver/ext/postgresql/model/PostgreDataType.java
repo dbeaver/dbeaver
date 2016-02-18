@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -18,8 +18,13 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -29,8 +34,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.utils.ArrayUtils;
@@ -38,7 +43,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * PostgreTypeType
@@ -92,8 +99,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private String defaultValue;
 
     private final AttributeCache attributeCache;
+    private Object[] enumValues;
 
-    public PostgreDataType(@NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) {
+    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
 
         this.typeId = JDBCUtils.safeGetInt(dbResult, "oid");
@@ -134,8 +142,31 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
 
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;
+
+        if (typeCategory == PostgreTypeCategory.E) {
+            readEnumValues(monitor);
+        }
     }
 
+    private void readEnumValues(JDBCSession session) throws DBException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT e.enumlabel \n" +
+                "FROM pg_catalog.pg_enum e\n" +
+                "WHERE e.enumtypid=?")) {
+            dbStat.setInt(1, getObjectId());
+            try (JDBCResultSet rs = dbStat.executeQuery()) {
+                List<String> values = new ArrayList<>();
+                while (rs.nextRow()) {
+                    values.add(JDBCUtils.safeGetString(rs, 1));
+                }
+                enumValues = values.toArray();
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error reading enum values", e, getDataSource());
+        }
+    }
+
+    @NotNull
     @Override
     public PostgreDataSource getDataSource() {
         return (PostgreDataSource) super.getDataSource();
@@ -145,6 +176,33 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public PostgreDatabase getDatabase() {
         return getParentObject().getDatabase();
+    }
+
+    @Override
+    public DBPDataKind getDataKind()
+    {
+        switch (typeCategory) {
+            case A: return DBPDataKind.ARRAY;
+            case B: return DBPDataKind.BOOLEAN;
+            case C: return DBPDataKind.STRUCT;
+            case D: return DBPDataKind.DATETIME;
+            case E: return DBPDataKind.OBJECT;
+            case N: return DBPDataKind.NUMERIC;
+            case S: return DBPDataKind.STRING;
+        }
+        return super.getDataKind();
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return getElementType();
+    }
+
+    @Nullable
+    @Override
+    public Object geTypeExtension() {
+        return typeCategory;
     }
 
     @Override
@@ -167,14 +225,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return resolveType(baseTypeId);
     }
 
-    @Property(category = CAT_MAIN, viewable = true)
+    @Property(category = CAT_MAIN, viewable = true, order = 13)
     public PostgreDataType getElementType() {
-        return resolveType(elementTypeId);
+        return elementTypeId == 0 ? null : resolveType(elementTypeId);
     }
 
-    @Property(category = CAT_MISC)
-    public int getOwnerId() {
-        return ownerId;
+    @Property(category = CAT_MAIN, order = 15)
+    public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
     }
 
     @Property(category = CAT_MISC)
@@ -259,7 +317,12 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     @Property(category = CAT_ARRAY)
     public PostgreDataType getArrayItemType() {
-        return resolveType(arrayItemTypeId);
+        return arrayItemTypeId == 0 ? null : resolveType(arrayItemTypeId);
+    }
+
+    // Plain type
+    public boolean isPlainType() {
+        return arrayItemTypeId != 0;
     }
 
     @Property(category = CAT_ARRAY)
@@ -275,14 +338,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         if (typeId <= 0) {
             return null;
         }
-        final PostgreDataType dataType = getDatabase().datatypeCache.getDataType(typeId);
+        final PostgreDataType dataType = getDatabase().dataTypeCache.getDataType(typeId);
         if (dataType == null) {
             log.debug("Data type '" + typeId + "' not found");
         }
         return dataType;
     }
 
-    public static PostgreDataType readDataType(@NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
         final PostgreSchema schema = owner.getSchema(dbResult.getSourceStatement().getConnection().getProgressMonitor(), schemaId);
@@ -325,7 +388,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     break;
                 case N:
                     valueType = Types.NUMERIC;
-                    if (name.startsWith("float")) {
+                    if (name.equals("numeric")) {
+                        valueType = Types.NUMERIC;
+                    } else if (name.startsWith("float")) {
                         switch (typeLength) {
                             case 4:
                                 valueType = Types.FLOAT;
@@ -375,6 +440,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         return new PostgreDataType(
+            session,
             schema,
             valueType,
             name,
@@ -382,33 +448,34 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             dbResult);
     }
 
+    @NotNull
     @Override
     public DBSEntityType getEntityType() {
         return DBSEntityType.TYPE;
     }
 
     @Override
-    public Collection<? extends DBSEntityAttribute> getAttributes(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
     }
 
     @Override
-    public DBSEntityAttribute getAttribute(DBRProgressMonitor monitor, String attributeName) throws DBException {
+    public PostgreDataTypeAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
         return attributeCache == null ? null : attributeCache.getObject(monitor, this, attributeName);
     }
 
     @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
     @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
         return null;
     }
 
@@ -417,10 +484,19 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         if (attributeCache != null) {
             attributeCache.clearCache();
         }
+        if (typeCategory == PostgreTypeCategory.E) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Refresh enum values")) {
+                readEnumValues(session);
+            }
+        }
         return true;
     }
 
-    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreAttribute> {
+    public Object[] getEnumValues() {
+        return enumValues;
+    }
+
+    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
 
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
@@ -437,8 +513,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         @Override
-        protected PostgreAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new PostgreAttribute(postgreDataType, resultSet);
+        protected PostgreDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new PostgreDataTypeAttribute(postgreDataType, resultSet);
         }
     }
 

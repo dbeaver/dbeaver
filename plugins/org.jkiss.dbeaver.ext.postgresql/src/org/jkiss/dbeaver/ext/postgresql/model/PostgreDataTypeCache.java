@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
@@ -53,8 +52,12 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
 
     @Override
     public void cacheObject(@NotNull PostgreDataType object) {
-        super.cacheObject(object);
-        dataTypeMap.put(object.getObjectId(), object);
+        if (getCachedObject(object.getName()) != null) {
+
+        } else {
+            super.cacheObject(object);
+            dataTypeMap.put(object.getObjectId(), object);
+        }
     }
 
     @Override
@@ -79,7 +82,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
     @Override
     protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        return PostgreDataType.readDataType(owner, dbResult);
+        return PostgreDataType.readDataType(session, owner, dbResult);
     }
 
     public PostgreDataType getDataType(int oid) {

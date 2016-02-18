@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -30,14 +30,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableObject
 {
     enum RelKind {
-        r,// ordinary table
-        i, // index
-        S, // sequence
-        v, // view
-        m, // materialized view
-        c, // composite type
-        t, // TOAST table
-        f, // = foreign table
+        r,  // ordinary table
+        i,  // index
+        S,  // sequence
+        v,  // view
+        m,  // materialized view
+        c,  // composite type
+        t,  // TOAST table
+        f,  // = foreign table
     }
 
     @NotNull

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -64,45 +64,6 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
         }
 
         return table;
-    }
-
-    public DBEPersistAction[] getTableDDL(DBRProgressMonitor monitor, GenericTable table) throws DBException
-    {
-        GenericTableColumnManager tcm = new GenericTableColumnManager();
-        GenericPrimaryKeyManager pkm = new GenericPrimaryKeyManager();
-        GenericForeignKeyManager fkm = new GenericForeignKeyManager();
-        GenericIndexManager im = new GenericIndexManager();
-
-        StructCreateCommand command = makeCreateCommand(table);
-        // Aggregate nested column, constraint and index commands
-        for (GenericTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-            command.aggregateCommand(tcm.makeCreateCommand(column));
-        }
-        try {
-            for (GenericPrimaryKey primaryKey : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-                command.aggregateCommand(pkm.makeCreateCommand(primaryKey));
-            }
-        } catch (DBException e) {
-            // Ignore primary keys
-            log.debug(e);
-        }
-        try {
-            for (GenericTableForeignKey foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                command.aggregateCommand(fkm.makeCreateCommand(foreignKey));
-            }
-        } catch (DBException e) {
-            // Ignore primary keys
-            log.debug(e);
-        }
-        try {
-            for (GenericTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                command.aggregateCommand(im.makeCreateCommand(index));
-            }
-        } catch (DBException e) {
-            // Ignore indexes
-            log.debug(e);
-        }
-        return command.getPersistActions();
     }
 
 }

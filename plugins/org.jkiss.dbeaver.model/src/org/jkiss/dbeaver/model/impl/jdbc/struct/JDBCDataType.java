@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -95,6 +95,7 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
         return remarks;
     }
 
+    @NotNull
     @Override
     public OWNER getParentObject()
     {
@@ -140,6 +141,12 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
     public long getMaxLength()
     {
         return precision;
+    }
+
+    @Nullable
+    @Override
+    public Object geTypeExtension() {
+        return null;
     }
 
     @Nullable

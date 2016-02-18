@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
@@ -28,13 +28,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
  * 
  * @author Denis Forveille
  */
-public class DB2PlanOperatorPredicate implements DBPNamedObject {
+public class DB2PlanOperatorPredicate implements DBPNamedValueObject {
 
     private DB2PlanOperator db2Operator;
 
     private Integer predicateId;
     private String howApplied;
-    private String whenApplied;
+    private String whenEvaluated;
     private String predicateText;
 
     private String displayName;
@@ -49,31 +49,42 @@ public class DB2PlanOperatorPredicate implements DBPNamedObject {
 
         this.predicateId = JDBCUtils.safeGetInteger(dbResult, "PREDICATE_ID");
         this.howApplied = JDBCUtils.safeGetString(dbResult, "HOW_APPLIED");
-        this.whenApplied = JDBCUtils.safeGetString(dbResult, "WHEN_APPLIED");
+        this.whenEvaluated = JDBCUtils.safeGetString(dbResult, "WHEN_EVALUATED");
         this.predicateText = JDBCUtils.safeGetString(dbResult, "PREDICATE_TEXT");
 
         StringBuilder sb = new StringBuilder(32);
         sb.append(predicateId);
-        if (whenApplied != null) {
+        if (whenEvaluated != null) {
             sb.append(" - ");
-            sb.append(whenApplied);
+            sb.append(whenEvaluated);
         }
         sb.append(" ");
         sb.append(howApplied);
         displayName = sb.toString();
     }
 
-    @Override
-    public String toString()
-    {
-        return predicateText;
-    }
+    // -----------------
+    // Business contract
+    // -----------------
 
     @NotNull
     @Override
     public String getName()
     {
         return displayName;
+    }
+
+    @NotNull
+    @Override
+    public Object getObjectValue()
+    {
+        return predicateText;
+    }
+
+    @Override
+    public String toString()
+    {
+        return predicateText;
     }
 
     // ----------------
@@ -90,9 +101,9 @@ public class DB2PlanOperatorPredicate implements DBPNamedObject {
         return howApplied;
     }
 
-    public String getWhenApplied()
+    public String getWhenEvaluated()
     {
-        return whenApplied;
+        return whenEvaluated;
     }
 
     public String getPredicateText()

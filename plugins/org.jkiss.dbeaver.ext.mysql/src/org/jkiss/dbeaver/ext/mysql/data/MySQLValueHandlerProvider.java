@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -44,17 +44,11 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        if (MySQLConstants.TYPE_NAME_ENUM.equalsIgnoreCase(typedObject.getTypeName())) {
-            return MySQLEnumValueHandler.INSTANCE;
-        } else if (MySQLConstants.TYPE_NAME_SET.equalsIgnoreCase(typedObject.getTypeName())) {
-            return MySQLSetValueHandler.INSTANCE;
+        int typeID = typedObject.getTypeID();
+        if (typeID == Types.DATE || typeID == Types.TIME || typeID == Types.TIMESTAMP) {
+            return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
         } else {
-            int typeID = typedObject.getTypeID();
-            if (typeID == Types.DATE || typeID == Types.TIME || typeID == Types.TIMESTAMP) {
-                return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
-            } else {
-                return null;
-            }
+            return null;
         }
     }
 

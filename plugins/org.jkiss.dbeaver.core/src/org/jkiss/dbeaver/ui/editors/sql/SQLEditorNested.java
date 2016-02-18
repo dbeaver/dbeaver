@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -163,11 +163,16 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void doSave(IProgressMonitor progressMonitor) {
+    public void doSave(final IProgressMonitor progressMonitor) {
         if (lazyInput != null) {
             return;
         }
-        super.doSave(progressMonitor);
+        UIUtils.runInUI(null, new Runnable() {
+            @Override
+            public void run() {
+                SQLEditorNested.super.doSave(progressMonitor);
+            }
+        });
     }
 
     @Override

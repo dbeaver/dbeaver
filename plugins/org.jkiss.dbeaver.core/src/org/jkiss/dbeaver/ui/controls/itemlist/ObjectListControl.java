@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -172,7 +172,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                     status = ""; //$NON-NLS-1$
                 } else if (selection.size() == 1) {
                     Object selectedNode = selection.getFirstElement();
-                    status = ObjectViewerRenderer.getCellString(selectedNode);
+                    status = ObjectViewerRenderer.getCellString(selectedNode, false);
                 } else {
                     status = NLS.bind(CoreMessages.controls_object_list_status_objects, selection.size());
                 }
@@ -885,7 +885,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (!sampleItems && renderer.isHyperlink(cellValue)) {
                 return ""; //$NON-NLS-1$
             }
-            return ObjectViewerRenderer.getCellString(cellValue);
+            return ObjectViewerRenderer.getCellString(cellValue, columnIndex == 0);
         }
 
     }

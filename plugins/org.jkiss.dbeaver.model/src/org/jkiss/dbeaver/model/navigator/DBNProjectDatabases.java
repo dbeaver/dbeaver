@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -253,7 +253,8 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 // do nothing
                             }
                         }
-                        if (parentNode.getChildNodes() != null) {
+                        if (parentNode.getChildNodes() != null && !parentNode.hasChildItem(event.getObject())) {
+                            // Add only if object wasn't yet added (e.g. by create new object command)
                             parentNode.addChildItem(event.getObject());
                         }
                     }

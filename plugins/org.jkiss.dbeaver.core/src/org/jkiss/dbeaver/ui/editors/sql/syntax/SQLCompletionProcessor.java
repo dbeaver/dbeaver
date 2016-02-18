@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -49,7 +50,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -563,11 +563,20 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         PropertyCollector collector = new PropertyCollector(object, false);
         collector.collectProperties();
         for (DBPPropertyDescriptor descriptor : collector.getPropertyDescriptors2()) {
+            if (descriptor.isRemote()) {
+                // Skip lazy properties
+                continue;
+            }
             Object propValue = collector.getPropertyValue(monitor, descriptor.getId());
             if (propValue == null) {
                 continue;
             }
-            String propString = propValue.toString();
+            String propString;
+            if (propValue instanceof DBPNamedObject) {
+                propString = ((DBPNamedObject) propValue).getName();
+            } else {
+                propString = DBUtils.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
+            }
             info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
             info.append(propString);
             info.append("<br>");

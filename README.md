@@ -26,8 +26,9 @@ Binaries are in product/standalone/target/products
 
 ## Notes
 
-- Pull requests are welcome.
+- Please leave bug reports and feature requests in the <a href="https://github.com/serge-rider/dbeaver/issues">GitHub issue tracker</a>.
 - DBeaver is a free non-profitable hobbie project. Please don't expect immediate reaction on issues.
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
+- Pull requests are welcome.
 - Visit http://dbeaver.jkiss.org for more information.
-- Thanks for using DBeaver ;)
+- Thanks for using DBeaver!

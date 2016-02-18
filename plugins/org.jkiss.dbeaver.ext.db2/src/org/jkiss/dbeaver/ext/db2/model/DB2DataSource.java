@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -64,10 +64,7 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DB2 DataSource
@@ -180,7 +177,12 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             LOG.warn(e);
         }
 
-        this.dataTypeCache.getAllObjects(monitor, this);
+        try {
+            this.dataTypeCache.getAllObjects(monitor, this);
+        } catch (DBException e) {
+            LOG.warn("Error reading types info", e);
+            this.dataTypeCache.setCache(Collections.<DB2DataType>emptyList());
+        }
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {

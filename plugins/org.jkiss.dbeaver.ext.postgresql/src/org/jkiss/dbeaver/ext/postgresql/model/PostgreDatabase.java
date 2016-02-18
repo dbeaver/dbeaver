@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -64,8 +65,13 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     private int connectionLimit;
     private int tablespaceId;
 
-    final SchemaCache schemaCache = new SchemaCache();
-    final PostgreDataTypeCache datatypeCache = new PostgreDataTypeCache();
+    public final AuthIdCache authIdCache = new AuthIdCache();
+    public final AccessMethodCache accessMethodCache = new AccessMethodCache();
+    public final LanguageCache languageCache = new LanguageCache();
+    public final EncodingCache encodingCache = new EncodingCache();
+    public final TablespaceCache tablespaceCache = new TablespaceCache();
+    public final SchemaCache schemaCache = new SchemaCache();
+    public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
     public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException
@@ -133,8 +139,49 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     }
 
     ///////////////////////////////////////////////////
-    // Instance methods
+    // Properties
 
+    @Property(viewable = false, order = 3)
+    public PostgreAuthId getDBA(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, authIdCache, this, ownerId);
+    }
+
+    @Property(viewable = false, order = 4)
+    public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
+    }
+
+    @Property(viewable = false, order = 5)
+    public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, encodingCache, this, encodingId);
+    }
+
+    @Property(viewable = false, order = 10)
+    public String getCollate() {
+        return collate;
+    }
+
+    @Property(viewable = false, order = 11)
+    public String getCtype() {
+        return ctype;
+    }
+
+    @Property(viewable = false, order = 12)
+    public boolean isTemplate() {
+        return isTemplate;
+    }
+
+    @Property(viewable = false, order = 13)
+    public boolean isAllowConnect() {
+        return allowConnect;
+    }
+
+    @Property(viewable = false, order = 14)
+    public int getConnectionLimit() {
+        return connectionLimit;
+    }
+///////////////////////////////////////////////////
+    // Instance methods
 
     @NotNull
     @Override
@@ -160,6 +207,34 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     }
 
     ///////////////////////////////////////////////
+    // Infos
+
+    @Association
+    public Collection<PostgreAuthId> getAuthIds(DBRProgressMonitor monitor) throws DBException {
+        return authIdCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreAccessMethod> getAccessMethods(DBRProgressMonitor monitor) throws DBException {
+        return accessMethodCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreLanguage> getLanguages(DBRProgressMonitor monitor) throws DBException {
+        return languageCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreCharset> getEncodings(DBRProgressMonitor monitor) throws DBException {
+        return encodingCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
+        return tablespaceCache.getAllObjects(monitor, this);
+    }
+
+    ///////////////////////////////////////////////
     // Object container
 
     @Association
@@ -174,7 +249,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
 
     private void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
         // Cache data types
-        datatypeCache.getAllObjects(monitor, this);
+        dataTypeCache.getAllObjects(monitor, this);
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
@@ -256,6 +331,108 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
 
     }
 
+    class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT a.oid,a.* FROM pg_catalog.pg_authid a " +
+                    "\nORDER BY a.oid"
+            );
+        }
+
+        @Override
+        protected PostgreAuthId fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreAuthId(owner, dbResult);
+        }
+    }
+
+    class AccessMethodCache extends JDBCObjectCache<PostgreDatabase, PostgreAccessMethod> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT am.oid,am.* FROM pg_catalog.pg_am am " +
+                    "\nORDER BY am.oid"
+            );
+        }
+
+        @Override
+        protected PostgreAccessMethod fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreAccessMethod(owner, dbResult);
+        }
+    }
+
+    class EncodingCache extends JDBCObjectCache<PostgreDatabase, PostgreCharset> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT c.contoencoding as encid,pg_catalog.pg_encoding_to_char(c.contoencoding) as encname\n" +
+                "FROM pg_catalog.pg_conversion c\n" +
+                "GROUP BY c.contoencoding\n" +
+                "ORDER BY 2\n"
+            );
+        }
+
+        @Override
+        protected PostgreCharset fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreCharset(owner, dbResult);
+        }
+    }
+
+    class LanguageCache extends JDBCObjectCache<PostgreDatabase, PostgreLanguage> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT l.oid,l.* FROM pg_catalog.pg_language l " +
+                    "\nORDER BY l.oid"
+            );
+        }
+
+        @Override
+        protected PostgreLanguage fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreLanguage(owner, dbResult);
+        }
+    }
+
+    class TablespaceCache extends JDBCObjectCache<PostgreDatabase, PostgreTablespace> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT t.oid,t.* FROM pg_catalog.pg_tablespace t " +
+                    "\nORDER BY t.oid"
+            );
+        }
+
+        @Override
+        protected PostgreTablespace fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreTablespace(owner, dbResult);
+        }
+    }
+
     static class SchemaCache extends JDBCObjectCache<PostgreDatabase, PostgreSchema>
     {
         @Override
@@ -267,11 +444,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
             return session.prepareStatement(
                 "SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
 */
-            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n ORDER BY nspname");
+            StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, PostgreConstants.COL_SCHEMA_NAME, true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
             }
+            catalogQuery.append(" ORDER BY nspname");
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
             if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);

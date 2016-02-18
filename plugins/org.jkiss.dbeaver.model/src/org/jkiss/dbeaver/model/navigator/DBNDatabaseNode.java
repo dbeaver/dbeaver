@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -88,7 +88,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (object == null) {
             return DBConstants.NULL_VALUE_LABEL;
         }
-        String objectName = object.getName();
+        String objectName;
+        if (object instanceof DBPOverloadedObject) {
+            objectName = ((DBPOverloadedObject) object).getOverloadedName();
+        } else {
+            objectName = object.getName();
+        }
         if (CommonUtils.isEmpty(objectName)) {
             objectName = object.toString();
             if (CommonUtils.isEmpty(objectName)) {
@@ -199,6 +204,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     List<DBNDatabaseNode> getChildNodes()
     {
         return childNodes;
+    }
+
+    boolean hasChildItem(DBSObject object)
+    {
+        if (childNodes != null) {
+            for (DBNDatabaseNode child : childNodes) {
+                if (child.getObject() == object) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     void addChildItem(DBSObject object)

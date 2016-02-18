@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -307,7 +307,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
 
     public void loadFromExternalFile()
     {
-        final File loadFile = DialogUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*.*"});
+        final File loadFile = DialogUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*.*", "*"});
         if (loadFile == null) {
             return;
         }
@@ -344,7 +344,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
         String fileName = curFile == null ? null : curFile.getName();
 
         final Document document = getDocument();
-        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*.*"}, fileName);
+        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*.*", "*"}, fileName);
         if (document == null || saveFile == null) {
             return;
         }
@@ -354,14 +354,13 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
                 @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
-                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            doSave(RuntimeUtils.getNestedMonitor(monitor));
-                        }
-                    });
-
+//                    UIUtils.runInUI(getSite().getShell(), new Runnable() {
+//                        @Override
+//                        public void run()
+//                        {
+//                            doSave(RuntimeUtils.getNestedMonitor(monitor));
+//                        }
+//                    });
                     try {
                         ContentUtils.saveContentToFile(new StringReader(document.get()), saveFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
                     } catch (Exception e) {
@@ -382,6 +381,7 @@ public abstract class BaseTextEditor extends StatusTextEditor implements ISingle
                 IFolder scriptsFolder = ResourceUtils.getScriptsFolder(curFile.getProject(), true);
                 IFile newFile = scriptsFolder.getFile(location.lastSegment());
                 newFile.createLink(location, IResource.NONE, null);
+                newFile.setPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID, curFile.getPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID));
 
                 SQLEditorInput newInput = new SQLEditorInput(newFile);
                 init(getEditorSite(), newInput);

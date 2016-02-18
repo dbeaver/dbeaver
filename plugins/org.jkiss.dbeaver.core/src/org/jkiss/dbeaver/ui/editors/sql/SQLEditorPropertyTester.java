@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -59,7 +59,8 @@ public class SQLEditorPropertyTester extends PropertyTester
         boolean isConnected = editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
         switch (property) {
             case PROP_CAN_EXECUTE:
-                return isConnected && isFocused && (!"statement".equals(expectedValue) || editor.hasActiveQuery());
+                // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
+                return isConnected && isFocused/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/;
             case PROP_CAN_EXPLAIN:
                 return isConnected && isFocused && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
             case PROP_CAN_NAVIGATE: {

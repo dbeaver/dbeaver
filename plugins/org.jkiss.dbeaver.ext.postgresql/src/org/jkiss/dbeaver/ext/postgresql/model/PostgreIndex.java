@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
@@ -34,9 +35,10 @@ import java.util.List;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase>
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements DBPHiddenObject
 {
     private boolean isUnique;
+    private boolean isPrimary; // Primary index - implicit
     private String description;
     private List<PostgreIndexColumn> columns = new ArrayList<>();
 
@@ -48,7 +50,12 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             DBSIndexType.UNKNOWN,
             true);
         this.isUnique = JDBCUtils.safeGetBoolean(dbResult, "indisunique");
+        this.isPrimary = JDBCUtils.safeGetBoolean(dbResult, "indisprimary");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+    }
+
+    public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType) {
+        super(parent.getContainer(), parent, name, indexType, false);
     }
 
     @NotNull
@@ -63,6 +70,10 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     public boolean isUnique()
     {
         return !isUnique;
+    }
+
+    public boolean isPrimary() {
+        return isPrimary;
     }
 
     @Nullable
@@ -104,5 +115,10 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getContainer(),
             this);
+    }
+
+    @Override
+    public boolean isHidden() {
+        return isPrimary;
     }
 }

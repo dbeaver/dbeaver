@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -45,15 +48,19 @@ public class DataManagerDescriptor extends AbstractDescriptor
     public static final String TAG_SUPPORTS = "supports"; //$NON-NLS-1$
     private static final String ATTR_KIND = "kind";
     private static final String ATTR_TYPE = "type";
+    private static final String ATTR_TYPE_NAME = "typeName";
     private static final String ATTR_DATA_SOURCE = "dataSource";
+    private static final String ATTR_EXTENSION = "extension";
 
     private String id;
     private ObjectType implType;
     private final List<SupportInfo> supportInfos = new ArrayList<>();
 
     private static class SupportInfo {
+        String typeName;
         DBPDataKind dataKind;
         ObjectType valueType;
+        String extension;
         DataSourceProviderDescriptor dataSource;
     }
 
@@ -69,9 +76,11 @@ public class DataManagerDescriptor extends AbstractDescriptor
         IConfigurationElement[] typeElements = config.getChildren(TAG_SUPPORTS);
         for (IConfigurationElement typeElement : typeElements) {
             String kindName = typeElement.getAttribute(ATTR_KIND);
-            String typeName = typeElement.getAttribute(ATTR_TYPE);
+            String typeName = typeElement.getAttribute(ATTR_TYPE_NAME);
+            String className = typeElement.getAttribute(ATTR_TYPE);
+            String ext = typeElement.getAttribute(ATTR_EXTENSION);
             String dspId = typeElement.getAttribute(ATTR_DATA_SOURCE);
-            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(kindName)) {
+            if (!CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(typeName) || !CommonUtils.isEmpty(className) || !CommonUtils.isEmpty(kindName) || !CommonUtils.isEmpty(ext)) {
                 SupportInfo info = new SupportInfo();
                 if (!CommonUtils.isEmpty(kindName)) {
                     try {
@@ -81,7 +90,13 @@ public class DataManagerDescriptor extends AbstractDescriptor
                     }
                 }
                 if (!CommonUtils.isEmpty(typeName)) {
-                    info.valueType = new ObjectType(typeName);
+                    info.typeName = typeName;
+                }
+                if (!CommonUtils.isEmpty(className)) {
+                    info.valueType = new ObjectType(className);
+                }
+                if (!CommonUtils.isEmpty(ext)) {
+                    info.extension = ext;
                 }
                 if (!CommonUtils.isEmpty(dspId)) {
                     info.dataSource = DataSourceProviderRegistry.getInstance().getDataSourceProvider(dspId);
@@ -112,8 +127,9 @@ public class DataManagerDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    public boolean supportsType(@Nullable DBPDataSourceContainer dataSource, DBPDataKind dataKind, Class<?> valueType, boolean checkDataSource, boolean checkType)
+    public boolean supportsType(@Nullable DBPDataSourceContainer dataSource, DBSTypedObject typedObject, Class<?> valueType, boolean checkDataSource, boolean checkType)
     {
+        final DBPDataKind dataKind = typedObject.getDataKind();
         for (SupportInfo info : supportInfos) {
             if (dataSource != null && info.dataSource != null) {
                 DriverDescriptor driver = (DriverDescriptor) dataSource.getDriver();
@@ -122,6 +138,11 @@ public class DataManagerDescriptor extends AbstractDescriptor
                 }
             } else if (checkDataSource) {
                 continue;
+            }
+            if (info.typeName != null) {
+                if (info.typeName.equalsIgnoreCase(typedObject.getTypeName())) {
+                    return true;
+                }
             }
             if (info.valueType != null) {
                 if (info.valueType.matchesType(valueType) && info.dataKind == null || info.dataKind == dataKind) {
@@ -133,6 +154,19 @@ public class DataManagerDescriptor extends AbstractDescriptor
 
             if (info.dataKind != null && info.dataKind == dataKind) {
                 return true;
+            }
+            if (info.extension != null) {
+                DBSDataType dataType;
+                if (typedObject instanceof DBSDataType) {
+                    dataType = (DBSDataType) typedObject;
+                } else if (typedObject instanceof DBSTypedObjectEx) {
+                    dataType = ((DBSTypedObjectEx) typedObject).getDataType();
+                } else {
+                    dataType = null;
+                }
+                if (dataType != null && CommonUtils.equalObjects(info.extension, CommonUtils.toString(dataType.geTypeExtension()))) {
+                    return true;
+                }
             }
         }
         return false;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -46,9 +46,9 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
     private final PostgreTableBase refTable;
 
     public PostgreTableForeignKey(
-        PostgreTableBase table,
-        String name,
-        JDBCResultSet resultSet) throws DBException
+        @NotNull PostgreTableBase table,
+        @NotNull String name,
+        @NotNull JDBCResultSet resultSet) throws DBException
     {
         super(table, name, DBSEntityConstraintType.FOREIGN_KEY, resultSet);
         updateRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confupdtype"));
@@ -64,6 +64,19 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
             log.warn("Reference table " + refTableId + " not found");
             return;
         }
+    }
+
+    public PostgreTableForeignKey(
+        @NotNull PostgreTableBase table,
+        @NotNull DBSEntityConstraint refConstraint,
+        @NotNull DBSForeignKeyModifyRule updateRule,
+        @NotNull DBSForeignKeyModifyRule deleteRule)
+    {
+        super(table, DBSEntityConstraintType.FOREIGN_KEY);
+        this.refConstraint = refConstraint;
+        this.refTable = (PostgreTableBase) refConstraint.getParentObject();
+        this.updateRule = updateRule;
+        this.deleteRule = deleteRule;
     }
 
     @NotNull
@@ -132,4 +145,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         }
     }
 
+    public void addColumn(PostgreTableForeignKeyColumn column) {
+        this.columns.add(column);
+    }
 }

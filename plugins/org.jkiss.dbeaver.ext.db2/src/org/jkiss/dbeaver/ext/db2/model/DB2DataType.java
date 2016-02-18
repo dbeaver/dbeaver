@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -243,6 +243,12 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         } else {
             return 0;
         }
+    }
+
+    @Nullable
+    @Override
+    public Object geTypeExtension() {
+        return metaType;
     }
 
     @Nullable

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -98,9 +98,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 detectCaseSensitivity(object);
                 this.objectList.add(object);
                 if (this.objectMap != null) {
-                    String name = caseSensitive ?
-                        object.getName() :
-                        object.getName().toUpperCase();
+                    String name = getObjectName(object);
                     checkDuplicateName(name, object);
                     this.objectMap.put(name, object);
                 }
@@ -116,9 +114,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
                 detectCaseSensitivity(object);
                 this.objectList.remove(object);
                 if (this.objectMap != null) {
-                    this.objectMap.remove(caseSensitive ?
-                        object.getName() :
-                        object.getName().toUpperCase());
+                    this.objectMap.remove(getObjectName(object));
                 }
             }
         }
@@ -161,9 +157,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         if (objectMap == null) {
             this.objectMap = new HashMap<>();
             for (OBJECT object : objectList) {
-                String name = caseSensitive ?
-                    object.getName() :
-                    object.getName().toUpperCase();
+                String name = getObjectName(object);
                 checkDuplicateName(name, object);
                 this.objectMap.put(name, object);
             }
@@ -173,7 +167,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     private void checkDuplicateName(String name, OBJECT object) {
         if (this.objectMap.containsKey(name)) {
-            log.warn("Duplicate object name '" + name + "' in cache " + this.getClass().getSimpleName() + ". Last value: " + DBUtils.getObjectFullName(object));
+            log.debug("Duplicate object name '" + name + "' in cache " + this.getClass().getSimpleName() + ". Last value: " + DBUtils.getObjectFullName(object));
         }
     }
 
@@ -191,6 +185,13 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     protected void invalidateObjects(DBRProgressMonitor monitor, OWNER owner, Iterator<OBJECT> objectIter)
     {
 
+    }
+
+    @NotNull
+    protected String getObjectName(@NotNull OBJECT object) {
+        return caseSensitive ?
+            object.getName() :
+            object.getName().toUpperCase();
     }
 
     protected class CacheIterator implements Iterator<OBJECT> {
@@ -217,7 +218,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         {
             listIterator.remove();
             if (objectMap != null) {
-                objectMap.remove(caseSensitive ? curObject.getName() : curObject.getName().toUpperCase());
+                objectMap.remove(getObjectName(curObject));
             }
         }
     }

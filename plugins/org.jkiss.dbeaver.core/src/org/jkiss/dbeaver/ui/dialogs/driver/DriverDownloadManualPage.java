@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -60,15 +60,18 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         filesGroup.setLayoutData(gd);
 
         final Combo sourceCombo = new Combo(filesGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
-        sourceCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                selectFileSource(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()));
-            }
-        });
         for (DriverFileSource source : driver.getDriverFileSources()) {
             sourceCombo.add(source.getName());
         }
+        final Link driverLink = new Link(filesGroup, SWT.NONE);
+        driverLink.setText("<a>" + driver.getDriverFileSources().get(0).getUrl() + "</a>");
+        driverLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        driverLink.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                WebUtils.openWebBrowser(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl());
+            }
+        });
 
         filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
         filesTable.setHeaderVisible(true);
@@ -76,6 +79,14 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         UIUtils.createTableColumn(filesTable, SWT.LEFT, "File");
         UIUtils.createTableColumn(filesTable, SWT.LEFT, "Required");
         UIUtils.createTableColumn(filesTable, SWT.LEFT, "Description");
+
+        sourceCombo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectFileSource(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()));
+                driverLink.setText("<a>" + driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl() + "</a>");
+            }
+        });
 
         sourceCombo.select(0);
         selectFileSource(driver.getDriverFileSources().get(0));
@@ -108,15 +119,16 @@ class DriverDownloadManualPage extends DriverDownloadPage {
     }
 
     @Override
-    void performFinish() {
+    boolean performFinish() {
         UIUtils.runInDetachedUI(getShell(), new Runnable() {
             @Override
             public void run() {
                 WebUtils.openWebBrowser(fileSource.getUrl());
             }
         });
-        DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());
-        dialog.open();
+        return false;
+//        DriverEditDialog dialog = new DriverEditDialog(null, getWizard().getDriver());
+//        dialog.open();
     }
 
 }

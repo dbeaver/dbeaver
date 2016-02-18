@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -180,14 +181,17 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         if (dialogSettings.get("openTableOnFinish") != null) {
             openTableOnFinish = dialogSettings.getBoolean("openTableOnFinish");
         }
-        if (CommonUtils.isEmpty(containerNodePath)) {
+        {
             List<DataTransferPipe> dataPipes = dataTransferSettings.getDataPipes();
             if (!dataPipes.isEmpty()) {
                 IDataTransferConsumer consumer = dataPipes.get(0).getConsumer();
                 if (consumer instanceof DatabaseTransferConsumer) {
-                    containerNode = DBeaverCore.getInstance().getNavigatorModel().findNode(
-                        ((DatabaseTransferConsumer) consumer).getTargetObject().getParentObject()
-                    );
+                    final DBSDataManipulator targetObject = ((DatabaseTransferConsumer) consumer).getTargetObject();
+                    if (targetObject != null) {
+                        containerNode = DBeaverCore.getInstance().getNavigatorModel().findNode(
+                            targetObject.getParentObject()
+                        );
+                    }
                 }
             }
         }

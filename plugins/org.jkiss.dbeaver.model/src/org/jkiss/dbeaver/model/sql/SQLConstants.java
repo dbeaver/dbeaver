@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -617,6 +617,6 @@ public class SQLConstants {
     public static final String CONFIG_FONT_OUTPUT = "org.jkiss.dbeaver.sql.editor.font.output";
 
     public static final char DEFAULT_PARAMETER_MARK = '?';
-    public static final char PARAMETER_PREFIX = ':';
+    public static final char DEFAULT_PARAMETER_PREFIX = ':';
     public static final String DEFAULT_IDENTIFIER_QUOTE = "\"";
 }

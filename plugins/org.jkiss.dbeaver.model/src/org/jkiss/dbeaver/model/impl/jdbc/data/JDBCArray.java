@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2015 Serge Rieder (serge@jkiss.org)
+ * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License (version 2)
@@ -203,7 +203,7 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
             StringBuilder str = new StringBuilder(contents.length * 32);
             for (Object item : contents) {
                 if (str.length() > 0) {
-                    str.append(","); //$NON-NLS-1$
+                    str.append(' '); //$NON-NLS-1$
                 }
                 String itemString = valueHandler.getValueDisplayString(type, item, DBDDisplayFormat.UI);
                 SQLUtils.appendValue(str, type, itemString);
