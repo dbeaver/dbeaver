@@ -43,6 +43,7 @@ import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -389,6 +390,9 @@ public final class SQLUtils {
                 }
                 return '\'' + strValue + '\'';
             default:
+                if (value instanceof UUID) {
+                    return '\'' + strValue + '\'';
+                }
                 return strValue;
         }
     }
