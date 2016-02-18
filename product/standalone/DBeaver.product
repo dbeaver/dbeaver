@@ -23,7 +23,7 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <!--<windowImages i16="/icons/dbeaver-16x16x32.png" i32="/icons/dbeaver-32x32x32.png" i48="/icons/dbeaver-48x48x32.png" i64="/icons/dbeaver-64x64x32.png" i128="/icons/dbeaver-128x128x32.png" i256="/icons/dbeaver-256x256x32.png"/>-->
+   <windowImages i16="/icons/dbeaver-16x16x32.png" i32="/icons/dbeaver-32x32x32.png" i48="/icons/dbeaver-48x48x32.png" i64="/icons/dbeaver-64x64x32.png" i128="/icons/dbeaver-128x128x32.png" i256="/icons/dbeaver-256x256x32.png"/>
 
    <splash
       location="org.jkiss.dbeaver.core.application"
