@@ -165,7 +165,11 @@ public class SQLQueryJob extends DataSourceJob
 
                 // Notify job start
                 if (listener != null) {
-                    listener.onStartScript();
+                    try {
+                        listener.onStartScript();
+                    } catch (Exception e) {
+                        log.error(e);
+                    }
                 }
 
                 resultSetNumber = 0;
@@ -256,7 +260,11 @@ public class SQLQueryJob extends DataSourceJob
         finally {
             // Notify job end
             if (listener != null) {
-                listener.onEndScript(statistics, lastError != null);
+                try {
+                    listener.onEndScript(statistics, lastError != null);
+                } catch (Exception e) {
+                    log.error(e);
+                }
             }
         }
     }
@@ -276,7 +284,11 @@ public class SQLQueryJob extends DataSourceJob
 
         if (fireEvents && listener != null) {
             // Notify query start
-            listener.onStartQuery(sqlQuery);
+            try {
+                listener.onStartQuery(sqlQuery);
+            } catch (Exception e) {
+                log.error(e);
+            }
         }
 
         try {
@@ -400,7 +412,11 @@ public class SQLQueryJob extends DataSourceJob
 
             if (fireEvents && listener != null) {
                 // Notify query end
-                listener.onEndQuery(curResult);
+                try {
+                    listener.onEndQuery(curResult);
+                } catch (Exception e) {
+                    log.error(e);
+                }
             }
         }
 
