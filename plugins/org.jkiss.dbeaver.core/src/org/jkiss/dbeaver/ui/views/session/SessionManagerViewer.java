@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -172,7 +173,7 @@ public class SessionManagerViewer
     protected void updateSQL() {
         try {
             String text = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
-            StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, ContentUtils.DEFAULT_CHARSET);
+            StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, GeneralUtils.getDefaultConsoleEncoding());
             sqlViewer.init(subSite, sqlInput);
             if (sqlViewer.getTextViewer() != null) {
                 sqlViewer.reloadSyntaxRules();

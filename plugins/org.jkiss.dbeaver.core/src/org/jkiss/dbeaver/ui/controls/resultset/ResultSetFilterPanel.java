@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -462,7 +463,7 @@ class ResultSetFilterPanel extends Composite
 
         };
         editor.setHasVerticalRuler(false);
-        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, ContentUtils.DEFAULT_CHARSET));
+        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, GeneralUtils.getDefaultConsoleEncoding()));
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
         StyledText textWidget = editor.getTextViewer().getTextWidget();
