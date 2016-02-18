@@ -1490,6 +1490,7 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean scriptMode;
         private long lastUIUpdateTime;
         private final ITextSelection originalSelection = (ITextSelection) getSelectionProvider().getSelection();
+        private int topOffset, visibleLength;
 
         private SQLEditorQueryListener(QueryProcessor queryProcessor) {
             this.queryProcessor = queryProcessor;
@@ -1514,6 +1515,13 @@ public class SQLEditor extends SQLEditorBase implements
                 runningQueries.add(query);
             }
             if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
+                UIUtils.runInUI(null, new Runnable() {
+                    @Override
+                    public void run() {
+                        topOffset = getTextViewer().getTopIndexStartOffset();
+                        visibleLength = getTextViewer().getBottomIndexEndOffset() - topOffset;
+                    }
+                });
                 showStatementInEditor(query, false);
                 lastUIUpdateTime = System.currentTimeMillis();
             }
@@ -1533,6 +1541,9 @@ public class SQLEditor extends SQLEditorBase implements
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     processQueryResult(result);
+                    if (!result.hasError() && topOffset >= 0) {
+                        getTextViewer().revealRange(topOffset, visibleLength);
+                    }
                 }
             });
         }
