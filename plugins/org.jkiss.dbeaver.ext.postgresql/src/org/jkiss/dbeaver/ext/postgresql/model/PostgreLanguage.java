@@ -27,9 +27,8 @@ import java.sql.SQLException;
 /**
  * PostgreCharset
  */
-public class PostgreLanguage extends PostgreInformation implements PostgreObject {
+public class PostgreLanguage extends PostgreInformation {
 
-    private final PostgreDatabase database;
     private int oid;
     private String name;
     private int ownerId;
@@ -42,8 +41,7 @@ public class PostgreLanguage extends PostgreInformation implements PostgreObject
     public PostgreLanguage(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
-        super(database.getDataSource());
-        this.database = database;
+        super(database);
         this.loadInfo(dbResult);
     }
 
@@ -66,12 +64,6 @@ public class PostgreLanguage extends PostgreInformation implements PostgreObject
     public String getName()
     {
         return name;
-    }
-
-    @NotNull
-    @Override
-    public PostgreDatabase getDatabase() {
-        return database;
     }
 
     @Property(viewable = true, order = 2)

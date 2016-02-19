@@ -24,26 +24,33 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
  * PostgreSQL informational object
  */
-public abstract class PostgreInformation implements DBSObject {
+public abstract class PostgreInformation implements DBSObject, PostgreObject {
 
-    private PostgreDataSource dataSource;
+    private PostgreDatabase database;
 
-    protected PostgreInformation(PostgreDataSource dataSource)
+    protected PostgreInformation(PostgreDatabase database)
     {
-        this.dataSource = dataSource;
+        this.database = database;
     }
 
     @Override
     public DBSObject getParentObject()
     {
-        return getDataSource().getContainer();
+        return database;
     }
+
+    @NotNull
+    @Override
+    public PostgreDatabase getDatabase() {
+        return database;
+    }
+
 
     @NotNull
     @Override
     public PostgreDataSource getDataSource()
     {
-        return dataSource;
+        return database.getDataSource();
     }
 
     @Nullable

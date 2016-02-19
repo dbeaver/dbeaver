@@ -27,12 +27,11 @@ import java.sql.SQLException;
 /**
  * PostgreAccessMethod
  */
-public class PostgreAccessMethod extends PostgreInformation implements PostgreObject {
+public class PostgreAccessMethod extends PostgreInformation {
 
     public static final String CAT_ROUTINES = "Routines";
     public static final String CAT_FLAGS = "Flags";
 
-    private final PostgreDatabase database;
     private int oid;
     private String name;
     private int operatorStrategies;
@@ -52,8 +51,7 @@ public class PostgreAccessMethod extends PostgreInformation implements PostgreOb
     public PostgreAccessMethod(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
-        super(database.getDataSource());
-        this.database = database;
+        super(database);
         this.loadInfo(dbResult);
     }
 
@@ -83,12 +81,6 @@ public class PostgreAccessMethod extends PostgreInformation implements PostgreOb
     public String getName()
     {
         return name;
-    }
-
-    @NotNull
-    @Override
-    public PostgreDatabase getDatabase() {
-        return database;
     }
 
     @Property(viewable = true, order = 2)
