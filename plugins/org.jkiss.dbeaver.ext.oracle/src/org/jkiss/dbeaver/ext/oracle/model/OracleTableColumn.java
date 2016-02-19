@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyCacheValidator;
@@ -131,14 +132,14 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    @Property(viewable = true, order = 41)
+    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 41)
     public int getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, order = 42)
+    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
     public int getScale()
     {
         return super.getScale();
