@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
@@ -134,19 +135,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, order = 22)
+    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
     public int getScale()
     {
         return super.getScale();
     }
-/*
-
-    @Override
-    public int getPrecision()
-    {
-        return super.getPrecision();
-    }
-*/
 
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 50)

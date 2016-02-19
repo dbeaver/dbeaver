@@ -46,6 +46,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private final String propDescription;
     private Method setter;
     private IPropertyValueTransformer valueTransformer;
+    private IPropertyValueTransformer valueRenderer;
     private final Class<?> declaringClass;
 
     public ObjectPropertyDescriptor(
@@ -76,6 +77,16 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 valueTransformer = valueTransformerClass.newInstance();
             } catch (Throwable e) {
                 log.warn("Can't create value transformer", e);
+            }
+        }
+
+        // Obtain value transformer
+        Class<? extends IPropertyValueTransformer> valueRendererClass = propInfo.valueRenderer();
+        if (valueRendererClass != null && valueRendererClass != IPropertyValueTransformer.class) {
+            try {
+                valueRenderer = valueRendererClass.newInstance();
+            } catch (Throwable e) {
+                log.warn("Can't create value renderer", e);
             }
         }
 
@@ -114,6 +125,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     public IPropertyValueTransformer getValueTransformer()
     {
         return valueTransformer;
+    }
+
+    public IPropertyValueTransformer getValueRenderer() {
+        return valueRenderer;
     }
 
     @Override
@@ -177,6 +192,9 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
             value = getGetter().invoke(object, progressMonitor);
         } else {
             value = getGetter().invoke(object);
+        }
+        if (valueRenderer != null) {
+            value = valueRenderer.transform(object, value);
         }
         return value;
     }

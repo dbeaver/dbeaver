@@ -96,4 +96,6 @@ public @interface Property
 
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;
 
+    Class<? extends IPropertyValueTransformer> valueRenderer() default IPropertyValueTransformer.class;
+
 }
