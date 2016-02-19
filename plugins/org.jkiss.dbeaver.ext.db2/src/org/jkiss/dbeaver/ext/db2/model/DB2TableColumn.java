@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2YesNo;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -250,7 +251,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     }
 
     @Override
-    @Property(viewable = true, order = 39)
+    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 39)
     public int getScale()
     {
         return super.getScale();
@@ -275,7 +276,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
     // }
 
     @Override
-    @Property(viewable = false, order = 42)
+    @Property(viewable = false, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
     public int getPrecision()
     {
         return super.getPrecision();

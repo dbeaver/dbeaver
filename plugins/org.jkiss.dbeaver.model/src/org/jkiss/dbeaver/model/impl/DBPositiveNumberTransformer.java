@@ -31,11 +31,11 @@ public class DBPositiveNumberTransformer implements IPropertyValueTransformer<DB
         if (value == null) {
             return null;
         }
-        if (value instanceof Double && value.doubleValue() == 0.0) {
+        if (value instanceof Double && value.doubleValue() <= 0.0) {
             return null;
-        } else if (value instanceof Float && value.floatValue() == 0.0) {
+        } else if (value instanceof Float && value.floatValue() <= 0.0) {
             return null;
-        } else if (value.longValue() == 0) {
+        } else if (value.longValue() <= 0) {
             return null;
         }
 

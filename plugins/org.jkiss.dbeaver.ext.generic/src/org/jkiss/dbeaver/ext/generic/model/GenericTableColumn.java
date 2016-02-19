@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -116,7 +117,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return this;
     }
 
-    @Property(viewable = false, order = 62)
+    @Property(viewable = false, valueRenderer = DBPositiveNumberTransformer.class, order = 62)
     public int getRadix()
     {
         return radix;

@@ -137,7 +137,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(viewable = false, order = 42)
+    @Property(viewable = false, valueRenderer = DBPositiveNumberTransformer.class, order = 42)
     public int getPrecision()
     {
         return precision;
