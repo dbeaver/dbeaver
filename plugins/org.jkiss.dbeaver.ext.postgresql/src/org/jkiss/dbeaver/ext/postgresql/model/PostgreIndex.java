@@ -44,7 +44,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private boolean isImmediate;
     private boolean isClustered;
     private boolean isValid;
-    private boolean isIsCheckXMin;
+    private boolean isCheckXMin;
     private boolean isReady;
     private String description;
     private List<PostgreIndexColumn> columns = new ArrayList<>();
@@ -63,7 +63,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         this.isImmediate = JDBCUtils.safeGetBoolean(dbResult, "indimmediate");
         this.isClustered = JDBCUtils.safeGetBoolean(dbResult, "indisclustered");
         this.isValid = JDBCUtils.safeGetBoolean(dbResult, "indisvalid");
-        this.isIsCheckXMin = JDBCUtils.safeGetBoolean(dbResult, "indcheckxmin");
+        this.isCheckXMin = JDBCUtils.safeGetBoolean(dbResult, "indcheckxmin");
         this.isReady = JDBCUtils.safeGetBoolean(dbResult, "indisready");
 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
@@ -114,8 +114,8 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Property(viewable = false, order = 25)
-    public boolean isIsCheckXMin() {
-        return isIsCheckXMin;
+    public boolean isCheckXMin() {
+        return isCheckXMin;
     }
 
     @Property(viewable = false, order = 26)

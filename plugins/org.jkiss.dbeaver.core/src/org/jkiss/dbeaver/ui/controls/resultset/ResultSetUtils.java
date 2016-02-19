@@ -183,40 +183,57 @@ public class ResultSetUtils
     }
 
     private static DBSEntity getEntityFromMetaData(DBCSession session, DBCEntityMetaData entityMeta) throws DBException {
-        DBPDataSource dataSource = session.getDataSource();
-        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, session.getDataSource());
         if (objectContainer != null) {
-            String catalogName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getCatalogName());
-            String schemaName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getSchemaName());
-            String entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityMeta.getEntityName());
-            Class<? extends DBSObject> scChildType = objectContainer.getChildType(session.getProgressMonitor());
-            DBSObject entityObject;
-            if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
-                (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
-                // Do not use catalog name
-                // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
-                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
-            } else {
-                if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && scChildType != null && DBSCatalog.class.isAssignableFrom(scChildType)) {
-                    // Catalog specified instead of schema. This may happen if metadata provided by SQL query parser
-                    // which doesn't know a difference between catalogs and schemas
-                    entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, schemaName, null, entityName);
-                    if (entityObject == null) {
-                        entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
-                    }
-                } else {
-                    entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
-                }
+            DBSEntity entity = getEntityFromMetaData(session, objectContainer, entityMeta, false);
+            if (entity == null) {
+                entity = getEntityFromMetaData(session, objectContainer, entityMeta, true);
             }
-            if (entityObject == null) {
-                log.debug("Table '" + DBUtils.getSimpleQualifiedName(catalogName, schemaName, entityName) + "' not found in metadata catalog");
-            } else if (entityObject instanceof DBSEntity) {
-                return (DBSEntity) entityObject;
+            if (entity == null) {
+                log.debug("Table '" + DBUtils.getSimpleQualifiedName(entityMeta.getCatalogName(), entityMeta.getSchemaName(), entityMeta.getEntityName()) + "' not found in metadata catalog");
+            }
+            return entity;
+        } else {
+            return null;
+        }
+    }
+    private static DBSEntity getEntityFromMetaData(DBCSession session, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
+        final DBPDataSource dataSource = session.getDataSource();
+        String catalogName = entityMeta.getCatalogName();
+        String schemaName = entityMeta.getSchemaName();
+        String entityName = entityMeta.getEntityName();
+        if (transformName) {
+            catalogName = DBObjectNameCaseTransformer.transformName(dataSource, catalogName);
+            schemaName = DBObjectNameCaseTransformer.transformName(dataSource, schemaName);
+            entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
+        }
+        Class<? extends DBSObject> scChildType = objectContainer.getChildType(session.getProgressMonitor());
+        DBSObject entityObject;
+        if (!CommonUtils.isEmpty(catalogName) && scChildType != null &&
+            (DBSSchema.class.isAssignableFrom(scChildType) || DBSTable.class.isAssignableFrom(scChildType))) {
+            // Do not use catalog name
+            // Some data sources do not load catalog list but result set meta data contains one (e.g. DB2 and SQLite)
+            entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+        } else {
+            if (CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName) && scChildType != null && DBSCatalog.class.isAssignableFrom(scChildType)) {
+                // Catalog specified instead of schema. This may happen if metadata provided by SQL query parser
+                // which doesn't know a difference between catalogs and schemas
+                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, schemaName, null, entityName);
+                if (entityObject == null) {
+                    entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, null, schemaName, entityName);
+                }
             } else {
-                log.debug("Unsupported table class: " + entityObject.getClass().getName());
+                entityObject = DBUtils.getObjectByPath(session.getProgressMonitor(), objectContainer, catalogName, schemaName, entityName);
             }
         }
-        return null;
+        if (entityObject == null) {
+            return null;
+        } else if (entityObject instanceof DBSEntity) {
+            return (DBSEntity) entityObject;
+        } else {
+            log.debug("Unsupported table class: " + entityObject.getClass().getName());
+            return null;
+        }
     }
 
     private static DBSEntityReferrer getBestIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity table, DBDAttributeBinding[] bindings)
