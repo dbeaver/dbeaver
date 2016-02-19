@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -124,7 +125,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase
     }
 
     @Override
-    @Property(viewable = false, order = 41)
+    @Property(viewable = false, valueRenderer = DBPositiveNumberTransformer.class, order = 41)
     public int getScale()
     {
         return scale;
