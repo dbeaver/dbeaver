@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,8 +40,15 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 {
     private boolean isUnique;
     private boolean isPrimary; // Primary index - implicit
+    private boolean isExclusion;
+    private boolean isImmediate;
+    private boolean isClustered;
+    private boolean isValid;
+    private boolean isIsCheckXMin;
+    private boolean isReady;
     private String description;
     private List<PostgreIndexColumn> columns = new ArrayList<>();
+    private int amId;
 
     public PostgreIndex(PostgreTableBase parent, String indexName, ResultSet dbResult) {
         super(
@@ -51,7 +59,15 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             true);
         this.isUnique = JDBCUtils.safeGetBoolean(dbResult, "indisunique");
         this.isPrimary = JDBCUtils.safeGetBoolean(dbResult, "indisprimary");
+        this.isExclusion = JDBCUtils.safeGetBoolean(dbResult, "indisexclusion");
+        this.isImmediate = JDBCUtils.safeGetBoolean(dbResult, "indimmediate");
+        this.isClustered = JDBCUtils.safeGetBoolean(dbResult, "indisclustered");
+        this.isValid = JDBCUtils.safeGetBoolean(dbResult, "indisvalid");
+        this.isIsCheckXMin = JDBCUtils.safeGetBoolean(dbResult, "indcheckxmin");
+        this.isReady = JDBCUtils.safeGetBoolean(dbResult, "indisready");
+
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+        this.amId = JDBCUtils.safeGetInt(dbResult, "relam");
     }
 
     public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType) {
@@ -72,8 +88,44 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return !isUnique;
     }
 
+    @Property(viewable = false, order = 20)
     public boolean isPrimary() {
         return isPrimary;
+    }
+
+    @Property(viewable = false, order = 21)
+    public boolean isExclusion() {
+        return isExclusion;
+    }
+
+    @Property(viewable = false, order = 22)
+    public boolean isImmediate() {
+        return isImmediate;
+    }
+
+    @Property(viewable = false, order = 23)
+    public boolean isClustered() {
+        return isClustered;
+    }
+
+    @Property(viewable = false, order = 24)
+    public boolean isValid() {
+        return isValid;
+    }
+
+    @Property(viewable = false, order = 25)
+    public boolean isIsCheckXMin() {
+        return isIsCheckXMin;
+    }
+
+    @Property(viewable = false, order = 26)
+    public boolean isReady() {
+        return isReady;
+    }
+
+    public DBSIndexType getIndexType()
+    {
+        return super.getIndexType();
     }
 
     @Nullable
@@ -82,6 +134,15 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     public String getDescription()
     {
         return description;
+    }
+
+    @Nullable
+    @Property(viewable = true, order = 30)
+    public PostgreAccessMethod getAccessMethod(DBRProgressMonitor monitor) throws DBException {
+        if (amId <= 0) {
+            return null;
+        }
+        return PostgreUtils.getObjectById(monitor, getTable().getDatabase().accessMethodCache, getTable().getDatabase(), amId);
     }
 
     @Override

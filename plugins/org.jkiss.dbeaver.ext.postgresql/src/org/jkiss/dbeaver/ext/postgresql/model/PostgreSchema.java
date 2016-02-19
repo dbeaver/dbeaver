@@ -568,7 +568,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.*,i.indkey::int[] as keys,c.relname,c.relnamespace,tc.relname as tabrelname,dsc.description" +
+                "SELECT i.*,i.indkey::int[] as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description" +
                 "\nFROM pg_catalog.pg_index i" +
                 "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +
                 "\nINNER JOIN pg_catalog.pg_class tc ON tc.oid=i.indrelid" +
