@@ -75,11 +75,11 @@
                         <id>process-product-info</id>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <outputDirectory>${project.build.directory}/content</outputDirectory>
+                            <outputDirectory>${project.build.directory}/content/</outputDirectory>
                             <overwrite>true</overwrite>
                             <resources>
                                 <resource>
-                                    <directory>${project.build.directory}/../../../../packaging/content</directory>
+                                    <directory>${basedir}/../../../packaging/content/</directory>
                                 </resource>
                             </resources>
                         </configuration>
