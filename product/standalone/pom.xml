@@ -69,7 +69,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>2.6</version>
+                <version>2.7</version>
                 <executions>
                     <execution>
                         <id>process-product-info</id>
@@ -77,9 +77,13 @@
                         <configuration>
                             <outputDirectory>${project.build.directory}/content/</outputDirectory>
                             <overwrite>true</overwrite>
+                            <includeEmptyDirs>true</includeEmptyDirs>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/../../../packaging/content/</directory>
+                                </resource>
+                                <resource>
+                                    <directory>${basedir}/content/</directory>
                                 </resource>
                             </resources>
                         </configuration>
