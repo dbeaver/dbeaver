@@ -142,6 +142,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
         if (!NavigatorHandlerObjectBase.updateUI) {
             return;
         }
+/*
         final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
         if (selectionProvider != null) {
             ISelection selection = selectionProvider.getSelection();
@@ -152,6 +153,7 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
                 }
             }
         }
+*/
     }
 
 }
