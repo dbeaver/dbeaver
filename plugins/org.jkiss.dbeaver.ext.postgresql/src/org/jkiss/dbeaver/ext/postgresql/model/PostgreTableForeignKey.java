@@ -61,8 +61,7 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
             table.getSchema().getObjectId(),
             refTableId);
         if (refTable == null) {
-            log.warn("Reference table " + refTableId + " not found");
-            return;
+            throw new DBException("Reference table " + refTableId + " not found");
         }
     }
 

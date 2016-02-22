@@ -479,10 +479,15 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                     log.warn("Unsupported constraint type");
                     return null;
             }
-            if (constraintType == DBSEntityConstraintType.FOREIGN_KEY) {
-                return new PostgreTableForeignKey(table, name, resultSet);
-            } else {
-                return new PostgreTableConstraint(table, name, constraintType, resultSet);
+            try {
+                if (constraintType == DBSEntityConstraintType.FOREIGN_KEY) {
+                    return new PostgreTableForeignKey(table, name, resultSet);
+                } else {
+                    return new PostgreTableConstraint(table, name, constraintType, resultSet);
+                }
+            } catch (DBException e) {
+                log.error(e);
+                return null;
             }
         }
 
@@ -498,9 +503,14 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
             if (constraint instanceof PostgreTableForeignKey) {
                 final PostgreTableForeignKey foreignKey = (PostgreTableForeignKey) constraint;
+                final PostgreTableBase refTable = foreignKey.getAssociatedEntity();
+                if (refTable == null) {
+                    log.warn("Unresolved reference table of '" + foreignKey.getName() + "'");
+                    return null;
+                }
                 Object keyRefNumbers = JDBCUtils.safeGetArray(resultSet, "confkey");
                 List<PostgreTableColumn> attributes = table.getAttributes(monitor);
-                List<PostgreTableColumn> refAttributes = foreignKey.getAssociatedEntity().getAttributes(monitor);
+                List<PostgreTableColumn> refAttributes = refTable.getAttributes(monitor);
                 assert attributes != null && refAttributes != null;
                 int colCount = Array.getLength(keyNumbers);
                 PostgreTableForeignKeyColumn[] fkCols = new PostgreTableForeignKeyColumn[colCount];
@@ -514,7 +524,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                         continue;
                     }
                     if (refAttr == null) {
-                        log.warn("Bad reference table '" + foreignKey.getAssociatedEntity() + "' attribute index: " + colNumber);
+                        log.warn("Bad reference table '" + refTable + "' attribute index: " + colNumber);
                         continue;
                     }
                     PostgreTableForeignKeyColumn cCol = new PostgreTableForeignKeyColumn(foreignKey, attr, i, refAttr);
