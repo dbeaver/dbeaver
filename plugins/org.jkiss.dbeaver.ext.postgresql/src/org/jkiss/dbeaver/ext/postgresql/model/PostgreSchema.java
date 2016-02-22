@@ -439,9 +439,10 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema schema, PostgreTableBase forParent) throws SQLException {
             StringBuilder sql = new StringBuilder(
-                "SELECT c.oid,c.*,t.relname as tabrelname" +
+                "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace" +
                 "\nFROM pg_catalog.pg_constraint c" +
                 "\nINNER JOIN pg_catalog.pg_class t ON t.oid=c.conrelid" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_class rt ON rt.oid=c.confrelid" +
                 "\nWHERE ");
             if (forParent == null) {
                 sql.append("t.relnamespace=?");
