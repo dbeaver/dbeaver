@@ -80,6 +80,13 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         this.loadInfo(dbResult);
     }
 
+    public PostgreSchema(PostgreDatabase database, String name, PostgreAuthId owner)
+    {
+        this.database = database;
+        this.name = name;
+        this.ownerId = owner == null ? 0 : owner.getObjectId();
+    }
+
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {

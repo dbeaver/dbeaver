@@ -49,7 +49,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,7 +64,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     static final Log log = Log.getLog(PostgreDataSource.class);
 
     private final DatabaseCache databaseCache = new DatabaseCache();
-    private List<PostgreUser> users;
     private String activeDatabaseName;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
@@ -127,7 +128,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         super.refreshObject(monitor);
 
         this.databaseCache.clearCache();
-        this.users = null;
         this.activeDatabaseName = null;
 
         this.initialize(monitor);
@@ -220,40 +220,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
 
         return mysqlConnection;
-    }
-
-    public List<PostgreUser> getUsers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        if (users == null) {
-            users = loadUsers(monitor);
-        }
-        return users;
-    }
-
-    public PostgreUser getUser(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return DBUtils.findObject(getUsers(monitor), name);
-    }
-
-    private List<PostgreUser> loadUsers(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load users")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM pg_catalog.pg_user ORDER BY usename")) {
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    List<PostgreUser> userList = new ArrayList<>();
-                    while (dbResult.next()) {
-                        PostgreUser user = new PostgreUser(this, dbResult);
-                        userList.add(user);
-                    }
-                    return userList;
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DBException(ex, this);
-        }
     }
 
     @Override
