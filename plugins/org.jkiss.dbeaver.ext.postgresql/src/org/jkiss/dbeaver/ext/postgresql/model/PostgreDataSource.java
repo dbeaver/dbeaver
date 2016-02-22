@@ -49,9 +49,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,6 +63,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private final DatabaseCache databaseCache = new DatabaseCache();
     private String activeDatabaseName;
+    private final List<String> searchPath = new ArrayList<>();
+    private String activeUser;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -114,6 +114,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         super.initialize(monitor);
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load meta info")) {
+            activeUser = JDBCUtils.queryString(session, "SELECT SESSION_USER");
+            String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
+            if (searchPathStr != null) {
+                Collections.addAll(this.searchPath, searchPathStr.replace("$user", activeUser).split(","));
+            } else {
+                this.searchPath.add("public");
+            }
+        } catch (SQLException e) {
+            log.error("Error reading connection meta info");
+        }
 
         // Read databases
         databaseCache.getAllObjects(monitor, this);
@@ -197,8 +208,24 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
+    public String getActiveUser() {
+        return activeUser;
+    }
 
+    public List<String> getSearchPath() {
+        return searchPath;
+    }
+
+    public void setSearchPath(String path) {
+        searchPath.clear();
+        searchPath.add(path);
+        if (!path.equals(activeUser)) {
+            searchPath.add(activeUser);
+        }
+    }
+
+    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
+        throw new DBCException("Active database change not supported yet");
     }
 
     @Override

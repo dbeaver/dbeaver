@@ -25,21 +25,21 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
-import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,7 +50,7 @@ import java.util.Collection;
 /**
  * PostgreDatabase
  */
-public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, PostgreObject {
+public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, PostgreObject, DBSObjectSelector {
 
     static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -74,14 +74,14 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public final SchemaCache schemaCache = new SchemaCache();
     public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
-    public PostgreDatabase(PostgreDataSource dataSource, ResultSet dbResult)
+    public PostgreDatabase(PostgreDataSource dataSource, JDBCResultSet dbResult)
         throws SQLException
     {
         this.dataSource = dataSource;
         this.loadInfo(dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult)
+    private void loadInfo(JDBCResultSet dbResult)
         throws SQLException
     {
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
@@ -348,6 +348,47 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     public Collection<PostgreAuthId> getUsers(DBRProgressMonitor monitor) throws DBException {
         return authIdCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public boolean supportsObjectSelect() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public PostgreSchema getSelectedObject() {
+        for (String schemaName : dataSource.getSearchPath()) {
+            final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
+            if (schema != null) {
+                return schema;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException {
+        if (object instanceof PostgreSchema) {
+            PostgreSchema oldActive = getSelectedObject();
+            if (oldActive == object) {
+                return;
+            }
+
+            for (JDBCExecutionContext context : dataSource.getAllContexts()) {
+                try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
+                    JDBCUtils.executeSQL(session, "SET search_path = \"$user\"," + DBUtils.getQuotedIdentifier(object));
+                } catch (SQLException e) {
+                    throw new DBCException("Error setting search path", e, dataSource);
+                }
+            }
+            dataSource.setSearchPath(object.getName());
+
+            if (oldActive != null) {
+                DBUtils.fireObjectSelect(oldActive, false);
+            }
+            DBUtils.fireObjectSelect(object, true);
+        }
     }
 
     class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {
