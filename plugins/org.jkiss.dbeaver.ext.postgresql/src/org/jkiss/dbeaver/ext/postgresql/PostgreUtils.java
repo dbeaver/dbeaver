@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -40,8 +41,10 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * postgresql utils
@@ -383,4 +386,12 @@ public class PostgreUtils {
     }
 
 
+    public static void setArrayParameter(JDBCPreparedStatement dbStat, int index, List<? extends PostgreObject> objectList) throws SQLException {
+        StringBuilder arrayString = new StringBuilder();
+        for (PostgreObject o : objectList) {
+            if (arrayString.length() > 0) arrayString.append(" ");
+            arrayString.append(o.getObjectId());
+        }
+        dbStat.setObject(index, arrayString.toString(), Types.OTHER);
+    }
 }
