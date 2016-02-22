@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -49,7 +50,7 @@ import java.util.Collection;
 /**
  * PostgreDatabase
  */
-public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObject, PostgreObject {
+public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, PostgreObject {
 
     static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -329,6 +330,24 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPStatefulObje
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
 
+    }
+
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        dataTypeCache.clearCache();
+        cacheDataTypes(monitor);
+
+        authIdCache.clearCache();
+        accessMethodCache.clearCache();
+        languageCache.clearCache();
+        encodingCache.clearCache();
+        tablespaceCache.clearCache();
+        schemaCache.clearCache();
+        return true;
+    }
+
+    public Collection<PostgreAuthId> getUsers(DBRProgressMonitor monitor) throws DBException {
+        return authIdCache.getAllObjects(monitor, this);
     }
 
     class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {

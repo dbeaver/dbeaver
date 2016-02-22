@@ -17,16 +17,22 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAuthId;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 /**
  * PostgreSchemaManager
@@ -49,30 +55,27 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     @Override
     protected PostgreSchema createDatabaseObject(DBECommandContext context, PostgreDatabase parent, Object copyFrom)
     {
-/*
-        PostgreCreateDatabaseDialog dialog = new PostgreCreateDatabaseDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+        PostgreCreateSchemaDialog dialog = new PostgreCreateSchemaDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
-        String schemaName = dialog.getName();
-        PostgreSchema newCatalog = new PostgreSchema(parent, null);
-        newCatalog.setName(schemaName);
-        newCatalog.setDefaultCharset(dialog.getCharset());
-        newCatalog.setDefaultCollation(dialog.getCollation());
-        return newCatalog;
-*/
-        return null;
+        return new PostgreSchema(parent, dialog.getName(), dialog.getOwner());
     }
 
     @Override
     protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
     {
-        final PostgreSchema catalog = command.getObject();
-        final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
-/*
-        if (catalog.getDefaultCharset() != null) {
-            script.append("\nDEFAULT CHARACTER SET ").append(catalog.getDefaultCharset().getName());
+        final PostgreSchema schema = command.getObject();
+        final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
+        try {
+            final PostgreAuthId owner = schema.getOwner(VoidProgressMonitor.INSTANCE);
+            if (owner != null) {
+                script.append("\nAUTHORIZATION ").append(owner.getName());
+            }
+        } catch (DBException e) {
+            log.error(e);
         }
+/*
         if (catalog.getDefaultCollation() != null) {
             script.append("\nDEFAULT COLLATE ").append(catalog.getDefaultCollation().getName());
         }
@@ -86,7 +89,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
         return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA `" + command.getObject().getName() + "`") //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
         };
     }
 
