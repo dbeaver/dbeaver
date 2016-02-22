@@ -55,10 +55,11 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
 
         final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
+        final int refSchemaId = JDBCUtils.safeGetInt(resultSet, "refnamespace");
         final int refTableId = JDBCUtils.safeGetInt(resultSet, "confrelid");
         refTable = table.getDatabase().findTable(
             monitor,
-            table.getSchema().getObjectId(),
+            refSchemaId,
             refTableId);
         if (refTable == null) {
             throw new DBException("Reference table " + refTableId + " not found");
