@@ -213,6 +213,8 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                             if (childContainer == null) {
                                 // Bad container - stop search
                                 return Status.CANCEL_STATUS;
+                            } else if (childContainer instanceof DBSObjectContainer) {
+                                container = (DBSObjectContainer) childContainer;
                             }
                         }
                     }
