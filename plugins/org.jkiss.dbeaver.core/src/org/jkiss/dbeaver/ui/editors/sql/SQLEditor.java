@@ -1598,10 +1598,10 @@ public class SQLEditor extends SQLEditorBase implements
             UIUtils.runInUI(null, new Runnable() {
                 @Override
                 public void run() {
+                    sashForm.setMaximizedControl(null);
                     if (!hasErrors) {
                         getSelectionProvider().setSelection(originalSelection);
                     }
-                    sashForm.setMaximizedControl(null);
                     QueryResultsContainer results = queryProcessor.getFirstResults();
                     ResultSetViewer viewer = results.getResultSetViewer();
                     if (viewer != null) {
