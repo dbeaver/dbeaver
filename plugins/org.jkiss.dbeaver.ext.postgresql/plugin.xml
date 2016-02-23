@@ -141,6 +141,9 @@
                     description="PostgreSQL standard driver">
                     <replace provider="generic" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
                 </driver>
             </drivers>
 
