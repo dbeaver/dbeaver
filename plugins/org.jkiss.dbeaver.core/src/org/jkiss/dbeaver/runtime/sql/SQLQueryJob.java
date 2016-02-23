@@ -565,31 +565,36 @@ public class SQLQueryJob extends DataSourceJob
         dataReceiver.fetchStart(session, resultSet, rsOffset, rsMaxRows);
 
         try {
-            // Retrieve source entity
+            String sourceName = null;//resultSet.getResultSetName();
             if (result != null) {
-                DBCResultSetMetaData rsMeta = resultSet.getMeta();
-                String sourceName = null;//resultSet.getResultSetName();
-                for (DBCAttributeMetaData attr : rsMeta.getAttributes()) {
-                    String entityName = attr.getEntityName();
-                    if (!CommonUtils.isEmpty(entityName)) {
-                        if (sourceName == null) {
-                            sourceName = entityName;
-                        } else if (!sourceName.equals(entityName)) {
-                            // Multiple source entities
-                            sourceName += "(+)";
-                            break;
+                final String queryTitle = result.getStatement().getQueryTitle();
+                if (!CommonUtils.isEmpty(queryTitle)) {
+                    sourceName = queryTitle;
+                } else {
+                    // Retrieve source entity
+                    DBCResultSetMetaData rsMeta = resultSet.getMeta();
+                    for (DBCAttributeMetaData attr : rsMeta.getAttributes()) {
+                        String entityName = attr.getEntityName();
+                        if (!CommonUtils.isEmpty(entityName)) {
+                            if (sourceName == null) {
+                                sourceName = entityName;
+                            } else if (!sourceName.equals(entityName)) {
+                                // Multiple source entities
+                                sourceName += "(+)";
+                                break;
+                            }
                         }
                     }
-                }
-/*
-                if (CommonUtils.isEmpty(sourceName)) {
-                    try {
-                        sourceName = resultSet.getResultSetName();
-                    } catch (DBCException e) {
-                        log.debug(e);
+    /*
+                    if (CommonUtils.isEmpty(sourceName)) {
+                        try {
+                            sourceName = resultSet.getResultSetName();
+                        } catch (DBCException e) {
+                            log.debug(e);
+                        }
                     }
+    */
                 }
-*/
                 if (CommonUtils.isEmpty(sourceName)) {
                     sourceName = "Result";
                 }

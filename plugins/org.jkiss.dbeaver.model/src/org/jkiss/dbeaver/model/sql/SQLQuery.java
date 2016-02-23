@@ -45,11 +45,15 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SQLQuery
  */
 public class SQLQuery {
+
+    private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("--\\s*(?:NAME|TITLE)\\s*:\\s*(.+)\\s*", Pattern.CASE_INSENSITIVE);
 
     @NotNull
     private final String originalQuery;
@@ -65,6 +69,7 @@ public class SQLQuery {
     private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
     private Map<String, SQLSelectItem> selectItems;
+    private String queryTitle;
 
     public SQLQuery(@NotNull String query)
     {
@@ -130,6 +135,12 @@ public class SQLQuery {
             this.type = SQLQueryType.UNKNOWN;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
+        // Extract query title
+        queryTitle = null;
+        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(query);
+        if (matcher.find()) {
+            queryTitle = matcher.group(1);
+        }
     }
 
     private String unquoteIdentifier(String name) {
@@ -172,6 +183,10 @@ public class SQLQuery {
 
     public void setQuery(@NotNull String query) {
         this.query = query;
+    }
+
+    public String getQueryTitle() {
+        return queryTitle;
     }
 
     @Nullable
