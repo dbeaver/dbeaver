@@ -317,21 +317,29 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return databaseCache.getCachedObjects();
     }
 
-    static class DatabaseCache extends JDBCObjectCache<PostgreDataSource, PostgreDatabase>
+    class DatabaseCache extends JDBCObjectCache<PostgreDataSource, PostgreDatabase>
     {
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
         {
+            final boolean hideNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProperty(PostgreConstants.PROP_HIDE_NON_DEFAULT_DB));
             StringBuilder catalogQuery = new StringBuilder(
-                "SELECT db.oid,db.*\n" +
-                "\nFROM pg_catalog.pg_database db where NOT datistemplate AND datallowconn" +
-                "\nORDER BY db.datname");
+                "SELECT db.oid,db.*" +
+                "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");
+            if (hideNDD) {
+                catalogQuery.append("\nAND db.datname=?");
+            }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
+            if (!hideNDD) {
+                if (catalogFilters != null) {
+                    JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
+                }
+                catalogQuery.append("\nORDER BY db.datname");
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            if (catalogFilters != null) {
+            if (hideNDD) {
+                dbStat.setString(1, activeDatabaseName);
+            } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
             return dbStat;
