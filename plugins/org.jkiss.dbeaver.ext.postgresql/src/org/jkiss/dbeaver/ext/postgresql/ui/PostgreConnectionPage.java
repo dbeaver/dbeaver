@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -54,6 +53,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private ClientHomesSelector homesSelector;
     private Button useSslButton;
     private Text sslCertText;
+    private Button hideNonDefault;
     private boolean activated = false;
 
     private static ImageDescriptor LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
@@ -155,6 +155,17 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(2, false));
 
+            hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, "Hide non-default databases", true);
+        }
+
+        {
+            Group secureGroup = new Group(addrGroup, SWT.NONE);
+            secureGroup.setText("Options");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 4;
+            secureGroup.setLayoutData(gd);
+            secureGroup.setLayout(new GridLayout(2, false));
+
             useSslButton = UIUtils.createLabelCheckbox(secureGroup, "Use SSL", true);
             useSslButton.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -222,6 +233,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             sslCertText.setEnabled(useSSL);
         }
 
+        final boolean hideNDD = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_HIDE_NON_DEFAULT_DB));
+        hideNonDefault.setSelection(hideNDD);
+
         activated = true;
     }
 
@@ -249,6 +263,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         connectionInfo.setProperty(PostgreConstants.PROP_USE_SSL, useSslButton.getSelection());
+        connectionInfo.setProperty(PostgreConstants.PROP_HIDE_NON_DEFAULT_DB, hideNonDefault.getSelection());
         super.saveSettings(dataSource);
     }
 
