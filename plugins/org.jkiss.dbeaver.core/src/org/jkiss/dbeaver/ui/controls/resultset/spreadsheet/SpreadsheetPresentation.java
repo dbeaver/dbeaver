@@ -940,7 +940,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             constraint.setOrderDescending(false);
         }
 
-        if (!ResultSetUtils.isServerSideFiltering(controller) && !controller.isHasMoreData()) {
+        if (!ResultSetUtils.isServerSideFiltering(controller) || !controller.isHasMoreData()) {
             reorderLocally();
         } else {
             controller.refreshData(null);
