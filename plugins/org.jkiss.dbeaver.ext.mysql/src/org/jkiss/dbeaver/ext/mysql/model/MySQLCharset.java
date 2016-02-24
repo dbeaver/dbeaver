@@ -20,12 +20,14 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -56,6 +58,7 @@ public class MySQLCharset extends MySQLInformation {
     void addCollation(MySQLCollation collation)
     {
         collations.add(collation);
+        Collections.sort(collations, DBUtils.nameComparator());
     }
 
     @NotNull

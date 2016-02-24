@@ -57,11 +57,11 @@ public final class DBUtils {
     private static final String DBEAVER_DDL_WARNING = "-- WARNING: It may differ from actual native database DDL";
     //public static final DateFormat DEFAULT_ new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 
-    public static <TYPE extends DBSObject> Comparator<TYPE> nameComparator()
+    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
     {
         return new Comparator<TYPE>() {
             @Override
-            public int compare(DBSObject o1, DBSObject o2)
+            public int compare(DBPNamedObject o1, DBPNamedObject o2)
             {
                 return o1.getName().compareTo(o2.getName());
             }
