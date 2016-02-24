@@ -101,10 +101,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private final AttributeCache attributeCache;
     private Object[] enumValues;
 
-    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
+    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, int typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
 
-        this.typeId = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.typeId = typeId;
         this.typeType = PostgreTypeType.b;
         try {
             this.typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
@@ -349,99 +349,174 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     {
         int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
         final PostgreSchema schema = owner.getSchema(dbResult.getSourceStatement().getConnection().getProgressMonitor(), schemaId);
+        int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
-        PostgreTypeCategory typeCategory = PostgreTypeCategory.X;
-        try {
-            typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
-        } catch (IllegalArgumentException e) {
-            log.debug(e);
-        }
+        PostgreTypeCategory typeCategory;
+            final String catString = JDBCUtils.safeGetString(dbResult, "typcategory");
+            if (catString == null) {
+                typeCategory = null;
+            } else {
+                try {
+                    typeCategory = PostgreTypeCategory.valueOf(catString);
+                } catch (IllegalArgumentException e) {
+                    log.debug(e);
+                    typeCategory = null;
+                }
+            }
         int valueType;
         if (ArrayUtils.contains(OID_TYPES, name) || name.equals("hstore")) {
             valueType = Types.VARCHAR;
         } else {
-            switch (typeCategory) {
-                case A:
-                    valueType = Types.ARRAY;
-                    break;
-                case P:
-                    valueType = Types.OTHER;
-                    break;
-                case B:
-                    valueType = Types.BOOLEAN;
-                    break;
-                case C:
-                    valueType = Types.STRUCT;
-                    break;
-                case D:
-                    if (name.startsWith("timestamp")) {
-                        valueType = Types.TIMESTAMP;
-                    } else if (name.startsWith("date")) {
-                        valueType = Types.DATE;
-                    } else {
-                        valueType = Types.TIME;
-                    }
-                    break;
-                case N:
-                    valueType = Types.NUMERIC;
-                    if (name.equals("numeric")) {
+            if (typeCategory == null) {
+                final int typElem = JDBCUtils.safeGetInt(dbResult, "typelem");
+                // In old PostgreSQL versions
+                switch (typeId) {
+                    case PostgreOid.BIT:
+                        valueType = Types.BIT;
+                        break;
+                    case PostgreOid.BOOL:
+                        valueType = Types.BOOLEAN;
+                        break;
+                    case PostgreOid.INT2:
+                        valueType = Types.SMALLINT;
+                        break;
+                    case PostgreOid.INT4:
+                        valueType = Types.INTEGER;
+                        break;
+                    case PostgreOid.INT8:
+                        valueType = Types.BIGINT;
+                        break;
+                    case PostgreOid.FLOAT4:
+                        valueType = Types.FLOAT;
+                        break;
+                    case PostgreOid.FLOAT8:
+                        valueType = Types.DOUBLE;
+                        break;
+                    case PostgreOid.NUMERIC:
                         valueType = Types.NUMERIC;
-                    } else if (name.startsWith("float")) {
-                        switch (typeLength) {
-                            case 4:
-                                valueType = Types.FLOAT;
-                                break;
-                            case 8:
-                                valueType = Types.DOUBLE;
-                                break;
-                        }
-                    } else {
-                        switch (typeLength) {
-                            case 2:
-                                valueType = Types.SMALLINT;
-                                break;
-                            case 4:
-                                valueType = Types.INTEGER;
-                                break;
-                            case 8:
-                                valueType = Types.BIGINT;
-                                break;
-                        }
-                    }
-                    break;
-                case S:
-                    //                if (name.equals("text")) {
-                    //                    valueType = Types.CLOB;
-                    //                } else {
-                    valueType = Types.VARCHAR;
-                    //                }
-                    break;
-                case U:
-                    switch (name) {
-                        case "bytea":
-                            valueType = Types.BINARY;
-                            break;
-                        case "xml":
-                            valueType = Types.SQLXML;
-                            break;
-                        default:
+                        break;
+                    case PostgreOid.CHAR:
+                        valueType = Types.CHAR;
+                        break;
+                    case PostgreOid.VARCHAR:
+                        valueType = Types.VARCHAR;
+                        break;
+                    case PostgreOid.DATE:
+                        valueType = Types.DATE;
+                        break;
+                    case PostgreOid.TIME:
+                    case PostgreOid.TIMETZ:
+                        valueType = Types.TIME;
+                        break;
+                    case PostgreOid.TIMESTAMP:
+                    case PostgreOid.TIMESTAMPTZ:
+                        valueType = Types.TIMESTAMP;
+                        break;
+                    case PostgreOid.BYTEA:
+                        valueType = Types.BINARY;
+                        break;
+                    case PostgreOid.CHAR_ARRAY:
+                        valueType = Types.CHAR;
+                        break;
+                    case PostgreOid.BPCHAR:
+                        valueType = Types.CHAR;
+                        break;
+                    case PostgreOid.XML:
+                        valueType = Types.SQLXML;
+                        break;
+                    default:
+                        if (typElem > 0) {
+                            valueType = Types.ARRAY;
+                        } else {
                             valueType = Types.OTHER;
-                            break;
-                    }
-                    break;
-                default:
-                    valueType = Types.OTHER;
-                    break;
+                        }
+                        break;
+                }
+            } else {
+                switch (typeCategory) {
+                    case A:
+                        valueType = Types.ARRAY;
+                        break;
+                    case P:
+                        valueType = Types.OTHER;
+                        break;
+                    case B:
+                        valueType = Types.BOOLEAN;
+                        break;
+                    case C:
+                        valueType = Types.STRUCT;
+                        break;
+                    case D:
+                        if (name.startsWith("timestamp")) {
+                            valueType = Types.TIMESTAMP;
+                        } else if (name.startsWith("date")) {
+                            valueType = Types.DATE;
+                        } else {
+                            valueType = Types.TIME;
+                        }
+                        break;
+                    case N:
+                        valueType = Types.NUMERIC;
+                        if (name.equals("numeric")) {
+                            valueType = Types.NUMERIC;
+                        } else if (name.startsWith("float")) {
+                            switch (typeLength) {
+                                case 4:
+                                    valueType = Types.FLOAT;
+                                    break;
+                                case 8:
+                                    valueType = Types.DOUBLE;
+                                    break;
+                            }
+                        } else {
+                            switch (typeLength) {
+                                case 2:
+                                    valueType = Types.SMALLINT;
+                                    break;
+                                case 4:
+                                    valueType = Types.INTEGER;
+                                    break;
+                                case 8:
+                                    valueType = Types.BIGINT;
+                                    break;
+                            }
+                        }
+                        break;
+                    case S:
+                        //                if (name.equals("text")) {
+                        //                    valueType = Types.CLOB;
+                        //                } else {
+                        valueType = Types.VARCHAR;
+                        //                }
+                        break;
+                    case U:
+                        switch (name) {
+                            case "bytea":
+                                valueType = Types.BINARY;
+                                break;
+                            case "xml":
+                                valueType = Types.SQLXML;
+                                break;
+                            default:
+                                valueType = Types.OTHER;
+                                break;
+                        }
+                        break;
+                    default:
+                        valueType = Types.OTHER;
+                        break;
+                }
             }
         }
 
         return new PostgreDataType(
             session,
             schema,
+            typeId,
             valueType,
             name,
             typeLength,
