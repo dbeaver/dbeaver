@@ -63,7 +63,7 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
 
         final OracleTableColumn column = new OracleTableColumn(parent);
         column.setName(getNewColumnName(context, parent));
-        column.setType((OracleDataType) columnType);
+        column.setDataType((OracleDataType) columnType);
         column.setTypeName(columnType == null ? "INTEGER" : columnType.getName()); //$NON-NLS-1$
         column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
         column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
