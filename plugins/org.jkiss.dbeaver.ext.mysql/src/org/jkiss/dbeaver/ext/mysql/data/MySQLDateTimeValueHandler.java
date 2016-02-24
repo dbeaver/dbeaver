@@ -43,7 +43,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
             if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Calendar cal = Calendar.getInstance();
             cal.setTime((Date) value);
-            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY) + 1);
+            final String hourOfDay = getTwoDigitValue(cal.get(Calendar.HOUR_OF_DAY));
             final String minutes = getTwoDigitValue(cal.get(Calendar.MINUTE));
             final String seconds = getTwoDigitValue(cal.get(Calendar.SECOND));
             final String year = String.valueOf(cal.get(Calendar.YEAR));
