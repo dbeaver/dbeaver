@@ -3,7 +3,7 @@ Free multi-platform database tool for developers, SQL programmers, database admi
 Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra).
 * Has a lot of <a href="http://dbeaver.jkiss.org/docs/features/">features</a>. 
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
-* Uses plugins architecture and provides additional functionality for the most popular databases (MySQL, Oracle, DB2 in version 3.5.x).
+* Uses plugins architecture and provides additional functionality for the most popular databases (MySQL, PostgreSQL, Oracle, DB2 in version 3.6.x).
 
 ## Download
 
