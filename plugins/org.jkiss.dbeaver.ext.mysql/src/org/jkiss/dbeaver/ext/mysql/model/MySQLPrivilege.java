@@ -38,7 +38,7 @@ public class MySQLPrivilege implements DBAPrivilege
     public static final String GRANT_PRIVILEGE = "Grant Option";
     public static final String ALL_PRIVILEGES = "All Privileges";
 
-    public static enum Kind {
+    public enum Kind {
         OBJECTS,
         DDL,
         ADMIN,
