@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -171,7 +172,15 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                 @Override
                 public List<MySQLPrivilege> evaluate() throws InvocationTargetException, InterruptedException {
                     try {
-                        return getDatabaseObject().getDataSource().getPrivilegesByKind(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
+                        final List<MySQLPrivilege> privList = getDatabaseObject().getDataSource().getPrivilegesByKind(getProgressMonitor(), MySQLPrivilege.Kind.ADMIN);
+                        for (Iterator<MySQLPrivilege> iterator = privList.iterator(); iterator.hasNext(); ) {
+                            MySQLPrivilege priv = iterator.next();
+                            // Remove proxy (it is not singleton)
+                            if (priv.getName().equalsIgnoreCase("proxy")) {
+                                iterator.remove();
+                            }
+                        }
+                        return privList;
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
