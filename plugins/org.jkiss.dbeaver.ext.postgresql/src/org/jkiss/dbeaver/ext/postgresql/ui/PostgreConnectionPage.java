@@ -155,7 +155,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(2, false));
 
-            hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, "Hide non-default databases", true);
+            hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, "Show non-default databases", true);
         }
 
         {
@@ -233,8 +233,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             sslCertText.setEnabled(useSSL);
         }
 
-        final boolean hideNDD = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_HIDE_NON_DEFAULT_DB));
-        hideNonDefault.setSelection(hideNDD);
+        final boolean showNDD = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
+        hideNonDefault.setSelection(showNDD);
 
         activated = true;
     }
@@ -263,7 +263,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         connectionInfo.setProperty(PostgreConstants.PROP_USE_SSL, useSslButton.getSelection());
-        connectionInfo.setProperty(PostgreConstants.PROP_HIDE_NON_DEFAULT_DB, hideNonDefault.getSelection());
+        connectionInfo.setProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, hideNonDefault.getSelection());
         super.saveSettings(dataSource);
     }
 
