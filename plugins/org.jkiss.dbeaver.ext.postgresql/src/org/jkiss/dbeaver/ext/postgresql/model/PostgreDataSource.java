@@ -322,22 +322,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataSource owner) throws SQLException
         {
-            final boolean hideNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProperty(PostgreConstants.PROP_HIDE_NON_DEFAULT_DB));
+            final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                 "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");
-            if (hideNDD) {
+            if (!showNDD) {
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (!hideNDD) {
+            if (showNDD) {
                 if (catalogFilters != null) {
                     JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
                 }
                 catalogQuery.append("\nORDER BY db.datname");
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            if (hideNDD) {
+            if (!showNDD) {
                 dbStat.setString(1, activeDatabaseName);
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
