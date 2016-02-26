@@ -82,7 +82,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         if (setActiveObject) {
             PostgreDatabase object = getSelectedObject();
             if (object != null) {
-                useDatabase(monitor, context, object);
+//                useDatabase(monitor, context, object);
             }
         }
     }
@@ -225,7 +225,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
-        //throw new DBCException("Active database change not supported yet");
+        throw new DBCException("Active database change not supported yet");
     }
 
     @Override
