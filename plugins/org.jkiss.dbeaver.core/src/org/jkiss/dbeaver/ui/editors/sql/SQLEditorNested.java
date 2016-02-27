@@ -29,7 +29,6 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PartInitException;
@@ -42,7 +41,6 @@ import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
@@ -51,6 +49,7 @@ import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -63,7 +62,6 @@ public abstract class SQLEditorNested<T extends DBSObject>
 {
 
     private EditorPageControl pageControl;
-    private IEditorInput lazyInput;
     private ObjectCompilerLogViewer compileLog;
     private Control editorControl;
     private SashForm editorSash;
@@ -157,16 +155,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void init(IEditorSite site, IEditorInput input) throws PartInitException {
-        lazyInput = input;
-        setSite(site);
-    }
-
-    @Override
     public void doSave(final IProgressMonitor progressMonitor) {
-        if (lazyInput != null) {
-            return;
-        }
         UIUtils.runInUI(null, new Runnable() {
             @Override
             public void run() {
@@ -177,14 +166,6 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void activatePart() {
-        if (lazyInput != null) {
-            try {
-                super.init(getEditorSite(), lazyInput);
-                lazyInput = null;
-            } catch (PartInitException e) {
-                log.error(e);
-            }
-        }
     }
 
     @Override
@@ -207,7 +188,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         if (documentProvider instanceof SQLEditorNested.ObjectDocumentProvider) {
             ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceText = null;
         }
-        if (lazyInput == null && force) {
+        if (force) {
             try {
                 super.init(editorSite, getEditorInput());
                 //setFocus();
