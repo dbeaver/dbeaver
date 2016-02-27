@@ -28,6 +28,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -44,6 +45,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -337,13 +339,17 @@ class ResultSetFilterPanel extends Composite
             // Update history buttons
             if (historyPosition > 0) {
                 historyBackButton.setEnabled(true);
-                historyBackButton.setToolTipText(stateHistory.get(historyPosition - 1).describeState());
+                historyBackButton.setToolTipText(
+                    stateHistory.get(historyPosition - 1).describeState() +
+                    " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, viewer.getSite(), true) + ")");
             } else {
                 historyBackButton.setEnabled(false);
             }
             if (historyPosition < stateHistory.size() - 1) {
                 historyForwardButton.setEnabled(true);
-                historyForwardButton.setToolTipText(stateHistory.get(historyPosition + 1).describeState());
+                historyForwardButton.setToolTipText(
+                    stateHistory.get(historyPosition + 1).describeState() +
+                    " (" + ActionUtils.findCommandDescription(IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, viewer.getSite(), true) + ")");
             } else {
                 historyForwardButton.setEnabled(false);
             }
