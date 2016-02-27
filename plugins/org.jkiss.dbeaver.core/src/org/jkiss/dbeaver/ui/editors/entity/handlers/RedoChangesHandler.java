@@ -49,11 +49,14 @@ public class RedoChangesHandler extends AbstractHandler implements IElementUpdat
     public void updateElement(UIElement element, Map parameters)
     {
         IWorkbenchWindow workbenchWindow = element.getServiceLocator().getService(IWorkbenchWindow.class);
+        if (workbenchWindow == null || workbenchWindow.getActivePage() == null) {
+            return;
+        }
         final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
         if (activeEditor instanceof EntityEditor) {
             final DBECommandContext commandContext = ((EntityEditor) activeEditor).getCommandContext();
             String text = "Redo";
-            if (commandContext.getRedoCommand() != null) {
+            if (commandContext != null && commandContext.getRedoCommand() != null) {
                 text += " " + commandContext.getRedoCommand().getTitle();
             }
             element.setText(text);
