@@ -318,7 +318,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
 
             if (!(newSelection.getData() instanceof DBNNode) ||
-                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart()))) {
+                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite()))) {
                 curSelection = null;
                 return;
             }

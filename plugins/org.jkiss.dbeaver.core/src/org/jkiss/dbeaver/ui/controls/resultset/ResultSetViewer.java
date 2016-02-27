@@ -1148,6 +1148,10 @@ public class ResultSetViewer extends Viewer
                 });
                 manager.add(viewMenu);
             }
+
+            if (ActionUtils.isCommandEnabled(ResultSetCommandHandler.CMD_NAVIGATE_LINK, site)) {
+                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_NAVIGATE_LINK));
+            }
         }
 
         // Fill general menu
