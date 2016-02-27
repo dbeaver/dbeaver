@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.jface.dialogs.TrayDialog;
+import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -40,6 +42,17 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
+    private static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
+    private static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
+    private static final String[] EXCLUDE_PREF_PAGES = {
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Perspectives",
+        //"org.eclipse.ui.preferencePages.FileEditors",
+        WORKBENCH_PREF_PAGE_ID + "/" + APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
+
+    };
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
@@ -72,6 +85,12 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public void postStartup()
     {
         super.postStartup();
+
+        // Remove unneeded pref pages
+        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager( );
+        for (String epp : EXCLUDE_PREF_PAGES) {
+            pm.remove(epp);
+        }
 
         startVersionChecker();
     }
