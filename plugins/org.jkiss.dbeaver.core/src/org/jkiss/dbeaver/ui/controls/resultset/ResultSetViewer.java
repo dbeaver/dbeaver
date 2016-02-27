@@ -520,13 +520,13 @@ public class ResultSetViewer extends Viewer
 
     @Nullable
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == IFindReplaceTarget.class) {
-            return findReplaceTarget;
+            return adapter.cast(findReplaceTarget);
         }
         if (adapter.isAssignableFrom(activePresentation.getClass())) {
-            return activePresentation;
+            return adapter.cast(activePresentation);
         }
         // Try to get it from adapter
         if (activePresentation instanceof IAdaptable) {
@@ -752,10 +752,6 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////
     // History
 
-    int getHistoryPosition() {
-        return historyPosition;
-    }
-
     List<StateItem> getStateHistory() {
         return stateHistory;
     }
@@ -788,16 +784,6 @@ public class ResultSetViewer extends Viewer
         curState = null;
         stateHistory.clear();
         historyPosition = -1;
-    }
-
-    void navigateHistory(int position) {
-        StateItem state = stateHistory.get(position);
-        int segmentSize = getSegmentMaxRows();
-        if (state.rowNumber >= 0 && state.rowNumber >= segmentSize && segmentSize > 0) {
-            segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
-        }
-
-        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, null);
     }
 
     ///////////////////////////////////////
@@ -1345,6 +1331,32 @@ public class ResultSetViewer extends Viewer
                 openNewDataEditor(targetNode, newFilter);
             }
         });
+    }
+
+    @Override
+    public int getHistoryPosition() {
+        return historyPosition;
+    }
+
+    @Override
+    public int getHistorySize() {
+        return stateHistory.size();
+    }
+
+    @Override
+    public void navigateHistory(int position) {
+        if (position < 0 || position >= stateHistory.size()) {
+            // out of range
+            log.debug("Wrong history position: " + position);
+            return;
+        }
+        StateItem state = stateHistory.get(position);
+        int segmentSize = getSegmentMaxRows();
+        if (state.rowNumber >= 0 && state.rowNumber >= segmentSize && segmentSize > 0) {
+            segmentSize = (state.rowNumber / segmentSize + 1) * segmentSize;
+        }
+
+        runDataPump(state.dataContainer, state.filter, 0, segmentSize, state.rowNumber, null);
     }
 
     @Override

@@ -108,6 +108,12 @@ public interface IResultSetController extends DBPContextProvider {
     void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException;
 
+    int getHistoryPosition();
+
+    int getHistorySize();
+
+    void navigateHistory(int position);
+
     void updateValueView();
 
     void updateEditControls();
