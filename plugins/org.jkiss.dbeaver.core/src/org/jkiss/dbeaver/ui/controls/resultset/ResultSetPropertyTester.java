@@ -128,7 +128,7 @@ public class ResultSetPropertyTester extends PropertyTester
                 return false;
             case PROP_CAN_NAVIGATE_HISTORY:
                 if (!actionsDisabled && rsv.getModel().hasData()) {
-                    if (expectedValue == 1 || "1".equals(expectedValue)) {
+                    if (expectedValue instanceof Number && ((Number)expectedValue).intValue() == 1 || "1".equals(expectedValue)) {
                         return rsv.getHistoryPosition() < rsv.getHistorySize() - 1;
                     } else {
                         return rsv.getHistoryPosition() > 0;
