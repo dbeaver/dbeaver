@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DatabaseEditorPropertyTester
@@ -37,6 +39,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_MOVE = "canMove";
     public static final String PROP_CAN_TOGGLE = "canToggle";
     public static final String PROP_CAN_SWITCH_PRESENTATION = "canSwitchPresentation";
+    public static final String PROP_CAN_NAVIGATE_LINK = "canNavigateLink";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
 
@@ -110,6 +113,18 @@ public class ResultSetPropertyTester extends PropertyTester
                         !rsv.isRefreshInProgress() &&
                         rsv.getAvailablePresentations() != null &&
                         rsv.getAvailablePresentations().size() > 1;
+            case PROP_CAN_NAVIGATE_LINK:
+                if (!actionsDisabled && rsv.getModel().hasData()) {
+                    final ResultSetRow row = rsv.getCurrentRow();
+                    if (row != null) {
+                        DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                        if (attr != null) {
+                            Object value = rsv.getModel().getCellValue(attr, row);
+                            return !CommonUtils.isEmpty(attr.getReferrers()) && !DBUtils.isNullValue(value);
+                        }
+                    }
+                }
+                return false;
         }
         return false;
     }

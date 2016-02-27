@@ -118,12 +118,12 @@ public class ActionUtils
         return new CommandContributionItem(contributionParameters);
     }
 
-    public static boolean isCommandEnabled(String commandId, IWorkbenchPart part)
+    public static boolean isCommandEnabled(String commandId, IWorkbenchPartSite site)
     {
-        if (commandId != null && part != null) {
+        if (commandId != null && site != null) {
             try {
                 //Command cmd = new Command();
-                ICommandService commandService = part.getSite().getService(ICommandService.class);
+                ICommandService commandService = site.getService(ICommandService.class);
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
                     return command != null && command.isEnabled();

@@ -46,7 +46,10 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
@@ -74,11 +77,10 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -101,7 +103,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -833,23 +834,18 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return;
         }
 
-        try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
-                        controller.navigateAssociation(monitor, attr, row, ctrlPressed);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+        new AbstractJob("Navigate association") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    boolean ctrlPressed = (state & SWT.CTRL) == SWT.CTRL;
+                    controller.navigateAssociation(monitor, attr, row, ctrlPressed);
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
                 }
-            });
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(spreadsheet.getShell(), "Cannot navigate to the reference", null, e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     ///////////////////////////////////////////////

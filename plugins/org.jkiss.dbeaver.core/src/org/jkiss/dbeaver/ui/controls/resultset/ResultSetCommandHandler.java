@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
@@ -27,9 +29,16 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ResultSetCommandHandler
@@ -51,77 +60,122 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
+    public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
 
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        ResultSetViewer resultSet = getActiveResultSet(HandlerUtil.getActivePart(event));
-        if (resultSet == null) {
+        final ResultSetViewer rsv = getActiveResultSet(HandlerUtil.getActivePart(event));
+        if (rsv == null) {
             return null;
         }
         String actionId = event.getCommand().getId();
-        IResultSetPresentation presentation = resultSet.getActivePresentation();
-        if (actionId.equals(IWorkbenchCommandConstants.FILE_REFRESH)) {
-            resultSet.refresh();
-        } else if (actionId.equals(CMD_TOGGLE_MODE)) {
-            resultSet.toggleMode();
-        } else if (actionId.equals(CMD_SWITCH_PRESENTATION)) {
-            resultSet.switchPresentation();
-        } else if (actionId.equals(CMD_ROW_PREVIOUS) || actionId.equals(ITextEditorActionDefinitionIds.WORD_PREVIOUS)) {
-            presentation.scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
-        } else if (actionId.equals(CMD_ROW_NEXT) || actionId.equals(ITextEditorActionDefinitionIds.WORD_NEXT)) {
-            presentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
-        } else if (actionId.equals(CMD_ROW_FIRST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS)) {
-            presentation.scrollToRow(IResultSetPresentation.RowPosition.FIRST);
-        } else if (actionId.equals(CMD_ROW_LAST) || actionId.equals(ITextEditorActionDefinitionIds.SELECT_WORD_NEXT)) {
-            presentation.scrollToRow(IResultSetPresentation.RowPosition.LAST);
-        } else if (actionId.equals(CMD_FETCH_PAGE)) {
-            resultSet.readNextSegment();
-        } else if (actionId.equals(CMD_FETCH_ALL)) {
-            resultSet.readAllData();
-        } else if (actionId.equals(CMD_ROW_EDIT)) {
-            if (presentation instanceof IResultSetEditor) {
-                ((IResultSetEditor) presentation).openValueEditor(false);
-            }
-        } else if (actionId.equals(CMD_ROW_EDIT_INLINE)) {
-            if (presentation instanceof IResultSetEditor) {
-                ((IResultSetEditor) presentation).openValueEditor(true);
-            }
-        } else if (actionId.equals(CMD_ROW_ADD)) {
-            resultSet.addNewRow(false);
-        } else if (actionId.equals(CMD_ROW_COPY)) {
-            resultSet.addNewRow(true);
-        } else if (actionId.equals(CMD_ROW_DELETE) || actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE)) {
-            resultSet.deleteSelectedRows();
-        } else if (actionId.equals(CMD_APPLY_CHANGES)) {
-            resultSet.applyChanges(null);
-        } else if (actionId.equals(CMD_REJECT_CHANGES)) {
-            resultSet.rejectChanges();
-        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            ResultSetUtils.copyToClipboard(
-                presentation.copySelectionToString(
-                    false, false, false, null, DBDDisplayFormat.EDIT));
-        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE)) {
-            if (presentation instanceof IResultSetEditor) {
-                ((IResultSetEditor) presentation).pasteFromClipboard();
-            }
-        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT)) {
-            ResultSetUtils.copyToClipboard(
-                presentation.copySelectionToString(
-                    false, false, true, null, DBDDisplayFormat.EDIT)
-            );
-        } else if (actionId.equals(ITextEditorActionDefinitionIds.SMART_ENTER)) {
-            if (presentation instanceof IResultSetEditor) {
-                ((IResultSetEditor) presentation).openValueEditor(false);
-            }
-        } else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE)) {
-            FindReplaceAction action = new FindReplaceAction(
-                DBeaverActivator.getCoreResourceBundle(),
-                "Editor.FindReplace.",
-                HandlerUtil.getActiveShell(event),
-                (IFindReplaceTarget)resultSet.getAdapter(IFindReplaceTarget.class));
-            action.run();
+        IResultSetPresentation presentation = rsv.getActivePresentation();
+        switch (actionId) {
+            case IWorkbenchCommandConstants.FILE_REFRESH:
+                rsv.refresh();
+                break;
+            case CMD_TOGGLE_MODE:
+                rsv.toggleMode();
+                break;
+            case CMD_SWITCH_PRESENTATION:
+                rsv.switchPresentation();
+                break;
+            case CMD_ROW_PREVIOUS:
+            case ITextEditorActionDefinitionIds.WORD_PREVIOUS:
+                presentation.scrollToRow(IResultSetPresentation.RowPosition.PREVIOUS);
+                break;
+            case CMD_ROW_NEXT:
+            case ITextEditorActionDefinitionIds.WORD_NEXT:
+                presentation.scrollToRow(IResultSetPresentation.RowPosition.NEXT);
+                break;
+            case CMD_ROW_FIRST:
+            case ITextEditorActionDefinitionIds.SELECT_WORD_PREVIOUS:
+                presentation.scrollToRow(IResultSetPresentation.RowPosition.FIRST);
+                break;
+            case CMD_ROW_LAST:
+            case ITextEditorActionDefinitionIds.SELECT_WORD_NEXT:
+                presentation.scrollToRow(IResultSetPresentation.RowPosition.LAST);
+                break;
+            case CMD_FETCH_PAGE:
+                rsv.readNextSegment();
+                break;
+            case CMD_FETCH_ALL:
+                rsv.readAllData();
+                break;
+            case CMD_ROW_EDIT:
+                if (presentation instanceof IResultSetEditor) {
+                    ((IResultSetEditor) presentation).openValueEditor(false);
+                }
+                break;
+            case CMD_ROW_EDIT_INLINE:
+                if (presentation instanceof IResultSetEditor) {
+                    ((IResultSetEditor) presentation).openValueEditor(true);
+                }
+                break;
+            case CMD_ROW_ADD:
+                rsv.addNewRow(false);
+                break;
+            case CMD_ROW_COPY:
+                rsv.addNewRow(true);
+                break;
+            case CMD_ROW_DELETE:
+            case IWorkbenchCommandConstants.EDIT_DELETE:
+                rsv.deleteSelectedRows();
+                break;
+            case CMD_APPLY_CHANGES:
+                rsv.applyChanges(null);
+                break;
+            case CMD_REJECT_CHANGES:
+                rsv.rejectChanges();
+                break;
+            case IWorkbenchCommandConstants.EDIT_COPY:
+                ResultSetUtils.copyToClipboard(
+                    presentation.copySelectionToString(
+                        false, false, false, null, DBDDisplayFormat.EDIT));
+                break;
+            case IWorkbenchCommandConstants.EDIT_PASTE:
+                if (presentation instanceof IResultSetEditor) {
+                    ((IResultSetEditor) presentation).pasteFromClipboard();
+                }
+                break;
+            case IWorkbenchCommandConstants.EDIT_CUT:
+                ResultSetUtils.copyToClipboard(
+                    presentation.copySelectionToString(
+                        false, false, true, null, DBDDisplayFormat.EDIT)
+                );
+                break;
+            case ITextEditorActionDefinitionIds.SMART_ENTER:
+                if (presentation instanceof IResultSetEditor) {
+                    ((IResultSetEditor) presentation).openValueEditor(false);
+                }
+                break;
+            case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
+                FindReplaceAction action = new FindReplaceAction(
+                    DBeaverActivator.getCoreResourceBundle(),
+                    "Editor.FindReplace.",
+                    HandlerUtil.getActiveShell(event),
+                    (IFindReplaceTarget) rsv.getAdapter(IFindReplaceTarget.class));
+                action.run();
+                break;
+            case CMD_NAVIGATE_LINK:
+                final ResultSetRow row = rsv.getCurrentRow();
+                final DBDAttributeBinding attr = rsv.getActivePresentation().getCurrentAttribute();
+                if (row != null && attr != null) {
+                    new AbstractJob("Navigate association") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try {
+                                rsv.navigateAssociation(monitor, attr, row, false);
+                            } catch (DBException e) {
+                                return GeneralUtils.makeExceptionStatus(e);
+                            }
+                            return Status.OK_STATUS;
+                        }
+                    }.schedule();
+                }
+                break;
         }
 
 
