@@ -60,7 +60,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         i(DBSProcedureParameterKind.IN),
         o(DBSProcedureParameterKind.OUT),
         b(DBSProcedureParameterKind.INOUT),
-        v(DBSProcedureParameterKind.RESULTSET);
+        v(DBSProcedureParameterKind.RESULTSET),
+        t(DBSProcedureParameterKind.TABLE),
+        u(DBSProcedureParameterKind.UNKNOWN);
 
         private final DBSProcedureParameterKind parameterKind;
         ArgumentMode(DBSProcedureParameterKind parameterKind) {
@@ -131,7 +133,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 String paramName = argNames == null || argNames.length < allArgTypes.length ? "$" + (i + 1) : argNames[i];
                 ArgumentMode mode = ArgumentMode.i;
                 if (argModes != null && argModes.length == allArgTypes.length) {
-                    mode = ArgumentMode.valueOf(argModes[i]);
+                    try {
+                        mode = ArgumentMode.valueOf(argModes[i]);
+                    } catch (IllegalArgumentException e) {
+                        log.debug(e);
+                    }
                 }
                 PostgreProcedureParameter param = new PostgreProcedureParameter(
                     this,

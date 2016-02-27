@@ -29,4 +29,5 @@ public enum DBSProcedureParameterKind
     INOUT,
     RETURN,
     RESULTSET,
+    TABLE,
 }
