@@ -405,6 +405,11 @@ public final class SQLUtils {
                     return "(" + maxLength + ")";
                 }
             }
+        } else if (dataKind == DBPDataKind.CONTENT) {
+            final long maxLength = column.getMaxLength();
+            if (maxLength > 0) {
+                return "(" + maxLength + ')';
+            }
         } else if (dataKind == DBPDataKind.NUMERIC) {
             if (typeName.equalsIgnoreCase("DECIMAL") || typeName.equalsIgnoreCase("NUMERIC") || typeName.equalsIgnoreCase("NUMBER")) {
                 int scale = column.getScale();
