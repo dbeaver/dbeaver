@@ -68,12 +68,13 @@ public final class DBUtils {
         };
     }
 
-    public static String getQuotedIdentifier(DBSObject object)
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull DBSObject object)
     {
         return getQuotedIdentifier(object.getDataSource(), object.getName());
     }
 
-    public static boolean isQuotedIdentifier(DBPDataSource dataSource, String str)
+    public static boolean isQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
             final String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
@@ -83,7 +84,8 @@ public final class DBUtils {
         }
     }
 
-    public static String getUnQuotedIdentifier(DBPDataSource dataSource, String str)
+    @NotNull
+    public static String getUnQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
             String quote = ((SQLDataSource) dataSource).getSQLDialect().getIdentifierQuoteString();
@@ -97,7 +99,8 @@ public final class DBUtils {
         return str;
     }
 
-    public static String getUnQuotedIdentifier(String str, String quote)
+    @NotNull
+    public static String getUnQuotedIdentifier(@NotNull String str, String quote)
     {
         if (quote != null && str.startsWith(quote) && str.endsWith(quote)) {
             return str.substring(quote.length(), str.length() - quote.length());
@@ -105,7 +108,8 @@ public final class DBUtils {
         return str;
     }
 
-    public static String getQuotedIdentifier(DBPDataSource dataSource, String str)
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull DBPDataSource dataSource, @NotNull String str)
     {
         if (dataSource instanceof SQLDataSource) {
             return getQuotedIdentifier((SQLDataSource)dataSource, str, true);
@@ -114,7 +118,8 @@ public final class DBUtils {
         }
     }
 
-    public static String getQuotedIdentifier(SQLDataSource dataSource, String str, boolean caseSensitiveNames)
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull SQLDataSource dataSource, @NotNull String str, boolean caseSensitiveNames)
     {
         final SQLDialect sqlDialect = dataSource.getSQLDialect();
         String quoteString = sqlDialect.getIdentifierQuoteString();
@@ -216,7 +221,8 @@ public final class DBUtils {
         return name.toString();
     }
 
-    public static String getSimpleQualifiedName(Object... names)
+    @NotNull
+    public static String getSimpleQualifiedName(@NotNull Object... names)
     {
         StringBuilder name = new StringBuilder(names.length * 16);
         for (Object namePart : names) {
@@ -237,7 +243,7 @@ public final class DBUtils {
      * @param name object name
      * @return true or false
      */
-    public static boolean isValidObjectName(String name)
+    public static boolean isValidObjectName(@Nullable String name)
     {
         if (name == null || name.isEmpty()) {
             return false;
@@ -264,11 +270,11 @@ public final class DBUtils {
      */
     @Nullable
     public static DBSObject getObjectByPath(
-            DBRProgressMonitor monitor,
-            DBSObjectContainer rootSC,
-            String catalogName,
-            String schemaName,
-            String objectName)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer rootSC,
+        @Nullable String catalogName,
+        @Nullable String schemaName,
+        @Nullable String objectName)
         throws DBException
     {
         if (!CommonUtils.isEmpty(catalogName)) {
@@ -317,9 +323,9 @@ public final class DBUtils {
 
     @Nullable
     public static DBSObject findNestedObject(
-        DBRProgressMonitor monitor,
-        DBSObjectContainer parent,
-        List<String> names)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectContainer parent,
+        @NotNull List<String> names)
         throws DBException
     {
         for (int i = 0; i < names.size(); i++) {
@@ -393,7 +399,7 @@ public final class DBUtils {
      * @return object or null
      */
     @Nullable
-    public static <T extends DBPNamedObject> List<T> findObjects(Collection<T> theList, String objectName)
+    public static <T extends DBPNamedObject> List<T> findObjects(@Nullable Collection<T> theList, @Nullable String objectName)
     {
         if (theList != null && !theList.isEmpty()) {
             List<T> result = new ArrayList<>();
@@ -408,7 +414,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static <T> T getAdapter(Class<T> adapterType, @Nullable DBPObject object)
+    public static <T> T getAdapter(@NotNull Class<T> adapterType, @Nullable DBPObject object)
     {
         if (object instanceof DBPDataSourceContainer) {
             // Root object's parent is data source container (not datasource)
@@ -428,7 +434,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static <T> T getParentAdapter(Class<T> i, DBSObject object)
+    public static <T> T getParentAdapter(@NotNull Class<T> i, DBSObject object)
     {
         if (object == null) {
             return null;
@@ -448,7 +454,7 @@ public final class DBUtils {
      * @return object path
      */
     @NotNull
-    public static DBSObject[] getObjectPath(DBSObject object, boolean includeSelf)
+    public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf)
     {
         int depth = 0;
         final DBSObject root = includeSelf ? object : object.getParentObject();
@@ -563,7 +569,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getDefaultDataTypeName(DBPDataSource dataSource, DBPDataKind dataKind)
+    public static String getDefaultDataTypeName(@NotNull DBPDataSource dataSource, DBPDataKind dataKind)
     {
         if (dataSource instanceof DBPDataTypeProvider) {
             return ((DBPDataTypeProvider) dataSource).getDefaultDataTypeName(dataKind);
@@ -631,7 +637,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(DBRProgressMonitor monitor, DBSEntity entity)
+    public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
         throws DBException
     {
         if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
@@ -734,7 +740,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static List<DBSEntityAttribute> getEntityAttributes(DBRProgressMonitor monitor, DBSEntityReferrer referrer)
+    public static List<DBSEntityAttribute> getEntityAttributes(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityReferrer referrer)
     {
         Collection<? extends DBSEntityAttributeRef> constraintColumns = null;
         if (referrer != null) {
@@ -755,7 +761,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(DBRProgressMonitor monitor, DBSEntityReferrer constraint, DBSEntityAttribute tableColumn) throws DBException
+    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull DBSEntityAttribute tableColumn) throws DBException
     {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
@@ -769,7 +775,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSEntityAttributeRef getConstraintAttribute(DBRProgressMonitor monitor, DBSEntityReferrer constraint, String columnName) throws DBException
+    public static DBSEntityAttributeRef getConstraintAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityReferrer constraint, @NotNull String columnName) throws DBException
     {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
@@ -787,7 +793,7 @@ public final class DBUtils {
      * Assumes that columns in both constraints are in the same order.
      */
     @Nullable
-    public static DBSEntityAttribute getReferenceAttribute(DBRProgressMonitor monitor, DBSEntityAssociation association, DBSEntityAttribute tableColumn) throws DBException
+    public static DBSEntityAttribute getReferenceAttribute(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull DBSEntityAttribute tableColumn) throws DBException
     {
         final DBSEntityConstraint refConstr = association.getReferencedConstraint();
         if (association instanceof DBSEntityReferrer && refConstr instanceof DBSEntityReferrer) {
@@ -811,10 +817,10 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement prepareStatement(
-        DBCExecutionSource executionSource,
-        DBCSession session,
-        DBCStatementType statementType,
-        String query,
+        @NotNull DBCExecutionSource executionSource,
+        @NotNull DBCSession session,
+        @NotNull DBCStatementType statementType,
+        @NotNull String query,
         long offset,
         long maxRows) throws DBCException
     {
@@ -830,10 +836,10 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement prepareStatement(
-        DBCExecutionSource executionSource,
-        DBCSession session,
-        DBCStatementType statementType,
-        SQLQuery sqlQuery,
+        @NotNull DBCExecutionSource executionSource,
+        @NotNull DBCSession session,
+        @NotNull DBCStatementType statementType,
+        @NotNull SQLQuery sqlQuery,
         long offset,
         long maxRows)
         throws DBCException
@@ -889,8 +895,8 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement createStatement(
-        DBCSession session,
-        String query,
+        @NotNull DBCSession session,
+        @NotNull String query,
         boolean scrollable) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.SCRIPT;
@@ -908,8 +914,8 @@ public final class DBUtils {
 
     @NotNull
     public static DBCStatement prepareStatement(
-        DBCSession session,
-        String query,
+        @NotNull DBCSession session,
+        @NotNull String query,
         boolean scrollable) throws DBCException
     {
         DBCStatementType statementType = DBCStatementType.QUERY;
@@ -935,7 +941,7 @@ public final class DBUtils {
             false);
     }
 
-    public static void fireObjectUpdate(DBSObject object)
+    public static void fireObjectUpdate(@NotNull DBSObject object)
     {
         fireObjectUpdate(object, null);
     }
@@ -973,7 +979,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBPDataSourceContainer getContainer(DBSObject object)
+    public static DBPDataSourceContainer getContainer(@Nullable DBSObject object)
     {
         if (object == null) {
             log.warn("Null object passed");
@@ -983,7 +989,7 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static String getObjectUniqueName(DBSObject object)
+    public static String getObjectUniqueName(@NotNull DBSObject object)
     {
         if (object instanceof DBSObjectUnique) {
             return ((DBSObjectUnique) object).getUniqueName();
@@ -993,7 +999,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSDataType findBestDataType(Collection<? extends DBSDataType> allTypes, String ... typeNames)
+    public static DBSDataType findBestDataType(@NotNull Collection<? extends DBSDataType> allTypes, @NotNull String ... typeNames)
     {
         for (String testType : typeNames) {
             for (DBSDataType dataType : allTypes) {
@@ -1007,9 +1013,9 @@ public final class DBUtils {
 
     @Nullable
     public static DBSDataType resolveDataType(
-        DBRProgressMonitor monitor,
-        DBPDataSource dataSource,
-        String fullTypeName)
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @NotNull String fullTypeName)
         throws DBException
     {
         DBPDataTypeProvider dataTypeProvider = getAdapter(DBPDataTypeProvider.class, dataSource);
@@ -1024,7 +1030,7 @@ public final class DBUtils {
         return dataType;
     }
 
-    public static <T extends DBPNamedObject> void orderObjects(List<T> objects)
+    public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
     {
         Collections.sort(objects, new Comparator<T>() {
             @Override
@@ -1032,14 +1038,15 @@ public final class DBUtils {
             {
                 String name1 = o1.getName();
                 String name2 = o2.getName();
-                return name1 == name2 ? 0 :
+                return name1 == null && name2 == null ? 0 :
                     (name1 == null ? -1 :
                         (name2 == null ? 1 : name1.compareTo(name2)));
             }
         });
     }
 
-    public static String getDefaultValueDisplayString(@Nullable Object value, DBDDisplayFormat format)
+    @NotNull
+    public static String getDefaultValueDisplayString(@Nullable Object value, @NotNull DBDDisplayFormat format)
     {
         if (isNullValue(value)) {
             if (format == DBDDisplayFormat.UI) {
@@ -1079,7 +1086,7 @@ public final class DBUtils {
         }
     }
 
-    public static DBPObject getPublicObject(DBPObject object)
+    public static DBPObject getPublicObject(@NotNull DBPObject object)
     {
         if (object instanceof DBPDataSourceContainer) {
             return ((DBPDataSourceContainer) object).getDataSource();
@@ -1357,7 +1364,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBCTransactionManager getTransactionManager(@NotNull DBCExecutionContext executionContext) {
+    public static DBCTransactionManager getTransactionManager(@Nullable DBCExecutionContext executionContext) {
         if (executionContext != null && executionContext.isConnected()) {
             return getAdapter(DBCTransactionManager.class, executionContext);
         }
@@ -1385,7 +1392,7 @@ public final class DBUtils {
         return null;
     }
 
-    private static DBSProcedure findProcedureByNames(DBCSession session, String... names) throws DBException {
+    private static DBSProcedure findProcedureByNames(@NotNull DBCSession session, @NotNull String... names) throws DBException {
         if (!(session.getDataSource() instanceof DBSObjectContainer)) {
             return null;
         }
@@ -1404,7 +1411,7 @@ public final class DBUtils {
         return null;
     }
 
-    public static String getDefaultBinaryFileEncoding(DBPDataSource dataSource)
+    public static String getDefaultBinaryFileEncoding(@NotNull DBPDataSource dataSource)
     {
         DBPPreferenceStore preferenceStore = dataSource.getContainer().getPreferenceStore();
         String fileEncoding = preferenceStore.getString(ModelPreferences.CONTENT_HEX_ENCODING);
@@ -1415,7 +1422,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static Number convertStringToNumber(String text, Class<?> hintType, DBDDataFormatter formatter)
+    public static Number convertStringToNumber(String text, Class<?> hintType, @NotNull DBDDataFormatter formatter)
     {
         if (text == null || text.length() == 0) {
             return null;
@@ -1452,7 +1459,8 @@ public final class DBUtils {
         }
     }
 
-    private static Number toDouble(String text)
+    @NotNull
+    private static Number toDouble(@NotNull String text)
     {
         if (text.equals(BAD_DOUBLE_VALUE)) {
             return Double.MIN_VALUE;
@@ -1461,7 +1469,8 @@ public final class DBUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T> Class<T> getDriverClass(DBPDataSource dataSource, String className) throws ClassNotFoundException {
+    @NotNull
+    public static <T> Class<T> getDriverClass(@NotNull DBPDataSource dataSource, @NotNull String className) throws ClassNotFoundException {
         return (Class<T>) Class.forName(className, true, dataSource.getContainer().getDriver().getClassLoader());
     }
 
@@ -1470,17 +1479,19 @@ public final class DBUtils {
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends DBCSession> T openMetaSession(DBRProgressMonitor monitor, DBPDataSource dataSource, String task) {
+    @NotNull
+    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
         return (T) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @SuppressWarnings("unchecked")
-    public static <T extends DBCSession> T openUtilSession(DBRProgressMonitor monitor, DBPDataSource dataSource, String task) {
+    @NotNull
+    public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
         return (T) dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
     }
 
     @Nullable
-    public static DBSObject getDefaultObject(DBRProgressMonitor monitor, DBSInstance instance)
+    public static DBSObject getDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSInstance instance)
     {
         try {
             DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, instance);
@@ -1512,7 +1523,7 @@ public final class DBUtils {
         return o == null || o instanceof CharSequence || o instanceof Number || o instanceof java.util.Date || o instanceof Boolean;
     }
 
-    public static String formatBinaryString(DBPDataSource dataSource, byte[] data, DBDDisplayFormat format) {
+    public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format) {
         DBDBinaryFormatter formatter = getBinaryPresentation(dataSource);
         int maxLength = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
         // Convert bytes to string
