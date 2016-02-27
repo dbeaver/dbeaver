@@ -131,6 +131,15 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                     }
                 } catch (Exception e) {
                     log.error(e);
+                    // Clear contents
+                    if (control instanceof Text) {
+                        ((Text) control).setText("");
+                    } else if (control instanceof HexEditControl) {
+                        ((HexEditControl) control).setContent(new byte[0]);
+                    } else if (control instanceof ImageViewer) {
+                        ((ImageViewer) control).clearImage();
+                    }
+                    // Show error
                     valueController.showMessage(e.getMessage(), true);
                 } finally {
                     monitor.done();
