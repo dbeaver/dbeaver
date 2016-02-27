@@ -90,11 +90,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                         Text text = (Text) control;
                         StringWriter buffer = new StringWriter();
                         if (data != null) {
-                            Reader contentReader = data.getContentReader();
-                            try {
+                            try (Reader contentReader = data.getContentReader()) {
                                 ContentUtils.copyStreams(contentReader, -1, buffer, monitor);
-                            } finally {
-                                ContentUtils.close(contentReader);
                             }
                         }
                         text.setText(buffer.toString());
@@ -103,11 +100,8 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                         HexEditControl hexEditControl = (HexEditControl) control;
                         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
                         if (data != null) {
-                            InputStream contentStream = data.getContentStream();
-                            try {
+                            try (InputStream contentStream = data.getContentStream()){
                                 ContentUtils.copyStreams(contentStream, -1, buffer, monitor);
-                            } catch (IOException e) {
-                                ContentUtils.close(contentStream);
                             }
                         }
                         hexEditControl.setContent(buffer.toByteArray());
@@ -115,15 +109,12 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
                         monitor.subTask("Read image value");
                         ImageViewer imageViewControl = (ImageViewer) control;
                         if (data != null) {
-                            InputStream contentStream = data.getContentStream();
-                            try {
+                            try (InputStream contentStream = data.getContentStream()) {
                                 if (!imageViewControl.loadImage(contentStream)) {
                                     valueController.showMessage("Can't load image: " + imageViewControl.getLastError().getMessage(), true);
                                 } else {
                                     valueController.showMessage("Image: " + imageViewControl.getImageDescription(), false);
                                 }
-                            } finally {
-                                ContentUtils.close(contentStream);
                             }
                         } else {
                             imageViewControl.clearImage();
