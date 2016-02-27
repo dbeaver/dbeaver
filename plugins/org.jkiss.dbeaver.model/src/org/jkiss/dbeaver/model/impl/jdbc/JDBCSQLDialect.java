@@ -354,14 +354,11 @@ public class JDBCSQLDialect extends BasicSQLDialect {
             for (String func : makeStringList(metaData.getTimeDateFunctions())) {
                 allFunctions.add(func.toUpperCase());
             }
-            functions.addAll(allFunctions);
+            addFunctions(allFunctions);
         }
         catch (Throwable e) {
             log.error(e);
         }
-
-        // Remove types and functions from reserved words list
-        addKeywords(functions, DBPKeywordType.FUNCTION);
     }
 
     private static List<String> makeStringList(String source)
