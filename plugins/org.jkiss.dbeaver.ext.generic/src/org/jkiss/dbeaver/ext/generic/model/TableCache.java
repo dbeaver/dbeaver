@@ -34,6 +34,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -165,6 +166,9 @@ public class TableCache extends JDBCStructCache<GenericStructContainer, GenericT
         boolean isNotNull = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
         int scale = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.DECIMAL_DIGITS);
         int precision = 0;//GenericUtils.safeGetInt(dbResult, JDBCConstants.COLUMN_);
+        if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
+            precision = (int) columnSize;
+        }
         int radix = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NUM_PREC_RADIX);
         String defaultValue = GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.COLUMN_DEF);
         String remarks = GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.REMARKS);
