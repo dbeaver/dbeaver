@@ -368,7 +368,7 @@ class ResultSetFilterPanel extends Composite
                 displayName = m.replaceAll("");
             }
 
-            displayName = displayName.replaceAll("--.+\\n", "").replaceAll("\\s+", " ");
+            displayName = displayName.replaceAll("--.+", "").replaceAll("\\s+", " ");
             activeDisplayName = CommonUtils.notEmpty(CommonUtils.truncateString(displayName, 200));
             if (CommonUtils.isEmpty(activeDisplayName)) {
                 activeDisplayName = DEFAULT_QUERY_TEXT;
