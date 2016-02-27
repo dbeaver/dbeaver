@@ -153,6 +153,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
             <menu id="navigate" label="%menu.navigate">
+                <command commandId="org.eclipse.ui.navigate.openResource"/>
                 <command commandId="org.jkiss.dbeaver.core.object.find"/>
                 <separator name="nav" visible="true"/>
                 <command commandId="org.eclipse.ui.navigate.backwardHistory"/>
