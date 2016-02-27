@@ -27,6 +27,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -40,6 +41,7 @@ import java.io.InputStream;
  */
 public class StringEditorInput implements IEditorInput {
 
+    public static final IEditorInput EMPTY_INPUT = new StringEditorInput("<empty>", "", true, ContentUtils.DEFAULT_CHARSET);
     private String name;
     private StringBuilder buffer;
     private boolean readOnly;
