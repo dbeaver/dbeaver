@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -115,7 +116,7 @@ public class XMLPanelEditor extends ContentPanelEditor {
     {
         editor = new XMLEditor();
         try {
-            editor.init(subSite, null);
+            editor.init(subSite, StringEditorInput.EMPTY_INPUT);
         } catch (PartInitException e) {
             log.error(e);
             return null;
