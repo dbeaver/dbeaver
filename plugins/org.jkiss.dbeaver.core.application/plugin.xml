@@ -243,24 +243,17 @@
         </page>
         <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.connectionTypes" class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" name="%pref.page.name.connectionTypes"/>
 
-        <page id="org.jkiss.dbeaver.preferences.editors" class="org.eclipse.ui.ExtensionFactory:editorsPreferencePage" name="%pref.page.name.db.editors"/>
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
+        <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" name="Templates"/>
 
-        <page category="org.jkiss.dbeaver.preferences.editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
+        <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.binary"/>
         </page>
 
-        <page id="org.jkiss.dbeaver.preferences.general" class="org.eclipse.ui.ExtensionFactory:workbenchPreferencePage" name="%pref.page.name.db.ui"/>
-        <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.appearance" class="org.eclipse.ui.ExtensionFactory:appearancePreferencePage" name="%pref.page.name.appearance"/>
-        <page category="org.jkiss.dbeaver.preferences.appearance" id="org.eclipse.ui.preferencePages.ColorsAndFonts" class="org.eclipse.ui.ExtensionFactory:colorsAndFontsPreferencePage" name="%pref.page.name.colors.and.fonts"/>
-
-        <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
-        <page category="org.jkiss.dbeaver.preferences.general" id="org.jkiss.dbeaver.preferences.shortcuts" class="org.eclipse.ui.ExtensionFactory:newKeysPreferencePage" name="%pref.page.name.keys"/>
-
+        <page category="org.eclipse.ui.preferencePages.Workbench" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
