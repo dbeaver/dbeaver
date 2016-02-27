@@ -1872,6 +1872,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.workbench.texteditor.rulerColumns">
+<!--
         <column class="org.jkiss.dbeaver.ui.editors.text.LineNumberColumn"
             enabled="false"
             global="true"
@@ -1881,6 +1882,7 @@
             <placement gravity="0.9"/>
             <targetClass class="org.jkiss.dbeaver.ui.editors.text.BaseTextEditor"/>
         </column>
+-->
         <column class="org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn"
             enabled="false"
             global="false"
