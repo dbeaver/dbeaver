@@ -45,7 +45,7 @@ public class BasicSQLDialect implements SQLDialect {
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
 
     protected final TreeSet<String> reservedWords = new TreeSet<>();
-    protected final TreeSet<String> functions = new TreeSet<>();
+    private final TreeSet<String> functions = new TreeSet<>();
     protected final TreeSet<String> types = new TreeSet<>();
     protected final TreeSet<String> tableQueryWords = new TreeSet<>();
     protected final TreeSet<String> columnQueryWords = new TreeSet<>();
@@ -88,13 +88,18 @@ public class BasicSQLDialect implements SQLDialect {
         allKeywords.remove(keyword);
     }
 
+    protected void addFunctions(Collection<String> allFunctions) {
+        functions.addAll(allFunctions);
+        addKeywords(allFunctions, DBPKeywordType.FUNCTION);
+    }
+
     public void addKeywords(Collection<String> set, DBPKeywordType type)
     {
         if (set != null) {
             for (String keyword : set) {
                 reservedWords.add(keyword);
                 DBPKeywordType oldType = allKeywords.get(keyword);
-                if (oldType == null || oldType.ordinal() > type.ordinal()) {
+                if (oldType == null || oldType.ordinal() < type.ordinal()) {
                     allKeywords.put(keyword, type);
                 }
             }
@@ -300,9 +305,11 @@ public class BasicSQLDialect implements SQLDialect {
     protected void loadStandardKeywords()
     {
         // Add default set of keywords
-        Collections.addAll(reservedWords, SQLConstants.SQL2003_RESERVED_KEYWORDS);
-        Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
-        Collections.addAll(reservedWords, SQLConstants.SQL_EX_KEYWORDS);
+        Set<String> all = new HashSet<>();
+        Collections.addAll(all, SQLConstants.SQL2003_RESERVED_KEYWORDS);
+        //Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
+        Collections.addAll(all, SQLConstants.SQL_EX_KEYWORDS);
+        Collections.addAll(functions, SQLConstants.SQL2003_FUNCTIONS);
         Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
         Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
 
@@ -312,8 +319,9 @@ public class BasicSQLDialect implements SQLDialect {
         // Add default types
         Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
 
+        addKeywords(all, DBPKeywordType.KEYWORD);
         addKeywords(types, DBPKeywordType.TYPE);
-        addKeywords(reservedWords, DBPKeywordType.KEYWORD);
+        addKeywords(functions, DBPKeywordType.FUNCTION);
     }
 
 }
