@@ -275,14 +275,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 styles);
     }
 
-    private IAnnotationAccess getAnnotationAccess()
-    {
-        if (annotationAccess == null) {
-            annotationAccess = new SQLMarkerAnnotationAccess();
-        }
-        return annotationAccess;
+    @Override
+    protected IAnnotationAccess createAnnotationAccess() {
+        return new SQLMarkerAnnotationAccess();
     }
-
 /*
     protected void adjustHighlightRange(int offset, int length)
     {
@@ -414,6 +410,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             }
         }
 
+/*
         Color fgColor = ruleManager.getColor(SQLConstants.CONFIG_COLOR_TEXT);
         Color bgColor = ruleManager.getColor(getDataSource() == null ?
             SQLConstants.CONFIG_COLOR_DISABLED :
@@ -423,6 +420,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             textWidget.setForeground(fgColor);
         }
         textWidget.setBackground(bgColor);
+*/
 
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
