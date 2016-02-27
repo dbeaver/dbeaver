@@ -318,7 +318,7 @@ public class DriverEditDialog extends HelpEnabledDialog
             libsListGroup.setLayout(layout);
 
             // Additional libraries list
-            libTable = new TreeViewer(libsListGroup, SWT.BORDER | SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL);
+            libTable = new TreeViewer(libsListGroup, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
             libTable.setContentProvider(new LibContentProvider());
             libTable.setLabelProvider(new CellLabelProvider() {
                 @Override
@@ -479,7 +479,14 @@ public class DriverEditDialog extends HelpEnabledDialog
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                driver.removeDriverLibrary(getSelectedLibrary());
+                IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
+                if (selection != null && !selection.isEmpty()) {
+                    for (Object obj : selection.toArray()) {
+                        if (obj instanceof DriverLibraryAbstract) {
+                            driver.removeDriverLibrary((DriverLibraryAbstract) obj);
+                        }
+                    }
+                }
                 changeLibContent();
             }
         });
