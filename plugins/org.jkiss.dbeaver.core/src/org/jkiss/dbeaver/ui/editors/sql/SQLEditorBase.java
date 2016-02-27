@@ -103,6 +103,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
                     reloadSyntaxRules();
+                    // Reconfigure to let comments/strings collors to take effect
+                    getSourceViewer().configure(getSourceViewerConfiguration());
                 }
             }
         };
