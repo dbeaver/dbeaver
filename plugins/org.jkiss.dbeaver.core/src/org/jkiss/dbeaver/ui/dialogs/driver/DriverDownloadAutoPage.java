@@ -65,7 +65,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
 
     @Override
     public void createControl(Composite parent) {
-        DriverDownloadWizard wizard = getWizard();
+        final DriverDownloadWizard wizard = getWizard();
         final DriverDescriptor driver = wizard.getDriver();
 
         setMessage("Download " + driver.getFullName() + " driver files");
@@ -74,10 +74,22 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        if (!wizard.isForceDownload()) {
-            Label infoText = new Label(composite, SWT.NONE);
+        {
+            Composite infoGroup = UIUtils.createPlaceholder(composite, 2, 5);
+            infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            Label infoText = new Label(infoGroup, SWT.NONE);
             infoText.setText(driver.getFullName() + " driver files are missing.\nDBeaver can download these files automatically.\n\n");
             infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            final Button forceCheckbox = UIUtils.createCheckbox(infoGroup, "Force download", wizard.isForceDownload());
+            forceCheckbox.setToolTipText("Force files download. Will download files even if they are already on the disk");
+            forceCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
+            forceCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    wizard.setForceDownload(forceCheckbox.getSelection());
+                }
+            });
         }
 
         {
@@ -415,7 +427,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                 DBPDriverLibrary lib = nodes.get(i).library;
                 int result = IDialogConstants.OK_ID;
                 try {
-                    lib.downloadLibraryFile(monitor, false, "Download " + (i + 1) + "/" + filesSize);
+                    lib.downloadLibraryFile(monitor, getWizard().isForceDownload(), "Download " + (i + 1) + "/" + filesSize);
                 } catch (IOException e) {
                     if (lib.getType() == DBPDriverLibrary.FileType.license) {
                         result = IDialogConstants.OK_ID;

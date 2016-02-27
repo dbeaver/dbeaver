@@ -60,6 +60,10 @@ public class DriverDownloadWizard extends Wizard implements IExportWizard {
         return forceDownload;
     }
 
+    public void setForceDownload(boolean forceDownload) {
+        this.forceDownload = forceDownload;
+    }
+
     public boolean isUpdateVersion() {
         return updateVersion;
     }
