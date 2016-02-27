@@ -155,6 +155,8 @@
             <menu id="navigate" label="%menu.navigate">
                 <command commandId="org.jkiss.dbeaver.core.object.find"/>
                 <separator name="nav" visible="true"/>
+                <command commandId="org.eclipse.ui.navigate.backwardHistory"/>
+                <command commandId="org.eclipse.ui.navigate.forwardHistory"/>
             </menu>
         </menuContribution>
 

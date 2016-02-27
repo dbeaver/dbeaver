@@ -61,6 +61,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
+    public static final String CMD_NAVIGATE_BACK = "org.jkiss.dbeaver.core.resultset.navigateBack";
+    public static final String CMD_NAVIGATE_FORWARD = "org.jkiss.dbeaver.core.resultset.navigateForward";
 
     @Nullable
     @Override
@@ -176,6 +178,20 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     }.schedule();
                 }
                 break;
+            case IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY: {
+                final int hp = rsv.getHistoryPosition();
+                if (hp > 0) {
+                    rsv.navigateHistory(hp - 1);
+                }
+                break;
+            }
+            case IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY: {
+                final int hp = rsv.getHistoryPosition();
+                if (hp < rsv.getHistorySize() - 1) {
+                    rsv.navigateHistory(hp + 1);
+                }
+                break;
+            }
         }
 
 

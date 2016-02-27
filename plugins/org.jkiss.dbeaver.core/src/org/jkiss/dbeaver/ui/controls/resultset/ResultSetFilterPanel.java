@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -149,7 +150,7 @@ class ResultSetFilterPanel extends Composite
                     if (filtersText.isEnabled() && filtersText.getCharCount() == 0) {
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
-                        e.gc.drawText("Enter a SQL expression to filter results", 2, 0);
+                        e.gc.drawText("Enter an SQL expression to filter results", 2, 0);
                         e.gc.setFont(null);
                     }
                 }

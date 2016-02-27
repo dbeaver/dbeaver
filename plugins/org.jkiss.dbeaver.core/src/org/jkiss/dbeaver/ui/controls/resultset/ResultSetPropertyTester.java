@@ -40,6 +40,7 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_TOGGLE = "canToggle";
     public static final String PROP_CAN_SWITCH_PRESENTATION = "canSwitchPresentation";
     public static final String PROP_CAN_NAVIGATE_LINK = "canNavigateLink";
+    public static final String PROP_CAN_NAVIGATE_HISTORY = "canNavigateHistory";
     public static final String PROP_EDITABLE = "editable";
     public static final String PROP_CHANGED = "changed";
 
@@ -125,6 +126,14 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 }
                 return false;
+            case PROP_CAN_NAVIGATE_HISTORY:
+                if (!actionsDisabled && rsv.getModel().hasData()) {
+                    if (expectedValue == 1 || "1".equals(expectedValue)) {
+                        return rsv.getHistoryPosition() < rsv.getHistorySize() - 1;
+                    } else {
+                        return rsv.getHistoryPosition() > 0;
+                    }
+                }
         }
         return false;
     }
