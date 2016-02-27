@@ -74,7 +74,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        {
+        if (!wizard.isForceDownload()) {
             Composite infoGroup = UIUtils.createPlaceholder(composite, 2, 5);
             infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Label infoText = new Label(infoGroup, SWT.NONE);
