@@ -38,21 +38,22 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorJob;
 import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,7 +62,7 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class SQLQueryJob extends DataSourceJob
+public class SQLQueryJob extends DataSourceJob implements Closeable
 {
     static final Log log = Log.getLog(SQLQueryJob.class);
 
@@ -657,17 +658,21 @@ public class SQLQueryJob extends DataSourceJob
     private void closeStatement()
     {
         if (curStatement != null) {
-            for (DBCResultSet resultSet : curResultSets) {
-                resultSet.close();
-            }
-            curResultSets.clear();
-
             try {
-                curStatement.close();
-            } catch (Throwable e) {
-                log.error("Error closing statement", e);
+                for (DBCResultSet resultSet : curResultSets) {
+                    resultSet.close();
+                }
+            } finally {
+                curResultSets.clear();
+
+                try {
+                    curStatement.close();
+                } catch (Throwable e) {
+                    log.error("Error closing statement", e);
+                } finally {
+                    curStatement = null;
+                }
             }
-            curStatement = null;
         }
     }
 
@@ -734,4 +739,8 @@ public class SQLQueryJob extends DataSourceJob
         this.fetchResultSetNumber = fetchResultSetNumber;
     }
 
+    @Override
+    public void close() {
+        closeStatement();
+    }
 }
