@@ -23,14 +23,10 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.IOException;
@@ -115,7 +111,6 @@ public class SQLEditorOutputViewer extends Composite {
     private void createContextMenu(IWorkbenchPartSite site)
     {
         MenuManager menuMgr = new MenuManager();
-        Menu menu = menuMgr.createContextMenu(text);
         menuMgr.addMenuListener(new IMenuListener() {
             @Override
             public void menuAboutToShow(IMenuManager manager)
@@ -131,8 +126,7 @@ public class SQLEditorOutputViewer extends Composite {
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        text.setMenu(menu);
-        //site.registerContextMenu(menuMgr, this);
+        text.setMenu(menuMgr.createContextMenu(text));
     }
 
 }

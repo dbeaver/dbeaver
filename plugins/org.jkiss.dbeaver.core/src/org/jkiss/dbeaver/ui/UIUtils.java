@@ -18,11 +18,11 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.*;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.GroupMarker;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.core.runtime.IProduct;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -65,7 +65,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
@@ -76,6 +75,7 @@ import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -1359,6 +1359,19 @@ public class UIUtils {
     public static void launchProgram(String path)
     {
         Program.launch(path);
+    }
+
+    public static void fillDefaultStyledTextContextMenu(final StyledText text) {
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                UIUtils.fillDefaultStyledTextContextMenu(manager, text);
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        text.setMenu(menuMgr.createContextMenu(text));
     }
 
     public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {

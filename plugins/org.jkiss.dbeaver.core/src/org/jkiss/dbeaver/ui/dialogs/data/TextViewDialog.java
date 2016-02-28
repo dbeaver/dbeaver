@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.data;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -29,23 +30,22 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -65,7 +65,7 @@ public class TextViewDialog extends ValueViewDialog {
     //private static final int DEFAULT_MAX_SIZE = 100000;
     private static final String VALUE_TYPE_SELECTOR = "string.value.type";
 
-    private Text textEdit;
+    private StyledText textEdit;
     private Label lengthLabel;
     private HexEditControl hexEditControl;
     private CTabFolder editorContainer;
@@ -113,8 +113,8 @@ public class TextViewDialog extends ValueViewDialog {
                 // Use border only for plain text editor, otherwise tab folder's border will be used
                 style |= SWT.BORDER;
             }
-            textEdit = new Text(useHex ? editorContainer : dialogGroup, style);
-
+            textEdit = new StyledText(useHex ? editorContainer : dialogGroup, style);
+            textEdit.setMargins(3, 3, 3, 3);
             if (maxSize > 0 && valueType.getDataKind() == DBPDataKind.STRING) {
                 textEdit.setTextLimit((int) maxSize);
             }
@@ -137,6 +137,7 @@ public class TextViewDialog extends ValueViewDialog {
                     updateValueLength();
                 }
             });
+            UIUtils.fillDefaultStyledTextContextMenu(textEdit);
 
             if (useHex) {
                 CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);
