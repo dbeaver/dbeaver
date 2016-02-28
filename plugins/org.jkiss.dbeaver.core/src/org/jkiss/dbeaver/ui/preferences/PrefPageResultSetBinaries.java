@@ -47,6 +47,8 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
     private Spinner memoryContentSize;
     private Combo encodingCombo;
     private Button contentCacheClob;
+    private Button contentCacheBlob;
+    private Spinner contentCacheMaxSize;
 
     private Spinner maxTextContentSize;
     private Button editLongAsLobCheck;
@@ -71,6 +73,8 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN) ||
             store.contains(ModelPreferences.CONTENT_HEX_ENCODING) ||
             store.contains(ModelPreferences.CONTENT_CACHE_CLOB) ||
+            store.contains(ModelPreferences.CONTENT_CACHE_BLOB) ||
+            store.contains(ModelPreferences.CONTENT_CACHE_MAX_SIZE) ||
             store.contains(DBeaverPreferences.RS_EDIT_LONG_AS_LOB) ||
 
             store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
@@ -108,26 +112,22 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             binaryEditorType.add("Editor");
             binaryEditorType.add("Dialog");
 
-            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length);
-            binaryStringMaxLength = new Spinner(binaryGroup, SWT.BORDER);
-            binaryStringMaxLength.setSelection(0);
+            binaryStringMaxLength = UIUtils.createLabelSpinner(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_strings_max_length, 0, 0, 10000);
             binaryStringMaxLength.setDigits(0);
             binaryStringMaxLength.setIncrement(1);
-            binaryStringMaxLength.setMinimum(0);
-            binaryStringMaxLength.setMaximum(10000);
 
-            UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_database_general_label_max_lob_length);
-            memoryContentSize = new Spinner(binaryGroup, SWT.BORDER);
-            memoryContentSize.setSelection(0);
+            memoryContentSize = UIUtils.createLabelSpinner(binaryGroup, CoreMessages.pref_page_database_general_label_max_lob_length, 0, 0, 1024 * 1024 * 1024);
             memoryContentSize.setDigits(0);
             memoryContentSize.setIncrement(1);
-            memoryContentSize.setMinimum(0);
-            memoryContentSize.setMaximum(1024 * 1024 * 1024);
 
             UIUtils.createControlLabel(binaryGroup, CoreMessages.pref_page_content_editor_hex_encoding);
             encodingCombo = UIUtils.createEncodingCombo(binaryGroup, null);
 
             contentCacheClob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_clob, true);
+            contentCacheBlob = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_cache_blob, true);
+            contentCacheMaxSize = UIUtils.createLabelSpinner(binaryGroup, CoreMessages.pref_page_database_general_label_cache_max_size, 0, 0, Integer.MAX_VALUE);
+            contentCacheMaxSize.setDigits(0);
+            contentCacheMaxSize.setIncrement(100000);
             editLongAsLobCheck = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_content_editor_checkbox_edit_long_as_lobs, false);
         }
 
@@ -137,14 +137,9 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             contentGroup.setText(CoreMessages.pref_page_content_editor_group_content);
             contentGroup.setLayout(new GridLayout(2, false));
 
-            UIUtils.createControlLabel(contentGroup, CoreMessages.pref_page_content_editor_label_max_text_length);
-
-            maxTextContentSize = new Spinner(contentGroup, SWT.BORDER);
-            maxTextContentSize.setSelection(0);
+            maxTextContentSize = UIUtils.createLabelSpinner(contentGroup, CoreMessages.pref_page_content_editor_label_max_text_length, 0, 0, Integer.MAX_VALUE);
             maxTextContentSize.setDigits(0);
             maxTextContentSize.setIncrement(1000000);
-            maxTextContentSize.setMinimum(0);
-            maxTextContentSize.setMaximum(Integer.MAX_VALUE);
 
             commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
             commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
@@ -176,6 +171,8 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             }
             UIUtils.setComboSelection(encodingCombo, store.getString(ModelPreferences.CONTENT_HEX_ENCODING));
             contentCacheClob.setSelection(store.getBoolean(ModelPreferences.CONTENT_CACHE_CLOB));
+            contentCacheBlob.setSelection(store.getBoolean(ModelPreferences.CONTENT_CACHE_BLOB));
+            contentCacheMaxSize.setSelection(store.getInt(ModelPreferences.CONTENT_CACHE_MAX_SIZE));
             editLongAsLobCheck.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_LONG_AS_LOB));
 
             maxTextContentSize.setSelection(store.getInt(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE));
@@ -207,6 +204,8 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
                     IValueController.EditType.PANEL.name());
             store.setValue(ModelPreferences.CONTENT_HEX_ENCODING, UIUtils.getComboSelection(encodingCombo));
             store.setValue(ModelPreferences.CONTENT_CACHE_CLOB, contentCacheClob.getSelection());
+            store.setValue(ModelPreferences.CONTENT_CACHE_BLOB, contentCacheBlob.getSelection());
+            store.setValue(ModelPreferences.CONTENT_CACHE_MAX_SIZE, contentCacheMaxSize.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_LONG_AS_LOB, editLongAsLobCheck.getSelection());
 
             store.setValue(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE, maxTextContentSize.getSelection());
@@ -227,6 +226,8 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE);
         store.setToDefault(ModelPreferences.CONTENT_HEX_ENCODING);
         store.setToDefault(ModelPreferences.CONTENT_CACHE_CLOB);
+        store.setToDefault(ModelPreferences.CONTENT_CACHE_BLOB);
+        store.setToDefault(ModelPreferences.CONTENT_CACHE_MAX_SIZE);
         store.setToDefault(DBeaverPreferences.RS_EDIT_LONG_AS_LOB);
 
         store.setToDefault(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE);
