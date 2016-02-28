@@ -136,6 +136,23 @@ public class ActionUtils
     }
 
     @Nullable
+    public static String findCommandName(String commandId)
+    {
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            Command command = commandService.getCommand(commandId);
+            if (command != null && command.isDefined()) {
+                try {
+                    return command.getName();
+                } catch (NotDefinedException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        return "???";
+    }
+
+    @Nullable
     public static String findCommandDescription(String commandId, IServiceLocator serviceLocator, boolean shortcutOnly)
     {
         String commandName = null;
