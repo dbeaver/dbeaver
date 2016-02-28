@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -482,6 +483,11 @@ class ResultSetFilterPanel extends Composite
                 return viewer.getExecutionContext();
             }
 
+            @Override
+            public void createPartControl(Composite parent) {
+                super.createPartControl(parent);
+                getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES).setEnabled(false);
+            }
         };
         editor.setHasVerticalRuler(false);
         editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, GeneralUtils.getDefaultConsoleEncoding()));
