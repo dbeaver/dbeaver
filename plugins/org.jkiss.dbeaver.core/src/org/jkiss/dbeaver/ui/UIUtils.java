@@ -1363,19 +1363,19 @@ public class UIUtils {
 
     public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {
         final Point selectionRange = text.getSelectionRange();
-        menu.add(new StyledTextAction("Copy", SWT.CTRL | 'c', selectionRange.y > 0, text, ST.COPY));
-        menu.add(new StyledTextAction("Paste", SWT.CTRL | 'v', text.getEditable(), text, ST.PASTE));
-        menu.add(new StyledTextAction("Cut", SWT.CTRL | 'x', selectionRange.y > 0, text, ST.CUT));
-        menu.add(new StyledTextAction("Select All", SWT.CTRL | 'a', true, text, ST.SELECT_ALL));
+        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_COPY, selectionRange.y > 0, text, ST.COPY));
+        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_PASTE, text.getEditable(), text, ST.PASTE));
+        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_CUT, selectionRange.y > 0, text, ST.CUT));
+        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, true, text, ST.SELECT_ALL));
         menu.add(new GroupMarker("styled_text_additions"));
     }
 
     private static class StyledTextAction extends Action {
         private final StyledText styledText;
         private final int action;
-        public StyledTextAction(String text, int accelerator, boolean enabled, StyledText styledText, int action) {
-            super(text);
-            this.setAccelerator(accelerator);
+        public StyledTextAction(String actionId, boolean enabled, StyledText styledText, int action) {
+            super(ActionUtils.findCommandName(actionId));
+            this.setActionDefinitionId(actionId);
             this.setEnabled(enabled);
             this.styledText = styledText;
             this.action = action;
