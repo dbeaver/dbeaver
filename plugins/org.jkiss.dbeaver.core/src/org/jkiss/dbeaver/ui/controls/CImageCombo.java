@@ -936,7 +936,7 @@ public class CImageCombo extends Composite {
         // create shell and list
         this.popup = new Shell(getShell(), SWT.RESIZE | SWT.ON_TOP);
         int style = getStyle();
-        int listStyle = SWT.BORDER | SWT.SINGLE;
+        int listStyle = SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL;
         if ((style & SWT.FLAT) != 0) {
             listStyle |= SWT.FLAT;
         }
@@ -1008,7 +1008,6 @@ public class CImageCombo extends Composite {
 
         // Commented because it increased table size on each dropdown
 
-/*
         Point size = getSize();
         int itemCount = this.table.getItemCount();
         itemCount = (itemCount == 0) ? this.visibleItemCount : Math.min(this.visibleItemCount, itemCount);
@@ -1019,7 +1018,6 @@ public class CImageCombo extends Composite {
             listSize.x -= verticalBar.getSize().x;
         }
         this.table.setBounds(1, 1, Math.max(size.x - 2, listSize.x), listSize.y);
-*/
 
         int index = this.table.getSelectionIndex();
         if (index != -1) {
@@ -1039,8 +1037,15 @@ public class CImageCombo extends Composite {
         }
         this.popup.setBounds(x, y, width, height);
         this.popup.layout();
-        //UIUtils.packColumns(this.table, false);
-        table.getColumn(0).setWidth(table.getSize().x - table.getVerticalBar().getSize().x);
+
+        {
+            final TableColumn column = table.getColumn(0);
+            column.pack();
+            final int maxSize = table.getSize().x;// - 2;//table.getVerticalBar().getSize().x;
+            if (column.getWidth() < maxSize) {
+                column.setWidth(maxSize);
+            }
+        }
         this.popup.setVisible(true);
         this.table.setFocus();
     }
