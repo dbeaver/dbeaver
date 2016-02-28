@@ -24,10 +24,13 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Menu;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.IOException;
@@ -48,6 +51,7 @@ public class SQLEditorOutputViewer extends Composite {
         setLayout(new FillLayout());
 
         text = new StyledText(this, SWT.READ_ONLY | SWT.MULTI | SWT.V_SCROLL | SWT.H_SCROLL);
+        text.setMargins(5, 5, 5, 5);
         UIUtils.enableHostEditorKeyBindingsSupport(site, text);
         Writer out = new Writer() {
             @Override
@@ -128,6 +132,7 @@ public class SQLEditorOutputViewer extends Composite {
         });
         menuMgr.setRemoveAllWhenShown(true);
         text.setMenu(menu);
+        //site.registerContextMenu(menuMgr, this);
     }
 
 }
