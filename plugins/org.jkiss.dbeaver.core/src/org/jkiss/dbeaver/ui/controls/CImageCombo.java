@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Arrays;
 
@@ -933,9 +934,9 @@ public class CImageCombo extends Composite {
         Shell oldPopup = this.popup;
 
         // create shell and list
-        this.popup = new Shell(getShell(), SWT.NO_TRIM | SWT.ON_TOP);
+        this.popup = new Shell(getShell(), SWT.RESIZE | SWT.ON_TOP);
         int style = getStyle();
-        int listStyle = SWT.SINGLE | SWT.V_SCROLL;
+        int listStyle = SWT.BORDER | SWT.SINGLE;
         if ((style & SWT.FLAT) != 0) {
             listStyle |= SWT.FLAT;
         }
@@ -1006,6 +1007,8 @@ public class CImageCombo extends Composite {
         }
 
         // Commented because it increased table size on each dropdown
+
+/*
         Point size = getSize();
         int itemCount = this.table.getItemCount();
         itemCount = (itemCount == 0) ? this.visibleItemCount : Math.min(this.visibleItemCount, itemCount);
@@ -1016,6 +1019,7 @@ public class CImageCombo extends Composite {
             listSize.x -= verticalBar.getSize().x;
         }
         this.table.setBounds(1, 1, Math.max(size.x - 2, listSize.x), listSize.y);
+*/
 
         int index = this.table.getSelectionIndex();
         if (index != -1) {
@@ -1026,7 +1030,7 @@ public class CImageCombo extends Composite {
         Rectangle parentRect = display.map(getParent(), null, getBounds());
         Point comboSize = getSize();
         Rectangle displayRect = getMonitor().getClientArea();
-        int width = Math.max(comboSize.x, listRect.width);
+        int width = comboSize.x;
         int height = listRect.height;
         int x = parentRect.x;
         int y = parentRect.y + comboSize.y;
@@ -1034,6 +1038,9 @@ public class CImageCombo extends Composite {
             y = parentRect.y - height;
         }
         this.popup.setBounds(x, y, width, height);
+        this.popup.layout();
+        //UIUtils.packColumns(this.table, false);
+        table.getColumn(0).setWidth(table.getSize().x - table.getVerticalBar().getSize().x);
         this.popup.setVisible(true);
         this.table.setFocus();
     }
