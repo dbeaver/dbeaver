@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -129,6 +130,7 @@ class ResultSetFilterPanel extends Composite
 
             this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
             this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            createFiltersContextMenu();
 
             this.historyPanel = new HistoryPanel(filterComposite);
             this.refreshPanel = new RefreshPanel(filterComposite);
@@ -276,6 +278,20 @@ class ResultSetFilterPanel extends Composite
             }
         });
 
+    }
+
+    private void createFiltersContextMenu() {
+        MenuManager menuMgr = new MenuManager();
+        Menu menu = menuMgr.createContextMenu(filtersText);
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                UIUtils.fillDefaultStyledTextContextMenu(manager, filtersText);
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        filtersText.setMenu(menu);
     }
 
     private void redrawPanels() {

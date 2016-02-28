@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -30,10 +33,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
-import org.eclipse.swt.custom.CTabFolder;
-import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
@@ -1359,6 +1359,32 @@ public class UIUtils {
     public static void launchProgram(String path)
     {
         Program.launch(path);
+    }
+
+    public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {
+        final Point selectionRange = text.getSelectionRange();
+        menu.add(new StyledTextAction("Copy", SWT.CTRL | 'c', selectionRange.y > 0, text, ST.COPY));
+        menu.add(new StyledTextAction("Paste", SWT.CTRL | 'v', text.getEditable(), text, ST.PASTE));
+        menu.add(new StyledTextAction("Cut", SWT.CTRL | 'x', selectionRange.y > 0, text, ST.CUT));
+        menu.add(new StyledTextAction("Select All", SWT.CTRL | 'a', true, text, ST.SELECT_ALL));
+        menu.add(new GroupMarker("styled_text_additions"));
+    }
+
+    private static class StyledTextAction extends Action {
+        private final StyledText styledText;
+        private final int action;
+        public StyledTextAction(String text, int accelerator, boolean enabled, StyledText styledText, int action) {
+            super(text);
+            this.setAccelerator(accelerator);
+            this.setEnabled(enabled);
+            this.styledText = styledText;
+            this.action = action;
+        }
+
+        @Override
+        public void run() {
+            styledText.invokeAction(action);
+        }
     }
 
     private static class SaveRunner implements Runnable {
