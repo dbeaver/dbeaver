@@ -31,8 +31,6 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
@@ -64,7 +62,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLSymbolInserter;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
-import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -89,7 +86,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
-    private SourceViewerDecorationSupport decorationSupport;
 
     public SQLEditorBase()
     {
@@ -103,7 +99,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
                     reloadSyntaxRules();
-                    // Reconfigure to let comments/strings collors to take effect
+                    // Reconfigure to let comments/strings colors to take effect
                     getSourceViewer().configure(getSourceViewerConfiguration());
                 }
             }
@@ -202,10 +198,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
         }
-
-        if (decorationSupport != null) {
-            decorationSupport.install(new PreferenceStoreDelegate(getActivePreferenceStore()));
-        }
     }
 
     @Override
@@ -243,28 +235,25 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         }
         SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, overviewRuler);
 
-        {
-            char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
-            ICharacterPairMatcher matcher;
-            try {
-                matcher = new DefaultCharacterPairMatcher(matchChars,
-                    SQLPartitionScanner.SQL_PARTITIONING,
-                    true);
-            } catch (Throwable e) {
-                // If we below Eclipse 4.2.1
-                matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
-            }
-
-            // Configure decorations
-            decorationSupport = new SourceViewerDecorationSupport(sourceViewer, overviewRuler, getAnnotationAccess(), getSharedColors());
-            decorationSupport.setCursorLinePainterPreferenceKeys(SQLPreferenceConstants.CURRENT_LINE, SQLPreferenceConstants.CURRENT_LINE_COLOR);
-            decorationSupport.setMarginPainterPreferenceKeys(SQLPreferenceConstants.PRINT_MARGIN, SQLPreferenceConstants.PRINT_MARGIN_COLOR, SQLPreferenceConstants.PRINT_MARGIN_COLUMN);
-            decorationSupport.setSymbolicFontName(getFontPropertyPreferenceKey());
-            decorationSupport.setCharacterPairMatcher(matcher);
-            decorationSupport.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
-        }
+        getSourceViewerDecorationSupport(sourceViewer);
 
         return sourceViewer;
+    }
+
+    protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
+        char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
+        ICharacterPairMatcher matcher;
+        try {
+            matcher = new DefaultCharacterPairMatcher(matchChars,
+                SQLPartitionScanner.SQL_PARTITIONING,
+                true);
+        } catch (Throwable e) {
+            // If we below Eclipse 4.2.1
+            matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+        }
+        support.setCharacterPairMatcher(matcher);
+        support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
+        super.configureSourceViewerDecorationSupport(support);
     }
 
     @NotNull
@@ -318,10 +307,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     @Override
     public void dispose()
     {
-        if (decorationSupport != null) {
-            decorationSupport.dispose();
-            decorationSupport = null;
-        }
         if (themeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
             themeListener = null;

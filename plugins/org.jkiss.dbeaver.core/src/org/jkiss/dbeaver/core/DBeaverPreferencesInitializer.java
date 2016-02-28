@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
@@ -102,15 +104,12 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
       PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
 
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CURRENT_LINE, false);
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CURRENT_LINE_COLOR, "230,230,230");
+//      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CURRENT_LINE, false);
+//      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.CURRENT_LINE_COLOR, "230,230,230");
 
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MATCHING_BRACKETS, true);
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
-
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PRINT_MARGIN, false);
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PRINT_MARGIN_COLOR, "230,230,230");
-      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PRINT_MARGIN_COLUMN, 120);
+//      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PRINT_MARGIN, false);
+//      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PRINT_MARGIN_COLOR, "230,230,230");
+//      PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PRINT_MARGIN_COLUMN, 120);
 
       PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);
 
@@ -153,6 +152,14 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
       // Data formats
       DataFormatterProfile.initDefaultPreferences(store, Locale.getDefault());
+
+      // SQL editor preferences
+      {
+          IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
+          editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
+          editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
+      }
+
   }
 
 }

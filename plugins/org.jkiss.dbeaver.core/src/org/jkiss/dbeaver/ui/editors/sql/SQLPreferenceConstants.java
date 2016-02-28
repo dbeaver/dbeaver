@@ -45,13 +45,6 @@ public class SQLPreferenceConstants
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
     public final static String MATCHING_BRACKETS_COLOR                  = "SQLEditor.matchingBracketsColor";
 
-    public final static String CURRENT_LINE                             = "SQLEditor.currentLine";
-    public final static String CURRENT_LINE_COLOR                       = "SQLEditor.currentLineColor";
-
-    public final static String PRINT_MARGIN                             = "SQLEditor.printMargin";
-    public final static String PRINT_MARGIN_COLOR                       = "SQLEditor.printMarginColor";
-    public final static String PRINT_MARGIN_COLUMN                      = "SQLEditor.printMarginColumn";
-
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
 
     public static final int PROPOSAL_CASE_DEFAULT                      = 0;
