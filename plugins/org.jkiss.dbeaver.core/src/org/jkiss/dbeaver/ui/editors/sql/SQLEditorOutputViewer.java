@@ -17,11 +17,13 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
@@ -65,6 +67,7 @@ public class SQLEditorOutputViewer extends Composite {
             }
         };
         writer = new PrintWriter(out, true);
+        createContextMenu(site);
         refreshStyles();
     }
 
@@ -104,4 +107,27 @@ public class SQLEditorOutputViewer extends Composite {
     void resetNewOutput() {
         hasNewOutput = false;
     }
+
+    private void createContextMenu(IWorkbenchPartSite site)
+    {
+        MenuManager menuMgr = new MenuManager();
+        Menu menu = menuMgr.createContextMenu(text);
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                UIUtils.fillDefaultStyledTextContextMenu(manager, text);
+                manager.add(new Separator());
+                manager.add(new Action("Clear") {
+                    @Override
+                    public void run() {
+                        text.setText("");
+                    }
+                });
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        text.setMenu(menu);
+    }
+
 }

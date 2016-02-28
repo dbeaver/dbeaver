@@ -1715,6 +1715,17 @@
             <command commandId="org.jkiss.dbeaver.core.process.stop"/>
         </menuContribution>
 
+        <!-- Styled text menu -->
+
+<!--
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=styled_text_additions">
+            <command commandId="org.eclipse.ui.edit.copy"/>
+            <command commandId="org.eclipse.ui.edit.paste"/>
+            <command commandId="org.eclipse.ui.edit.cut"/>
+            <command commandId="org.eclipse.ui.edit.delete"/>
+        </menuContribution>
+-->
+
     </extension>
 
     <extension point="org.eclipse.ui.bindings">
