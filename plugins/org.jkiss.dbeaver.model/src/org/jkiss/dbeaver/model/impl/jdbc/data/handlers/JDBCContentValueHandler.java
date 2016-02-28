@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
@@ -161,10 +162,21 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     return new JDBCContentChars(session.getDataSource(), (String) object);
             }
         } else if (object instanceof Blob) {
-            return new JDBCContentBLOB(session.getDataSource(), (Blob) object);
+            final JDBCContentBLOB blob = new JDBCContentBLOB(session.getDataSource(), (Blob) object);
+            final DBPPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
+            if (preferenceStore.getBoolean(ModelPreferences.CONTENT_CACHE_BLOB) &&
+                blob.getLOBLength() < preferenceStore.getLong(ModelPreferences.CONTENT_CACHE_MAX_SIZE))
+            {
+                // Precache content
+                blob.getContents(session.getProgressMonitor());
+            }
+            return blob;
         } else if (object instanceof Clob) {
             JDBCContentCLOB clob = new JDBCContentCLOB(session.getDataSource(), (Clob) object);
-            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.CONTENT_CACHE_CLOB)) {
+            final DBPPreferenceStore preferenceStore = session.getDataSource().getContainer().getPreferenceStore();
+            if (preferenceStore.getBoolean(ModelPreferences.CONTENT_CACHE_CLOB) &&
+                clob.getLOBLength() < preferenceStore.getLong(ModelPreferences.CONTENT_CACHE_MAX_SIZE))
+            {
                 // Precache content
                 clob.getContents(session.getProgressMonitor());
             }
