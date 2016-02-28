@@ -1487,7 +1487,10 @@ public class ResultSetViewer extends Viewer
                 viewerPanel.getShell(),
                 "Error executing query",
                 dataContainer == null ?
-                    "Viewer detached from data source" : "Can't refresh after reconnect. Re-execute query.");
+                    "Viewer detached from data source" :
+                    dataPumpJob == null ?
+                        "Can't refresh after reconnect. Re-execute query." :
+                        "Previous query is still running");
         }
     }
 
