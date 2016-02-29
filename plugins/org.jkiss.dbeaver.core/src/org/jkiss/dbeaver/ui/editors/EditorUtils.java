@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -36,6 +37,9 @@ public class EditorUtils {
     @Nullable
     public static IFile getFileFromEditorInput(IEditorInput editorInput)
     {
+        if (editorInput instanceof IFileEditorInput) {
+            return ((IFileEditorInput) editorInput).getFile();
+        }
         try {
             Method getFileMethod = editorInput.getClass().getMethod("getFile");
             if (IFile.class.isAssignableFrom(getFileMethod.getReturnType())) {
