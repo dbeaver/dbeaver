@@ -22,21 +22,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.rulers.RulerColumnDescriptor;
-import org.eclipse.ui.texteditor.rulers.RulerColumnPreferenceAdapter;
-import org.eclipse.ui.texteditor.rulers.RulerColumnRegistry;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.PrefUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * PrefPageSQLEditor
@@ -52,7 +45,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Combo csInsertCase;
     private Button csHideDuplicates;
     private Button csShortName;
-    private Map<RulerColumnDescriptor, Button> rulerChecks = new HashMap<>();
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
     private Button acBracketsCheck;
@@ -132,20 +124,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             csShortName = UIUtils.createLabelCheckbox(assistGroup, "Use short object names\n(omit schema/catalog)", false);
         }
 
-        // Rulers
-        {
-            Composite rulersGroup = UIUtils.createControlGroup(composite2, "Rulers", 2, GridData.FILL_HORIZONTAL, 0);
-            rulersGroup.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_BEGINNING));
-
-            for (Object obj : RulerColumnRegistry.getDefault().getColumnDescriptors()) {
-                final RulerColumnDescriptor descriptor = (RulerColumnDescriptor)obj;
-                if (!descriptor.isGlobal())
-                    continue;
-                Button checkbox = UIUtils.createLabelCheckbox(rulersGroup, descriptor.getName(), false);
-                rulerChecks.put(descriptor, checkbox);
-            }
-        }
-
         // Autoclose
         {
             Composite acGroup = UIUtils.createControlGroup(composite2, "Auto close", 2, GridData.FILL_BOTH, 0);
@@ -206,13 +184,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
             acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
 
-            final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
-                new PreferenceStoreDelegate(store),
-                AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
-            for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
-                entry.getValue().setSelection(adapter.isEnabled(entry.getKey()));
-            }
-
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
 
@@ -238,13 +209,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
-
-            final RulerColumnPreferenceAdapter adapter = new RulerColumnPreferenceAdapter(
-                new PreferenceStoreDelegate(store),
-                    AbstractTextEditor.PREFERENCE_RULER_CONTRIBUTIONS);
-            for (Map.Entry<RulerColumnDescriptor, Button> entry : rulerChecks.entrySet()) {
-                adapter.setEnabled(entry.getKey(), entry.getValue().getSelection());
-            }
 
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
