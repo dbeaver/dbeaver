@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -88,9 +89,9 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
      * @param editor the SQLEditor to configure
      */
     public SQLEditorSourceViewerConfiguration(
-        SQLEditorBase editor)
+        SQLEditorBase editor, IPreferenceStore preferenceStore)
     {
-        super(EditorsPlugin.getDefault().getPreferenceStore());
+        super(preferenceStore);
         this.editor = editor;
         this.ruleManager = editor.getRuleManager();
         this.completionProcessor = new SQLCompletionProcessor(editor);
