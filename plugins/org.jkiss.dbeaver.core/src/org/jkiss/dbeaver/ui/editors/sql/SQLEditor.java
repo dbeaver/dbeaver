@@ -416,17 +416,17 @@ public class SQLEditor extends SQLEditorBase implements
 
         getSite().setSelectionProvider(new DynamicSelectionProvider());
 
+/*
         final StyledText textWidget = getTextViewer().getTextWidget();
 
-        // TODO: it is a hack. We change selection on each caret move to trigger toolbar elements update.
-        // TODO: without this hack toolbar won't update Execute* commands.
-        // TODO: Need some better solution or workaround.
+        // Execute commands now always enabled. Easy and dirty.
         textWidget.addCaretListener(new CaretListener() {
             @Override
             public void caretMoved(CaretEvent event) {
                 ((SQLEditorSourceViewer)getSourceViewer()).refreshTextSelection();
             }
         });
+*/
 
         createResultTabs();
 
