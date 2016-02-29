@@ -257,14 +257,6 @@
         <page category="org.eclipse.ui.preferencePages.Workbench" id="org.jkiss.dbeaver.preferences.main.confirmations" class="org.jkiss.dbeaver.ui.preferences.PrefPageConfirmations" name="%pref.page.name.confirmations"/>
     </extension>
 
-    <extension point="org.eclipse.ui.propertyPages">
-        <page class="org.jkiss.dbeaver.ui.dialogs.ResourceInfoPage" id="org.jkiss.dbeaver.ui.dialogs.ResourceInfoPage" name="Resource properties">
-            <enabledWhen>
-                <adapt type="org.eclipse.core.resources.IResource"/>
-            </enabledWhen>
-        </page>
-    </extension>
-
     <extension point="org.eclipse.ui.splashHandlers">
         <splashHandler
                 class="org.jkiss.dbeaver.core.application.DBeaverSplashHandler"

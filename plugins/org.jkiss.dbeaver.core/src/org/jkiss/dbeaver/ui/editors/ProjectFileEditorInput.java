@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.model.IWorkbenchAdapter;
@@ -33,7 +34,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 /**
  * ProjectFileEditorInput
  */
-public class ProjectFileEditorInput extends PlatformObject implements IPathEditorInput {
+public class ProjectFileEditorInput extends PlatformObject implements IFileEditorInput, IPathEditorInput {
 	private IFile file;
 
 	/**
@@ -68,9 +69,7 @@ public class ProjectFileEditorInput extends PlatformObject implements IPathEdito
 		return file.exists();
 	}
 
-	/* (non-Javadoc)
-	 * Method declared on IFileEditorInput.
-    */
+	@Override
 	public IFile getFile() {
 		return file;
 	}
