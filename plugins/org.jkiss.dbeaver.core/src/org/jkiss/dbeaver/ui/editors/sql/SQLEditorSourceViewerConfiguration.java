@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.text.contentassist.IContentAssistProcessor;
@@ -35,12 +36,13 @@ import org.eclipse.jface.text.rules.DefaultDamagerRepairer;
 import org.eclipse.jface.text.rules.Token;
 import org.eclipse.jface.text.source.IAnnotationHover;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -60,7 +62,7 @@ import org.jkiss.dbeaver.ui.editors.sql.util.SQLInformationProvider;
  * This class defines the editor add-ons; content assist, content formatter,
  * highlighting, auto-indent strategy, double click strategy.
  */
-public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguration {
+public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfiguration {
     /**
      * The editor with which this configuration is associated.
      */
@@ -87,8 +89,9 @@ public class SQLEditorSourceViewerConfiguration extends SourceViewerConfiguratio
      * @param editor the SQLEditor to configure
      */
     public SQLEditorSourceViewerConfiguration(
-        SQLEditorBase editor)
+        SQLEditorBase editor, IPreferenceStore preferenceStore)
     {
+        super(preferenceStore);
         this.editor = editor;
         this.ruleManager = editor.getRuleManager();
         this.completionProcessor = new SQLCompletionProcessor(editor);

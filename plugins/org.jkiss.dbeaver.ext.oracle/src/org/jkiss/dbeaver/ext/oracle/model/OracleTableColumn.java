@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import java.sql.ResultSet;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -222,6 +224,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
             if (!dataTypes.contains(column.getDataType())) {
                 dataTypes.add(column.getDataType());
             }
+            Collections.sort(dataTypes, DBUtils.nameComparator());
             return dataTypes.toArray(new DBSDataType[dataTypes.size()]);
         }
     }
