@@ -542,6 +542,8 @@ public abstract class JDBCDataSource
         String sqlState = error.getDatabaseState();
         if (SQLState.SQL_08000.getCode().equals(sqlState) ||
             SQLState.SQL_08003.getCode().equals(sqlState) ||
+            SQLState.SQL_08006.getCode().equals(sqlState) ||
+            SQLState.SQL_08007.getCode().equals(sqlState) ||
             SQLState.SQL_08S01.getCode().equals(sqlState))
         {
             return ErrorType.CONNECTION_LOST;
