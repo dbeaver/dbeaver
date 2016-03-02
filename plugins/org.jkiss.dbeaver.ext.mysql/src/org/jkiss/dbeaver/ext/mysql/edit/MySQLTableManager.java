@@ -112,11 +112,12 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     @Override
     protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
+        final MySQLDataSource dataSource = command.getObject().getDataSource();
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 "Rename table",
                 "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
-                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getContainer()) + "." + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         };
     }
 
