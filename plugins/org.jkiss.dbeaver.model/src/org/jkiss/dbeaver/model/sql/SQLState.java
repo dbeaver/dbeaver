@@ -43,6 +43,7 @@ public enum SQLState {
 	SQL_08002("08002", "Connection already in use"),
 	SQL_08003("08003", "Connection not open"),
 	SQL_08004("08004", "Data source rejected establishment of connection"),
+	SQL_08006("08006", "Connection failure"),
 	SQL_08007("08007", "Connection failure during transaction"),
 	SQL_08900("08900", "Server lookup failed"),
 	SQL_08S01("08S01", "Communication link failure"),
