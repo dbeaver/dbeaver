@@ -192,8 +192,8 @@ public class UIUtils {
                 for (TableColumn column : columns) {
                     int colWidth = column.getWidth();
                     if (colWidth > totalWidth / 3) {
-                        // If some columns is too big (more than 33% of total width)
-                        // Then shrink it to 30%
+                        // If some columns are too big (more than 33% of total width)
+                        // Then shrink them to 30%
                         column.setWidth(totalWidth / 3);
                         totalWidth -= colWidth;
                         totalWidth += column.getWidth();
@@ -201,10 +201,21 @@ public class UIUtils {
                 }
                 int extraSpace = totalWidth - clientArea.width;
 
-                for (TableColumn tc : columns) {
-                    double ratio = (double) tc.getWidth() / totalWidth;
-                    int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
-                    tc.setWidth(newWidth);
+                GC gc = new GC(table);
+                try {
+                    for (TableColumn tc : columns) {
+                        double ratio = (double) tc.getWidth() / totalWidth;
+                        int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                        int minWidth = gc.stringExtent(tc.getText()).x;
+                        minWidth += 5;
+                        if (newWidth < minWidth) {
+                            newWidth = minWidth;
+                        }
+                        tc.setWidth(newWidth);
+                    }
+                }
+                finally {
+                    gc.dispose();
                 }
             }
             if (fit && totalWidth < clientArea.width) {
@@ -256,10 +267,21 @@ public class UIUtils {
                     areaWidth -= tree.getVerticalBar().getSize().x;
                 }
                 if (totalWidth > areaWidth) {
-                    int extraSpace = totalWidth - areaWidth;
-                    for (TreeColumn tc : columns) {
-                        double ratio = (double) tc.getWidth() / totalWidth;
-                        tc.setWidth((int) (tc.getWidth() - extraSpace * ratio));
+                    GC gc = new GC(tree);
+                    try {
+                        int extraSpace = totalWidth - areaWidth;
+                        for (TreeColumn tc : columns) {
+                            double ratio = (double) tc.getWidth() / totalWidth;
+                            int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                            int minWidth = gc.stringExtent(tc.getText()).x;
+                            minWidth += 5;
+                            if (newWidth < minWidth) {
+                                newWidth = minWidth;
+                            }
+                            tc.setWidth((int) newWidth);
+                        }
+                    } finally {
+                        gc.dispose();
                     }
                 } else if (totalWidth < areaWidth) {
                     float extraSpace = areaWidth - totalWidth;
