@@ -110,41 +110,30 @@ public class ContentUtils {
     public static void saveContentToFile(InputStream contentStream, File file, DBRProgressMonitor monitor)
         throws IOException
     {
-        try {
-            try (OutputStream os = new FileOutputStream(file)) {
-                copyStreams(contentStream, file.length(), os, monitor);
-            }
-            // Check for cancel
-            if (monitor.isCanceled()) {
-                // Delete output file
-                if (!file.delete()) {
-                    log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
-                }
-            }
+        try (OutputStream os = new FileOutputStream(file)) {
+            copyStreams(contentStream, file.length(), os, monitor);
         }
-        finally {
-            close(contentStream);
+        // Check for cancel
+        if (monitor.isCanceled()) {
+            // Delete output file
+            if (!file.delete()) {
+                log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
+            }
         }
     }
 
     public static void saveContentToFile(Reader contentReader, File file, String charset, DBRProgressMonitor monitor)
         throws IOException
     {
-        try {
-
-            try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), charset)) {
-                copyStreams(contentReader, file.length(), writer, monitor);
-            }
-            // Check for cancel
-            if (monitor.isCanceled()) {
-                // Delete output file
-                if (!file.delete()) {
-                    log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
-                }
-            }
+        try (Writer writer = new OutputStreamWriter(new FileOutputStream(file), charset)) {
+            copyStreams(contentReader, file.length(), writer, monitor);
         }
-        finally {
-            contentReader.close();
+        // Check for cancel
+        if (monitor.isCanceled()) {
+            // Delete output file
+            if (!file.delete()) {
+                log.warn("Can't delete incomplete file '" + file.getAbsolutePath() + "'");
+            }
         }
     }
 
