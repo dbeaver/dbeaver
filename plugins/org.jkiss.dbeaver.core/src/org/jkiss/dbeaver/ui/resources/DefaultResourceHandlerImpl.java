@@ -20,7 +20,11 @@ package org.jkiss.dbeaver.ui.resources;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -74,7 +78,15 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     public void openResource(IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
-            UIUtils.launchProgram(resource.getLocation().toFile().getAbsolutePath());
+            IEditorDescriptor desc = PlatformUI.getWorkbench().
+                getEditorRegistry().getDefaultEditor(resource.getName());
+            if (desc != null) {
+                DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
+                    new FileEditorInput((IFile) resource),
+                    desc.getId());
+            } else {
+                UIUtils.launchProgram(resource.getLocation().toFile().getAbsolutePath());
+            }
         }
     }
 
