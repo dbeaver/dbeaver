@@ -274,7 +274,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
                     log.warn("Can't get data from null storage");
                     return;
                 }
-                ContentUtils.copyStreams(storage.getContentStream(), storage.getContentLength(), os, monitor);
+                try (InputStream is = storage.getContentStream()) {
+                    ContentUtils.copyStreams(is, storage.getContentLength(), os, monitor);
+                }
             }
         }
 

@@ -46,14 +46,32 @@ public class UUIDValueManager extends BaseValueManager {
                 return new StringInlineEditor(controller) {
                     @Override
                     public Object extractEditorValue() {
-                        return UUID.fromString(CommonUtils.toString(super.extractEditorValue()));
+                        String strValue = (String) super.extractEditorValue();
+                        if (strValue == null || strValue.isEmpty()) {
+                            return null;
+                        }
+                        try {
+                            return UUID.fromString(CommonUtils.toString(strValue));
+                        } catch (Exception e) {
+                            log.warn(e);
+                            return null;
+                        }
                     }
                 };
             case EDITOR:
                 return new TextViewDialog(controller) {
                     @Override
                     public Object extractEditorValue() {
-                        return UUID.fromString(CommonUtils.toString(super.extractEditorValue()));
+                        String strValue = (String) super.extractEditorValue();
+                        if (strValue == null || strValue.isEmpty()) {
+                            return null;
+                        }
+                        try {
+                            return UUID.fromString(CommonUtils.toString(super.extractEditorValue()));
+                        } catch (Exception e) {
+                            log.warn(e);
+                            return null;
+                        }
                     }
                 };
             default:

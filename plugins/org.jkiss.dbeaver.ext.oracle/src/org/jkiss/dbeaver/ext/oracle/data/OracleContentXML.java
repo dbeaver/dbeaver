@@ -58,15 +58,12 @@ public class OracleContentXML extends JDBCContentXML {
     {
         try {
             if (storage != null) {
-                InputStream streamReader = storage.getContentStream();
-                try {
+                try (InputStream streamReader = storage.getContentStream()) {
                     final Object xmlObject = createXmlObject(session, streamReader);
 
                     preparedStatement.setObject(
                         paramIndex,
                         xmlObject);
-                } finally {
-                    ContentUtils.close(streamReader);
                 }
             } else {
                 preparedStatement.setNull(paramIndex + 1, java.sql.Types.SQLXML);

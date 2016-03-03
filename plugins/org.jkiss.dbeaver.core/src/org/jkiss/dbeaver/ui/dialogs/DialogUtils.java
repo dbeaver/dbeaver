@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.InvocationTargetException;
 
 /**
@@ -173,18 +175,18 @@ public class DialogUtils {
                     try {
                         DBDContentStorage storage = value.getContents(monitor);
                         if (ContentUtils.isTextContent(value)) {
-                            ContentUtils.saveContentToFile(
-                                storage.getContentReader(),
-                                saveFile,
-                                GeneralUtils.DEFAULT_FILE_CHARSET_NAME,
-                                monitor
-                            );
+                            try (Reader cr = storage.getContentReader()) {
+                                ContentUtils.saveContentToFile(
+                                    cr,
+                                    saveFile,
+                                    GeneralUtils.DEFAULT_FILE_CHARSET_NAME,
+                                    monitor
+                                );
+                            }
                         } else {
-                            ContentUtils.saveContentToFile(
-                                storage.getContentStream(),
-                                saveFile,
-                                monitor
-                            );
+                            try (InputStream cs = storage.getContentStream()) {
+                                ContentUtils.saveContentToFile(cs, saveFile, monitor);
+                            }
                         }
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
