@@ -79,6 +79,12 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider {
         if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
             url.append(connectionInfo.getDatabaseName());
         }
+        if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL))) {
+            url.append("?ssl=true");
+            if (CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING))) {
+                url.append("&sslfactory=org.postgresql.ssl.NonValidatingFactory");
+            }
+        }
         return url.toString();
     }
 

@@ -38,6 +38,7 @@ public class PostgreConstants {
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
     public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
+    public static final String PROP_SSL_NON_VALIDATING = DBConstants.INTERNAL_PROP_PREFIX + "ssl-non-validating@";
     public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
 
     public static final DBSEntityType ENTITY_TYPE_SEQUENCE = new DBSEntityType("pg_sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);

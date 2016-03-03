@@ -52,6 +52,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text passwordText;
     private ClientHomesSelector homesSelector;
     private Button useSslButton;
+    private Button sslNonValidating;
     private Text sslCertText;
     private Button hideNonDefault;
     private boolean activated = false;
@@ -149,7 +150,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         {
             Group secureGroup = new Group(addrGroup, SWT.NONE);
-            secureGroup.setText("Security");
+            secureGroup.setText("Settings");
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
@@ -160,7 +161,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         {
             Group secureGroup = new Group(addrGroup, SWT.NONE);
-            secureGroup.setText("Options");
+            secureGroup.setText("SSL");
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
@@ -175,6 +176,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
                     }
                 }
             });
+            sslNonValidating = UIUtils.createLabelCheckbox(secureGroup, "Do not validate certificate", true);
             //sslCertText = UIUtils.createLabelText(secureGroup, "Certificate Path", "");
         }
 
@@ -228,6 +230,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         final boolean useSSL = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL));
         useSslButton.setSelection(useSSL);
+        sslNonValidating.setSelection(CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING)));
         if (sslCertText != null) {
             sslCertText.setText(CommonUtils.toString(connectionInfo.getProperty(PostgreConstants.PROP_SSL_CERT)));
             sslCertText.setEnabled(useSSL);
@@ -263,6 +266,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         connectionInfo.setProperty(PostgreConstants.PROP_USE_SSL, useSslButton.getSelection());
+        connectionInfo.setProperty(PostgreConstants.PROP_SSL_NON_VALIDATING, sslNonValidating.getSelection());
         connectionInfo.setProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, hideNonDefault.getSelection());
         super.saveSettings(dataSource);
     }
