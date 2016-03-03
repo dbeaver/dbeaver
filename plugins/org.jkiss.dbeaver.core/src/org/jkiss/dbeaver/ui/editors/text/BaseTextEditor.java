@@ -213,7 +213,8 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        ContentUtils.saveContentToFile(new StringReader(document.get()), saveFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
+                        StringReader cr = new StringReader(document.get());
+                        ContentUtils.saveContentToFile(cr, saveFile, GeneralUtils.DEFAULT_FILE_CHARSET_NAME, monitor);
                     } catch (Exception e) {
                         throw new InvocationTargetException(e);
                     }

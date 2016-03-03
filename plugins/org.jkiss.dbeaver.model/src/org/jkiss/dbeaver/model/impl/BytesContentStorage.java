@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.util.Arrays;
@@ -91,12 +93,12 @@ public class BytesContentStorage implements DBDContentStorage {
         if (contentLength > Integer.MAX_VALUE) {
             throw new IOException("Too big content length for memory storage: " + contentLength);
         }
-        byte[] data = new byte[(int)contentLength];
-        int count = stream.read(data);
-        if (count >= 0 && count != contentLength) {
-            log.warn("Actual content length (" + count + ") is less than declared: " + contentLength);
-            data = Arrays.copyOf(data, count);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        IOUtils.copyStream(stream, baos);
+        byte[] result = baos.toByteArray();
+        if (result.length != contentLength) {
+            log.warn("Actual content length (" + result.length + ") is less than declared: " + contentLength);
         }
-        return new BytesContentStorage(data, encoding);
+        return new BytesContentStorage(result, encoding);
     }
 }

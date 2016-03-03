@@ -69,11 +69,8 @@ public abstract class DBDDocumentContentProxy implements DBDDocument {
         DBDContentStorage contents = content.getContents(monitor);
         if (contents != null) {
             try {
-                InputStream contentStream = contents.getContentStream();
-                try {
+                try (InputStream contentStream = contents.getContentStream()) {
                     ContentUtils.copyStreams(contentStream, content.getContentLength(), stream, monitor);
-                } finally {
-                    ContentUtils.close(contentStream);
                 }
             } catch (IOException e) {
                 throw new DBException("Error copying content stream", e);

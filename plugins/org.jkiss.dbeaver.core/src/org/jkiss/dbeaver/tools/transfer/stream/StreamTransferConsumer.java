@@ -178,7 +178,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         Boolean extractImages = (Boolean) processorProperties.get(StreamConsumerSettings.PROP_EXTRACT_IMAGES);
         String fileExt = (extractImages != null && extractImages) ? ".jpg" : ".data";
         File lobFile = new File(lobDirectory, outputFile.getName() + "-" + lobCount + fileExt); //$NON-NLS-1$ //$NON-NLS-2$
-        ContentUtils.saveContentToFile(contents.getContentStream(), lobFile, monitor);
+        try (InputStream cs = contents.getContentStream()) {
+            ContentUtils.saveContentToFile(cs, lobFile, monitor);
+        }
         return lobFile;
     }
 
