@@ -20,27 +20,29 @@ package org.jkiss.dbeaver.ui.data.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.resource.JFaceResources;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.internal.image.FileFormat;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
+import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -238,11 +240,16 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IVal
         {
             if (!content.isNull()) {
                 try {
-                    InputStream contentStream = content.getContents(monitor).getContentStream();
-                    try {
-                        new ImageData(contentStream);
-                    } finally {
-                        ContentUtils.close(contentStream);
+                    try (InputStream contentStream = content.getContents(monitor).getContentStream()) {
+
+/*
+                        FileFormat.load(contentStream, new ImageLoader() {
+                                public ImageData[] load(InputStream stream) {
+                                    return null;
+                                }
+                        });
+*/
+                        new ImageLoader().load(contentStream);
                     }
                     isImage = true;
                 }
