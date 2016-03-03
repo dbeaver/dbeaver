@@ -174,16 +174,17 @@ public class RuntimeUtils {
         }
     }
 
-    public static boolean runTask(final DBRRunnableWithProgress task, final long waitTime) {
+    public static boolean runTask(final DBRRunnableWithProgress task, String taskName, final long waitTime) {
         final MonitoringTask monitoringTask = new MonitoringTask(task);
-        Job monitorJob = new AbstractJob("Disconnect from data sources") {
+        Job monitorJob = new AbstractJob(taskName) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
                 try {
                     monitoringTask.run(monitor);
                 } catch (InvocationTargetException e) {
-                    return GeneralUtils.makeExceptionStatus(e.getTargetException());
+                    log.error(getName() + " - error", e.getTargetException());
+                    return Status.OK_STATUS;
                 } catch (InterruptedException e) {
                     // do nothing
                 }
