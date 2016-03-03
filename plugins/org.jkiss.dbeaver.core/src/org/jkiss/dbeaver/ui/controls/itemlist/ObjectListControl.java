@@ -1027,19 +1027,21 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 }
                 }
                 monitor.worked(1);
-                if (!isDisposed()) {
-                    getDisplay().asyncExec(new Runnable() {
-                        @Override
-                        public void run()
-                        {
-                            if (!isDisposed()) {
-                                itemsViewer.update(element, null);
-                            }
-                        }
-                    });
-                }
             }
             monitor.done();
+            if (!isDisposed()) {
+                // Make refresh of whole table
+                // Some other objects could also be updated implicitly with our lazy loader
+                getDisplay().asyncExec(new Runnable() {
+                    @Override
+                    public void run()
+                    {
+                        if (!isDisposed()) {
+                            itemsViewer.refresh();
+                        }
+                    }
+                });
+            }
 
 /*
             // Update viewer
