@@ -84,10 +84,12 @@ public class JDBCContentBLOB extends JDBCContentLOB {
             DBPApplication application = dataSource.getContainer().getApplication();
             if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
                 try {
-                    storage = BytesContentStorage.createFromStream(
-                        blob.getBinaryStream(),
-                        contentLength,
-                        application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+                    try (InputStream bs = blob.getBinaryStream()) {
+                        storage = BytesContentStorage.createFromStream(
+                            bs,
+                            contentLength,
+                            application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+                    }
                 }
                 catch (SQLException e) {
                     throw new DBCException(e, dataSource);
@@ -104,7 +106,9 @@ public class JDBCContentBLOB extends JDBCContentLOB {
                     throw new DBCException("Can't create temporary file", e);
                 }
                 try (OutputStream os = new FileOutputStream(tempFile)) {
-                    ContentUtils.copyStreams(blob.getBinaryStream(), contentLength, os, monitor);
+                    try (InputStream bs = blob.getBinaryStream()) {
+                        ContentUtils.copyStreams(bs, contentLength, os, monitor);
+                    }
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);
                     throw new DBCException("IO error while copying stream", e);
