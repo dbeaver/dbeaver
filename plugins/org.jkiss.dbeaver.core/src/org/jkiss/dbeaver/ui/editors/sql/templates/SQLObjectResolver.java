@@ -60,7 +60,7 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
                         throw new InvocationTargetException(e);
                     }
                 }
-            }, 1000);
+            }, "Resolve object references", 1000);
         }
         if (!CommonUtils.isEmpty(entities)) {
             String[] result = new String[entities.size()];

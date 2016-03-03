@@ -131,7 +131,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             return;
         }
         final DisconnectTask disconnectTask = new DisconnectTask();
-        if (!RuntimeUtils.runTask(disconnectTask, waitTime)) {
+        if (!RuntimeUtils.runTask(disconnectTask, "Disconnect from data sources", waitTime)) {
             log.warn("Some data source connections wasn't closed on shutdown in " + waitTime + "ms. Probably network timeout occurred.");
         }
     }

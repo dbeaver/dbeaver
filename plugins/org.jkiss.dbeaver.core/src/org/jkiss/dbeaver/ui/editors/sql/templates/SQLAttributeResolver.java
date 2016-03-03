@@ -73,7 +73,7 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
                     }
                 }
             };
-            RuntimeUtils.runTask(runnable, 1000);
+            RuntimeUtils.runTask(runnable, "Resolve attributes", 1000);
             if (!CommonUtils.isEmpty(attributes)) {
                 String[] result = new String[attributes.size()];
                 for (int i = 0; i < attributes.size(); i++) {

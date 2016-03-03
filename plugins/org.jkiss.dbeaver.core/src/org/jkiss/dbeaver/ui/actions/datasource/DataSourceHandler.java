@@ -314,7 +314,7 @@ public class DataSourceHandler
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "End active transaction")) {
             monitor.subTask("End active transaction");
             EndTransactionTask task = new EndTransactionTask(session, commitTxn);
-            RuntimeUtils.runTask(task, END_TRANSACTION_WAIT_TIME);
+            RuntimeUtils.runTask(task, "Close active transactions", END_TRANSACTION_WAIT_TIME);
         }
     }
 
