@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.net;
  * Network handler type
  */
 public enum DBWHandlerType {
-    TUNNEL,
-    PROXY
+    TUNNEL,     // Tunnel - assumes creation of tunnel connection before real connect
+    PROXY,      // Proxy - configures global proxy to access specific host/port
+    CONFIG      // Connection configuration - provides additional network configuration (e.g. SSL)
 }
