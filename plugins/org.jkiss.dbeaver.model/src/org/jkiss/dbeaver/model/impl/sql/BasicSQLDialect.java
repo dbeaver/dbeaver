@@ -99,7 +99,9 @@ public class BasicSQLDialect implements SQLDialect {
             for (String keyword : set) {
                 reservedWords.add(keyword);
                 DBPKeywordType oldType = allKeywords.get(keyword);
-                if (oldType == null || oldType.ordinal() < type.ordinal()) {
+                if (oldType != DBPKeywordType.KEYWORD) {
+                    // We can't mark keywords as functions or types because keywords are reserved and
+                    // if some identifier conflicts with keyword it must be quoted.
                     allKeywords.put(keyword, type);
                 }
             }

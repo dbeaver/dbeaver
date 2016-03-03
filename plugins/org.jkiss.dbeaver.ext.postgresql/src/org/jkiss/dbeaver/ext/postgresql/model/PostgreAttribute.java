@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
@@ -178,8 +180,15 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getOrdinalPosition() < 0;
     }
 
-    public String getFullTypeName() {
-        return dataType.getTypeName();
+    public String getFullQualifiedTypeName() {
+        String fqtn = dataType.getTypeName();
+        if (dataType.getDataKind() != DBPDataKind.CONTENT) {
+            String modifiers = SQLUtils.getColumnTypeModifiers(this, fqtn, dataType.getDataKind());
+            if (modifiers != null) {
+                return fqtn + modifiers;
+            }
+        }
+        return fqtn;
     }
 
     public static class DataTypeListProvider implements IPropertyValueListProvider<PostgreAttribute> {
