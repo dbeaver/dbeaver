@@ -183,9 +183,11 @@
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
         <manager
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreDatabaseManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
+        <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSchemaManager"
-            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"
-            label="%manager.catalog.name"/>
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>

@@ -190,22 +190,35 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     public void selectObject(DBRProgressMonitor monitor, DBSObject object)
         throws DBException
     {
-        final PostgreDatabase oldSelectedEntity = getSelectedObject();
+        final PostgreDatabase oldDatabase = getSelectedObject();
         if (!(object instanceof PostgreDatabase)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
+        final PostgreDatabase newDatabase = (PostgreDatabase) object;
+        if (oldDatabase == newDatabase) {
+            // The same
+            return;
+        }
+        // FIXME: make real target database change
+        // 1. Check active transactions
+        // 2. Reconnect all open contexts
+        // 3. Refresh datasource tree
         for (JDBCExecutionContext context : getAllContexts()) {
-            useDatabase(monitor, context, (PostgreDatabase) object);
+            useDatabase(monitor, context, newDatabase);
         }
         activeDatabaseName = object.getName();
 
+        refreshObject(monitor);
+        DBUtils.fireObjectUpdate(this, true);
+/*
         // Send notifications
-        if (oldSelectedEntity != null) {
-            DBUtils.fireObjectSelect(oldSelectedEntity, false);
+        if (oldDatabase != null) {
+            DBUtils.fireObjectSelect(oldDatabase, false);
         }
         if (this.activeDatabaseName != null) {
             DBUtils.fireObjectSelect(object, true);
         }
+*/
     }
 
     public String getActiveUser() {
