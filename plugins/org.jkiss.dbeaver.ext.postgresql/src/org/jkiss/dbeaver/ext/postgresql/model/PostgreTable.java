@@ -48,12 +48,10 @@ import java.util.List;
 /**
  * PostgreTable
  */
-public class PostgreTable extends PostgreTableReal implements DBDPseudoAttributeContainer
+public abstract class PostgreTable extends PostgreTableReal implements DBDPseudoAttributeContainer
 {
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
-    private long rowCountEstimate;
-    private Long rowCount;
     private boolean hasOids;
     private int tablespaceId;
     private List<PostgreTableInheritance> superTables;
@@ -70,7 +68,6 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
     {
         super(catalog, dbResult);
 
-        this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "reltablespace");
     }
@@ -85,35 +82,6 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
             return null;
         }
         return PostgreUtils.getObjectById(monitor, getDatabase().tablespaceCache, getDatabase(), tablespaceId);
-    }
-
-    @Property(viewable = true, order = 22)
-    public long getRowCountEstimate() {
-        return rowCountEstimate;
-    }
-
-    @Property(viewable = false, expensive = true, order = 23)
-    public synchronized Long getRowCount(DBRProgressMonitor monitor)
-    {
-        if (rowCount != null) {
-            return rowCount;
-        }
-        if (!isPersisted()) {
-            // Do not count rows for views
-            return null;
-        }
-
-        // Query row count
-        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
-            rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
-        } catch (DBException e) {
-            log.debug("Can't fetch row count", e);
-        }
-        if (rowCount == null) {
-            rowCount = -1L;
-        }
-
-        return rowCount;
     }
 
     @Override
@@ -140,18 +108,12 @@ public class PostgreTable extends PostgreTableReal implements DBDPseudoAttribute
         foreignKeys.clearCache();
         superTables = null;
         subTables = null;
-        rowCount = null;
         return true;
     }
 
     @Override
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException {
         return JDBCUtils.generateTableDDL(monitor, this, false);
-    }
-
-    @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException {
-        throw new DBException("Table DDL is read-only");
     }
 
     @Override

@@ -170,19 +170,6 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return indexCache.getObjects(monitor, this, null);
     }
 
-    @Association
-    public Collection<PostgreTable> getTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
-        return tableCache.getTypedObjects(monitor, this, PostgreTable.class);
-    }
-
-    public PostgreTableBase getTable(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
-        return tableCache.getObject(monitor, this, name, PostgreTable.class);
-    }
-
     public PostgreTableBase getTable(DBRProgressMonitor monitor, int tableId)
         throws DBException
     {
@@ -193,6 +180,13 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         }
 
         return null;
+    }
+
+    @Association
+    public Collection<PostgreTable> getTables(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return tableCache.getTypedObjects(monitor, this, PostgreTable.class);
     }
 
     @Association
@@ -381,11 +375,13 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             }
             switch (kind) {
                 case r:
-                    return new PostgreTable(PostgreSchema.this, dbResult);
+                    return new PostgreTableRegular(PostgreSchema.this, dbResult);
                 case v:
                     return new PostgreView(PostgreSchema.this, dbResult);
                 case m:
                     return new PostgreMaterializedView(PostgreSchema.this, dbResult);
+                case f:
+                    return new PostgreTableForeign(PostgreSchema.this, dbResult);
                 case S:
                     return new PostgreSequence(PostgreSchema.this, dbResult);
                 default:
