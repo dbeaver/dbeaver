@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -139,6 +140,17 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     public void renameObject(DBECommandContext commandContext, PostgreTableBase object, String newName) throws DBException
     {
         processObjectRename(commandContext, object, newName);
+    }
+
+    @Override
+    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    {
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
+                ModelMessages.model_jdbc_drop_table,
+                "DROP " + (command.getObject() instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +
+                    " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+        };
     }
 
 }
