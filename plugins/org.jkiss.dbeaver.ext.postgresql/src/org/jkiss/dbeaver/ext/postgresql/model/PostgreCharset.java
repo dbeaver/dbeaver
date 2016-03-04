@@ -30,16 +30,15 @@ import java.sql.SQLException;
 /**
  * PostgreCharset
  */
-public class PostgreCharset implements PostgreObject {
+public class PostgreCharset extends PostgreInformation {
 
-    private final PostgreDatabase database;
     private int encodingId;
     private String name;
 
     public PostgreCharset(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
-        this.database = database;
+        super(database);
         this.loadInfo(dbResult);
     }
 
@@ -58,37 +57,9 @@ public class PostgreCharset implements PostgreObject {
         return name;
     }
 
-    @NotNull
-    @Override
-    public PostgreDatabase getDatabase() {
-        return database;
-    }
-
     @Override
     public int getObjectId() {
         return encodingId;
     }
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public DBSObject getParentObject() {
-        return database;
-    }
-
-    @NotNull
-    @Override
-    public PostgreDataSource getDataSource() {
-        return database.getDataSource();
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return true;
-    }
 }

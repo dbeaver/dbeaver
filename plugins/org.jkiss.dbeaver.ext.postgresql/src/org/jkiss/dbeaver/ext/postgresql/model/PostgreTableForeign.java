@@ -17,13 +17,28 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
  * PostgreTableForeign
  */
 public class PostgreTableForeign extends PostgreTable
 {
+    private int foreignServerId;
+    private String[] foreignOptions;
+
     public PostgreTableForeign(PostgreSchema catalog)
     {
         super(catalog);
@@ -34,6 +49,37 @@ public class PostgreTableForeign extends PostgreTable
         ResultSet dbResult)
     {
         super(catalog, dbResult);
+    }
+
+    @Property(viewable = false, order = 200)
+    public PostgreForeignServer getForeignServer(DBRProgressMonitor monitor) throws DBException {
+        readForeignInfo(monitor);
+        return PostgreUtils.getObjectById(monitor, getDatabase().foreignServerCache, getDatabase(), foreignServerId);
+    }
+
+    @Property(viewable = false, order = 201)
+    public String[] getForeignOptions(DBRProgressMonitor monitor) throws DBException {
+        readForeignInfo(monitor);
+        return foreignOptions;
+    }
+
+    private void readForeignInfo(DBRProgressMonitor monitor) throws DBException {
+        if (foreignServerId > 0) {
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read foreign table info")) {
+            try (JDBCPreparedStatement stat = session.prepareStatement("SELECT * FROM pg_catalog.pg_foreign_table WHERE ftrelid=?")) {
+                stat.setInt(1, getObjectId());
+                try (JDBCResultSet result = stat.executeQuery()) {
+                    if (result.next()) {
+                        foreignServerId = JDBCUtils.safeGetInt(result, "ftserver");
+                        foreignOptions = JDBCUtils.safeGetArray(result, "ftoptions");
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
     }
 
 }
