@@ -20,19 +20,21 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * PostgreTable base
@@ -41,8 +43,8 @@ public abstract class PostgreTableReal extends PostgreTableBase
 {
     static final Log log = Log.getLog(PostgreTableReal.class);
 
-    private int oid;
-    private String description;
+    private long rowCountEstimate;
+    private Long rowCount;
     final TriggerCache triggerCache = new TriggerCache();
 
     protected PostgreTableReal(PostgreSchema catalog)
@@ -55,6 +57,38 @@ public abstract class PostgreTableReal extends PostgreTableBase
         ResultSet dbResult)
     {
         super(catalog, dbResult);
+
+        this.rowCountEstimate = JDBCUtils.safeGetLong(dbResult, "reltuples");
+    }
+
+
+    @Property(viewable = true, order = 22)
+    public long getRowCountEstimate() {
+        return rowCountEstimate;
+    }
+
+    @Property(viewable = false, expensive = true, order = 23)
+    public synchronized Long getRowCount(DBRProgressMonitor monitor)
+    {
+        if (rowCount != null) {
+            return rowCount;
+        }
+        if (!isPersisted()) {
+            // Do not count rows for views
+            return null;
+        }
+
+        // Query row count
+        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
+            rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
+        } catch (DBException e) {
+            log.debug("Can't fetch row count", e);
+        }
+        if (rowCount == null) {
+            rowCount = -1L;
+        }
+
+        return rowCount;
     }
 
     @Override
@@ -71,6 +105,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
+        rowCount = null;
         triggerCache.clearCache();
         super.refreshObject(monitor);
 
@@ -88,6 +123,11 @@ public abstract class PostgreTableReal extends PostgreTableBase
         throws DBException
     {
         return triggerCache.getObject(monitor, this, name);
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Table DDL is read-only");
     }
 
     class TriggerCache extends JDBCObjectCache<PostgreTableReal, PostgreTrigger> {

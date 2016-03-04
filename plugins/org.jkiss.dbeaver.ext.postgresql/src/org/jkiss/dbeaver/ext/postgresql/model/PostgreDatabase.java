@@ -273,20 +273,6 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return null;
     }
 
-    PostgreTableBase findTable(DBRProgressMonitor monitor, String catalogName, String tableName)
-        throws DBException
-    {
-        if (CommonUtils.isEmpty(catalogName)) {
-            return null;
-        }
-        PostgreSchema schema = getSchema(monitor, catalogName);
-        if (schema == null) {
-            log.error("Catalog " + catalogName + " not found");
-            return null;
-        }
-        return schema.getTable(monitor, tableName);
-    }
-
     PostgreTableBase findTable(DBRProgressMonitor monitor, int schemaId, int tableId)
         throws DBException
     {

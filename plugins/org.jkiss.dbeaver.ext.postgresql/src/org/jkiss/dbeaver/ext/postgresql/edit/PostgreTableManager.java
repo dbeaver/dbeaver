@@ -54,7 +54,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     @Override
     protected PostgreTable createDatabaseObject(DBECommandContext context, PostgreSchema parent, Object copyFrom)
     {
-        final PostgreTable table = new PostgreTable(parent);
+        final PostgreTableRegular table = new PostgreTableRegular(parent);
         try {
             setTableName(parent, table);
         } catch (DBException e) {
@@ -80,9 +80,9 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     @Override
     protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl)
     {
-        if (tableBase instanceof PostgreTable) {
+        if (tableBase instanceof PostgreTableRegular) {
             final VoidProgressMonitor monitor = VoidProgressMonitor.INSTANCE;
-            PostgreTable table =(PostgreTable)tableBase;
+            PostgreTableRegular table =(PostgreTableRegular)tableBase;
             try {
                 final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
                 if (!CommonUtils.isEmpty(superTables)) {
@@ -95,7 +95,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                 }
                 ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE").append("\n)");
 /*
-                final PostgreTable.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
+                final PostgreTableRegular.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
                 if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
                     ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
                 }
