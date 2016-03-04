@@ -18,26 +18,31 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * PostgreTablespace
+ * PostgreForeignServer
  */
-public class PostgreTablespace extends PostgreInformation {
+public class PostgreForeignServer extends PostgreInformation {
 
     private int oid;
     private String name;
+    private String type;
+    private String version;
+    private String[] options;
     private int ownerId;
-    private Object[] options;
+    private int dataWrapperId;
 
-    public PostgreTablespace(PostgreDatabase database, ResultSet dbResult)
+    public PostgreForeignServer(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
         super(database);
@@ -48,17 +53,35 @@ public class PostgreTablespace extends PostgreInformation {
         throws SQLException
     {
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
-        this.name = JDBCUtils.safeGetString(dbResult, "spcname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "spcowner");
-        this.options = JDBCUtils.safeGetArray(dbResult, "spcoptions");
+        this.name = JDBCUtils.safeGetString(dbResult, "srvname");
+        this.ownerId = JDBCUtils.safeGetInt(dbResult, "srvowner");
+        this.dataWrapperId = JDBCUtils.safeGetInt(dbResult, "srvfdw");
+        this.type = JDBCUtils.safeGetString(dbResult, "srvtype");
+        this.version = JDBCUtils.safeGetString(dbResult, "srvversion");
+        this.options = JDBCUtils.safeGetArray(dbResult, "srvoptions");
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 2)
     public String getName()
     {
         return name;
+    }
+
+    @Property(viewable = true, order = 3)
+    public String getType() {
+        return type;
+    }
+
+    @Property(viewable = true, order = 4)
+    public String getVersion() {
+        return version;
+    }
+
+    @Property(viewable = true, order = 5)
+    public String[] getOptions() {
+        return options;
     }
 
     @Override
@@ -66,14 +89,14 @@ public class PostgreTablespace extends PostgreInformation {
         return oid;
     }
 
-    @Property(order = 2)
+    @Property(viewable = false, order = 8)
     public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
     }
 
-    @Property(order = 100)
-    public Object[] getOptions() {
-        return options;
+    @Property(viewable = true, order = 10)
+    public PostgreForeignDataWrapper getForeignDataWrapper(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, getDatabase().foreignDataWrapperCache, getDatabase(), dataWrapperId);
     }
-}
 
+}

@@ -41,9 +41,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.utils.CommonUtils;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 
@@ -68,6 +66,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     public final AuthIdCache authIdCache = new AuthIdCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
+    public final ForeignDataWrapperCache foreignDataWrapperCache = new ForeignDataWrapperCache();
+    public final ForeignServerCache foreignServerCache = new ForeignServerCache();
     public final LanguageCache languageCache = new LanguageCache();
     public final EncodingCache encodingCache = new EncodingCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
@@ -218,6 +218,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     @Association
     public Collection<PostgreAccessMethod> getAccessMethods(DBRProgressMonitor monitor) throws DBException {
         return accessMethodCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreForeignDataWrapper> getForeignDataWrappers(DBRProgressMonitor monitor) throws DBException {
+        return foreignDataWrapperCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<PostgreForeignServer> getForeignServers(DBRProgressMonitor monitor) throws DBException {
+        return foreignServerCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -377,6 +387,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         }
     }
 
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, int schemaId, int procId)
+        throws DBException
+    {
+        final PostgreSchema schema = getSchema(monitor, schemaId);
+        if (schema != null) {
+            return PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
+        }
+        return null;
+    }
+
     class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {
 
         @Override
@@ -456,6 +476,47 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             throws SQLException, DBException
         {
             return new PostgreLanguage(owner, dbResult);
+        }
+    }
+
+    class ForeignDataWrapperCache extends JDBCObjectCache<PostgreDatabase, PostgreForeignDataWrapper> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT l.oid,l.*,p.pronamespace as handler_schema_id FROM pg_catalog.pg_foreign_data_wrapper l" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_proc p ON p.oid=l.fdwhandler " +
+                "\nORDER BY l.fdwname"
+            );
+        }
+
+        @Override
+        protected PostgreForeignDataWrapper fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreForeignDataWrapper(owner, dbResult);
+        }
+    }
+
+    class ForeignServerCache extends JDBCObjectCache<PostgreDatabase, PostgreForeignServer> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "SELECT l.oid,l.* FROM pg_catalog.pg_foreign_server l" +
+                "\nORDER BY l.srvname"
+            );
+        }
+
+        @Override
+        protected PostgreForeignServer fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreForeignServer(owner, dbResult);
         }
     }
 

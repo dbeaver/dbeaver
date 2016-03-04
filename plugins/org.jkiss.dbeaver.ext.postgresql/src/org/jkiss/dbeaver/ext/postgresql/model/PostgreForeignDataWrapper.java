@@ -28,16 +28,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * PostgreTablespace
+ * PostgreForeignDataWrapper
  */
-public class PostgreTablespace extends PostgreInformation {
+public class PostgreForeignDataWrapper extends PostgreInformation {
 
     private int oid;
     private String name;
+    private String[] options;
     private int ownerId;
-    private Object[] options;
+    private int handlerProcId;
+    private int validatorProcId;
+    private int handlerSchemaId;
 
-    public PostgreTablespace(PostgreDatabase database, ResultSet dbResult)
+    public PostgreForeignDataWrapper(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
         super(database);
@@ -48,17 +51,25 @@ public class PostgreTablespace extends PostgreInformation {
         throws SQLException
     {
         this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
-        this.name = JDBCUtils.safeGetString(dbResult, "spcname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "spcowner");
-        this.options = JDBCUtils.safeGetArray(dbResult, "spcoptions");
+        this.name = JDBCUtils.safeGetString(dbResult, "fdwname");
+        this.ownerId = JDBCUtils.safeGetInt(dbResult, "fdwowner");
+        this.handlerProcId = JDBCUtils.safeGetInt(dbResult, "fdwhandler");
+        this.validatorProcId = JDBCUtils.safeGetInt(dbResult, "fdwvalidator");
+        this.handlerSchemaId = JDBCUtils.safeGetInt(dbResult, "handler_schema_id");
+        this.options = JDBCUtils.safeGetArray(dbResult, "fdwoptions");
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 2)
     public String getName()
     {
         return name;
+    }
+
+    @Property(viewable = true, order = 5)
+    public String[] getOptions() {
+        return options;
     }
 
     @Override
@@ -66,14 +77,19 @@ public class PostgreTablespace extends PostgreInformation {
         return oid;
     }
 
-    @Property(order = 2)
+    @Property(viewable = false, order = 8)
     public PostgreAuthId getOwner(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, getDatabase().authIdCache, getDatabase(), ownerId);
     }
 
-    @Property(order = 100)
-    public Object[] getOptions() {
-        return options;
+    @Property(viewable = false, order = 10)
+    public PostgreProcedure getHandler(DBRProgressMonitor monitor) throws DBException {
+        return getDatabase().getProcedure(monitor, handlerSchemaId, handlerProcId);
     }
-}
 
+    @Property(viewable = false, order = 10)
+    public PostgreProcedure getValidator(DBRProgressMonitor monitor) throws DBException {
+        return getDatabase().getProcedure(monitor, handlerSchemaId, validatorProcId);
+    }
+
+}
