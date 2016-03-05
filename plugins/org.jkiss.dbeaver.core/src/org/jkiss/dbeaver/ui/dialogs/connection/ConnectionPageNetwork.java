@@ -99,7 +99,13 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
     private void createHandlerTab(TabFolder tabFolder, final NetworkHandlerDescriptor descriptor) throws DBException
     {
-        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator = descriptor.createConfigurator();
+        IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
+        try {
+            configurator = descriptor.createConfigurator();
+        } catch (DBException e) {
+            log.error("Can't create network configurator '" + descriptor.getId() + "'", e);
+            return;
+        }
 
         TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
@@ -141,6 +147,9 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
                 configuration = new DBWHandlerConfiguration(descriptor, driver);
             }
             HandlerBlock handlerBlock = configurations.get(descriptor);
+            if (handlerBlock == null) {
+                continue;
+            }
             //handlerBlock.useHandlerCheck.setSelection(configuration.isEnabled());
             if (selectItem == null && configuration.isEnabled()) {
                 selectItem = handlerBlock.tabItem;

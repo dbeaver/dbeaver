@@ -2588,7 +2588,7 @@
                 label="SSL"
                 description="Secure socket layer"
                 secured="true"
-                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorUI"
+                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorAbstractUI"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl"/>
     </extension>
 
