@@ -1405,6 +1405,18 @@ public class UIUtils {
         menu.add(new GroupMarker("styled_text_additions"));
     }
 
+    public static void addFileOpenOverlay(Text text, SelectionListener listener) {
+        final Image browseImage = DBeaverIcons.getImage(DBIcon.TREE_FOLDER);
+        final Rectangle iconBounds = browseImage.getBounds();
+        text.addPaintListener(new PaintListener() {
+            @Override
+            public void paintControl(PaintEvent e) {
+                final Rectangle bounds = ((Text) e.widget).getBounds();
+                e.gc.drawImage(browseImage, bounds.width - iconBounds.width - 2, 0);
+            }
+        });
+    }
+
     private static class StyledTextAction extends Action {
         private final StyledText styledText;
         private final int action;
