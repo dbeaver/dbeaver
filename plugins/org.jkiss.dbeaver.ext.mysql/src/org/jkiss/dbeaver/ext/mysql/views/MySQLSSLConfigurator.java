@@ -58,6 +58,12 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         requireSSQL = UIUtils.createLabelCheckbox(composite, "Require SSL", false);
         veryServerCert = UIUtils.createLabelCheckbox(composite, "Verify server certificate", true);
 
+        UIUtils.createControlLabel(composite, "CA certificate");
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.minimumWidth = 130;
+        clientCAText = new TextWithOpenFile(composite, "CA Certificate", new String[] {"*.*", "*.cert", "*.pem", "*"} );
+        clientCAText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         UIUtils.createControlLabel(composite, "SSL certificate");
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = 130;
@@ -69,12 +75,6 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         gd.minimumWidth = 130;
         clientKeyText = new TextWithOpenFile(composite, "SSL Certificate", new String[] {"*.*", "*.cert", "*.pem", "*"} );
         clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        UIUtils.createControlLabel(composite, "CA certificate (optional)");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        clientCAText = new TextWithOpenFile(composite, "CA Certificate", new String[] {"*.*", "*.cert", "*.pem", "*"} );
-        clientCAText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         cipherSuitesText = UIUtils.createLabelText(composite, "Cipher suites (optional)", "");
     }
