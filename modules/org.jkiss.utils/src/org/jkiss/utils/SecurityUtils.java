@@ -17,13 +17,9 @@
  */
 package org.jkiss.utils;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManagerFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.security.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.util.Random;
 
 /**
@@ -126,21 +122,6 @@ public class SecurityUtils {
                 Integer.toString(random, Character.MAX_RADIX);
     }
 
-    public static String generateSessionId() {
-        long curTime = System.currentTimeMillis();
-        long random = secureRand.nextLong();
-        if (random < 0) {
-            random = -random;
-        }
-        curTime ^= random;
-        curTime ^= 1249210983;
-        random ^= 1701729106;
-
-        return
-            Long.toString(curTime, Character.MAX_RADIX) +
-                Long.toString(random, Character.MAX_RADIX);
-    }
-
     public static String makeDigest(
         String userAlias,
         String userPassword) {
@@ -215,42 +196,4 @@ public class SecurityUtils {
         '4', '5', '6', '7', '8', '9',
     };
 
-    public static KeyManagerFactory openSecuredKeyManager(File path, String password)
-        throws IOException, GeneralSecurityException {
-        try (FileInputStream ksf = new FileInputStream(path)) {
-            KeyStore ks = KeyStore.getInstance("JKS");
-            ks.load(ksf, password.toCharArray());
-            KeyManagerFactory kmf = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
-            kmf.init(ks, password.toCharArray());
-            return kmf;
-        }
-    }
-
-    public static TrustManagerFactory openSecuredTrustManager(File path, String password)
-        throws IOException, GeneralSecurityException
-    {
-        try (FileInputStream ksf = new FileInputStream(path)) {
-            KeyStore ks = KeyStore.getInstance("JKS");
-            ks.load(ksf, password.toCharArray());
-
-            TrustManagerFactory tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
-            tmf.init(ks);
-            return tmf;
-        }
-    }
-
-    public static SSLContext openSSLContext(
-        File truststorePath,
-        String truststorePassword,
-        File keystorePath,
-        String keystorePassword)
-        throws IOException, GeneralSecurityException
-    {
-        SSLContext ctx = SSLContext.getInstance("SSL");
-
-        TrustManagerFactory tmf = openSecuredTrustManager(truststorePath, truststorePassword);
-        KeyManagerFactory kmf = openSecuredKeyManager(keystorePath, keystorePassword);
-        ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
-        return ctx;
-    }
 }
