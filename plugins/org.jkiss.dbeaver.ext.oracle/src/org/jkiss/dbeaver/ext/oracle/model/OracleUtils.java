@@ -55,7 +55,7 @@ public class OracleUtils {
         DBRProgressMonitor monitor,
         String objectType,
         DBSEntity object,
-        OracleDDLFormat ddlFormat) throws DBCException
+        OracleDDLFormat ddlFormat) throws DBException
     {
         String objectFullName = DBUtils.getObjectFullName(object);
         OracleSchema schema = null;
@@ -115,7 +115,12 @@ public class OracleUtils {
 */
             }
         } catch (SQLException e) {
-            throw new DBCException(e, dataSource);
+            if (object instanceof OracleTableBase) {
+                log.error("Error generating Oracle DDL. Generate default.", e);
+                return JDBCUtils.generateTableDDL(monitor, (OracleTableBase)object, true);
+            } else {
+                throw new DBException(e, dataSource);
+            }
         } finally {
             monitor.done();
         }
