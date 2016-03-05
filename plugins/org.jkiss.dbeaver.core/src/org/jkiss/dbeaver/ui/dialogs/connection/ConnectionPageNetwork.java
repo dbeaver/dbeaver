@@ -49,6 +49,8 @@ import java.util.Map;
  */
 public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
+    public static final String PAGE_NAME = "networkHandlersSettings";
+
     static final Log log = Log.getLog(ConnectionPageNetwork.class);
     private TabFolder handlersFolder;
     private DataSourceDescriptor prevDataSource;
@@ -75,7 +77,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
     ConnectionPageNetwork(ConnectionWizard wizard)
     {
-        super(CoreMessages.dialog_tunnel_title);
+        super(PAGE_NAME);
         this.wizard = wizard;
         setTitle("Network");
         setDescription(CoreMessages.dialog_tunnel_title);

@@ -17,8 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.preferences.*;
 
 import java.util.ArrayList;
@@ -125,6 +128,26 @@ public class EditConnectionWizard extends ConnectionWizard
         }
         addPage(wizardPage);
         return wizardPage;
+    }
+
+    public IWizardPage getPage(String name) {
+        for (IWizardPage page : getPages()) {
+            String pageName = page.getName();
+            if (pageName.equals(name)) {
+                return page;
+            }
+            if (page instanceof ICompositeDialogPage) {
+                final IDialogPage[] subPages = ((ICompositeDialogPage) page).getSubPages();
+                if (subPages != null) {
+                    for (IDialogPage subPage : subPages) {
+                        if (subPage instanceof IWizardPage && ((IWizardPage) subPage).getName().equals(name)) {
+                            return (IWizardPage) subPage;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**

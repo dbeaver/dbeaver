@@ -44,4 +44,6 @@ public interface IDataSourceConnectionEditorSite
 
     boolean openDriverEditor();
 
+    boolean openSettingsPage(String pageId);
+
 }

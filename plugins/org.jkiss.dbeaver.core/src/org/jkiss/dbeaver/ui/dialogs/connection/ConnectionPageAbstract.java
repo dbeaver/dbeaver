@@ -19,14 +19,12 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -110,6 +108,19 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         gd.grabExcessVerticalSpace = true;
         placeholder.setLayoutData(gd);
 
+        if (!site.isNew()) {
+            Link netConfigLink = new Link(panel, SWT.NONE);
+            netConfigLink.setText("<a>Network settings (SSH, SSL, Proxy, ...)</a>");
+            netConfigLink.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    site.openSettingsPage(ConnectionPageNetwork.PAGE_NAME);
+                }
+            });
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+            gd.horizontalSpan = 4;
+            netConfigLink.setLayoutData(gd);
+        }
 
         Label divLabel = new Label(panel, SWT.SEPARATOR | SWT.HORIZONTAL);
         gd = new GridData(GridData.FILL_HORIZONTAL);
