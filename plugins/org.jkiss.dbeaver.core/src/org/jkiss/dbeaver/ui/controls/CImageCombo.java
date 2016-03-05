@@ -1041,7 +1041,7 @@ public class CImageCombo extends Composite {
         {
             final TableColumn column = table.getColumn(0);
             column.pack();
-            final int maxSize = table.getSize().x;// - 2;//table.getVerticalBar().getSize().x;
+            final int maxSize = table.getSize().x - 2;// - 2;//table.getVerticalBar().getSize().x;
             if (column.getWidth() < maxSize) {
                 column.setWidth(maxSize);
             }
@@ -1156,7 +1156,7 @@ public class CImageCombo extends Composite {
 
             }
             case SWT.Resize: {
-                table.getColumn(0).setWidth(table.getBounds().width);
+                table.getColumn(0).setWidth(table.getSize().x - table.getVerticalBar().getSize().x);
                 break;
             }
         }
