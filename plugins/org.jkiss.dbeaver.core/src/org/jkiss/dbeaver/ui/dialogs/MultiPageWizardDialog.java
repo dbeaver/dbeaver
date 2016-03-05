@@ -283,7 +283,15 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (TreeItem item : pagesTree.getItems()) {
             if (item.getData() == page) {
                 pagesTree.setSelection(item);
+                changePage();
                 break;
+            }
+            for (TreeItem child : item.getItems()) {
+                if (child.getData() == page) {
+                    pagesTree.setSelection(child);
+                    changePage();
+                    return;
+                }
             }
         }
     }

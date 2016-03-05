@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -256,6 +257,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     {
         DriverEditDialog dialog = new DriverEditDialog(wizard.getShell(), this.getDriver());
         return dialog.open() == IDialogConstants.OK_ID;
+    }
+
+    @Override
+    public boolean openSettingsPage(String pageId) {
+        final IWizardPage page = wizard.getPage(pageId);
+        if (page != null) {
+            wizard.getContainer().showPage(page);
+        }
+        return false;
     }
 
     @Override
