@@ -47,6 +47,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_SCHEMA = new DBIcon("schema", "tree/schema.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE = new DBIcon("table", "tree/table.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_ALIAS = new DBIcon("table_alias", "tree/table_alias.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_TABLE_LINK = new DBIcon("table_link", "tree/table_link.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_SORT = new DBIcon("table_sort", "tree/table_sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_TABLE_INDEX = new DBIcon("table_index", "tree/table_index.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_VIEW = new DBIcon("view", "tree/view.png"); //$NON-NLS-1$ //$NON-NLS-2$
