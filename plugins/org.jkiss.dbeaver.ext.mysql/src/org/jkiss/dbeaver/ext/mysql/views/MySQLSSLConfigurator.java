@@ -42,6 +42,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
 {
     private Button requireSSQL;
     private Button veryServerCert;
+    private Button allowPublicKeyRetrieval;
     private TextWithOpen clientCertText;
     private TextWithOpen clientKeyText;
     private TextWithOpen clientCAText;
@@ -55,8 +56,9 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
 
-        requireSSQL = UIUtils.createLabelCheckbox(composite, "Require SSL", false);
-        veryServerCert = UIUtils.createLabelCheckbox(composite, "Verify server certificate", true);
+        requireSSQL = UIUtils.createLabelCheckbox(composite, "Require SSL", "Require server support of SSL connection.", false);
+        veryServerCert = UIUtils.createLabelCheckbox(composite, "Verify server certificate", "Should the driver verify the server's certificate?\nWhen using this feature, the explicit certificate parameters should be specified, rather than system properties.", true);
+        allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(composite, "Allow public key retrieval", "Allows special handshake roundtrip to get server RSA public key directly from server.", false);
 
         UIUtils.createControlLabel(composite, "CA certificate");
         gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -77,12 +79,14 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         cipherSuitesText = UIUtils.createLabelText(composite, "Cipher suites (optional)", "");
+        cipherSuitesText.setToolTipText("Overrides the cipher suites enabled for use on the underlying SSL sockets.\nThis may be required when using external JSSE providers or to specify cipher suites compatible with both MySQL server and used JVM.");
     }
 
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration) {
         requireSSQL.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL), false));
         veryServerCert.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT), true));
+        allowPublicKeyRetrieval.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false));
         clientCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT)));
         clientKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_KEY)));
         clientCAText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT)));
@@ -93,6 +97,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
     public void saveSettings(DBWHandlerConfiguration configuration) {
         configuration.getProperties().put(MySQLConstants.PROP_REQUIRE_SSL, String.valueOf(requireSSQL.getSelection()));
         configuration.getProperties().put(MySQLConstants.PROP_VERIFY_SERVER_SERT, String.valueOf(veryServerCert.getSelection()));
+        configuration.getProperties().put(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE, String.valueOf(allowPublicKeyRetrieval.getSelection()));
         configuration.getProperties().put(MySQLConstants.PROP_SSL_CLIENT_CERT, clientCertText.getText());
         configuration.getProperties().put(MySQLConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
         configuration.getProperties().put(MySQLConstants.PROP_SSL_CA_CERT, clientCAText.getText());

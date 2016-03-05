@@ -37,6 +37,7 @@ public class MySQLConstants {
     public static final String PROP_REQUIRE_SSL = "ssl.require";
     public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";
     public static final String PROP_SSL_CIPHER_SUITES = "ssl.cipher.suites";
+    public static final String PROP_SSL_PUBLIC_KEY_RETRIEVE = "ssl.public.key.retrieve";
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
