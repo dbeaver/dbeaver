@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.impl.net.SSHConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.controls.TextWithOpen;
+import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,7 +46,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Spinner portText;
     private Text userNameText;
     private Combo authMethodCombo;
-    private Text privateKeyText;
+    private TextWithOpen privateKeyText;
     private Label pwdLabel;
     private Composite pwdControlGroup;
     private Text passwordText;
@@ -76,29 +78,15 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         privateKeyLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_private_key);
         privateKeyLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        pkControlGroup = UIUtils.createPlaceholder(composite, 2);
+        pkControlGroup = UIUtils.createPlaceholder(composite, 1);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.minimumWidth = 130;
         pkControlGroup.setLayoutData(gd);
-        privateKeyText = new Text(pkControlGroup, SWT.BORDER);
+        privateKeyText = new TextWithOpenFile(
+            pkControlGroup,
+            CoreMessages.model_ssh_configurator_dialog_choose_private_key,
+            new String[] {"*.*", "*.ssh", "*.pem", "*"});
         privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        Button openFolder = new Button(pkControlGroup, SWT.PUSH);
-        openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        openFolder.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                FileDialog fd = new FileDialog(composite.getShell(), SWT.OPEN | SWT.SINGLE);
-                fd.setText(CoreMessages.model_ssh_configurator_dialog_choose_private_key);
-                String[] filterExt = {"*.*", "*.ssh", "*.pem", "*"}; //$NON-NLS-1$ //$NON-NLS-2$
-                fd.setFilterExtensions(filterExt);
-                String selected = DialogUtils.openFileDialog(fd);
-                if (selected != null) {
-                    privateKeyText.setText(selected);
-                }
-            }
-        });
 
         pwdLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_password);
         pwdControlGroup = UIUtils.createPlaceholder(composite, 3);

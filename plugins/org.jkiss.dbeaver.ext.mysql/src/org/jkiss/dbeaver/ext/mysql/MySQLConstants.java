@@ -32,8 +32,12 @@ public class MySQLConstants {
     public static final String DRIVER_ID_MYSQL = "mysql5";
     public static final String DRIVER_ID_MARIA_DB = "mariaDB";
 
-    public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
-    public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
+    public static final String PROP_REQUIRE_SSL = "ssl.require";
+    public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";
+    public static final String PROP_SSL_CIPHER_SUITES = "ssl.cipher.suites";
+    public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
+    public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
+    public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
 
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 

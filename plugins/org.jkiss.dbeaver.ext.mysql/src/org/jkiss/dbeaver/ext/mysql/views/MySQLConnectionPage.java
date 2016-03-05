@@ -22,18 +22,18 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
@@ -53,8 +53,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
     private Text usernameText;
     private Text passwordText;
     private ClientHomesSelector homesSelector;
-    private Button useSslButton;
-    private Text sslCertText;
     private boolean activated = false;
 
     private static ImageDescriptor MYSQL_LOGO_IMG = Activator.getImageDescriptor("icons/mysql_logo.png");
@@ -149,26 +147,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             homesSelector.setLayoutData(gd);
         }
 
-        {
-            Group secureGroup = new Group(addrGroup, SWT.NONE);
-            secureGroup.setText("Security");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
-            secureGroup.setLayoutData(gd);
-            secureGroup.setLayout(new GridLayout(2, false));
-
-            useSslButton = UIUtils.createLabelCheckbox(secureGroup, "Use SSL", true);
-            useSslButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (sslCertText != null) {
-                        sslCertText.setEnabled(useSslButton.getSelection());
-                    }
-                }
-            });
-            //sslCertText = UIUtils.createLabelText(secureGroup, "Certificate Path", "");
-        }
-
         createDriverPanel(addrGroup);
         setControl(addrGroup);
     }
@@ -224,13 +202,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        final boolean useSSL = CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL));
-        useSslButton.setSelection(useSSL);
-        if (sslCertText != null) {
-            sslCertText.setText(CommonUtils.toString(connectionInfo.getProperty(MySQLConstants.PROP_SSL_CERT)));
-            sslCertText.setEnabled(useSSL);
-        }
-
         activated = true;
     }
 
@@ -257,7 +228,6 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
-        connectionInfo.setProperty(MySQLConstants.PROP_USE_SSL, useSslButton.getSelection());
         super.saveSettings(dataSource);
     }
 
