@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPProjectManager;
+import org.jkiss.dbeaver.model.DBPSecurityManager;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.model.impl.security.DefaultSecurityManager;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -85,6 +87,7 @@ public class DBeaverCore implements DBPApplication {
     private QMControllerImpl queryManager;
     private QMLogFileWriter qmLogWriter;
     private ProjectRegistry projectRegistry;
+    private DefaultSecurityManager securityManager;
 
     private final List<IPluginService> activatedServices = new ArrayList<>();
 
@@ -218,6 +221,9 @@ public class DBeaverCore implements DBPApplication {
         Authenticator.setDefault(new GlobalProxyAuthenticator());
         ProxySelector.setDefault(new GlobalProxySelector(ProxySelector.getDefault()));
 
+        this.securityManager = new DefaultSecurityManager(
+            new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
+
         // Init project registry
         this.projectRegistry = new ProjectRegistry(workspace);
 
@@ -315,6 +321,7 @@ public class DBeaverCore implements DBPApplication {
         log.debug("Shutdown completed in " + (System.currentTimeMillis() - startTime) + "ms");
     }
 
+    @NotNull
     @Override
     public IWorkspace getWorkspace()
     {
@@ -374,6 +381,12 @@ public class DBeaverCore implements DBPApplication {
     @Override
     public DBPPreferenceStore getPreferenceStore() {
         return getGlobalPreferenceStore();
+    }
+
+    @NotNull
+    @Override
+    public DBPSecurityManager getSecurityManager() {
+        return securityManager;
     }
 
     public ProjectRegistry getProjectRegistry()

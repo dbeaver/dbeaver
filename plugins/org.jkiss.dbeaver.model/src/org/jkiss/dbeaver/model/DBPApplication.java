@@ -40,6 +40,7 @@ public interface DBPApplication
     @NotNull
     DBNModel getNavigatorModel();
 
+    @NotNull
     IWorkspace getWorkspace();
 
     @NotNull
@@ -58,6 +59,9 @@ public interface DBPApplication
 
     @NotNull
     DBPPreferenceStore getPreferenceStore();
+
+    @NotNull
+    DBPSecurityManager getSecurityManager();
 
     @NotNull
     File getTempFolder(DBRProgressMonitor monitor, String name) throws IOException;
