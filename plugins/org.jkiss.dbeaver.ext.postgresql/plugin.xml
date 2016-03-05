@@ -256,7 +256,7 @@
                 label="SSL"
                 description="Secure socket layer"
                 secured="true"
-                uiClass="org.jkiss.dbeaver.ext.postgresql.SSLConfiguratorAbstractUI"
+                uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>
         </handler>
