@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 /**
  * Data source provider
  */
-public interface DBPDataSourceProvider
+public interface DBPDataSourceProvider extends DBPObject
 {
     long FEATURE_CATALOGS    = 1;
     long FEATURE_SCHEMAS     = 2;

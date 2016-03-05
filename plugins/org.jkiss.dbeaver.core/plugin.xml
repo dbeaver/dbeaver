@@ -2582,14 +2582,6 @@
                 secured="true"
                 uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
-        <handler
-                type="config"
-                id="ssl"
-                label="SSL"
-                description="Secure socket layer"
-                secured="true"
-                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorAbstractUI"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.search">
