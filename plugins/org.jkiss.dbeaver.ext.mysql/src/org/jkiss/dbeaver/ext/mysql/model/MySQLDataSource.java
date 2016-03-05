@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPSecurityManager;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.*;
@@ -49,6 +50,9 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -80,13 +84,16 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     protected Map<String, String> getInternalConnectionProperties()
+        throws DBCException
     {
-        Map<String, String> props = new HashMap<>(MySQLDataSourceProvider.getConnectionsProps());
+        Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getDeclaredHandler(MySQLConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
-            props.put("useSSL", "true");
-            props.put("verifyServerCertificate", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT))));
-            props.put("requireSSL", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL))));
+            try {
+                initSSL(props, sslConfig);
+            } catch (Exception e) {
+                throw new DBCException("Error configuring SSL certificates", e);
+            }
         }
 /*
         if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
@@ -95,6 +102,41 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 */
 
         return props;
+    }
+
+    private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+        props.put("useSSL", "true");
+        props.put("verifyServerCertificate", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT))));
+        props.put("requireSSL", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL))));
+
+        final String caCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT);
+        final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
+        final String cipherSuites = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CIPHER_SUITES);
+
+        // Trust keystore
+        if (!CommonUtils.isEmpty(caCertProp)) {
+            File caCertFile = new File(caCertProp);
+            String ksId = "ssl-truststore";
+            final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
+            try (InputStream is = new FileInputStream(caCertFile)) {
+                securityManager.addCertificate(ksId, getContainer().getId(), is);
+            }
+            props.put("trustCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
+        }
+
+        // Client certificate
+        if (!CommonUtils.isEmpty(clientCertProp)) {
+            File clientCertFile = new File(clientCertProp);
+            String ksId = "ssl-clientstore";
+            final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
+            try (InputStream is = new FileInputStream(clientCertFile)) {
+                securityManager.addCertificate(ksId, getContainer().getId(), is);
+            }
+            props.put("clientCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
+        }
+        if (!CommonUtils.isEmpty(cipherSuites)) {
+            props.put("enabledSSLCipherSuites", cipherSuites);
+        }
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {

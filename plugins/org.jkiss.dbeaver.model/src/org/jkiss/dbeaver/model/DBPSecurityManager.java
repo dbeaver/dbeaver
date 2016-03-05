@@ -18,7 +18,10 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.dbeaver.DBException;
+
 import java.io.File;
+import java.io.InputStream;
 import java.security.KeyStore;
 
 /**
@@ -26,7 +29,9 @@ import java.security.KeyStore;
  */
 public interface DBPSecurityManager
 {
-    KeyStore getKeyStore(String ksId);
+    KeyStore getKeyStore(String ksId) throws DBException;
+
+    void addCertificate(String ksId, String certId, InputStream certStream) throws DBException;
 
     File getKeyStorePath(String ksId);
 }

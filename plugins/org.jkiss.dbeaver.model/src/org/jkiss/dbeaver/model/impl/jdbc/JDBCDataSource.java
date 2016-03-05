@@ -514,6 +514,7 @@ public abstract class JDBCDataSource
      */
     @Nullable
     protected Map<String, String> getInternalConnectionProperties()
+        throws DBCException
     {
         return null;
     }

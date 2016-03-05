@@ -17,11 +17,14 @@
  */
 package org.jkiss.dbeaver.model.impl.security;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSecurityManager;
 
-import java.io.File;
+import java.io.*;
 import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 
 /**
  * DefaultSecurityManager
@@ -29,6 +32,8 @@ import java.security.KeyStore;
 public class DefaultSecurityManager implements DBPSecurityManager {
 
     static final Log log = Log.getLog(DefaultSecurityManager.class);
+    private static final char[] DEFAULT_PASSWORD = "".toCharArray();
+    public static final String JKS_EXTENSION = ".jks";
 
     private final File localPath;
 
@@ -40,12 +45,47 @@ public class DefaultSecurityManager implements DBPSecurityManager {
     }
 
     @Override
-    public KeyStore getKeyStore(String ksId) {
-        return null;
+    public KeyStore getKeyStore(String ksId) throws DBException {
+        try {
+            File ksFile = getKeyStorePath(ksId);
+            KeyStore ks = KeyStore.getInstance(KeyStore.getDefaultType());
+            if (ksFile.exists()) {
+                try (InputStream is = new FileInputStream(ksFile)) {
+                    ks.load(is, DEFAULT_PASSWORD);
+                }
+            } else {
+                ks.load(null, DEFAULT_PASSWORD);
+            }
+
+            return ks;
+        } catch (Exception e) {
+            throw new DBException("Error opening keystore '" + ksId + "'", e);
+        }
+    }
+
+    @Override
+    public void addCertificate(String ksId, String certId, InputStream certStream) throws DBException {
+        final KeyStore keyStore = getKeyStore(ksId);
+        try {
+            CertificateFactory cf = CertificateFactory.getInstance("X.509");
+            Certificate cert =  cf.generateCertificate(certStream);
+            keyStore.setCertificateEntry(certId, cert);
+            saveKeyStore(ksId, keyStore);
+        } catch (Exception e) {
+            throw new DBException("Error adding certificate to keystore '" + ksId + "'", e);
+        }
+    }
+
+    private void saveKeyStore(String ksId, KeyStore keyStore) throws Exception {
+        final File ksFile = getKeyStorePath(ksId);
+
+        try (OutputStream os = new FileOutputStream(ksFile)) {
+            keyStore.store(os, DEFAULT_PASSWORD);
+        }
     }
 
     @Override
     public File getKeyStorePath(String ksId) {
-        return null;
+        return new File(localPath, ksId + JKS_EXTENSION);
     }
 }

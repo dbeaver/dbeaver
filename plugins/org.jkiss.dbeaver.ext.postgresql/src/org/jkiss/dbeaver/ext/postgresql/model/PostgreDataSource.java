@@ -73,7 +73,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties()
+    protected Map<String, String> getInternalConnectionProperties() throws DBCException
     {
         return PostgreDataSourceProvider.getConnectionsProps();
     }
