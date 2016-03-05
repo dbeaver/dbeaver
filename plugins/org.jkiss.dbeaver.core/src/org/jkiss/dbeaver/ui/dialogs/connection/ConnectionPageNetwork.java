@@ -87,7 +87,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
-        for (NetworkHandlerDescriptor descriptor : registry.getDescriptors()) {
+        for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(wizard.getPageSettings().getActiveDataSource())) {
             try {
                 createHandlerTab(handlersFolder, descriptor);
             } catch (DBException e) {
@@ -141,7 +141,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         DriverDescriptor driver = wizard.getSelectedDriver();
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
         TabItem selectItem = null;
-        for (NetworkHandlerDescriptor descriptor : registry.getDescriptors()) {
+        for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
             if (configuration == null) {
                 configuration = new DBWHandlerConfiguration(descriptor, driver);

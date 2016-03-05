@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.registry.network;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,5 +66,18 @@ public class NetworkHandlerRegistry
         }
         return null;
     }
-    
+
+    public List<NetworkHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource) {
+        List<NetworkHandlerDescriptor> result = new ArrayList<>();
+        for (NetworkHandlerDescriptor d : descriptors) {
+            try {
+                if (!d.hasObjectTypes() || d.matches(dataSource.getDriver().getDataSourceProvider())) {
+                    result.add(d);
+                }
+            } catch (DBException e) {
+                // ignore
+            }
+        }
+        return result;
+    }
 }

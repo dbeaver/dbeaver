@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry.network;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -50,6 +51,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         IConfigurationElement config)
     {
         super(config);
+
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -83,6 +85,11 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     public boolean isSecured()
     {
         return secured;
+    }
+
+    public boolean matches(DBPDataSourceProvider provider)
+    {
+        return appliesTo(provider);
     }
 
     public <T extends DBWNetworkHandler> T createHandler(Class<T> impl)
