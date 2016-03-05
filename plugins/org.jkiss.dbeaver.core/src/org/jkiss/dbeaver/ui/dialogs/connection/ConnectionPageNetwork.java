@@ -51,6 +51,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
     static final Log log = Log.getLog(ConnectionPageNetwork.class);
     private TabFolder handlersFolder;
+    private DataSourceDescriptor prevDataSource;
 
     private static class HandlerBlock {
         private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
@@ -86,18 +87,10 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         handlersFolder = new TabFolder(parent, SWT.TOP);
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
-        for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(wizard.getPageSettings().getActiveDataSource())) {
-            try {
-                createHandlerTab(handlersFolder, descriptor);
-            } catch (DBException e) {
-                log.warn(e);
-            }
-        }
         setControl(handlersFolder);
     }
 
-    private void createHandlerTab(TabFolder tabFolder, final NetworkHandlerDescriptor descriptor) throws DBException
+    private void createHandlerTab(final NetworkHandlerDescriptor descriptor) throws DBException
     {
         IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         try {
@@ -107,11 +100,11 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
             return;
         }
 
-        TabItem tabItem = new TabItem(tabFolder, SWT.NONE);
+        TabItem tabItem = new TabItem(handlersFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
         tabItem.setToolTipText(descriptor.getDescription());
 
-        Composite composite = new Composite(tabFolder, SWT.NONE);
+        Composite composite = new Composite(handlersFolder, SWT.NONE);
         tabItem.setControl(composite);
         composite.setLayout(new GridLayout(1, false));
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -140,6 +133,25 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         DataSourceDescriptor dataSource = wizard.getPageSettings().getActiveDataSource();
         DriverDescriptor driver = wizard.getSelectedDriver();
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
+
+        if (prevDataSource == null || prevDataSource != dataSource) {
+            for (TabItem item : handlersFolder.getItems()) {
+                item.dispose();
+            }
+            for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
+                try {
+                    createHandlerTab(descriptor);
+                } catch (DBException e) {
+                    log.warn(e);
+                }
+            }
+            prevDataSource = dataSource;
+            handlersFolder.layout();
+            for (TabItem item : handlersFolder.getItems()) {
+                ((Composite)item.getControl()).layout();
+            }
+        }
+
         TabItem selectItem = null;
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
