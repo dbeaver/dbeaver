@@ -81,8 +81,8 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
 
     @Override
     public void loadSettings(DBWHandlerConfiguration configuration) {
-        requireSSQL.setSelection("true".equals(configuration.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL)));
-        veryServerCert.setSelection("true".equals(configuration.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT)));
+        requireSSQL.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL), false));
+        veryServerCert.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT), true));
         clientCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT)));
         clientKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_KEY)));
         clientCAText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT)));
