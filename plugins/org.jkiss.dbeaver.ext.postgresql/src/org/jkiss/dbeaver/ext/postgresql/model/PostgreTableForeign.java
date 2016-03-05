@@ -17,8 +17,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -34,7 +38,7 @@ import java.sql.SQLException;
 /**
  * PostgreTableForeign
  */
-public class PostgreTableForeign extends PostgreTable
+public class PostgreTableForeign extends PostgreTable implements DBPImageProvider
 {
     private int foreignServerId;
     private String[] foreignOptions;
@@ -80,6 +84,12 @@ public class PostgreTableForeign extends PostgreTable
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
+    }
+
+    @Nullable
+    @Override
+    public DBPImage getObjectImage() {
+        return DBIcon.TREE_TABLE_LINK;
     }
 
 }
