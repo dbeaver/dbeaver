@@ -207,6 +207,15 @@ public class DBPConnectionConfiguration implements DBPObject
         return handlers;
     }
 
+    public DBWHandlerConfiguration getDeclaredHandler(String id) {
+        for (DBWHandlerConfiguration cfg : handlers) {
+            if (cfg.getId().equals(id)) {
+                return cfg;
+            }
+        }
+        return null;
+    }
+
     public void setHandlers(@NotNull List<DBWHandlerConfiguration> handlers)
     {
         this.handlers.clear();
@@ -262,4 +271,5 @@ public class DBPConnectionConfiguration implements DBPObject
     public DBPConnectionBootstrap getBootstrap() {
         return bootstrap;
     }
+
 }

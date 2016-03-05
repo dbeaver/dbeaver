@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.WinRegistry;
@@ -101,12 +102,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
             url.append(":").append(connectionInfo.getHostPort());
         }
         url.append("/").append(connectionInfo.getDatabaseName());
-        connectionInfo.getDeclaredHandlers();
-/*
-        if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
-            url.append("?useSSL=true&requireSSL=true");
-        }
-*/
+
         return url.toString();
     }
 
