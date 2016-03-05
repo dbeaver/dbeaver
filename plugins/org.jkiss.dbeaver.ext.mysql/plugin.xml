@@ -356,4 +356,17 @@
         </tools>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.networkHandler">
+        <handler
+                type="config"
+                id="mysql_ssl"
+                label="SSL"
+                description="Secure socket layer"
+                secured="true"
+                uiClass="org.jkiss.dbeaver.ext.mysql.views.MySQLSSLConfigurator"
+                handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
+            <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
+        </handler>
+    </extension>
+
 </plugin>
