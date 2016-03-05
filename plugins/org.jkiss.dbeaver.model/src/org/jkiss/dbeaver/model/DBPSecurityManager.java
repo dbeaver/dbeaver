@@ -33,5 +33,7 @@ public interface DBPSecurityManager
 
     void addCertificate(String ksId, String certId, InputStream certStream) throws DBException;
 
+    void deleteCertificate(String ksId, String certId) throws DBException;
+
     File getKeyStorePath(String ksId);
 }

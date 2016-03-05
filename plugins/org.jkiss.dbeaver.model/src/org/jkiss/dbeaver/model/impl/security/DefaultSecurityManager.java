@@ -55,6 +55,7 @@ public class DefaultSecurityManager implements DBPSecurityManager {
                 }
             } else {
                 ks.load(null, DEFAULT_PASSWORD);
+                saveKeyStore(ksId, ks);
             }
 
             return ks;
@@ -73,6 +74,17 @@ public class DefaultSecurityManager implements DBPSecurityManager {
             saveKeyStore(ksId, keyStore);
         } catch (Exception e) {
             throw new DBException("Error adding certificate to keystore '" + ksId + "'", e);
+        }
+    }
+
+    @Override
+    public void deleteCertificate(String ksId, String certId) throws DBException {
+        final KeyStore keyStore = getKeyStore(ksId);
+        try {
+            keyStore.deleteEntry(certId);
+            saveKeyStore(ksId, keyStore);
+        } catch (Exception e) {
+            throw new DBException("Error deleting certificate from keystore '" + ksId + "'", e);
         }
     }
 

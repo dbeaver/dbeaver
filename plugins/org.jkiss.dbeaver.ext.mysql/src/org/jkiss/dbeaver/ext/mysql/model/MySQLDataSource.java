@@ -105,37 +105,42 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+        final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
+
         props.put("useSSL", "true");
         props.put("verifyServerCertificate", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_VERIFY_SERVER_SERT))));
         props.put("requireSSL", String.valueOf(CommonUtils.toBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_REQUIRE_SSL))));
 
         final String caCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT);
-        final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
-        final String cipherSuites = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CIPHER_SUITES);
 
         // Trust keystore
+        String ksId = "ssl-truststore";
         if (!CommonUtils.isEmpty(caCertProp)) {
             File caCertFile = new File(caCertProp);
-            String ksId = "ssl-truststore";
-            final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
             try (InputStream is = new FileInputStream(caCertFile)) {
                 securityManager.addCertificate(ksId, getContainer().getId(), is);
             }
-            props.put("trustCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
+        } else {
+            securityManager.deleteCertificate(ksId, getContainer().getId());
         }
+        props.put("trustCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
 
         // Client certificate
+        ksId = "ssl-clientstore";
+        final String clientCertProp = sslConfig.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_CERT);
         if (!CommonUtils.isEmpty(clientCertProp)) {
             File clientCertFile = new File(clientCertProp);
-            String ksId = "ssl-clientstore";
-            final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
             try (InputStream is = new FileInputStream(clientCertFile)) {
                 securityManager.addCertificate(ksId, getContainer().getId(), is);
             }
-            props.put("clientCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
+        } else {
+            securityManager.deleteCertificate(ksId, getContainer().getId());
         }
-        if (!CommonUtils.isEmpty(cipherSuites)) {
-            props.put("enabledSSLCipherSuites", cipherSuites);
+        props.put("clientCertificateKeyStoreUrl", securityManager.getKeyStorePath(ksId).toURI().toURL().toString());
+
+        final boolean retrievePublicKey = CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false);
+        if (retrievePublicKey) {
+            props.put("allowPublicKeyRetrieval", "true");
         }
     }
 
