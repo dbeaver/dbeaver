@@ -159,7 +159,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties() throws DBCException
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor) throws DBCException
     {
         return OracleDataSourceProvider.getConnectionsProps();
     }

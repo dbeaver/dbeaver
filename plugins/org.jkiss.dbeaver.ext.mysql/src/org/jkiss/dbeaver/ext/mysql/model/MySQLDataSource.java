@@ -83,14 +83,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties()
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor)
         throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getDeclaredHandler(MySQLConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             try {
-                initSSL(props, sslConfig);
+                initSSL(monitor, props, sslConfig);
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
@@ -104,7 +104,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return props;
     }
 
-    private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+    private void initSSL(DBRProgressMonitor monitor, Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+        monitor.subTask("Install SSL certificates");
         final DBPSecurityManager securityManager = getContainer().getApplication().getSecurityManager();
 
         props.put("useSSL", "true");
@@ -141,6 +142,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         final boolean retrievePublicKey = CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_PUBLIC_KEY_RETRIEVE), false);
         if (retrievePublicKey) {
             props.put("allowPublicKeyRetrieval", "true");
+        }
+
+        if (CommonUtils.getBoolean(sslConfig.getProperties().get(MySQLConstants.PROP_SSL_DEBUG), false)) {
+            System.setProperty("javax.net.debug", "all");
         }
     }
 
