@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.impl.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSecurityManager;
-import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.security.KeyStore;
