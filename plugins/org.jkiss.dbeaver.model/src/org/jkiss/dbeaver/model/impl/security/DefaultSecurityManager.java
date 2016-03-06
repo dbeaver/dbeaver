@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSecurityManager;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.security.KeyStore;
@@ -39,7 +40,17 @@ public class DefaultSecurityManager implements DBPSecurityManager {
 
     public DefaultSecurityManager(File localPath) {
         this.localPath = localPath;
-        if (!localPath.exists() && !localPath.mkdirs()) {
+        if (localPath.exists()) {
+            // Cleanup old keystores
+            final File[] ksFiles = localPath.listFiles();
+            if (ksFiles != null) {
+                for (File ksFile : ksFiles) {
+                    if (!ksFile.delete()) {
+                        log.warn("Can't delete old keystore '" + ksFile.getAbsolutePath() + "'");
+                    }
+                }
+            }
+        } else if (!localPath.mkdirs()) {
             log.error("Can't create directory for security manager: " + localPath.getAbsolutePath());
         }
     }
