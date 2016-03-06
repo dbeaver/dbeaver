@@ -47,6 +47,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
     private TextWithOpen clientKeyText;
     private TextWithOpen clientCAText;
     private Text cipherSuitesText;
+//    private Button debugSSL;
 
     @Override
     public void createControl(Composite parent) {
@@ -80,6 +81,8 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
 
         cipherSuitesText = UIUtils.createLabelText(composite, "Cipher suites (optional)", "");
         cipherSuitesText.setToolTipText("Overrides the cipher suites enabled for use on the underlying SSL sockets.\nThis may be required when using external JSSE providers or to specify cipher suites compatible with both MySQL server and used JVM.");
+
+//        debugSSL = UIUtils.createLabelCheckbox(composite, "Debug SSL", "Prints debug information in standard output.", false);
     }
 
     @Override
@@ -91,6 +94,7 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         clientKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CLIENT_KEY)));
         clientCAText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CA_CERT)));
         cipherSuitesText.setText(CommonUtils.notEmpty(configuration.getProperties().get(MySQLConstants.PROP_SSL_CIPHER_SUITES)));
+//        debugSSL.setSelection(CommonUtils.getBoolean(configuration.getProperties().get(MySQLConstants.PROP_SSL_DEBUG), false));
     }
 
     @Override
@@ -102,5 +106,6 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
         configuration.getProperties().put(MySQLConstants.PROP_SSL_CLIENT_KEY, clientKeyText.getText());
         configuration.getProperties().put(MySQLConstants.PROP_SSL_CA_CERT, clientCAText.getText());
         configuration.getProperties().put(MySQLConstants.PROP_SSL_CIPHER_SUITES, cipherSuitesText.getText());
+//        configuration.getProperties().put(MySQLConstants.PROP_SSL_DEBUG, String.valueOf(debugSSL.getSelection()));
     }
 }

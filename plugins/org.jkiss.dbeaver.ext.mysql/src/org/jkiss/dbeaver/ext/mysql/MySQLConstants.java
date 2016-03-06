@@ -41,6 +41,7 @@ public class MySQLConstants {
     public static final String PROP_SSL_CLIENT_CERT = "ssl.client.cert";
     public static final String PROP_SSL_CLIENT_KEY = "ssl.client.key";
     public static final String PROP_SSL_CA_CERT = "ssl.ca.cert";
+    public static final String PROP_SSL_DEBUG = "ssl.debug";
 
     public static final String[] TABLE_TYPES = new String[]{"TABLE", "VIEW", "LOCAL TEMPORARY"};
 
