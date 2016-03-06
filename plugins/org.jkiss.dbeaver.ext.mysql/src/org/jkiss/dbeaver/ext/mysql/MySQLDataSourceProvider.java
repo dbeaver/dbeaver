@@ -18,17 +18,17 @@
 package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.WinRegistry;
@@ -88,12 +88,14 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
+/*
         String trustStorePath = System.getProperty("user.home") + "/.keystore";
 
         System.setProperty("javax.net.ssl.keyStore", trustStorePath);
         System.setProperty("javax.net.ssl.keyStorePassword", "changeit");
         System.setProperty("javax.net.ssl.trustStore", trustStorePath);
         System.setProperty("javax.net.ssl.trustStorePassword", "changeit");
+*/
 
         StringBuilder url = new StringBuilder();
         url.append("jdbc:mysql://")
