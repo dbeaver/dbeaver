@@ -99,6 +99,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             this.file = library.getLocalFile();
         }
 
+        public File getFile() {
+            return file;
+        }
+
         @Override
         public String toString() {
             return file.getName();

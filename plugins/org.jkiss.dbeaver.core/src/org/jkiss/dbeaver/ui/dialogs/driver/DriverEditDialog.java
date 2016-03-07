@@ -17,12 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -43,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverLibraryAbstract;
 import org.jkiss.dbeaver.registry.driver.DriverLibraryMavenArtifact;
+import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -58,20 +57,11 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
-import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.Opcodes;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.*;
 import java.util.List;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 /**
  * DriverEditDialog
@@ -382,7 +372,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 public void handleEvent(Event event)
                 {
                     try {
-                        ClassFindJob classFinder = new ClassFindJob();
+                        DriverClassFindJob classFinder = new DriverClassFindJob(driver, "java/sql/Driver", true);
                         new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
 
                         if (classListCombo != null && !classListCombo.isDisposed()) {
@@ -632,11 +622,23 @@ public class DriverEditDialog extends HelpEnabledDialog
         libTable.setInput(driver.getEnabledDriverLibraries());
         boolean hasFiles = false, hasDownloads = false;
         for (DBPDriverLibrary library : driver.getDriverLibraries()) {
+            final File localFile = library.getLocalFile();
+            hasFiles = hasFiles || (localFile != null && localFile.exists());
+            if (!hasFiles) {
+                final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
+                if (files != null) {
+                    for (DriverDescriptor.DriverFileInfo file : files) {
+                        if (file.getFile() != null && file.getFile().exists()) {
+                            hasFiles = true;
+                        }
+                    }
+                }
+            }
+
             if (library.isDownloadable()) {
                 hasDownloads = true;
                 break;
             }
-            hasFiles = true;
         }
         findClassButton.setEnabled(provider.isDriversManagable() && hasFiles);
         updateVersionButton.setEnabled(hasDownloads);
@@ -764,116 +766,6 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
         };
         UIUtils.runInUI(shell, runnable);
-    }
-
-    private class ClassFindJob implements IRunnableWithProgress {
-
-        public static final String SQL_DRIVER_CLASS_NAME = "java/sql/Driver";
-        public static final String OBJECT_CLASS_NAME = "java/lang/Object";
-        public static final String CLASS_FILE_EXT = ".class";
-        private java.util.List<String> driverClassNames = new ArrayList<>();
-
-        private ClassFindJob() {
-        }
-
-        public java.util.List<String> getDriverClassNames() {
-            return driverClassNames;
-        }
-
-        @Override
-        public void run(IProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
-            findDriverClasses(monitor);
-        }
-
-        private void findDriverClasses(IProgressMonitor monitor)
-        {
-            java.util.List<File> libFiles = new ArrayList<>();
-            java.util.List<URL> libURLs = new ArrayList<>();
-            for (DBPDriverLibrary lib : driver.getDriverLibraries()) {
-                File libFile = lib.getLocalFile();
-                if (libFile != null && libFile.exists() && !libFile.isDirectory() && lib.getType() == DBPDriverLibrary.FileType.jar) {
-                    libFiles.add(libFile);
-                    try {
-                        libURLs.add(libFile.toURI().toURL());
-                    } catch (MalformedURLException e) {
-                        log.debug(e);
-                    }
-                }
-            }
-            ClassLoader findCL = new URLClassLoader(libURLs.toArray(new URL[libURLs.size()]));
-
-            for (File libFile : libFiles) {
-                if (monitor.isCanceled()) {
-                    break;
-                }
-                findDriverClasses(monitor, findCL, libFile);
-            }
-        }
-
-        private void findDriverClasses(IProgressMonitor monitor, ClassLoader findCL, File libFile)
-        {
-            try {
-                JarFile currentFile = new JarFile(libFile, false);
-                monitor.beginTask(libFile.getName(), currentFile.size());
-
-                for (Enumeration<?> e = currentFile.entries(); e.hasMoreElements(); ) {
-                    {
-                        if (monitor.isCanceled()) {
-                            break;
-                        }
-                        JarEntry current = (JarEntry) e.nextElement();
-                        String fileName = current.getName();
-                        if (fileName.endsWith(CLASS_FILE_EXT) && !fileName.contains("$")) { //$NON-NLS-1$ //$NON-NLS-2$
-                            String className = fileName.replaceAll("/", ".").replace(CLASS_FILE_EXT, ""); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                            monitor.subTask(className);
-                            try {
-                                if (implementsDriver(currentFile, current, 0)) {
-                                    driverClassNames.add(className);
-                                }
-                            } catch (Throwable e1) {
-                                // do nothing
-                            }
-                            monitor.worked(1);
-                        }
-                    }
-                }
-                monitor.done();
-            } catch (IOException e) {
-                log.debug(e);
-            }
-        }
-
-        private boolean implementsDriver(JarFile currentFile, JarEntry current, int depth) throws IOException {
-            try (InputStream classStream = currentFile.getInputStream(current)) {
-                ClassReader cr = new ClassReader(classStream);
-                int access = cr.getAccess();
-                if (depth == 0 && ((access & Opcodes.ACC_PUBLIC) == 0 || (access & Opcodes.ACC_ABSTRACT) != 0)) {
-                    return false;
-                }
-                String[] interfaces = cr.getInterfaces();
-                if (ArrayUtils.contains(interfaces, SQL_DRIVER_CLASS_NAME)) {
-                    return true;
-                } else if (!CommonUtils.isEmpty(cr.getSuperName()) && !cr.getSuperName().equals(OBJECT_CLASS_NAME)) {
-                    // Check recursively
-                    JarEntry jarEntry = currentFile.getJarEntry(cr.getSuperName() + CLASS_FILE_EXT);
-                    if (jarEntry != null) {
-                        return implementsDriver(currentFile, jarEntry, depth + 1);
-                    }
-                }
-                for (String intName : interfaces) {
-                    JarEntry jarEntry = currentFile.getJarEntry(intName + CLASS_FILE_EXT);
-                    if (jarEntry != null) {
-                        if (implementsDriver(currentFile, jarEntry, depth + 1)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }
-
     }
 
     private static class BadDriverConfigDialog extends StandardErrorDialog {
