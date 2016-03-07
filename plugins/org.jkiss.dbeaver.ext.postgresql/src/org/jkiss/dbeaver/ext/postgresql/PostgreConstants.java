@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreConstants
@@ -37,9 +38,12 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
-    public static final String PROP_USE_SSL = DBConstants.INTERNAL_PROP_PREFIX + "ssl@";
-    public static final String PROP_SSL_NON_VALIDATING = DBConstants.INTERNAL_PROP_PREFIX + "ssl-non-validating@";
-    public static final String PROP_SSL_CERT = DBConstants.INTERNAL_PROP_PREFIX + "ssl-cert@";
+
+    public static final String PROP_SSL_CLIENT_CERT = "clientCert";
+    public static final String PROP_SSL_CLIENT_KEY = "clientKey";
+    public static final String PROP_SSL_ROOT_CERT = "rootCert";
+    public static final String PROP_SSL_MODE = "sslMode";
+    public static final String PROP_SSL_FACTORY = "sslFactory";
 
     public static final DBSEntityType ENTITY_TYPE_SEQUENCE = new DBSEntityType("pg_sequence", "Sequence", DBIcon.TREE_SEQUENCE, true);
     public static final DBSObjectState STATE_UNAVAILABLE = new DBSObjectState("Unavailable", DBIcon.OVER_EXTERNAL);

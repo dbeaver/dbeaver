@@ -22,8 +22,6 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -52,8 +50,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text passwordText;
     private ClientHomesSelector homesSelector;
     private Button useSslButton;
-    private Button sslNonValidating;
-    private Text sslCertText;
     private Button hideNonDefault;
     private boolean activated = false;
 
@@ -166,18 +162,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(2, false));
-
-            useSslButton = UIUtils.createLabelCheckbox(secureGroup, "Use SSL", true);
-            useSslButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    if (sslCertText != null) {
-                        sslCertText.setEnabled(useSslButton.getSelection());
-                    }
-                }
-            });
-            sslNonValidating = UIUtils.createLabelCheckbox(secureGroup, "Do not validate certificate", true);
-            //sslCertText = UIUtils.createLabelText(secureGroup, "Certificate Path", "");
         }
 
         createDriverPanel(addrGroup);
@@ -228,14 +212,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        final boolean useSSL = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_USE_SSL));
-        useSslButton.setSelection(useSSL);
-        sslNonValidating.setSelection(CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SSL_NON_VALIDATING)));
-        if (sslCertText != null) {
-            sslCertText.setText(CommonUtils.toString(connectionInfo.getProperty(PostgreConstants.PROP_SSL_CERT)));
-            sslCertText.setEnabled(useSSL);
-        }
-
         final boolean showNDD = CommonUtils.toBoolean(connectionInfo.getProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
         hideNonDefault.setSelection(showNDD);
 
@@ -265,8 +241,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
-        connectionInfo.setProperty(PostgreConstants.PROP_USE_SSL, useSslButton.getSelection());
-        connectionInfo.setProperty(PostgreConstants.PROP_SSL_NON_VALIDATING, sslNonValidating.getSelection());
         connectionInfo.setProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, hideNonDefault.getSelection());
         super.saveSettings(dataSource);
     }
