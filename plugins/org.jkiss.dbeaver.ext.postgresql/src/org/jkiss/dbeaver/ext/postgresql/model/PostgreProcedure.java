@@ -75,6 +75,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private int oid;
+    private String procSrc;
     private String body;
     private int ownerId;
     private int languageId;
@@ -204,6 +205,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 returnType = container.getDatabase().dataTypeCache.getDataType(retTypeId);
             }
         }
+        this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");
     }
 
     @NotNull
@@ -262,10 +264,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (body == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
-                body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
-            } catch (SQLException e) {
-                throw new DBException("Error reading procedure body", e);
+            if (oid == 0) {
+                // No OID so let's use old (bad) way
+                body = this.procSrc;
+            } else {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                    body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
+                } catch (SQLException e) {
+                    throw new DBException("Error reading procedure body", e);
+                }
             }
         }
         return body;
