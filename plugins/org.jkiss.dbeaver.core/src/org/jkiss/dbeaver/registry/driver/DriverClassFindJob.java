@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.registry.driver;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -35,8 +36,8 @@ public class DriverClassFindJob implements IRunnableWithProgress {
     private final String interfaceName;
     private final boolean isInterface;
 
-    public DriverClassFindJob(DriverDescriptor driver, String interfaceName, boolean isInterface) {
-        this.driver = driver;
+    public DriverClassFindJob(DBPDriver driver, String interfaceName, boolean isInterface) {
+        this.driver = (DriverDescriptor) driver;
         this.interfaceName = interfaceName;
         this.isInterface = isInterface;
     }
@@ -46,8 +47,7 @@ public class DriverClassFindJob implements IRunnableWithProgress {
     }
 
     @Override
-    public void run(IProgressMonitor monitor)
-        throws InvocationTargetException, InterruptedException {
+    public void run(IProgressMonitor monitor) {
         findDriverClasses(monitor);
     }
 

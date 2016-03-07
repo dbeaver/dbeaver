@@ -17,12 +17,19 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
+import org.jkiss.dbeaver.registry.driver.DriverClassFindJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
@@ -76,20 +83,48 @@ public class PostgreSSLConfigurator extends SSLConfiguratorAbstractUI
         {
             Group advGroup = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_HORIZONTAL, -1);
             sslModeCombo = UIUtils.createLabelCombo(advGroup, "SSL mode", SWT.READ_ONLY | SWT.DROP_DOWN);
+            sslModeCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             for (String mode : SSL_MODES) {
                 sslModeCombo.add(mode);
             }
-            sslFactoryCombo = UIUtils.createLabelCombo(advGroup, "SSL Factory", SWT.READ_ONLY | SWT.DROP_DOWN);
+            sslFactoryCombo = UIUtils.createLabelCombo(advGroup, "SSL Factory", SWT.DROP_DOWN);
         }
     }
 
     @Override
-    public void loadSettings(DBWHandlerConfiguration configuration) {
+    public void loadSettings(final DBWHandlerConfiguration configuration) {
         clientCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_CERT)));
         clientKeyText.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_KEY)));
         rootCertText.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_ROOT_CERT)));
-        sslModeCombo.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_MODE)));
-        sslFactoryCombo.setText(CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_FACTORY)));
+        UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getProperties().get(PostgreConstants.PROP_SSL_MODE)));
+
+        final Job resolveJob = new Job("Find factories") {
+            {
+                setUser(true);
+            }
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                final DriverClassFindJob finder = new DriverClassFindJob(
+                    configuration.getDriver(),
+                    "javax/net/ssl/SSLSocketFactory",
+                    false);
+                finder.run(monitor);
+                UIUtils.runInUI(null, new Runnable() {
+                    @Override
+                    public void run() {
+                        for (String cn : finder.getDriverClassNames()) {
+                            sslFactoryCombo.add(cn);
+                        }
+                        final String factoryValue = configuration.getProperties().get(PostgreConstants.PROP_SSL_FACTORY);
+                        if (!CommonUtils.isEmpty(factoryValue)) {
+                            sslFactoryCombo.setText(factoryValue);
+                        }
+                    }
+                });
+                return Status.OK_STATUS;
+            }
+        };
+        resolveJob.schedule();
     }
 
     @Override
