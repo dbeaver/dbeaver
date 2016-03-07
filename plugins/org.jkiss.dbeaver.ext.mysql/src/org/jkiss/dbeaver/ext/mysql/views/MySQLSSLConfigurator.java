@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.views;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.impl.net.SSHConstants;
@@ -52,36 +49,42 @@ public class MySQLSSLConfigurator extends SSLConfiguratorAbstractUI
     @Override
     public void createControl(Composite parent) {
         final Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(2, false));
+        composite.setLayout(new GridLayout(1, false));
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
 
-        requireSSQL = UIUtils.createLabelCheckbox(composite, "Require SSL", "Require server support of SSL connection.", false);
-        veryServerCert = UIUtils.createLabelCheckbox(composite, "Verify server certificate", "Should the driver verify the server's certificate?\nWhen using this feature, the explicit certificate parameters should be specified, rather than system properties.", true);
-        allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(composite, "Allow public key retrieval", "Allows special handshake roundtrip to get server RSA public key directly from server.", false);
+        {
+            Group certGroup = UIUtils.createControlGroup(composite, "Certificates", 2, GridData.FILL_HORIZONTAL, -1);
+            UIUtils.createControlLabel(certGroup, "CA certificate");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 130;
+            clientCAText = new TextWithOpenFile(certGroup, "CA Certificate", new String[]{"*.*", "*.crt", "*.cert", "*.pem", "*"});
+            clientCAText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(composite, "CA certificate");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        clientCAText = new TextWithOpenFile(composite, "CA Certificate", new String[] {"*.*", "*.cert", "*.pem", "*"} );
-        clientCAText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createControlLabel(certGroup, "SSL certificate");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 130;
+            clientCertText = new TextWithOpenFile(certGroup, "SSL Certificate", new String[]{"*.*", "*.cert", "*.pem", "*"});
+            clientCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(composite, "SSL certificate");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        clientCertText = new TextWithOpenFile(composite, "SSL Certificate", new String[] {"*.*", "*.cert", "*.pem", "*"} );
-        clientCertText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            UIUtils.createControlLabel(certGroup, "SSL certificate key");
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.minimumWidth = 130;
+            clientKeyText = new TextWithOpenFile(certGroup, "SSL Certificate", new String[]{"*.*", "*.cert", "*.pem", "*"});
+            clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createControlLabel(composite, "SSL certificate key");
-        gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.minimumWidth = 130;
-        clientKeyText = new TextWithOpenFile(composite, "SSL Certificate", new String[] {"*.*", "*.cert", "*.pem", "*"} );
-        clientKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            cipherSuitesText = UIUtils.createLabelText(certGroup, "Cipher suites (optional)", "");
+            cipherSuitesText.setToolTipText("Overrides the cipher suites enabled for use on the underlying SSL sockets.\nThis may be required when using external JSSE providers or to specify cipher suites compatible with both MySQL server and used JVM.");
+        }
 
-        cipherSuitesText = UIUtils.createLabelText(composite, "Cipher suites (optional)", "");
-        cipherSuitesText.setToolTipText("Overrides the cipher suites enabled for use on the underlying SSL sockets.\nThis may be required when using external JSSE providers or to specify cipher suites compatible with both MySQL server and used JVM.");
 
+        {
+            Group advGroup = UIUtils.createControlGroup(composite, "Advanced", 2, GridData.FILL_HORIZONTAL, -1);
+            requireSSQL = UIUtils.createLabelCheckbox(advGroup, "Require SSL", "Require server support of SSL connection.", false);
+            veryServerCert = UIUtils.createLabelCheckbox(advGroup, "Verify server certificate", "Should the driver verify the server's certificate?\nWhen using this feature, the explicit certificate parameters should be specified, rather than system properties.", true);
+            allowPublicKeyRetrieval = UIUtils.createLabelCheckbox(advGroup, "Allow public key retrieval", "Allows special handshake roundtrip to get server RSA public key directly from server.", false);
+        }
 //        debugSSL = UIUtils.createLabelCheckbox(composite, "Debug SSL", "Prints debug information in standard output.", false);
     }
 
