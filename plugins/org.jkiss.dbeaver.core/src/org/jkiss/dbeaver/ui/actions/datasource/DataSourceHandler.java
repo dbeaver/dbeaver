@@ -178,7 +178,7 @@ public class DataSourceHandler
         String user = networkHandler != null ? networkHandler.getUserName() : dataSourceContainer.getConnectionConfiguration().getUserName();
         String password = networkHandler != null ? networkHandler.getPassword() : dataSourceContainer.getConnectionConfiguration().getUserPassword();
 
-        DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials(prompt, user, password);
+        DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, false);
         if (authInfo == null) {
             return false;
         }

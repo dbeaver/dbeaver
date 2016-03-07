@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -43,10 +40,15 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.*;
@@ -75,7 +77,43 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor) throws DBCException
     {
-        return PostgreDataSourceProvider.getConnectionsProps();
+        Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
+        final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getDeclaredHandler(PostgreConstants.HANDLER_SSL);
+        if (sslConfig != null && sslConfig.isEnabled()) {
+            try {
+                initSSL(props, sslConfig);
+            } catch (Exception e) {
+                throw new DBCException("Error configuring SSL certificates", e);
+            }
+        }
+        return props;
+    }
+
+    private void initSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws Exception {
+        props.put("ssl", "true");
+
+        final String rootCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_ROOT_CERT);
+        if (!CommonUtils.isEmpty(rootCertProp)) {
+            props.put("sslrootcert", rootCertProp);
+        }
+        final String clientCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_CERT);
+        if (!CommonUtils.isEmpty(clientCertProp)) {
+            props.put("sslcert", clientCertProp);
+        }
+        final String keyCertProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_CLIENT_KEY);
+        if (!CommonUtils.isEmpty(keyCertProp)) {
+            props.put("sslkey", keyCertProp);
+        }
+
+        final String modeProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_MODE);
+        if (!CommonUtils.isEmpty(modeProp)) {
+            props.put("sslmode", modeProp);
+        }
+        final String factoryProp = sslConfig.getProperties().get(PostgreConstants.PROP_SSL_FACTORY);
+        if (!CommonUtils.isEmpty(factoryProp)) {
+            props.put("sslfactory", factoryProp);
+        }
+        props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {

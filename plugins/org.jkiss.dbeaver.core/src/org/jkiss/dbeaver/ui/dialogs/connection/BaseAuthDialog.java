@@ -32,16 +32,17 @@ import org.jkiss.utils.CommonUtils;
  */
 public class BaseAuthDialog extends BaseDialog
 {
-
+    private boolean passwordOnly;
     private DBAAuthInfo authInfo = new DBAAuthInfo();
 
     private Text usernameText;
     private Text passwordText;
     private Button savePasswordCheck;
 
-    public BaseAuthDialog(Shell parentShell, String title)
+    public BaseAuthDialog(Shell parentShell, String title, boolean passwordOnly)
     {
         super(parentShell, title, DBIcon.CONNECTIONS);
+        this.passwordOnly = passwordOnly;
     }
 
     public DBAAuthInfo getAuthInfo()
@@ -93,19 +94,20 @@ public class BaseAuthDialog extends BaseDialog
             credGroup.setLayout(gl);
             gd = new GridData(GridData.FILL_BOTH);
             credGroup.setLayoutData(gd);
+            if (!passwordOnly) {
+                Label usernameLabel = new Label(credGroup, SWT.NONE);
+                usernameLabel.setText(CoreMessages.dialog_connection_auth_label_username);
+                usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            Label usernameLabel = new Label(credGroup, SWT.NONE);
-            usernameLabel.setText(CoreMessages.dialog_connection_auth_label_username);
-            usernameLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-
-            usernameText = new Text(credGroup, SWT.BORDER);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.grabExcessHorizontalSpace = true;
-            gd.widthHint = 120;
-            //gd.horizontalSpan = 3;
-            usernameText.setLayoutData(gd);
-            if (authInfo.getUserName() != null) {
-                usernameText.setText(authInfo.getUserName());
+                usernameText = new Text(credGroup, SWT.BORDER);
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.grabExcessHorizontalSpace = true;
+                gd.widthHint = 120;
+                //gd.horizontalSpan = 3;
+                usernameText.setLayoutData(gd);
+                if (authInfo.getUserName() != null) {
+                    usernameText.setText(authInfo.getUserName());
+                }
             }
 
             Label passwordLabel = new Label(credGroup, SWT.NONE);
@@ -127,7 +129,7 @@ public class BaseAuthDialog extends BaseDialog
         savePasswordCheck.setLayoutData(gd);
         savePasswordCheck.setSelection(authInfo.isSavePassword());
 
-        if (!CommonUtils.isEmpty(usernameText.getText())) {
+        if (passwordOnly || !CommonUtils.isEmpty(usernameText.getText())) {
             passwordText.setFocus();
         }
 
@@ -136,7 +138,9 @@ public class BaseAuthDialog extends BaseDialog
 
     @Override
     protected void okPressed() {
-        authInfo.setUserName(usernameText.getText());
+        if (!passwordOnly) {
+            authInfo.setUserName(usernameText.getText());
+        }
         authInfo.setUserPassword(passwordText.getText());
         authInfo.setSavePassword(savePasswordCheck.getSelection());
 

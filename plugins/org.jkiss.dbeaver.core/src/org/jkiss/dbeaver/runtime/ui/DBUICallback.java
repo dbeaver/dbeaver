@@ -33,7 +33,7 @@ public interface DBUICallback {
     void showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
     void showError(@NotNull final String title, @Nullable final String message);
 
-    DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword);
+    DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly);
 
     void executeProcess(DBRProcessDescriptor processDescriptor);
 

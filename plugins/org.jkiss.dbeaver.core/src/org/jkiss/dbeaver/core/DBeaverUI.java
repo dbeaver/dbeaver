@@ -24,7 +24,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
@@ -327,11 +326,13 @@ public class DBeaverUI implements DBUICallback {
     }
 
     @Override
-    public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword) {
+    public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly) {
         // Ask user
         final Shell shell = DBeaverUI.getActiveWorkbenchShell();
-        final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt);
-        authDialog.setUserName(userName);
+        final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly);
+        if (!passwordOnly) {
+            authDialog.setUserName(userName);
+        }
         authDialog.setUserPassword(userPassword);
         final RunnableWithResult<Boolean> binder = new RunnableWithResult<Boolean>() {
             @Override

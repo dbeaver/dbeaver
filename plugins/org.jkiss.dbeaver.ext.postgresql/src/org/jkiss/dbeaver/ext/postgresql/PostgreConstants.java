@@ -59,4 +59,5 @@ public class PostgreConstants {
         "oid", "oid", "Row identifier", false);
 
     public static final String TYPE_HSTORE = "hstore";
+    public static final String HANDLER_SSL = "postgre_ssl";
 }
