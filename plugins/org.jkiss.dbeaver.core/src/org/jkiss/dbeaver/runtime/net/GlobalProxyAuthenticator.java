@@ -137,7 +137,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
 
     private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword)
     {
-        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword);
+        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false);
     }
 
 }

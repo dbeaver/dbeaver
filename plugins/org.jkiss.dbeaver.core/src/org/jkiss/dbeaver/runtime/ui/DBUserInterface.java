@@ -60,7 +60,7 @@ public class DBUserInterface {
         }
 
         @Override
-        public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword) {
+        public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly) {
             return null;
         }
 
