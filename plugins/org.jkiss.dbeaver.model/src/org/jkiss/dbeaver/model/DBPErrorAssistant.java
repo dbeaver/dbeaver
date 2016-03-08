@@ -30,7 +30,8 @@ public interface DBPErrorAssistant
     enum ErrorType {
         NORMAL,
         CONNECTION_LOST,
-        DRIVER_CLASS_MISSING
+        DRIVER_CLASS_MISSING,
+        PERMISSION_DENIED
     }
 
     class ErrorPosition
