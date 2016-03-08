@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
-import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 

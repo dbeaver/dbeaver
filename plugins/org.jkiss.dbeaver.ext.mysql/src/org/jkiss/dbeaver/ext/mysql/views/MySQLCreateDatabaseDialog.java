@@ -23,7 +23,6 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCharset;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCollation;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;

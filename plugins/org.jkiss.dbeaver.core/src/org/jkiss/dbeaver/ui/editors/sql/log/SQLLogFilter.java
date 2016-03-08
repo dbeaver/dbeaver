@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.log;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.meta.*;

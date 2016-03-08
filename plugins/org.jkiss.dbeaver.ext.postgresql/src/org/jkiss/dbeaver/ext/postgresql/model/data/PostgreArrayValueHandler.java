@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.postgresql.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCArray;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;

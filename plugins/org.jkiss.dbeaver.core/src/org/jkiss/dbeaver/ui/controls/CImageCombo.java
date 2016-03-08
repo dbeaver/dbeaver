@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Arrays;
 
