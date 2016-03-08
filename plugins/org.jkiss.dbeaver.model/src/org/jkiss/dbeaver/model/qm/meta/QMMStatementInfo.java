@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.qm.meta;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 
-import java.lang.ref.SoftReference;
-
 /**
  * DBCStatement meta info
  */

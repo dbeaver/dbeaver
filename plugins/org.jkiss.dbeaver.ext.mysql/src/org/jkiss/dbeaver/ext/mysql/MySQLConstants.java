@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**

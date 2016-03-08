@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.registry.transfer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPRegistryDescriptor;

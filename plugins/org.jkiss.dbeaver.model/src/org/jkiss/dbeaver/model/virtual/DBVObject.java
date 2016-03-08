@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**

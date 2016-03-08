@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.meta.Property;
 
 /**
  * Named value object

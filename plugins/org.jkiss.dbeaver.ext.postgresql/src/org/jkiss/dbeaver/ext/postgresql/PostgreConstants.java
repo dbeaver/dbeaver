@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * PostgreConstants

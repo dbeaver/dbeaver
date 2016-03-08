@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.sql.ResultSet;
 

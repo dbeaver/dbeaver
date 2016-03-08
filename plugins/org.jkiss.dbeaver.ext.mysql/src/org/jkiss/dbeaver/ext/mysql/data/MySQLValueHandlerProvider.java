@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;

@@ -17,8 +17,6 @@
  */
 package org.jkiss.dbeaver.model.net;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-
 /**
  * Abstract config provider
  */

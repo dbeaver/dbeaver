@@ -17,10 +17,6 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSourceConfigurator;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.net.DBWConfigProvider;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 

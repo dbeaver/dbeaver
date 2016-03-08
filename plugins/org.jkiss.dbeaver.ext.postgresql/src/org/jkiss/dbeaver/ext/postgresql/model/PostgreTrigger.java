@@ -24,8 +24,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSActionTiming;
-import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 
 import java.sql.ResultSet;
 

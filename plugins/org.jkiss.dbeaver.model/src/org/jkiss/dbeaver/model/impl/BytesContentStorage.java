@@ -20,12 +20,10 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.util.Arrays;
 
 /**
  * Memory content storage

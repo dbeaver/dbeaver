@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 import java.util.HashMap;
 import java.util.Map;
