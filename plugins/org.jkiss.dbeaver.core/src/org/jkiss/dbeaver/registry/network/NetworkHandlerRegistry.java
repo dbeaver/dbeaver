@@ -70,12 +70,8 @@ public class NetworkHandlerRegistry
     public List<NetworkHandlerDescriptor> getDescriptors(DBPDataSourceContainer dataSource) {
         List<NetworkHandlerDescriptor> result = new ArrayList<>();
         for (NetworkHandlerDescriptor d : descriptors) {
-            try {
-                if (!d.hasObjectTypes() || d.matches(dataSource.getDriver().getDataSourceProvider())) {
-                    result.add(d);
-                }
-            } catch (DBException e) {
-                // ignore
+            if (!d.hasObjectTypes() || d.matches(dataSource.getDriver().getDataSourceProvider())) {
+                result.add(d);
             }
         }
         return result;

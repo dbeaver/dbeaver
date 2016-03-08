@@ -37,8 +37,7 @@ public interface DBPDriver extends DBPNamedObject
      * Driver contributor
      */
     @NotNull
-    DBPDataSourceProvider getDataSourceProvider()
-        throws DBException;
+    DBPDataSourceProvider getDataSourceProvider();
 
     /**
      * Client manager or null

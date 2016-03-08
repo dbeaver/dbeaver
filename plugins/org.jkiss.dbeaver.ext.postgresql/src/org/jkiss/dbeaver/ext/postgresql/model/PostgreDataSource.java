@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -66,6 +67,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private final DatabaseCache databaseCache = new DatabaseCache();
     private String activeDatabaseName;
     private String activeSchemaName;
+    private boolean databaseSwitchInProgress;
     private final List<String> searchPath = new ArrayList<>();
     private String activeUser;
 
@@ -245,26 +247,29 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             // The same
             return;
         }
+
         // FIXME: make real target database change
         // 1. Check active transactions
         // 2. Reconnect all open contexts
         // 3. Refresh datasource tree
-        for (JDBCExecutionContext context : getAllContexts()) {
-            useDatabase(monitor, context, newDatabase);
-        }
         activeDatabaseName = object.getName();
+        try {
+            databaseSwitchInProgress = true;
+            final List<JDBCExecutionContext> allContexts = new ArrayList<>(getAllContexts());
+            for (JDBCExecutionContext context : allContexts) {
+                context.reconnect(monitor);
+            }
+        }
+        finally {
+            databaseSwitchInProgress = false;
+        }
 
-        refreshObject(monitor);
-        DBUtils.fireObjectUpdate(this, true);
-/*
-        // Send notifications
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
+            DBUtils.fireObjectUpdate(oldDatabase, false);
         }
-        if (this.activeDatabaseName != null) {
-            DBUtils.fireObjectSelect(object, true);
-        }
-*/
+        DBUtils.fireObjectSelect(newDatabase, true);
+        DBUtils.fireObjectUpdate(newDatabase, true);
     }
 
     public String getActiveUser() {
@@ -291,13 +296,26 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
-        //context.reconnect();
-    }
-
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
-        Connection pgConnection = super.openConnection(monitor, purpose);
+        Connection pgConnection;
+        if (databaseSwitchInProgress) {
+            final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
+            final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
+            try {
+                // Patch URL with new database name
+                conConfig.setDatabaseName(activeDatabaseName);
+                conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
+
+                pgConnection = super.openConnection(monitor, purpose);
+            }
+            finally {
+                conConfig.setDatabaseName(originalConfig.getDatabaseName());
+                conConfig.setUrl(originalConfig.getUrl());
+            }
+        } else {
+            pgConnection = super.openConnection(monitor, purpose);
+        }
 
         {
             // Provide client info

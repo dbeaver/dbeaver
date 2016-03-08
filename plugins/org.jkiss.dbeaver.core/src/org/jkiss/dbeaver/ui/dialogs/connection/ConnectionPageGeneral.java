@@ -227,12 +227,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (savePasswordCheck != null) {
             //savePasswordCheck.setEnabled();
         }
-        long features = 0;
-        try {
-            features = wizard.getSelectedDriver().getDataSourceProvider().getFeatures();
-        } catch (DBException e) {
-            log.error("Can't obtain data source provider instance", e); //$NON-NLS-1$
-        }
+        long features = wizard.getSelectedDriver().getDataSourceProvider().getFeatures();
 
         for (FilterInfo filterInfo : filters) {
             if (DBSCatalog.class.isAssignableFrom(filterInfo.type)) {
