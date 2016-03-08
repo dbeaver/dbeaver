@@ -52,7 +52,7 @@ public class SQLQueryParameter implements DBSAttributeBase {
     }
 
     public boolean isNamed() {
-        return !name.equals("?");
+        return !"?".equals(name);
     }
 
     public void resolve()

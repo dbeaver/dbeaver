@@ -53,7 +53,7 @@ public class OSDescriptor {
 
     public boolean isWindows()
     {
-        return code.equals("win32");
+        return "win32".equals(code);
     }
 
     @Override
