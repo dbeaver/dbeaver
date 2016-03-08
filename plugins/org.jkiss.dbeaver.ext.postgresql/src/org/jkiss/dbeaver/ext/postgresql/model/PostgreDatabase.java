@@ -354,13 +354,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     @Nullable
     @Override
     public PostgreSchema getSelectedObject() {
-        for (String schemaName : dataSource.getSearchPath()) {
-            final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
-            if (schema != null) {
-                return schema;
-            }
-        }
-        return null;
+        return schemaCache.getCachedObject(dataSource.getActiveSchemaName());
     }
 
     @Override
@@ -378,6 +372,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                     throw new DBCException("Error setting search path", e, dataSource);
                 }
             }
+            dataSource.setActiveSchemaName(object.getName());
             dataSource.setSearchPath(object.getName());
 
             if (oldActive != null) {

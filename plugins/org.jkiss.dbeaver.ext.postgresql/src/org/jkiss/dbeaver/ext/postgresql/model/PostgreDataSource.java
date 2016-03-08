@@ -65,6 +65,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private final DatabaseCache databaseCache = new DatabaseCache();
     private String activeDatabaseName;
+    private String activeSchemaName;
     private final List<String> searchPath = new ArrayList<>();
     private String activeUser;
 
@@ -153,7 +154,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load meta info")) {
-            activeUser = JDBCUtils.queryString(session, "SELECT SESSION_USER");
+            try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_database(), current_schema(),session_user")) {
+                try (JDBCResultSet rs = stat.executeQuery()) {
+                    rs.nextRow();
+                    activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+                    activeSchemaName = JDBCUtils.safeGetString(rs, 2);
+                    activeUser = JDBCUtils.safeGetString(rs, 3);
+                }
+            }
             String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
             if (searchPathStr != null) {
                 Collections.addAll(this.searchPath, searchPathStr.replace("$user", activeUser).split(","));
@@ -263,6 +271,14 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return activeUser;
     }
 
+    public String getActiveSchemaName() {
+        return activeSchemaName;
+    }
+
+    public void setActiveSchemaName(String activeSchemaName) {
+        this.activeSchemaName = activeSchemaName;
+    }
+
     public List<String> getSearchPath() {
         return searchPath;
     }
@@ -276,12 +292,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, PostgreDatabase catalog) throws DBCException {
-        throw new DBCException("Active database change not supported yet");
+        //context.reconnect();
     }
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
-        Connection mysqlConnection = super.openConnection(monitor, purpose);
+        Connection pgConnection = super.openConnection(monitor, purpose);
 
         {
             // Provide client info
@@ -289,7 +305,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             if (product != null) {
                 String appName = DBeaverCore.getProductTitle();
                 try {
-                    mysqlConnection.setClientInfo("ApplicationName", appName + " - " + purpose);
+                    pgConnection.setClientInfo("ApplicationName", appName + " - " + purpose);
                 } catch (Throwable e) {
                     // just ignore
                     log.debug(e);
@@ -297,7 +313,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             }
         }
 
-        return mysqlConnection;
+        return pgConnection;
     }
 
     @Override
