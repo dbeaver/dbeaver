@@ -1,3 +1,4 @@
+[![Codacy Badge](https://api.codacy.com/project/badge/grade/1297a2440b5c43ca804d2199520c98f0)](https://www.codacy.com/app/codebling/dbeaver)
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
