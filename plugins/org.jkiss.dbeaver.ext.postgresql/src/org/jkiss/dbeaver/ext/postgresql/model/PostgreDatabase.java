@@ -400,7 +400,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT a.oid,a.* FROM pg_catalog.pg_authid1 a " +
+                "SELECT a.oid,a.* FROM pg_catalog.pg_authid a " +
                     "\nORDER BY a.oid"
             );
         }
@@ -415,6 +415,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         @Override
         protected boolean handleCacheReadError(DBException error) {
             // #271: in some databases (AWS?) pg_authid is not accessible
+            // FIXME: maybe some better workaround?
 //            if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
 //                log.warn(error);
                 setCache(Collections.<PostgreAuthId>emptyList());
