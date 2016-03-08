@@ -347,7 +347,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @NotNull
     @Override
     public DBPDataSourceProvider getDataSourceProvider()
-        throws DBException
     {
         return providerDescriptor.getInstance(this);
     }
@@ -356,15 +355,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @Override
     public DBPClientManager getClientManager()
     {
-        try {
-            DBPDataSourceProvider provider = getDataSourceProvider();
-            if (provider instanceof DBPClientManager) {
-                return (DBPClientManager) provider;
-            } else {
-                return null;
-            }
-        } catch (DBException e) {
-            log.error(e);
+        DBPDataSourceProvider provider = getDataSourceProvider();
+        if (provider instanceof DBPClientManager) {
+            return (DBPClientManager) provider;
+        } else {
             return null;
         }
     }

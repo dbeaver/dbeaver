@@ -356,4 +356,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
     }
 
+    public void reconnect(DBRProgressMonitor monitor) throws DBCException {
+        close();
+        connect(monitor);
+    }
 }

@@ -954,6 +954,14 @@ public final class DBUtils {
         }
     }
 
+    public static void fireObjectUpdate(DBSObject object, boolean enabled)
+    {
+        final DBPDataSourceContainer container = getContainer(object);
+        if (container != null) {
+            container.fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, object, enabled));
+        }
+    }
+
     public static void fireObjectAdd(DBSObject object)
     {
         final DBPDataSourceContainer container = getContainer(object);

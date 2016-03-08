@@ -82,14 +82,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo)
     {
         if (!isCustomURL()) {
-            try {
-                connectionInfo.setUrl(
-                    site.getDriver().getDataSourceProvider().getConnectionURL(
-                        site.getDriver(),
-                        connectionInfo));
-            } catch (DBException e) {
-                setErrorMessage(e.getMessage());
-            }
+            connectionInfo.setUrl(
+                site.getDriver().getDataSourceProvider().getConnectionURL(
+                    site.getDriver(),
+                    connectionInfo));
         }
     }
 

@@ -43,11 +43,14 @@ public class InvalidateJob extends DataSourceJob
 
     private long timeSpent;
     private List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
+    //private boolean reconnect;
 
     public InvalidateJob(
-        DBCExecutionContext context)
+        DBCExecutionContext context/*,
+        boolean reconnect*/)
     {
         super("Invalidate " + context.getDataSource().getContainer().getName(), null, context);
+//        this.reconnect = reconnect;
     }
 
     public List<ContextInvalidateResult> getInvalidateResults() {
@@ -68,7 +71,8 @@ public class InvalidateJob extends DataSourceJob
         for (DBCExecutionContext context : allContexts) {
             long startTime = System.currentTimeMillis();
             try {
-                invalidateResults.add(new ContextInvalidateResult(context.invalidateContext(monitor), null));
+                final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor);
+                invalidateResults.add(new ContextInvalidateResult(result, null));
             } catch (Exception e) {
                 invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
             } finally {

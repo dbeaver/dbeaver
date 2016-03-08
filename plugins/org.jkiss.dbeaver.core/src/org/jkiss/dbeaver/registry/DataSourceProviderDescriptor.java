@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.text.templates.TemplateContextType;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -157,19 +156,18 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
 
     @NotNull
     public DBPDataSourceProvider getInstance(DriverDescriptor driver)
-        throws DBException
     {
         if (instance == null) {
             initProviderBundle(driver);
-            // locate class
-            this.instance = implType.createInstance(DBPDataSourceProvider.class);
-            // Initialize it
             try {
+                // locate class
+                this.instance = implType.createInstance(DBPDataSourceProvider.class);
+                // Initialize it
                 this.instance.init(DBeaverCore.getInstance());
             }
             catch (Throwable ex) {
                 this.instance = null;
-                throw new DBException("Can't initialize data source provider '" + implType.getImplName() + "'", ex);
+                throw new IllegalStateException("Can't initialize data source provider '" + implType.getImplName() + "'", ex);
             }
         }
         return instance;
