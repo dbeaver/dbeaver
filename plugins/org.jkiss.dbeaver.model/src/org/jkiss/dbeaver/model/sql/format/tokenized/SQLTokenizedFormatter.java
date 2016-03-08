@@ -163,56 +163,66 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     index += insertReturnAndIndent(argList, index, indent);
                 }
             } else if (token.getType() == FormatterConstants.KEYWORD) {
-                if (tokenString.equals("DELETE") //$NON-NLS-1$
-                        || tokenString.equals("SELECT") //$NON-NLS-1$
-                        || tokenString.equals("UPDATE")) //$NON-NLS-1$
-                {
-                    indent++;
-                    index += insertReturnAndIndent(argList, index + 1, indent);
-                } else if (tokenString.equals("INSERT") //$NON-NLS-1$
-                        || tokenString.equals("INTO") //$NON-NLS-1$
-                        || tokenString.equals("CREATE") //$NON-NLS-1$
-                        || tokenString.equals("DROP") //$NON-NLS-1$
-                        || tokenString.equals("TRUNCATE") //$NON-NLS-1$
-                        || tokenString.equals("TABLE") //$NON-NLS-1$
-                        || tokenString.equals("CASE")) { //$NON-NLS-1$
-                    indent++;
-                    index += insertReturnAndIndent(argList, index + 1, indent);
-                } else if (tokenString.equals("FROM") //$NON-NLS-1$
-                        || tokenString.equals("WHERE") //$NON-NLS-1$
-                        || tokenString.equals("SET") //$NON-NLS-1$
-                        || tokenString.equals("ORDER BY") //$NON-NLS-1$
-                        || tokenString.equals("GROUP BY") //$NON-NLS-1$
-                        || tokenString.equals("HAVING")) { //$NON-NLS-1$
-                    index += insertReturnAndIndent(argList, index, indent - 1);
-                    index += insertReturnAndIndent(argList, index + 1, indent);
-                } else if (tokenString.equals("VALUES")) { //$NON-NLS-1$
-                    indent--;
-                    index += insertReturnAndIndent(argList, index, indent);
-                } else if (tokenString.equals("END")) { //$NON-NLS-1$
-                    indent--;
-                    index += insertReturnAndIndent(argList, index, indent);
-                } else if (tokenString.equals("OR") //$NON-NLS-1$
-                        || tokenString.equals("WHEN") //$NON-NLS-1$
-                        || tokenString.equals("ELSE")) { //$NON-NLS-1$
-                    index += insertReturnAndIndent(argList, index, indent);
-                } else if (tokenString.equals("ON") || tokenString.equals("USING")) { //$NON-NLS-1$ //$NON-NLS-2$
-                    index += insertReturnAndIndent(argList, index, indent + 1);
-                } else if (tokenString.equals("UNION") //$NON-NLS-1$
-                    || tokenString.equals("INTERSECT") //$NON-NLS-1$
-                    || tokenString.equals("EXCEPT")) //$NON-NLS-1$
-                {
-                    indent -= 2;
-                    index += insertReturnAndIndent(argList, index, indent);
-                    //index += insertReturnAndIndent(argList, index + 1, indent);
-                    indent++;
-                } else if (tokenString.equals("BETWEEN")) { //$NON-NLS-1$
-                    encounterBetween = true;
-                } else if (tokenString.equals("AND")) { //$NON-NLS-1$
-                    if (!encounterBetween) {
+                switch (tokenString) {
+                    case "DELETE":
+                    case "SELECT":
+                    case "UPDATE": //$NON-NLS-1$
+                        indent++;
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                        break;
+                    case "INSERT":
+                    case "INTO":
+                    case "CREATE":
+                    case "DROP":
+                    case "TRUNCATE":
+                    case "TABLE":
+                    case "CASE":  //$NON-NLS-1$
+                        indent++;
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                        break;
+                    case "FROM":
+                    case "WHERE":
+                    case "SET":
+                    case "ORDER BY":
+                    case "GROUP BY":
+                    case "HAVING":  //$NON-NLS-1$
+                        index += insertReturnAndIndent(argList, index, indent - 1);
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                        break;
+                    case "VALUES":  //$NON-NLS-1$
+                        indent--;
                         index += insertReturnAndIndent(argList, index, indent);
-                    }
-                    encounterBetween = false;
+                        break;
+                    case "END":  //$NON-NLS-1$
+                        indent--;
+                        index += insertReturnAndIndent(argList, index, indent);
+                        break;
+                    case "OR":
+                    case "WHEN":
+                    case "ELSE":  //$NON-NLS-1$
+                        index += insertReturnAndIndent(argList, index, indent);
+                        break;
+                    case "ON":
+                    case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
+                        index += insertReturnAndIndent(argList, index, indent + 1);
+                        break;
+                    case "UNION":
+                    case "INTERSECT":
+                    case "EXCEPT": //$NON-NLS-1$
+                        indent -= 2;
+                        index += insertReturnAndIndent(argList, index, indent);
+                        //index += insertReturnAndIndent(argList, index + 1, indent);
+                        indent++;
+                        break;
+                    case "BETWEEN":  //$NON-NLS-1$
+                        encounterBetween = true;
+                        break;
+                    case "AND":  //$NON-NLS-1$
+                        if (!encounterBetween) {
+                            index += insertReturnAndIndent(argList, index, indent);
+                        }
+                        encounterBetween = false;
+                        break;
                 }
             } else if (token.getType() == FormatterConstants.COMMENT) {
                 Pair<String, String> mlComments = formatterCfg.getSyntaxManager().getDialect().getMultiLineComments();
