@@ -108,7 +108,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         gd.grabExcessVerticalSpace = true;
         placeholder.setLayoutData(gd);
 
-        if (!site.isNew()) {
+        if (!site.isNew() && !site.getDriver().isEmbedded()) {
             Link netConfigLink = new Link(panel, SWT.NONE);
             netConfigLink.setText("<a>Network settings (SSH, SSL, Proxy, ...)</a>");
             netConfigLink.addSelectionListener(new SelectionAdapter() {
