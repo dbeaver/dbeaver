@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * PostgreDatabase
@@ -399,7 +400,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             throws SQLException
         {
             return session.prepareStatement(
-                "SELECT a.oid,a.* FROM pg_catalog.pg_authid a " +
+                "SELECT a.oid,a.* FROM pg_catalog.pg_authid1 a " +
                     "\nORDER BY a.oid"
             );
         }
@@ -409,6 +410,17 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             throws SQLException, DBException
         {
             return new PostgreAuthId(owner, dbResult);
+        }
+
+        @Override
+        protected boolean handleCacheReadError(DBException error) {
+            // #271: in some databases (AWS?) pg_authid is not accessible
+//            if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
+//                log.warn(error);
+                setCache(Collections.<PostgreAuthId>emptyList());
+//                return true;
+//            }
+            return false;
         }
     }
 

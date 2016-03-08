@@ -84,35 +84,40 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load objects from " + owner.getName())) {
-            try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
-                monitor.subTask("Execute query");
-                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
-                dbStat.executeStatement();
-                JDBCResultSet dbResult = dbStat.getResultSet();
-                if (dbResult != null) {
-                    try {
-                        while (dbResult.next()) {
-                            if (monitor.isCanceled()) {
-                                break;
-                            }
+        try {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load objects from " + owner.getName())) {
+                try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
+                    monitor.subTask("Execute query");
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                    dbStat.executeStatement();
+                    JDBCResultSet dbResult = dbStat.getResultSet();
+                    if (dbResult != null) {
+                        try {
+                            while (dbResult.next()) {
+                                if (monitor.isCanceled()) {
+                                    break;
+                                }
 
-                            OBJECT object = fetchObject(session, owner, dbResult);
-                            if (object == null) {
-                                continue;
-                            }
-                            tmpObjectList.add(object);
+                                OBJECT object = fetchObject(session, owner, dbResult);
+                                if (object == null) {
+                                    continue;
+                                }
+                                tmpObjectList.add(object);
 
-                            monitor.subTask(object.getName());
+                                monitor.subTask(object.getName());
+                            }
+                        } finally {
+                            dbResult.close();
                         }
-                    } finally {
-                        dbResult.close();
                     }
                 }
+            } catch (SQLException ex) {
+                throw new DBException(ex, dataSource);
             }
-        }
-        catch (SQLException ex) {
-            throw new DBException(ex, dataSource);
+        } catch (DBException e) {
+            if (!handleCacheReadError(e)) {
+                throw e;
+            }
         }
 
         Comparator<OBJECT> comparator = getListOrderComparator();
@@ -125,6 +130,11 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             setCache(tmpObjectList);
             this.invalidateObjects(monitor, owner, new CacheIterator());
         }
+    }
+
+    // Can be implemented to provide custom cache error handler
+    protected boolean handleCacheReadError(DBException error) {
+        return false;
     }
 
 
