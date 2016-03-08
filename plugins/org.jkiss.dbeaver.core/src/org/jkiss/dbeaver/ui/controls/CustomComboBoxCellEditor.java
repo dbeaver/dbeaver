@@ -219,9 +219,11 @@ public class CustomComboBoxCellEditor extends CellEditor {
 			fireCancelEditor();
 		} else if (keyEvent.character == SWT.TAB) { // tab key
 			applyEditorValueAndDeactivate();
-        } else if (keyEvent.character == SWT.DEL) { // tab key
-            comboBox.setText("");
-            keyEvent.doit = false;
+        } else if (keyEvent.character == SWT.DEL) { // delete key
+			if ((comboBox.getStyle() & SWT.READ_ONLY) != 0) {
+				comboBox.setText("");
+				keyEvent.doit = false;
+			}
 		}
 	}
 
