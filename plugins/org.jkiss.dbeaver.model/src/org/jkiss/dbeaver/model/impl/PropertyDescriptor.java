@@ -204,7 +204,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     @Override
     public boolean allowCustomValue()
     {
-        return ArrayUtils.isEmpty(validValues);
+        return true;//ArrayUtils.isEmpty(validValues);
     }
 
     @Override
