@@ -364,16 +364,22 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // Get matched children
             makeProposalsFromChildren(monitor, childObject, lastToken, proposals);
             if (proposals.isEmpty() || tokens.size() == 1) {
-                // At last - try to find child tables by pattern
-                DBSStructureAssistant structureAssistant = null;
-                for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {
-                    structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, object);
-                    if (structureAssistant != null) {
-                        break;
-                    }
+                if (selectedContainer != null && selectedContainer != childObject) {
+                    // Try in active object
+                    makeProposalsFromChildren(monitor, selectedContainer, lastToken, proposals);
                 }
-                if (structureAssistant != null) {
-                    makeProposalsFromAssistant(monitor, structureAssistant, sc, lastToken, proposals);
+                if (proposals.isEmpty()) {
+                    // At last - try to find child tables by pattern
+                    DBSStructureAssistant structureAssistant = null;
+                    for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {
+                        structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, object);
+                        if (structureAssistant != null) {
+                            break;
+                        }
+                    }
+                    if (structureAssistant != null) {
+                        makeProposalsFromAssistant(monitor, structureAssistant, sc, lastToken, proposals);
+                    }
                 }
             }
         }
