@@ -1352,6 +1352,8 @@
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="Database Toolbar">
+                <command commandId="org.jkiss.dbeaver.core.new.connection"/>
+                <control class="org.jkiss.dbeaver.ui.controls.ToolbarVerticalSeparator"/>
                 <command commandId="org.jkiss.dbeaver.core.connect"/>
                 <command commandId="org.jkiss.dbeaver.core.invalidate"/>
                 <command commandId="org.jkiss.dbeaver.core.disconnect"/>
