@@ -271,9 +271,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public synchronized boolean refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
+        collationCache.clearCache();
+        extensionCache.clearCache();
         tableCache.clearCache();
-        indexCache.clearCache();
+        constraintCache.clearCache();
         proceduresCache.clearCache();
+        indexCache.clearCache();
         return true;
     }
 
