@@ -49,7 +49,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text usernameText;
     private Text passwordText;
     private ClientHomesSelector homesSelector;
-    private Button useSslButton;
     private Button hideNonDefault;
     private boolean activated = false;
 
@@ -153,15 +152,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             secureGroup.setLayout(new GridLayout(2, false));
 
             hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, "Show non-default databases", true);
-        }
-
-        {
-            Group secureGroup = new Group(addrGroup, SWT.NONE);
-            secureGroup.setText("SSL");
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 4;
-            secureGroup.setLayoutData(gd);
-            secureGroup.setLayout(new GridLayout(2, false));
         }
 
         createDriverPanel(addrGroup);
