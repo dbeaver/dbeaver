@@ -17,14 +17,9 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
-import org.jkiss.utils.IOUtils;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
 
 /**
  * PostgreServerHome
