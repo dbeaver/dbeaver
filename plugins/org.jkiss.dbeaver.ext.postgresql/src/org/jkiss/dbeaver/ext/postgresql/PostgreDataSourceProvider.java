@@ -37,11 +37,6 @@ import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
 
-    public static final String PG_INSTALL_REG_KEY = "SOFTWARE\\PostgreSQL\\Installations";
-    public static final String PG_INSTALL_PROP_BASE_DIRECTORY = "Base Directory";
-    public static final String PG_INSTALL_PROP_VERSION = "Version";
-    public static final String PG_INSTALL_PROP_BRANDING = "Branding";
-    public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     private static Map<String,String> connectionsProps;
 
     static {
@@ -152,17 +147,17 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         OSDescriptor localSystem = DBeaverCore.getInstance().getLocalSystem();
         if (localSystem.isWindows()) {
             try {
-                List<String> homeKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, PG_INSTALL_REG_KEY);
+                List<String> homeKeys = WinRegistry.readStringSubKeys(WinRegistry.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY);
                 if (homeKeys != null) {
                     for (String homeKey : homeKeys) {
-                        Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, PG_INSTALL_REG_KEY + "\\" + homeKey);
+                        Map<String, String> valuesMap = WinRegistry.readStringValues(WinRegistry.HKEY_LOCAL_MACHINE, PostgreConstants.PG_INSTALL_REG_KEY + "\\" + homeKey);
                         if (valuesMap != null) {
                             for (String key : valuesMap.keySet()) {
-                                if (PG_INSTALL_PROP_BASE_DIRECTORY.equalsIgnoreCase(key)) {
-                                    String baseDir = CommonUtils.removeTrailingSlash(valuesMap.get(PG_INSTALL_PROP_BASE_DIRECTORY));
-                                    String version = valuesMap.get(PG_INSTALL_PROP_VERSION);
-                                    String branding = valuesMap.get(PG_INSTALL_PROP_BRANDING);
-                                    String dataDir = valuesMap.get(PG_INSTALL_PROP_DATA_DIRECTORY);
+                                if (PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY.equalsIgnoreCase(key)) {
+                                    String baseDir = CommonUtils.removeTrailingSlash(valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BASE_DIRECTORY));
+                                    String version = valuesMap.get(PostgreConstants.PG_INSTALL_PROP_VERSION);
+                                    String branding = valuesMap.get(PostgreConstants.PG_INSTALL_PROP_BRANDING);
+                                    String dataDir = valuesMap.get(PostgreConstants.PG_INSTALL_PROP_DATA_DIRECTORY);
                                     localServers.put(homeKey, new PostgreServerHome(homeKey, baseDir, version, branding, dataDir));
                                     break;
                                 }
