@@ -101,7 +101,7 @@ public class ClientHomesPanel extends Composite
         setLayout(layout);
 
         Composite listGroup = UIUtils.createPlaceholder(this, 1, 5);
-        listGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+        listGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL));
         homesTable = new Table(listGroup, SWT.SINGLE | SWT.BORDER | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);
         homesTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         homesTable.addSelectionListener(new SelectionAdapter()
