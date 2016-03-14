@@ -321,7 +321,13 @@ public class ResultSetModel {
     public Object getCellValue(@NotNull DBDAttributeBinding attribute, @NotNull ResultSetRow row) {
         int depth = attribute.getLevel();
         if (depth == 0) {
-            return row.values[attribute.getOrdinalPosition()];
+            final int index = attribute.getOrdinalPosition();
+            if (index >= row.values.length) {
+                log.debug("Bad attribute - index out of row values' bounds");
+                return null;
+            } else {
+                return row.values[index];
+            }
         }
         Object curValue = row.values[attribute.getTopParent().getOrdinalPosition()];
 
