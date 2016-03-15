@@ -22,50 +22,30 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-
-import java.util.Date;
 
 /**
 * CustomTimeEditor
 */
 public class CustomTimeEditor {
-    private DBDDataFormatter formatter;
     private Text timeEditor;
 
-    public CustomTimeEditor(Composite parent, int style, DBDDataFormatter formatter) {
+    public CustomTimeEditor(Composite parent, int style) {
         this.timeEditor = new Text(parent, style);
-        this.formatter = formatter;
     }
 
-    public void setValue(@Nullable Object value)
+    public void setValue(@Nullable String value)
     {
-        if (value == null) {
-            value = new Date(0l);
-        }
-        String timeText;
-        if (value instanceof Date) {
-            timeText = formatter.formatValue(value);
-        } else if (value instanceof String) {
-            timeText = (String) value;
-        } else {
-            timeText = value.toString();
-        }
-        timeEditor.setText(timeText);
+        timeEditor.setText(value);
     }
 
-    public Date getValue()
+    public String getValue()
         throws DBException
     {
         final String timeText = timeEditor.getText();
         if (timeText.isEmpty()) {
             return null;
         }
-        try {
-            return (Date)formatter.parseValue(timeText, Date.class);
-        } catch (final Exception e) {
-            throw new DBException("Error parsing date value [" + timeText + "]", e);
-        }
+        return timeText;
     }
 
 
