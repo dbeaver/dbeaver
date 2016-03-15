@@ -22,21 +22,18 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
-
-import java.util.Date;
 
 /**
 * DateTimeInlineEditor
 */
 public class DateTimeInlineEditor extends BaseValueEditor<Control> {
-    private final DateTimeEditorHelper helper;
     private CustomTimeEditor timeEditor;
 
-    public DateTimeInlineEditor(IValueController controller, DateTimeEditorHelper helper) {
+    public DateTimeInlineEditor(IValueController controller) {
         super(controller);
-        this.helper = helper;
     }
 
     @Override
@@ -46,22 +43,25 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 
         timeEditor = new CustomTimeEditor(
             valueController.getEditPlaceholder(),
-            (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG,
-            helper.getFormatter(valueController, valueController.getValueType()));
+            (inline ? SWT.BORDER : SWT.NONE) | SWT.TIME | SWT.LONG);
         timeEditor.setEnabled(!valueController.isReadOnly());
 
         return timeEditor.getControl();
     }
 
     @Override
-    public Date extractEditorValue() throws DBException {
-        return timeEditor.getValue();
+    public Object extractEditorValue() throws DBException {
+        final String strValue = timeEditor.getValue();
+        return valueController.getValueHandler().getValueFromObject(null, valueController.getValueType(), strValue, false);
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        timeEditor.setValue(value);
+        final String strValue = value == null ?
+            "" :
+            valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+        timeEditor.setValue(strValue);
     }
 
 }
