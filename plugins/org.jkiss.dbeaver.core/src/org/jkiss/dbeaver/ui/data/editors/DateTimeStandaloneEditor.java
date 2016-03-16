@@ -27,10 +27,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
+import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 
 import java.util.Date;
@@ -40,12 +40,10 @@ import java.util.Date;
  */
 public class DateTimeStandaloneEditor extends ValueViewDialog {
 
-    private final DateTimeEditorHelper helper;
     private CustomTimeEditor timeEditor;
 
-    public DateTimeStandaloneEditor(IValueController valueController, DateTimeEditorHelper helper) {
+    public DateTimeStandaloneEditor(IValueController valueController) {
         super(valueController);
-        this.helper = helper;
     }
 
     @Override
@@ -64,8 +62,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         }
 
         UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        DBDDataFormatter formatter = helper.getFormatter(valueController, valueController.getValueType());
-        timeEditor = new CustomTimeEditor(panel, style, formatter);
+        timeEditor = new CustomTimeEditor(panel, style);
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
@@ -89,14 +86,18 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
     }
 
     @Override
-    public void primeEditorValue(@Nullable Object value)
-    {
-        timeEditor.setValue(value);
+    public Object extractEditorValue() throws DBException {
+        final String strValue = timeEditor.getValue();
+        return getValueController().getValueHandler().getValueFromObject(null, getValueController().getValueType(), strValue, false);
     }
 
     @Override
-    public Object extractEditorValue() throws DBException {
-        return timeEditor.getValue();
+    public void primeEditorValue(@Nullable Object value)
+    {
+        final String strValue = value == null ?
+            "" :
+            getValueController().getValueHandler().getValueDisplayString(getValueController().getValueType(), value, DBDDisplayFormat.EDIT);
+        timeEditor.setValue(strValue);
     }
 
     @Override
