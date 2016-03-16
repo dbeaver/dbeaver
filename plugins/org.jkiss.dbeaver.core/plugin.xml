@@ -1967,6 +1967,11 @@
                 </or>
            </enabledWhen>
         </page>
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLFormat" name="SQL Formatting">
+            <enabledWhen>
+                <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+            </enabledWhen>
+        </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="SQL Processing">
             <enabledWhen>
                 <or>
