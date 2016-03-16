@@ -248,6 +248,7 @@
             <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute"/>
+        <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLFormat" name="%pref.page.name.sql.format"/>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.templates" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLTemplates" name="Templates"/>
 
         <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" class="org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage" name="%pref.page.name.binary.editor">

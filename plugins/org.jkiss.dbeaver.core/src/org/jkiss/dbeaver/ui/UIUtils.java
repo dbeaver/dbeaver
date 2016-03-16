@@ -490,7 +490,7 @@ public class UIUtils {
     {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-
+        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         return textLabel;
     }
 
