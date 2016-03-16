@@ -634,6 +634,23 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     }
 
+    public boolean isMariaDB() {
+        return MySQLConstants.DRIVER_CLASS_MARIA_DB.equals(
+            getContainer().getDriver().getDriverClassName());
+    }
+
+    @Override
+    public ErrorType discoverErrorType(@NotNull DBException error)
+    {
+        if (isMariaDB()) {
+            // MariaDB-specific. They have bad SQLState support
+            if ("08".equals(error.getDatabaseState())) {
+                return ErrorType.CONNECTION_LOST;
+            }
+        }
+        return super.discoverErrorType(error);
+    }
+
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(" at line ([0-9]+)");
 
     @Nullable

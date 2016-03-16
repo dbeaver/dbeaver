@@ -46,6 +46,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * PostgreTypeType
@@ -107,13 +108,19 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.typeId = typeId;
         this.typeType = PostgreTypeType.b;
         try {
-            this.typeType = PostgreTypeType.valueOf(JDBCUtils.safeGetString(dbResult, "typtype"));
+            String typTypeStr = JDBCUtils.safeGetString(dbResult, "typtype");
+            if (typTypeStr != null) {
+                this.typeType = PostgreTypeType.valueOf(typTypeStr.toLowerCase(Locale.ENGLISH));
+            }
         } catch (IllegalArgumentException e) {
             log.debug(e);
         }
         this.typeCategory = PostgreTypeCategory.X;
         try {
-            this.typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
+            String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory");
+            if (typCategoryStr != null) {
+                this.typeCategory = PostgreTypeCategory.valueOf(typCategoryStr.toUpperCase(Locale.ENGLISH));
+            }
         } catch (IllegalArgumentException e) {
             log.debug(e);
         }
@@ -132,8 +139,16 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.modInFunc = JDBCUtils.safeGetString(dbResult, "typmodin");
         this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout");
         this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze");
-        this.align = PostgreTypeAlign.valueOf(JDBCUtils.safeGetString(dbResult, "typalign"));
-        this.storage = PostgreTypeStorage.valueOf(JDBCUtils.safeGetString(dbResult, "typstorage"));
+        try {
+            this.align = PostgreTypeAlign.valueOf(JDBCUtils.safeGetString(dbResult, "typalign"));
+        } catch (IllegalArgumentException e) {
+            log.debug(e);
+        }
+        try {
+            this.storage = PostgreTypeStorage.valueOf(JDBCUtils.safeGetString(dbResult, "typstorage"));
+        } catch (IllegalArgumentException e) {
+            log.debug(e);
+        }
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetInt(dbResult, "typbasetype");
         this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
@@ -361,7 +376,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 typeCategory = null;
             } else {
                 try {
-                    typeCategory = PostgreTypeCategory.valueOf(catString);
+                    typeCategory = PostgreTypeCategory.valueOf(catString.toUpperCase());
                 } catch (IllegalArgumentException e) {
                     log.debug(e);
                     typeCategory = null;

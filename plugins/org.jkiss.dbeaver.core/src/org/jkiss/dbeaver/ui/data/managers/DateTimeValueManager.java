@@ -21,18 +21,13 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPPropertyManager;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.DateTimeEditorHelper;
 import org.jkiss.dbeaver.ui.data.editors.DateTimeInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.DateTimeStandaloneEditor;
 
@@ -41,7 +36,7 @@ import java.util.Date;
 /**
  * JDBC string value handler
  */
-public class DateTimeValueManager extends BaseValueManager implements DateTimeEditorHelper {
+public class DateTimeValueManager extends BaseValueManager {
 
     protected static final Log log = Log.getLog(DateTimeValueManager.class);
 
@@ -57,17 +52,6 @@ public class DateTimeValueManager extends BaseValueManager implements DateTimeEd
         });
     }
 
-    @Override
-    public void contributeProperties(@NotNull DBPPropertyManager propertySource, @NotNull IValueController controller)
-    {
-        super.contributeProperties(propertySource, controller);
-        propertySource.addProperty(
-            "Date/Time",
-            "format", //$NON-NLS-1$
-            "Pattern",
-            getFormatter(controller, controller.getValueType()).getPattern());
-    }
-
     @NotNull
     @Override
     public IValueController.EditType[] getSupportedEditTypes() {
@@ -81,35 +65,11 @@ public class DateTimeValueManager extends BaseValueManager implements DateTimeEd
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new DateTimeInlineEditor(controller, this);
+                return new DateTimeInlineEditor(controller);
             case EDITOR:
-                return new DateTimeStandaloneEditor(controller, this);
+                return new DateTimeStandaloneEditor(controller);
             default:
                 return null;
-        }
-    }
-
-    public DBDDataFormatter getFormatter(@NotNull IValueController controller, String typeId)
-    {
-        try {
-            return controller.getExecutionContext().getDataSource().getContainer().getDataFormatterProfile().createFormatter(typeId);
-        } catch (Exception e) {
-            log.error("Can't create formatter for datetime value handler", e); //$NON-NLS-1$
-            return DefaultDataFormatter.INSTANCE;
-        }
-    }
-
-    @Override
-    @NotNull
-    public DBDDataFormatter getFormatter(@NotNull IValueController controller, DBSTypedObject column)
-    {
-        switch (column.getTypeID()) {
-            case java.sql.Types.TIME:
-                return getFormatter(controller, DBDDataFormatter.TYPE_NAME_TIME);
-            case java.sql.Types.DATE:
-                return getFormatter(controller, DBDDataFormatter.TYPE_NAME_DATE);
-            default:
-                return getFormatter(controller, DBDDataFormatter.TYPE_NAME_TIMESTAMP);
         }
     }
 
