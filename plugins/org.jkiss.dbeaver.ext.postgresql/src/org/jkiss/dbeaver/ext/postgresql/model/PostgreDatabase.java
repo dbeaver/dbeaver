@@ -562,6 +562,9 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
             if (catalogFilters != null) {
+                catalogFilters = new DBSObjectFilter(catalogFilters);
+                // Always read catalog schema
+                catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
             }
             catalogQuery.append(" ORDER BY nspname");
