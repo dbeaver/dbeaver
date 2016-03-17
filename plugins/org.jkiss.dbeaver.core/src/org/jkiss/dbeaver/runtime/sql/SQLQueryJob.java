@@ -55,6 +55,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -456,12 +457,14 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             fakeResultSet.addColumn("Execute time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Fetch time", DBPDataKind.NUMERIC);
             fakeResultSet.addColumn("Total time", DBPDataKind.NUMERIC);
+            fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
             fakeResultSet.addRow(
                 statistics.getStatementsCount(),
                 statistics.getRowsUpdated(),
                 statistics.getExecuteTime(),
                 statistics.getFetchTime(),
-                statistics.getTotalTime());
+                statistics.getTotalTime(),
+                new Date());
             resultInfo.setResultSetName("Statistics");
         } else {
             // Single statement
@@ -469,7 +472,8 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             if (updateCount >= 0) {
                 fakeResultSet.addColumn("Query", DBPDataKind.STRING);
                 fakeResultSet.addColumn("Updated Rows", DBPDataKind.NUMERIC);
-                fakeResultSet.addRow(query.getQuery(), updateCount);
+                fakeResultSet.addColumn("Finish time", DBPDataKind.DATETIME);
+                fakeResultSet.addRow(query.getQuery(), updateCount, new Date());
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
