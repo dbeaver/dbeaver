@@ -154,6 +154,25 @@
                     <parameter name="supports-scroll" value="true"/>
                 </driver>
                 <driver
+                    id="postgresql_generic"
+                    label="PostgreSQL (Generic)"
+                    class="org.postgresql.Driver"
+                    sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                    defaultPort="5432"
+                    webURL="http://jdbc.postgresql.org/"
+                    description="PostgreSQL JDBC driver. Can be used for old PostgreSQL server versions (before 8.x).">
+
+                    <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
+
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db" value="SHOW search_path"/>
+                    <parameter name="query-set-active-db" value="SET search_path = ?"/>
+                    <parameter name="active-entity-type" value="schema"/>
+                    <parameter name="supports-scroll" value="true"/>
+                </driver>
+                <driver
                     id="oracle"
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
