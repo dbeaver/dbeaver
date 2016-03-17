@@ -374,11 +374,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
-        final PostgreSchema schema = getDefaultInstance().getCatalogSchema();
-        if (schema != null) {
-            return schema.dataTypeCache.getCachedObject(typeName);
-        }
-        return null;
+        return getDefaultInstance().getDataType(typeName);
     }
 
     @Override

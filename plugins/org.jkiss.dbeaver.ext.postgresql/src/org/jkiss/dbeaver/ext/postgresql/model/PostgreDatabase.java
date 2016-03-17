@@ -41,10 +41,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * PostgreDatabase
@@ -73,6 +75,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public final EncodingCache encodingCache = new EncodingCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     public final SchemaCache schemaCache = new SchemaCache();
+    public final IntKeyMap<PostgreDataType> dataTypeCache = new IntKeyMap<>();
 
     public PostgreDatabase(PostgreDataSource dataSource, JDBCResultSet dbResult)
         throws SQLException
@@ -268,6 +271,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
+        dataTypeCache.clear();
         // Cache data types
         for (final PostgreSchema pgSchema : getSchemas(monitor)) {
             pgSchema.getDataTypes(monitor);
@@ -405,13 +409,42 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         if (typeId <= 0) {
             return null;
         }
+        PostgreDataType dataType = dataTypeCache.get(typeId);
+        if (dataType != null) {
+            return dataType;
+        }
         for (PostgreSchema schema : getDatabase().schemaCache.getCachedObjects()) {
-            final PostgreDataType dataType = schema.dataTypeCache.getDataType(typeId);
+            dataType = schema.dataTypeCache.getDataType(typeId);
             if (dataType != null) {
+                dataTypeCache.put(typeId, dataType);
                 return dataType;
             }
         }
         log.debug("Data type '" + typeId + "' not found");
+        return null;
+    }
+
+    public PostgreDataType getDataType(String typeName) {
+        final List<String> searchPath = dataSource.getSearchPath();
+        for (String schemaName : searchPath) {
+            final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
+            if (schema != null) {
+                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+        for (PostgreSchema schema : schemaCache.getCachedObjects()) {
+            if (searchPath.contains(schema.getName())) {
+                continue;
+            }
+            final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+            if (dataType != null) {
+                return dataType;
+            }
+        }
+        log.debug("Data type '" + typeName + "' not found in database '" + getName() + "'");
         return null;
     }
 
