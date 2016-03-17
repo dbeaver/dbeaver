@@ -73,7 +73,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         if (identifierQuoteString != null) {
             identifierQuoteString = identifierQuoteString.trim();
             if (identifierQuoteString.isEmpty()) {
-                identifierQuoteString = null;
+                identifierQuoteString = SQLConstants.DEFAULT_IDENTIFIER_QUOTE;
             }
         }
 
