@@ -70,6 +70,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     public final ConstraintCache constraintCache = new ConstraintCache();
     public final ProceduresCache proceduresCache = new ProceduresCache();
     public final IndexCache indexCache = new IndexCache();
+    public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
 
     public PostgreSchema(PostgreDatabase database, String name, ResultSet dbResult)
         throws SQLException
@@ -289,7 +290,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     @Property
     public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         List<PostgreDataType> types = new ArrayList<>();
-        for (PostgreDataType dt : database.dataTypeCache.getAllObjects(monitor, database)) {
+        for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
             if (dt.getParentObject() == this) {
                 types.add(dt);
             }

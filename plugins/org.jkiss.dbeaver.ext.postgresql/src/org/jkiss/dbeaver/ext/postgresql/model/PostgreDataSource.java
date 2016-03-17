@@ -176,8 +176,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         // Read databases
         databaseCache.getAllObjects(monitor, this);
-        final PostgreDatabase defaultInstance = getDefaultInstance();
-        getDefaultInstance().dataTypeCache.getAllObjects(monitor, defaultInstance);
+        getDefaultInstance().cacheDataTypes(monitor);
     }
 
     @Override
@@ -365,13 +364,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public Collection<PostgreDataType> getLocalDataTypes()
     {
-        return getDefaultInstance().dataTypeCache.getCachedObjects();
+        final PostgreSchema schema = getDefaultInstance().getCatalogSchema();
+        if (schema != null) {
+            return schema.dataTypeCache.getCachedObjects();
+        }
+        return null;
     }
 
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
-        return getDefaultInstance().dataTypeCache.getCachedObject(typeName);
+        final PostgreSchema schema = getDefaultInstance().getCatalogSchema();
+        if (schema != null) {
+            return schema.dataTypeCache.getCachedObject(typeName);
+        }
+        return null;
     }
 
     @Override

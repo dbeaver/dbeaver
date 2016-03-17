@@ -169,7 +169,7 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
     
     public String toString()
     {
-        return name;
+        return owner.getName() + "." + name;
     }
 
     @Override
