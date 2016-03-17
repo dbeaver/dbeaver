@@ -350,26 +350,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     private PostgreDataType resolveType(int typeId) {
-        if (typeId <= 0) {
-            return null;
-        }
-        final PostgreDataType dataType = getDatabase().dataTypeCache.getDataType(typeId);
-        if (dataType == null) {
-            log.debug("Data type '" + typeId + "' not found");
-        }
-        return dataType;
+        return getDatabase().getDataType(typeId);
     }
 
-    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
-        final PostgreSchema schema = owner.getSchema(dbResult.getSourceStatement().getConnection().getProgressMonitor(), schemaId);
         int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
-        if (schema == null) {
-            log.warn("Can't find schema " + schemaId + " for data type " + name + "(" + typeId + ")");
-            return null;
-        }
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
