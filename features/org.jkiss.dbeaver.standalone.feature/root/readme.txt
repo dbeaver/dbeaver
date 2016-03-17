@@ -50,16 +50,6 @@ Web
   Main web site: http://dbeaver.jkiss.org
   Source code: https://github.com/serge-rider/dbeaver
 
-Authors
-==========
-  Architect, main programmer, team leader - Serge Rieder (serge@jkiss.org)
-  DB2 extension developer - Denis Forveille (titou10.titou10@gmail.com)
-
-Support
-=======
-  For technical support and assistance, you may find necessary information at the Support page
-  (http://dbeaver.jkiss.org/forum) or contact us at support@jkiss.org.
-
 Contacts
 ==============
   serge@jkiss.org       - Technical support, feature suggestions and any other questions.
