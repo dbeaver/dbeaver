@@ -88,13 +88,19 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
         if (contentLength > Integer.MAX_VALUE / 2) {
             throw new IOException("Too big content length for memory storage: " + contentLength);
         }
-        char[] data = new char[(int)contentLength];
-        int count = stream.read(data);
-        if (count >= 0 && count != contentLength) {
-            log.warn("Actual content length (" + count + ") is less than declared: " + contentLength);
-            data = Arrays.copyOf(data, count);
+        StringBuilder buffer = new StringBuilder((int) contentLength);
+        char[] charBuffer = new char[10000];
+        for (;;) {
+            int count = stream.read(charBuffer);
+            if (count <= 0) {
+                break;
+            }
+            buffer.append(charBuffer, 0, count);
         }
-        return new StringContentStorage(String.valueOf(data));
+        if (buffer.length() != contentLength) {
+            log.warn("Actual content length (" + buffer.length() + ") is less than declared: " + contentLength);
+        }
+        return new StringContentStorage(buffer.toString());
     }
 
     @NotNull
