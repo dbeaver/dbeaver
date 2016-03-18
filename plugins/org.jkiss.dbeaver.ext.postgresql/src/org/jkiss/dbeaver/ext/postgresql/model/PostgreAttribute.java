@@ -89,11 +89,20 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
         int maxLength = PostgreUtils.getAttributePrecision(typeId, typeMod);
-        if (maxLength <= 0) {
-            maxLength = PostgreUtils.getDisplaySize(typeId, typeMod);
-        }
-        if (maxLength >= 0) {
-            setMaxLength(maxLength);
+        DBPDataKind dataKind = dataType.getDataKind();
+        if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
+            setMaxLength(0);
+        } else {
+            if (maxLength <= 0) {
+                maxLength = PostgreUtils.getDisplaySize(typeId, typeMod);
+            }
+            if (maxLength >= 0) {
+                setMaxLength(maxLength);
+            } else {
+                // TypeMod can be anything.
+                // It is often used in packed format and has no numeric meaning at all
+                //setMaxLength(typeMod);
+            }
         }
         setPrecision(maxLength);
         setScale(PostgreUtils.getScale(typeId, typeMod));
@@ -124,7 +133,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 21)
+    @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 21)
     public long getMaxLength()
     {
         return super.getMaxLength();
@@ -138,6 +147,13 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Override
     @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 22)
+    public int getPrecision()
+    {
+        return super.getPrecision();
+    }
+
+    @Override
+    @Property(viewable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 23)
     public int getScale()
     {
         return super.getScale();

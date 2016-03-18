@@ -53,28 +53,30 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             } else {
                 sql.append(dataType.getTypeName());
             }
-            switch (dataType.getTypeID()) {
-                case Types.VARCHAR:
+            switch (dataType.getDataKind()) {
+                case STRING:
                     final long length = column.getMaxLength();
                     if (length > 0) {
                         sql.append('(').append(length).append(')');
                     }
                     break;
-                case Types.NUMERIC:
-                    final int precision = column.getPrecision();
-                    final int scale = column.getScale();
-                    if (scale > 0 || precision > 0) {
-                        sql.append('(');
-                        if (precision > 0) {
-                            sql.append(precision);
-                        }
-                        if (scale > 0) {
+                case NUMERIC:
+                    if (dataType.getTypeID() == Types.NUMERIC) {
+                        final int precision = column.getPrecision();
+                        final int scale = column.getScale();
+                        if (scale > 0 || precision > 0) {
+                            sql.append('(');
                             if (precision > 0) {
-                                sql.append(',');
+                                sql.append(precision);
                             }
-                            sql.append(scale);
+                            if (scale > 0) {
+                                if (precision > 0) {
+                                    sql.append(',');
+                                }
+                                sql.append(scale);
+                            }
+                            sql.append(')');
                         }
-                        sql.append(')');
                     }
                     break;
             }
