@@ -188,7 +188,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(String.valueOf(connectionInfo.getHostPort()));
             } else {
-                portText.setText(String.valueOf(MySQLConstants.DEFAULT_PORT));
+                portText.setText(site.getDriver().getDefaultPort());
             }
         }
         if (dbText != null) {

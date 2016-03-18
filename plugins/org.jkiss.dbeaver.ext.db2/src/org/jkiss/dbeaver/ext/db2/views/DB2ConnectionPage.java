@@ -161,7 +161,7 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(String.valueOf(connectionInfo.getHostPort()));
             } else {
-                portText.setText(String.valueOf(DB2Constants.DEFAULT_PORT));
+                portText.setText(site.getDriver().getDefaultPort());
             }
         }
         if (dbText != null) {
