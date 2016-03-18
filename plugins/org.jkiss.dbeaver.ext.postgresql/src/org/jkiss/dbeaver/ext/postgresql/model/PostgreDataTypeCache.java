@@ -33,7 +33,7 @@ import java.util.List;
 /**
  * PostgreDataTypeCache
  */
-public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, PostgreDataType>
+public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
     static final Log log = Log.getLog(PostgreDataTypeCache.class);
     private IntKeyMap<PostgreDataType> dataTypeMap = new IntKeyMap<>();
@@ -69,18 +69,18 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreDatabase, Postg
     }
 
     @Override
-    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner) throws SQLException
+    protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException
     {
         final JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT t.oid,t.* \n" +
-                "FROM pg_catalog.pg_type t\n" +
+                "FROM pg_catalog.pg_type t WHERE typnamespace=?\n" +
                 "ORDER by t.oid");
-        //dbStat.setInt(1, owner.getObjectId());
+        dbStat.setInt(1, owner.getObjectId());
         return dbStat;
     }
 
     @Override
-    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
+    protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return PostgreDataType.readDataType(session, owner, dbResult);
     }

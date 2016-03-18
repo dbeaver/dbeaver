@@ -125,7 +125,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
             for (int i = 0; i < allArgTypes.length; i++) {
                 Long paramType = allArgTypes[i];
-                final PostgreDataType dataType = container.getDatabase().dataTypeCache.getDataType(paramType.intValue());
+                final PostgreDataType dataType = container.getDatabase().getDataType(paramType.intValue());
                 if (dataType == null) {
                     log.warn("Parameter data type [" + paramType + "] not found");
                     continue;
@@ -154,7 +154,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             if (!ArrayUtils.isEmpty(inArgTypes)) {
                 for (int i = 0; i < inArgTypes.length; i++) {
                     Long paramType = inArgTypes[i];
-                    final PostgreDataType dataType = container.getDatabase().dataTypeCache.getDataType(paramType.intValue());
+                    final PostgreDataType dataType = container.getDatabase().getDataType(paramType.intValue());
                     if (dataType == null) {
                         log.warn("Parameter data type [" + paramType + "] not found");
                         continue;
@@ -184,7 +184,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         {
             final int varTypeId = JDBCUtils.safeGetInt(dbResult, "provariadic");
             if (varTypeId != 0) {
-                varArrayType = container.getDatabase().dataTypeCache.getDataType(varTypeId);
+                varArrayType = container.getDatabase().getDataType(varTypeId);
             }
         }
         this.procTransform = JDBCUtils.safeGetString(dbResult, "protransform");
@@ -202,7 +202,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         {
             final int retTypeId = JDBCUtils.safeGetInt(dbResult, "prorettype");
             if (retTypeId != 0) {
-                returnType = container.getDatabase().dataTypeCache.getDataType(retTypeId);
+                returnType = container.getDatabase().getDataType(retTypeId);
             }
         }
         this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");

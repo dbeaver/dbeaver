@@ -41,10 +41,12 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.IntKeyMap;
 
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * PostgreDatabase
@@ -73,7 +75,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public final EncodingCache encodingCache = new EncodingCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     public final SchemaCache schemaCache = new SchemaCache();
-    public final PostgreDataTypeCache dataTypeCache = new PostgreDataTypeCache();
+    public final IntKeyMap<PostgreDataType> dataTypeCache = new IntKeyMap<>();
 
     public PostgreDatabase(PostgreDataSource dataSource, JDBCResultSet dbResult)
         throws SQLException
@@ -254,21 +256,32 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         if (this != dataSource.getDefaultInstance()) {
             throw new DBException("Can't access non-default database");
         }
-        cacheDataTypes(monitor);
         // Get all schemas
         return schemaCache.getAllObjects(monitor, this);
     }
 
-    private void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
+    @Nullable
+    public PostgreSchema getCatalogSchema(DBRProgressMonitor monitor) throws DBException {
+        return getSchema(monitor, PostgreConstants.CATALOG_SCHEMA_NAME);
+    }
+
+    @Nullable
+    PostgreSchema getCatalogSchema() {
+        return schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
+    }
+
+    void cacheDataTypes(DBRProgressMonitor monitor) throws DBException {
+        dataTypeCache.clear();
         // Cache data types
-        dataTypeCache.getAllObjects(monitor, this);
+        for (final PostgreSchema pgSchema : getSchemas(monitor)) {
+            pgSchema.getDataTypes(monitor);
+        }
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
         if (this != dataSource.getDefaultInstance()) {
             throw new DBException("Can't access non-default database");
         }
-        cacheDataTypes(monitor);
         return schemaCache.getObject(monitor, this, name);
     }
 
@@ -331,15 +344,14 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     @Override
     public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        dataTypeCache.clearCache();
-        cacheDataTypes(monitor);
-
         authIdCache.clearCache();
         accessMethodCache.clearCache();
         languageCache.clearCache();
         encodingCache.clearCache();
         tablespaceCache.clearCache();
         schemaCache.clearCache();
+
+        cacheDataTypes(monitor);
         return true;
     }
 
@@ -390,6 +402,49 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         if (schema != null) {
             return PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
         }
+        return null;
+    }
+
+    public PostgreDataType getDataType(int typeId) {
+        if (typeId <= 0) {
+            return null;
+        }
+        PostgreDataType dataType = dataTypeCache.get(typeId);
+        if (dataType != null) {
+            return dataType;
+        }
+        for (PostgreSchema schema : getDatabase().schemaCache.getCachedObjects()) {
+            dataType = schema.dataTypeCache.getDataType(typeId);
+            if (dataType != null) {
+                dataTypeCache.put(typeId, dataType);
+                return dataType;
+            }
+        }
+        log.debug("Data type '" + typeId + "' not found");
+        return null;
+    }
+
+    public PostgreDataType getDataType(String typeName) {
+        final List<String> searchPath = dataSource.getSearchPath();
+        for (String schemaName : searchPath) {
+            final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
+            if (schema != null) {
+                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+        for (PostgreSchema schema : schemaCache.getCachedObjects()) {
+            if (searchPath.contains(schema.getName())) {
+                continue;
+            }
+            final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+            if (dataType != null) {
+                return dataType;
+            }
+        }
+        log.debug("Data type '" + typeName + "' not found in database '" + getName() + "'");
         return null;
     }
 
@@ -561,7 +616,10 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 */
             StringBuilder catalogQuery = new StringBuilder("SELECT n.oid,n.* FROM pg_catalog.pg_namespace n");
             DBSObjectFilter catalogFilters = owner.getDataSource().getContainer().getObjectFilter(PostgreSchema.class, null, false);
-            if (catalogFilters != null) {
+            if (catalogFilters != null && !catalogFilters.isEmpty()) {
+                catalogFilters = new DBSObjectFilter(catalogFilters);
+                // Always read catalog schema
+                catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "nspname", true);
             }
             catalogQuery.append(" ORDER BY nspname");
