@@ -188,7 +188,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(String.valueOf(connectionInfo.getHostPort()));
             } else {
-                portText.setText(String.valueOf(PostgreConstants.DEFAULT_PORT));
+                portText.setText(site.getDriver().getDefaultPort());
             }
         }
         if (dbText != null) {
