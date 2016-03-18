@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -31,6 +32,9 @@ import java.util.List;
  * SQL formatter
  */
 public class SQLTokenizedFormatter implements SQLFormatter {
+
+    private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
+
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<>();
     private Collection<String> statementDelimiters = new ArrayList<>(2);
@@ -189,6 +193,18 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                         index += insertReturnAndIndent(argList, index, indent - 1);
                         index += insertReturnAndIndent(argList, index + 1, indent);
                         break;
+                    case "LEFT":
+                    case "RIGHT":
+                    case "INNER":
+                    case "OUTER":
+                    case "JOIN":
+                        if (isJoinStart(argList, index)) {
+                            index += insertReturnAndIndent(argList, index, indent - 1);
+                        }
+                        if (tokenString.equals("JOIN")) {
+                            index += insertReturnAndIndent(argList, index + 1, indent);
+                        }
+                        break;
                     case "VALUES":  //$NON-NLS-1$
                         indent--;
                         index += insertReturnAndIndent(argList, index, indent);
@@ -203,6 +219,9 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                         index += insertReturnAndIndent(argList, index, indent);
                         break;
                     case "ON":
+                        indent++;
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                        break;
                     case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
                         index += insertReturnAndIndent(argList, index, indent + 1);
                         break;
@@ -251,10 +270,11 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             FormatterToken t3 = argList.get(index - 3);
             FormatterToken t4 = argList.get(index - 4);
 
-            if (t4.getString().equalsIgnoreCase("(") //$NON-NLS-1$
+            if (t4.getString().equals("(") //$NON-NLS-1$
                     && t3.getString().trim().isEmpty()
                     && t1.getString().trim().isEmpty()
-                    && t0.getString().equalsIgnoreCase(")")) { //$NON-NLS-1$
+                    && t0.getString().equalsIgnoreCase(")")) //$NON-NLS-1$
+            {
                 t4.setString(t4.getString() + t2.getString() + t0.getString());
                 argList.remove(index);
                 argList.remove(index - 1);
@@ -287,6 +307,44 @@ public class SQLTokenizedFormatter implements SQLFormatter {
         }
 
         return argList;
+    }
+
+    private boolean isJoinStart(List<FormatterToken> argList, int index) {
+        // Keyword sequence must start from LEFT, RIGHT, INNER, OUTER or JOIN and must end with JOIN
+        // And we must be in the beginning of sequence
+
+        // check current token
+        if (!ArrayUtils.contains(JOIN_BEGIN, argList.get(index).getString())) {
+            return false;
+        }
+        // check previous token
+        for (int i = index - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == FormatterConstants.SPACE) {
+                continue;
+            }
+            if (ArrayUtils.contains(JOIN_BEGIN, token.getString())) {
+                // It is not the begin of sequence
+                return false;
+            } else {
+                break;
+            }
+        }
+        // check last token
+        for (int i = index; i < argList.size(); i++) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == FormatterConstants.SPACE) {
+                continue;
+            }
+            if (token.getString().equals("JOIN")) {
+                return true;
+            }
+            if (!ArrayUtils.contains(JOIN_BEGIN, token.getString())) {
+                // It is not the begin of sequence
+                return false;
+            }
+        }
+        return false;
     }
 
     private int insertReturnAndIndent(final List<FormatterToken> argList, final int argIndex, final int argIndent)
