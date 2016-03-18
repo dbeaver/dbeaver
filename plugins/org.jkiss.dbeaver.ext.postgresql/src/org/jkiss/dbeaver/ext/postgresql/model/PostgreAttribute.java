@@ -80,7 +80,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         final int typeId = JDBCUtils.safeGetInt(dbResult, "atttypid");
-        dataType = getTable().getDatabase().dataTypeCache.getDataType(typeId);
+        dataType = getTable().getDatabase().getDataType(typeId);
         if (dataType == null) {
             throw new DBException("Attribute data type '" + typeId + "' not found");
         }
@@ -208,7 +208,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                     return o1.getTypeName().compareTo(o2.getTypeName());
                 }
             });
-            for (PostgreDataType type : column.getDatabase().dataTypeCache.getCachedObjects()) {
+            for (PostgreDataType type : column.getDataSource().getLocalDataTypes()) {
                 types.add(type);
             }
             return types.toArray(new PostgreDataType[types.size()]);
