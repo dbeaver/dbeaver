@@ -353,8 +353,10 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 hostText.setText(CommonUtils.notEmpty(connectionInfo.getHostName()));
                 if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                     portText.setText(String.valueOf(connectionInfo.getHostPort()));
-                } else {
+                } else if (site.getDriver().getDefaultPort() != null) {
                     portText.setText(site.getDriver().getDefaultPort());
+                } else {
+                    portText.setText("");
                 }
 
                 serviceNameCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
