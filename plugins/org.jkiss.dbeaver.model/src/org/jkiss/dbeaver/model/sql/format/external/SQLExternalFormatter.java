@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
  */
 public class SQLExternalFormatter implements SQLFormatter {
 
+    public static final String FORMATTER_ID = "External";
+
     @Override
     public String format(String source, SQLFormatterConfiguration configuration) {
         return source;

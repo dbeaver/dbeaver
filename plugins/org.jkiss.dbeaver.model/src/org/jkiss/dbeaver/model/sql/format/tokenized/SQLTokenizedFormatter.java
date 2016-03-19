@@ -33,6 +33,8 @@ import java.util.List;
  */
 public class SQLTokenizedFormatter implements SQLFormatter {
 
+    public static final String FORMATTER_ID = "Default";
+
     private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
 
     private SQLFormatterConfiguration formatterCfg;

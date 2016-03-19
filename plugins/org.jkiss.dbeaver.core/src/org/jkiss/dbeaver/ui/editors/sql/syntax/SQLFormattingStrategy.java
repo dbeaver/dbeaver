@@ -50,9 +50,6 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
     {
     }
 
-    /**
-   * @see org.eclipse.jface.text.formatter.IFormattingStrategy#format(String, boolean, String, int[])
-   */
     @Override
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
