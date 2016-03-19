@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
@@ -106,9 +107,10 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
+
+          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_FORMATTER, SQLTokenizedFormatter.FORMATTER_ID);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_CASE, DBPIdentifierCase.UPPER.name());
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO, false);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_EXTERNAL, false);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_EXTERNAL_CMD, "");
       }
 
