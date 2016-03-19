@@ -204,7 +204,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                             index += insertReturnAndIndent(argList, index, indent - 1);
                         }
                         if (tokenString.equals("JOIN")) {
-                            index += insertReturnAndIndent(argList, index + 1, indent);
+                            //index += insertReturnAndIndent(argList, index + 1, indent);
                         }
                         break;
                     case "VALUES":  //$NON-NLS-1$
@@ -221,7 +221,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                         index += insertReturnAndIndent(argList, index, indent);
                         break;
                     case "ON":
-                        indent++;
+                        //indent++;
                         index += insertReturnAndIndent(argList, index + 1, indent);
                         break;
                     case "USING":  //$NON-NLS-1$ //$NON-NLS-2$

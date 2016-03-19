@@ -23,6 +23,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -40,6 +42,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -53,11 +56,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.format"; //$NON-NLS-1$
 
-    private static final CharSequence SQL_PREVIEW_TEXT =
-        "SELECT * FROM TABLE1 t WHERE a > 100 AND b BETWEEN 12 AND 45;\n" +
-        "SELECT t.*,j1.x,j2.y FROM TABLE1 t JOIN JT1 j1 ON j1.a = t.a LEFT OUTER JOIN JT2 j2 ON j2.a=t.a AND j2.b=j1.b;\n" +
-        "DELETE FROM TABLE1 WHERE a=1;\n" +
-        "UPDATE TABLE1 SET a=2 WHERE a=1;\n";
+    private final static String FORMAT_FILE_NAME = "format_preview.sql";
 
     private Combo formatterSelector;
 
@@ -66,8 +65,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     private Text externalCmdText;
 
-    private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
+    private Composite defaultGroup;
+    private Composite externalGroup;
 
     public PrefPageSQLFormat()
     {
@@ -100,10 +100,16 @@ public class PrefPageSQLFormat extends TargetPrefPage
         formatterSelector = UIUtils.createLabelCombo(composite, "Formatter", SWT.DROP_DOWN | SWT.READ_ONLY);
         formatterSelector.add(SQLTokenizedFormatter.FORMATTER_ID);
         formatterSelector.add(SQLExternalFormatter.FORMATTER_ID);
+        formatterSelector.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showFormatterSettings();
+            }
+        });
 
         // Default formatter settings
         {
-            Composite defaultGroup = UIUtils.createControlGroup(composite, "Formatter", 2, GridData.FILL_HORIZONTAL, 0);
+            defaultGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
             keywordCaseCombo = UIUtils.createLabelCombo(defaultGroup, "Keyword case", SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             keywordCaseCombo.add("Database");
@@ -115,9 +121,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         // External formatter
         {
-            Composite externalGroup = UIUtils.createControlGroup(composite, "External formatter", 2, GridData.FILL_HORIZONTAL, 0);
+            externalGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
 
-            externalCmdText = UIUtils.createLabelText(externalGroup, "External formatter command", "");
+            externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
         }
 
         {
@@ -132,10 +138,11 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 }
             };
             try {
-                subSite = new SubEditorSite(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
-                StringEditorInput sqlInput = new StringEditorInput("SQL preview", SQL_PREVIEW_TEXT, true, GeneralUtils.getDefaultConsoleEncoding());
+                final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), ContentUtils.DEFAULT_CHARSET);
+                IEditorSite subSite = new SubEditorSite(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
+                StringEditorInput sqlInput = new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultConsoleEncoding());
                 sqlViewer.init(subSite, sqlInput);
-            } catch (PartInitException e) {
+            } catch (Exception e) {
                 log.error(e);
             }
 
@@ -157,10 +164,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
         return composite;
     }
 
-    private static String capitalizeCaseName(String name) {
-        return CommonUtils.capitalizeWord(name.toLowerCase(Locale.ENGLISH));
-    }
-
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
@@ -175,7 +178,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         externalCmdText.setText(store.getString(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD));
 
-        sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
+        formatSQL();
+        showFormatterSettings();
     }
 
     @Override
@@ -217,6 +221,23 @@ public class PrefPageSQLFormat extends TargetPrefPage
     protected String getPropertyPageID()
     {
         return PAGE_ID;
+    }
+
+    private void showFormatterSettings() {
+        final boolean isDefFormatter = formatterSelector.getSelectionIndex() == 0;
+        defaultGroup.setVisible(isDefFormatter);
+        externalGroup.setVisible(!isDefFormatter);
+        ((GridData)defaultGroup.getLayoutData()).exclude = !isDefFormatter;
+        ((GridData)externalGroup.getLayoutData()).exclude = isDefFormatter;
+        defaultGroup.getParent().layout();
+    }
+
+    private static String capitalizeCaseName(String name) {
+        return CommonUtils.capitalizeWord(name.toLowerCase(Locale.ENGLISH));
+    }
+
+    private void formatSQL() {
+        sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
     }
 
 }
