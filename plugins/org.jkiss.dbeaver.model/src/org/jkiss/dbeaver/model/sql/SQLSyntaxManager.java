@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -154,4 +154,17 @@ public class SQLSyntaxManager {
         }
     }
 
+    public DBPIdentifierCase getKeywordCase() {
+        final String caseName = preferenceStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        if (CommonUtils.isEmpty(caseName)) {
+            // Database specific
+            return sqlDialect.storesUnquotedCase();
+        } else {
+            try {
+                return DBPIdentifierCase.valueOf(caseName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return DBPIdentifierCase.MIXED;
+            }
+        }
+    }
 }

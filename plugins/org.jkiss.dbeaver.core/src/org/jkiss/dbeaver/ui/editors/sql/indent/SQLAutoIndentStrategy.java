@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.sql.indent;
 import org.eclipse.jface.text.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -49,23 +50,54 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
 
     @Override
-    public void customizeDocumentCommand(IDocument d, DocumentCommand c)
+    public void customizeDocumentCommand(IDocument document, DocumentCommand command)
     {
-        if (!c.doit) {
+        if (!command.doit) {
+            return;
+        }
+        if (command.offset < 0) {
             return;
         }
 
-        if (c.length == 0 && c.text != null) {
-            final boolean lineDelimiter = isLineDelimiter(d, c.text);
-            if (lineDelimiter || c.text.length() == 1 && Character.isWhitespace(c.text.charAt(0)) &&
-                syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
-            {
-                // Whitespace - check for keyword
+        if (command.length == 0 && command.text != null) {
+            final boolean lineDelimiter = isLineDelimiter(document, command.text);
+            try {
+                if (command.offset > 1 && Character.isJavaIdentifierPart(document.getChar(command.offset - 1)) &&
+                    (lineDelimiter || (command.text.length() == 1 && !Character.isJavaIdentifierPart(command.text.charAt(0)))) &&
+                    syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO))
+                {
+                    updateKeywordCase(document, command);
+                }
+            } catch (BadLocationException e) {
+                log.debug(e);
             }
             if (lineDelimiter) {
-                smartIndentAfterNewLine(d, c);
+                smartIndentAfterNewLine(document, command);
             }
         }
+    }
+
+    private boolean updateKeywordCase(IDocument document, DocumentCommand command) throws BadLocationException {
+        // Whitespace - check for keyword
+        int startPos, endPos;
+        int pos = command.offset;
+        while (pos >= 0 && Character.isWhitespace(document.getChar(pos))) {
+            pos--;
+        }
+        endPos = pos + 1;
+        while (pos >= 0 && Character.isJavaIdentifierPart(document.getChar(pos))) {
+            pos--;
+        }
+        startPos = pos + 1;
+        final String keyword = document.get(startPos, endPos - startPos);
+        if (syntaxManager.getDialect().getKeywordType(keyword) == DBPKeywordType.KEYWORD) {
+            String fixedKeyword = syntaxManager.getKeywordCase().transform(keyword);
+            if (!fixedKeyword.equals(keyword)) {
+                document.replace(startPos, endPos - startPos, fixedKeyword);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void smartIndentAfterNewLine(IDocument document, DocumentCommand command)
@@ -73,9 +105,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         clearCachedValues();
 
         int docLength = document.getLength();
-        if (command.offset == -1 || docLength == 0) {
+        if (docLength == 0) {
             return;
         }
+
         SQLHeuristicScanner scanner = new SQLHeuristicScanner(document, syntaxManager);
         SQLIndenter indenter = new SQLIndenter(document, scanner);
 
