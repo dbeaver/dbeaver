@@ -741,4 +741,15 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         };
     }
 
+    protected String[] collectContextMenuPreferencePages() {
+        String[] ids = super.collectContextMenuPreferencePages();
+        String[] more = new String[ids.length + 4];
+        more[0] = "org.jkiss.dbeaver.preferences.main.sqleditor";
+        more[1] = "org.jkiss.dbeaver.preferences.main.sql.format";
+        more[2] = "org.jkiss.dbeaver.preferences.main.sqlexecute";
+        more[3] = "org.jkiss.dbeaver.preferences.main.sql.templates";
+        System.arraycopy(ids, 0, more, 4, ids.length);
+        return more;
+    }
+
 }
