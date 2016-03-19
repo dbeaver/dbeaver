@@ -26,8 +26,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * SQL formatter
@@ -40,13 +40,16 @@ public class SQLTokenizedFormatter implements SQLFormatter {
 
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<>();
-    private Collection<String> statementDelimiters = new ArrayList<>(2);
+    private List<String> statementDelimiters = new ArrayList<>(2);
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
     {
         formatterCfg = configuration;
-        statementDelimiters = formatterCfg.getSyntaxManager().getStatementDelimiters();
+
+        for (String delim : formatterCfg.getSyntaxManager().getStatementDelimiters()) {
+            statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
+        }
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
 
         functionBracket.clear();
@@ -144,7 +147,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
         boolean encounterBetween = false;
         for (int index = 0; index < argList.size(); index++) {
             token = argList.get(index);
-            String tokenString = token.getString().toUpperCase();
+            String tokenString = token.getString().toUpperCase(Locale.ENGLISH);
             if (token.getType() == FormatterConstants.SYMBOL) {
                 if (tokenString.equals("(")) { //$NON-NLS-1$
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
@@ -248,7 +251,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             } else {
                 if (statementDelimiters.contains(tokenString)) {
                     indent = 0;
-                    index += insertReturnAndIndent(argList, index, indent);
+                    index += insertReturnAndIndent(argList, index + 1, indent);
                 }
             }
             prev = token;
