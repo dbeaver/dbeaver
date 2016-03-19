@@ -353,13 +353,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
 
             {
                 Group txnGroup = UIUtils.createControlGroup(rightSide, "Connection", 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-                autocommit = UIUtils.createCheckbox(
+                autocommit = UIUtils.createLabelCheckbox(
                     txnGroup,
                     CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
                     dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.horizontalSpan = 2;
-                autocommit.setLayoutData(gd);
+                autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 autocommit.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e)
