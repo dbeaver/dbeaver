@@ -21,8 +21,8 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
 
 /**
@@ -55,7 +55,9 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
         final String[] indentPrefixes = svConfig.getIndentPrefixes(sourceViewer, IDocument.DEFAULT_CONTENT_TYPE);
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
         configuration.setIndentString(indentPrefixes[0]);
-        return new SQLTokenizedFormatter().format(content, configuration);
+
+        SQLFormatter formatter = configuration.createFormatter();
+        return formatter.format(content, configuration);
     }
 
     @Override

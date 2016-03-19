@@ -1,4 +1,4 @@
-Select * From TABLE1 t Where a > 100 AND b BETWEEN 12 AND 45;
+Select * From TABLE1 t Where a > 100 AND b between 12 AND 45;
 
 SELECT t.*,j1.x,j2.y FROM TABLE1 t JOIN JT1 j1 ON j1.a = t.a
 LEFT OUTER JOIN JT2 j2 ON j2.a=t.a AND j2.b=j1.b

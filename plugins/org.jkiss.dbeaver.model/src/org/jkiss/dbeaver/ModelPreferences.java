@@ -72,6 +72,9 @@ public final class ModelPreferences
     public final static String SQL_FORMAT_FORMATTER = "sql.format.formatter";
     public final static String SQL_FORMAT_KEYWORD_CASE = "sql.format.keywordCase";
     public final static String SQL_FORMAT_EXTERNAL_CMD = "sql.format.external.cmd";
+    public final static String SQL_FORMAT_EXTERNAL_FILE = "sql.format.external.file";
+    public final static String SQL_FORMAT_EXTERNAL_DIR = "sql.format.external.dir";
+    public final static String SQL_FORMAT_EXTERNAL_TIMEOUT = "sql.format.external.timeout";
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
 
