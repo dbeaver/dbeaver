@@ -539,16 +539,27 @@ public class UIUtils {
     }
 
     @NotNull
-    public static Spinner createLabelSpinner(@NotNull Composite parent, @NotNull String label, int value, int minimum, int maximum)
-    {
-        createControlLabel(parent, label);
+    public static Spinner createLabelSpinner(@NotNull Composite parent, @NotNull String label, @Nullable String tooltip, int value, int minimum, int maximum) {
+        final Label l = createControlLabel(parent, label);
+        if (tooltip != null) {
+            l.setToolTipText(tooltip);
+        }
 
         Spinner spinner = new Spinner(parent, SWT.BORDER);
         spinner.setMinimum(minimum);
         spinner.setMaximum(maximum);
         spinner.setSelection(value);
+        if (tooltip != null) {
+            spinner.setToolTipText(tooltip);
+        }
 
         return spinner;
+    }
+
+    @NotNull
+    public static Spinner createLabelSpinner(@NotNull Composite parent, @NotNull String label, int value, int minimum, int maximum)
+    {
+        return createLabelSpinner(parent, label, null, value, minimum, maximum);
     }
 
     @NotNull

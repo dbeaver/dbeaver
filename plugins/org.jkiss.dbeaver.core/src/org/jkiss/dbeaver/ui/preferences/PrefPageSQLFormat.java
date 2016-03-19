@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -64,6 +63,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
     private Combo keywordCaseCombo;
 
     private Text externalCmdText;
+    private Button externalUseFile;
+    private Spinner externalTimeout;
 
     private SQLEditorBase sqlViewer;
     private Composite defaultGroup;
@@ -81,7 +82,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
         return
             store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
             store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE) ||
-            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD)
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD) ||
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE) ||
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT)
         ;
     }
 
@@ -122,6 +125,13 @@ public class PrefPageSQLFormat extends TargetPrefPage
             externalGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
 
             externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
+            externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
+                "Use temp file",
+                "Use temporary file to pass SQL text.\nTo pass file name in command line use parameter ${file}", false);
+            externalTimeout = UIUtils.createLabelSpinner(externalGroup,
+                "Exec timeout",
+                "Time to wait until formatter process finish (ms)",
+                100, 100, 10000);
         }
 
         {
@@ -181,6 +191,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
         }
 
         externalCmdText.setText(store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD));
+        externalUseFile.setSelection(store.getBoolean(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE));
+        externalTimeout.setSelection(store.getInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT));
 
         formatSQL();
         showFormatterSettings();
@@ -200,6 +212,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
         store.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
 
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD, externalCmdText.getText());
+        store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE, externalUseFile.getSelection());
+        store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT, externalTimeout.getSelection());
+
         PrefUtils.savePreferenceStore(store);
     }
 
@@ -237,7 +252,14 @@ public class PrefPageSQLFormat extends TargetPrefPage
     }
 
     private void formatSQL() {
+        try {
+            final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), ContentUtils.DEFAULT_CHARSET);
+            sqlViewer.setInput(new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultConsoleEncoding()));
+        } catch (Exception e) {
+            log.error(e);
+        }
         sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
+        sqlViewer.reloadSyntaxRules();
     }
 
 }
