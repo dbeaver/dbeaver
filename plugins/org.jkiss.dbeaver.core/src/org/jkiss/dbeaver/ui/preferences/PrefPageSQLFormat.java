@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -61,7 +62,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     private Combo formatterSelector;
 
     private Combo keywordCaseCombo;
-    private Button autoConvertKeywordCase;
 
     private Text externalCmdText;
 
@@ -81,7 +81,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
         return
             store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
             store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE) ||
-            store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
             store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD)
         ;
     }
@@ -116,7 +115,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
                 keywordCaseCombo.add(capitalizeCaseName(c.name()));
             }
-            autoConvertKeywordCase = UIUtils.createLabelCheckbox(defaultGroup, "Auto-convert case", false);
         }
 
         // External formatter
@@ -181,7 +179,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
         } else {
             UIUtils.setComboSelection(keywordCaseCombo, capitalizeCaseName(caseName));
         }
-        autoConvertKeywordCase.setSelection(store.getBoolean(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO));
 
         externalCmdText.setText(store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD));
 
@@ -201,7 +198,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
             caseName = keywordCaseCombo.getText().toUpperCase(Locale.ENGLISH);
         }
         store.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
-        store.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO, autoConvertKeywordCase.getSelection());
 
         store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD, externalCmdText.getText());
         PrefUtils.savePreferenceStore(store);
@@ -211,10 +207,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
-
         store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
-        store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO);
-
         store.setToDefault(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
     }
 

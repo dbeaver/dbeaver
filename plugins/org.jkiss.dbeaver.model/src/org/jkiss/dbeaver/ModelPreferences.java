@@ -71,7 +71,6 @@ public final class ModelPreferences
 
     public final static String SQL_FORMAT_FORMATTER = "sql.format.formatter";
     public final static String SQL_FORMAT_KEYWORD_CASE = "sql.format.keywordCase";
-    public final static String SQL_FORMAT_KEYWORD_CASE_AUTO = "sql.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTERNAL_CMD = "sql.format.external.cmd";
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
@@ -135,7 +134,6 @@ public final class ModelPreferences
 
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_FORMATTER, SQLTokenizedFormatter.FORMATTER_ID);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, DBPIdentifierCase.UPPER.name());
-        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE_AUTO, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_CMD, "");
     }
 }
