@@ -115,10 +115,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return new SQLAnnotationHover(getSQLEditor());
     }
 
-    /*
-     * @see SourceViewerConfiguration#getAutoIndentStrategy(ISourceViewer, String)
-     */
-
     @Nullable
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
@@ -147,8 +143,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     /**
      * Creates, initializes, and returns the ContentAssistant to use with this editor.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentAssistant(ISourceViewer)
      */
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)

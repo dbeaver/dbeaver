@@ -46,18 +46,7 @@ public class SQLFormatterConfiguration {
     public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
     {
         this.syntaxManager = syntaxManager;
-        final DBPPreferenceStore prefStore = syntaxManager.getPreferenceStore();
-        final String caseName = prefStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
-        if (CommonUtils.isEmpty(caseName)) {
-            // Database specific
-            keywordCase = syntaxManager.getDialect().storesUnquotedCase();
-        } else {
-            try {
-                keywordCase = DBPIdentifierCase.valueOf(caseName.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                keywordCase = DBPIdentifierCase.MIXED;
-            }
-        }
+        this.keywordCase = syntaxManager.getKeywordCase();
     }
 
     public SQLSyntaxManager getSyntaxManager()
@@ -101,9 +90,9 @@ public class SQLFormatterConfiguration {
     public SQLFormatter createFormatter() {
         final String formatterId = CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH);
         if (SQLExternalFormatter.FORMATTER_ID.equals(formatterId)) {
-            return new SQLTokenizedFormatter();
-        } else {
             return new SQLExternalFormatter();
+        } else {
+            return new SQLTokenizedFormatter();
         }
     }
 }
