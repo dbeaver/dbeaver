@@ -108,6 +108,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 showFormatterSettings();
             }
         });
+        formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         // Default formatter settings
         {
