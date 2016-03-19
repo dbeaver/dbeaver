@@ -152,6 +152,14 @@ public final class IOUtils {
 		writer.flush();
 	}
 
+	public static void copyText(
+		java.io.Reader reader,
+		java.io.Writer writer)
+		throws IOException
+	{
+		copyText(reader, writer, DEFAULT_BUFFER_SIZE);
+	}
+
 	public static int readStreamToBuffer(
 		java.io.InputStream inputStream,
 		byte[] buffer)
