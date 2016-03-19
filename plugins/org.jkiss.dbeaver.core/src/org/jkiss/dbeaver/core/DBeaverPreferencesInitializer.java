@@ -108,7 +108,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_CASE, DBPIdentifierCase.UPPER.name());
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO, false);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA, "");
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_EXTERNAL, false);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_EXTERNAL_CMD, "");
       }

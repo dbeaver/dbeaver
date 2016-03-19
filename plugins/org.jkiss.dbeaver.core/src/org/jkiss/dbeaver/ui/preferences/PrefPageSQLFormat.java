@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
@@ -39,7 +40,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     private Combo keywordCaseCombo;
     private Button autoConvertKeywordCase;
-    private Text additionalKeywordsText;
 
     private Button useExternalCheckbox;
     private Text externalCmdText;
@@ -56,7 +56,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
         return
             store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_CASE) ||
             store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO) ||
-            store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA) ||
             store.contains(SQLPreferenceConstants.FORMAT_EXTERNAL) ||
             store.contains(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD)
         ;
@@ -78,14 +77,11 @@ public class PrefPageSQLFormat extends TargetPrefPage
             Composite formatGroup = UIUtils.createControlGroup(composite, "Formatter", 2, GridData.FILL_HORIZONTAL, 0);
             keywordCaseCombo = UIUtils.createLabelCombo(formatGroup, "Keyword case", SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            keywordCaseCombo.add("Database");
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
-                keywordCaseCombo.add(c.name());
+                keywordCaseCombo.add(capitalizeCaseName(c.name()));
             }
             autoConvertKeywordCase = UIUtils.createLabelCheckbox(formatGroup, "Auto-convert case", false);
-            additionalKeywordsText = UIUtils.createLabelText(formatGroup, "Additional keywords", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.heightHint = 50;
-            additionalKeywordsText.setLayoutData(gd);
         }
 
         // External formatter
@@ -99,12 +95,20 @@ public class PrefPageSQLFormat extends TargetPrefPage
         return composite;
     }
 
+    private static String capitalizeCaseName(String name) {
+        return CommonUtils.capitalizeWord(name.toLowerCase(Locale.ENGLISH));
+    }
+
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
-        UIUtils.setComboSelection(keywordCaseCombo, store.getString(SQLPreferenceConstants.FORMAT_KEYWORD_CASE));
+        final String caseName = store.getString(SQLPreferenceConstants.FORMAT_KEYWORD_CASE);
+        if (CommonUtils.isEmpty(caseName)) {
+            keywordCaseCombo.select(0);
+        } else {
+            UIUtils.setComboSelection(keywordCaseCombo, capitalizeCaseName(caseName));
+        }
         autoConvertKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO));
-        additionalKeywordsText.setText(store.getString(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA));
 
         useExternalCheckbox.setSelection(store.getBoolean(SQLPreferenceConstants.FORMAT_EXTERNAL));
         externalCmdText.setText(store.getString(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD));
@@ -113,9 +117,14 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void savePreferences(DBPPreferenceStore store)
     {
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE, keywordCaseCombo.getText());
+        final String caseName;
+        if (keywordCaseCombo.getSelectionIndex() == 0) {
+            caseName = "";
+        } else {
+            caseName = keywordCaseCombo.getText().toUpperCase(Locale.ENGLISH);
+        }
+        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE, caseName);
         store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO, autoConvertKeywordCase.getSelection());
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA, additionalKeywordsText.getText());
 
         store.setValue(SQLPreferenceConstants.FORMAT_EXTERNAL, useExternalCheckbox.getSelection());
         store.setValue(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD, externalCmdText.getText());
@@ -127,7 +136,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_CASE);
         store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO);
-        store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA);
 
         store.setToDefault(SQLPreferenceConstants.FORMAT_EXTERNAL);
         store.setToDefault(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD);
