@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
