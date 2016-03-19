@@ -214,7 +214,6 @@ public final class SQLUtils {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
-        configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
         return new SQLTokenizedFormatter().format(query, configuration);
     }
 

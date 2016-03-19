@@ -29,8 +29,9 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
@@ -41,7 +42,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -79,10 +79,10 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(SQLPreferenceConstants.FORMAT_FORMATTER) ||
-            store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_CASE) ||
-            store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO) ||
-            store.contains(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD)
+            store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
+            store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE) ||
+            store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD)
         ;
     }
 
@@ -134,6 +134,13 @@ public class PrefPageSQLFormat extends TargetPrefPage
             sqlViewer = new SQLEditorBase() {
                 @Override
                 public DBCExecutionContext getExecutionContext() {
+                    final DBPDataSourceContainer container = getDataSourceContainer();
+                    if (container != null) {
+                        final DBPDataSource dataSource = container.getDataSource();
+                        if (dataSource != null) {
+                            return dataSource.getDefaultContext(false);
+                        }
+                    }
                     return null;
                 }
             };
@@ -167,16 +174,16 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
-        UIUtils.setComboSelection(formatterSelector, store.getString(SQLPreferenceConstants.FORMAT_FORMATTER));
-        final String caseName = store.getString(SQLPreferenceConstants.FORMAT_KEYWORD_CASE);
+        UIUtils.setComboSelection(formatterSelector, store.getString(ModelPreferences.SQL_FORMAT_FORMATTER));
+        final String caseName = store.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         if (CommonUtils.isEmpty(caseName)) {
             keywordCaseCombo.select(0);
         } else {
             UIUtils.setComboSelection(keywordCaseCombo, capitalizeCaseName(caseName));
         }
-        autoConvertKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO));
+        autoConvertKeywordCase.setSelection(store.getBoolean(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO));
 
-        externalCmdText.setText(store.getString(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD));
+        externalCmdText.setText(store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD));
 
         formatSQL();
         showFormatterSettings();
@@ -185,7 +192,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void savePreferences(DBPPreferenceStore store)
     {
-        store.setValue(SQLPreferenceConstants.FORMAT_FORMATTER, formatterSelector.getText());
+        store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER, formatterSelector.getText());
 
         final String caseName;
         if (keywordCaseCombo.getSelectionIndex() == 0) {
@@ -193,28 +200,28 @@ public class PrefPageSQLFormat extends TargetPrefPage
         } else {
             caseName = keywordCaseCombo.getText().toUpperCase(Locale.ENGLISH);
         }
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE, caseName);
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO, autoConvertKeywordCase.getSelection());
+        store.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
+        store.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO, autoConvertKeywordCase.getSelection());
 
-        store.setValue(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD, externalCmdText.getText());
+        store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD, externalCmdText.getText());
         PrefUtils.savePreferenceStore(store);
     }
 
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(SQLPreferenceConstants.FORMAT_FORMATTER);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
 
-        store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_CASE);
-        store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE_AUTO);
 
-        store.setToDefault(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
     }
 
     @Override
-    public void applyData(Object data)
-    {
-        super.applyData(data);
+    protected void performApply() {
+        super.performApply();
+        formatSQL();
     }
 
     @Override

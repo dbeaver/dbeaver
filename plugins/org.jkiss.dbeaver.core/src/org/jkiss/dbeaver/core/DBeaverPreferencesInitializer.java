@@ -23,6 +23,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -107,11 +108,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_COMMENTS, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.SQLEDITOR_CLOSE_BEGIN_END, true);
-
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_FORMATTER, SQLTokenizedFormatter.FORMATTER_ID);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_CASE, DBPIdentifierCase.UPPER.name());
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO, false);
-          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.FORMAT_EXTERNAL_CMD, "");
       }
 
       PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, false);

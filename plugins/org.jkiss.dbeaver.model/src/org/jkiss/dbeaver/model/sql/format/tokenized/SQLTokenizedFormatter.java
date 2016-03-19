@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -91,19 +92,11 @@ public class SQLTokenizedFormatter implements SQLFormatter {
             }
         }
 
+        final DBPIdentifierCase keywordCase = formatterCfg.getKeywordCase();
         for (int index = 0; index < argList.size(); index++) {
             token = argList.get(index);
             if (token.getType() == FormatterConstants.KEYWORD) {
-                switch (formatterCfg.getKeywordCase()) {
-                case SQLFormatterConfiguration.KEYWORD_NONE:
-                    break;
-                case SQLFormatterConfiguration.KEYWORD_UPPER_CASE:
-                    token.setString(token.getString().toUpperCase());
-                    break;
-                case SQLFormatterConfiguration.KEYWORD_LOWER_CASE:
-                    token.setString(token.getString().toLowerCase());
-                    break;
-                }
+                token.setString(keywordCase.transform(token.getString()));
             }
         }
 
