@@ -51,10 +51,4 @@ public class SQLPreferenceConstants
     public static final int PROPOSAL_CASE_UPPER                        = 1;
     public static final int PROPOSAL_CASE_LOWER                        = 2;
 
-    public final static String FORMAT_FORMATTER                        = "SQLEditor.format.formatter";
-    public final static String FORMAT_KEYWORD_CASE                     = "SQLEditor.format.keywordCase";
-    public final static String FORMAT_KEYWORD_CASE_AUTO                = "SQLEditor.format.keywordCaseAuto";
-    public final static String FORMAT_EXTERNAL                         = "SQLEditor.format.external";
-    public final static String FORMAT_EXTERNAL_CMD                     = "SQLEditor.format.external.cmd";
-
 }

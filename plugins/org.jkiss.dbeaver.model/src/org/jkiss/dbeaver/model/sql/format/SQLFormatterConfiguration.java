@@ -18,25 +18,39 @@
 
 package org.jkiss.dbeaver.model.sql.format;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLFormatterConfiguration
  */
 public class SQLFormatterConfiguration {
 
-    public static final int KEYWORD_NONE = 0;
-    public static final int KEYWORD_UPPER_CASE = 1;
-    public static final int KEYWORD_LOWER_CASE = 2;
-
-    private int keywordCase = KEYWORD_UPPER_CASE;
+    @NotNull
+    private DBPIdentifierCase keywordCase;
     private String indentString = "    ";
     private SQLSyntaxManager syntaxManager;
 
     public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
     {
         this.syntaxManager = syntaxManager;
+        final DBPPreferenceStore prefStore = syntaxManager.getPreferenceStore();
+        final String caseName = prefStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        if (CommonUtils.isEmpty(caseName)) {
+            // Database specific
+            keywordCase = syntaxManager.getDialect().storesUnquotedCase();
+        } else {
+            try {
+                keywordCase = DBPIdentifierCase.valueOf(caseName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                keywordCase = DBPIdentifierCase.MIXED;
+            }
+        }
     }
 
     public SQLSyntaxManager getSyntaxManager()
@@ -54,12 +68,13 @@ public class SQLFormatterConfiguration {
         this.indentString = indentString;
     }
 
-    public int getKeywordCase()
+    @NotNull
+    public DBPIdentifierCase getKeywordCase()
     {
         return keywordCase;
     }
 
-    public void setKeywordCase(int keyword) {
+    public void setKeywordCase(@NotNull DBPIdentifierCase keyword) {
         this.keywordCase = keyword;
     }
 

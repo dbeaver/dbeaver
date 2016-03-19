@@ -296,7 +296,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     }
 
     @Override
-    protected final void performApply()
+    protected void performApply()
     {
         performOk();
     }

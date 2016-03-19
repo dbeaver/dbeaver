@@ -54,35 +54,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
-        configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
-        //configuration.setIndentString(indentation);
         return new SQLTokenizedFormatter().format(content, configuration);
-        //return new SQLSimpleFormatter().format(content);
-    }
-
-    private String allToUpper( String content ) {
-        return content.toUpperCase();
-    }
-
-    /**
-   * Method keyWordsToUpper.
-   *
-   * @param content
-   * @return String
-   */
-    private String keyWordsToUpper(String content)
-    {
-        StringTokenizer st = new StringTokenizer(content, " \n", true);
-        StringBuilder newContent = new StringBuilder();
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            DBPKeywordType type = sqlSyntax.getDialect().getKeywordType(token);
-            if (type == DBPKeywordType.KEYWORD) {
-                token = token.toUpperCase();
-            }
-            newContent.append(token);
-        }
-        return newContent.toString();
     }
 
     @Override

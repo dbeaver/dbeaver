@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.CommonUtils;
 
@@ -38,6 +39,8 @@ public class SQLSyntaxManager {
 
     @NotNull
     private SQLDialect sqlDialect = BasicSQLDialect.INSTANCE;
+    @NotNull
+    private DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
     @Nullable
     private String quoteSymbol;
     private char structSeparator;
@@ -60,6 +63,11 @@ public class SQLSyntaxManager {
     @NotNull
     public SQLDialect getDialect() {
         return sqlDialect;
+    }
+
+    @NotNull
+    public DBPPreferenceStore getPreferenceStore() {
+        return preferenceStore;
     }
 
     public char getStructSeparator()
@@ -113,6 +121,7 @@ public class SQLSyntaxManager {
     {
         this.statementDelimiters.clear();
         this.sqlDialect = dialect;
+        this.preferenceStore = preferenceStore;
         this.quoteSymbol = sqlDialect.getIdentifierQuoteString();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
