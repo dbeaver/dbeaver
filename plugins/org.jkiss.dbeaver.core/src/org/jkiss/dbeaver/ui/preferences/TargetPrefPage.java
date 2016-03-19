@@ -88,7 +88,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public DBPDataSourceContainer getDataSourceContainer()
     {
-        return containerNode.getObject();
+        return containerNode == null ? null : containerNode.getObject();
     }
 
     @Override

@@ -45,9 +45,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Combo csInsertCase;
     private Button csHideDuplicates;
     private Button csShortName;
+    // Auto-close
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
     private Button acBracketsCheck;
+    // Auto-Format
+    private Button afKeywordCase;
+    private Button afExtractFromSource;
+
     private Button autoFoldersCheck;
     private Text scriptTitlePattern;
 
@@ -67,7 +72,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
-            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS)
+            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)
         ;
     }
 
@@ -133,9 +140,16 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         {
             // Formatting
-
-            // TODO: Convert case on enter
-            // TODO: Format code on paste
+            Composite afGroup = UIUtils.createControlGroup(composite2, "Auto format", 2, GridData.FILL_BOTH, 0);
+            afKeywordCase = UIUtils.createLabelCheckbox(
+                afGroup,
+                "Convert keyword case",
+                "Auto-convert keywords to upper/lower case on enter",
+                false);
+            afExtractFromSource = UIUtils.createLabelCheckbox(
+                afGroup,
+                "Extract SQL from source code",
+                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false);
         }
 
         // Scripts
@@ -173,6 +187,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
             acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
+            afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
+            afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
 
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
@@ -199,6 +215,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
 
+            store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
+            store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
+
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
         } catch (Exception e) {
@@ -222,6 +241,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
 
         store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
