@@ -27,6 +27,8 @@ public interface SQLIndentSymbols
     int Tokenend = 1002;
     int TokenEND = 1003;
     int TokenIDENT = 2000;
+    int TokenKeyword = 3000;
+    int TokenKeywordStart = 3001;
 
 
     String BEGIN = "BEGIN";
