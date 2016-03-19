@@ -127,6 +127,13 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
         }
     }
 
+
+    public void applyData(Object data) {
+        if (containerNode == null && data instanceof IAdaptable) {
+            setElement((IAdaptable) data);
+        }
+    }
+
     @Override
     protected Label createDescriptionLabel(Composite parent)
     {

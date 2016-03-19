@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
@@ -32,13 +33,12 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.texteditor.DefaultRangeIndicator;
-import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
-import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
-import org.eclipse.ui.texteditor.TextOperationAction;
+import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
@@ -346,6 +346,14 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         a.setActionDefinitionId(ICommandIds.CMD_CONTENT_FORMAT);
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, a);
 
+        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action("Preferences...") { //$NON-NLS-1$
+            public void run() {
+                Shell shell = getSourceViewer().getTextWidget().getShell();
+                String[] preferencePages = collectContextMenuPreferencePages();
+                if (preferencePages.length > 0 && (shell == null || !shell.isDisposed()))
+                    PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
+            }
+        });
 /*
         // Add the task action to the Edit pulldown menu (bookmark action is  'free')
         ResourceAction ra = new AddTaskAction(bundle, "AddTask.", this);
@@ -744,11 +752,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     protected String[] collectContextMenuPreferencePages() {
         String[] ids = super.collectContextMenuPreferencePages();
         String[] more = new String[ids.length + 4];
-        more[0] = "org.jkiss.dbeaver.preferences.main.sqleditor";
-        more[1] = "org.jkiss.dbeaver.preferences.main.sql.format";
-        more[2] = "org.jkiss.dbeaver.preferences.main.sqlexecute";
-        more[3] = "org.jkiss.dbeaver.preferences.main.sql.templates";
-        System.arraycopy(ids, 0, more, 4, ids.length);
+        more[ids.length] = "org.jkiss.dbeaver.preferences.main.sqleditor";
+        more[ids.length + 1] = "org.jkiss.dbeaver.preferences.main.sql.format";
+        more[ids.length + 2] = "org.jkiss.dbeaver.preferences.main.sqlexecute";
+        more[ids.length + 3] = "org.jkiss.dbeaver.preferences.main.sql.templates";
+        System.arraycopy(ids, 0, more, 0, ids.length);
         return more;
     }
 

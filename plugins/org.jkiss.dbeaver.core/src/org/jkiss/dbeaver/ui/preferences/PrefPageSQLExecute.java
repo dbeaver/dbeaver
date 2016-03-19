@@ -243,12 +243,6 @@ public class PrefPageSQLExecute extends TargetPrefPage
     }
 
     @Override
-    public void applyData(Object data)
-    {
-        super.applyData(data);
-    }
-
-    @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;

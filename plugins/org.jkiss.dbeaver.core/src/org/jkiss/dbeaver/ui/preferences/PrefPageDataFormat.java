@@ -377,6 +377,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     @Override
     public void applyData(Object data)
     {
+        super.applyData(data);
         if (data instanceof DBDDataFormatterProfile) {
             UIUtils.setComboSelection(profilesCombo, ((DBDDataFormatterProfile)data).getProfileName());
             changeProfile();
