@@ -17,34 +17,35 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
-
-import java.util.StringTokenizer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
 
 /**
  * The formatting strategy that transforms SQL keywords to upper case
  */
 public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
 {
+    private ISourceViewer sourceViewer;
+    private SQLEditorSourceViewerConfiguration svConfig;
     private SQLSyntaxManager sqlSyntax;
 
     /**
-   * According to profileName to determine which the database syntax keywords highlighted.
-   *
-   * @param syntax syntax manager
-   */
-    public SQLFormattingStrategy(SQLSyntaxManager syntax)
+     * According to profileName to determine which the database syntax keywords highlighted.
+     */
+    public SQLFormattingStrategy(ISourceViewer sourceViewer, SQLEditorSourceViewerConfiguration svConfig, SQLSyntaxManager syntax)
     {
-        sqlSyntax = syntax;
+        this.sourceViewer = sourceViewer;
+        this.svConfig = svConfig;
+        this.sqlSyntax = syntax;
     }
 
-    /**
-   * @see org.eclipse.jface.text.formatter.IFormattingStrategy#formatterStarts(String)
-   */
     @Override
     public void formatterStarts(String initialIndentation)
     {
@@ -53,7 +54,9 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
     @Override
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
+        final String[] indentPrefixes = svConfig.getIndentPrefixes(sourceViewer, IDocument.DEFAULT_CONTENT_TYPE);
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
+        configuration.setIndentString(indentPrefixes[0]);
         return new SQLTokenizedFormatter().format(content, configuration);
     }
 
