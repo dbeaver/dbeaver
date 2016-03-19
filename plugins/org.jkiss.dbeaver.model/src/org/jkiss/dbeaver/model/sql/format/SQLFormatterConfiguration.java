@@ -24,7 +24,12 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Locale;
 
 /**
  * SQLFormatterConfiguration
@@ -35,6 +40,8 @@ public class SQLFormatterConfiguration {
     private DBPIdentifierCase keywordCase;
     private String indentString = "    ";
     private SQLSyntaxManager syntaxManager;
+    @NotNull
+    private String sourceEncoding = ContentUtils.DEFAULT_CHARSET;
 
     public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
     {
@@ -78,8 +85,25 @@ public class SQLFormatterConfiguration {
         this.keywordCase = keyword;
     }
 
+    @NotNull
+    public String getSourceEncoding() {
+        return sourceEncoding;
+    }
+
+    public void setSourceEncoding(@NotNull String sourceEncoding) {
+        this.sourceEncoding = sourceEncoding;
+    }
+
     public boolean isFunction(String name) {
         return syntaxManager.getDialect().getKeywordType(name) == DBPKeywordType.FUNCTION;
     }
 
+    public SQLFormatter createFormatter() {
+        final String formatterId = CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH);
+        if (SQLExternalFormatter.FORMATTER_ID.equals(formatterId)) {
+            return new SQLTokenizedFormatter();
+        } else {
+            return new SQLExternalFormatter();
+        }
+    }
 }
