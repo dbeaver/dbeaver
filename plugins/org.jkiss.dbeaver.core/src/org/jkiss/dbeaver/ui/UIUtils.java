@@ -490,7 +490,7 @@ public class UIUtils {
     {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
         return textLabel;
     }
 
@@ -616,11 +616,21 @@ public class UIUtils {
 
     public static Combo createLabelCombo(Composite parent, String label, int style)
     {
+        return createLabelCombo(parent, label, null, style);
+    }
+
+    public static Combo createLabelCombo(Composite parent, String label, String tooltip, int style)
+    {
         Label labelControl = createControlLabel(parent, label);
-        // labelControl.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (tooltip != null) {
+            labelControl.setToolTipText(tooltip);
+        }
 
         final Combo combo = new Combo(parent, style);
         combo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (tooltip != null) {
+            combo.setToolTipText(tooltip);
+        }
 
         return combo;
     }

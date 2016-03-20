@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * General connection page (common for all connection types)
@@ -74,17 +75,19 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private Button autocommit;
     private Combo isolationLevel;
     private Combo defaultSchema;
+    private Spinner keepAliveInterval;
+
     private Button showSystemObjects;
     private Button readOnlyConnection;
     private Button eventsButton;
     private Font boldFont;
 
     private boolean connectionNameChanged = false;
-    private java.util.List<FilterInfo> filters = new ArrayList<>();
+    private List<FilterInfo> filters = new ArrayList<>();
     private Group filtersGroup;
     private boolean activated = false;
-    private java.util.List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
-    private java.util.List<String> bootstrapQueries;
+    private List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
+    private List<String> bootstrapQueries;
     private boolean ignoreBootstrapErrors;
 
     private static class FilterInfo {
@@ -356,6 +359,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 autocommit = UIUtils.createLabelCheckbox(
                     txnGroup,
                     CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
+                    "Sets auto-commit mode for all connections",
                     dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
                 autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
                 autocommit.addSelectionListener(new SelectionAdapter() {
@@ -368,15 +372,13 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     }
                 });
 
-                isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", SWT.DROP_DOWN | SWT.READ_ONLY);
-                isolationLevel.setToolTipText(
-                    "Default transaction isolation level.");
-                defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema", SWT.DROP_DOWN);
-                defaultSchema.setToolTipText(
-                    "Name of schema or catalog which will be set as default.");
+                isolationLevel = UIUtils.createLabelCombo(txnGroup, "Isolation level", "Default transaction isolation level.", SWT.DROP_DOWN | SWT.READ_ONLY);
+                defaultSchema = UIUtils.createLabelCombo(txnGroup, "Default schema", "Name of schema or catalog which will be set as default.", SWT.DROP_DOWN);
 
-                UIUtils.createControlLabel(txnGroup, "Bootstrap queries");
-                Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                String bootstrapTooltip = "SQL queries to execute right after connection establishment";
+                UIUtils.createControlLabel(txnGroup, "Bootstrap queries").setToolTipText(bootstrapTooltip);
+                final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, "Configure ...", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                queriesConfigButton.setToolTipText(bootstrapTooltip);
                 if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
                     queriesConfigButton.setFont(boldFont);
                 }
@@ -393,6 +395,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                         }
                     }
                 });
+
+                keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, "Keep-Alive", "Keep-alive interval (in seconds). Zero turns keep-alive off", 0, 0, Short.MAX_VALUE);
             }
 
             {
@@ -418,7 +422,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             {
                 // Filters
                 filtersGroup = UIUtils.createControlGroup(
-                    rightSide,
+                    leftSide,
                     CoreMessages.dialog_connection_wizard_final_group_filters,
                     1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
@@ -447,7 +451,6 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
 
         {
-            //Composite buttonsGroup = UIUtils.createPlaceholder(group, 3);
             Composite buttonsGroup = new Composite(group, SWT.NONE);
             gl = new GridLayout(1, false);
             gl.verticalSpacing = 0;
@@ -563,7 +566,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                final java.util.List<String> schemaNames = new ArrayList<>();
+                final List<String> schemaNames = new ArrayList<>();
                 Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
                 if (children != null) {
                     for (DBSObject child : children) {
