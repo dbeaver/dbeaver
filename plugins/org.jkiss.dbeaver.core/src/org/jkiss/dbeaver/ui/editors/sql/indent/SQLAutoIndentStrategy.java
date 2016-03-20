@@ -136,12 +136,13 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         try {
             document.replace(command.offset, command.length, command.text);
             document.replace(command.offset, command.text.length(), result.toString());
-        } catch (BadLocationException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.warn(e);
         }
 
-        command.text = null;
         command.caretOffset = command.offset + result.length();
+        command.text = null;
+        command.length = 0;
         command.doit = false;
 
         return true;
