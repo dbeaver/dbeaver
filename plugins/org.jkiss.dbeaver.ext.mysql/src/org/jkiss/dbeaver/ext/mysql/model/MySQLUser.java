@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -177,35 +178,43 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
                         List<MySQLPrivilege> privileges = new ArrayList<>();
                         boolean allPrivilegesFlag = false;
                         boolean grantOption = false;
-                        String catalog;
-                        String table;
+                        String catalog = null;
+                        String table = null;
 
-                        String grantString = JDBCUtils.safeGetString(dbResult, 1).trim().toUpperCase(Locale.ENGLISH);
+                        String grantString = CommonUtils.notEmpty(JDBCUtils.safeGetString(dbResult, 1)).trim().toUpperCase(Locale.ENGLISH);
                         if (grantString.endsWith(" WITH GRANT OPTION")) {
                             grantOption = true;//privileges.add(getDataSource().getPrivilege(monitor, MySQLPrivilege.GRANT_PRIVILEGE));
                         }
-                        Matcher matcher = MySQLGrant.GRANT_PATTERN.matcher(grantString);
+                        String privString;
+                        Matcher matcher = MySQLGrant.TABLE_GRANT_PATTERN.matcher(grantString);
                         if (matcher.find()) {
-                            StringTokenizer st = new StringTokenizer(matcher.group(1), ",");
-                            while (st.hasMoreTokens()) {
-                                String privName = st.nextToken().trim();
-                                if (privName.equalsIgnoreCase(MySQLPrivilege.ALL_PRIVILEGES)) {
-                                    allPrivilegesFlag = true;
-                                    continue;
-                                }
-                                MySQLPrivilege priv = getDataSource().getPrivilege(monitor, privName);
-                                if (priv == null) {
-                                    log.warn("Can't find privilege '" + privName + "'");
-                                } else {
-                                    privileges.add(priv);
-                                }
-                            }
+                            privString = matcher.group(1);
                             catalog = matcher.group(2);
                             table = matcher.group(3);
                         } else {
-                            log.warn("Can't parse GRANT string: " + grantString);
-                            continue;
+                            matcher = MySQLGrant.GLOBAL_GRANT_PATTERN.matcher(grantString);
+                            if (matcher.find()) {
+                                privString = matcher.group(1);
+                            } else {
+                                log.warn("Can't parse GRANT string: " + grantString);
+                                continue;
+                            }
                         }
+                        StringTokenizer st = new StringTokenizer(privString, ",");
+                        while (st.hasMoreTokens()) {
+                            String privName = st.nextToken().trim();
+                            if (privName.equalsIgnoreCase(MySQLPrivilege.ALL_PRIVILEGES)) {
+                                allPrivilegesFlag = true;
+                                continue;
+                            }
+                            MySQLPrivilege priv = getDataSource().getPrivilege(monitor, privName);
+                            if (priv == null) {
+                                log.warn("Can't find privilege '" + privName + "'");
+                            } else {
+                                privileges.add(priv);
+                            }
+                        }
+
                         grants.add(
                             new MySQLGrant(
                                 this,
