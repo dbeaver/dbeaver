@@ -20,3 +20,6 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
  org.eclipse.help,
  org.eclipse.core.filesystem
+Require-Bundle2: org.eclipse.e4.ui.css.core,
+ org.eclipse.e4.ui.css.swt,
+ org.eclipse.e4.ui.workbench.renderers.swt
