@@ -32,6 +32,7 @@ import java.util.Map;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
+    private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
 
     private String partitioning;
     private SQLSyntaxManager syntaxManager;
@@ -59,7 +60,11 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             return;
         }
 
-        if (command.length == 0 && command.text != null) {
+        if (command.text != null && command.text.length() > MINIMUM_SOUCE_CODE_LENGTH) {
+            if (syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)) {
+                transformSourceCode(command);
+            }
+        } else if (command.length == 0 && command.text != null) {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);
             try {
                 if (command.offset > 1 && Character.isJavaIdentifierPart(document.getChar(command.offset - 1)) &&
@@ -77,9 +82,63 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
     }
 
-    private boolean updateKeywordCase(IDocument document, DocumentCommand command) throws BadLocationException {
+    private boolean transformSourceCode(DocumentCommand command) {
+        String sourceCode = command.text;
+        int quoteStart = -1, quoteEnd = -1;
+        for (int i = 0; i < sourceCode.length(); i++) {
+            final char ch = sourceCode.charAt(i);
+            if (ch == '"') {
+                quoteStart = i;
+                break;
+            } else if (Character.isUnicodeIdentifierPart(ch)) {
+                // Letter before quote
+                return false;
+            }
+        }
+        for (int i = sourceCode.length() - 1; i >= 0; i--) {
+            final char ch = sourceCode.charAt(i);
+            if (ch == '"') {
+                quoteEnd = i;
+                break;
+            } else if (Character.isUnicodeIdentifierPart(ch)) {
+                // Letter before quote
+                return false;
+            }
+        }
+        StringBuilder result = new StringBuilder(sourceCode.length());
+        char prevChar = (char)-1;
+        boolean inString = true;
+        for (int i = quoteStart + 1; i < quoteEnd; i++) {
+            final char ch = sourceCode.charAt(i);
+            if (prevChar == '\\' && inString) {
+                switch (ch) {
+                    case 'n': result.append("\n"); break;
+                    case 'r': result.append("\r"); break;
+                    case 't': result.append("\t"); break;
+                    default: result.append(ch); break;
+                }
+            } else {
+                switch (ch) {
+                    case '"':
+                        inString = !inString;
+                        break;
+                    case '\\':
+                        break;
+                    default:
+                        if (inString) {
+                            result.append(ch);
+                        }
+                }
+            }
+            prevChar = ch;
+        }
+        command.text = result.toString();
+        return true;
+    }
+
+    private boolean updateKeywordCase(final IDocument document, DocumentCommand command) throws BadLocationException {
         // Whitespace - check for keyword
-        int startPos, endPos;
+        final int startPos, endPos;
         int pos = command.offset;
         while (pos >= 0 && Character.isWhitespace(document.getChar(pos))) {
             pos--;
@@ -91,9 +150,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         startPos = pos + 1;
         final String keyword = document.get(startPos, endPos - startPos);
         if (syntaxManager.getDialect().getKeywordType(keyword) == DBPKeywordType.KEYWORD) {
-            String fixedKeyword = syntaxManager.getKeywordCase().transform(keyword);
+            final String fixedKeyword = syntaxManager.getKeywordCase().transform(keyword);
             if (!fixedKeyword.equals(keyword)) {
-                document.replace(startPos, endPos - startPos, fixedKeyword);
+                command.addCommand(startPos, endPos - startPos, fixedKeyword, null);
+                command.doit = false;
                 return true;
             }
         }
