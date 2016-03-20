@@ -276,7 +276,7 @@ public class DBPConnectionConfiguration implements DBPObject
     }
 
     /**
-     * Keep-Alive interval (ms).
+     * Keep-Alive interval (seconds).
      * Zero or negative means no keep-alive.
      */
     public int getKeepAliveInterval() {
