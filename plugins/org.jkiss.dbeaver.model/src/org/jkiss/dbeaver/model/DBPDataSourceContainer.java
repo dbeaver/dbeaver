@@ -104,6 +104,10 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     DBPClientHome getClientHome();
 
+    /**
+     * Checks this data source is connected.
+     * Do not check whether underlying connection is alive or not.
+     */
     boolean isConnected();
 
     /**

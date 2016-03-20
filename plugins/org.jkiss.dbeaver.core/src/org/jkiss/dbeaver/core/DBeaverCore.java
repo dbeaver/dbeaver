@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
+import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
@@ -217,6 +218,10 @@ public class DBeaverCore implements DBPApplication {
                 log.error("Error activating plugin service", e);
             }
         }
+
+        // Keep-alive job
+        new KeepAliveJob().scheduleMonitor();
+
         log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
