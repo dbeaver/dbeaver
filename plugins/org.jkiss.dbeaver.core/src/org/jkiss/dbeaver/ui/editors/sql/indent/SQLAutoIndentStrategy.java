@@ -62,7 +62,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
         if (command.text != null && command.text.length() > MINIMUM_SOUCE_CODE_LENGTH) {
             if (syntaxManager.getPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)) {
-                transformSourceCode(command);
+                transformSourceCode(document, command);
             }
         } else if (command.length == 0 && command.text != null) {
             final boolean lineDelimiter = isLineDelimiter(document, command.text);
@@ -82,7 +82,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
     }
 
-    private boolean transformSourceCode(DocumentCommand command) {
+    private boolean transformSourceCode(IDocument document, DocumentCommand command) {
         String sourceCode = command.text;
         int quoteStart = -1, quoteEnd = -1;
         for (int i = 0; i < sourceCode.length(); i++) {
@@ -132,7 +132,18 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             }
             prevChar = ch;
         }
-        command.text = result.toString();
+
+        try {
+            document.replace(command.offset, command.length, command.text);
+            document.replace(command.offset, command.text.length(), result.toString());
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+
+        command.text = null;
+        command.caretOffset = command.offset + result.length();
+        command.doit = false;
+
         return true;
     }
 
