@@ -50,7 +50,7 @@ public class PingJob extends AbstractJob
             try {
                 context.isContextAlive(monitor);
             } catch (Exception e) {
-                log.debug("Context [" + context.getContextName() + "] seems to be dead");
+                log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
             }
         }
         return Status.OK_STATUS;

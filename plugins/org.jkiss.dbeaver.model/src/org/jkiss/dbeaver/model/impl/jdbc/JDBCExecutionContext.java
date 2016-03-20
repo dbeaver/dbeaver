@@ -154,7 +154,9 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
     @Override
     public void isContextAlive(DBRProgressMonitor monitor) throws DBException {
-        JDBCUtils.isConnectionAlive(getConnection());
+        if (!JDBCUtils.isConnectionAlive(getConnection())) {
+            throw new DBCException("Connection is dead");
+        }
     }
 
     @Override

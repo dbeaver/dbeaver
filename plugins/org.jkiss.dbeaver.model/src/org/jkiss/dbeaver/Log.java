@@ -111,9 +111,8 @@ public class Log
     private static void debugMessage(Object message, Throwable t, PrintStream debugWriter) {
         synchronized (Log.class) {
             debugWriter.print(sdf.format(new Date()) + " - ");
-            if (t == null) {
-                debugWriter.println(message);
-            } else {
+            debugWriter.println(message);
+            if (t != null) {
                 t.printStackTrace(debugWriter);
             }
             debugWriter.flush();
