@@ -178,7 +178,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (dataSourceDescriptor != null) {
             if (!activated) {
                 // Get settings from data source descriptor
-                connectionTypeCombo.select(dataSourceDescriptor.getConnectionConfiguration().getConnectionType());
+                final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
+                connectionTypeCombo.select(conConfig.getConnectionType());
                 savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
@@ -204,7 +205,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     isolationLevel.setEnabled(false);
                 }
                 defaultSchema.setText(CommonUtils.notEmpty(
-                    dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getDefaultObjectName()));
+                    conConfig.getBootstrap().getDefaultObjectName()));
+                keepAliveInterval.setSelection(conConfig.getKeepAliveInterval());
                 activated = true;
             }
         } else {
@@ -525,8 +527,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
         }
+
+        final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
+
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
-            dataSource.getConnectionConfiguration().setConnectionType(
+            confConfig.setConnectionType(
                 (DBPConnectionType) connectionTypeCombo.getData(connectionTypeCombo.getSelectionIndex()));
         }
         for (FilterInfo filterInfo : filters) {
@@ -534,9 +539,11 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
             }
         }
-        DBPConnectionBootstrap bootstrap = dataSource.getConnectionConfiguration().getBootstrap();
+        DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();
         bootstrap.setIgnoreErrors(ignoreBootstrapErrors);
         bootstrap.setInitQueries(bootstrapQueries);
+
+        confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
     }
 
     private void configureEvents()
