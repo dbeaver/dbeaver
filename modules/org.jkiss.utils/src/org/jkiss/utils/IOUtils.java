@@ -126,10 +126,12 @@ public final class IOUtils {
 		outputStream.flush();
 	}
 
-	public static String toString(Reader reader) throws IOException {
-		StringWriter writer = new StringWriter();
-		copyText(reader, writer, DEFAULT_BUFFER_SIZE);
-		return writer.toString();
+	public static String toString(File file) throws IOException {
+		try (Reader reader = new FileReader(file)) {
+			StringWriter writer = new StringWriter();
+			copyText(reader, writer, DEFAULT_BUFFER_SIZE);
+			return writer.toString();
+		}
 	}
 
 	/**
@@ -146,9 +148,6 @@ public final class IOUtils {
 		for (int br = reader.read(writeBuffer); br != -1; br = reader.read(writeBuffer)) {
 			writer.write(writeBuffer, 0, br);
 		}
-
-		// Close input stream
-		reader.close();
 		writer.flush();
 	}
 

@@ -152,7 +152,7 @@ public class BinaryEditorInput implements IEditorInput {
         public void setContents(IProgressMonitor monitor, InputStream stream) throws CoreException {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
-                IOUtils.copyStream(stream, baos, 10000);
+                IOUtils.copyStream(stream, baos);
             } catch (IOException e) {
                 throw new CoreException(GeneralUtils.makeExceptionStatus(e));
             }

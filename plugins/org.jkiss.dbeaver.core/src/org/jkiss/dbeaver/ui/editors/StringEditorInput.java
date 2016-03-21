@@ -157,7 +157,7 @@ public class StringEditorInput implements IEditorInput {
         public void setContents(IProgressMonitor monitor, InputStream stream) throws CoreException {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             try {
-                IOUtils.copyStream(stream, baos, 10000);
+                IOUtils.copyStream(stream, baos);
                 buffer.setLength(0);
                 buffer.append(new String(baos.toByteArray(), encoding));
             } catch (IOException e) {

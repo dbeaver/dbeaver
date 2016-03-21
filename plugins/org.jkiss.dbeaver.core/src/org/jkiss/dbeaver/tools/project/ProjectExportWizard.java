@@ -223,11 +223,8 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
                         final ZipEntry driverFile = new ZipEntry(ExportConstants.DIR_DRIVERS + "/" + libFileName); //$NON-NLS-1$
                         driverFile.setComment("Driver library"); //$NON-NLS-1$
                         exportData.archiveStream.putNextEntry(driverFile);
-                        InputStream is = new FileInputStream(libFile);
-                        try {
+                        try (InputStream is = new FileInputStream(libFile)) {
                             IOUtils.copyStream(is, exportData.archiveStream, COPY_BUFFER_SIZE);
-                        } finally {
-                            ContentUtils.close(is);
                         }
 
                         exportData.archiveStream.closeEntry();
@@ -327,7 +324,9 @@ public class ProjectExportWizard extends Wizard implements IExportWizard {
             // Add file to archive
             IFile file = (IFile)resource;
             exportData.archiveStream.putNextEntry(new ZipEntry(parentPath + resource.getName()));
-            IOUtils.copyStream(file.getContents(), exportData.archiveStream, COPY_BUFFER_SIZE);
+            try (InputStream is = file.getContents()) {
+                IOUtils.copyStream(is, exportData.archiveStream, COPY_BUFFER_SIZE);
+            }
             exportData.archiveStream.closeEntry();
         } else {
             // Just skip it
