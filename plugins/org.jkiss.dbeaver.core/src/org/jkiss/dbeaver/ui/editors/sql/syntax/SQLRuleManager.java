@@ -247,6 +247,9 @@ public class SQLRuleManager extends RuleBasedScanner {
             int index = 0, maxLength = 0;
             for (Iterator<String> iter = delimiters.iterator(); iter.hasNext(); ) {
                 this.delimiters[index] = iter.next().toCharArray();
+                for (int i = 0; i < this.delimiters[index].length; i++) {
+                    this.delimiters[index][i] = Character.toUpperCase(this.delimiters[index][i]);
+                }
                 maxLength = Math.max(maxLength, this.delimiters[index].length);
                 index++;
             }
@@ -260,6 +263,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                 int c = scanner.read();
                 boolean matches = false;
                 if (c != ICharacterScanner.EOF) {
+                    c = Character.toUpperCase(c);
                     for (int k = 0; k < delimiters.length; k++) {
                         if (i < delimiters[k].length && delimiters[k][i] == c) {
                             buffer[i] = (char)c;
