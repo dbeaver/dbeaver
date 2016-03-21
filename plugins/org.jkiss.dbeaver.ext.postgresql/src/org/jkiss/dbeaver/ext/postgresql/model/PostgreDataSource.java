@@ -166,9 +166,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             }
             String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
             if (searchPathStr != null) {
-                Collections.addAll(this.searchPath, searchPathStr.replace("$user", activeUser).split(","));
+                for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
+                    this.searchPath.add(DBUtils.getUnQuotedIdentifier(str, "\""));
+                }
             } else {
-                this.searchPath.add("public");
+                this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
             }
         } catch (SQLException e) {
             log.error("Error reading connection meta info");
