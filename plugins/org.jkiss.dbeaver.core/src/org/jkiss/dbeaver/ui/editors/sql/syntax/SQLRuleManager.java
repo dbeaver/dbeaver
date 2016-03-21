@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -116,6 +117,8 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
         final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
+        final SQLBlockToggleToken blockToggleToken = new SQLBlockToggleToken(
+            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<>();
@@ -162,17 +165,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                 delimRule.addWord(delimiter, delimiterToken);
             } else {
                 // Default delim rule
-                delimRule = new WordRule(new IWordDetector() {
-                    @Override
-                    public boolean isWordStart(char c) {
-                        return delimiter.charAt(0) == c;
-                    }
-
-                    @Override
-                    public boolean isWordPart(char c) {
-                        return delimiter.indexOf(c) != -1;
-                    }
-                }, Token.UNDEFINED, false);
+                delimRule = new WordRule(new SymbolSequenceDetector(delimiter), Token.UNDEFINED, false);
                 delimRule.addWord(delimiter, delimiterToken);
             }
             rules.add(delimRule);
@@ -192,6 +185,17 @@ public class SQLRuleManager extends RuleBasedScanner {
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
         wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
         rules.add(wordRule);
+
+        final String blockToggleString = dialect.getBlockToggleString();
+        if (!CommonUtils.isEmpty(blockToggleString)) {
+            IRule blockToggleRule;
+            if (Character.isLetterOrDigit(blockToggleString.charAt(0))) {
+                blockToggleRule = new WordRule(new SQLWordDetector(), blockToggleToken, true);
+            } else {
+                blockToggleRule = new WordRule(new SymbolSequenceDetector(blockToggleString), blockToggleToken, false);
+            }
+            rules.add(blockToggleRule);
+        }
 
         // Parameter rule
         rules.add(new ParametersRule(parameterToken));
@@ -214,6 +218,24 @@ public class SQLRuleManager extends RuleBasedScanner {
             color = Display.getDefault().getSystemColor(colorDefault);
         }
         return color;
+    }
+
+    private static class SymbolSequenceDetector implements IWordDetector {
+        private final String delimiter;
+
+        public SymbolSequenceDetector(String delimiter) {
+            this.delimiter = delimiter;
+        }
+
+        @Override
+        public boolean isWordStart(char c) {
+            return delimiter.charAt(0) == c;
+        }
+
+        @Override
+        public boolean isWordPart(char c) {
+            return delimiter.indexOf(c) != -1;
+        }
     }
 
     private class ParametersRule implements IRule {

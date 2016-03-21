@@ -148,6 +148,14 @@ public interface SQLDialect {
     String getScriptDelimiter();
 
     /**
+     * Script block toggle string.
+     * Begins and ends SQL blocks.
+     * @return block toggle string or null (not supported)
+     */
+    @Nullable
+    String getBlockToggleString();
+
+    /**
      * Retrieves whether a catalog appears at the start of a fully qualified
      * table name.  If not, the catalog appears at the end.
      *
