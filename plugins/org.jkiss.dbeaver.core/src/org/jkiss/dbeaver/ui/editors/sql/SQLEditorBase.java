@@ -682,7 +682,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 if (token.isEOF()) {
                     return null;
                 }
-                if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLCommentToken) && !(token instanceof SQLSetDelimiterToken)) {
+                if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLSetDelimiterToken)) {
                     hasValuableTokens = true;
                 }
             }
