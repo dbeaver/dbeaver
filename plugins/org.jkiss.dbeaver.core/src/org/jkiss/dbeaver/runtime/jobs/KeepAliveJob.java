@@ -59,6 +59,9 @@ public class KeepAliveJob extends AbstractJob
     {
         final DBeaverCore core = DBeaverCore.getInstance();
         final ProjectRegistry projectRegistry = core.getProjectRegistry();
+        if (projectRegistry == null) {
+            return Status.OK_STATUS;
+        }
         for (IProject project : core.getLiveProjects()) {
             if (!project.isOpen()) {
                 continue;
