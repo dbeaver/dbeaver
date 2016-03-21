@@ -587,6 +587,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     log.warn(e);
                 }
             }
+            if (token instanceof SQLSetDelimiterToken) {
+                statementStart = tokenOffset + tokenLength;
+                continue;
+            }
             if (token instanceof SQLBlockToggleToken) {
                 if (bracketDepth == 1) {
                     bracketDepth--;
