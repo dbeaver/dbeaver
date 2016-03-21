@@ -54,10 +54,20 @@ public class SQLRuleManager extends RuleBasedScanner {
     private Set<SQLScriptPosition> addedPositions = new HashSet<>();
     private Set<SQLScriptPosition> removedPositions = new HashSet<>();
 
+    private boolean evalMode;
+
     public SQLRuleManager(@NotNull SQLSyntaxManager syntaxManager)
     {
         this.syntaxManager = syntaxManager;
         this.themeManager = PlatformUI.getWorkbench().getThemeManager();
+    }
+
+    public boolean isEvalMode() {
+        return evalMode;
+    }
+
+    public void setEvalMode(boolean evalMode) {
+        this.evalMode = evalMode;
     }
 
     public void dispose()
@@ -245,11 +255,12 @@ public class SQLRuleManager extends RuleBasedScanner {
     }
 
     private static class DelimiterRule implements IRule {
-        private final char[][] delimiters;
         private final IToken token;
-        private char[] buffer;
+        private char[][] delimiters, origDelimiters;
+        private char[] buffer, origBuffer;
         public DelimiterRule(Collection<String> delimiters, IToken token) {
-            this.delimiters = new char[delimiters.size()][];
+            this.token = token;
+            this.origDelimiters = this.delimiters = new char[delimiters.size()][];
             int index = 0, maxLength = 0;
             for (Iterator<String> iter = delimiters.iterator(); iter.hasNext(); ) {
                 this.delimiters[index] = iter.next().toCharArray();
@@ -259,8 +270,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                 maxLength = Math.max(maxLength, this.delimiters[index].length);
                 index++;
             }
-            this.token = token;
-            this.buffer = new char[maxLength];
+            this.origBuffer = this.buffer = new char[maxLength];
         }
 
         @Override
@@ -306,6 +316,17 @@ public class SQLRuleManager extends RuleBasedScanner {
                 }
             }
             return true;
+        }
+
+        public void changeDelimiter(String newDelimiter) {
+            if (CommonUtils.isEmpty(newDelimiter)) {
+                this.delimiters = this.origDelimiters;
+                this.buffer = this.origBuffer;
+            } else {
+                this.delimiters = new char[1][];
+                this.delimiters[0] = newDelimiter.toUpperCase(Locale.ENGLISH).toCharArray();
+                this.buffer = new char[newDelimiter.length()];
+            }
         }
     }
 
@@ -429,7 +450,10 @@ public class SQLRuleManager extends RuleBasedScanner {
                 }
                 scanner.unread();
             }
-            final String newDelimiter = delimBuffer.toString().trim();
+            if (scanner instanceof SQLRuleManager && ((SQLRuleManager) scanner).isEvalMode()) {
+                final String newDelimiter = delimBuffer.toString().trim();
+                delimiterRule.changeDelimiter(newDelimiter);
+            }
 
             return setDelimiterToken;
         }
