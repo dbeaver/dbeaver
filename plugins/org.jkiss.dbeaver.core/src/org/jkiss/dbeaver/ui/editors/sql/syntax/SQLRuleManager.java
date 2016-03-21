@@ -119,8 +119,6 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
         final SQLBlockToggleToken blockToggleToken = new SQLBlockToggleToken(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
-        final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
-            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<>();
@@ -167,6 +165,9 @@ public class SQLRuleManager extends RuleBasedScanner {
             // Delimiter redefine
             String delimRedefine = dialect.getScriptDelimiterRedefiner();
             if (!CommonUtils.isEmpty(delimRedefine)) {
+                final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
+                    new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
+
                 rules.add(new SetDelimiterRule(delimRedefine, setDelimiterToken, delimRule));
             }
         }
@@ -324,10 +325,6 @@ public class SQLRuleManager extends RuleBasedScanner {
         @Override
         public IToken evaluate(ICharacterScanner scanner)
         {
-            int column = scanner.getColumn();
-            if (column  <= 0) {
-                return Token.UNDEFINED;
-            }
             scanner.unread();
             int prevChar = scanner.read();
             if (Character.isJavaIdentifierPart(prevChar) ||
@@ -390,11 +387,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         @Override
         public IToken evaluate(ICharacterScanner scanner) {
             // Must be in the beginning of line
-            int column = scanner.getColumn();
-            if (column != 0) {
+            {
                 scanner.unread();
                 int prevChar = scanner.read();
-                if (prevChar != '\r' && prevChar != '\n') {
+                if (prevChar != ICharacterScanner.EOF && prevChar != '\r' && prevChar != '\n') {
                     return Token.UNDEFINED;
                 }
             }
