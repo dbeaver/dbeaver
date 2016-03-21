@@ -425,6 +425,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     public PostgreDataType getDataType(String typeName) {
+        {
+            // First check system catalog
+            final PostgreSchema schema = schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
+            if (schema != null) {
+                final PostgreDataType dataType = schema.dataTypeCache.getCachedObject(typeName);
+                if (dataType != null) {
+                    return dataType;
+                }
+            }
+        }
+
+        // Check schemas in search path
         final List<String> searchPath = dataSource.getSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
@@ -435,6 +447,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 }
             }
         }
+        // Check the rest
         for (PostgreSchema schema : schemaCache.getCachedObjects()) {
             if (searchPath.contains(schema.getName())) {
                 continue;
