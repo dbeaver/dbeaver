@@ -147,6 +147,9 @@ public interface SQLDialect {
     @NotNull
     String getScriptDelimiter();
 
+    @Nullable
+    String getScriptDelimiterRedefiner();
+
     /**
      * Script block toggle string.
      * Begins and ends SQL blocks.

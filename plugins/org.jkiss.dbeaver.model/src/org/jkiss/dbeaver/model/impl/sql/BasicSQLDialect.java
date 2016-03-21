@@ -224,6 +224,12 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Nullable
     @Override
+    public String getScriptDelimiterRedefiner() {
+        return null;
+    }
+
+    @Nullable
+    @Override
     public String getBlockToggleString() {
         return null;
     }
