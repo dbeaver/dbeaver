@@ -587,10 +587,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     log.warn(e);
                 }
             }
-            if (token instanceof SQLSetDelimiterToken) {
-                statementStart = tokenOffset + tokenLength;
-                continue;
-            }
             if (token instanceof SQLBlockToggleToken) {
                 if (bracketDepth == 1) {
                     bracketDepth--;
@@ -611,7 +607,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
+            } else if (token instanceof SQLSetDelimiterToken) {
+                isDelimiter = true;
             }
+
             if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
                 // get position before last token start
                 if (tokenOffset > endPos) {
@@ -625,7 +624,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 }
                 assert (tokenOffset >= currentPos);
                 try {
-                    String queryText = document.get(statementStart, tokenOffset - statementStart);
 
                     // remove leading spaces
                     while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
@@ -637,27 +635,35 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     }
                     if (tokenOffset == statementStart) {
                         // Empty statement
-                        return null;
+                        if (token.isEOF()) {
+                            return null;
+                        }
+                        statementStart = tokenOffset + tokenLength;
+                        continue;
                     }
-
-                    Collection<String> delimiterTexts;
-                    if (isDelimiter) {
-                        delimiterTexts = Collections.singleton(delimiterText);
-                    } else {
-                        delimiterTexts = syntaxManager.getStatementDelimiters();
-                    }
+                    String queryText = document.get(statementStart, tokenOffset - statementStart);
 
                     // FIXME: includes last delimiter in query (Oracle?)
                     if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
-                        queryText = (queryText + delimiterText).trim();
-                    } else {
-                        queryText = queryText.trim();
+                        if (delimiterText != null) {
+                            queryText += delimiterText;
+                        }
+                    }
+                    // FIXME: don't remember what is is for. Delimiters are not in queries anyway
+                    /* else {
+                        Collection<String> delimiterTexts;
+                        if (isDelimiter) {
+                            delimiterTexts = Collections.singleton(delimiterText);
+                        } else {
+                            delimiterTexts = syntaxManager.getStatementDelimiters();
+                        }
+
                         for (String delim : delimiterTexts) {
                             if (queryText.endsWith(delim)) {
                                 queryText = queryText.substring(0, queryText.length() - delim.length());
                             }
                         }
-                    }
+                    }*/
                     // make script line
                     return new SQLQuery(
                         queryText.trim(),
@@ -674,7 +680,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             if (token.isEOF()) {
                 return null;
             }
-            if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLCommentToken)) {
+            if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLCommentToken) && !(token instanceof SQLSetDelimiterToken)) {
                 hasValuableTokens = true;
             }
         }
