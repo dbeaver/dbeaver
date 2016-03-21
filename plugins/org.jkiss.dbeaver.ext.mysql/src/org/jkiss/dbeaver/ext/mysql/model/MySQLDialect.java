@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
@@ -29,6 +30,12 @@ class MySQLDialect extends JDBCSQLDialect {
     public MySQLDialect(MySQLDataSource oracleDataSource, JDBCDatabaseMetaData metaData) {
         super(oracleDataSource, "MySQL", metaData);
         //addSQLKeyword("STATISTICS");
+    }
+
+    @Nullable
+    @Override
+    public String getScriptDelimiterRedefiner() {
+        return "DELIMITER";
     }
 
     @NotNull

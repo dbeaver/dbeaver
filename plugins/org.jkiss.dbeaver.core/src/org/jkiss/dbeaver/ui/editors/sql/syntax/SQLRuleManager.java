@@ -163,8 +163,13 @@ public class SQLRuleManager extends RuleBasedScanner {
         DelimiterRule delimRule = new DelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
         rules.add(delimRule);
 
-        // Delimiter redefine
-        rules.add(new SetDelimiterRule("DELIMITER", setDelimiterToken, delimRule));
+        {
+            // Delimiter redefine
+            String delimRedefine = dialect.getScriptDelimiterRedefiner();
+            if (!CommonUtils.isEmpty(delimRedefine)) {
+                rules.add(new SetDelimiterRule(delimRedefine, setDelimiterToken, delimRule));
+            }
+        }
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
