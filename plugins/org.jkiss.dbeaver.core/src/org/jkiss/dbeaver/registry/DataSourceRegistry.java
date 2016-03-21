@@ -469,15 +469,18 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             if (connectionInfo.getConnectionColor() != null) {
                 xml.addAttribute(RegistryConstants.ATTR_COLOR, connectionInfo.getConnectionColor());
             }
-            if (connectionInfo.getProperties() != null) {
-
-                for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
-                    xml.startElement(RegistryConstants.TAG_PROPERTY);
-                    xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
-                    xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
-                    xml.endElement();
-                }
+            // Save other
+            if (connectionInfo.getKeepAliveInterval() > 0) {
+                xml.addAttribute(RegistryConstants.ATTR_KEEP_ALIVE, connectionInfo.getKeepAliveInterval());
             }
+
+            for (Map.Entry<Object, Object> entry : connectionInfo.getProperties().entrySet()) {
+                xml.startElement(RegistryConstants.TAG_PROPERTY);
+                xml.addAttribute(RegistryConstants.ATTR_NAME, CommonUtils.toString(entry.getKey()));
+                xml.addAttribute(RegistryConstants.ATTR_VALUE, CommonUtils.toString(entry.getValue()));
+                xml.endElement();
+            }
+
             // Save events
             for (DBPConnectionEventType eventType : connectionInfo.getDeclaredEvents()) {
                 DBRShellCommand command = connectionInfo.getEvent(eventType);
@@ -542,6 +545,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 }
                 xml.endElement();
             }
+
 
             xml.endElement();
         }
@@ -699,17 +703,21 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         curDataSource.setProvided(true);
                     }
                     curDataSource.setName(name);
-                    String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
-                    if (!CommonUtils.isEmpty(createDate)) {
-                        curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
-                    }
-                    String updateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
-                    if (!CommonUtils.isEmpty(updateDate)) {
-                        curDataSource.setUpdateDate(new Date(Long.parseLong(updateDate)));
-                    }
-                    String loginDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
-                    if (!CommonUtils.isEmpty(loginDate)) {
-                        curDataSource.setLoginDate(new Date(Long.parseLong(loginDate)));
+                    try {
+                        String createDate = atts.getValue(RegistryConstants.ATTR_CREATE_DATE);
+                        if (!CommonUtils.isEmpty(createDate)) {
+                            curDataSource.setCreateDate(new Date(Long.parseLong(createDate)));
+                        }
+                        String updateDate = atts.getValue(RegistryConstants.ATTR_UPDATE_DATE);
+                        if (!CommonUtils.isEmpty(updateDate)) {
+                            curDataSource.setUpdateDate(new Date(Long.parseLong(updateDate)));
+                        }
+                        String loginDate = atts.getValue(RegistryConstants.ATTR_LOGIN_DATE);
+                        if (!CommonUtils.isEmpty(loginDate)) {
+                            curDataSource.setLoginDate(new Date(Long.parseLong(loginDate)));
+                        }
+                    } catch (NumberFormatException e) {
+                        log.warn("Bad date value", e);
                     }
                     curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                     curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
@@ -759,6 +767,14 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         String colorValue = atts.getValue(RegistryConstants.ATTR_COLOR);
                         if (!CommonUtils.isEmpty(colorValue)) {
                             config.setConnectionColor(colorValue);
+                        }
+                        String keepAlive = atts.getValue(RegistryConstants.ATTR_KEEP_ALIVE);
+                        if (!CommonUtils.isEmpty(keepAlive)) {
+                            try {
+                                config.setKeepAliveInterval(Integer.parseInt(keepAlive));
+                            } catch (NumberFormatException e) {
+                                log.warn("Bad keep-alive interval value", e);
+                            }
                         }
                     }
                     break;

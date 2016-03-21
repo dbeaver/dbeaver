@@ -24,6 +24,7 @@ import org.eclipse.jface.text.templates.TemplateVariableResolver;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -50,6 +51,11 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
     @Override
     protected String[] resolveAll(final TemplateContext context)
     {
+        final DBCExecutionContext executionContext = ((DBPContextProvider) context).getExecutionContext();
+        if (executionContext == null) {
+            return super.resolveAll(context);
+        }
+
         TemplateVariable tableVariable = ((SQLContext) context).getTemplateVariable("table");
         final String tableName = tableVariable == null ? null : tableVariable.getDefaultValue();
         if (!CommonUtils.isEmpty(tableName)) {
@@ -61,7 +67,7 @@ public class SQLAttributeResolver extends TemplateVariableResolver {
                 {
                     try {
                         List<DBSEntity> entities = new ArrayList<>();
-                        SQLEntityResolver.resolveTables(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
+                        SQLEntityResolver.resolveTables(monitor, executionContext, context, entities);
                         if (!CommonUtils.isEmpty(entities)) {
                             DBSEntity table = DBUtils.findObject(entities, tableName);
                             if (table != null) {

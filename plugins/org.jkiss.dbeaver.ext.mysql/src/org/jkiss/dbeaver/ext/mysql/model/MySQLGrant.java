@@ -18,23 +18,29 @@
 
 package org.jkiss.dbeaver.ext.mysql.model;
 
+import org.jkiss.code.Nullable;
+
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * User privilege grant
  */
 public class MySQLGrant {
 
-    public static final java.util.regex.Pattern GRANT_PATTERN = java.util.regex.Pattern.compile("GRANT\\s+(.+)\\sON\\s`?([^`]+)`?\\.`?([^`]+)`?\\sTO\\s");
+    public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+");
+    public static final Pattern GLOBAL_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+(.+)\\s+TO\\s+");
 
     private MySQLUser user;
     private List<MySQLPrivilege> privileges;
+    @Nullable
     private String catalogName;
+    @Nullable
     private String tableName;
     private boolean allPrivileges;
     private boolean grantOption;
 
-    public MySQLGrant(MySQLUser user, List<MySQLPrivilege> privileges, String catalogName, String tableName, boolean allPrivileges, boolean grantOption)
+    public MySQLGrant(MySQLUser user, List<MySQLPrivilege> privileges, @Nullable String catalogName, @Nullable String tableName, boolean allPrivileges, boolean grantOption)
     {
         this.user = user;
         this.privileges = privileges;
@@ -59,11 +65,13 @@ public class MySQLGrant {
         return "*".equals(catalogName);
     }
 
+    @Nullable
     public String getCatalog()
     {
         return catalogName;
     }
 
+    @Nullable
     public String getTable()
     {
         return tableName;

@@ -207,6 +207,25 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
                 // Use void monitor because this object already read by readValue
                 object = getParent().getGroupObject(object, VoidProgressMonitor.INSTANCE);
             }
+            if (value == null) {
+                // Check for primitive argument
+                final Class<?> argType = setter.getParameterTypes()[0];
+                if (argType == Integer.TYPE) {
+                    value = 0;
+                } else if (argType == Short.TYPE) {
+                    value = (short)0;
+                } else if (argType == Long.TYPE) {
+                    value = 0l;
+                } else if (argType == Float.TYPE) {
+                    value = (float)0.0;
+                } else if (argType == Double.TYPE) {
+                    value = 0.0;
+                } else if (argType == Boolean.TYPE) {
+                    value = false;
+                } else if (argType == Character.TYPE) {
+                    value = ' ';
+                }
+            }
             setter.invoke(object, value);
         } else {
             throw new IllegalAccessError("No setter found for property " + getId());

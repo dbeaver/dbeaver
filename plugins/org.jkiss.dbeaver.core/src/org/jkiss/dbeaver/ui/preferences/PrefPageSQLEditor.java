@@ -45,12 +45,16 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Combo csInsertCase;
     private Button csHideDuplicates;
     private Button csShortName;
+    // Auto-close
     private Button acSingleQuotesCheck;
     private Button acDoubleQuotesCheck;
     private Button acBracketsCheck;
+    // Auto-Format
+    private Button afKeywordCase;
+    private Button afExtractFromSource;
+
     private Button autoFoldersCheck;
     private Text scriptTitlePattern;
-    private Button resetCursorCheck;
 
     public PrefPageSQLEditor()
     {
@@ -68,8 +72,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
-            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
-            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS)
+            store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)
         ;
     }
 
@@ -133,6 +138,20 @@ public class PrefPageSQLEditor extends TargetPrefPage
             acBracketsCheck = UIUtils.createLabelCheckbox(acGroup, "Brackets", false);
         }
 
+        {
+            // Formatting
+            Composite afGroup = UIUtils.createControlGroup(composite2, "Auto format", 2, GridData.FILL_BOTH, 0);
+            afKeywordCase = UIUtils.createLabelCheckbox(
+                afGroup,
+                "Convert keyword case",
+                "Auto-convert keywords to upper/lower case on enter",
+                false);
+            afExtractFromSource = UIUtils.createLabelCheckbox(
+                afGroup,
+                "Extract SQL from source code",
+                "On source code paste will remove all source language elements like quotes, +, \\n, etc", false);
+        }
+
         // Scripts
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_BOTH, 0);
@@ -148,21 +167,6 @@ public class PrefPageSQLEditor extends TargetPrefPage
                 legend.append("\n\t- ${").append(vars[i]).append("}:  ").append(explain[i]);
             }
             scriptTitlePattern.setToolTipText(legend.toString());
-/*
-            Label legendLabel = new Label(scriptsGroup, SWT.NONE);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            legendLabel.setLayoutData(gd);
-            legendLabel.setText(legend.toString());
-*/
-        }
-
-        // Misc
-        {
-            Composite miscGroup = UIUtils.createControlGroup(composite2, CoreMessages.pref_page_sql_editor_group_misc, 2, GridData.FILL_BOTH, 0);
-            ((GridData) miscGroup.getLayoutData()).horizontalSpan = 2;
-
-            resetCursorCheck = UIUtils.createLabelCheckbox(miscGroup, CoreMessages.pref_page_sql_editor_checkbox_reset_cursor, false);
         }
 
         return composite;
@@ -183,11 +187,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
             acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
             acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
             acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
+            afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
+            afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
 
             autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
             scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
 
-            resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -210,10 +215,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
             store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
 
+            store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
+            store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
+
             store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
-
-            store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -235,17 +241,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
 
         store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
         store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
-
-        store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
-    }
-
-    @Override
-    public void applyData(Object data)
-    {
-        super.applyData(data);
     }
 
     @Override

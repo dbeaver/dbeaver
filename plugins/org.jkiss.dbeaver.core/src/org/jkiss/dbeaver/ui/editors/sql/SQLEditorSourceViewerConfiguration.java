@@ -115,16 +115,12 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return new SQLAnnotationHover(getSQLEditor());
     }
 
-    /*
-     * @see SourceViewerConfiguration#getAutoIndentStrategy(ISourceViewer, String)
-     */
-
     @Nullable
     @Override
     public IAutoEditStrategy[] getAutoEditStrategies(ISourceViewer sourceViewer, String contentType)
     {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
-            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
+            return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING, editor.getSyntaxManager()) } ;
         } else if (SQLPartitionScanner.SQL_COMMENT.equals(contentType) || SQLPartitionScanner.SQL_MULTILINE_COMMENT.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
         } else if (SQLPartitionScanner.SQL_STRING.equals(contentType)) {
@@ -147,8 +143,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     /**
      * Creates, initializes, and returns the ContentAssistant to use with this editor.
-     *
-     * @see org.eclipse.jface.text.source.SourceViewerConfiguration#getContentAssistant(ISourceViewer)
      */
     @Override
     public IContentAssistant getContentAssistant(ISourceViewer sourceViewer)
@@ -191,12 +185,16 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             @Override
             public void preferenceChange(PreferenceChangeEvent event)
             {
-                if (event.getProperty().equals(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)) {
-                    assistant.enableAutoActivation(configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
-                } else if (event.getProperty().equals(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY)) {
-                    assistant.setAutoActivationDelay(configStore.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
-                } else if (event.getProperty().equals(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO)) {
-                    assistant.enableAutoInsert(configStore.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+                switch (event.getProperty()) {
+                    case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
+                        assistant.enableAutoActivation(configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+                        break;
+                    case SQLPreferenceConstants.AUTO_ACTIVATION_DELAY:
+                        assistant.setAutoActivationDelay(configStore.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
+                        break;
+                    case SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO:
+                        assistant.enableAutoInsert(configStore.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
+                        break;
                 }
             }
         };
@@ -211,12 +209,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         return assistant;
 
     }
-
-    /*
-    * @see SourceViewerConfiguration#getInformationControlCreator(ISourceViewer)
-    * @since 2.0
-    *
-    */
 
     @Override
     public IInformationControlCreator getInformationControlCreator(ISourceViewer sourceViewer)
@@ -241,7 +233,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         ContentFormatter formatter = new ContentFormatter();
         formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
 
-        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(editor.getSyntaxManager());
+        IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(sourceViewer, this, editor.getSyntaxManager());
         for (String ct : SQLPartitionScanner.SQL_PARTITION_TYPES) {
             formatter.setFormattingStrategy(formattingStrategy, ct);
         }
@@ -339,18 +331,6 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         //return new BestMatchHover(this.getSQLEditor());
         return new SQLAnnotationHover(this.getSQLEditor());
     }
-
-    /**
-     * Sets the <code>ISQLDBProposalsService</code> object that provides content
-     * assist services for this viewer to the given object.
-     *
-    public void setDBProposalsService(SQLAssistProposalsService dbProposalsService)
-    {
-        fDBProposalsService = dbProposalsService;
-        if (completionProcessor != null) {
-            completionProcessor.setProposalsService(dbProposalsService);
-        }
-    }*/
 
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)

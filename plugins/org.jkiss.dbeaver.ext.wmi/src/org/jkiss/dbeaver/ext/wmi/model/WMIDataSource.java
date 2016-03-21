@@ -118,6 +118,11 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         return new WMISession(monitor, purpose, task, this);
     }
 
+    @Override
+    public void isContextAlive(DBRProgressMonitor monitor) throws DBException {
+        // do nothing
+    }
+
     @NotNull
     @Override
     public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException

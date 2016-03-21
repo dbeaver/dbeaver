@@ -36,7 +36,9 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
     @Override
     public void dispose()
     {
-        sessionsViewer.dispose();
+        if (sessionsViewer != null) {
+            sessionsViewer.dispose();
+        }
         super.dispose();
     }
 

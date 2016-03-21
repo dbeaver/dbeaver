@@ -50,17 +50,20 @@ public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVar
     {
         final List<T> entities = new ArrayList<>();
         if (context instanceof DBPContextProvider) {
-            RuntimeUtils.runTask(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException {
-                    try {
-                        resolveObjects(monitor, ((DBPContextProvider) context).getExecutionContext(), context, entities);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
+            final DBCExecutionContext executionContext = ((DBPContextProvider) context).getExecutionContext();
+            if (executionContext != null) {
+                RuntimeUtils.runTask(new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor)
+                        throws InvocationTargetException, InterruptedException {
+                        try {
+                            resolveObjects(monitor, executionContext, context, entities);
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
                     }
-                }
-            }, "Resolve object references", 1000);
+                }, "Resolve object references", 1000);
+            }
         }
         if (!CommonUtils.isEmpty(entities)) {
             String[] result = new String[entities.size()];

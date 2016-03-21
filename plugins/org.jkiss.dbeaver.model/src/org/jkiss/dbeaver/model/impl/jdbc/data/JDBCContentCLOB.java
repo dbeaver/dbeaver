@@ -193,7 +193,7 @@ public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
             } else if (clob != null) {
                 preparedStatement.setClob(paramIndex, clob);
             } else {
-                preparedStatement.setNull(paramIndex + 1, java.sql.Types.CLOB);
+                preparedStatement.setNull(paramIndex, java.sql.Types.CLOB);
             }
         }
         catch (SQLException e) {

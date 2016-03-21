@@ -32,6 +32,7 @@ import org.eclipse.ui.application.WorkbenchWindowAdvisor;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -43,7 +44,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
-    //static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
+    static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {
@@ -85,7 +86,15 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     @Override
     public void postWindowCreate()
     {
-        UIUtils.updateMainWindowTitle(getWindowConfigurer().getWindow());
+        final IWorkbenchWindow window = getWindowConfigurer().getWindow();
+        UIUtils.updateMainWindowTitle(window);
+/*
+        try {
+            ApplicationCSSManager.updateApplicationCSS(window.getShell().getDisplay());
+        } catch (Throwable e) {
+            log.warn(e);
+        }
+*/
     }
 
     @Override

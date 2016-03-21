@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.utils.CommonUtils;
@@ -38,6 +39,8 @@ public class SQLSyntaxManager {
 
     @NotNull
     private SQLDialect sqlDialect = BasicSQLDialect.INSTANCE;
+    @NotNull
+    private DBPPreferenceStore preferenceStore = ModelPreferences.getPreferences();
     @Nullable
     private String quoteSymbol;
     private char structSeparator;
@@ -60,6 +63,11 @@ public class SQLSyntaxManager {
     @NotNull
     public SQLDialect getDialect() {
         return sqlDialect;
+    }
+
+    @NotNull
+    public DBPPreferenceStore getPreferenceStore() {
+        return preferenceStore;
     }
 
     public char getStructSeparator()
@@ -113,6 +121,7 @@ public class SQLSyntaxManager {
     {
         this.statementDelimiters.clear();
         this.sqlDialect = dialect;
+        this.preferenceStore = preferenceStore;
         this.quoteSymbol = sqlDialect.getIdentifierQuoteString();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
@@ -145,4 +154,17 @@ public class SQLSyntaxManager {
         }
     }
 
+    public DBPIdentifierCase getKeywordCase() {
+        final String caseName = preferenceStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        if (CommonUtils.isEmpty(caseName)) {
+            // Database specific
+            return sqlDialect.storesUnquotedCase();
+        } else {
+            try {
+                return DBPIdentifierCase.valueOf(caseName.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                return DBPIdentifierCase.MIXED;
+            }
+        }
+    }
 }

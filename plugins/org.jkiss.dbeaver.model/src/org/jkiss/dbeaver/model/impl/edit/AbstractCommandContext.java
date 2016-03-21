@@ -79,7 +79,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     @Override
     public void saveChanges(DBRProgressMonitor monitor) throws DBException {
         if (!executionContext.isConnected()) {
-            throw new DBException("Not connected to database");
+            throw new DBException("Context [" + executionContext.getContextName() + "] isn't connected to the database");
         }
         List<CommandQueue> commandQueues = getCommandQueues();
 

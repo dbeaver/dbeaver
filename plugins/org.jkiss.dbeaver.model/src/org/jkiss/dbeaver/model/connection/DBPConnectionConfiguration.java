@@ -47,6 +47,7 @@ public class DBPConnectionConfiguration implements DBPObject
     private final DBPConnectionBootstrap bootstrap;
     private DBPConnectionType connectionType;
     private String connectionColor;
+    private int keepAliveInterval;
 
     public DBPConnectionConfiguration()
     {
@@ -55,6 +56,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.events = new HashMap<>();
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
+        this.keepAliveInterval = 0;
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info)
@@ -78,6 +80,7 @@ public class DBPConnectionConfiguration implements DBPObject
             this.handlers.add(new DBWHandlerConfiguration(handler));
         }
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
+        this.keepAliveInterval = info.keepAliveInterval;
     }
 
     public String getClientHomeId()
@@ -272,4 +275,15 @@ public class DBPConnectionConfiguration implements DBPObject
         return bootstrap;
     }
 
+    /**
+     * Keep-Alive interval (seconds).
+     * Zero or negative means no keep-alive.
+     */
+    public int getKeepAliveInterval() {
+        return keepAliveInterval;
+    }
+
+    public void setKeepAliveInterval(int keepAliveInterval) {
+        this.keepAliveInterval = keepAliveInterval;
+    }
 }
