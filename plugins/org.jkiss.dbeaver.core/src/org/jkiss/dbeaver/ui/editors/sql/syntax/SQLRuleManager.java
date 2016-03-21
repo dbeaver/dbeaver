@@ -119,6 +119,8 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
         final SQLBlockToggleToken blockToggleToken = new SQLBlockToggleToken(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
+        final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
+            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
 
         setDefaultReturnToken(otherToken);
         List<IRule> rules = new ArrayList<>();
@@ -158,18 +160,11 @@ public class SQLRuleManager extends RuleBasedScanner {
         // Add numeric rule
         rules.add(new NumberRule(numberToken));
 
-        for (final String delimiter : syntaxManager.getStatementDelimiters()) {
-            WordRule delimRule;
-            if (Character.isLetterOrDigit(delimiter.charAt(0))) {
-                delimRule = new WordRule(new SQLWordDetector(), Token.UNDEFINED, true);
-                delimRule.addWord(delimiter, delimiterToken);
-            } else {
-                // Default delim rule
-                delimRule = new WordRule(new SymbolSequenceDetector(delimiter), Token.UNDEFINED, false);
-                delimRule.addWord(delimiter, delimiterToken);
-            }
-            rules.add(delimRule);
-        }
+        DelimiterRule delimRule = new DelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
+        rules.add(delimRule);
+
+        // Delimiter redefine
+        rules.add(new SetDelimiterRule("DELIMITER", setDelimiterToken, delimRule));
 
         // Add word rule for keywords, types, and constants.
         WordRule wordRule = new WordRule(new SQLWordDetector(), otherToken, true);
@@ -188,12 +183,8 @@ public class SQLRuleManager extends RuleBasedScanner {
 
         final String blockToggleString = dialect.getBlockToggleString();
         if (!CommonUtils.isEmpty(blockToggleString)) {
-            IRule blockToggleRule;
-            if (Character.isLetterOrDigit(blockToggleString.charAt(0))) {
-                blockToggleRule = new WordRule(new SQLWordDetector(), blockToggleToken, true);
-            } else {
-                blockToggleRule = new WordRule(new SymbolSequenceDetector(blockToggleString), blockToggleToken, false);
-            }
+            WordRule blockToggleRule = new WordRule(getWordOrSymbolDetector(blockToggleString), Token.UNDEFINED, true);
+            blockToggleRule.addWord(blockToggleString, blockToggleToken);
             rules.add(blockToggleRule);
         }
 
@@ -220,6 +211,15 @@ public class SQLRuleManager extends RuleBasedScanner {
         return color;
     }
 
+    private static IWordDetector getWordOrSymbolDetector(String word) {
+        if (Character.isLetterOrDigit(word.charAt(0))) {
+            return new SQLWordDetector();
+        } else {
+            // Default delim rule
+            return new SymbolSequenceDetector(word);
+        }
+    }
+
     private static class SymbolSequenceDetector implements IWordDetector {
         private final String delimiter;
 
@@ -235,6 +235,67 @@ public class SQLRuleManager extends RuleBasedScanner {
         @Override
         public boolean isWordPart(char c) {
             return delimiter.indexOf(c) != -1;
+        }
+    }
+
+    private static class DelimiterRule implements IRule {
+        private final char[][] delimiters;
+        private final IToken token;
+        private char[] buffer;
+        public DelimiterRule(Collection<String> delimiters, IToken token) {
+            this.delimiters = new char[delimiters.size()][];
+            int index = 0, maxLength = 0;
+            for (Iterator<String> iter = delimiters.iterator(); iter.hasNext(); ) {
+                this.delimiters[index] = iter.next().toCharArray();
+                maxLength = Math.max(maxLength, this.delimiters[index].length);
+                index++;
+            }
+            this.token = token;
+            this.buffer = new char[maxLength];
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner) {
+            for (int i = 0; ; i++) {
+                int c = scanner.read();
+                boolean matches = false;
+                if (c != ICharacterScanner.EOF) {
+                    for (int k = 0; k < delimiters.length; k++) {
+                        if (i < delimiters[k].length && delimiters[k][i] == c) {
+                            buffer[i] = (char)c;
+                            if (i == delimiters[k].length - 1 && equalsBegin(delimiters[k])) {
+                                // Matched. Check next character
+                                if (Character.isLetterOrDigit(c)) {
+                                    int cn = scanner.read();
+                                    scanner.unread();
+                                    if (Character.isLetterOrDigit(cn)) {
+                                        matches = false;
+                                        continue;
+                                    }
+                                }
+                                return token;
+                            }
+                            matches = true;
+                            break;
+                        }
+                    }
+                }
+                if (!matches) {
+                    for (int k = 0; k <= i; k++) {
+                        scanner.unread();
+                    }
+                    return Token.UNDEFINED;
+                }
+            }
+        }
+
+        private boolean equalsBegin(char[] delimiter) {
+            for (int i = 0; i < delimiter.length; i++) {
+                if (buffer[i] != delimiter[i]) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 
@@ -304,4 +365,69 @@ public class SQLRuleManager extends RuleBasedScanner {
             return Token.UNDEFINED;
         }
     }
+
+    private static class SetDelimiterRule implements IRule {
+
+        private final String setDelimiterWord;
+        private final SQLSetDelimiterToken setDelimiterToken;
+        private final DelimiterRule delimiterRule;
+
+        public SetDelimiterRule(String setDelimiterWord, SQLSetDelimiterToken setDelimiterToken, DelimiterRule delimiterRule) {
+            this.setDelimiterWord = setDelimiterWord;
+            this.setDelimiterToken = setDelimiterToken;
+            this.delimiterRule = delimiterRule;
+        }
+
+        @Override
+        public IToken evaluate(ICharacterScanner scanner) {
+            // Must be in the beginning of line
+            int column = scanner.getColumn();
+            if (column != 0) {
+                scanner.unread();
+                int prevChar = scanner.read();
+                if (prevChar != '\r' && prevChar != '\n') {
+                    return Token.UNDEFINED;
+                }
+            }
+
+            for (int i = 0; i < setDelimiterWord.length(); i++) {
+                char c = setDelimiterWord.charAt(i);
+                final int nextChar = scanner.read();
+                if (Character.toUpperCase(nextChar) != c) {
+                    // Doesn't match
+                    for (int k = 0; k <= i; k++) {
+                        scanner.unread();
+                    }
+                    return Token.UNDEFINED;
+                }
+            }
+            StringBuilder delimBuffer = new StringBuilder();
+
+            int next = scanner.read();
+            if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
+                // Empty delimiter
+                scanner.unread();
+            } else {
+                if (!Character.isWhitespace(next)) {
+                    for (int k = 0; k < setDelimiterWord.length() + 1; k++) {
+                        scanner.unread();
+                    }
+                    return Token.UNDEFINED;
+                }
+                // Get everything till the end of line
+                for (; ; ) {
+                    next = scanner.read();
+                    if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
+                        break;
+                    }
+                    delimBuffer.append((char) next);
+                }
+                scanner.unread();
+            }
+            final String newDelimiter = delimBuffer.toString().trim();
+
+            return setDelimiterToken;
+        }
+    }
+
 }
