@@ -100,8 +100,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         formatterSelector = UIUtils.createLabelCombo(composite, "Formatter", SWT.DROP_DOWN | SWT.READ_ONLY);
-        formatterSelector.add(SQLTokenizedFormatter.FORMATTER_ID);
-        formatterSelector.add(SQLExternalFormatter.FORMATTER_ID);
+        formatterSelector.add(capitalizeCaseName(SQLTokenizedFormatter.FORMATTER_ID));
+        formatterSelector.add(capitalizeCaseName(SQLExternalFormatter.FORMATTER_ID));
         formatterSelector.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -183,7 +183,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
-        UIUtils.setComboSelection(formatterSelector, store.getString(ModelPreferences.SQL_FORMAT_FORMATTER));
+        UIUtils.setComboSelection(formatterSelector, capitalizeCaseName(store.getString(ModelPreferences.SQL_FORMAT_FORMATTER)));
         final String caseName = store.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         if (CommonUtils.isEmpty(caseName)) {
             keywordCaseCombo.select(0);
@@ -202,7 +202,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void savePreferences(DBPPreferenceStore store)
     {
-        store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER, formatterSelector.getText());
+        store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER, formatterSelector.getText().toUpperCase(Locale.ENGLISH));
 
         final String caseName;
         if (keywordCaseCombo.getSelectionIndex() == 0) {

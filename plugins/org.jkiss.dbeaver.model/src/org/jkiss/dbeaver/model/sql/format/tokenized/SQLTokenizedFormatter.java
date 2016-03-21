@@ -34,7 +34,7 @@ import java.util.Locale;
  */
 public class SQLTokenizedFormatter implements SQLFormatter {
 
-    public static final String FORMATTER_ID = "Default";
+    public static final String FORMATTER_ID = "DEFAULT";
 
     private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
 

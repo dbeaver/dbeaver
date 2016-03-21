@@ -38,7 +38,7 @@ import java.io.*;
  */
 public class SQLExternalFormatter implements SQLFormatter {
 
-    public static final String FORMATTER_ID = "External";
+    public static final String FORMATTER_ID = "EXTERNAL";
 
     static final Log log = Log.getLog(SQLExternalFormatter.class);
 
