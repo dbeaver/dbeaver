@@ -587,7 +587,16 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     log.warn(e);
                 }
             }
-            if (token instanceof SQLBlockBeginToken) {
+            if (token instanceof SQLBlockToggleToken) {
+                if (bracketDepth == 1) {
+                    bracketDepth--;
+                } else if (bracketDepth == 0) {
+                    bracketDepth++;
+                } else {
+                    log.debug("Block toggle token inside another block. Can't process it");
+                }
+                hasBlocks = true;
+            } else if (token instanceof SQLBlockBeginToken) {
                 bracketDepth++;
                 hasBlocks = true;
             } else if (bracketDepth > 0 && token instanceof SQLBlockEndToken) {

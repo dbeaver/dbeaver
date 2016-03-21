@@ -222,6 +222,12 @@ public class BasicSQLDialect implements SQLDialect {
         return ";"; //$NON-NLS-1$
     }
 
+    @Nullable
+    @Override
+    public String getBlockToggleString() {
+        return null;
+    }
+
     @Override
     public boolean validUnquotedCharacter(char c)
     {
