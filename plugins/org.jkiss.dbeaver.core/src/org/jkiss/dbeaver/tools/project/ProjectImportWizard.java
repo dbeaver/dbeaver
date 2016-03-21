@@ -295,11 +295,10 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                             }
                             File importLibFile = new File(contribFolder, libName);
                             if (!importLibFile.exists()) {
-                                FileOutputStream os = new FileOutputStream(importLibFile);
-                                try {
-                                    IOUtils.copyStream(zipFile.getInputStream(libEntry), os, IOUtils.DEFAULT_BUFFER_SIZE);
-                                } finally {
-                                    ContentUtils.close(os);
+                                try (FileOutputStream os = new FileOutputStream(importLibFile)) {
+                                    try (InputStream is = zipFile.getInputStream(libEntry)) {
+                                        IOUtils.copyStream(is, os);
+                                    }
                                 }
                             }
                             // Make relative path

@@ -28,10 +28,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArgumentTokenizer;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * External SQL formatter
@@ -54,9 +57,10 @@ public class SQLExternalFormatter implements SQLFormatter {
             for (int i = 0; i < 10; i++) {
                 Thread.sleep(timeout / 10);
                 if (formatJob.finished) {
-                    return formatJob.result.toString();
+                    return formatJob.result;
                 }
             }
+            log.warn("Formatter process hangs. Terminating.");
             formatJob.stop();
         }
         catch (Exception ex) {
@@ -100,16 +104,23 @@ public class SQLExternalFormatter implements SQLFormatter {
                     }
                     command = command.replace("${file}", tmpFile.getAbsolutePath());
                 }
-                process = Runtime.getRuntime().exec(command);
+                List<String> commandList = ArgumentTokenizer.tokenize(command, false);
+                ProcessBuilder pb = new ProcessBuilder(commandList);
+                pb.redirectErrorStream(true);
+                process = pb.start();
                 try {
                     if (tmpFile == null) {
                         try (final OutputStream stdout = process.getOutputStream()) {
                             stdout.write(source.getBytes(sourceEncoding));
                         }
                     }
+                    int rc = process.waitFor();
                     StringWriter buf = new StringWriter();
                     try (Reader input = new InputStreamReader(process.getInputStream(), sourceEncoding)) {
                         IOUtils.copyText(input, buf);
+                        if (rc != 0) {
+                            log.debug("Formatter result code: " + rc);
+                        }
                     }
                     result = buf.toString();
                 } finally {

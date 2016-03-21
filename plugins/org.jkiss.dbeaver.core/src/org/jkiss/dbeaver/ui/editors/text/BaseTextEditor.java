@@ -177,7 +177,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 GeneralUtils.DEFAULT_FILE_CHARSET))
             {
                 StringWriter buffer = new StringWriter();
-                IOUtils.copyText(reader, buffer, 10000);
+                IOUtils.copyText(reader, buffer);
                 newContent = buffer.toString();
             }
         }

@@ -103,7 +103,7 @@ public class MavenArtifact implements IMavenIdentifier
 
     private void parseDirectory(InputStream dirStream) throws IOException, XMLException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IOUtils.copyStream(dirStream, baos, 10000);
+        IOUtils.copyStream(dirStream, baos);
         String dir = baos.toString();
         Pattern hrefPattern = Pattern.compile("a href=\"(.+)/?\"");
         Matcher matcher = hrefPattern.matcher(dir);
