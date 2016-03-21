@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
@@ -42,4 +43,10 @@ class PostgreDialect extends JDBCSQLDialect {
         return MultiValueInsertMode.GROUP_ROWS;
     }
 */
+
+    @Nullable
+    @Override
+    public String getBlockToggleString() {
+        return "$$";
+    }
 }
