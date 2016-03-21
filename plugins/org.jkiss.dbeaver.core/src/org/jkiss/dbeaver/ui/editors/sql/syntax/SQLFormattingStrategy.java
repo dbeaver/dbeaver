@@ -17,75 +17,47 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
-import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
-
-import java.util.StringTokenizer;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
 
 /**
  * The formatting strategy that transforms SQL keywords to upper case
  */
 public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
 {
+    private ISourceViewer sourceViewer;
+    private SQLEditorSourceViewerConfiguration svConfig;
     private SQLSyntaxManager sqlSyntax;
 
     /**
-   * According to profileName to determine which the database syntax keywords highlighted.
-   *
-   * @param syntax syntax manager
-   */
-    public SQLFormattingStrategy(SQLSyntaxManager syntax)
+     * According to profileName to determine which the database syntax keywords highlighted.
+     */
+    public SQLFormattingStrategy(ISourceViewer sourceViewer, SQLEditorSourceViewerConfiguration svConfig, SQLSyntaxManager syntax)
     {
-        sqlSyntax = syntax;
+        this.sourceViewer = sourceViewer;
+        this.svConfig = svConfig;
+        this.sqlSyntax = syntax;
     }
 
-    /**
-   * @see org.eclipse.jface.text.formatter.IFormattingStrategy#formatterStarts(String)
-   */
     @Override
     public void formatterStarts(String initialIndentation)
     {
     }
 
-    /**
-   * @see org.eclipse.jface.text.formatter.IFormattingStrategy#format(String, boolean, String, int[])
-   */
     @Override
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
+        final String[] indentPrefixes = svConfig.getIndentPrefixes(sourceViewer, IDocument.DEFAULT_CONTENT_TYPE);
         SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
-        configuration.setKeywordCase(SQLFormatterConfiguration.KEYWORD_UPPER_CASE);
-        //configuration.setIndentString(indentation);
-        return new SQLTokenizedFormatter().format(content, configuration);
-        //return new SQLSimpleFormatter().format(content);
-    }
+        configuration.setIndentString(indentPrefixes[0]);
 
-    private String allToUpper( String content ) {
-        return content.toUpperCase();
-    }
-
-    /**
-   * Method keyWordsToUpper.
-   *
-   * @param content
-   * @return String
-   */
-    private String keyWordsToUpper(String content)
-    {
-        StringTokenizer st = new StringTokenizer(content, " \n", true);
-        StringBuilder newContent = new StringBuilder();
-        while (st.hasMoreTokens()) {
-            String token = st.nextToken();
-            DBPKeywordType type = sqlSyntax.getDialect().getKeywordType(token);
-            if (type == DBPKeywordType.KEYWORD) {
-                token = token.toUpperCase();
-            }
-            newContent.append(token);
-        }
-        return newContent.toString();
+        SQLFormatter formatter = configuration.createFormatter();
+        return formatter.format(content, configuration);
     }
 
     @Override

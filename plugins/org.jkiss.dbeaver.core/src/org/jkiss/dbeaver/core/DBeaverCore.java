@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
+import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
@@ -180,32 +181,6 @@ public class DBeaverCore implements DBPApplication {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
-        // Temp folder
-        {
-            try {
-                final java.nio.file.Path tempDirectory = Files.createTempDirectory(TEMP_PROJECT_NAME);
-                tempFolder = tempDirectory.toFile();
-            } catch (IOException e) {
-                final String sysTempFolder = System.getProperty("java.io.tmpdir");
-                if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
-                    if (!tempFolder.mkdirs()){
-                        final String sysUserFolder = System.getProperty("user.home");
-                        if (!CommonUtils.isEmpty(sysUserFolder)) {
-                            tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
-                            if (!tempFolder.mkdirs()){
-                                tempFolder = new File(TEMP_PROJECT_NAME);
-                                if (!tempFolder.mkdirs()){
-                                    log.error("Can't create temp directory!");
-                                }
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-
         // Register properties adapter
         this.workspace = ResourcesPlugin.getWorkspace();
 
@@ -243,6 +218,10 @@ public class DBeaverCore implements DBPApplication {
                 log.error("Error activating plugin service", e);
             }
         }
+
+        // Keep-alive job
+        new KeepAliveJob().scheduleMonitor();
+
         log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
@@ -396,6 +375,32 @@ public class DBeaverCore implements DBPApplication {
 
     @NotNull
     public File getTempFolder(DBRProgressMonitor monitor, String name) {
+        if (tempFolder == null) {
+            // Make temp folder
+            monitor.subTask("Create temp folder");
+            try {
+                final java.nio.file.Path tempDirectory = Files.createTempDirectory(TEMP_PROJECT_NAME);
+                tempFolder = tempDirectory.toFile();
+            } catch (IOException e) {
+                final String sysTempFolder = System.getProperty("java.io.tmpdir");
+                if (!CommonUtils.isEmpty(sysTempFolder)) {
+                    tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
+                    if (!tempFolder.mkdirs()){
+                        final String sysUserFolder = System.getProperty("user.home");
+                        if (!CommonUtils.isEmpty(sysUserFolder)) {
+                            tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
+                            if (!tempFolder.mkdirs()){
+                                tempFolder = new File(TEMP_PROJECT_NAME);
+                                if (!tempFolder.mkdirs()){
+                                    log.error("Can't create temp directory!");
+                                }
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
         return tempFolder;
     }
 

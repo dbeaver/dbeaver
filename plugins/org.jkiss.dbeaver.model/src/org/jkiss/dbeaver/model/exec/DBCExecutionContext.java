@@ -57,7 +57,6 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      * Checks this context is really connected to remote database.
      * Usually DBPDataSourceContainer.getDataSource() returns datasource only if datasource is connected.
      * But in some cases (e.g. connection invalidation) datasource remains disconnected for some period of time.
-     * @return true if underlying connection is alive.
      */
     boolean isConnected();
 
@@ -70,6 +69,16 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      */
     @NotNull
     DBCSession openSession(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionPurpose purpose, @NotNull String task);
+
+    /**
+     * Checks whether this context is alive and underlying network connection isn't broken.
+     * Implementation should perform server round-trip.
+     * This function is also used for keep-alive function.
+     * @param monitor    monitor
+     * @throws DBException on any network errors
+     */
+    void isContextAlive(DBRProgressMonitor monitor)
+        throws DBException;
 
     /**
      * Checks context is alive and reconnects if needed.

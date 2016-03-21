@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.model;
 
+import java.util.Locale;
+
 /**
  * Database keyword type
  */
@@ -26,14 +28,14 @@ public enum DBPIdentifierCase {
         @Override
         public String transform(String value)
         {
-            return value.toUpperCase();
+            return value.toUpperCase(Locale.ENGLISH);
         }
     },
     LOWER {
         @Override
         public String transform(String value)
         {
-            return value.toLowerCase();
+            return value.toLowerCase(Locale.ENGLISH);
         }
     },
     MIXED {

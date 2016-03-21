@@ -194,11 +194,8 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
 
                     final char character = event.character;
                     final char closingCharacter = getPeerCharacter(character);
-                    final StringBuilder buffer = new StringBuilder();
-                    buffer.append(character);
-                    buffer.append(closingCharacter);
 
-                    document.replace(offset, length, buffer.toString());
+                    document.replace(offset, length, String.valueOf(character) + closingCharacter);
 
                     SymbolLevel level = new SymbolLevel();
                     bracketLevelStack.add(level);
@@ -237,10 +234,7 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
                     event.doit = false;
 
                 }
-                catch (BadLocationException e) {
-                    log.debug(e);
-                }
-                catch (BadPositionCategoryException e) {
+                catch (BadLocationException | BadPositionCategoryException e) {
                     log.debug(e);
                 }
                 break;

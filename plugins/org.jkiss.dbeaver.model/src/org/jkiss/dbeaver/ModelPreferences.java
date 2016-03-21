@@ -21,6 +21,7 @@ package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.bundle.ModelActivator;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.osgi.framework.Bundle;
@@ -66,9 +68,18 @@ public final class ModelPreferences
     public static final String SQL_ANONYMOUS_PARAMETERS_ENABLED = "sql.parameter.anonymous.enabled"; //$NON-NLS-1$
     public static final String SQL_ANONYMOUS_PARAMETERS_MARK = "sql.parameter.mark"; //$NON-NLS-1$
     public static final String SQL_NAMED_PARAMETERS_PREFIX = "sql.parameter.prefix"; //$NON-NLS-1$
+
+    public final static String SQL_FORMAT_FORMATTER = "sql.format.formatter";
+    public final static String SQL_FORMAT_KEYWORD_CASE = "sql.format.keywordCase";
+    public final static String SQL_FORMAT_EXTERNAL_CMD = "sql.format.external.cmd";
+    public final static String SQL_FORMAT_EXTERNAL_FILE = "sql.format.external.file";
+    //public final static String SQL_FORMAT_EXTERNAL_DIR = "sql.format.external.dir";
+    public final static String SQL_FORMAT_EXTERNAL_TIMEOUT = "sql.format.external.timeout";
+
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
-    public static Bundle mainBundle;
-    public static DBPPreferenceStore preferences;
+
+    private static Bundle mainBundle;
+    private static DBPPreferenceStore preferences;
 
     public static synchronized DBPPreferenceStore getPreferences() {
         if (preferences == null) {
@@ -124,5 +135,10 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_ANONYMOUS_PARAMETERS_MARK, String.valueOf(SQLConstants.DEFAULT_PARAMETER_MARK));
         PrefUtils.setDefaultPreferenceValue(store, SQL_NAMED_PARAMETERS_PREFIX, String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));
 
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_FORMATTER, SQLTokenizedFormatter.FORMATTER_ID);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, DBPIdentifierCase.UPPER.name());
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_CMD, "");
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_FILE, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 500);
     }
 }

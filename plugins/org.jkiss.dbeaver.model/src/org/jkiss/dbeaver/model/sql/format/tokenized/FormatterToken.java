@@ -29,9 +29,9 @@ class FormatterToken {
 
     public FormatterToken(final int argType, final String argString, final int argPos)
     {
-        setType(argType);
-        setString(argString);
-        setPos(argPos);
+        fType = argType;
+        fString = argString;
+        fPos = argPos;
     }
 
     public FormatterToken(final int argType, final String argString)

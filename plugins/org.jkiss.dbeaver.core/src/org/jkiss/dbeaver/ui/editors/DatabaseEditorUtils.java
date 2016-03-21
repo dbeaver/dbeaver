@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
@@ -34,17 +35,19 @@ public class DatabaseEditorUtils {
 
     public static void setPartBackground(IEditorPart editor, Composite composite)
     {
+        CTabFolder tabFolder = null;
         Composite rootComposite = null;
         for (Composite c = composite; c != null; c = c.getParent()) {
             if (c.getParent() instanceof CTabFolder) {
-                ((CTabFolder) c.getParent()).setBorderVisible(false);
+                tabFolder = (CTabFolder) c.getParent();
                 rootComposite = c;
                 break;
             }
         }
-        if (rootComposite == null) {
+        if (tabFolder == null) {
             return;
         }
+        tabFolder.setBorderVisible(false);
 
         Color bgColor = null;
         if (editor instanceof IDataSourceContainerProvider) {

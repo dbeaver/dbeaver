@@ -94,6 +94,7 @@ public class DBNResource extends DBNNode
     }
 
     @Override
+//    @Property(viewable = false, order = 100)
     public String getNodeDescription()
     {
         return handler == null ? null : handler.getResourceDescription(getResource());
@@ -407,6 +408,26 @@ public class DBNResource extends DBNNode
                 childResource.handleResourceChange(delta);
             }
         }
+    }
+
+    @Property(viewable = true, order = 10)
+    public String getResourcePath() {
+        return resource == null ? "" : resource.getFullPath().toOSString();
+    }
+
+    @Property(viewable = true, order = 11)
+    public String getResourceLocation() {
+        return resource == null ? "" : resource.getLocation().toOSString();
+    }
+
+    @Property(viewable = true, order = 11)
+    public long getResourceSize() {
+        return resource == null ? 0 : resource.getLocation().toFile().length();
+    }
+
+    @Property(viewable = true, order = 11)
+    public String getResourceLastModified() {
+        return resource == null ? null : new Date(resource.getLocation().toFile().lastModified()).toString();
     }
 
 }

@@ -18,15 +18,34 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IEditorSite;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.sql.format.external.SQLExternalFormatter;
+import org.jkiss.dbeaver.model.sql.format.tokenized.SQLTokenizedFormatter;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
 
@@ -37,12 +56,19 @@ public class PrefPageSQLFormat extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sql.format"; //$NON-NLS-1$
 
-    private Combo keywordCaseCombo;
-    private Button autoConvertKeywordCase;
-    private Text additionalKeywordsText;
+    private final static String FORMAT_FILE_NAME = "format_preview.sql";
 
-    private Button useExternalCheckbox;
+    private Combo formatterSelector;
+
+    private Combo keywordCaseCombo;
+
     private Text externalCmdText;
+    private Button externalUseFile;
+    private Spinner externalTimeout;
+
+    private SQLEditorBase sqlViewer;
+    private Composite defaultGroup;
+    private Composite externalGroup;
 
     public PrefPageSQLFormat()
     {
@@ -54,11 +80,11 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_CASE) ||
-            store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO) ||
-            store.contains(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA) ||
-            store.contains(SQLPreferenceConstants.FORMAT_EXTERNAL) ||
-            store.contains(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD)
+            store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
+            store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE) ||
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD) ||
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE) ||
+            store.contains(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT)
         ;
     }
 
@@ -71,29 +97,84 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+
+        formatterSelector = UIUtils.createLabelCombo(composite, "Formatter", SWT.DROP_DOWN | SWT.READ_ONLY);
+        formatterSelector.add(SQLTokenizedFormatter.FORMATTER_ID);
+        formatterSelector.add(SQLExternalFormatter.FORMATTER_ID);
+        formatterSelector.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showFormatterSettings();
+            }
+        });
+        formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         // Default formatter settings
         {
-            Composite formatGroup = UIUtils.createControlGroup(composite, "Formatter", 2, GridData.FILL_HORIZONTAL, 0);
-            keywordCaseCombo = UIUtils.createLabelCombo(formatGroup, "Keyword case", SWT.DROP_DOWN | SWT.READ_ONLY);
+            defaultGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
+            keywordCaseCombo = UIUtils.createLabelCombo(defaultGroup, "Keyword case", SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            keywordCaseCombo.add("Database");
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
-                keywordCaseCombo.add(c.name());
+                keywordCaseCombo.add(capitalizeCaseName(c.name()));
             }
-            autoConvertKeywordCase = UIUtils.createLabelCheckbox(formatGroup, "Auto-convert case", false);
-            additionalKeywordsText = UIUtils.createLabelText(formatGroup, "Additional keywords", "", SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.heightHint = 50;
-            additionalKeywordsText.setLayoutData(gd);
         }
 
         // External formatter
         {
-            Composite externalGroup = UIUtils.createControlGroup(composite, "External formatter", 2, GridData.FILL_HORIZONTAL, 0);
+            externalGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
 
-            useExternalCheckbox = UIUtils.createLabelCheckbox(externalGroup, "Use external formatter", false);
-            externalCmdText = UIUtils.createLabelText(externalGroup, "External formatter command", "");
+            externalCmdText = UIUtils.createLabelText(externalGroup, "Command line", "");
+            externalUseFile = UIUtils.createLabelCheckbox(externalGroup,
+                "Use temp file",
+                "Use temporary file to pass SQL text.\nTo pass file name in command line use parameter ${file}", false);
+            externalTimeout = UIUtils.createLabelSpinner(externalGroup,
+                "Exec timeout",
+                "Time to wait until formatter process finish (ms)",
+                100, 100, 10000);
+        }
+
+        {
+            // SQL preview
+            Composite previewGroup = UIUtils.createControlGroup(composite, "SQL preview", 2, GridData.FILL_BOTH, 0);
+            previewGroup.setLayout(new FillLayout());
+
+            sqlViewer = new SQLEditorBase() {
+                @Override
+                public DBCExecutionContext getExecutionContext() {
+                    final DBPDataSourceContainer container = getDataSourceContainer();
+                    if (container != null) {
+                        final DBPDataSource dataSource = container.getDataSource();
+                        if (dataSource != null) {
+                            return dataSource.getDefaultContext(false);
+                        }
+                    }
+                    return null;
+                }
+            };
+            try {
+                final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), ContentUtils.DEFAULT_CHARSET);
+                IEditorSite subSite = new SubEditorSite(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
+                StringEditorInput sqlInput = new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultConsoleEncoding());
+                sqlViewer.init(subSite, sqlInput);
+            } catch (Exception e) {
+                log.error(e);
+            }
+
+            sqlViewer.createPartControl(previewGroup);
+            Object text = sqlViewer.getAdapter(Control.class);
+            if (text instanceof StyledText) {
+                ((StyledText) text).setWordWrap(true);
+            }
+            sqlViewer.reloadSyntaxRules();
+
+            previewGroup.addDisposeListener(new DisposeListener() {
+                @Override
+                public void widgetDisposed(DisposeEvent e) {
+                    sqlViewer.dispose();
+                }
+            });
         }
 
         return composite;
@@ -102,47 +183,84 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
-        UIUtils.setComboSelection(keywordCaseCombo, store.getString(SQLPreferenceConstants.FORMAT_KEYWORD_CASE));
-        autoConvertKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO));
-        additionalKeywordsText.setText(store.getString(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA));
+        UIUtils.setComboSelection(formatterSelector, store.getString(ModelPreferences.SQL_FORMAT_FORMATTER));
+        final String caseName = store.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        if (CommonUtils.isEmpty(caseName)) {
+            keywordCaseCombo.select(0);
+        } else {
+            UIUtils.setComboSelection(keywordCaseCombo, capitalizeCaseName(caseName));
+        }
 
-        useExternalCheckbox.setSelection(store.getBoolean(SQLPreferenceConstants.FORMAT_EXTERNAL));
-        externalCmdText.setText(store.getString(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD));
+        externalCmdText.setText(store.getString(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD));
+        externalUseFile.setSelection(store.getBoolean(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE));
+        externalTimeout.setSelection(store.getInt(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT));
+
+        formatSQL();
+        showFormatterSettings();
     }
 
     @Override
     protected void savePreferences(DBPPreferenceStore store)
     {
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE, keywordCaseCombo.getText());
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO, autoConvertKeywordCase.getSelection());
-        store.setValue(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA, additionalKeywordsText.getText());
+        store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER, formatterSelector.getText());
 
-        store.setValue(SQLPreferenceConstants.FORMAT_EXTERNAL, useExternalCheckbox.getSelection());
-        store.setValue(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD, externalCmdText.getText());
+        final String caseName;
+        if (keywordCaseCombo.getSelectionIndex() == 0) {
+            caseName = "";
+        } else {
+            caseName = keywordCaseCombo.getText().toUpperCase(Locale.ENGLISH);
+        }
+        store.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
+
+        store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD, externalCmdText.getText());
+        store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_FILE, externalUseFile.getSelection());
+        store.setValue(ModelPreferences.SQL_FORMAT_EXTERNAL_TIMEOUT, externalTimeout.getSelection());
+
         PrefUtils.savePreferenceStore(store);
     }
 
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_CASE);
-        store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_CASE_AUTO);
-        store.setToDefault(SQLPreferenceConstants.FORMAT_KEYWORD_EXTRA);
-
-        store.setToDefault(SQLPreferenceConstants.FORMAT_EXTERNAL);
-        store.setToDefault(SQLPreferenceConstants.FORMAT_EXTERNAL_CMD);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        store.setToDefault(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
     }
 
     @Override
-    public void applyData(Object data)
-    {
-        super.applyData(data);
+    protected void performApply() {
+        super.performApply();
+        formatSQL();
     }
 
     @Override
     protected String getPropertyPageID()
     {
         return PAGE_ID;
+    }
+
+    private void showFormatterSettings() {
+        final boolean isDefFormatter = formatterSelector.getSelectionIndex() == 0;
+        defaultGroup.setVisible(isDefFormatter);
+        externalGroup.setVisible(!isDefFormatter);
+        ((GridData)defaultGroup.getLayoutData()).exclude = !isDefFormatter;
+        ((GridData)externalGroup.getLayoutData()).exclude = isDefFormatter;
+        defaultGroup.getParent().layout();
+    }
+
+    private static String capitalizeCaseName(String name) {
+        return CommonUtils.capitalizeWord(name.toLowerCase(Locale.ENGLISH));
+    }
+
+    private void formatSQL() {
+        try {
+            final String sqlText = ContentUtils.readToString(getClass().getResourceAsStream(FORMAT_FILE_NAME), ContentUtils.DEFAULT_CHARSET);
+            sqlViewer.setInput(new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultConsoleEncoding()));
+        } catch (Exception e) {
+            log.error(e);
+        }
+        sqlViewer.getTextViewer().doOperation(ISourceViewer.FORMAT);
+        sqlViewer.reloadSyntaxRules();
     }
 
 }

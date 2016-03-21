@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,6 +47,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Combo errorHandlingCombo;
     private Spinner commitLinesText;
     private Button fetchResultSetsCheck;
+    private Button resetCursorCheck;
+
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
     private Button blankLineDelimiter;
@@ -76,7 +79,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
-            store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)
+            store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
+            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
         ;
     }
 
@@ -89,11 +93,12 @@ public class PrefPageSQLExecute extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         // General settings
         {
             Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
+            ((GridData)commonGroup.getLayoutData()).horizontalSpan = 2;
             {
                 invalidateBeforeExecuteCheck = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, false);
 
@@ -110,7 +115,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         // Scripts
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
-
+            ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
             {
                 UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_commit_type);
 
@@ -141,6 +146,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             }
 
             fetchResultSetsCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_fetch_resultsets, false);
+            resetCursorCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_reset_cursor, false);
         }
         // Parameters
         {
@@ -155,7 +161,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // Delimiters
         {
-            Composite delimGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite delimGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_delimiters, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             statementDelimiterText = UIUtils.createLabelText(delimGroup, CoreMessages.pref_page_sql_editor_text_statement_delimiter, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             //statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createLabelCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, false);
@@ -176,6 +182,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
             commitLinesText.setSelection(store.getInt(DBeaverPreferences.SCRIPT_COMMIT_LINES));
             fetchResultSetsCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS));
+            resetCursorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE));
+
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
             blankLineDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
@@ -199,6 +207,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
             store.setValue(DBeaverPreferences.SCRIPT_ERROR_HANDLING, CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE, resetCursorCheck.getSelection());
+
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK, blankLineDelimiter.getSelection());
@@ -222,18 +232,14 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.SCRIPT_COMMIT_LINES);
         store.setToDefault(DBeaverPreferences.SCRIPT_ERROR_HANDLING);
         store.setToDefault(DBeaverPreferences.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE);
+
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         store.setToDefault(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
 
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
-    }
-
-    @Override
-    public void applyData(Object data)
-    {
-        super.applyData(data);
     }
 
     @Override

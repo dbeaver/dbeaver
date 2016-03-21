@@ -15,25 +15,30 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-
-package org.jkiss.dbeaver.ui.editors.sql.indent;
-
-public interface SQLIndentSymbols
-{
-    int TokenEOF   = -1;
-    int TokenOTHER = 0;
-    int Tokenbegin = 1000;
-    int TokenBEGIN = 1001;
-    int Tokenend = 1002;
-    int TokenEND = 1003;
-    int TokenIDENT = 2000;
-    int TokenKeyword = 3000;
-    int TokenKeywordStart = 3001;
+package org.jkiss.dbeaver.core.application;
 
 
-    String BEGIN = "BEGIN";
-    String begin = "begin";
-    String beginTrail = "end ";
-    String BEGINTrail = "END ";
+import org.eclipse.e4.ui.workbench.renderers.swt.CTabRendering;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabFolderRenderer;
+import org.eclipse.swt.graphics.GC;
+import org.eclipse.swt.graphics.Rectangle;
+
+/**
+ * TODO: Implement correct rendering of editor tabs
+ * TODO: Have to read a lot about SWT CSS rendering. Maybe, some day..
+ */
+public class ApplicationTabRenderer extends CTabRendering {
+
+
+    public ApplicationTabRenderer(CTabFolder parent) {
+        super(parent);
+    }
+
+    @Override
+    protected void draw(int part, int state, Rectangle bounds, GC gc) {
+        super.draw(part, state, bounds, gc);
+    }
+
 }
 

@@ -88,7 +88,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
 
     public DBPDataSourceContainer getDataSourceContainer()
     {
-        return containerNode.getObject();
+        return containerNode == null ? null : containerNode.getObject();
     }
 
     @Override
@@ -124,6 +124,13 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
             } else if (element instanceof DBPDataSourceContainer) {
                 containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
             }
+        }
+    }
+
+
+    public void applyData(Object data) {
+        if (containerNode == null && data instanceof IAdaptable) {
+            setElement((IAdaptable) data);
         }
     }
 
@@ -296,7 +303,7 @@ public abstract class TargetPrefPage extends PreferencePage implements IWorkbenc
     }
 
     @Override
-    protected final void performApply()
+    protected void performApply()
     {
         performOk();
     }

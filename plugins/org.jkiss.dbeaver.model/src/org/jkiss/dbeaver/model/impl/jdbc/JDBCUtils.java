@@ -484,7 +484,7 @@ public class JDBCUtils {
             // Otherwise it will fail with SQLException
             log.debug("Can't validate connection", e);
             try {
-                connection.getMetaData().getTables(null, null, "UN_EXIST_DBEAVER_TBL_NAME1978", null);
+                connection.getMetaData().getTables(null, null, "DBEAVER_FAKE_TABLE_NAME_FOR_PING", null);
                 return true;
             } catch (Throwable e1) {
                 log.debug("Connection seems to be broken", e1);

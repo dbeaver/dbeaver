@@ -78,6 +78,7 @@ public class RegistryConstants {
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
     public static final String ATTR_COLOR = "color"; //$NON-NLS-1$
+    public static final String ATTR_KEEP_ALIVE = "keepAlive"; //$NON-NLS-1$
     public static final String ATTR_AUTOCOMMIT = "autocommit"; //$NON-NLS-1$
     public static final String ATTR_TXN_ISOLATION = "txnIsolation"; //$NON-NLS-1$
     public static final String ATTR_DEFAULT_OBJECT = "defaultObject"; //$NON-NLS-1$

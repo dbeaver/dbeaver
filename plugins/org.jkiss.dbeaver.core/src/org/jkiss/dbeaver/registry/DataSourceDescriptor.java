@@ -504,6 +504,10 @@ public class DataSourceDescriptor
         this.loginDate = loginDate;
     }
 
+    public Date getConnectTime() {
+        return connectTime;
+    }
+
     @Nullable
     @Override
     public DBPDataSource getDataSource()
@@ -543,7 +547,7 @@ public class DataSourceDescriptor
     @Override
     public boolean isConnected()
     {
-        return dataSource != null/* && dataSource.getDefaultContext(false).isConnected()*/;
+        return dataSource != null;
     }
 
     @Override
@@ -607,6 +611,7 @@ public class DataSourceDescriptor
 
             connectFailed = false;
             connectTime = new Date();
+            loginDate = connectTime;
 
             if (reflect) {
                 getRegistry().notifyDataSourceListeners(new DBPEvent(
