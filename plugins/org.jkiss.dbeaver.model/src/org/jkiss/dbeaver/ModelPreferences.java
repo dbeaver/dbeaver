@@ -136,7 +136,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_NAMED_PARAMETERS_PREFIX, String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));
 
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_FORMATTER, SQLTokenizedFormatter.FORMATTER_ID);
-        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, DBPIdentifierCase.UPPER.name());
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, "");
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_CMD, "");
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_FILE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 500);
