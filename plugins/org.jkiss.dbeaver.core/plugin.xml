@@ -2158,6 +2158,20 @@
             <description>SQL statement delimiter foreground</description>
         </colorDefinition>
         <colorDefinition
+                label="SQL command foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.command.foreground"
+                value="COLOR_DARK_MAGENTA">
+            <description>Control command foreground</description>
+        </colorDefinition>
+        <colorDefinition
+                label="SQL parameter foreground"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                id="org.jkiss.dbeaver.sql.editor.color.parameter.foreground"
+                value="COLOR_DARK_BLUE">
+            <description>SQL parameter (?, :param, etc) foreground</description>
+        </colorDefinition>
+        <colorDefinition
                 label="SQL text foreground"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
                 id="org.jkiss.dbeaver.sql.editor.color.text.foreground"

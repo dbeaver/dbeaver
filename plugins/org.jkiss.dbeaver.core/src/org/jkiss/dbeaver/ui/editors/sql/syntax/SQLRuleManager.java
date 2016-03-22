@@ -185,7 +185,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             String delimRedefine = dialect.getScriptDelimiterRedefiner();
             if (!CommonUtils.isEmpty(delimRedefine)) {
                 final SQLSetDelimiterToken setDelimiterToken = new SQLSetDelimiterToken(
-                    new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER), null, SWT.BOLD));
+                    new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, SWT.BOLD));
 
                 rules.add(new SetDelimiterRule(delimRedefine, setDelimiterToken, delimRule));
             }
