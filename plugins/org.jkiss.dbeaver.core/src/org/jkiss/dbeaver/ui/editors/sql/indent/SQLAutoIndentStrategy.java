@@ -151,7 +151,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private boolean updateKeywordCase(final IDocument document, DocumentCommand command) throws BadLocationException {
         // Whitespace - check for keyword
         final int startPos, endPos;
-        int pos = command.offset;
+        int pos = command.offset - 1;
         while (pos >= 0 && Character.isWhitespace(document.getChar(pos))) {
             pos--;
         }
