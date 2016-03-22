@@ -66,8 +66,17 @@ public class SQLRuleManager extends RuleBasedScanner {
         return evalMode;
     }
 
-    public void setEvalMode(boolean evalMode) {
-        this.evalMode = evalMode;
+    public void startEval() {
+        this.evalMode = true;
+    }
+
+    public void endEval() {
+        this.evalMode = false;
+        for (IRule rule : fRules) {
+            if (rule instanceof DelimiterRule) {
+                ((DelimiterRule) rule).changeDelimiter(null);
+            }
+        }
     }
 
     public void dispose()
