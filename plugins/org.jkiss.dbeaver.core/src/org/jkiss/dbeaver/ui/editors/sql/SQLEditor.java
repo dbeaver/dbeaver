@@ -753,13 +753,19 @@ public class SQLEditor extends SQLEditorBase implements
             return queryList;
         }
 
-        for (int queryOffset = startOffset;;) {
-            SQLQuery query = parseQuery(document, queryOffset, startOffset + length, queryOffset);
-            if (query == null) {
-                break;
+        this.startScriptEvaluation();
+        try {
+            for (int queryOffset = startOffset; ; ) {
+                SQLQuery query = parseQuery(document, queryOffset, startOffset + length, queryOffset);
+                if (query == null) {
+                    break;
+                }
+                queryList.add(query);
+                queryOffset = query.getOffset() + query.getLength() + 1;
             }
-            queryList.add(query);
-            queryOffset = query.getOffset() + query.getLength() + 1;
+        }
+        finally {
+            this.endScriptEvaluation();
         }
 
         if (getActivePreferenceStore().getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)) {

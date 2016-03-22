@@ -550,145 +550,148 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         return partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos));
     }
 
+    protected void startScriptEvaluation() {
+        ruleManager.startEval();
+    }
+
+    protected void endScriptEvaluation() {
+        ruleManager.endEval();
+    }
+
     protected SQLQuery parseQuery(IDocument document, int startPos, int endPos, int currentPos) {
         if (endPos - startPos <= 0) {
             return null;
         }
         SQLDialect dialect = getSQLDialect();
+
         // Parse range
-        ruleManager.setEvalMode(true);
-        try {
-            ruleManager.setRange(document, startPos, endPos - startPos);
-            int statementStart = startPos;
-            int bracketDepth = 0;
-            boolean hasBlocks = false;
-            boolean hasValuableTokens = false;
-            for (; ; ) {
-                IToken token = ruleManager.nextToken();
-                int tokenOffset = ruleManager.getTokenOffset();
-                final int tokenLength = ruleManager.getTokenLength();
-                boolean isDelimiter = token instanceof SQLDelimiterToken;
-                String delimiterText = null;
-                if (isDelimiter) {
-                    try {
-                        delimiterText = document.get(tokenOffset, tokenLength);
-                    } catch (BadLocationException e) {
-                        log.debug(e);
-                        delimiterText = "";
-                    }
-                }
-                if (tokenLength == 1) {
-                    try {
-                        char aChar = document.getChar(tokenOffset);
-                        if (aChar == '(' || aChar == '{' || aChar == '[') {
-                            bracketDepth++;
-                        } else if (aChar == ')' || aChar == '}' || aChar == ']') {
-                            bracketDepth--;
-                        }
-                    } catch (BadLocationException e) {
-                        log.warn(e);
-                    }
-                }
-                if (token instanceof SQLBlockToggleToken) {
-                    if (bracketDepth == 1) {
-                        bracketDepth--;
-                    } else if (bracketDepth == 0) {
-                        bracketDepth++;
-                    } else {
-                        log.debug("Block toggle token inside another block. Can't process it");
-                    }
-                    hasBlocks = true;
-                } else if (token instanceof SQLBlockBeginToken) {
-                    bracketDepth++;
-                    hasBlocks = true;
-                } else if (bracketDepth > 0 && token instanceof SQLBlockEndToken) {
-                    // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
-                    // This END doesn't mean block
-                    bracketDepth--;
-                    hasBlocks = true;
-                } else if (isDelimiter && bracketDepth > 0) {
-                    // Delimiter in some brackets - ignore it
-                    continue;
-                } else if (token instanceof SQLSetDelimiterToken) {
-                    isDelimiter = true;
-                }
-
-                if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
-                    // get position before last token start
-                    if (tokenOffset > endPos) {
-                        tokenOffset = endPos;
-                    }
-
-                    if (tokenOffset >= document.getLength()) {
-                        // Sometimes (e.g. when comment finishing script text)
-                        // last token offset is beyond document range
-                        tokenOffset = document.getLength();
-                    }
-                    assert (tokenOffset >= currentPos);
-                    try {
-
-                        // remove leading spaces
-                        while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
-                            statementStart++;
-                        }
-                        // remove trailing spaces
-                        while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
-                            tokenOffset--;
-                        }
-                        if (tokenOffset == statementStart) {
-                            // Empty statement
-                            if (token.isEOF()) {
-                                return null;
-                            }
-                            statementStart = tokenOffset + tokenLength;
-                            continue;
-                        }
-                        String queryText = document.get(statementStart, tokenOffset - statementStart);
-
-                        // FIXME: includes last delimiter in query (Oracle?)
-                        if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
-                            if (delimiterText != null) {
-                                queryText += delimiterText;
-                            }
-                        }
-                        // FIXME: don't remember what is is for. Delimiters are not in queries anyway
-                        /* else {
-                            Collection<String> delimiterTexts;
-                            if (isDelimiter) {
-                                delimiterTexts = Collections.singleton(delimiterText);
-                            } else {
-                                delimiterTexts = syntaxManager.getStatementDelimiters();
-                            }
-
-                            for (String delim : delimiterTexts) {
-                                if (queryText.endsWith(delim)) {
-                                    queryText = queryText.substring(0, queryText.length() - delim.length());
-                                }
-                            }
-                        }*/
-                        // make script line
-                        return new SQLQuery(
-                            queryText.trim(),
-                            statementStart,
-                            tokenOffset - statementStart);
-                    } catch (BadLocationException ex) {
-                        log.warn("Can't extract query", ex); //$NON-NLS-1$
-                        return null;
-                    }
-                }
-                if (isDelimiter) {
-                    statementStart = tokenOffset + tokenLength;
-                }
-                if (token.isEOF()) {
-                    return null;
-                }
-                if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLSetDelimiterToken)) {
-                    hasValuableTokens = true;
+        ruleManager.setRange(document, startPos, endPos - startPos);
+        int statementStart = startPos;
+        int bracketDepth = 0;
+        boolean hasBlocks = false;
+        boolean hasValuableTokens = false;
+        for (; ; ) {
+            IToken token = ruleManager.nextToken();
+            int tokenOffset = ruleManager.getTokenOffset();
+            final int tokenLength = ruleManager.getTokenLength();
+            boolean isDelimiter = token instanceof SQLDelimiterToken;
+            String delimiterText = null;
+            if (isDelimiter) {
+                try {
+                    delimiterText = document.get(tokenOffset, tokenLength);
+                } catch (BadLocationException e) {
+                    log.debug(e);
+                    delimiterText = "";
                 }
             }
-        }
-        finally {
-            ruleManager.setEvalMode(false);
+            if (tokenLength == 1) {
+                try {
+                    char aChar = document.getChar(tokenOffset);
+                    if (aChar == '(' || aChar == '{' || aChar == '[') {
+                        bracketDepth++;
+                    } else if (aChar == ')' || aChar == '}' || aChar == ']') {
+                        bracketDepth--;
+                    }
+                } catch (BadLocationException e) {
+                    log.warn(e);
+                }
+            }
+            if (token instanceof SQLBlockToggleToken) {
+                if (bracketDepth == 1) {
+                    bracketDepth--;
+                } else if (bracketDepth == 0) {
+                    bracketDepth++;
+                } else {
+                    log.debug("Block toggle token inside another block. Can't process it");
+                }
+                hasBlocks = true;
+            } else if (token instanceof SQLBlockBeginToken) {
+                bracketDepth++;
+                hasBlocks = true;
+            } else if (bracketDepth > 0 && token instanceof SQLBlockEndToken) {
+                // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
+                // This END doesn't mean block
+                bracketDepth--;
+                hasBlocks = true;
+            } else if (isDelimiter && bracketDepth > 0) {
+                // Delimiter in some brackets - ignore it
+                continue;
+            } else if (token instanceof SQLSetDelimiterToken) {
+                isDelimiter = true;
+            }
+
+            if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset >= currentPos) || tokenOffset > endPos)) {
+                // get position before last token start
+                if (tokenOffset > endPos) {
+                    tokenOffset = endPos;
+                }
+
+                if (tokenOffset >= document.getLength()) {
+                    // Sometimes (e.g. when comment finishing script text)
+                    // last token offset is beyond document range
+                    tokenOffset = document.getLength();
+                }
+                assert (tokenOffset >= currentPos);
+                try {
+
+                    // remove leading spaces
+                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(statementStart))) {
+                        statementStart++;
+                    }
+                    // remove trailing spaces
+                    while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
+                        tokenOffset--;
+                    }
+                    if (tokenOffset == statementStart) {
+                        // Empty statement
+                        if (token.isEOF()) {
+                            return null;
+                        }
+                        statementStart = tokenOffset + tokenLength;
+                        continue;
+                    }
+                    String queryText = document.get(statementStart, tokenOffset - statementStart);
+
+                    // FIXME: includes last delimiter in query (Oracle?)
+                    if (isDelimiter && hasBlocks && dialect.isDelimiterAfterBlock()) {
+                        if (delimiterText != null) {
+                            queryText += delimiterText;
+                        }
+                    }
+                    // FIXME: don't remember what is is for. Delimiters are not in queries anyway
+                    /* else {
+                        Collection<String> delimiterTexts;
+                        if (isDelimiter) {
+                            delimiterTexts = Collections.singleton(delimiterText);
+                        } else {
+                            delimiterTexts = syntaxManager.getStatementDelimiters();
+                        }
+
+                        for (String delim : delimiterTexts) {
+                            if (queryText.endsWith(delim)) {
+                                queryText = queryText.substring(0, queryText.length() - delim.length());
+                            }
+                        }
+                    }*/
+                    // make script line
+                    return new SQLQuery(
+                        queryText.trim(),
+                        statementStart,
+                        tokenOffset - statementStart);
+                } catch (BadLocationException ex) {
+                    log.warn("Can't extract query", ex); //$NON-NLS-1$
+                    return null;
+                }
+            }
+            if (isDelimiter) {
+                statementStart = tokenOffset + tokenLength;
+            }
+            if (token.isEOF()) {
+                return null;
+            }
+            if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLSetDelimiterToken)) {
+                hasValuableTokens = true;
+            }
         }
     }
 
