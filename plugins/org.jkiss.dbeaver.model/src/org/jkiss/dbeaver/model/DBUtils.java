@@ -135,7 +135,7 @@ public final class DBUtils {
         final DBPKeywordType keywordType = sqlDialect.getKeywordType(str);
         boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE);
 
-        if (!hasBadChars) {
+        if (!hasBadChars && !str.isEmpty()) {
             hasBadChars = Character.isDigit(str.charAt(0));
         }
         if (caseSensitiveNames) {
