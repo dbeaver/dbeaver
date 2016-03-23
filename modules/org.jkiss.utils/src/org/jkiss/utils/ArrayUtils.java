@@ -182,4 +182,34 @@ public class ArrayUtils {
         System.arraycopy(elements, pos, newArray, pos + add.length, elements.length - pos);
         return newArray;
     }
+
+    public static <T> T[] add(Class<T> type, T[] elements, T add) {
+        T[] newArray = (T[]) Array.newInstance(type, elements.length + 1);
+        System.arraycopy(elements, 0, newArray, 0, elements.length);
+        newArray[elements.length] = add;
+        return newArray;
+    }
+
+    public static <T> T[] remove(Class<T> type, Object[] elements, int index) {
+        T[] newArray = (T[]) Array.newInstance(type, elements.length - 1);
+        System.arraycopy(elements, 0, newArray, 0, index);
+        if (index < elements.length - 1) {
+            System.arraycopy(elements, index + 1, newArray, index, elements.length - index - 1);
+        }
+        return newArray;
+    }
+
+    public static void main(String[] args) {
+        String[] arr = new String[0];
+
+        for (int i = 0; i < 100; i++) {
+            arr = add(String.class, arr, String.valueOf(i));
+        }
+        System.out.println(Arrays.toString(arr));
+        for (int i = 0; i < 100; i++) {
+            arr = remove(String.class, arr, 0);
+        }
+        System.out.println(Arrays.toString(arr));
+    }
+
 }
