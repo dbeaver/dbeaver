@@ -80,7 +80,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     protected void startBlock()
     {
         this.connection.getProgressMonitor().startBlock(
-            this, this.query == null ? "?" : JDBCUtils.limitQueryLength(query, 200));
+            this, "Execute statement"/*this.query == null ? "?" : JDBCUtils.limitQueryLength(query, 200)*/);
     }
 
     protected void endBlock()
