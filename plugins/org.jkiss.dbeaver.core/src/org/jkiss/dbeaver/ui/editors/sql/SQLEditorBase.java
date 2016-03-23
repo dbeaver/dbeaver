@@ -388,7 +388,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (document != null) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(dialect),
-                SQLPartitionScanner.SQL_PARTITION_TYPES);
+                SQLPartitionScanner.SQL_CONTENT_TYPES);
             partitioner.connect(document);
             document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
 

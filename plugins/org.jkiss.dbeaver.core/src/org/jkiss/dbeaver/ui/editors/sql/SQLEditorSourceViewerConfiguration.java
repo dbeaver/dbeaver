@@ -121,10 +121,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     {
         if (IDocument.DEFAULT_CONTENT_TYPE.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING, editor.getSyntaxManager()) } ;
-        } else if (SQLPartitionScanner.SQL_COMMENT.equals(contentType) || SQLPartitionScanner.SQL_MULTILINE_COMMENT.equals(contentType)) {
+        } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLCommentAutoIndentStrategy(SQLPartitionScanner.SQL_PARTITIONING) } ;
-        } else if (SQLPartitionScanner.SQL_STRING.equals(contentType)) {
-            return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLPartitionScanner.SQL_STRING) };
+        } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
+            return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLPartitionScanner.CONTENT_TYPE_SQL_STRING) };
         }
         return null;
     }
@@ -234,7 +234,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         formatter.setDocumentPartitioning(SQLPartitionScanner.SQL_PARTITIONING);
 
         IFormattingStrategy formattingStrategy = new SQLFormattingStrategy(sourceViewer, this, editor.getSyntaxManager());
-        for (String ct : SQLPartitionScanner.SQL_PARTITION_TYPES) {
+        for (String ct : SQLPartitionScanner.SQL_CONTENT_TYPES) {
             formatter.setFormattingStrategy(formattingStrategy, ct);
         }
 
@@ -282,28 +282,21 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // the corresponding text attributes
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
             new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
-        reconciler.setDamager(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
-        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_MULTILINE_COMMENT);
+        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
+        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT);
 
         // Add a "damager-repairer" for changes within one-line SQL comments.
         dr = new DefaultDamagerRepairer(new SingleTokenScanner(
             new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_COMMENT))));
-        reconciler.setDamager(dr, SQLPartitionScanner.SQL_COMMENT);
-        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_COMMENT);
+        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT);
+        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_COMMENT);
 
         // Add a "damager-repairer" for changes within quoted literals.
         dr = new DefaultDamagerRepairer(
             new SingleTokenScanner(
                 new TextAttribute(ruleManager.getColor(SQLConstants.CONFIG_COLOR_STRING))));
-        reconciler.setDamager(dr, SQLPartitionScanner.SQL_STRING);
-        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_STRING);
-
-//        // Add a "damager-repairer" for changes within delimited identifiers.
-//        dr = new DefaultDamagerRepairer(
-//            new SingleTokenScanner(
-//                new TextAttribute(ruleManager.getColor(SQLSyntaxManager.CONFIG_COLOR_DELIMITER))));
-//        reconciler.setDamager(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
-//        reconciler.setRepairer(dr, SQLPartitionScanner.SQL_DOUBLE_QUOTES_IDENTIFIER);
+        reconciler.setDamager(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING);
+        reconciler.setRepairer(dr, SQLPartitionScanner.CONTENT_TYPE_SQL_STRING);
 
         return reconciler;
     }
@@ -335,7 +328,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public String[] getConfiguredContentTypes(ISourceViewer sourceViewer)
     {
-        return SQLPartitionScanner.SQL_PARTITION_TYPES;
+        return SQLPartitionScanner.SQL_CONTENT_TYPES;
     }
 
     /*

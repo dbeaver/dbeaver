@@ -38,26 +38,23 @@ import java.util.List;
  */
 public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     public final static String SQL_PARTITIONING = "___sql_partitioning";
-    public final static String SQL_COMMENT = "sql_comment";
-    public final static String SQL_MULTILINE_COMMENT = "sql_multiline_comment";
-    //public final static String SQL_DOUBLE_QUOTES_IDENTIFIER = "sql_double_quotes_identifier";
-    public final static String SQL_STRING = "sql_character";
 
-    public final static String[] SQL_PARTITION_TYPES = new String[]{
+    public final static String CONTENT_TYPE_SQL_COMMENT = "sql_comment";
+    public final static String CONTENT_TYPE_SQL_MULTILINE_COMMENT = "sql_multiline_comment";
+    public final static String CONTENT_TYPE_SQL_STRING = "sql_character";
+
+    public final static String[] SQL_CONTENT_TYPES = new String[]{
         IDocument.DEFAULT_CONTENT_TYPE,
-        SQL_COMMENT,
-        SQL_MULTILINE_COMMENT,
-        SQL_STRING,
-        //SQL_DOUBLE_QUOTES_IDENTIFIER,
+        CONTENT_TYPE_SQL_COMMENT,
+        CONTENT_TYPE_SQL_MULTILINE_COMMENT,
+        CONTENT_TYPE_SQL_STRING,
     };
 
     // Syntax higlight
-    List<IPredicateRule> rules = new ArrayList<>();
-    IToken commentToken = new Token(SQL_COMMENT);
-    IToken multilineCommentToken = new Token(SQL_MULTILINE_COMMENT);
-    //IToken sqlIdentifierToken = new Token(SQL_DOUBLE_QUOTES_IDENTIFIER);
-    IToken sqlStringToken = new Token(SQL_STRING);
-
+    private final List<IPredicateRule> rules = new ArrayList<>();
+    private final IToken commentToken = new Token(CONTENT_TYPE_SQL_COMMENT);
+    private final IToken multilineCommentToken = new Token(CONTENT_TYPE_SQL_MULTILINE_COMMENT);
+    private final IToken sqlStringToken = new Token(CONTENT_TYPE_SQL_STRING);
 
     /**
      * Detector for empty comments.
@@ -110,20 +107,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         }
     }
 
-    /**
-     * Constructor for SQLPartitionScanner. Creates rules to parse comment partitions in an SQL document. In the
-     * constructor, is defined the entire set of rules used to parse the SQL document, in an instance of an
-     * IPredicateRule. The coonstructor calls setPredicateRules method which associates the rules to the scanner and
-     * makes the document ready for parsing.
-     */
-    public SQLPartitionScanner()
-    {
-        super();
-
-        initRules(null);
-        setupRules();
-    }
-
     private void setupRules()
     {
         IPredicateRule[] result = new IPredicateRule[rules.size()];
@@ -133,21 +116,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
 
     private void initRules(SQLDialect dialect)
     {
-        /*
-        //Add rule for identifier which is enclosed in double quotes.
-        rules.add(new MultiLineRule("\"", "\"", sqlDoubleQuotesIdentifierToken, '\\'));
-
-        //Add rule for SQL string.
-        rules.add(new MultiLineRule("'", "'", sqlStringToken, '\\', true));
-
-        //comments
-        rules.add(new EndOfLineRule("--", commentToken));
-
-        // Add special case word rule.
-        EmptyCommentRule wordRule = new EmptyCommentRule(multilineCommentToken);
-        rules.add(wordRule);
-         */
-
         rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, sqlStringToken, '\\'));
 
         for (String lineComment : dialect.getSingleLineComments()) {
@@ -163,25 +131,19 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         if (multiLineComments != null) {
             rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), multilineCommentToken, (char) 0, true));
         }
-    }
 
-    public SQLPartitionScanner(SQLDialect dialect)
-    {
-        initRules(dialect);
-        //database specific rules
-        setCommentsScanner(dialect);
-        setupRules();
-
-    }
-
-    private void setCommentsScanner(SQLDialect dialect)
-    {
         String[] singleLineComments = dialect.getSingleLineComments();
 
         for (String singleLineComment : singleLineComments) {
             // Add rule for single line comments.
             rules.add(new EndOfLineRule(singleLineComment, commentToken));
         }
+    }
+
+    public SQLPartitionScanner(SQLDialect dialect)
+    {
+        initRules(dialect);
+        setupRules();
     }
 
     /**
@@ -200,7 +162,6 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
         return "";
     }
 
-
     /**
      * Gets the partitions of the given document as an array of
      * <code>ITypedRegion</code> objects.  There is a distinct non-overlapping partition
@@ -214,8 +175,7 @@ public class SQLPartitionScanner extends RuleBasedPartitionScanner {
     {
         ITypedRegion[] regions = null;
         try {
-            regions = TextUtilities.computePartitioning(doc, SQLPartitionScanner.SQL_PARTITIONING, 0, doc.getLength(),
-                                                        false);
+            regions = TextUtilities.computePartitioning(doc, SQLPartitionScanner.SQL_PARTITIONING, 0, doc.getLength(), false);
         }
         catch (BadLocationException e) {
             // ignore
