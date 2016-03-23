@@ -217,7 +217,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
 
             int start = reg.getOffset();
             ITypedRegion region = TextUtilities.getPartition(document, partitioning, start, true);
-            if (SQLPartitionScanner.SQL_MULTILINE_COMMENT.equals(region.getType())) {
+            if (SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(region.getType())) {
                 start = document.getLineInformationOfOffset(region.getOffset()).getOffset();
             }
 
