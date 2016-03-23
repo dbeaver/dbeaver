@@ -1474,6 +1474,11 @@ public class SQLEditor extends SQLEditorBase implements
         public DBPDataSourceContainer getDataSourceContainer() {
             return SQLEditor.this.getDataSourceContainer();
         }
+
+        @Override
+        public String toString() {
+            return "SQL Query / " + SQLEditor.this.getEditorInput().getName();
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {

@@ -76,7 +76,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
     private String progressMessage;
 
     protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, IResultSetController controller, DBCExecutionContext executionContext, Composite progressControl) {
-        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer.getName() + "]", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
+        super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
         progressMessage = CoreMessages.controls_rs_pump_job_name;
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
@@ -131,7 +131,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
         try (DBCSession session = getExecutionContext().openSession(
             proxyMonitor,
             purpose,
-            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.getName())))
+            NLS.bind(CoreMessages.controls_rs_pump_job_context_name, dataContainer.toString())))
         {
             visualizer.schedule(PROGRESS_VISUALIZE_PERIOD * 2);
             statistics = dataContainer.readData(

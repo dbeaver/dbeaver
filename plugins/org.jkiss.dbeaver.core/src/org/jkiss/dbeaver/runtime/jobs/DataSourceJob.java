@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DataSourceJob
@@ -37,7 +38,7 @@ public abstract class DataSourceJob extends AbstractJob implements DBPDataSource
 
     protected DataSourceJob(String name, @Nullable ImageDescriptor image, @NotNull DBCExecutionContext executionContext)
     {
-        super(name);
+        super(CommonUtils.truncateString(name, 1000)); // Trunkate just in case
         this.executionContext = executionContext;
         final DBPDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
 

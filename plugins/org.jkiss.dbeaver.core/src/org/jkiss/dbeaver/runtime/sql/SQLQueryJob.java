@@ -711,7 +711,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         }
         resultSetNumber = 0;
         SQLQuery query = queries.get(0);
-        session.getProgressMonitor().beginTask(query.getQuery(), 1);
+        session.getProgressMonitor().beginTask(CommonUtils.truncateString(query.getQuery(), 1000), 1);
         try {
             boolean result = executeSingleQuery(session, query, true);
             if (!result && lastError != null) {
