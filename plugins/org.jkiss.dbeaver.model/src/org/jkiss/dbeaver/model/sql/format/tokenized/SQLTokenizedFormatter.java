@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
@@ -41,6 +42,7 @@ public class SQLTokenizedFormatter implements SQLFormatter {
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<>();
     private List<String> statementDelimiters = new ArrayList<>(2);
+    private String delimiterRedefiner;
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
@@ -49,6 +51,10 @@ public class SQLTokenizedFormatter implements SQLFormatter {
 
         for (String delim : formatterCfg.getSyntaxManager().getStatementDelimiters()) {
             statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
+        }
+        delimiterRedefiner = formatterCfg.getSyntaxManager().getDialect().getScriptDelimiterRedefiner();
+        if (delimiterRedefiner != null) {
+            delimiterRedefiner = delimiterRedefiner.toUpperCase(Locale.ENGLISH);
         }
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
 
@@ -254,6 +260,17 @@ public class SQLTokenizedFormatter implements SQLFormatter {
                     index += insertReturnAndIndent(argList, index, 0);
                 }
                 index += insertReturnAndIndent(argList, index + 1, 0);
+                if (!CommonUtils.isEmpty(delimiterRedefiner) && token.getString().startsWith(delimiterRedefiner)) {
+                    final String command = token.getString().trim().toUpperCase(Locale.ENGLISH);
+                    final int divPos = command.lastIndexOf(' ');
+                    if (divPos > 0) {
+                        String delimiter = command.substring(divPos).trim();
+                        if (!CommonUtils.isEmpty(delimiter)) {
+                            statementDelimiters.clear();
+                            statementDelimiters.add(delimiter);
+                        }
+                    }
+                }
             } else {
                 if (statementDelimiters.contains(tokenString)) {
                     indent = 0;
