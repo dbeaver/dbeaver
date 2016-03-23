@@ -23,28 +23,28 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 class FormatterToken {
 
-    private int fType;
+    private TokenType fType;
     private String fString;
     private int fPos = -1;
 
-    public FormatterToken(final int argType, final String argString, final int argPos)
+    public FormatterToken(final TokenType argType, final String argString, final int argPos)
     {
         fType = argType;
         fString = argString;
         fPos = argPos;
     }
 
-    public FormatterToken(final int argType, final String argString)
+    public FormatterToken(final TokenType argType, final String argString)
     {
         this(argType, argString, -1);
     }
 
-    public void setType(final int argType)
+    public void setType(final TokenType argType)
     {
         fType = argType;
     }
 
-    public int getType()
+    public TokenType getType()
     {
         return fType;
     }
