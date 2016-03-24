@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 */
 class MySQLDialect extends JDBCSQLDialect {
 
-    public MySQLDialect(MySQLDataSource oracleDataSource, JDBCDatabaseMetaData metaData) {
-        super(oracleDataSource, "MySQL", metaData);
+    public MySQLDialect(JDBCDatabaseMetaData metaData) {
+        super("MySQL", metaData);
         //addSQLKeyword("STATISTICS");
     }
 

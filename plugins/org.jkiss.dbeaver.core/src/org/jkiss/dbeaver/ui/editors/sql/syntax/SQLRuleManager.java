@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -109,7 +110,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void refreshRules()
+    public void refreshRules(DBPDataSource dataSource)
     {
         /*final Color backgroundColor = null;unassigned || dataSource != null ?
             getColor(SQLConstants.CONFIG_COLOR_BACKGROUND, SWT.COLOR_WHITE) :
@@ -196,10 +197,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         for (String reservedWord : dialect.getReservedWords()) {
             wordRule.addWord(reservedWord, keywordToken);
         }
-        for (String function : dialect.getFunctions()) {
+        for (String function : dialect.getFunctions(dataSource)) {
             wordRule.addWord(function, typeToken);
         }
-        for (String type : dialect.getTypes()) {
+        for (String type : dialect.getDataTypes(dataSource)) {
             wordRule.addWord(type, typeToken);
         }
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);

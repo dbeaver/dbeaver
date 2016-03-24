@@ -151,7 +151,7 @@ public class OracleDataSource extends JDBCDataSource
 
     @Override
     protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        JDBCSQLDialect dialect = new OracleSQLDialect(this, metaData);
+        JDBCSQLDialect dialect = new OracleSQLDialect(metaData);
         for (String kw : OracleConstants.ADVANCED_KEYWORDS) {
             dialect.addSQLKeyword(kw);
         }

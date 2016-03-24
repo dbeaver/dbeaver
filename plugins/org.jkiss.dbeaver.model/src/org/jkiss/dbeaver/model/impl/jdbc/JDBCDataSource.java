@@ -528,7 +528,7 @@ public abstract class JDBCDataSource
 
     protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData)
     {
-        return new JDBCSQLDialect(this, "JDBC", metaData);
+        return new JDBCSQLDialect("JDBC", metaData);
     }
 
     @NotNull
