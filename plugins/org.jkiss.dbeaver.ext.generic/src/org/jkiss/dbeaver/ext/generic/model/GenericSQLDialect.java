@@ -48,7 +48,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
-        super(dataSource, "Generic", metaData);
+        super("Generic", metaData);
         scriptDelimiter = CommonUtils.toString(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
         legacySQLDialect = CommonUtils.toBoolean(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
     }

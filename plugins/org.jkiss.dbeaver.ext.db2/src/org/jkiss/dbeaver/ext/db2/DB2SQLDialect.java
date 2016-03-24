@@ -19,7 +19,6 @@
 package org.jkiss.dbeaver.ext.db2;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 
@@ -34,9 +33,9 @@ import java.util.Collections;
  */
 public class DB2SQLDialect extends JDBCSQLDialect {
 
-    public DB2SQLDialect(DB2DataSource db2DataSource, JDBCDatabaseMetaData metaData)
+    public DB2SQLDialect(JDBCDatabaseMetaData metaData)
     {
-        super(db2DataSource, "DB2", metaData);
+        super("DB2", metaData);
         for (String kw : DB2Constants.ADVANCED_KEYWORDS) {
             this.addSQLKeyword(kw);
         }

@@ -265,7 +265,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     @Override
     protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData)
     {
-        return new DB2SQLDialect(this, metaData);
+        return new DB2SQLDialect(metaData);
     }
 
     @Override

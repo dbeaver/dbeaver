@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -41,7 +42,6 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     static final Log log = Log.getLog(JDBCSQLDialect.class);
 
-    private final JDBCDataSource dataSource;
     private String name;
     private String identifierQuoteString;
     private SQLStateType sqlStateType;
@@ -59,9 +59,8 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     private transient boolean typesLoaded = false;
 
-    public JDBCSQLDialect(JDBCDataSource dataSource, String name, JDBCDatabaseMetaData metaData)
+    public JDBCSQLDialect(String name, JDBCDatabaseMetaData metaData)
     {
-        this.dataSource = dataSource;
         this.name = name;
 
         try {
@@ -306,11 +305,11 @@ public class JDBCSQLDialect extends BasicSQLDialect {
 
     @NotNull
     @Override
-    public TreeSet<String> getTypes() {
-        if (!typesLoaded) {
+    public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource) {
+        if (!typesLoaded && dataSource instanceof JDBCDataSource) {
             types.clear();
 
-            Collection<? extends DBSDataType> supportedDataTypes = dataSource.getLocalDataTypes();
+            Collection<? extends DBSDataType> supportedDataTypes = ((JDBCDataSource) dataSource).getLocalDataTypes();
             if (supportedDataTypes != null) {
                 for (DBSDataType dataType : supportedDataTypes) {
                     if (!dataType.getDataKind().isComplex()) {

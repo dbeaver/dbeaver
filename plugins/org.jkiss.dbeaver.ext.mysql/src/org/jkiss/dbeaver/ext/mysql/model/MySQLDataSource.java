@@ -160,7 +160,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     protected SQLDialect createSQLDialect(@NotNull JDBCDatabaseMetaData metaData) {
-        return new MySQLDialect(this, metaData);
+        return new MySQLDialect(metaData);
     }
 
     public String[] getTableTypes()

@@ -34,8 +34,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
             //"^rem"
     };
 
-    public OracleSQLDialect(OracleDataSource oracleDataSource, JDBCDatabaseMetaData metaData) {
-        super(oracleDataSource, "Oracle", metaData);
+    public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
+        super("Oracle", metaData);
         addSQLKeyword("ANALYZE");
         addSQLKeyword("VALIDATE");
         addSQLKeyword("STRUCTURE");

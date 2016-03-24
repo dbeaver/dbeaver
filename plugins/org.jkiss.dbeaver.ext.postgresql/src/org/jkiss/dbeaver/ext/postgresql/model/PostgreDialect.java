@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 */
 class PostgreDialect extends JDBCSQLDialect {
 
-    public PostgreDialect(PostgreDataSource dataSource, JDBCDatabaseMetaData metaData) {
-        super(dataSource, "PostgreSQL", metaData);
+    public PostgreDialect(JDBCDatabaseMetaData metaData) {
+        super("PostgreSQL", metaData);
         addSQLKeyword("SHOW");
         addSQLKeyword("TYPE");
         addSQLKeyword("USER");

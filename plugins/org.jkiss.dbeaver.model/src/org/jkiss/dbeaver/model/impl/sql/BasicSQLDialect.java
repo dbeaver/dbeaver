@@ -117,14 +117,14 @@ public class BasicSQLDialect implements SQLDialect {
 
     @NotNull
     @Override
-    public Set<String> getFunctions()
+    public Set<String> getFunctions(@NotNull DBPDataSource dataSource)
     {
         return functions;
     }
 
     @NotNull
     @Override
-    public TreeSet<String> getTypes()
+    public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource)
     {
         return types;
     }
