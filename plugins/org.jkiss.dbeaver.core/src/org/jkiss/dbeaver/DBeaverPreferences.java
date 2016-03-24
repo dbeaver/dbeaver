@@ -79,11 +79,15 @@ public final class DBeaverPreferences
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
     public static final String UI_KEEP_DATABASE_EDITORS = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
+
+    public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
     public static final String UI_DRIVERS_HOME = "ui.drivers.home"; //$NON-NLS-1$
+
     public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
     public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
     public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
     public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
+
     public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
     public static final String UI_MAVEN_REPOSITORIES = "ui.maven.repositories"; //$NON-NLS-1$
 
