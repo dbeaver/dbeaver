@@ -66,10 +66,7 @@ import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
-import org.jkiss.dbeaver.ui.controls.CustomCheckboxCellEditor;
-import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
-import org.jkiss.dbeaver.ui.controls.CustomNumberCellEditor;
-import org.jkiss.dbeaver.ui.controls.CustomTextCellEditor;
+import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
@@ -926,50 +923,28 @@ public class UIUtils {
         @Nullable ModifyListener changeListener)
     {
         UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
-        Composite chooserPlaceholder = UIUtils.createPlaceholder(parent, 2);
-        chooserPlaceholder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        final Text directoryText = new Text(chooserPlaceholder, SWT.BORDER);
-        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (changeListener != null) {
-            directoryText.addModifyListener(changeListener);
-        }
-
-        final Runnable folderChooser = new Runnable() {
+        final TextWithOpen directoryText = new TextWithOpen(parent) {
             @Override
-            public void run()
-            {
+            protected void openBrowser() {
                 DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
                 dialog.setMessage(CoreMessages.data_transfer_wizard_output_dialog_directory_message);
                 dialog.setText(CoreMessages.data_transfer_wizard_output_dialog_directory_text);
-                String directory = directoryText.getText();
+                String directory = getText();
                 if (!CommonUtils.isEmpty(directory)) {
                     dialog.setFilterPath(directory);
                 }
                 directory = dialog.open();
                 if (directory != null) {
-                    directoryText.setText(directory);
+                    setText(directory);
                 }
             }
         };
-        directoryText.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseUp(MouseEvent e)
-            {
-                folderChooser.run();
-            }
-        });
+        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (changeListener != null) {
+            directoryText.getTextControl().addModifyListener(changeListener);
+        }
 
-        Button openFolder = new Button(chooserPlaceholder, SWT.PUSH | SWT.FLAT);
-        openFolder.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        openFolder.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER | GridData.HORIZONTAL_ALIGN_CENTER));
-        openFolder.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                folderChooser.run();
-            }
-        });
-        return directoryText;
+        return directoryText.getTextControl();
     }
 
     public static String makeAnchor(String text)

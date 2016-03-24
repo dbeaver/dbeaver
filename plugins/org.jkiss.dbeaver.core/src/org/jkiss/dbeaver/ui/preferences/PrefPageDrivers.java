@@ -156,32 +156,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                 }
             });
             removeButton.setEnabled(false);
-            final Button upButton = UIUtils.createToolButton(buttonsPH, "Up", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    int index = sourceList.getSelectionIndex();
-                    String prevValue = sourceList.getItem(index - 1);
-                    sourceList.setItem(index - 1, sourceList.getItem(index));
-                    sourceList.setItem(index, prevValue);
-                    sourceList.setSelection(index - 1);
-                    sourceList.notifyListeners(SWT.Selection, new Event());
-                }
-            });
-            upButton.setEnabled(false);
-            final Button downButton = UIUtils.createToolButton(buttonsPH, "Down", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    int index = sourceList.getSelectionIndex();
-                    String nextValue = sourceList.getItem(index + 1);
-                    sourceList.setItem(index + 1, sourceList.getItem(index));
-                    sourceList.setItem(index, nextValue);
-                    sourceList.setSelection(index + 1);
-                    sourceList.notifyListeners(SWT.Selection, new Event());
-                }
-            });
-            downButton.setEnabled(false);
 
             sourceList.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -189,12 +163,8 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
                 {
                     if (sourceList.getSelectionIndex() >= 0) {
                         removeButton.setEnabled(sourceList.getItemCount() > 1);
-                        upButton.setEnabled(sourceList.getSelectionIndex() > 0);
-                        downButton.setEnabled(sourceList.getSelectionIndex() < sourceList.getItemCount() - 1);
                     } else {
                         removeButton.setEnabled(false);
-                        upButton.setEnabled(false);
-                        downButton.setEnabled(false);
                     }
                 }
             });
