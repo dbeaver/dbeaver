@@ -38,6 +38,8 @@ import java.util.*;
  */
 public class DBNResource extends DBNNode
 {
+    private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
+
     private IResource resource;
     private DBPResourceHandler handler;
     private DBNNode[] children;
@@ -160,10 +162,14 @@ public class DBNResource extends DBNNode
         } catch (CoreException e) {
             throw new DBException("Can't read container's members", e);
         }
-        filterChildren(result);
-        final DBNNode[] childNodes = result.toArray(new DBNNode[result.size()]);
-        sortChildren(childNodes);
-        return childNodes;
+        if (result.isEmpty()) {
+            return EMPTY_NODES;
+        } else {
+            filterChildren(result);
+            final DBNNode[] childNodes = result.toArray(new DBNNode[result.size()]);
+            sortChildren(childNodes);
+            return childNodes;
+        }
     }
 
     DBNResource getChild(IResource resource)
