@@ -95,6 +95,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
         treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer));
         treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
+
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
 
         initEditor();
@@ -123,6 +124,23 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 public ISelection getSelection() {
                     ISelection selection = super.getSelection();
                     return selection.isEmpty() && defaultSelection != null ? defaultSelection : selection;
+                }
+                protected void handleTreeExpand(TreeEvent event) {
+                    // Disable redraw during expand (its blinking)
+                    getTree().setRedraw(false);
+                    try {
+                        super.handleTreeExpand(event);
+                    } finally {
+                        getTree().setRedraw(true);
+                    }
+                }
+                protected void handleTreeCollapse(TreeEvent event) {
+                    getTree().setRedraw(false);
+                    try {
+                        super.handleTreeCollapse(event);
+                    } finally {
+                        getTree().setRedraw(true);
+                    }
                 }
             };
         }
