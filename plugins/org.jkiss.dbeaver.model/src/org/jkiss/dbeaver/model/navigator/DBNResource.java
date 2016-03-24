@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -39,7 +40,7 @@ public class DBNResource extends DBNNode
 {
     private IResource resource;
     private DBPResourceHandler handler;
-    private List<DBNNode> children;
+    private DBNNode[] children;
     private DBPImage resourceImage;
 
     public DBNResource(DBNNode parentNode, IResource resource, DBPResourceHandler handler)
@@ -135,7 +136,7 @@ public class DBNResource extends DBNNode
     }
 
     @Override
-    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException
+    public DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
         if (children == null) {
             if (resource instanceof IContainer) {
@@ -145,7 +146,7 @@ public class DBNResource extends DBNNode
         return children;
     }
 
-    protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
+    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
         List<DBNNode> result = new ArrayList<>();
         try {
@@ -160,8 +161,9 @@ public class DBNResource extends DBNNode
             throw new DBException("Can't read container's members", e);
         }
         filterChildren(result);
-        sortChildren(result);
-        return result;
+        final DBNNode[] childNodes = result.toArray(new DBNNode[result.size()]);
+        sortChildren(childNodes);
+        return childNodes;
     }
 
     DBNResource getChild(IResource resource)
@@ -302,9 +304,9 @@ public class DBNResource extends DBNNode
 
     }
 
-    protected void sortChildren(List<DBNNode> list)
+    protected void sortChildren(DBNNode[] list)
     {
-        Collections.sort(list, new Comparator<DBNNode>() {
+        Arrays.sort(list, new Comparator<DBNNode>() {
             @Override
             public int compare(DBNNode o1, DBNNode o2)
             {
@@ -382,7 +384,7 @@ public class DBNResource extends DBNNode
                 // New child or new "grand-child"
                 DBNNode newChild = makeNode(deltaResource);
                 if (newChild != null) {
-                    children.add(newChild);
+                    children = ArrayUtils.add(DBNNode.class, children, newChild);
                     sortChildren(children);
                     getModel().fireNodeEvent(new DBNEvent(delta, DBNEvent.Action.ADD, newChild));
 
@@ -401,7 +403,7 @@ public class DBNResource extends DBNNode
         } else {
             if (delta.getKind() == IResourceDelta.REMOVED) {
                 // Node deleted
-                children.remove(childResource);
+                children = ArrayUtils.remove(DBNNode.class, children, childResource);
                 childResource.dispose(true);
             } else {
                 // Node changed - handle it recursive

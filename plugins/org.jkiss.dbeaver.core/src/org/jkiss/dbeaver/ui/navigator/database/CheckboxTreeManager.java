@@ -113,18 +113,20 @@ public class CheckboxTreeManager implements ICheckStateListener {
                 }
                 for (DBNDatabaseNode container : change ? targetContainers : Collections.singletonList((DBNDatabaseNode) element)) {
                     try {
-                        List<DBNDatabaseNode> directChildren = CommonUtils.safeList(container.getChildren(VoidProgressMonitor.INSTANCE));
-                        boolean missingOne = false, missingAll = true;
-                        for (DBNDatabaseNode node : directChildren) {
-                            if (!viewer.getChecked(node)) {
-                                missingOne = true;
-                            } else {
-                                missingAll = false;
+                        DBNDatabaseNode[] directChildren = container.getChildren(VoidProgressMonitor.INSTANCE);
+                        if (directChildren != null) {
+                            boolean missingOne = false, missingAll = true;
+                            for (DBNDatabaseNode node : directChildren) {
+                                if (!viewer.getChecked(node)) {
+                                    missingOne = true;
+                                } else {
+                                    missingAll = false;
+                                }
                             }
-                        }
 
-                        viewer.setChecked(container, change ? checked : !missingAll);
-                        viewer.setGrayed(container, missingOne);
+                            viewer.setChecked(container, change ? checked : !missingAll);
+                            viewer.setGrayed(container, missingOne);
+                        }
                     } catch (DBException e) {
                         // shouldn't be here
                     }
@@ -151,8 +153,8 @@ public class CheckboxTreeManager implements ICheckStateListener {
                 }
             }
             ((DBNDatabaseNode) element).initializeNode(monitor, null);
-            List<DBNDatabaseNode> children = ((DBNDatabaseNode) element).getChildren(monitor);
-            if (!CommonUtils.isEmpty(children)) {
+            DBNDatabaseNode[] children = ((DBNDatabaseNode) element).getChildren(monitor);
+            if (!ArrayUtils.isEmpty(children)) {
                 boolean foundChild = false;
                 for (DBNDatabaseNode child : children) {
                     if (collectChildren(monitor, child, targetChildren, targetContainers, onlyChecked)) {

@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -167,11 +168,11 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                         if (parentElement instanceof DBNDatabaseNode) {
                             try {
                                 // Read children with void progress monitor because inline children SHOULD be already cached
-                                List<DBNDatabaseNode> children = ((DBNDatabaseNode) parentElement).getChildren(VoidProgressMonitor.INSTANCE);
-                                if (CommonUtils.isEmpty(children)) {
+                                DBNDatabaseNode[] children = ((DBNDatabaseNode) parentElement).getChildren(VoidProgressMonitor.INSTANCE);
+                                if (ArrayUtils.isEmpty(children)) {
                                     return null;
                                 } else {
-                                    return children.toArray();
+                                    return children;
                                 }
                             } catch (DBException e) {
                                 log.error(e);

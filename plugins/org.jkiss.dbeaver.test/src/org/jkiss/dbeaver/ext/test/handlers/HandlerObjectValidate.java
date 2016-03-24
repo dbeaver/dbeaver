@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class HandlerObjectValidate extends AbstractHandler {
 
@@ -84,7 +83,7 @@ public class HandlerObjectValidate extends AbstractHandler {
             if (!node.allowsChildren()) {
                 return;
             }
-            final List<? extends DBNNode> children = node.getChildren(monitor);
+            final DBNNode[] children = node.getChildren(monitor);
             if (children != null) {
                 for (DBNNode child : children) {
                     processNode(monitor, child);

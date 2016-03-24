@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -141,8 +142,8 @@ public class ItemListControl extends NodeListControl
         {
             try {
                 List<DBNNode> items = new ArrayList<>();
-                List<? extends DBNNode> children = getRootNode().getChildren(getProgressMonitor());
-                if (CommonUtils.isEmpty(children)) {
+                DBNNode[] children = getRootNode().getChildren(getProgressMonitor());
+                if (ArrayUtils.isEmpty(children)) {
                     return items;
                 }
                 for (DBNNode item : children) {

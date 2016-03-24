@@ -47,10 +47,10 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 
 public class DatabaseNavigatorTree extends Composite implements INavigatorListener
 {
@@ -245,11 +245,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
     private DBNNode finaActiveNode(DBRProgressMonitor monitor, DBNNode node) throws DBException
     {
-        List<? extends DBNNode> children = node.getChildren(monitor);
-        if (!CommonUtils.isEmpty(children)) {
-            if (children.get(0) instanceof DBNContainer) {
+        DBNNode[] children = node.getChildren(monitor);
+        if (!ArrayUtils.isEmpty(children)) {
+            if (children[0] instanceof DBNContainer) {
                 // Use only first folder to search
-                return finaActiveNode(monitor, children.get(0));
+                return finaActiveNode(monitor, children[0]);
             }
             for (DBNNode child : children) {
                 if (NavigatorUtils.isDefaultElement(child)) {

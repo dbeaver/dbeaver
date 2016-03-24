@@ -134,7 +134,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject
 
     public abstract boolean allowsNavigableChildren();
     
-    public abstract List<? extends DBNNode> getChildren(DBRProgressMonitor monitor) throws DBException;
+    public abstract DBNNode[] getChildren(DBRProgressMonitor monitor) throws DBException;
 
     void clearNode(boolean reflect)
     {

@@ -33,7 +33,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
 {
     private List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
-    private volatile List<DBNNode> children;
+    private volatile DBNNode[] children;
     private final List<DBNLocalFolder> folders = new ArrayList<>();
 
     public DBNProjectDatabases(DBNProject parentNode, DBPDataSourceRegistry dataSourceRegistry)
@@ -124,33 +124,34 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
     }
 
     @Override
-    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(DBRProgressMonitor monitor)
     {
         if (children == null) {
-            children = new ArrayList<>();
+            List<DBNNode> childNodes = new ArrayList<>();
             for (DBNDataSource dataSource : dataSources) {
                 String folderPath = dataSource.getDataSourceContainer().getFolderPath();
                 if (CommonUtils.isEmpty(folderPath)) {
-                    children.add(dataSource);
+                    childNodes.add(dataSource);
                 } else {
                     DBNLocalFolder folder = getLocalFolder(folderPath);
                     if (folder == null) {
                         folder = new DBNLocalFolder(this, folderPath);
                         folders.add(folder);
                     }
-                    if (!children.contains(folder)) {
-                        children.add(folder);
+                    if (!childNodes.contains(folder)) {
+                        childNodes.add(folder);
                     }
                 }
             }
+            Collections.sort(childNodes, new Comparator<DBNNode>() {
+                @Override
+                public int compare(DBNNode o1, DBNNode o2)
+                {
+                    return o1.getName().compareToIgnoreCase(o2.getName());
+                }
+            });
+            this.children = childNodes.toArray(new DBNNode[childNodes.size()]);
         }
-        Collections.sort(children, new Comparator<DBNNode>() {
-            @Override
-            public int compare(DBNNode o1, DBNNode o2)
-            {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
         return children;
     }
 
