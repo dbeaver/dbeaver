@@ -165,7 +165,6 @@ public class ResultSetUtils
             monitor.subTask("Late bindings");
             // Read nested bindings
             for (DBDAttributeBinding binding : bindings) {
-                monitor.subTask("Late bind attribute '" + binding.getName() + "'");
                 binding.lateBinding(session, rows);
             }
             monitor.subTask("Complete metadata load");
