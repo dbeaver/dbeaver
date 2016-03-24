@@ -421,7 +421,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
         }
-        getVerticalRuler().update();
+        final IVerticalRuler verticalRuler = getVerticalRuler();
+        if (verticalRuler != null) {
+            verticalRuler.update();
+        }
     }
 
     public boolean hasActiveQuery()
