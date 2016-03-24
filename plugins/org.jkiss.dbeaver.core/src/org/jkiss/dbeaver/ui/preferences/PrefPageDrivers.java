@@ -55,6 +55,11 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
 
+    private Button versionUpdateCheck;
+
+    private Table mavenRepoTable;
+    private List sourceList;
+
     private Text proxyHostText;
     private Spinner proxyPortSpinner;
     private Text proxyUserText;
@@ -62,8 +67,6 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     private SecuredPasswordEncrypter encrypter;
 
     private Text customDriversHome;
-    private List sourceList;
-    private Table mavenRepoTable;
 
     @Override
     public void init(IWorkbench workbench)
@@ -81,6 +84,10 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
+        {
+            Group settings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, 300);
+            versionUpdateCheck = UIUtils.createCheckbox(settings, "Check for new driver versions", false);
+        }
         {
             Group mavenGroup = UIUtils.createControlGroup(composite, "Maven repositories", 2, GridData.FILL_HORIZONTAL, 300);
             mavenRepoTable = new Table(mavenGroup, SWT.BORDER | SWT.FULL_SELECTION);
@@ -195,6 +202,8 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
+        versionUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE));
+
         proxyHostText.setText(store.getString(DBeaverPreferences.UI_PROXY_HOST));
         proxyPortSpinner.setSelection(store.getInt(DBeaverPreferences.UI_PROXY_PORT));
         proxyUserText.setText(store.getString(DBeaverPreferences.UI_PROXY_USER));
@@ -227,6 +236,8 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
     public boolean performOk()
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        store.setValue(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
+
         store.setValue(DBeaverPreferences.UI_PROXY_HOST, proxyHostText.getText());
         store.setValue(DBeaverPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
         store.setValue(DBeaverPreferences.UI_PROXY_USER, proxyUserText.getText());

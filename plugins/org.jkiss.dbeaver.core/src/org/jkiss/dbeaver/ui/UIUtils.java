@@ -922,13 +922,14 @@ public class UIUtils {
     public static Text createOutputFolderChooser(final Composite parent, @Nullable String label,
         @Nullable ModifyListener changeListener)
     {
-        UIUtils.createControlLabel(parent, label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory);
+        final String message = label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory;
+        UIUtils.createControlLabel(parent, message);
         final TextWithOpen directoryText = new TextWithOpen(parent) {
             @Override
             protected void openBrowser() {
                 DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
-                dialog.setMessage(CoreMessages.data_transfer_wizard_output_dialog_directory_message);
-                dialog.setText(CoreMessages.data_transfer_wizard_output_dialog_directory_text);
+                dialog.setMessage("Choose target directory");
+                dialog.setText(message);
                 String directory = getText();
                 if (!CommonUtils.isEmpty(directory)) {
                     dialog.setFilterPath(directory);
