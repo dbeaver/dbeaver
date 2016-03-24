@@ -611,8 +611,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             } else if (bracketDepth > 0 && token instanceof SQLBlockEndToken) {
                 // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
                 // This END doesn't mean block
-                bracketDepth--;
-                hasBlocks = true;
+                if (hasBlocks) {
+                    bracketDepth--;
+                }
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;
