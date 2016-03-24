@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -211,9 +212,9 @@ public class DBNModel implements IResourceChangeListener {
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, List<String> items, DBNNode curNode, int firstItem) throws DBException {
         for (int i = firstItem, itemsSize = items.size(); i < itemsSize; i++) {
             String item = items.get(i);
-            List<? extends DBNNode> children = curNode.getChildren(monitor);
+            DBNNode[] children = curNode.getChildren(monitor);
             DBNNode nextChild = null;
-            if (children != null && !children.isEmpty()) {
+            if (children != null && children.length > 0) {
                 for (DBNNode child : children) {
                     if (child instanceof DBNDatabaseFolder) {
                         DBXTreeFolder meta = ((DBNDatabaseFolder) child).getMeta();
@@ -246,9 +247,9 @@ public class DBNModel implements IResourceChangeListener {
 
     private boolean cacheNodeChildren(DBRProgressMonitor monitor, DBNDatabaseNode node, DBSObject objectToCache, boolean addFiltered) throws DBException
     {
-        List<? extends DBNDatabaseNode> children = node.getChildren(monitor);
+        DBNDatabaseNode[] children = node.getChildren(monitor);
         boolean cached = false;
-        if (!CommonUtils.isEmpty(children)) {
+        if (!ArrayUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 if (child instanceof DBNDatabaseFolder) {
                     Class<?> itemsClass = ((DBNDatabaseFolder) child).getChildrenClass();
@@ -290,8 +291,8 @@ public class DBNModel implements IResourceChangeListener {
                 // Parent node read
                 return null;
             }
-            List<? extends DBNDatabaseNode> children = node.getChildNodes();
-            if (CommonUtils.isEmpty(children)) {
+            DBNDatabaseNode[] children = node.getChildNodes();
+            if (ArrayUtils.isEmpty(children)) {
                 // Parent node is not read
                 return null;
             }

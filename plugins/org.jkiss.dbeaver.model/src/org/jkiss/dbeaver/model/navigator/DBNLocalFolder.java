@@ -97,9 +97,10 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
     }
 
     @Override
-    public List<DBNDataSource> getChildren(DBRProgressMonitor monitor) throws DBException
+    public DBNDataSource[] getChildren(DBRProgressMonitor monitor) throws DBException
     {
-        return getDataSources();
+        final List<DBNDataSource> dataSources = getDataSources();
+        return dataSources.toArray(new DBNDataSource[dataSources.size()]);
     }
 
     public List<DBNDataSource> getDataSources()

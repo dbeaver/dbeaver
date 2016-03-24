@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.*;
 
@@ -31,7 +32,7 @@ import java.util.*;
 public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 {
     private final DBNModel model;
-    private List<DBNProject> projects = new ArrayList<>();
+    private DBNProject[] projects = new DBNProject[0];
 
     public DBNRoot(DBNModel model)
     {
@@ -46,7 +47,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
         for (DBNProject project : projects) {
             project.dispose(reflect);
         }
-        projects.clear();
+        projects = new DBNProject[0];
         model.getApplication().getProjectManager().removeProjectListener(this);
     }
 
@@ -100,7 +101,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     @Override
     public boolean allowsChildren()
     {
-        return !projects.isEmpty();
+        return projects.length > 0;
     }
 
     @Override
@@ -110,7 +111,7 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
     }
 
     @Override
-    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(DBRProgressMonitor monitor)
     {
         return projects;
     }
@@ -137,8 +138,8 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
             this,
             project,
             model.getApplication().getProjectManager().getResourceHandler(project));
-        projects.add(projectNode);
-        Collections.sort(projects, new Comparator<DBNProject>() {
+        projects = ArrayUtils.add(DBNProject.class, projects, projectNode);
+        Arrays.sort(projects, new Comparator<DBNProject>() {
             @Override
             public int compare(DBNProject o1, DBNProject o2)
             {
@@ -152,10 +153,10 @@ public class DBNRoot extends DBNNode implements DBNContainer, DBPProjectListener
 
     void removeProject(IProject project)
     {
-        for (Iterator<DBNProject> iter = projects.iterator(); iter.hasNext(); ) {
-            DBNProject projectNode = iter.next();
+        for (int i = 0; i < projects.length; i++) {
+            DBNProject projectNode = projects[i];
             if (projectNode.getProject() == project) {
-                iter.remove();
+                projects = ArrayUtils.remove(DBNProject.class, projects, i);
                 model.fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, projectNode));
                 projectNode.dispose(true);
                 break;

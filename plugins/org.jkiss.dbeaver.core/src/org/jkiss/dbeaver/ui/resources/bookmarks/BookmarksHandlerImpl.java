@@ -28,17 +28,18 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.InputStream;
@@ -150,8 +151,8 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
                         final Collection<String> dataSourcePath = storage.getDataSourcePath();
                         for (String path : dataSourcePath) {
                             DBNNode nextChild = null;
-                            final List<? extends DBNNode> children = currentNode.getChildren(monitor);
-                            if (!CommonUtils.isEmpty(children)) {
+                            final DBNNode[] children = currentNode.getChildren(monitor);
+                            if (!ArrayUtils.isEmpty(children)) {
                                 for (DBNNode node : children) {
                                     if (path.equals(node.getNodeName())) {
                                         nextChild = node;

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -145,9 +146,9 @@ public class DBNDatabaseFolder extends DBNDatabaseNode implements DBNContainer, 
     @Override
     public Collection<DBSObject> getChildrenObjects(DBRProgressMonitor monitor) throws DBException
     {
-        List<DBNDatabaseNode> children = getChildren(monitor);
+        DBNDatabaseNode[] children = getChildren(monitor);
         List<DBSObject> childObjects = new ArrayList<>();
-        if (!CommonUtils.isEmpty(children)) {
+        if (!ArrayUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 childObjects.add(child.getObject());
             }

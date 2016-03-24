@@ -190,13 +190,22 @@ public class ArrayUtils {
         return newArray;
     }
 
-    public static <T> T[] remove(Class<T> type, Object[] elements, int index) {
+    public static <T> T[] remove(Class<T> type, T[] elements, int index) {
         T[] newArray = (T[]) Array.newInstance(type, elements.length - 1);
         System.arraycopy(elements, 0, newArray, 0, index);
         if (index < elements.length - 1) {
             System.arraycopy(elements, index + 1, newArray, index, elements.length - index - 1);
         }
         return newArray;
+    }
+
+    public static <T> T[] remove(Class<T> type, T[] elements, T element) {
+        for (int i = 0; i < elements.length; i++) {
+            if (elements[i] == element) {
+                return remove(type, elements, i);
+            }
+        }
+        return elements;
     }
 
     public static void main(String[] args) {

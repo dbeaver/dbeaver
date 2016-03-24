@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,7 +47,7 @@ import java.util.*;
 public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
 
     private volatile boolean locked;
-    protected volatile List<DBNDatabaseNode> childNodes;
+    protected volatile DBNDatabaseNode[] childNodes;
     private boolean filtered;
 
     protected DBNDatabaseNode(DBNNode parentNode)
@@ -168,8 +169,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (isDisposed()) {
             return false;
         }
-        List<DBNDatabaseNode> children = getChildren(monitor);
-        if (!CommonUtils.isEmpty(children)) {
+        DBNDatabaseNode[] children = getChildren(monitor);
+        if (!ArrayUtils.isEmpty(children)) {
             for (DBNDatabaseNode child : children) {
                 if (child.getMeta() == childType) {
                     return true;
@@ -180,7 +181,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     }
 
     @Override
-    public List<DBNDatabaseNode> getChildren(DBRProgressMonitor monitor)
+    public DBNDatabaseNode[] getChildren(DBRProgressMonitor monitor)
         throws DBException
     {
         if (childNodes == null && allowsChildren()) {
@@ -188,7 +189,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 if (!monitor.isCanceled()) {
-                    this.childNodes = tmpList;
+                    this.childNodes = tmpList.toArray(new DBNDatabaseNode[tmpList.size()]);
                     this.afterChildRead();
                 }
             }
@@ -201,7 +202,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         // Do nothing
     }
 
-    List<DBNDatabaseNode> getChildNodes()
+    DBNDatabaseNode[] getChildNodes()
     {
         return childNodes;
     }
@@ -224,7 +225,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         if (metaChildren != null) {
             final DBNDatabaseItem newChild = new DBNDatabaseItem(this, metaChildren, object, false);
             synchronized (this) {
-                childNodes.add(newChild);
+                childNodes = ArrayUtils.add(DBNDatabaseNode.class, childNodes, newChild);
             }
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.ADD, DBNEvent.NodeChange.LOAD, newChild));
         } else {
@@ -236,12 +237,12 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     {
         DBNNode childNode = null;
         synchronized (this) {
-            if (!CommonUtils.isEmpty(childNodes)) {
-                for (Iterator<DBNDatabaseNode> iter = childNodes.iterator(); iter.hasNext(); ) {
-                    final DBNDatabaseNode child = iter.next();
+            if (!ArrayUtils.isEmpty(childNodes)) {
+                for (int i = 0; i < childNodes.length; i++) {
+                    final DBNDatabaseNode child = childNodes[i];
                     if (child.getObject() == object) {
                         childNode = child;
-                        iter.remove();
+                        childNodes = ArrayUtils.remove(DBNDatabaseNode.class, childNodes, i);
                         break;
                     }
                 }
@@ -332,23 +333,22 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
 
     protected void clearChildren(boolean reflect)
     {
-        List<DBNDatabaseNode> childrenCopy;
+        DBNDatabaseNode[] childrenCopy;
         synchronized (this) {
-            childrenCopy = childNodes;
+            childrenCopy = childNodes == null ? null : Arrays.copyOf(childNodes, childNodes.length);
             childNodes = null;
         }
         if (childrenCopy != null) {
             for (DBNNode child : childrenCopy) {
                 child.dispose(reflect);
             }
-            childrenCopy.clear();
         }
     }
 
     private void loadChildren(
         DBRProgressMonitor monitor,
         final DBXTreeNode meta,
-        final List<DBNDatabaseNode> oldList,
+        final DBNDatabaseNode[] oldList,
         final List<DBNDatabaseNode> toList)
         throws DBException
     {
@@ -407,7 +407,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             monitor.worked(1);
         }
         monitor.done();
-        
+
         if (filtered) {
             getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         }
@@ -426,7 +426,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     private boolean loadTreeItems(
         DBRProgressMonitor monitor,
         DBXTreeItem meta,
-        final List<DBNDatabaseNode> oldList,
+        final DBNDatabaseNode[] oldList,
         final List<DBNDatabaseNode> toList)
         throws DBException
     {
@@ -605,18 +605,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     protected void reloadChildren(DBRProgressMonitor monitor)
         throws DBException
     {
-        List<DBNDatabaseNode> oldChildren;
+        DBNDatabaseNode[] oldChildren;
         synchronized (this) {
             if (childNodes == null) {
                 // Nothing to reload
                 return;
             }
-            oldChildren = new ArrayList<>(childNodes);
+            oldChildren = Arrays.copyOf(childNodes, childNodes.length);
         }
         List<DBNDatabaseNode> newChildren = new ArrayList<>();
         loadChildren(monitor, getMeta(), oldChildren, newChildren);
         synchronized (this) {
-            childNodes = newChildren;
+            childNodes = newChildren.toArray(new DBNDatabaseNode[newChildren.size()]);
         }
     }
 

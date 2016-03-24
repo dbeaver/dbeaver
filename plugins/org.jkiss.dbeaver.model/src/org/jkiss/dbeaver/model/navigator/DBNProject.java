@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -122,7 +123,7 @@ public class DBNProject extends DBNResource implements IAdaptable
     }
 
     @Override
-    protected List<DBNNode> readChildNodes(DBRProgressMonitor monitor) throws DBException
+    protected DBNNode[] readChildNodes(DBRProgressMonitor monitor) throws DBException
     {
         if (!getProject().isOpen()) {
             try {
@@ -133,9 +134,9 @@ public class DBNProject extends DBNResource implements IAdaptable
             }
         }
         DBPDataSourceRegistry dataSourceRegistry = getModel().getApplication().getProjectManager().getDataSourceRegistry(getProject());
-        List<DBNNode> children = super.readChildNodes(monitor);
+        DBNNode[] children = super.readChildNodes(monitor);
         if (dataSourceRegistry != null) {
-            children.add(0, new DBNProjectDatabases(this, dataSourceRegistry));
+            children = ArrayUtils.add(DBNNode.class, children, new DBNProjectDatabases(this, dataSourceRegistry));
         }
         return children;
     }

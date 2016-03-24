@@ -418,7 +418,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             // Do not add children tabs
         } else if (node != null) {
             try {
-                List<? extends DBNNode> children = node.getChildren(monitor);
+                DBNNode[] children = node.getChildren(monitor);
                 if (children != null) {
                     for (DBNNode child : children) {
                         if (child instanceof DBNDatabaseFolder) {

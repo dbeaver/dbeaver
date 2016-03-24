@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.navigator;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.List;
-
 /**
  * Empty node
  */
@@ -69,7 +67,7 @@ public class DBNEmptyNode extends DBNNode
     }
 
     @Override
-    public List<? extends DBNNode> getChildren(DBRProgressMonitor monitor)
+    public DBNNode[] getChildren(DBRProgressMonitor monitor)
     {
         return null;
     }

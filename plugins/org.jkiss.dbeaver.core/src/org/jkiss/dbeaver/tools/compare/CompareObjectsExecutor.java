@@ -25,17 +25,12 @@ import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
-import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
-import org.jkiss.dbeaver.runtime.properties.DataSourcePropertyFilter;
-import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
-import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
-import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.runtime.properties.*;
 
 import java.util.*;
 
@@ -263,7 +258,7 @@ public class CompareObjectsExecutor {
     {
         // Compare children
         int nodeCount = nodes.size();
-        List<List<DBNDatabaseNode>> allChildren = new ArrayList<>(nodeCount);
+        List<DBNDatabaseNode[]> allChildren = new ArrayList<>(nodeCount);
         for (int i = 0; i < nodeCount; i++) {
             DBNDatabaseNode node = nodes.get(i);
             // Cache structure if possible
@@ -271,15 +266,17 @@ public class CompareObjectsExecutor {
                 ((DBSObjectContainer) node.getObject()).cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
             }
             try {
-                List<DBNDatabaseNode> children = node.getChildren(monitor);
-                allChildren.add(CommonUtils.safeList(children));
+                DBNDatabaseNode[] children = node.getChildren(monitor);
+                allChildren.add(children);
             } catch (Exception e) {
                 log.warn("Error reading child nodes for compare", e);
+                allChildren.add(null);
             }
         }
 
         Set<String> allChildNames = new LinkedHashSet<>();
-        for (List<DBNDatabaseNode> childList : allChildren) {
+        for (DBNDatabaseNode[] childList : allChildren) {
+            if (childList == null) continue;
             for (DBNDatabaseNode child : childList) {
                 DBXTreeNode meta = child.getMeta();
                 if (meta.isVirtual()) {
@@ -298,9 +295,10 @@ public class CompareObjectsExecutor {
             int[] childIndexes = new int[nodeCount];
             for (int i = 0; i < nodeCount; i++) {
                 childIndexes[i] = -1;
-                List<DBNDatabaseNode> childList = allChildren.get(i);
-                for (int k = 0; k < childList.size(); k++) {
-                    DBNDatabaseNode child = childList.get(k);
+                DBNDatabaseNode[] childList = allChildren.get(i);
+                if (childList == null) continue;
+                for (int k = 0; k < childList.length; k++) {
+                    DBNDatabaseNode child = childList[k];
                     if (child.getNodeName().equals(childName)) {
                         childIndexes[i] = k;
                         break;
@@ -319,7 +317,10 @@ public class CompareObjectsExecutor {
                             break;
                         }
                     }
-                    nodesToCompare.add(allChildren.get(i).get(childIndexes[i]));
+                    final DBNDatabaseNode[] childList = allChildren.get(i);
+                    if (childList != null) {
+                        nodesToCompare.add(childList[childIndexes[i]]);
+                    }
                 }
             }
             // Compare children recursively
