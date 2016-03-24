@@ -17,23 +17,26 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-
-import java.lang.ref.SoftReference;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 
 /**
  * Data source information
  */
 public class QMMSessionInfo extends QMMObject {
 
-    private final String containerId;
-    private SoftReference<DBCExecutionContext> reference;
-    private SoftReference<DBPDataSourceContainer> container;
+    private String containerId;
+    private String containerName;
+    private String driverId;
+    private DBPConnectionConfiguration connectionConfiguration;
+    private String contextName;
+    private SQLDialect sqlDialect;
     private boolean transactional;
 
     private QMMSessionInfo previous;
@@ -44,8 +47,13 @@ public class QMMSessionInfo extends QMMObject {
     public QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
     {
         this.containerId = context.getDataSource().getContainer().getId();
-        this.reference = new SoftReference<>(context);
-        this.container = new SoftReference<>(context.getDataSource().getContainer());
+        this.containerName = context.getDataSource().getContainer().getName();
+        this.driverId = context.getDataSource().getContainer().getDriver().getId();
+        this.connectionConfiguration = context.getDataSource().getContainer().getConnectionConfiguration();
+        this.contextName = context.getContextName();
+        if (context.getDataSource() instanceof SQLDataSource) {
+            this.sqlDialect = ((SQLDataSource) context.getDataSource()).getSQLDialect();
+        }
         this.previous = previous;
         this.transactional = transactional;
         if (transactional) {
@@ -214,14 +222,20 @@ public class QMMSessionInfo extends QMMObject {
         return containerId;
     }
 
-    public DBPDataSourceContainer getContainer()
-    {
-        return container.get();
+    public String getContainerName() {
+        return containerName;
     }
 
-    public DBCExecutionContext getReference()
-    {
-        return reference == null ? null : reference.get();
+    public String getDriverId() {
+        return driverId;
+    }
+
+    public DBPConnectionConfiguration getConnectionConfiguration() {
+        return connectionConfiguration;
+    }
+
+    public String getContextName() {
+        return contextName;
     }
 
     public QMMStatementInfo getStatementStack()
@@ -250,4 +264,7 @@ public class QMMSessionInfo extends QMMObject {
         return "SESSION " + containerId;
     }
 
+    public SQLDialect getSQLDialect() {
+        return sqlDialect;
+    }
 }
