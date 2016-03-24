@@ -29,7 +29,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
 
     private final QMMTransactionInfo transaction;
     private final String name;
-    private boolean commited;
+    private boolean committed;
     private final QMMTransactionSavepointInfo previous;
     private QMMStatementExecuteInfo lastExecute;
 
@@ -45,7 +45,7 @@ public class QMMTransactionSavepointInfo extends QMMObject {
 
     protected void close(boolean commit)
     {
-        this.commited = commit;
+        this.committed = commit;
         super.close();
         this.reference = null;
     }
@@ -65,9 +65,9 @@ public class QMMTransactionSavepointInfo extends QMMObject {
         return name;
     }
 
-    public boolean isCommited()
+    public boolean isCommitted()
     {
-        return commited;
+        return committed;
     }
 
     public QMMTransactionSavepointInfo getPrevious()

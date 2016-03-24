@@ -27,7 +27,7 @@ public class QMMTransactionInfo extends QMMObject {
 
     private final QMMSessionInfo session;
     private final QMMTransactionInfo previous;
-    private boolean commited;
+    private boolean committed;
     private QMMTransactionSavepointInfo savepointStack;
 
     QMMTransactionInfo(QMMSessionInfo session, QMMTransactionInfo previous)
@@ -39,7 +39,7 @@ public class QMMTransactionInfo extends QMMObject {
 
     void commit()
     {
-        this.commited = true;
+        this.committed = true;
         for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
             if (!sp.isClosed()) {
                 // Commit all non-finished savepoints
@@ -51,7 +51,7 @@ public class QMMTransactionInfo extends QMMObject {
 
     void rollback(DBCSavepoint toSavepoint)
     {
-        this.commited = false;
+        this.committed = false;
         for (QMMTransactionSavepointInfo sp = savepointStack; sp != null; sp = sp.getPrevious()) {
             sp.close(false);
             if (toSavepoint != null && sp.getReference() == toSavepoint) {
@@ -71,9 +71,9 @@ public class QMMTransactionInfo extends QMMObject {
         return previous;
     }
 
-    public boolean isCommited()
+    public boolean isCommitted()
     {
-        return commited;
+        return committed;
     }
 
     public QMMTransactionSavepointInfo getCurrentSavepoint()
