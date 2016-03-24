@@ -82,4 +82,7 @@ public class TextWithOpen extends Composite
 
     }
 
+    public Text getTextControl() {
+        return text;
+    }
 }
