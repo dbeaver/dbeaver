@@ -46,6 +46,8 @@ import java.util.*;
  */
 public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBPContextProvider, IDataSourceContainerProvider {
 
+    private static final DBNDatabaseNode[] EMPTY_NODES = new DBNDatabaseNode[0];
+
     private volatile boolean locked;
     protected volatile DBNDatabaseNode[] childNodes;
     private boolean filtered;
@@ -189,7 +191,11 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 final List<DBNDatabaseNode> tmpList = new ArrayList<>();
                 loadChildren(monitor, getMeta(), null, tmpList);
                 if (!monitor.isCanceled()) {
-                    this.childNodes = tmpList.toArray(new DBNDatabaseNode[tmpList.size()]);
+                    if (tmpList.isEmpty()) {
+                        this.childNodes = EMPTY_NODES;
+                    } else {
+                        this.childNodes = tmpList.toArray(new DBNDatabaseNode[tmpList.size()]);
+                    }
                     this.afterChildRead();
                 }
             }
