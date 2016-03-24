@@ -18,17 +18,17 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.eclipse.core.runtime.IStatus;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMMetaListener;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -156,7 +156,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
             }
         } else if (object instanceof QMMSessionInfo) {
             QMMSessionInfo sessionInfo = (QMMSessionInfo)object;
-            buffer.append(action).append(" SESSION [").append(sessionInfo.getContainer().getName()).append("]");
+            buffer.append(action).append(" SESSION [").append(sessionInfo.getContainerName()).append("]");
         }
         buffer.append(lineSeparator);
 

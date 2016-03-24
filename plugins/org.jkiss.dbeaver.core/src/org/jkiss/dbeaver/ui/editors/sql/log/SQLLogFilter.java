@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
+import java.util.Objects;
+
 /**
  * SQL log filter
  */
@@ -44,7 +46,7 @@ class SQLLogFilter implements QMEventFilter {
         // - session changes (if session belongs to active datasource)
         QMMObject object = event.getObject();
         if (object instanceof QMMSessionInfo) {
-            return ((QMMSessionInfo)object).getContainer() == editor.getDataSourceContainer();
+            return Objects.equals(((QMMSessionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
                 return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getSession());
@@ -60,8 +62,12 @@ class SQLLogFilter implements QMEventFilter {
     }
 
     private boolean belongsToEditor(QMMSessionInfo session) {
-        DBCExecutionContext executionContext = session.getReference();
-        return executionContext != null && executionContext == editor.getExecutionContext();
+        String containerId = session.getContainerId();
+        String contextName = session.getContextName();
+        DBCExecutionContext executionContext = editor.getExecutionContext();
+        return executionContext != null &&
+            Objects.equals(executionContext.getDataSource().getContainer().getId(), containerId) &&
+            Objects.equals(executionContext.getContextName(), contextName);
     }
 
 }

@@ -34,6 +34,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -81,6 +83,11 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
         sqlViewer = new SQLEditorBase() {
             @Override
+            protected SQLDialect getSQLDialect() {
+                return BaseSQLDialog.this.getSQLDialect();
+            }
+
+            @Override
             public DBCExecutionContext getExecutionContext() {
                 return BaseSQLDialog.this.getExecutionContext();
             }
@@ -104,6 +111,14 @@ public abstract class BaseSQLDialog extends BaseDialog {
         });
 
         return panel;
+    }
+
+    protected SQLDialect getSQLDialect() {
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null && executionContext.getDataSource() instanceof SQLDataSource) {
+            return ((SQLDataSource) executionContext.getDataSource()).getSQLDialect();
+        }
+        return null;
     }
 
     protected abstract DBCExecutionContext getExecutionContext();

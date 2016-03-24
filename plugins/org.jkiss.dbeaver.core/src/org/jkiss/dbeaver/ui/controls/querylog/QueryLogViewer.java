@@ -33,7 +33,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
@@ -46,13 +49,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
@@ -141,10 +144,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     return CoreMessages.controls_querylog_rollback;
                 }
             } else if (object instanceof QMMSessionInfo) {
-                DBPDataSourceContainer container = ((QMMSessionInfo) object).getContainer();
+                String containerName = ((QMMSessionInfo) object).getContainerName();
                 switch (event.getAction()) {
-                    case BEGIN: return CoreMessages.controls_querylog_connected_to + (container == null ? "?" : container.getName()) + "\"";
-                    case END:   return CoreMessages.controls_querylog_disconnected_from + (container == null ? "?" : container.getName()) + "\"";
+                    case BEGIN: return CoreMessages.controls_querylog_connected_to + containerName + "\"";
+                    case END:   return CoreMessages.controls_querylog_disconnected_from + containerName + "\"";
                     default:    return "?";
                 }
             }
@@ -237,41 +240,41 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         String getText(QMMetaEvent event)
         {
             QMMObject object = event.getObject();
-            DBPDataSourceContainer container = null;
+            String containerName = null;
             if (object instanceof QMMSessionInfo) {
-                container = ((QMMSessionInfo) object).getContainer();
+                containerName = ((QMMSessionInfo) object).getContainerName();
             } else if (object instanceof QMMTransactionInfo) {
-                container = ((QMMTransactionInfo) object).getSession().getContainer();
+                containerName = ((QMMTransactionInfo) object).getSession().getContainerName();
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                container = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getContainer();
+                containerName = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getContainerName();
             } else if (object instanceof QMMStatementInfo) {
-                container = ((QMMStatementInfo) object).getSession().getContainer();
+                containerName = ((QMMStatementInfo) object).getSession().getContainerName();
             } else if (object instanceof QMMStatementExecuteInfo) {
-                container = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContainer();
+                containerName = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContainerName();
             }
-            return container == null ? "?" : container.getName();
+            return containerName == null ? "?" : containerName;
         }
     };
     private static LogColumn COLUMN_CONTEXT = new LogColumn("context", CoreMessages.controls_querylog_column_context_name, CoreMessages.controls_querylog_column_context_tooltip, 150) {
         @Override
         String getText(QMMetaEvent event) {
             QMMObject object = event.getObject();
-            DBCExecutionContext context = null;
+            String contextName = null;
             if (object instanceof QMMSessionInfo) {
-                context = ((QMMSessionInfo) object).getReference();
+                contextName = ((QMMSessionInfo) object).getContextName();
             } else if (object instanceof QMMTransactionInfo) {
-                context = ((QMMTransactionInfo) object).getSession().getReference();
+                contextName = ((QMMTransactionInfo) object).getSession().getContextName();
             } else if (object instanceof QMMTransactionSavepointInfo) {
-                context = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getReference();
+                contextName = ((QMMTransactionSavepointInfo) object).getTransaction().getSession().getContextName();
             } else if (object instanceof QMMStatementInfo) {
-                context = ((QMMStatementInfo) object).getSession().getReference();
+                contextName = ((QMMStatementInfo) object).getSession().getContextName();
             } else if (object instanceof QMMStatementExecuteInfo) {
-                context = ((QMMStatementExecuteInfo) object).getStatement().getSession().getReference();
+                contextName = ((QMMStatementExecuteInfo) object).getStatement().getSession().getContextName();
             }
-            if (context == null) {
+            if (contextName == null) {
                 return "?";
             }
-            return context.getContextName();
+            return contextName;
         }
     };
     private static LogColumn[] ALL_COLUMNS = new LogColumn[] {
@@ -928,10 +931,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
 
         @Override
-        protected DBCExecutionContext getExecutionContext() {
+        protected SQLDialect getSQLDialect() {
             if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                return ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getReference();
+                return ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getSQLDialect();
             }
+            return super.getSQLDialect();
+        }
+
+        @Override
+        protected DBCExecutionContext getExecutionContext() {
             return null;
         }
 
