@@ -149,7 +149,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
         } else if (object instanceof QMMTransactionInfo) {
             QMMTransactionInfo transactionInfo = (QMMTransactionInfo)object;
-            if (transactionInfo.isCommited()) {
+            if (transactionInfo.isCommitted()) {
                 buffer.append("COMMIT");
             } else {
                 buffer.append("ROLLBACK");
