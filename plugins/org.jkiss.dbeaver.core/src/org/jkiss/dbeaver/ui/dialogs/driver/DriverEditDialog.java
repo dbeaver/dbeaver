@@ -72,6 +72,8 @@ public class DriverEditDialog extends HelpEnabledDialog
 
     private static final String DIALOG_ID = "DBeaver.DriverEditDialog";//$NON-NLS-1$
 
+    private static int dialogCount;
+
     private final boolean newDriver;
     private DataSourceProviderDescriptor provider;
     private DriverDescriptor driver;
@@ -97,6 +99,10 @@ public class DriverEditDialog extends HelpEnabledDialog
     private ClientHomesPanel clientHomesPanel;
     private Button embeddedDriverCheck;
 
+    public static int getDialogCount() {
+        return dialogCount;
+    }
+
     public DriverEditDialog(Shell shell, DriverDescriptor driver)
     {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
@@ -115,6 +121,16 @@ public class DriverEditDialog extends HelpEnabledDialog
         this.defaultCategory = category;
         this.newDriver = true;
         this.origLibList = new ArrayList<>();
+    }
+
+    @Override
+    public int open() {
+        try {
+            dialogCount++;
+            return super.open();
+        } finally {
+            dialogCount--;
+        }
     }
 
     @Override

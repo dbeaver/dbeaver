@@ -25,10 +25,8 @@ package org.jkiss.dbeaver.registry.maven.versioning;
  * @author <a href="mailto:brett@apache.org">Brett Porter</a>
  */
 public class InvalidVersionSpecificationException
-    extends Exception
-{
-    public InvalidVersionSpecificationException( String message )
-    {
-        super( message );
+    extends Exception {
+    public InvalidVersionSpecificationException(String message) {
+        super(message);
     }
 }

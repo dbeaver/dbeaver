@@ -33,7 +33,9 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -54,6 +56,7 @@ import org.xml.sax.Attributes;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
@@ -123,7 +126,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     private String driverDefaultPort;
     private String sampleURL;
 
-    private String note;
     private String webURL;
     private DBPImage iconPlain;
     private DBPImage iconNormal;
@@ -191,7 +193,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.category = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_CATEGORY));
         this.origName = this.name = CommonUtils.notEmpty(config.getAttribute(RegistryConstants.ATTR_LABEL));
         this.origDescription = this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.note = config.getAttribute(RegistryConstants.ATTR_NOTE);
         this.origClassName = this.driverClassName = config.getAttribute(RegistryConstants.ATTR_CLASS);
         if (!CommonUtils.isEmpty(config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT))) {
             this.origDefaultPort = this.driverDefaultPort = config.getAttribute(RegistryConstants.ATTR_DEFAULT_PORT);
@@ -921,6 +922,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
+        boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
             final DriverDependencies dependencies = new DriverDependencies(downloadCandidates);
             UIUtils.runInUI(null, new Runnable() {
@@ -929,6 +931,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     DriverDownloadDialog.downloadDriverFiles(null, DriverDescriptor.this, dependencies);
                 }
             });
+            downloaded = true;
             for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryMap()) {
                 List<DriverFileInfo> info = new ArrayList<>();
                 resolvedFiles.put(node.library, info);
@@ -955,7 +958,41 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             }
         }
 
+        // Now check driver version
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
+            try {
+                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        try {
+                            checkDriverVersion(monitor);
+                        } catch (IOException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+
         return result;
+    }
+
+    private void checkDriverVersion(DBRProgressMonitor monitor) throws IOException {
+        for (DBPDriverLibrary library : libraries) {
+            final Collection<String> availableVersions = library.getAvailableVersions(monitor);
+            if (!CommonUtils.isEmpty(availableVersions)) {
+                final String curVersion = library.getVersion();
+                String latestVersion = DriverUtils.findLatestVersion(availableVersions);
+                if (latestVersion != null && !latestVersion.equals(curVersion)) {
+                    log.debug("Update driver " + getName() + " " + curVersion + "->" + latestVersion);
+                }
+            }
+        }
+
     }
 
     public boolean isLibraryResolved(DBPDriverLibrary library) {
