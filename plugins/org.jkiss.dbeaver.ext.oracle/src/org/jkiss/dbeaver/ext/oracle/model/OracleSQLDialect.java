@@ -42,7 +42,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addSQLKeyword("COMPUTE");
         addSQLKeyword("STATISTICS");
         addFunctions(
-            Arrays.asList("SUBSTR", "APPROX_COUNT_DISTINCT"));
+            Arrays.asList(
+                "SUBSTR", "APPROX_COUNT_DISTINCT",
+                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE"));
     }
 
     @NotNull
