@@ -192,11 +192,46 @@ public class MavenArtifact implements IMavenIdentifier
     }
 
     @Nullable
-    public Collection<String> getAvailableVersion(DBRProgressMonitor monitor) throws IOException {
+    public Collection<String> getAvailableVersions(DBRProgressMonitor monitor, String versionSpec) throws IOException {
         if (CommonUtils.isEmpty(versions) && !metadataLoaded) {
             loadMetadata(monitor);
         }
-        return versions;
+        if (!isVersionPattern(versionSpec)) {
+            return versions;
+        }
+        // Filter versions according to spec
+        Pattern versionPattern = null;
+        VersionRange versionRange = null;
+        if (versionSpec.startsWith("{") && versionSpec.endsWith("}")) {
+            // Regex - find most recent version matching this pattern
+            try {
+                versionPattern = Pattern.compile(versionSpec.substring(1, versionSpec.length() - 1));
+            } catch (Exception e) {
+                log.error("Bad version pattern: " + versionSpec);
+            }
+        } else {
+            try {
+                versionRange = VersionRange.createFromVersionSpec(versionSpec);
+            } catch (Exception e) {
+                log.error("Bad version specification: " + versionSpec);
+            }
+        }
+
+        List<String> filtered = new ArrayList<>();
+        for (String version : versions) {
+            boolean matches;
+            if (versionPattern != null) {
+                matches = versionPattern.matcher(version).matches();
+            } else if (versionRange != null) {
+                matches = versionRange.containsVersion(new DefaultArtifactVersion(version));
+            } else {
+                matches = true;
+            }
+            if (matches) {
+                filtered.add(version);
+            }
+        }
+        return filtered;
     }
 
     public Date getLastUpdate() {
@@ -256,16 +291,11 @@ public class MavenArtifact implements IMavenIdentifier
         if (CommonUtils.isEmpty(versionRef)) {
             throw new IOException("Empty artifact " + this + " version");
         }
-        char firstChar = versionRef.charAt(0), lastChar = versionRef.charAt(versionRef.length() - 1);
         boolean predefinedVersion =
             versionRef.equals(MavenArtifactReference.VERSION_PATTERN_RELEASE) ||
             versionRef.equals(MavenArtifactReference.VERSION_PATTERN_LATEST) ||
             versionRef.equals(MavenArtifactReference.VERSION_PATTERN_SNAPSHOT);
-        boolean lookupVersion =
-            firstChar == '[' || firstChar == '(' || firstChar == '{' ||
-            lastChar == ']' || lastChar == ')' || lastChar == '}' ||
-            versionRef.contains(",") ||
-            predefinedVersion;
+        boolean lookupVersion = predefinedVersion || isVersionPattern(versionRef);
 
         if (lookupVersion && !metadataLoaded) {
             loadMetadata(monitor);
@@ -360,4 +390,13 @@ public class MavenArtifact implements IMavenIdentifier
         return versionInfo;
     }
 
+    private static boolean isVersionPattern(String versionSpec) {
+        if (versionSpec.isEmpty()) {
+            return false;
+        }
+        char firstChar = versionSpec.charAt(0), lastChar = versionSpec.charAt(versionSpec.length() - 1);
+        return firstChar == '[' || firstChar == '(' || firstChar == '{' ||
+            lastChar == ']' || lastChar == ')' || lastChar == '}' ||
+            versionSpec.contains(",");
+    }
 }
