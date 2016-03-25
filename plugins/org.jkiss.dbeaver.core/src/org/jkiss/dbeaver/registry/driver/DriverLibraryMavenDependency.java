@@ -33,7 +33,7 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     private MavenArtifactDependency source;
 
     public DriverLibraryMavenDependency(DriverLibraryMavenArtifact parent, MavenArtifactVersion localVersion, MavenArtifactDependency source) {
-        super(parent.getDriver(), FileType.jar, PATH_PREFIX + localVersion.toString());
+        super(parent.getDriver(), FileType.jar, PATH_PREFIX + localVersion.toString(), null);
         this.parent = parent;
         this.localVersion = localVersion;
         this.source = source;

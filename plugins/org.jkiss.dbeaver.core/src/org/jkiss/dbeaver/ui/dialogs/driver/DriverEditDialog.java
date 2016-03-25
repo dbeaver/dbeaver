@@ -431,7 +431,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                                 DriverLibraryAbstract.createFromPath(
                                     driver,
                                     fileName.endsWith(".jar") || fileName.endsWith(".zip") ? DBPDriverLibrary.FileType.jar : DBPDriverLibrary.FileType.lib,
-                                    new File(folderFile, fileName).getAbsolutePath()));
+                                    new File(folderFile, fileName).getAbsolutePath(),
+                                    null));
                         }
                         changeLibContent();
                     }
@@ -452,7 +453,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                     driver.addDriverLibrary(DriverLibraryAbstract.createFromPath(
                         driver,
                         DBPDriverLibrary.FileType.jar,
-                        selected));
+                        selected,
+                        null));
                     changeLibContent();
                 }
             }
@@ -467,7 +469,8 @@ public class DriverEditDialog extends HelpEnabledDialog
                     driver.addDriverLibrary(DriverLibraryAbstract.createFromPath(
                         driver,
                         DBPDriverLibrary.FileType.jar,
-                        DriverLibraryMavenArtifact.PATH_PREFIX + fd.getArtifact().getPath()));
+                        DriverLibraryMavenArtifact.PATH_PREFIX + fd.getArtifact().getPath(),
+                        null));
                     changeLibContent();
                 }
             }

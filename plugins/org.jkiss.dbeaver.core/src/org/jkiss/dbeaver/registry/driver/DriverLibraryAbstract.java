@@ -48,11 +48,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     protected boolean custom;
     protected boolean disabled;
 
-    public static DriverLibraryAbstract createFromPath(DriverDescriptor driver, FileType type, String path) {
+    public static DriverLibraryAbstract createFromPath(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
         if (path.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
             return new DriverLibraryRepository(driver, type, path);
         } else if (path.startsWith(DriverLibraryMavenArtifact.PATH_PREFIX)) {
-            return new DriverLibraryMavenArtifact(driver, type, path);
+            return new DriverLibraryMavenArtifact(driver, type, path, preferredVersion);
         } else {
             if (DriverLibraryRemote.supportsURL(path)) {
                 return new DriverLibraryRemote(driver, type, path);
@@ -119,10 +119,14 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return Collections.emptyList();
     }
 
-    @NotNull
     @Override
-    public DBPDriverLibrary createVersion(DBRProgressMonitor monitor, @NotNull String version) throws IOException {
-        throw new IOException("Versions are not supported");
+    public String getPreferredVersion() {
+        return null;
+    }
+
+    @Override
+    public void setPreferredVersion(String version) {
+        // do nothing
     }
 
     @NotNull
