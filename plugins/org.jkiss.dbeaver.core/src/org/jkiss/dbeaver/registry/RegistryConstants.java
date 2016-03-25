@@ -95,7 +95,6 @@ public class RegistryConstants {
     public static final String ATTR_MAIN = "main"; //$NON-NLS-1$
     public static final String ATTR_POSITION = "position"; //$NON-NLS-1$
     public static final String ATTR_OBJECT_TYPE = "objectType"; //$NON-NLS-1$
-    public static final String ATTR_EXTENSION = "extension"; //$NON-NLS-1$
     public static final String ATTR_SAMPLE_CLASS = "sampleClass"; //$NON-NLS-1$
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDABLE = "embeddable"; //$NON-NLS-1$

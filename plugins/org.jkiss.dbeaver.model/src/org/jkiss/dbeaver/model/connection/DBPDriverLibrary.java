@@ -100,9 +100,9 @@ public interface DBPDriverLibrary
     @NotNull
     Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException;
 
-    @NotNull
-    DBPDriverLibrary createVersion(DBRProgressMonitor monitor, @NotNull String version)
-        throws IOException;
+    String getPreferredVersion();
+
+    void setPreferredVersion(String version);
 
     void resetVersion();
 

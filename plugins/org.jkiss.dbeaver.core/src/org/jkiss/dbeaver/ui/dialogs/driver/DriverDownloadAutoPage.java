@@ -212,29 +212,9 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         if (CommonUtils.equalObjects(curVersion, version)) {
             return false;
         }
-        try {
-            getContainer().run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        DBPDriverLibrary newVersion = library.createVersion(RuntimeUtils.makeMonitor(monitor), version);
-                        DriverDescriptor driver = getWizard().getDriver();
-                        driver.removeDriverLibrary(library);
-                        driver.addDriverLibrary(newVersion);
-                        getWizard().getDependencies().changeLibrary(library, newVersion);
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
-            resolveLibraries();
-            return true;
-        } catch (InvocationTargetException e) {
-            UIUtils.showErrorDialog(getShell(), "Version change", "Error changing library version", e.getTargetException());
-        } catch (InterruptedException e) {
-            // ignore
-        }
-        return false;
+        library.setPreferredVersion(version);
+        resolveLibraries();
+        return true;
     }
 
     @Override

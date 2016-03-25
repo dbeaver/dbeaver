@@ -669,7 +669,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 return lib;
             }
         }
-        DriverLibraryAbstract lib = DriverLibraryAbstract.createFromPath(this, fileType, path);
+        DriverLibraryAbstract lib = DriverLibraryAbstract.createFromPath(this, fileType, path, null);
         addDriverLibrary(lib);
         return lib;
     }
@@ -1142,6 +1142,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     if (lib.isDisabled()) {
                         xml.addAttribute(RegistryConstants.ATTR_DISABLED, true);
                     }
+                    if (!CommonUtils.isEmpty(lib.getPreferredVersion())) {
+                        xml.addAttribute(RegistryConstants.ATTR_VERSION, lib.getPreferredVersion());
+                    }
                     //xml.addAttribute(RegistryConstants.ATTR_CUSTOM, lib.isCustom());
                     List<DriverFileInfo> files = resolvedFiles.get(lib);
                     if (files != null) {
@@ -1421,6 +1424,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     }
                     String path = normalizeLibraryPath(atts.getValue(RegistryConstants.ATTR_PATH));
                     boolean custom = CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM), true);
+                    String version = atts.getValue(RegistryConstants.ATTR_VERSION);
                     DBPDriverLibrary lib = curDriver.getDriverLibrary(path);
                     if (!custom && lib == null) {
                         // This is predefined library from some previous version - as it wasn't defined in plugin.xml
@@ -1432,8 +1436,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     if (lib != null && CommonUtils.getBoolean(disabledAttr)) {
                         lib.setDisabled(true);
                     } else if (lib == null) {
-                        lib = DriverLibraryAbstract.createFromPath(curDriver, type, path);
+                        lib = DriverLibraryAbstract.createFromPath(curDriver, type, path, version);
                         curDriver.libraries.add(lib);
+                    } else if (!CommonUtils.isEmpty(version)) {
+                        lib.setPreferredVersion(version);
                     }
                     curLibrary = lib;
                     break;
