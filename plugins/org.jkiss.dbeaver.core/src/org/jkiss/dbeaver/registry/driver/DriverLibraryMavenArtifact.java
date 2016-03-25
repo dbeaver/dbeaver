@@ -77,7 +77,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     public Collection<String> getAvailableVersions(DBRProgressMonitor monitor) throws IOException {
         MavenArtifactVersion artifactVersion = getArtifactVersion(monitor);
         if (artifactVersion != null) {
-            Collection<String> availableVersion = artifactVersion.getArtifact().getAvailableVersion(monitor);
+            Collection<String> availableVersion = artifactVersion.getArtifact().getAvailableVersions(monitor, reference.getVersion());
             if (availableVersion != null) {
                 return availableVersion;
             }
