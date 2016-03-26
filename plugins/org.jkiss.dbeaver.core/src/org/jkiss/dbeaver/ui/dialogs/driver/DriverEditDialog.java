@@ -332,7 +332,11 @@ public class DriverEditDialog extends HelpEnabledDialog
                     final Object element = cell.getElement();
                     if (element instanceof DBPDriverLibrary) {
                         DBPDriverLibrary lib = (DBPDriverLibrary) element;
-                        cell.setText(lib.getDisplayName());
+                        String displayName = lib.getDisplayName();
+                        if (lib.getPreferredVersion() != null) {
+                            displayName += " [" + lib.getPreferredVersion() + "]";
+                        }
+                        cell.setText(displayName);
                         File localFile = lib.getLocalFile();
                         if (localFile != null && !localFile.exists()) {
                             cell.setForeground(Display.getDefault().getSystemColor(SWT.COLOR_RED));
