@@ -960,21 +960,24 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
         // Now check driver version
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
-            try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        try {
-                            checkDriverVersion(monitor);
-                        } catch (IOException e) {
-                            throw new InvocationTargetException(e);
+            // TODO: implement new version check
+            if (false) {
+                try {
+                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                            try {
+                                checkDriverVersion(monitor);
+                            } catch (IOException e) {
+                                throw new InvocationTargetException(e);
+                            }
                         }
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                log.error(e.getTargetException());
-            } catch (InterruptedException e) {
-                // ignore
+                    });
+                } catch (InvocationTargetException e) {
+                    log.error(e.getTargetException());
+                } catch (InterruptedException e) {
+                    // ignore
+                }
             }
         }
 
