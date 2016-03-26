@@ -83,6 +83,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private TreeViewer libTable;
     private Button deleteButton;
     private Button updateVersionButton;
+    private Button detailsButton;
     private Combo classListCombo;
     private Button findClassButton;
     private Combo driverCategoryCombo;
@@ -488,15 +489,24 @@ public class DriverEditDialog extends HelpEnabledDialog
             }
         });
 
+        detailsButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_details, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                new DriverLibraryDetailsDialog(getShell(), driver, getSelectedLibrary()).open();
+            }
+        });
+        detailsButton.setEnabled(false);
         deleteButton = UIUtils.createToolButton(libsControlGroup, CoreMessages.dialog_edit_driver_button_delete, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
                 IStructuredSelection selection = (IStructuredSelection) libTable.getSelection();
                 if (selection != null && !selection.isEmpty()) {
-                    for (Object obj : selection.toArray()) {
-                        if (obj instanceof DriverLibraryAbstract) {
-                            driver.removeDriverLibrary((DriverLibraryAbstract) obj);
+                    if (UIUtils.confirmAction(getShell(), "Delete library", "Are you sure you want to delete selected libraries?")) {
+                        for (Object obj : selection.toArray()) {
+                            if (obj instanceof DriverLibraryAbstract) {
+                                driver.removeDriverLibrary((DriverLibraryAbstract) obj);
+                            }
                         }
                     }
                 }
@@ -670,6 +680,7 @@ public class DriverEditDialog extends HelpEnabledDialog
     private void changeLibSelection()
     {
         DriverLibraryAbstract selectedLib = getSelectedLibrary();
+        detailsButton.setEnabled(selectedLib != null);
         deleteButton.setEnabled(selectedLib != null);
 /*
         upButton.setEnabled(libList.indexOf(selectedLib) > 0);
