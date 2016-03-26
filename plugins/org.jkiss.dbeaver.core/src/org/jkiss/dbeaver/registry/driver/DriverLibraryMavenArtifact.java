@@ -186,11 +186,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     @NotNull
     public String getDisplayName() {
-        String refString = reference.toString();
-        if (!CommonUtils.isEmpty(preferredVersion)) {
-            refString += " [" + preferredVersion + "]";
-        }
-        return refString;
+        return reference.toString();
     }
 
     @Override

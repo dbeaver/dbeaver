@@ -146,7 +146,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="PostgreSQL standard driver">
                     <replace provider="generic" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4}"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:{.*jdbc4|.*jre7}"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>

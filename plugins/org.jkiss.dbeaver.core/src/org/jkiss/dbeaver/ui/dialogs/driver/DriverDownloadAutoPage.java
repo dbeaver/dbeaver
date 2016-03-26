@@ -122,6 +122,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
                     disposeOldEditor();
                 }
             });
+            new Label(filesGroup, SWT.NONE).setText("You can change driver version by clicking on version column.\nThen you can choose one of the available versions.");
         }
 
         if (!wizard.isForceDownload()) {
