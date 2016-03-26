@@ -164,7 +164,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 "Rename column",
                 "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
-                    DBUtils.getQuotedIdentifier(column))}; //$NON-NLS-1$ //$NON-NLS-2$
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()))}; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }
