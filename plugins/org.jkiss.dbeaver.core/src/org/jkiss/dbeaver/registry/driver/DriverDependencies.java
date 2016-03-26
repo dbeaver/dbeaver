@@ -37,7 +37,7 @@ public class DriverDependencies implements DBPDriverDependencies
     final List<DependencyNode> rootNodes = new ArrayList<>();
     final List<DependencyNode> libraryList = new ArrayList<>();
 
-    public DriverDependencies(List<? extends DBPDriverLibrary> rootLibraries) {
+    public DriverDependencies(Collection<? extends DBPDriverLibrary> rootLibraries) {
         this.rootLibraries = new ArrayList<>(rootLibraries);
     }
 
