@@ -23,26 +23,30 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+
+import java.io.File;
+import java.util.Collections;
+import java.util.Set;
 
 /**
  * DriverEditDialog
  */
 public class DriverLibraryDetailsDialog extends HelpEnabledDialog
 {
-    static final Log log = Log.getLog(DriverLibraryDetailsDialog.class);
-
     private static final String DIALOG_ID = "DBeaver.DriverLibraryDetailsDialog";//$NON-NLS-1$
 
     private DBPDriver driver;
     private DBPDriverLibrary library;
+    private Text fileText;
 
     public DriverLibraryDetailsDialog(Shell shell, DBPDriver driver, DBPDriverLibrary library)
     {
@@ -76,7 +80,7 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
             UIUtils.createLabelText(propsGroup, "Library", library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(propsGroup, "Path", library.getPath(), SWT.BORDER | SWT.READ_ONLY);
             UIUtils.createLabelText(propsGroup, "Version", library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(propsGroup, "File", library.getLocalFile() == null ? "" : library.getLocalFile().getAbsolutePath(), SWT.BORDER | SWT.READ_ONLY);
+            fileText = UIUtils.createLabelText(propsGroup, "File", "", SWT.BORDER | SWT.READ_ONLY);
         }
         TabFolder tabs = new TabFolder(group, SWT.HORIZONTAL | SWT.FLAT);
         tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -91,6 +95,26 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
     private void createDependenciesTab(TabFolder tabs) {
         Composite paramsGroup = new Composite(tabs, SWT.NONE);
         paramsGroup.setLayout(new GridLayout(1, false));
+
+        final Set<DBPDriverLibrary> libList = Collections.singleton(library);
+        DriverDependencies dependencies = new DriverDependencies(libList);
+        final DriverDependenciesTree depsTree = new DriverDependenciesTree(
+            paramsGroup,
+            DBeaverUI.getDefaultRunnableContext(),
+            dependencies,
+            driver,
+            libList,
+            false);
+        UIUtils.runInDetachedUI(getShell(), new Runnable() {
+            @Override
+            public void run() {
+                depsTree.resolveLibraries();
+                final File localFile = library.getLocalFile();
+                if (localFile != null) {
+                    fileText.setText(localFile.getAbsolutePath());
+                }
+            }
+        });
 
         TabItem depsTab = new TabItem(tabs, SWT.NONE);
         depsTab.setText("Dependencies");
