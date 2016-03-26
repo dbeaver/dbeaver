@@ -78,7 +78,7 @@ class DB2ToolShowErrorDialog extends Dialog {
         Composite container1 = UIUtils.createPlaceholder(area, 3, 5);
 
         // SQL Error Code
-        UIUtils.createTextLabel(container1, DB2Messages.dialog_tools_msg_code);
+        UIUtils.createLabel(container1, DB2Messages.dialog_tools_msg_code);
 
         textSqlErrorCode = new Text(container1, SWT.BORDER);
 

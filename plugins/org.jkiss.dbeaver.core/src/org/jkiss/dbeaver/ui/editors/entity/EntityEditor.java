@@ -777,7 +777,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     private void createPathRow(Composite infoGroup, DBPImage image, String label, String value, @Nullable SelectionListener selectionListener)
     {
-        UIUtils.createImageLabel(infoGroup, image);
+        UIUtils.createLabel(infoGroup, image);
 
         Link objectLink = new Link(infoGroup, SWT.NONE);
         if (selectionListener == null) {

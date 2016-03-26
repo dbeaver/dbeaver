@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.Collections;
@@ -46,7 +47,6 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
 
     private DBPDriver driver;
     private DBPDriverLibrary library;
-    private Text fileText;
 
     public DriverLibraryDetailsDialog(Shell shell, DBPDriver driver, DBPDriverLibrary library)
     {
@@ -72,22 +72,26 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         gd.widthHint = 500;
         group.setLayoutData(gd);
 
-        {
-            Group propsGroup = UIUtils.createControlGroup(group, "Information", 2, -1, -1);
-            propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Group propsGroup = UIUtils.createControlGroup(group, "Information", 2, -1, -1);
+        propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            UIUtils.createLabelText(propsGroup, "Driver", driver.getName(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(propsGroup, "Library", library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(propsGroup, "Path", library.getPath(), SWT.BORDER | SWT.READ_ONLY);
-            UIUtils.createLabelText(propsGroup, "Version", library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
-            fileText = UIUtils.createLabelText(propsGroup, "File", "", SWT.BORDER | SWT.READ_ONLY);
-        }
+        UIUtils.createLabelText(propsGroup, "Driver", driver.getName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, "Library", library.getDisplayName(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, "Path", library.getPath(), SWT.BORDER | SWT.READ_ONLY);
+        UIUtils.createLabelText(propsGroup, "Version", library.getVersion(), SWT.BORDER | SWT.READ_ONLY);
+        Text fileText = UIUtils.createLabelText(propsGroup, "File", "", SWT.BORDER | SWT.READ_ONLY);
+
         TabFolder tabs = new TabFolder(group, SWT.HORIZONTAL | SWT.FLAT);
         tabs.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         createDependenciesTab(tabs);
         createLicenseTab(tabs);
         createDetailsTab(tabs);
+
+        final File localFile = library.getLocalFile();
+        if (localFile != null) {
+            fileText.setText(localFile.getAbsolutePath());
+        }
 
         return group;
     }
@@ -105,14 +109,11 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
             driver,
             libList,
             false);
+        depsTree.resolveLibraries();
         UIUtils.runInDetachedUI(getShell(), new Runnable() {
             @Override
             public void run() {
-                depsTree.resolveLibraries();
-                final File localFile = library.getLocalFile();
-                if (localFile != null) {
-                    fileText.setText(localFile.getAbsolutePath());
-                }
+                depsTree.resizeTree();
             }
         });
 
@@ -125,6 +126,13 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
     private void createDetailsTab(TabFolder tabs) {
         Composite detailsGroup = new Composite(tabs, SWT.NONE);
         detailsGroup.setLayout(new GridLayout(1, false));
+
+        UIUtils.createControlLabel(detailsGroup, "Description");
+        Text descriptionText = new Text(detailsGroup, SWT.READ_ONLY | SWT.BORDER);
+        descriptionText.setText(CommonUtils.notEmpty(library.getDescription()));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.heightHint = 40;
+        descriptionText.setLayoutData(gd);
 
         TabItem detailsTab = new TabItem(tabs, SWT.NONE);
         detailsTab.setText("Details");

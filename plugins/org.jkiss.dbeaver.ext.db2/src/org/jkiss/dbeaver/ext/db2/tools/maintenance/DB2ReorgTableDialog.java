@@ -248,7 +248,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
         UIUtils.createPlaceholder(composite, 1);
 
         // TABLE ACCESS
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorg_access_title);
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_reorg_access_title);
         Composite groupRB = new Composite(composite, SWT.NULL);
         groupRB.setLayout(new RowLayout());
         dlgAccesNo = new Button(groupRB, SWT.RADIO);
