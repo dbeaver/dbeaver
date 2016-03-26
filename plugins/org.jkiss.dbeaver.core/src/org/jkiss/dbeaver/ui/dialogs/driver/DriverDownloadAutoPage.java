@@ -81,7 +81,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
             infoText.setText(driver.getFullName() + " driver files are missing.\nDBeaver can download these files automatically.\n\n");
             infoText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            final Button forceCheckbox = UIUtils.createCheckbox(infoGroup, "Force download", wizard.isForceDownload());
+            final Button forceCheckbox = UIUtils.createCheckbox(infoGroup, "Force download / overwrite", wizard.isForceDownload());
             forceCheckbox.setToolTipText("Force files download. Will download files even if they are already on the disk");
             forceCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
             forceCheckbox.addSelectionListener(new SelectionAdapter() {

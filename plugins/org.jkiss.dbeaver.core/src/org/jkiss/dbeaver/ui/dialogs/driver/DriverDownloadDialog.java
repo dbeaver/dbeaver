@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IPageChangedListener;
 import org.eclipse.jface.dialogs.PageChangedEvent;
 import org.eclipse.jface.wizard.WizardDialog;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class DriverDownloadDialog extends WizardDialog
 {
+    private static final String DIALOG_ID = "DBeaver.DriverDownloadDialog";//$NON-NLS-1$
     public static final int EDIT_DRIVER_BUTTON_ID = 2000;
 
     private boolean doDownload = false;
@@ -56,6 +58,12 @@ public class DriverDownloadDialog extends WizardDialog
                 });
             }
         });
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     DriverDescriptor getDriver() {
