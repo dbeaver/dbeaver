@@ -491,7 +491,7 @@ public class UIUtils {
         return textLabel;
     }
 
-    public static Label createTextLabel(Composite parent, String label)
+    public static Label createLabel(Composite parent, String label)
     {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label);
@@ -499,7 +499,7 @@ public class UIUtils {
         return textLabel;
     }
 
-    public static Label createImageLabel(Composite parent, DBPImage image)
+    public static Label createLabel(Composite parent, DBPImage image)
     {
         Label imageLabel = new Label(parent, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(image));

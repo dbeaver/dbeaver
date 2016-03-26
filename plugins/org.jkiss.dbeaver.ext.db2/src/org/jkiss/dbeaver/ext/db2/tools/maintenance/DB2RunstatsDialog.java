@@ -67,7 +67,7 @@ public class DB2RunstatsDialog extends DB2BaseTableToolDialog {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // RUNSTATS ON COLUMNS
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_runstats_cols_title).setLayoutData(
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_runstats_cols_title).setLayoutData(
             new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupCols = new Composite(composite, SWT.NONE);
         groupCols.setLayout(new RowLayout(SWT.VERTICAL));
@@ -82,7 +82,7 @@ public class DB2RunstatsDialog extends DB2BaseTableToolDialog {
         dlgColsNo.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // RUNSTATS ON INDEXES
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_runstats_indexes_title).setLayoutData(
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_runstats_indexes_title).setLayoutData(
             new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupIx = new Composite(composite, SWT.NULL);
         groupIx.setLayout(new RowLayout(SWT.VERTICAL));

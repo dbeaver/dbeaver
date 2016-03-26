@@ -156,14 +156,6 @@ class DriverDependenciesTree {
         }
         UIUtils.packColumns(filesTree);
 
-        Shell shell = filesTree.getShell();
-        Point curSize = shell.getSize();
-        int itemHeight = filesTree.getItemHeight();
-        shell.setSize(curSize.x, Math.min(
-            (int)(DBeaverUI.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
-            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight);
-        shell.layout();
-
         // Check missing files
         int missingFiles = 0;
         for (DBPDriverDependencies.DependencyNode node : dependencies.getLibraryList()) {
@@ -176,6 +168,16 @@ class DriverDependenciesTree {
 //            UIUtils.showMessageBox(getShell(), "Driver Download", "All driver files are present", SWT.ICON_INFORMATION);
 //            ((DriverDownloadDialog)getWizard().getContainer()).closeWizard();
         }
+    }
+
+    public void resizeTree() {
+        Shell shell = filesTree.getShell();
+        Point curSize = shell.getSize();
+        int itemHeight = filesTree.getItemHeight();
+        shell.setSize(curSize.x, Math.min(
+            (int)(DBeaverUI.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
+            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight);
+        shell.layout();
     }
 
     private boolean addDependencies(TreeItem parent, DBPDriverDependencies.DependencyNode node) {

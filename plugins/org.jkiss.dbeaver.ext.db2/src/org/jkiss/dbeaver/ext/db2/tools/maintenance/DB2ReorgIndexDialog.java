@@ -61,7 +61,7 @@ public class DB2ReorgIndexDialog extends DB2BaseTableToolDialog {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // REORG ACCESS
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorgix_access_title).setLayoutData(
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_reorgix_access_title).setLayoutData(
             new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupAccess = new Composite(composite, SWT.NULL);
         groupAccess.setLayout(new RowLayout(SWT.VERTICAL));
@@ -79,7 +79,7 @@ public class DB2ReorgIndexDialog extends DB2BaseTableToolDialog {
         dlgAccessReadWrite.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // PAGE CLEANUP
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_reorgix_options_title).setLayoutData(
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_reorgix_options_title).setLayoutData(
             new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupCleanup = new Composite(composite, SWT.NULL);
         groupCleanup.setLayout(new RowLayout(SWT.VERTICAL));

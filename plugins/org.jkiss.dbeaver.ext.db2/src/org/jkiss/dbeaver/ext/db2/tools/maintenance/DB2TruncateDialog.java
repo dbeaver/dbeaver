@@ -60,7 +60,7 @@ public class DB2TruncateDialog extends DB2BaseTableToolDialog {
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Drop/Reuse Storage
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_truncate_storage_title).setLayoutData(
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_truncate_storage_title).setLayoutData(
             new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupCols = new Composite(composite, SWT.NONE);
         groupCols.setLayout(new RowLayout(SWT.VERTICAL));
@@ -72,7 +72,7 @@ public class DB2TruncateDialog extends DB2BaseTableToolDialog {
         dlgStorageReuse.addSelectionListener(SQL_CHANGE_LISTENER);
 
         // Triggers Clauses
-        UIUtils.createTextLabel(composite, DB2Messages.dialog_table_tools_truncate_triggers_title).setLayoutData(
+        UIUtils.createLabel(composite, DB2Messages.dialog_table_tools_truncate_triggers_title).setLayoutData(
             new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         Composite groupIx = new Composite(composite, SWT.NULL);
         groupIx.setLayout(new RowLayout(SWT.VERTICAL));

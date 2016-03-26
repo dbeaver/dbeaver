@@ -119,6 +119,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
     @Override
     void resolveLibraries() {
         depsTree.resolveLibraries();
+        depsTree.resizeTree();
     }
 
     @Override

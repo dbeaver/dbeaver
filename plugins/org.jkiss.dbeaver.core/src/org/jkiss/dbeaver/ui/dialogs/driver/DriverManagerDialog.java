@@ -183,11 +183,11 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
                 gd.horizontalSpan = 2;
                 legend.setLayoutData(gd);
 
-                UIUtils.createImageLabel(legend, DBIcon.OVER_LAMP);
-                UIUtils.createTextLabel(legend, CoreMessages.dialog_driver_manager_label_user_defined);
+                UIUtils.createLabel(legend, DBIcon.OVER_LAMP);
+                UIUtils.createLabel(legend, CoreMessages.dialog_driver_manager_label_user_defined);
 
-                UIUtils.createImageLabel(legend, DBIcon.OVER_ERROR);
-                UIUtils.createTextLabel(legend, CoreMessages.dialog_driver_manager_label_unavailable);
+                UIUtils.createLabel(legend, DBIcon.OVER_ERROR);
+                UIUtils.createLabel(legend, CoreMessages.dialog_driver_manager_label_unavailable);
 
             }
         }
