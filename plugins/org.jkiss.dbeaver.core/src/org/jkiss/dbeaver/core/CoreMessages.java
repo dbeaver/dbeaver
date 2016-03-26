@@ -522,6 +522,7 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_edit_driver_button_classpath;
 	public static String dialog_edit_driver_button_update_version;
+	public static String dialog_edit_driver_button_details;
 	public static String dialog_edit_driver_button_delete;
 
 	public static String dialog_edit_driver_button_down;
