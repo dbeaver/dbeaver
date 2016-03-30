@@ -191,6 +191,11 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    /**
+     * Check whether dialect support plain comment queries (queries which contains only comments)
+     */
+    boolean supportsCommentQuery();
+
     @NotNull
     DBPIdentifierCase storesUnquotedCase();
 
