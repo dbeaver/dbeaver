@@ -49,6 +49,7 @@ public class DBVModel extends DBVContainer {
     private static final String TAG_ENTITY = "entity"; //$NON-NLS-1$
     private static final String TAG_CONSTRAINT = "constraint"; //$NON-NLS-1$
     private static final String TAG_ATTRIBUTE = "attribute"; //$NON-NLS-1$
+    private static final String ATTR_ID = "id"; //$NON-NLS-1$
     private static final String ATTR_NAME = "name"; //$NON-NLS-1$
     private static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
     private static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
@@ -60,6 +61,9 @@ public class DBVModel extends DBVContainer {
     private static final String ATTR_FOREGROUND = "foreground";
     private static final String ATTR_BACKGROUND = "background";
     private static final String TAG_VALUE = "value";
+    private static final String TAG_TRANSFORM = "transform";
+    private static final String TAG_INCLUDE = "include";
+    private static final String TAG_EXCLUDE = "exclude";
 
     private DBPDataSourceContainer dataSourceContainer;
 
@@ -153,9 +157,24 @@ public class DBVModel extends DBVContainer {
         }
         // Attributes
         for (DBVEntityAttribute attr : CommonUtils.safeCollection(entity.entityAttributes)) {
-            xml.startElement(TAG_ATTRIBUTE);
-            xml.addAttribute(ATTR_NAME, attr.getName());
-            xml.endElement();
+            try (final XMLBuilder.Element e3 = xml.startElement(TAG_ATTRIBUTE)) {
+                xml.addAttribute(ATTR_NAME, attr.getName());
+                final DBVTransformSettings transformSettings = attr.getTransformSettings();
+                if (transformSettings != null && transformSettings.hasValuableData()) {
+                    try (final XMLBuilder.Element e4 = xml.startElement(TAG_TRANSFORM)) {
+                        for (String id : CommonUtils.safeCollection(transformSettings.getIncludedTransformers())) {
+                            try (final XMLBuilder.Element e5 = xml.startElement(TAG_INCLUDE)) {
+                                xml.addAttribute(ATTR_ID, id);
+                            }
+                        }
+                        for (String id : CommonUtils.safeCollection(transformSettings.getExcludedTransformers())) {
+                            try (final XMLBuilder.Element e5 = xml.startElement(TAG_EXCLUDE)) {
+                                xml.addAttribute(ATTR_ID, id);
+                            }
+                        }
+                    }
+                }
+            }
         }
         // Constraints
         for (DBVEntityConstraint c : CommonUtils.safeCollection(entity.entityConstraints)) {

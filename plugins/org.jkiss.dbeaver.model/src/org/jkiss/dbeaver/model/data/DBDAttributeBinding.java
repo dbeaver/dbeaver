@@ -111,6 +111,10 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return valueRenderer;
     }
 
+    public void setValueRenderer(@NotNull DBDValueRenderer renderer) {
+        this.valueRenderer = renderer;
+    }
+
     @NotNull
     public DBSAttributeBase getAttribute()
     {

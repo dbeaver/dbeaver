@@ -33,22 +33,25 @@ import java.util.List;
  */
 public abstract class DBVUtils {
 
-    public static DBVTransformSettings getTransformSettings(DBDAttributeBinding binding) {
+    public static DBVTransformSettings getTransformSettings(DBDAttributeBinding binding, boolean create) {
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
         if (entityAttribute != null) {
-            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), false);
+            DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), create);
             if (vEntity != null) {
-                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
+                DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, create);
                 if (vAttr != null) {
-                    return getTransformSettings(vAttr);
+                    return getTransformSettings(vAttr, create);
                 }
             }
         }
         return null;
     }
 
-    public static DBVTransformSettings getTransformSettings(DBVEntityAttribute attribute) {
+    public static DBVTransformSettings getTransformSettings(DBVEntityAttribute attribute, boolean create) {
         if (attribute.getTransformSettings() != null) {
+            return attribute.getTransformSettings();
+        } else if (create) {
+            attribute.setTransformSettings(new DBVTransformSettings());
             return attribute.getTransformSettings();
         }
         for (DBVObject object = attribute.getParentObject(); object != null; object = object.getParentObject()) {
@@ -82,7 +85,7 @@ public abstract class DBVUtils {
             if (vEntity != null) {
                 DBVEntityAttribute vAttr = vEntity.getVirtualAttribute(binding, false);
                 if (vAttr != null) {
-                    final DBVTransformSettings transformSettings = getTransformSettings(vAttr);
+                    final DBVTransformSettings transformSettings = getTransformSettings(vAttr, false);
                     if (transformSettings != null) {
                         filtered = transformSettings.filterTransformers(tdList);
                     }

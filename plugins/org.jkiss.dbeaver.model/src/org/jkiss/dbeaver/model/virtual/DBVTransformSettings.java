@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,7 +28,7 @@ import java.util.Set;
 /**
  * Virtual model object
  */
-public abstract class DBVTransformSettings {
+public class DBVTransformSettings {
     private Set<String> excludedTransformers, includedTransformers;
     private String customTransformer;
     private Map<String, String> rendererProperties;
@@ -36,8 +37,33 @@ public abstract class DBVTransformSettings {
         return excludedTransformers;
     }
 
+    public boolean isExcluded(String id) {
+        return excludedTransformers != null && excludedTransformers.contains(id);
+    }
+
     public Set<String> getIncludedTransformers() {
         return includedTransformers;
+    }
+
+    public boolean isIncluded(String id) {
+        return includedTransformers != null && includedTransformers.contains(id);
+    }
+
+    public void enableTransformer(DBDAttributeTransformerDescriptor transformer, boolean enable) {
+        final String id = transformer.getId();
+        if (includedTransformers == null) includedTransformers = new HashSet<>();
+        if (excludedTransformers == null) excludedTransformers = new HashSet<>();
+        if (enable) {
+            if (!transformer.isApplicableByDefault()) {
+                includedTransformers.add(id);
+            }
+            excludedTransformers.remove(id);
+        } else {
+            if (transformer.isApplicableByDefault()) {
+                excludedTransformers.add(id);
+            }
+            includedTransformers.remove(id);
+        }
     }
 
     public String getCustomTransformer() {
@@ -70,4 +96,5 @@ public abstract class DBVTransformSettings {
         }
         return true;
     }
+
 }
