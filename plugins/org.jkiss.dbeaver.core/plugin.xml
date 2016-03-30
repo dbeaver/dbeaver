@@ -2359,6 +2359,8 @@
 
         </provider>
 
+        <!-- Standard transformers (enabled by default) -->
+
         <transformer
             class="org.jkiss.dbeaver.model.impl.data.transformers.ComplexTypeAttributeTransformer"
             id="org.jkiss.dbeaver.core.ComplexTypeAttributeTransformer"
@@ -2388,6 +2390,17 @@
             applyByDefault="true">
             <type kind="ARRAY"/>
         </transformer>
+
+        <!-- Extra transformers -->
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.EpochTimeAttributeTransformer"
+                id="org.jkiss.dbeaver.core.EpochTimeAttributeTransformer"
+                name="Epoch Time"
+                description="Evaluate integer value as timestamp in Epoch (C, Unix, Java, etc) time"
+                applyByDefault="false">
+            <type kind="NUMERIC"/>
+        </transformer>
+
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataFormatter">

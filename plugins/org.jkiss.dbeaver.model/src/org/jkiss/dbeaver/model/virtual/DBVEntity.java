@@ -219,17 +219,23 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
             DBSObject[] path = DBUtils.getObjectPath(binding, true);
             DBVEntityAttribute topAttribute = DBUtils.findObject(entityAttributes, path[0].getName());
+            if (topAttribute == null && create) {
+                topAttribute = new DBVEntityAttribute(this, null, path[0].getName());
+                entityAttributes.add(topAttribute);
+            }
             if (topAttribute != null) {
                 for (int i = 1; i < path.length; i++) {
-                    topAttribute = topAttribute.getChild(path[i].getName());
-                    if (topAttribute == null) {
-                        log.debug("Can't find hierarchical attribute '" + binding + "'");
-                        return null;
+                    DBVEntityAttribute nextAttribute = topAttribute.getChild(path[i].getName());
+                    if (nextAttribute == null) {
+                        if (create) {
+                            nextAttribute = new DBVEntityAttribute(this, topAttribute, path[i].getName());
+                        } else {
+                            log.debug("Can't find hierarchical attribute '" + binding + "'");
+                            return null;
+                        }
                     }
+                    topAttribute = nextAttribute;
                 }
-            }
-            if (create) {
-
             }
 
             return topAttribute;
@@ -427,7 +433,11 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
             }
         }
         if (!CommonUtils.isEmpty(entityAttributes)) {
-            return true;
+            for (DBVEntityAttribute attr : entityAttributes) {
+                if (attr.hasValuableData()) {
+                    return true;
+                }
+            }
         }
         if (!CommonUtils.isEmpty(colorOverrides)) {
             return true;
