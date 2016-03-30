@@ -2296,7 +2296,9 @@ public class ResultSetViewer extends Viewer
         @NotNull
         protected DBVEntity getVirtualEntity(DBDAttributeBinding binding) {
             final DBSEntity entity = getModel().getSingleSource();
-            assert entity != null;
+            if (entity == null) {
+                throw new IllegalStateException("No virtual entity for multi-source query");
+            }
             final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
             assert vEntity != null;
             return vEntity;

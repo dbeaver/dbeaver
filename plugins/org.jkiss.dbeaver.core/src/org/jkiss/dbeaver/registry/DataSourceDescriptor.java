@@ -142,8 +142,8 @@ public class DataSourceDescriptor
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
     private DBWTunnel tunnel;
     private String folderPath;
-
-    private DBVModel virtualModel;
+    @NotNull
+    private final DBVModel virtualModel;
 
     public DataSourceDescriptor(
         @NotNull DBPDataSourceRegistry registry,
@@ -428,6 +428,7 @@ public class DataSourceDescriptor
     }
 
     @Override
+    @NotNull
     public DBVModel getVirtualModel()
     {
         return virtualModel;
