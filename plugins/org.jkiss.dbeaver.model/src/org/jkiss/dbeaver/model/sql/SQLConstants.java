@@ -305,6 +305,8 @@ public class SQLConstants {
         "WITHIN",
         "WITHOUT",
         "YEAR",
+        "ASC",
+        "DESC"
     };
 
     public static final String[] SQL2003_FUNCTIONS = {
