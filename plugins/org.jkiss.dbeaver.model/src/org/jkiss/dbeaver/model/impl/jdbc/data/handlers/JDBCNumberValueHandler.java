@@ -63,6 +63,9 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             return DBUtils.getDefaultValueDisplayString(null, format);
         }
         if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
+            if (value instanceof BigDecimal) {
+                return ((BigDecimal) value).toPlainString();
+            }
             return value.toString();
         }
         return formatter.formatValue(value);
