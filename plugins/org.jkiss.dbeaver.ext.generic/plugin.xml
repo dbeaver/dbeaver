@@ -679,7 +679,7 @@
                     defaultPort="1527"
                     description="Pivotal GemfireXD"
                     webURL="http://blog.pivotal.io/tag/gemfire-xd">
-                    <!--<library path="C:\Program Files\Java\lib\jdbc\gemfirexd-client.jar"/>-->
+                    <file type="jar" path="maven:/io.snappydata:gemfirexd-client:RELEASE"/>
                 </driver>
                 <driver
                     id="apache_hive2"
