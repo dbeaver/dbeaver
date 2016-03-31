@@ -305,7 +305,7 @@ public class OracleUtils {
         if (body) {
             sourceType += " BODY";
         }
-        Pattern srcPattern = Pattern.compile("(" + sourceType + ")\\s+(\\w+)", Pattern.CASE_INSENSITIVE);
+        Pattern srcPattern = Pattern.compile("^(" + sourceType + ")\\s+(\"{0,1}\\w+\"{0,1})", Pattern.CASE_INSENSITIVE);
         Matcher matcher = srcPattern.matcher(source);
         if (matcher.find()) {
             return
