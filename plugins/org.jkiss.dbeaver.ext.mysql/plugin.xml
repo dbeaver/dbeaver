@@ -157,7 +157,7 @@
                     class="org.mariadb.jdbc.Driver"
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
-                    webURL="http://www.mysql.com/products/connector/"
+                    webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     description="MySQL standard driver">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE"/>
                 </driver>
