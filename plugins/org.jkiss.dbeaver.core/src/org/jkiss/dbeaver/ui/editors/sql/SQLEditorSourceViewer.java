@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
@@ -52,6 +53,15 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
         StyledText textWidget = super.createTextWidget(parent, styles);
         //textWidget.setAlwaysShowScrollBars(false);
         return textWidget;
+    }
+
+    // Let source viewer reconfiguration possible (http://dbeaver.jkiss.org/forum/viewtopic.php?f=2&t=2939)
+    public void setHyperlinkPresenter(IHyperlinkPresenter hyperlinkPresenter) throws IllegalStateException {
+        if (fHyperlinkManager != null) {
+            fHyperlinkManager.uninstall();
+            fHyperlinkManager= null;
+        }
+        super.setHyperlinkPresenter(hyperlinkPresenter);
     }
 
 }
