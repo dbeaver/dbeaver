@@ -85,7 +85,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
     @Override
     protected String getDropForeignKeyPattern(PostgreTableForeignKey foreignKey)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
 }

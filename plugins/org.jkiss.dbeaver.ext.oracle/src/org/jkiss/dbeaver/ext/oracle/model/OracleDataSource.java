@@ -287,6 +287,11 @@ public class OracleDataSource extends JDBCDataSource
 
                 // Get active schema
                 this.activeSchemaName = OracleUtils.getCurrentSchema(session);
+                if (this.activeSchemaName != null) {
+                    if (this.activeSchemaName.isEmpty()) {
+                        this.activeSchemaName = null;
+                    }
+                }
 
             } catch (SQLException e) {
                 //throw new DBException(e);

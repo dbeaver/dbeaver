@@ -26,12 +26,12 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
-* Oracle SQL dialect
-*/
+ * Oracle SQL dialect
+ */
 class OracleSQLDialect extends JDBCSQLDialect {
     private static final String[] ORACLE_LINE_COMMENTS = {
-            "--",
-            //"^rem"
+        "--",
+        //"^rem"
     };
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
@@ -41,10 +41,219 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addSQLKeyword("STRUCTURE");
         addSQLKeyword("COMPUTE");
         addSQLKeyword("STATISTICS");
+        addSQLKeyword("NULLS");
+        addSQLKeyword("FIRST");
+        addSQLKeyword("LAST");
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
-                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE"));
+                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE",
+                // Additions from #323
+                //Number Functions:
+                "BITAND",
+                "COSH",
+                "NANVL",
+                "REMAINDER",
+                "SINH",
+                "TANH",
+                "TRUNC",
+
+                //Character Functions Returning Character Values:
+                "CHR",
+                "INITCAP",
+                "LPAD",
+                "NLS_INITCAP",
+                "NLS_LOWER",
+                "NLSSORT",
+                "NLS_UPPER",
+                "RPAD",
+
+                // NLS Character Functions:
+                "NLS_CHARSET_DECL_LEN",
+                "NLS_CHARSET_ID",
+                "NLS_CHARSET_NAME",
+
+                //Character Functions Returning Number VALUES:
+                "INSTR",
+
+                //Datetime Functions:
+                "ADD_MONTHS",
+                "DBTIMEZONE",
+                "FROM_TZ",
+                "LAST_DAY",
+                "MONTHS_BETWEEN",
+                "NEW_TIME",
+                "NEXT_DAY",
+                "NUMTODSINTERVAL",
+                "NUMTOYMINTERVAL",
+                "SESSIONTIMEZONE",
+                "SYS_EXTRACT_UTC",
+                "SYSDATE",
+                "SYSTIMESTAMP",
+                "TO_CHAR",
+                "TO_TIMESTAMP",
+                "TO_TIMESTAMP_TZ",
+                "TO_DSINTERVAL",
+                "TO_YMINTERVAL",
+                "TRUNC",
+                "TZ_OFFSET",
+
+                //General Comparison Functions:
+                "GREATEST",
+                "LEAST",
+
+                //Conversion Functions:
+                "ASCIISTR",
+                "BIN_TO_NUM",
+                "CHARTOROWID",
+                "COMPOSE",
+                "DECOMPOSE",
+                "HEXTORAW",
+                "NUMTODSINTERVAL",
+                "NUMTOYMINTERVAL",
+                "RAWTOHEX",
+                "RAWTONHEX",
+                "ROWIDTOCHAR",
+                "ROWIDTONCHAR",
+                "SCN_TO_TIMESTAMP",
+                "TIMESTAMP_TO_SCN",
+                "TO_BINARY_DOUBLE",
+                "TO_BINARY_FLOAT",
+                "TO_CHAR",
+                "TO_CLOB",
+                "TO_DATE",
+                "TO_DSINTERVAL",
+                "TO_LOB",
+                "TO_MULTI_BYTE",
+                "TO_NCHAR",
+                "TO_NCLOB",
+                "TO_NUMBER",
+                "TO_DSINTERVAL",
+                "TO_SINGLE_BYTE",
+                "TO_TIMESTAMP",
+                "TO_TIMESTAMP_TZ",
+                "TO_YMINTERVAL",
+                "TO_YMINTERVAL",
+                "UNISTR",
+
+                //Large Object Functions:
+                "BFILENAME",
+                "EMPTY_BLOB",
+                "EMPTY_CLOB",
+
+                //Collection Functions:
+                "POWERMULTISET",
+                "POWERMULTISET_BY_CARDINALITY",
+
+                //Hierarchical FUNCTION:
+                "SYS_CONNECT_BY_PATH",
+
+                //Data Mining Functions:
+                "CLUSTER_ID",
+                "CLUSTER_PROBABILITY",
+                "CLUSTER_SET",
+                "FEATURE_ID",
+                "FEATURE_SET",
+                "FEATURE_VALUE",
+                "PREDICTION",
+                "PREDICTION_COST",
+                "PREDICTION_DETAILS",
+                "PREDICTION_PROBABILITY",
+                "PREDICTION_SET",
+
+                //XML Functions:
+                "APPENDCHILDXML",
+                "DELETEXML",
+                "DEPTH",
+                "EXISTSNODE",
+                "EXTRACTVALUE",
+                "INSERTCHILDXML",
+                "INSERTXMLBEFORE",
+                "PATH",
+                "SYS_DBURIGEN",
+                "SYS_XMLAGG",
+                "SYS_XMLGEN",
+                "UPDATEXML",
+                "XMLAGG",
+                "XMLCDATA",
+                "XMLCOLATTVAL",
+                "XMLCOMMENT",
+                "XMLCONCAT",
+                "XMLFOREST",
+                "XMLPARSE",
+                "XMLPI",
+                "XMLQUERY",
+                "XMLROOT",
+                "XMLSEQUENCE",
+                "XMLSERIALIZE",
+                "XMLTABLE",
+                "XMLTRANSFORM",
+
+                //Encoding and Decoding Functions:
+                "DECODE",
+                "DUMP",
+                "ORA_HASH",
+                "VSIZE",
+
+                //NULL-Related Functions:
+                "LNNVL",
+                "NVL",
+                "NVL2",
+
+                //Environment and Identifier Functions:
+                "SYS_CONTEXT",
+                "SYS_GUID",
+                "SYS_TYPEID",
+                "UID",
+                "USERENV",
+
+                //Aggregate Functions:
+                "CORR_S",
+                "CORR_K",
+                "FIRST",
+                "GROUP_ID",
+                "GROUPING_ID",
+                "LAST",
+                "MEDIAN",
+                "STATS_BINOMIAL_TEST",
+                "STATS_CROSSTAB",
+                "STATS_F_TEST",
+                "STATS_KS_TEST",
+                "STATS_MODE",
+                "STATS_MW_TEST",
+                "STATS_ONE_WAY_ANOVA",
+                "STATS_T_TEST_ONE",
+                "STATS_T_TEST_PAIRED",
+                "STATS_T_TEST_INDEP",
+                "STATS_T_TEST_INDEPU",
+                "STATS_WSR_TEST",
+                "STDDEV",
+                "VARIANCE",
+
+                //Analytic Functions:
+                "FIRST",
+                "FIRST_VALUE",
+                "LAG",
+                "LAST",
+                "LAST_VALUE",
+                "LEAD",
+                "NTILE",
+                "RATIO_TO_REPORT",
+                "STDDEV",
+                "VARIANCE",
+
+                //Object Reference Functions:
+                "MAKE_REF",
+                "REFTOHEX",
+
+                //Model Functions:
+                "CV",
+                "ITERATION_NUMBER",
+                "PRESENTNNV",
+                "PRESENTV",
+                "PREVIOUS"
+
+            ));
     }
 
     @NotNull
