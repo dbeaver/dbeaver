@@ -132,7 +132,7 @@ public class PostgreUtils {
         return null;
     }
 
-    public static Long[] getIdVector(Object pgObject) {
+    public static long[] getIdVector(Object pgObject) {
         Object pgVector = extractValue(pgObject);
         if (pgVector == null) {
             return null;
@@ -143,13 +143,20 @@ public class PostgreUtils {
                 return null;
             }
             final String[] strings = vector.split(" ");
-            final Long[] ids = new Long[strings.length];
+            final long[] ids = new long[strings.length];
             for (int i = 0; i < strings.length; i++) {
-                ids[i] = new Long(strings[i]);
+                ids[i] = Long.parseLong(strings[i]);
             }
             return ids;
+        } else if (pgVector instanceof long[]) {
+            return (long[]) pgVector;
         } else if (pgVector instanceof Long[]) {
-            return (Long[]) pgVector;
+            Long[] objVector = (Long[]) pgVector;
+            long[] result = new long[objVector.length];
+            for (int i = 0; i < objVector.length; i++) {
+                result[i] = objVector[i];
+            }
+            return result;
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
@@ -394,4 +401,5 @@ public class PostgreUtils {
         }
         dbStat.setObject(index, arrayString.toString(), Types.OTHER);
     }
+
 }
