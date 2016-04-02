@@ -40,7 +40,7 @@ public class MySQLToolExport implements IExternalTool
             if (object instanceof MySQLCatalog) {
                 ToolWizardDialog dialog = new ToolWizardDialog(
                     window,
-                    new MySQLDatabaseExportWizard((MySQLCatalog) object));
+                    new MySQLExportWizard((MySQLCatalog) object));
                 dialog.open();
             }
         }
