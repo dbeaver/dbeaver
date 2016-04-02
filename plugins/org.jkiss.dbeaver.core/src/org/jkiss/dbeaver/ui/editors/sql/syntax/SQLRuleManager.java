@@ -382,7 +382,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                     if (buffer.charAt(0) == namedParameterPrefix && buffer.length() > 1) {
                         boolean validChars = true;
                         for (int i = 1; i < buffer.length(); i++) {
-                            if (!Character.isLetterOrDigit(buffer.charAt(i))) {
+                            if (!Character.isJavaIdentifierPart(buffer.charAt(i))) {
                                 validChars = false;
                                 break;
                             }

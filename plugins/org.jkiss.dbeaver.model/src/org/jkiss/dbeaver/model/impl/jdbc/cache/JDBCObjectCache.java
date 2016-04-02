@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -39,8 +40,18 @@ import java.util.*;
  */
 public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT>
 {
+    public static final int DEFAULT_MAX_CACHE_SIZE = 100000;
+
+    static final Log log = Log.getLog(AbstractObjectCache.class);
+
+    // Maximum number of objects in cache
+    private int maximumCacheSize = DEFAULT_MAX_CACHE_SIZE;
 
     protected JDBCObjectCache() {
+    }
+
+    public void setMaximumCacheSize(int maximumCacheSize) {
+        this.maximumCacheSize = maximumCacheSize;
     }
 
     abstract protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OWNER owner)
@@ -105,6 +116,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                                 tmpObjectList.add(object);
 
                                 monitor.subTask(object.getName());
+                                if (tmpObjectList.size() == maximumCacheSize) {
+                                    log.warn("Maximum cache size exceeded (" + maximumCacheSize + ") in " + this);
+                                    break;
+                                }
                             }
                         } finally {
                             dbResult.close();

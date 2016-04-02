@@ -586,7 +586,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.*,i.indkey::int[] as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description" +
+                "SELECT i.*,i.indkey as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description" +
                 "\nFROM pg_catalog.pg_index i" +
                 "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +
                 "\nINNER JOIN pg_catalog.pg_class tc ON tc.oid=i.indrelid" +
@@ -627,17 +627,16 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             PostgreTableBase parent, PostgreIndex object, JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            Object keyNumbers = JDBCUtils.safeGetArray(dbResult, "keys");
+            long[] keyNumbers = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "keys"));
             if (keyNumbers == null) {
                 return null;
             }
             List<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
-            int colCount = Array.getLength(keyNumbers);
-            PostgreIndexColumn[] result = new PostgreIndexColumn[colCount];
-            for (int i = 0; i < colCount; i++) {
-                Number colNumber = (Number) Array.get(keyNumbers, i);
-                final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, colNumber.intValue());
+            PostgreIndexColumn[] result = new PostgreIndexColumn[keyNumbers.length];
+            for (int i = 0; i < keyNumbers.length; i++) {
+                long colNumber = keyNumbers[i];
+                final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, (int) colNumber);
                 if (attr == null) {
                     log.warn("Bad index attribute index: " + colNumber);
                     continue;

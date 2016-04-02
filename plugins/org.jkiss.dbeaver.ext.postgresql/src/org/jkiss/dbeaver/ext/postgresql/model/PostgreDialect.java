@@ -49,4 +49,10 @@ class PostgreDialect extends JDBCSQLDialect {
     public String getBlockToggleString() {
         return "$$";
     }
+
+    @Override
+    public boolean supportsCommentQuery() {
+        return true;
+    }
+
 }

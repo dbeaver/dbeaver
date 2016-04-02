@@ -323,6 +323,8 @@ public class SQLConstants {
         "SCHEMA",
         "ROLE",
         "RESTRICT",
+        "ASC",
+        "DESC"
     };
 
     public static final String[] SQL2003_FUNCTIONS = {

@@ -1099,7 +1099,7 @@ public class ResultSetViewer extends Viewer
                     dataSource.getContainer().getApplication().getValueHandlerRegistry().findTransformers(
                         dataSource, attr, null);
                 if (!CommonUtils.isEmpty(transformers)) {
-                    MenuManager transformersMenu = new MenuManager("Customize");
+                    MenuManager transformersMenu = new MenuManager("Transformers");
                     transformersMenu.setRemoveAllWhenShown(true);
                     transformersMenu.addMenuListener(new IMenuListener() {
                         @Override
@@ -1109,7 +1109,7 @@ public class ResultSetViewer extends Viewer
                     });
                     viewMenu.add(transformersMenu);
                 } else {
-                    final Action customizeAction = new Action("Customize") {};
+                    final Action customizeAction = new Action("Transformers") {};
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
@@ -1166,14 +1166,14 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillAttributeTransformersMenu(IMenuManager manager, DBDAttributeBinding attr) {
+    private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
             return;
         }
-        DBPDataSource dataSource = dataContainer.getDataSource();
+        final DBPDataSource dataSource = dataContainer.getDataSource();
         final DBDRegistry registry = dataSource.getContainer().getApplication().getValueHandlerRegistry();
-        final DBVTransformSettings transformSettings = DBVUtils.getTransformSettings(attr);
+        final DBVTransformSettings transformSettings = DBVUtils.getTransformSettings(attr, false);
         DBDAttributeTransformerDescriptor customTransformer = null;
         if (transformSettings != null && transformSettings.getCustomTransformer() != null) {
             customTransformer = registry.getTransformer(transformSettings.getCustomTransformer());
@@ -1203,11 +1203,27 @@ public class ResultSetViewer extends Viewer
                 manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
                     @Override
                     public void run() {
+                        final DBVTransformSettings ts = DBVUtils.getTransformSettings(attr, true);
+                        if (ts == null) {
+                            log.debug("Can't get transformer settings for '" + DBUtils.getObjectFullName(attr) + "'");
+                            return;
+                        }
+                        final boolean include = !isChecked();
+                        System.out.println("Include " + attr.getName() + " transformer " + descriptor.getName() + "=" + include);
+                        ts.enableTransformer(descriptor, include);
 
+                        dataSource.getContainer().persistConfiguration();
                     }
 
                     @Override
                     public boolean isChecked() {
+                        if (transformSettings != null) {
+                            if (descriptor.isApplicableByDefault()) {
+                                return !transformSettings.isExcluded(descriptor.getId());
+                            } else {
+                                return transformSettings.isIncluded(descriptor.getId());
+                            }
+                        }
                         return descriptor.isApplicableByDefault();
                     }
                 });
@@ -2296,7 +2312,9 @@ public class ResultSetViewer extends Viewer
         @NotNull
         protected DBVEntity getVirtualEntity(DBDAttributeBinding binding) {
             final DBSEntity entity = getModel().getSingleSource();
-            assert entity != null;
+            if (entity == null) {
+                throw new IllegalStateException("No virtual entity for multi-source query");
+            }
             final DBVEntity vEntity = DBVUtils.findVirtualEntity(entity, true);
             assert vEntity != null;
             return vEntity;

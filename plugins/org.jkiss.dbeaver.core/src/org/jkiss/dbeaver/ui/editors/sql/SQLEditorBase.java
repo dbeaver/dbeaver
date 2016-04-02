@@ -694,7 +694,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 return null;
             }
             if (!hasValuableTokens && !token.isWhitespace() && !(token instanceof SQLSetDelimiterToken)) {
-                hasValuableTokens = true;
+                if (token instanceof SQLCommentToken) {
+                    hasValuableTokens = dialect.supportsCommentQuery();
+                } else {
+                    hasValuableTokens = true;
+                }
             }
         }
     }
