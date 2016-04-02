@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -70,6 +71,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private boolean databaseSwitchInProgress;
     private final List<String> searchPath = new ArrayList<>();
     private String activeUser;
+    private Version serverVersion;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -148,6 +150,23 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return databaseCache.getCachedObject(name);
     }
 
+
+    public Version getServerVersion() {
+        return serverVersion;
+    }
+
+    public boolean isVersionAtLeast(int major, int minor) {
+        if (serverVersion == null) {
+            return false;
+        }
+        if (serverVersion.getMajor() < major) {
+            return false;
+        } else if (serverVersion.getMajor() == major && serverVersion.getMinor() < minor) {
+            return false;
+        }
+        return true;
+    }
+
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -156,6 +175,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load meta info")) {
+            try {
+                String serverVersionStr = JDBCUtils.queryString(session, "SHOW server_version");
+                if (!CommonUtils.isEmpty(serverVersionStr)) {
+                    this.serverVersion = new Version(serverVersionStr);
+                }
+            } catch (SQLException e) {
+                log.debug(e);
+            }
+
             try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_database(), current_schema(),session_user")) {
                 try (JDBCResultSet rs = stat.executeQuery()) {
                     rs.nextRow();
@@ -163,7 +191,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     activeSchemaName = JDBCUtils.safeGetString(rs, 2);
                     activeUser = JDBCUtils.safeGetString(rs, 3);
                 }
+            } catch (Exception e) {
+                log.debug(e);
             }
+
             String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
             if (searchPathStr != null) {
                 for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
