@@ -36,9 +36,13 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -46,6 +50,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private Table catalogTable;
     private Table tablesTable;
+    private Map<MySQLCatalog, List<MySQLTable>> checkedObjects = new HashMap<>();
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -68,9 +73,10 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         Group objectsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL, 0);
         objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        //SashForm sash = new CustomSashForm()
+        SashForm sash = new CustomSashForm(objectsGroup, SWT.VERTICAL);
+        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        catalogTable = new Table(objectsGroup, SWT.BORDER | SWT.CHECK);
+        catalogTable = new Table(sash, SWT.BORDER | SWT.CHECK);
         catalogTable.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
                 if (event.detail == SWT.CHECK) {
@@ -88,7 +94,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         gd.heightHint = 50;
         catalogTable.setLayoutData(gd);
 
-        tablesTable = new Table(objectsGroup, SWT.BORDER | SWT.CHECK);
+        tablesTable = new Table(sash, SWT.BORDER | SWT.CHECK);
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
         tablesTable.setLayoutData(gd);
@@ -102,6 +108,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             item.setData(catalog);
             if (catalog == activeCatalog) {
                 item.setChecked(true);
+                catalogTable.select(catalogTable.indexOf(item));
             }
         }
         loadTables(activeCatalog);
