@@ -41,9 +41,6 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addSQLKeyword("STRUCTURE");
         addSQLKeyword("COMPUTE");
         addSQLKeyword("STATISTICS");
-        addSQLKeyword("NULLS");
-        addSQLKeyword("FIRST");
-        addSQLKeyword("LAST");
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
