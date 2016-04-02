@@ -774,45 +774,7 @@ public class UIUtils {
     @NotNull
     public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
-        final SashForm sash = new SashForm(parent, style);
-        /*
-         * //sash.setSashWidth(10); final IWorkbenchWindow workbenchWindow = workbenchPart.getSite().getWorkbenchWindow();
-         * //sash.setBackground(sashActiveBackground);
-         * 
-         * final IPartListener partListener = new IPartListener() {
-         * 
-         * @Override public void partBroughtToTop(IWorkbenchPart part) { }
-         * 
-         * @Override public void partOpened(IWorkbenchPart part) { }
-         * 
-         * @Override public void partClosed(IWorkbenchPart part) { }
-         * 
-         * @Override
-         * 
-         * @SuppressWarnings("restriction") public void partActivated(IWorkbenchPart part) { if (part == workbenchPart) { Color
-         * sashActiveBackground = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(
-         * IWorkbenchThemeConstants.ACTIVE_TAB_BG_END); if (sashActiveBackground == null) { sashActiveBackground =
-         * Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW); } sash.setBackground(sashActiveBackground); } }
-         * 
-         * @Override public void partDeactivated(IWorkbenchPart part) { if (part == workbenchPart) {
-         * sash.setBackground(Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND)); } } };
-         * 
-         * final IPageListener pageListener = workbenchWindow.getActivePage() != null ? null : new IPageListener() {
-         * 
-         * @Override public void pageActivated(IWorkbenchPage page) { }
-         * 
-         * @Override public void pageOpened(IWorkbenchPage page) { page.addPartListener(partListener); }
-         * 
-         * @Override public void pageClosed(IWorkbenchPage page) { page.removePartListener(partListener); } }; if (pageListener !=
-         * null) { // No active page yet, wait for it in listener workbenchWindow.addPageListener(pageListener); } else { // Add
-         * listener to active page workbenchWindow.getActivePage().addPartListener(partListener); }
-         * 
-         * sash.addDisposeListener(new DisposeListener() {
-         * 
-         * @Override public void widgetDisposed(DisposeEvent e) { if (pageListener != null) {
-         * workbenchWindow.removePageListener(pageListener); } if (workbenchWindow.getActivePage() != null) {
-         * workbenchWindow.getActivePage().removePartListener(partListener); } } });
-         */
+        final CustomSashForm sash = new CustomSashForm(parent, style);
 
         return sash;
     }

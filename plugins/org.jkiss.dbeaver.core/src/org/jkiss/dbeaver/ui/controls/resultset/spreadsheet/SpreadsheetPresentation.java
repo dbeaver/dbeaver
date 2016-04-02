@@ -169,7 +169,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.foregroundNull = parent.getShell().getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
         {
-            resultsSash = new SashForm(parent, SWT.HORIZONTAL | SWT.SMOOTH);
+            resultsSash = UIUtils.createPartDivider(controller.getSite().getPart(),
+                parent, SWT.HORIZONTAL | SWT.SMOOTH);
             resultsSash.setBackgroundMode(SWT.INHERIT_FORCE);
             resultsSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             resultsSash.setSashWidth(5);

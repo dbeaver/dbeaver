@@ -413,18 +413,6 @@ public class SQLEditor extends SQLEditorBase implements
 
         getSite().setSelectionProvider(new DynamicSelectionProvider());
 
-/*
-        final StyledText textWidget = getTextViewer().getTextWidget();
-
-        // Execute commands now always enabled. Easy and dirty.
-        textWidget.addCaretListener(new CaretListener() {
-            @Override
-            public void caretMoved(CaretEvent event) {
-                ((SQLEditorSourceViewer)getSourceViewer()).refreshTextSelection();
-            }
-        });
-*/
-
         createResultTabs();
 
         // Update controls
