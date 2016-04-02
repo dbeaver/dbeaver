@@ -37,10 +37,10 @@ import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 
 
-public abstract class MySQLDatabaseWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
+public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard> extends AbstractToolWizardPage<WIZARD>
 {
 
-    public MySQLDatabaseWizardPageSettings(WIZARD wizard, String title)
+    public MySQLWizardPageSettings(WIZARD wizard, String title)
     {
         super(wizard, title);
     }

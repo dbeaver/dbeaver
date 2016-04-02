@@ -25,14 +25,14 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 
 
-class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSettings<MySQLDatabaseExportWizard>
+class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard>
 {
 
     private Text outputFileText;
@@ -43,8 +43,9 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
     private Button extendedInsertsCheck;
     private Button dumpEventsCheck;
     private Button commentsCheck;
+    private Button removeDefiner;
 
-    protected MySQLDatabaseExportWizardPageSettings(MySQLDatabaseExportWizard wizard)
+    protected MySQLExportWizardPageSettings(MySQLExportWizard wizard)
     {
         super(wizard, MySQLMessages.tools_db_export_wizard_page_settings_page_name);
         setTitle(MySQLMessages.tools_db_export_wizard_page_settings_page_name);
@@ -77,7 +78,7 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
             }
         };
 
-        Group settingsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_settings, 2, GridData.FILL_HORIZONTAL, 0);
+        Group settingsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
         noCreateStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_no_create, wizard.noCreateStatements);
         noCreateStatementsCheck.addSelectionListener(changeListener);
         addDropStatementsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_add_drop, wizard.addDropStatements);
@@ -90,6 +91,8 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         dumpEventsCheck.addSelectionListener(changeListener);
         commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
         commentsCheck.addSelectionListener(changeListener);
+        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.comments);
+        removeDefiner.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 3, GridData.FILL_HORIZONTAL, 0);
         outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, null);
@@ -126,9 +129,9 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         String fileName = outputFileText.getText();
         wizard.setOutputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         switch (methodCombo.getSelectionIndex()) {
-            case 0: wizard.method = MySQLDatabaseExportWizard.DumpMethod.ONLINE; break;
-            case 1: wizard.method = MySQLDatabaseExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
-            default: wizard.method = MySQLDatabaseExportWizard.DumpMethod.NORMAL; break;
+            case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;
+            case 1: wizard.method = MySQLExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
+            default: wizard.method = MySQLExportWizard.DumpMethod.NORMAL; break;
         }
         wizard.noCreateStatements = noCreateStatementsCheck.getSelection();
         wizard.addDropStatements = addDropStatementsCheck.getSelection();
@@ -136,6 +139,7 @@ class MySQLDatabaseExportWizardPageSettings extends MySQLDatabaseWizardPageSetti
         wizard.extendedInserts = extendedInsertsCheck.getSelection();
         wizard.dumpEvents = dumpEventsCheck.getSelection();
         wizard.comments = commentsCheck.getSelection();
+        wizard.removeDefiner = removeDefiner.getSelection();
 
         getContainer().updateButtons();
     }

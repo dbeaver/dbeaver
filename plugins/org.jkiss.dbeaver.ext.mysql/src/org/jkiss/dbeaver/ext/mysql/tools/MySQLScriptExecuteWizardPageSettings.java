@@ -35,7 +35,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 
 
-public class MySQLScriptExecuteWizardPageSettings extends MySQLDatabaseWizardPageSettings<MySQLScriptExecuteWizard>
+public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSettings<MySQLScriptExecuteWizard>
 {
     private Text inputFileText;
     private Combo logLevelCombo;

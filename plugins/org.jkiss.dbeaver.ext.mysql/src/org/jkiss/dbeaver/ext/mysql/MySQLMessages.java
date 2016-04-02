@@ -86,6 +86,7 @@ public class MySQLMessages extends NLS {
 	public static String tools_db_export_wizard_monitor_export_db;
 	public static String tools_db_export_wizard_page_settings_checkbox_add_drop;
 	public static String tools_db_export_wizard_page_settings_checkbox_addnl_comments;
+	public static String tools_db_export_wizard_page_settings_checkbox_remove_definer;
 	public static String tools_db_export_wizard_page_settings_checkbox_disable_keys;
 	public static String tools_db_export_wizard_page_settings_checkbox_dump_events;
 	public static String tools_db_export_wizard_page_settings_checkbox_ext_inserts;
@@ -95,6 +96,7 @@ public class MySQLMessages extends NLS {
 	public static String tools_db_export_wizard_page_settings_combo_item_online_backup;
 	public static String tools_db_export_wizard_page_settings_file_selector_title;
 	public static String tools_db_export_wizard_page_settings_group_exe_method;
+	public static String tools_db_export_wizard_page_settings_group_objects;
 	public static String tools_db_export_wizard_page_settings_group_output;
 	public static String tools_db_export_wizard_page_settings_group_settings;
 	public static String tools_db_export_wizard_page_settings_label_out_text;

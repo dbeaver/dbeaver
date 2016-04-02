@@ -66,7 +66,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         this.context = context;
         this.container = container;
 
-        setTitle("Goto Meta Object in '" + context.getDataSource().getContainer().getName() + "'");
+        setTitle("Goto Database Object in '" + context.getDataSource().getContainer().getName() + "'");
         setListLabelProvider(new ObjectLabelProvider());
         setDetailsLabelProvider(new DetailsLabelProvider());
     }
