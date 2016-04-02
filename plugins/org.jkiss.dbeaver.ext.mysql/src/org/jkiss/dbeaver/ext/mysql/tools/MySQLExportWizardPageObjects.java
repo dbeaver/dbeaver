@@ -18,24 +18,34 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Tree;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.util.Collection;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
 {
 
-    private Tree catalogTree;
-    private Tree tableTree;
+    private Table catalogTable;
+    private Table tablesTable;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -55,13 +65,78 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        Group objectsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_objects, 3, GridData.FILL_HORIZONTAL, 0);
-        final MySQLDataSource dataSource = wizard.getDatabaseObject().getDataSource();
-        final DBNDatabaseNode dsNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(dataSource.getContainer());
-        DatabaseNavigatorTree tree = new DatabaseNavigatorTree(objectsGroup, dsNode, SWT.BORDER | SWT.CHECK, false);
-        tree.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Group objectsGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_objects, 1, GridData.FILL_HORIZONTAL, 0);
+        objectsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        //SashForm sash = new CustomSashForm()
+
+        catalogTable = new Table(objectsGroup, SWT.BORDER | SWT.CHECK);
+        catalogTable.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event) {
+                if (event.detail == SWT.CHECK) {
+                    catalogTable.select(catalogTable.indexOf((TableItem) event.item));
+                }
+            }
+        });
+        catalogTable.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                loadTables((MySQLCatalog) e.item.getData());
+            }
+        });
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 50;
+        catalogTable.setLayoutData(gd);
+
+        tablesTable = new Table(objectsGroup, SWT.BORDER | SWT.CHECK);
+        gd = new GridData(GridData.FILL_BOTH);
+        gd.heightHint = 50;
+        tablesTable.setLayoutData(gd);
+
+        final MySQLCatalog activeCatalog = wizard.getDatabaseObject();
+        final MySQLDataSource dataSource = activeCatalog.getDataSource();
+        for (MySQLCatalog catalog : dataSource.getCatalogs()) {
+            TableItem item = new TableItem(catalogTable, SWT.NONE);
+            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+            item.setText(0, catalog.getName());
+            item.setData(catalog);
+            if (catalog == activeCatalog) {
+                item.setChecked(true);
+            }
+        }
+        loadTables(activeCatalog);
 
         setControl(composite);
+    }
+
+    private void loadTables(final MySQLCatalog catalog) {
+        tablesTable.removeAll();
+        new AbstractJob("Load '" + catalog.getName() + "' tables") {
+            {
+                setUser(true);
+            }
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                try {
+                    final Collection<MySQLTable> tables = catalog.getTables(monitor);
+                    UIUtils.runInUI(getShell(), new Runnable() {
+                        @Override
+                        public void run() {
+                            for (MySQLTable table : tables) {
+                                TableItem item = new TableItem(tablesTable, SWT.NONE);
+                                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
+                                item.setText(0, table.getName());
+                                item.setData(table);
+                                item.setChecked(true);
+                            }
+                        }
+                    });
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     private void updateState()
