@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
@@ -175,5 +176,19 @@ public class DBVEntityAttribute implements DBSEntityAttribute
 
     public void setTransformSettings(DBVTransformSettings transformSettings) {
         this.transformSettings = transformSettings;
+    }
+
+    public boolean hasValuableData() {
+        if (!CommonUtils.isEmpty(defaultValue) || !CommonUtils.isEmpty(description)) {
+            return true;
+        }
+        if (!children.isEmpty()) {
+            for (DBVEntityAttribute child : children) {
+                if (child.hasValuableData()) {
+                    return true;
+                }
+            }
+        }
+        return transformSettings != null && transformSettings.hasValuableData();
     }
 }

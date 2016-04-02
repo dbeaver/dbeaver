@@ -300,6 +300,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsCommentQuery() {
+        return false;
+    }
+
+    @Override
     public Pair<String, String> getMultiLineComments()
     {
         return multiLineComments;

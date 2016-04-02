@@ -43,4 +43,9 @@ class MySQLDialect extends JDBCSQLDialect {
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;
     }
+
+    @Override
+    public boolean supportsCommentQuery() {
+        return true;
+    }
 }
