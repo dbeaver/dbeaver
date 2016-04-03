@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,7 +51,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private Table catalogTable;
     private Table tablesTable;
-    private Map<MySQLCatalog, List<MySQLTable>> checkedObjects = new HashMap<>();
+    private Map<MySQLCatalog, List<MySQLTableBase>> checkedObjects = new HashMap<>();
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -98,6 +99,8 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
         tablesTable.setLayoutData(gd);
+
+        UIUtils.createCheckbox(objectsGroup, "Show views", false);
 
         final MySQLCatalog activeCatalog = wizard.getDatabaseObject();
         final MySQLDataSource dataSource = activeCatalog.getDataSource();
