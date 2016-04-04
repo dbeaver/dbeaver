@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
 import java.io.*;
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 
 class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExportWizard {
@@ -58,6 +60,7 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
     boolean dumpEvents;
     boolean comments;
     public boolean removeDefiner;
+    public List<MySQLDatabaseExportInfo> objects = new ArrayList<>();
 
     private MySQLExportWizardPageObjects objectsPage;
     private MySQLExportWizardPageSettings settingsPage;
@@ -132,6 +135,11 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
         if (comments) cmd.add("--comments"); //$NON-NLS-1$
     }
 
+    @Override
+    public boolean performFinish() {
+        objectsPage.saveState();
+        return super.performFinish();
+    }
 
     @Override
     public MySQLServerHome findServerHome(String clientHomeId)

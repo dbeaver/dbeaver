@@ -201,6 +201,17 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }.schedule();
     }
 
+    public void saveState() {
+        wizard.objects.clear();
+        for (TableItem item : catalogTable.getItems()) {
+            if (item.getChecked()) {
+                MySQLCatalog catalog = (MySQLCatalog) item.getData();
+                MySQLDatabaseExportInfo info = new MySQLDatabaseExportInfo(catalog, checkedObjects.get(catalog));
+                wizard.objects.add(info);
+            }
+        }
+    }
+
     private void updateState()
     {
         //wizard.removeDefiner = removeDefiner.getSelection();
