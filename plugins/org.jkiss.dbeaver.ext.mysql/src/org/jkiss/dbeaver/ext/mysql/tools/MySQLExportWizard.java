@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.tools;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
@@ -98,7 +99,23 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
         addPage(logPage);
     }
 
-	@Override
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        if (page == settingsPage) {
+            return null;
+        }
+        return super.getNextPage(page);
+    }
+
+    @Override
+    public IWizardPage getPreviousPage(IWizardPage page) {
+        if (page == logPage) {
+            return null;
+        }
+        return super.getPreviousPage(page);
+    }
+
+    @Override
 	public void onSuccess() {
         UIUtils.showMessageBox(
                 getShell(),

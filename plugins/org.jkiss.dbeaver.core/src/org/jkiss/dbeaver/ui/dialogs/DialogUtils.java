@@ -50,7 +50,7 @@ public class DialogUtils {
 
     static final Log log = Log.getLog(DialogUtils.class);
 
-    public static String curDialogFolder = System.getProperty("user.dir");
+    public static String curDialogFolder = System.getProperty("user.home");
 
     public static File selectFileForSave(Shell parentShell, String valueName)
     {
