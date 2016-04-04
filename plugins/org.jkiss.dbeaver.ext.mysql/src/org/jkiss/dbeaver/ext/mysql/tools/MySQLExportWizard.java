@@ -80,7 +80,9 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
 
     public void setOutputFile(File outputFile)
     {
-        DialogUtils.setCurDialogFolder(outputFile.getParentFile().getAbsolutePath());
+        if (outputFile != null && outputFile.getParentFile() != null) {
+            DialogUtils.setCurDialogFolder(outputFile.getParentFile().getAbsolutePath());
+        }
         this.outputFile = outputFile;
     }
 
