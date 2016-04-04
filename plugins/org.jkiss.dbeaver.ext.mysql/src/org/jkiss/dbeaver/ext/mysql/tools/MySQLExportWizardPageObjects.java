@@ -30,9 +30,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -40,10 +40,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 
 class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWizard>
@@ -51,7 +49,10 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private Table catalogTable;
     private Table tablesTable;
-    private Map<MySQLCatalog, List<MySQLTableBase>> checkedObjects = new HashMap<>();
+    private Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
+    private boolean exportViews;
+
+    private MySQLCatalog curCatalog;
 
     protected MySQLExportWizardPageObjects(MySQLExportWizard wizard)
     {
@@ -80,15 +81,13 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         catalogTable = new Table(sash, SWT.BORDER | SWT.CHECK);
         catalogTable.addListener(SWT.Selection, new Listener() {
             public void handleEvent(Event event) {
+                TableItem item = (TableItem) event.item;
+                MySQLCatalog catalog = (MySQLCatalog) item.getData();
                 if (event.detail == SWT.CHECK) {
-                    catalogTable.select(catalogTable.indexOf((TableItem) event.item));
+                    catalogTable.select(catalogTable.indexOf(item));
+                    checkedObjects.remove(catalog);
                 }
-            }
-        });
-        catalogTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                loadTables((MySQLCatalog) e.item.getData());
+                loadTables(catalog);
             }
         });
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -99,8 +98,22 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 50;
         tablesTable.setLayoutData(gd);
+        tablesTable.addListener(SWT.Selection, new Listener() {
+            public void handleEvent(Event event) {
+                if (event.detail == SWT.CHECK) {
+                    updateCheckedTables();
+                }
+            }
+        });
 
-        UIUtils.createCheckbox(objectsGroup, "Show views", false);
+        final Button exportViewsCheck = UIUtils.createCheckbox(objectsGroup, "Export views", false);
+        exportViewsCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                exportViews = exportViewsCheck.getSelection();
+                loadTables(null);
+            }
+        });
 
         final MySQLCatalog activeCatalog = wizard.getDatabaseObject();
         final MySQLDataSource dataSource = activeCatalog.getDataSource();
@@ -119,25 +132,64 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         setControl(composite);
     }
 
+    private void updateCheckedTables() {
+        Set<MySQLTableBase> checkedTables = new HashSet<>();
+        TableItem[] tableItems = tablesTable.getItems();
+        for (TableItem item : tableItems) {
+            if (item.getChecked()) {
+                checkedTables.add((MySQLTableBase) item.getData());
+            }
+        }
+        TableItem catalogItem = catalogTable.getItem(catalogTable.getSelectionIndex());
+        catalogItem.setChecked(!checkedTables.isEmpty());
+        if (checkedTables.isEmpty() || checkedTables.size() == tableItems.length) {
+            checkedObjects.remove(curCatalog);
+        } else {
+            checkedObjects.put(curCatalog, checkedTables);
+        }
+    }
+
+    private boolean isChecked(MySQLCatalog catalog) {
+        for (TableItem item : catalogTable.getItems()) {
+            if (item.getData() == catalog) {
+                return item.getChecked();
+            }
+        }
+        return false;
+    }
+
     private void loadTables(final MySQLCatalog catalog) {
-        tablesTable.removeAll();
-        new AbstractJob("Load '" + catalog.getName() + "' tables") {
+        if (catalog != null) {
+            curCatalog = catalog;
+        }
+        if (curCatalog == null) {
+            return;
+        }
+        final boolean isCatalogChecked = isChecked(curCatalog);
+        final Set<MySQLTableBase> checkedObjects = this.checkedObjects.get(curCatalog);
+        new AbstractJob("Load '" + curCatalog.getName() + "' tables") {
             {
                 setUser(true);
             }
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try {
-                    final Collection<MySQLTable> tables = catalog.getTables(monitor);
+                    final List<MySQLTableBase> objects = new ArrayList<>();
+                    objects.addAll(curCatalog.getTables(monitor));
+                    if (exportViews) {
+                        objects.addAll(curCatalog.getViews(monitor));
+                    }
+                    Collections.sort(objects, DBUtils.nameComparator());
                     UIUtils.runInUI(getShell(), new Runnable() {
                         @Override
                         public void run() {
-                            for (MySQLTable table : tables) {
+                            tablesTable.removeAll();
+                            for (MySQLTableBase table : objects) {
                                 TableItem item = new TableItem(tablesTable, SWT.NONE);
-                                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
+                                item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
                                 item.setText(0, table.getName());
                                 item.setData(table);
-                                item.setChecked(true);
+                                item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
                             }
                         }
                     });
