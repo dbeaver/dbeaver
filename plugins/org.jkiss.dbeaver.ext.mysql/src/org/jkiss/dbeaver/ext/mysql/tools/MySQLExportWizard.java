@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
@@ -154,6 +155,14 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
 
     @Override
     public boolean performFinish() {
+        final File dir = outputFile.getParentFile();
+        if (!dir.exists()) {
+            if (!dir.mkdirs()) {
+                logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
+                getContainer().updateMessage();
+                return false;
+            }
+        }
         objectsPage.saveState();
         return super.performFinish();
     }
