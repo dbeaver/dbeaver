@@ -631,8 +631,9 @@ public class ResultSetViewer extends Viewer
 
         // Add presentation switcher
         presentationSwitchCombo = new PresentationSwitchCombo();
-        toolBarManager.add(presentationSwitchCombo);
-        toolBarManager.add(new Separator());
+        presentationSwitchCombo.createControl(statusBar);
+        //toolBarManager.add(presentationSwitchCombo);
+        //toolBarManager.add(new Separator());
 
         // handle own commands
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
@@ -2479,9 +2480,12 @@ public class ResultSetViewer extends Viewer
         }
 
         protected Control  createControl(Composite parent) {
+            final int textWidth = parent.getFont().getFontData()[0].getHeight() * 10;
             combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             combo.add(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN), "", null, null);
-            toolitem.setWidth(100);
+            if (toolitem != null) {
+                toolitem.setWidth(textWidth);
+            }
             combo.addSelectionListener(this);
             combo.setToolTipText(ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_SWITCH_PRESENTATION, getSite(), false));
             return combo;
