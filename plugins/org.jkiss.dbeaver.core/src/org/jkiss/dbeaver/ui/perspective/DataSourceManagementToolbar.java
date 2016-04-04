@@ -732,14 +732,17 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         gl.marginHeight = 0;
         comboGroup.setLayout(gl);
 
+        final int fontHeight = parent.getFont().getFontData()[0].getHeight();
+        int comboWidth = fontHeight * 20;
+
         connectionCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         GridData gd = new GridData();
-        gd.widthHint = 160;
-        gd.minimumWidth = 160;
+        gd.widthHint = comboWidth;
+        gd.minimumWidth = comboWidth;
         gd.grabExcessVerticalSpace = true;
         connectionCombo.setLayoutData(gd);
         connectionCombo.setVisibleItemCount(15);
-        connectionCombo.setWidthHint(160);
+        connectionCombo.setWidthHint(comboWidth);
         connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip);
         connectionCombo.add(DBeaverIcons.getImage(DBIcon.TREE_DATABASE), EMPTY_SELECTION_TEXT, null, null);
         connectionCombo.select(0);
@@ -758,14 +761,15 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
         });
 
+        comboWidth = fontHeight * 16;
         databaseCombo = new CImageCombo(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER);
         gd = new GridData();
-        gd.widthHint = 140;
-        gd.minimumWidth = 140;
+        gd.widthHint = comboWidth;
+        gd.minimumWidth = comboWidth;
         gd.grabExcessVerticalSpace = true;
         databaseCombo.setLayoutData(gd);
         databaseCombo.setVisibleItemCount(15);
-        databaseCombo.setWidthHint(140);
+        databaseCombo.setWidthHint(comboWidth);
         databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
         databaseCombo.add(DBeaverIcons.getImage(DBIcon.TREE_DATABASE), EMPTY_SELECTION_TEXT, null, null);
         databaseCombo.select(0);
@@ -786,7 +790,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         resultSetSize = new Text(comboGroup, SWT.BORDER);
         resultSetSize.setTextLimit(10);
         gd = new GridData();
-        gd.widthHint = 30;
+        gd.widthHint = fontHeight * 4;
         gd.grabExcessVerticalSpace = true;
         resultSetSize.setLayoutData(gd);
 
