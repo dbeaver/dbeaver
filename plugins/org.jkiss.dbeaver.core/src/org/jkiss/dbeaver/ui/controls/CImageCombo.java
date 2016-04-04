@@ -935,7 +935,7 @@ public class CImageCombo extends Composite {
         // create shell and list
         this.popup = new Shell(getShell(), SWT.RESIZE | SWT.ON_TOP);
         int style = getStyle();
-        int listStyle = SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL;
+        int listStyle = SWT.SINGLE | SWT.V_SCROLL | SWT.H_SCROLL | SWT.FULL_SELECTION;
         if ((style & SWT.FLAT) != 0) {
             listStyle |= SWT.FLAT;
         }
