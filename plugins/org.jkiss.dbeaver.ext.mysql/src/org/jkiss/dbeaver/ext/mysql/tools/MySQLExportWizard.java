@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -43,6 +44,8 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExportWizard {
 
@@ -193,7 +196,11 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
         logPage.startLogReader(
             processBuilder,
             process.getErrorStream());
-        new DumpCopierJob(monitor, process.getInputStream()).start();
+        boolean isFiltering = removeDefiner;
+        Thread job = isFiltering ?
+            new DumpFilterJob(monitor, process.getInputStream()) :
+            new DumpCopierJob(monitor, process.getInputStream());
+        job.start();
     }
 
     class DumpCopierJob extends Thread {
@@ -242,6 +249,8 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
         }
     }
 
+    private static Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_]*`", Pattern.CASE_INSENSITIVE);
+
     class DumpFilterJob extends Thread {
         private DBRProgressMonitor monitor;
         private InputStream input;
@@ -268,6 +277,12 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
                         String line = reader.readLine();
                         if (line == null) {
                             break;
+                        }
+                        if (removeDefiner) {
+                            final Matcher matcher = DEFINER_PATTER.matcher(line);
+                            if (matcher.find()) {
+                                line = matcher.replaceFirst("");
+                            }
                         }
                         long currentTime = System.currentTimeMillis();
                         if (currentTime - prevStatusUpdateTime > 300) {
