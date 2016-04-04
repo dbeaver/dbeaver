@@ -324,7 +324,10 @@ public class SQLConstants {
         "ROLE",
         "RESTRICT",
         "ASC",
-        "DESC"
+        "DESC",
+
+        // Not actually standard but widely used
+        "LIMIT"
     };
 
     public static final String[] SQL2003_FUNCTIONS = {
