@@ -18,7 +18,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tools;
 
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -31,23 +30,23 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
 import java.io.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExportWizard {
+class MySQLExportWizard extends AbstractToolWizard<DBSObject> implements IExportWizard {
 
 
     public enum DumpMethod {
@@ -70,10 +69,16 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
     private MySQLExportWizardPageObjects objectsPage;
     private MySQLExportWizardPageSettings settingsPage;
 
-    public MySQLExportWizard(MySQLCatalog catalog) {
-        super(catalog, MySQLMessages.tools_db_export_wizard_task_name);
+    public MySQLExportWizard(Collection<DBSObject> objects) {
+        super(objects, MySQLMessages.tools_db_export_wizard_task_name);
         this.method = DumpMethod.NORMAL;
-        this.outputFile = new File(DialogUtils.getCurDialogFolder(), catalog.getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql"); //$NON-NLS-1$ //$NON-NLS-2$
+        String fileName;
+        if (objects.size() == 1) {
+            fileName = objects.iterator().next().getName();
+        } else {
+            fileName = "export";
+        }
+        this.outputFile = new File(DialogUtils.getCurDialogFolder(), fileName + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
     public File getOutputFile()
@@ -124,10 +129,10 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
     @Override
 	public void onSuccess() {
         UIUtils.showMessageBox(
-                getShell(),
-                MySQLMessages.tools_db_export_wizard_title,
-                NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getDatabaseObject().getName()),
-                SWT.ICON_INFORMATION);
+            getShell(),
+            MySQLMessages.tools_db_export_wizard_title,
+            NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()),
+            SWT.ICON_INFORMATION);
         UIUtils.launchProgram(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
@@ -181,7 +186,9 @@ class MySQLExportWizard extends AbstractToolWizard<MySQLCatalog> implements IExp
     @Override
     protected List<String> getCommandLine() throws IOException
     {
-        return MySQLToolScript.getMySQLToolCommandLine(this);
+        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this);
+        cmd.add(getObjectsName());
+        return cmd;
     }
 
     @Override
