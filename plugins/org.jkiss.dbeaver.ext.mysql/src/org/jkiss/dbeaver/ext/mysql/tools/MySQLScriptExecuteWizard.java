@@ -84,7 +84,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd) throws IOException
+    public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException
     {
         String dumpPath = MySQLUtils.getHomeBinary(getClientHome(), "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
@@ -110,7 +110,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     @Override
     protected List<String> getCommandLine(MySQLCatalog arg) throws IOException
     {
-        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this);
+        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
         cmd.add(DBUtils.getQuotedIdentifier(arg));
         return cmd;
     }

@@ -52,10 +52,11 @@ public class MySQLToolScript implements IExternalTool
         }
     }
 
-    public static List<String> getMySQLToolCommandLine(AbstractToolWizard toolWizard) throws IOException
+    public static <BASE_OBJECT extends DBSObject, PROCESS_ARG> List<String> getMySQLToolCommandLine(
+        AbstractToolWizard<BASE_OBJECT, PROCESS_ARG> toolWizard, PROCESS_ARG arg) throws IOException
     {
         java.util.List<String> cmd = new ArrayList<>();
-        toolWizard.fillProcessParameters(cmd);
+        toolWizard.fillProcessParameters(cmd, arg);
 
         if (toolWizard.isVerbose()) {
             cmd.add("-v");

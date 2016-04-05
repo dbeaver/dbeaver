@@ -55,7 +55,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     @Override
     public boolean isPageComplete()
     {
-        return super.isPageComplete() && wizard.getOutputFile() != null;
+        return super.isPageComplete() && wizard.getOutputFolder() != null;
     }
 
     @Override
@@ -96,8 +96,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 3, GridData.FILL_HORIZONTAL, 0);
         outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, null);
-        if (wizard.getOutputFile() != null) {
-            outputFileText.setText(wizard.getOutputFile().getAbsolutePath());
+        if (wizard.getOutputFolder() != null) {
+            outputFileText.setText(wizard.getOutputFolder().getAbsolutePath());
         }
         outputFileText.addModifyListener(new ModifyListener() {
             @Override
@@ -127,7 +127,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     private void updateState()
     {
         String fileName = outputFileText.getText();
-        wizard.setOutputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         switch (methodCombo.getSelectionIndex()) {
             case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;
             case 1: wizard.method = MySQLExportWizard.DumpMethod.LOCK_ALL_TABLES; break;
