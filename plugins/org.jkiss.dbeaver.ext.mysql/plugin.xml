@@ -294,6 +294,7 @@
                     label="Export database"
                     icon="#export"
                     singleton="false">
+                <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource"/>
                 <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
                 <objectType name="org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase"/>
             </tool>
