@@ -89,6 +89,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                     checkedObjects.remove(catalog);
                 }
                 loadTables(catalog);
+                updateState();
             }
         });
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -103,6 +104,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             public void handleEvent(Event event) {
                 if (event.detail == SWT.CHECK) {
                     updateCheckedTables();
+                    updateState();
                 }
             }
         });
@@ -132,6 +134,8 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                     checkedObjects.put(catalog, tables);
                 }
                 tables.add((MySQLTableBase) object);
+            } else if (object.getDataSource() instanceof MySQLDataSource) {
+                dataSource = (MySQLDataSource) object.getDataSource();
             }
         }
         if (dataSource != null) {
@@ -151,7 +155,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 }
             }
         }
-
+        updateState();
         setControl(composite);
     }
 
@@ -237,9 +241,17 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private void updateState()
     {
-        //wizard.removeDefiner = removeDefiner.getSelection();
-
-        getContainer().updateButtons();
+        boolean complete = false;
+        if (!checkedObjects.isEmpty()) {
+            complete = true;
+        }
+        for (TableItem item : catalogTable.getItems()) {
+            if (item.getChecked()) {
+                complete = true;
+                break;
+            }
+        }
+        setPageComplete(complete);
     }
 
 }
