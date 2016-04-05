@@ -55,7 +55,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     }
 
     @Override
-    public void fillProcessParameters(List<String> cmd) throws IOException
+    public void fillProcessParameters(List<String> cmd, OracleDataSource arg) throws IOException
     {
         String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
         File sqlPlusBinary = new File(getClientHome().getHomePath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
@@ -84,7 +84,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     protected List<String> getCommandLine(OracleDataSource arg) throws IOException
     {
         List<String> cmd = new ArrayList<>();
-        fillProcessParameters(cmd);
+        fillProcessParameters(cmd, arg);
         DBPConnectionConfiguration conInfo = getConnectionInfo();
         String url;
         if ("TNS".equals(conInfo.getProperty(OracleConstants.PROP_CONNECTION_TYPE))) { //$NON-NLS-1$

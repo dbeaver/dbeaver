@@ -73,7 +73,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject,
 	}
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
+    protected void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process)
     {
         logPage.startLogReader(
             processBuilder,

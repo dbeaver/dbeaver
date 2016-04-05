@@ -222,7 +222,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             Process process = processBuilder.start();
 
-            startProcessHandler(monitor, processBuilder, process);
+            startProcessHandler(monitor, arg, processBuilder, process);
             Thread.sleep(100);
 
             for (;;) {
@@ -269,8 +269,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
     abstract protected java.util.List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
 
-    public abstract void fillProcessParameters(List<String> cmd) throws IOException;
+    public abstract void fillProcessParameters(List<String> cmd, PROCESS_ARG arg) throws IOException;
 
-    protected abstract void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process);
+    protected abstract void startProcessHandler(DBRProgressMonitor monitor, PROCESS_ARG arg, ProcessBuilder processBuilder, Process process);
 
 }

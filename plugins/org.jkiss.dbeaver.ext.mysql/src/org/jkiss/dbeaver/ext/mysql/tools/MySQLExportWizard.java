@@ -26,16 +26,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
@@ -61,7 +58,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         NORMAL
     }
 
-    private File outputFile;
+    private File outputFolder;
     DumpMethod method;
     boolean noCreateStatements;
     boolean addDropStatements = true;
@@ -79,26 +76,20 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     public MySQLExportWizard(Collection<DBSObject> objects) {
         super(objects, MySQLMessages.tools_db_export_wizard_task_name);
         this.method = DumpMethod.NORMAL;
-        String fileName;
-        if (objects.size() == 1) {
-            fileName = objects.iterator().next().getName();
-        } else {
-            fileName = "export";
-        }
-        this.outputFile = new File(DialogUtils.getCurDialogFolder(), fileName + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql"); //$NON-NLS-1$ //$NON-NLS-2$
+        this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
-    public File getOutputFile()
+    public File getOutputFolder()
     {
-        return outputFile;
+        return outputFolder;
     }
 
-    public void setOutputFile(File outputFile)
+    public void setOutputFolder(File outputFolder)
     {
-        if (outputFile != null && outputFile.getParentFile() != null) {
-            DialogUtils.setCurDialogFolder(outputFile.getParentFile().getAbsolutePath());
+        if (outputFolder != null && outputFolder.getParentFile() != null) {
+            DialogUtils.setCurDialogFolder(outputFolder.getParentFile().getAbsolutePath());
         }
-        this.outputFile = outputFile;
+        this.outputFolder = outputFolder;
     }
 
     @Override
@@ -128,7 +119,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     @Override
     public IWizardPage getPreviousPage(IWizardPage page) {
         if (page == logPage) {
-            return null;
+            return settingsPage;
         }
         return super.getPreviousPage(page);
     }
@@ -140,11 +131,11 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
             MySQLMessages.tools_db_export_wizard_title,
             NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()),
             SWT.ICON_INFORMATION);
-        UIUtils.launchProgram(outputFile.getAbsoluteFile().getParentFile().getAbsolutePath());
+        UIUtils.launchProgram(outputFolder.getAbsoluteFile().getParentFile().getAbsolutePath());
 	}
 
     @Override
-    public void fillProcessParameters(List<String> cmd) throws IOException
+    public void fillProcessParameters(List<String> cmd, MySQLDatabaseExportInfo arg) throws IOException
     {
         File dumpBinary = MySQLUtils.getHomeBinary(getClientHome(), "mysqldump"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
@@ -161,7 +152,9 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         if (noCreateStatements) {
             cmd.add("--no-create-info"); //$NON-NLS-1$
         } else {
-            cmd.add("--routines"); //$NON-NLS-1$
+            if (CommonUtils.isEmpty(arg.getTables())) {
+                cmd.add("--routines"); //$NON-NLS-1$
+            }
         }
         if (addDropStatements) cmd.add("--add-drop-table"); //$NON-NLS-1$
         if (disableKeys) cmd.add("--disable-keys"); //$NON-NLS-1$
@@ -172,7 +165,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
 
     @Override
     public boolean performFinish() {
-        final File dir = outputFile.getParentFile();
+        final File dir = outputFolder;
         if (!dir.exists()) {
             if (!dir.mkdirs()) {
                 logPage.setMessage("Can't create directory '" + dir.getAbsolutePath() + "'", IMessageProvider.ERROR);
@@ -198,7 +191,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     @Override
     protected List<String> getCommandLine(MySQLDatabaseExportInfo arg) throws IOException
     {
-        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this);
+        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
         if (objects.isEmpty()) {
             // no dump
         } else if (!CommonUtils.isEmpty(arg.getTables())) {
@@ -220,27 +213,37 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, ProcessBuilder processBuilder, Process process)
+    protected void startProcessHandler(DBRProgressMonitor monitor, MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
     {
         logPage.startLogReader(
             processBuilder,
             process.getErrorStream());
+        File outFile = new File(outputFolder, "dump-" + arg.getDatabase().getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
         boolean isFiltering = removeDefiner;
         Thread job = isFiltering ?
-            new DumpFilterJob(monitor, process.getInputStream()) :
-            new DumpCopierJob(monitor, process.getInputStream());
+            new DumpFilterJob(monitor, process.getInputStream(), outFile) :
+            new DumpCopierJob(monitor, process.getInputStream(), outFile);
         job.start();
     }
 
-    class DumpCopierJob extends Thread {
-        private DBRProgressMonitor monitor;
-        private InputStream input;
+    abstract class DumpJob extends Thread {
+        protected DBRProgressMonitor monitor;
+        protected InputStream input;
+        protected File outFile;
 
-        protected DumpCopierJob(DBRProgressMonitor monitor, InputStream stream)
+        protected DumpJob(String name, DBRProgressMonitor monitor, InputStream stream, File outFile)
         {
-            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader);
+            super(name);
             this.monitor = monitor;
             this.input = stream;
+            this.outFile = outFile;
+        }
+    }
+
+    class DumpCopierJob extends DumpJob {
+        protected DumpCopierJob(DBRProgressMonitor monitor, InputStream stream, File outFile)
+        {
+            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader, monitor, stream, outFile);
         }
 
         @Override
@@ -253,7 +256,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
-                try (OutputStream output = new FileOutputStream(outputFile, true)){
+                try (OutputStream output = new FileOutputStream(outFile)){
                     for (;;) {
                         int count = input.read(buffer);
                         if (count <= 0) {
@@ -280,15 +283,10 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
 
     private static Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_]*`", Pattern.CASE_INSENSITIVE);
 
-    class DumpFilterJob extends Thread {
-        private DBRProgressMonitor monitor;
-        private InputStream input;
-
-        protected DumpFilterJob(DBRProgressMonitor monitor, InputStream stream)
+    class DumpFilterJob extends DumpJob {
+        protected DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, File outFile)
         {
-            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader);
-            this.monitor = monitor;
-            this.input = stream;
+            super(MySQLMessages.tools_db_export_wizard_job_dump_log_reader, monitor, stream, outFile);
         }
 
         @Override
@@ -300,7 +298,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(input, ContentUtils.DEFAULT_CHARSET));
-                try (OutputStream output = new FileOutputStream(outputFile, true)) {
+                try (OutputStream output = new FileOutputStream(outFile)) {
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
                     for (;;) {
                         String line = reader.readLine();
