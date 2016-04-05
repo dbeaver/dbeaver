@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.mysql.tools;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
@@ -36,13 +35,9 @@ public class MySQLToolExport implements IExternalTool
     @Override
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException
     {
-        for (DBSObject object : objects) {
-            if (object instanceof MySQLCatalog) {
-                ToolWizardDialog dialog = new ToolWizardDialog(
-                    window,
-                    new MySQLExportWizard((MySQLCatalog) object));
-                dialog.open();
-            }
-        }
+        ToolWizardDialog dialog = new ToolWizardDialog(
+            window,
+            new MySQLExportWizard(objects));
+        dialog.open();
     }
 }

@@ -30,13 +30,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.util.Collection;
 
 public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
         extends AbstractToolWizard<BASE_OBJECT> implements IImportWizard
 {
     protected File inputFile;
 
-    public AbstractScriptExecuteWizard(BASE_OBJECT dbObject, String task) {
+    public AbstractScriptExecuteWizard(Collection<BASE_OBJECT> dbObject, String task) {
         super(dbObject, task);
         this.inputFile = null;
 	}
@@ -67,7 +68,7 @@ public abstract class AbstractScriptExecuteWizard<BASE_OBJECT extends DBSObject>
 	public void onSuccess() {
         UIUtils.showMessageBox(getShell(),
                 task,
-                NLS.bind(CoreMessages.tools_script_execute_wizard_task_completed, task, getDatabaseObject().getName()) , //$NON-NLS-1$
+                NLS.bind(CoreMessages.tools_script_execute_wizard_task_completed, task, getObjectsName()) , //$NON-NLS-1$
                         SWT.ICON_INFORMATION);
 	}
 

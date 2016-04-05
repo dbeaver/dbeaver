@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog> {
@@ -45,7 +46,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
 
     public MySQLScriptExecuteWizard(MySQLCatalog catalog, boolean isImport)
     {
-        super(catalog, isImport ? MySQLMessages.tools_script_execute_wizard_db_import : MySQLMessages.tools_script_execute_wizard_execute_script);
+        super(Collections.singleton(catalog), isImport ? MySQLMessages.tools_script_execute_wizard_db_import : MySQLMessages.tools_script_execute_wizard_execute_script);
         this.isImport = isImport;
         this.logLevel = LogLevel.Normal;
         this.noBeep = true;
@@ -102,6 +103,8 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     @Override
     protected List<String> getCommandLine() throws IOException
     {
-        return MySQLToolScript.getMySQLToolCommandLine(this);
+        List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this);
+        cmd.add(getObjectsName());
+        return cmd;
     }
 }

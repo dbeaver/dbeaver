@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSource> {
@@ -41,7 +42,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
 
     public OracleScriptExecuteWizard(OracleDataSource oracleSchema)
     {
-        super(oracleSchema, OracleMessages.tools_script_execute_wizard_page_name);
+        super(Collections.singleton(oracleSchema), OracleMessages.tools_script_execute_wizard_page_name);
         this.mainPage = new OracleScriptExecuteWizardPageSettings(this);
     }
 
@@ -104,7 +105,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
         }
         cmd.add("-q");
 
-        cmd.add(toolWizard.getDatabaseObject().getName());
+        cmd.add(toolWizard.getDatabaseObjects().getName());
 */
         return cmd;
     }
