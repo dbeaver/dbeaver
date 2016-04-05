@@ -34,7 +34,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     @Override
     public boolean isPageComplete()
     {
-        return wizard.getClientHome() != null;
+        return wizard.getClientHome() != null && super.isPageComplete();
     }
 
 }

@@ -50,7 +50,7 @@ public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard>
         try {
             final SecuredPasswordEncrypter encrypter = new SecuredPasswordEncrypter();
             final DBPConnectionConfiguration connectionInfo = wizard.getConnectionInfo();
-            final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getDatabaseObject().getName() + "@";
+            final String authProperty = DBConstants.INTERNAL_PROP_PREFIX + "-auth-" + wizard.getObjectsName() + "@";
             String authUser = null;
             String authPassword = null;
             {
@@ -72,7 +72,7 @@ public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard>
                 parent, "Security", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
             infoLabel.setText("Override user credentials (" + wizard.getConnectionInfo().getUserName() +
-                ") for database '" + wizard.getDatabaseObject().getName() + "'.\nExternal tools like 'mysqldump' may require different set of permissions.");
+                ") for objects '" + wizard.getObjectsName() + "'.\nExternal tools like 'mysqldump' may require different set of permissions.");
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);

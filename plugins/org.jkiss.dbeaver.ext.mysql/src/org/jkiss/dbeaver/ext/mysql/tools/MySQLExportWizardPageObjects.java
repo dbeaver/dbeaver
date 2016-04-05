@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
@@ -88,6 +89,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                     checkedObjects.remove(catalog);
                 }
                 loadTables(catalog);
+                updateState();
             }
         });
         GridData gd = new GridData(GridData.FILL_BOTH);
@@ -102,6 +104,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             public void handleEvent(Event event) {
                 if (event.detail == SWT.CHECK) {
                     updateCheckedTables();
+                    updateState();
                 }
             }
         });
@@ -115,20 +118,44 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             }
         });
 
-        final MySQLCatalog activeCatalog = wizard.getDatabaseObject();
-        final MySQLDataSource dataSource = activeCatalog.getDataSource();
-        for (MySQLCatalog catalog : dataSource.getCatalogs()) {
-            TableItem item = new TableItem(catalogTable, SWT.NONE);
-            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
-            item.setText(0, catalog.getName());
-            item.setData(catalog);
-            if (catalog == activeCatalog) {
-                item.setChecked(true);
-                catalogTable.select(catalogTable.indexOf(item));
+        MySQLDataSource dataSource = null;
+        Set<MySQLCatalog> activeCatalogs = new LinkedHashSet<>();
+        for (DBSObject object : wizard.getDatabaseObjects()) {
+            if (object instanceof MySQLCatalog) {
+                activeCatalogs.add((MySQLCatalog) object);
+                dataSource = ((MySQLCatalog) object).getDataSource();
+            } else if (object instanceof MySQLTableBase) {
+                MySQLCatalog catalog = ((MySQLTableBase) object).getContainer();
+                dataSource = catalog.getDataSource();
+                activeCatalogs.add(catalog);
+                Set<MySQLTableBase> tables = checkedObjects.get(catalog);
+                if (tables == null) {
+                    tables = new HashSet<>();
+                    checkedObjects.put(catalog, tables);
+                }
+                tables.add((MySQLTableBase) object);
+            } else if (object.getDataSource() instanceof MySQLDataSource) {
+                dataSource = (MySQLDataSource) object.getDataSource();
             }
         }
-        loadTables(activeCatalog);
-
+        if (dataSource != null) {
+            boolean tablesLoaded = false;
+            for (MySQLCatalog catalog : dataSource.getCatalogs()) {
+                TableItem item = new TableItem(catalogTable, SWT.NONE);
+                item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
+                item.setText(0, catalog.getName());
+                item.setData(catalog);
+                if (activeCatalogs.contains(catalog)) {
+                    item.setChecked(true);
+                    catalogTable.select(catalogTable.indexOf(item));
+                    if (!tablesLoaded) {
+                        loadTables(catalog);
+                        tablesLoaded = true;
+                    }
+                }
+            }
+        }
+        updateState();
         setControl(composite);
     }
 
@@ -214,9 +241,17 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
 
     private void updateState()
     {
-        //wizard.removeDefiner = removeDefiner.getSelection();
-
-        getContainer().updateButtons();
+        boolean complete = false;
+        if (!checkedObjects.isEmpty()) {
+            complete = true;
+        }
+        for (TableItem item : catalogTable.getItems()) {
+            if (item.getChecked()) {
+                complete = true;
+                break;
+            }
+        }
+        setPageComplete(complete);
     }
 
 }
