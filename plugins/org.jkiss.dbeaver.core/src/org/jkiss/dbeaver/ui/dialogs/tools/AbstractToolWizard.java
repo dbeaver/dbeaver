@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * Abstract wizard
  */
-public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
+public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
         extends Wizard implements DBRRunnableWithProgress {
 
     static final Log log = Log.getLog(AbstractToolWizard.class);
@@ -123,6 +123,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
 
     public abstract DBPClientHome findServerHome(String clientHomeId);
 
+    public abstract Collection<PROCESS_ARG> getRunInfo();
+
     @Override
     public void createPageControls(Composite pageContainer)
     {
@@ -184,7 +186,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
     {
         try {
-            finished = executeProcess(monitor);
+            for (PROCESS_ARG arg : getRunInfo()) {
+                executeProcess(monitor, arg);
+            }
             // Refresh navigator node (script execution can change everything inside)
             for (BASE_OBJECT object : databaseObjects) {
                 final DBNDatabaseNode node = dataSourceContainer.getApplication().getNavigatorModel().findNode(object);
@@ -196,17 +200,19 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             throw e;
         } catch (Exception e) {
             throw new InvocationTargetException(e);
+        } finally {
+            finished = true;
         }
         if (monitor.isCanceled()) {
             throw new InterruptedException();
         }
     }
 
-    public boolean executeProcess(DBRProgressMonitor monitor)
+    public boolean executeProcess(DBRProgressMonitor monitor, PROCESS_ARG arg)
         throws IOException, CoreException, InterruptedException
     {
         try {
-            final List<String> commandLine = getCommandLine();
+            final List<String> commandLine = getCommandLine(arg);
             final File execPath = new File(commandLine.get(0));
 
             ProcessBuilder processBuilder = new ProcessBuilder(commandLine);
@@ -227,10 +233,10 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
                 try {
                     final int exitCode = process.exitValue();
                     if (exitCode != 0) {
-                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode));
+                        logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_process_exit_code, exitCode), true);
                         return false;
                     }
-                } catch (Exception e) {
+                } catch (IllegalThreadStateException e) {
                     // Still running
                     continue;
                 }
@@ -239,7 +245,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             //process.waitFor();
         } catch (IOException e) {
             log.error(e);
-            logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_io_error, e.getMessage()));
+            logPage.appendLog(NLS.bind(CoreMessages.tools_wizard_log_io_error, e.getMessage()), true);
             return false;
         }
 
@@ -261,7 +267,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
 
     }
 
-    abstract protected java.util.List<String> getCommandLine() throws IOException;
+    abstract protected java.util.List<String> getCommandLine(PROCESS_ARG arg) throws IOException;
 
     public abstract void fillProcessParameters(List<String> cmd) throws IOException;
 

@@ -26,17 +26,23 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
 import java.text.NumberFormat;
@@ -46,7 +52,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class MySQLExportWizard extends AbstractToolWizard<DBSObject> implements IExportWizard {
+class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExportInfo> implements IExportWizard {
 
 
     public enum DumpMethod {
@@ -63,7 +69,8 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject> implements IExport
     boolean extendedInserts = true;
     boolean dumpEvents;
     boolean comments;
-    public boolean removeDefiner;
+    boolean removeDefiner;
+    boolean exportViews;
     public List<MySQLDatabaseExportInfo> objects = new ArrayList<>();
 
     private MySQLExportWizardPageObjects objectsPage;
@@ -184,10 +191,25 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject> implements IExport
     }
 
     @Override
-    protected List<String> getCommandLine() throws IOException
+    public Collection<MySQLDatabaseExportInfo> getRunInfo() {
+        return objects;
+    }
+
+    @Override
+    protected List<String> getCommandLine(MySQLDatabaseExportInfo arg) throws IOException
     {
         List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this);
-        cmd.add(getObjectsName());
+        if (objects.isEmpty()) {
+            // no dump
+        } else if (!CommonUtils.isEmpty(arg.getTables())) {
+            cmd.add(DBUtils.getQuotedIdentifier(arg.getDatabase()));
+            for (MySQLTableBase table : arg.getTables()) {
+                cmd.add(DBUtils.getQuotedIdentifier(table));
+            }
+        } else {
+            cmd.add(DBUtils.getQuotedIdentifier(arg.getDatabase()));
+        }
+
         return cmd;
     }
 
@@ -231,7 +253,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject> implements IExport
             try {
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
-                try (OutputStream output = new FileOutputStream(outputFile)){
+                try (OutputStream output = new FileOutputStream(outputFile, true)){
                     for (;;) {
                         int count = input.read(buffer);
                         if (count <= 0) {
@@ -278,7 +300,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject> implements IExport
                 NumberFormat numberFormat = NumberFormat.getInstance();
 
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(input, ContentUtils.DEFAULT_CHARSET));
-                try (OutputStream output = new FileOutputStream(outputFile)) {
+                try (OutputStream output = new FileOutputStream(outputFile, true)) {
                     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
                     for (;;) {
                         String line = reader.readLine();
