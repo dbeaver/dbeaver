@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,8 +51,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
 
     static final Log log = Log.getLog(AbstractToolWizard.class);
 
-    private final BASE_OBJECT databaseObject;
+    private final List<BASE_OBJECT> databaseObjects;
     private DBPClientHome clientHome;
+    private DBPDataSourceContainer dataSourceContainer;
     private DBPConnectionConfiguration connectionInfo;
     private String toolUserName;
     private String toolUserPassword;
@@ -59,11 +62,22 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
 
-    protected AbstractToolWizard(BASE_OBJECT databaseObject, String task)
+    protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
     {
-        this.databaseObject = databaseObject;
+        this.databaseObjects = new ArrayList<>(databaseObjects);
         this.task = task;
         this.logPage = new DatabaseWizardPageLog(task);
+
+        if (databaseObjects.isEmpty()) {
+            throw new IllegalArgumentException("Empty object list");
+        }
+        for (BASE_OBJECT object : databaseObjects) {
+            if (dataSourceContainer != null && dataSourceContainer != object.getDataSource().getContainer()) {
+                throw new IllegalArgumentException("Objects from different data sources");
+            }
+            dataSourceContainer = object.getDataSource().getContainer();
+            connectionInfo = dataSourceContainer.getActualConnectionConfiguration();
+        }
     }
 
     @Override
@@ -72,9 +86,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         return !finished && super.canFinish();
     }
 
-    public BASE_OBJECT getDatabaseObject()
+    public List<BASE_OBJECT> getDatabaseObjects()
     {
-        return databaseObject;
+        return databaseObjects;
     }
 
     public DBPConnectionConfiguration getConnectionInfo()
@@ -112,9 +126,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
     @Override
     public void createPageControls(Composite pageContainer)
     {
-        DBPDataSourceContainer container = databaseObject.getDataSource().getContainer();
-        connectionInfo = container.getActualConnectionConfiguration();
-
         super.createPageControls(pageContainer);
 
         WizardPage currentPage = (WizardPage) getStartingPage();
@@ -141,7 +152,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
             DBeaverUI.run(getContainer(), true, true, this);
         }
         catch (InterruptedException ex) {
-            UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, databaseObject.getName()), SWT.ICON_ERROR);
+            UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, getObjectsName()), SWT.ICON_ERROR);
             return false;
         }
         catch (InvocationTargetException ex) {
@@ -160,15 +171,26 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject>
         return false;
     }
 
+    public String getObjectsName() {
+        StringBuilder str = new StringBuilder();
+        for (BASE_OBJECT object : databaseObjects) {
+            if (str.length() > 0) str.append(",");
+            str.append(object.getName());
+        }
+        return str.toString();
+    }
+
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
     {
         try {
             finished = executeProcess(monitor);
             // Refresh navigator node (script execution can change everything inside)
-            final DBNDatabaseNode node = databaseObject.getDataSource().getContainer().getApplication().getNavigatorModel().findNode(databaseObject);
-            if (node != null) {
-                node.refreshNode(monitor, AbstractToolWizard.this);
+            for (BASE_OBJECT object : databaseObjects) {
+                final DBNDatabaseNode node = dataSourceContainer.getApplication().getNavigatorModel().findNode(object);
+                if (node != null) {
+                    node.refreshNode(monitor, AbstractToolWizard.this);
+                }
             }
         } catch (InterruptedException e) {
             throw e;
