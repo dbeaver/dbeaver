@@ -24,13 +24,15 @@ import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog> {
+class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog, MySQLCatalog> {
 
     enum LogLevel {
         Normal,
@@ -101,10 +103,15 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog>
     }
 
     @Override
-    protected List<String> getCommandLine() throws IOException
+    public Collection<MySQLCatalog> getRunInfo() {
+        return getDatabaseObjects();
+    }
+
+    @Override
+    protected List<String> getCommandLine(MySQLCatalog arg) throws IOException
     {
         List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this);
-        cmd.add(getObjectsName());
+        cmd.add(DBUtils.getQuotedIdentifier(arg));
         return cmd;
     }
 }

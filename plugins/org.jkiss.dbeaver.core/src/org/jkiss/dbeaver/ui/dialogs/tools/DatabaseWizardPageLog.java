@@ -69,6 +69,11 @@ public class DatabaseWizardPageLog extends WizardPage {
 
     public void appendLog(final String line)
     {
+        appendLog(line, false);
+    }
+
+    public void appendLog(final String line, final boolean error)
+    {
         if (getShell().isDisposed()) {
             return;
         }
@@ -131,7 +136,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         @Override
         public void run()
         {
-            clearLog();
+            //clearLog();
             String lf = GeneralUtils.getDefaultLineSeparator();
             List<String> command = processBuilder.command();
             StringBuilder cmdString = new StringBuilder();

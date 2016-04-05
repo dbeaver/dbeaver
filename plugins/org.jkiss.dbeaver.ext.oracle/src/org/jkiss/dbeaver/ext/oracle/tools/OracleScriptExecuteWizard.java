@@ -33,10 +33,11 @@ import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSource> {
+class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSource,OracleDataSource> {
 
     private OracleScriptExecuteWizardPageSettings mainPage;
 
@@ -75,7 +76,12 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     }
 
     @Override
-    protected List<String> getCommandLine() throws IOException
+    public Collection<OracleDataSource> getRunInfo() {
+        return getDatabaseObjects();
+    }
+
+    @Override
+    protected List<String> getCommandLine(OracleDataSource arg) throws IOException
     {
         List<String> cmd = new ArrayList<>();
         fillProcessParameters(cmd);

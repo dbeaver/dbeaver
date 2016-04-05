@@ -51,7 +51,6 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
     private Table catalogTable;
     private Table tablesTable;
     private Map<MySQLCatalog, Set<MySQLTableBase>> checkedObjects = new HashMap<>();
-    private boolean exportViews;
 
     private MySQLCatalog curCatalog;
 
@@ -113,7 +112,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         exportViewsCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                exportViews = exportViewsCheck.getSelection();
+                wizard.exportViews = exportViewsCheck.getSelection();
                 loadTables(null);
             }
         });
@@ -134,6 +133,10 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                     checkedObjects.put(catalog, tables);
                 }
                 tables.add((MySQLTableBase) object);
+                if (((MySQLTableBase) object).isView()) {
+                    wizard.exportViews = true;
+                    exportViewsCheck.setSelection(true);
+                }
             } else if (object.getDataSource() instanceof MySQLDataSource) {
                 dataSource = (MySQLDataSource) object.getDataSource();
             }
@@ -203,7 +206,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 try {
                     final List<MySQLTableBase> objects = new ArrayList<>();
                     objects.addAll(curCatalog.getTables(monitor));
-                    if (exportViews) {
+                    if (wizard.exportViews) {
                         objects.addAll(curCatalog.getViews(monitor));
                     }
                     Collections.sort(objects, DBUtils.nameComparator());
