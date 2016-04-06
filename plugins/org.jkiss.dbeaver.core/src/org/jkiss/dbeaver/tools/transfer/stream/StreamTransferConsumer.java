@@ -343,6 +343,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     public File makeOutputFile()
     {
         File dir = new File(settings.getOutputFolder());
+        if (!dir.exists() && !dir.mkdirs()) {
+            log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
+        }
         String fileName = getOutputFileName();
         if (settings.isCompressResults()) {
             fileName += ".zip";

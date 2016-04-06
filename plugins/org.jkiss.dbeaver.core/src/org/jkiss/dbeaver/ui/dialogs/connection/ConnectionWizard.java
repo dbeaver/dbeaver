@@ -25,6 +25,9 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -62,6 +65,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     // protected final IProject project;
     protected final DBPDataSourceRegistry dataSourceRegistry;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
+    private boolean resized = false;
 
     protected ConnectionWizard(DBPDataSourceRegistry dataSourceRegistry)
     {
@@ -175,6 +179,19 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     public boolean isNew()
     {
         return false;
+    }
+
+    public void resizeShell() {
+        if (!resized) {
+            Shell shell = getContainer().getShell();
+            Point shellSize = shell.getSize();
+            Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            if (shellSize.y < compSize.y) {
+                shell.setSize(compSize);
+                shell.layout(true);
+            }
+            resized = true;
+        }
     }
 
     private class ConnectionTester extends ConnectJob {
