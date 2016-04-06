@@ -57,6 +57,9 @@ public class KeepAliveJob extends AbstractJob
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
+        if (DBeaverCore.isClosing()) {
+            return Status.OK_STATUS;
+        }
         final DBeaverCore core = DBeaverCore.getInstance();
         final ProjectRegistry projectRegistry = core.getProjectRegistry();
         if (projectRegistry == null) {
