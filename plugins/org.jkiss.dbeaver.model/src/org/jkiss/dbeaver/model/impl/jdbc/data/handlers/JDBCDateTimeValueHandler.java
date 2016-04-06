@@ -71,6 +71,15 @@ public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
             }
         }
         catch (SQLException e) {
+            if (e.getCause() instanceof ParseException) {
+                // [SQLite] workaround.
+                try {
+                    return ((JDBCResultSet) resultSet).getObject(index + 1);
+                } catch (SQLException e1) {
+                    // Ignore
+                    log.debug("Can't retrieve datetime object");
+                }
+            }
             throw new DBCException(e, session.getDataSource());
         }
     }
