@@ -140,7 +140,7 @@ public class ResultSetUtils
             // Init row identifiers
             monitor.subTask("Detect unique identifiers");
             for (DBDAttributeBindingMeta binding : bindings) {
-                monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
+                //monitor.subTask("Find attribute '" + binding.getName() + "' identifier");
                 DBSEntityAttribute attr = binding.getEntityAttribute();
                 if (attr == null) {
                     continue;
@@ -253,18 +253,9 @@ public class ResultSetUtils
 
         } else if (identifiers.isEmpty()) {
 
-            // Check constraints
-            Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
-            if (constraints != null) {
-                for (DBSEntityConstraint constraint : constraints) {
-                    if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
-                        identifiers.add((DBSEntityReferrer)constraint);
-                    }
-                }
-            }
-            if (identifiers.isEmpty() && table instanceof DBSTable) {
+            // Check indexes first.
+            if (table instanceof DBSTable) {
                 try {
-                    // Check indexes only if no unique constraints found
                     Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
                     if (!CommonUtils.isEmpty(indexes)) {
                         for (DBSTableIndex index : indexes) {
@@ -280,6 +271,18 @@ public class ResultSetUtils
                     log.debug(e);
                 }
             }
+            if (identifiers.isEmpty()) {
+                // Check constraints
+                Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
+                if (constraints != null) {
+                    for (DBSEntityConstraint constraint : constraints) {
+                        if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
+                            identifiers.add((DBSEntityReferrer) constraint);
+                        }
+                    }
+                }
+            }
+
         }
         if (CommonUtils.isEmpty(identifiers)) {
             // No physical identifiers

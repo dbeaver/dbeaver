@@ -40,7 +40,7 @@ import java.util.*;
  */
 public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> extends AbstractObjectCache<OWNER, OBJECT>
 {
-    public static final int DEFAULT_MAX_CACHE_SIZE = 100000;
+    public static final int DEFAULT_MAX_CACHE_SIZE = 1000000;
 
     static final Log log = Log.getLog(AbstractObjectCache.class);
 
