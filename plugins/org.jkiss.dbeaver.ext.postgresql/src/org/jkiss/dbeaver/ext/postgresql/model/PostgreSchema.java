@@ -403,6 +403,8 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                     return new PostgreTableForeign(PostgreSchema.this, dbResult);
                 case S:
                     return new PostgreSequence(PostgreSchema.this, dbResult);
+                case t:
+                    return new PostgreTableRegular(PostgreSchema.this, dbResult);
                 default:
                     log.warn("Unsupported PostgreClass '" + kind + "'");
                     return null;
