@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.virtual;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -63,7 +64,7 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    public static DBVEntity findVirtualEntity(DBSEntity source, boolean create)
+    public static DBVEntity findVirtualEntity(@NotNull DBSEntity source, boolean create)
     {
         return source.getDataSource().getContainer().getVirtualModel().findEntity(source, create);
     }
