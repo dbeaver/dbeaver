@@ -423,6 +423,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_checkbox_save_password_locally;
     public static String dialog_connection_wizard_final_checkbox_auto_commit;
 	public static String dialog_connection_wizard_final_checkbox_show_system_objects;
+	public static String dialog_connection_wizard_final_checkbox_show_util_objects;
 
     public static String dialog_connection_wizard_final_checkbox_connection_readonly;
 
