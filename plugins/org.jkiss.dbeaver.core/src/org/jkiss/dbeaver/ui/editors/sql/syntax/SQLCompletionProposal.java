@@ -29,6 +29,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
@@ -144,6 +145,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public String getAdditionalProposalInfo()
     {
+        if (additionalProposalInfo == null && object != null) {
+            additionalProposalInfo = SQLCompletionProcessor.makeObjectDescription(VoidProgressMonitor.INSTANCE, object);
+        }
         return additionalProposalInfo;
     }
 
