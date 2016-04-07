@@ -51,6 +51,8 @@ public class PostgreConstants {
 
     public static final String INFO_SCHEMA_NAME = "information_schema";
     public static final String CATALOG_SCHEMA_NAME = "pg_catalog";
+    public static final String TOAST_SCHEMA_PREFIX = "pg_toast";
+    public static final String TEMP_SCHEMA_PREFIX = "pg_temp";
     public static final String PUBLIC_SCHEMA_NAME = "public";
 
     public static final String PG_OBJECT_CLASS = "org.postgresql.util.PGobject";

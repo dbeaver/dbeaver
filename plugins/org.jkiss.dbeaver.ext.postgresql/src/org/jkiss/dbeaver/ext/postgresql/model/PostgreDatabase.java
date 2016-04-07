@@ -647,7 +647,10 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         protected PostgreSchema fetchObject(@NotNull JDBCSession session, @NotNull PostgreDatabase owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             String name = JDBCUtils.safeGetString(resultSet, "nspname");
-            if (name == null || name.startsWith("pg_toast") || name.startsWith("pg_temp")) {
+            if (name == null) {
+                return null;
+            }
+            if (PostgreSchema.isUtilitySchema(name) && !owner.getDataSource().getContainer().isShowUtilityObjects()) {
                 return null;
             }
             return new PostgreSchema(owner, name, resultSet);

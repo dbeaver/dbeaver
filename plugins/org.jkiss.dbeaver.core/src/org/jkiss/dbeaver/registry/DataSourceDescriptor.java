@@ -120,6 +120,7 @@ public class DataSourceDescriptor
     private String description;
     private boolean savePassword;
     private boolean showSystemObjects;
+    private boolean showUtilityObjects;
     private boolean connectionReadOnly;
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private Date createDate;
@@ -259,6 +260,15 @@ public class DataSourceDescriptor
     public void setShowSystemObjects(boolean showSystemObjects)
     {
         this.showSystemObjects = showSystemObjects;
+    }
+
+    @Override
+    public boolean isShowUtilityObjects() {
+        return showUtilityObjects;
+    }
+
+    public void setShowUtilityObjects(boolean showUtilityObjects) {
+        this.showUtilityObjects = showUtilityObjects;
     }
 
     @Override
@@ -1026,6 +1036,7 @@ public class DataSourceDescriptor
         setDescription(descriptor.getDescription());
         setSavePassword(descriptor.isSavePassword());
         setShowSystemObjects(descriptor.isShowSystemObjects());
+        setShowUtilityObjects(descriptor.isShowUtilityObjects());
         setConnectionReadOnly(descriptor.isConnectionReadOnly());
         folderPath = descriptor.folderPath;
     }

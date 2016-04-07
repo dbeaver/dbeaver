@@ -284,7 +284,22 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     @Override
     public boolean isSystem()
     {
-        return PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(getName()) || PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(getName());
+        return
+            PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
+            PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(name) ||
+            name.startsWith(PostgreConstants.TOAST_SCHEMA_PREFIX) ||
+            name.startsWith(PostgreConstants.TEMP_SCHEMA_PREFIX);
+    }
+
+    public boolean isUtility()
+    {
+        return isUtilitySchema(name);
+    }
+
+    public static boolean isUtilitySchema(String schema)
+    {
+        return schema.startsWith(PostgreConstants.TOAST_SCHEMA_PREFIX) ||
+            schema.startsWith(PostgreConstants.TEMP_SCHEMA_PREFIX);
     }
 
     @Property
@@ -373,7 +388,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             PostgreClass.RelKind kind;
             try {
                 kind = PostgreClass.RelKind.valueOf(kindString);
-            } catch (IllegalArgumentException e) {
+            } catch (Throwable e) {
                 log.warn("Unexpected class '" + kindString + "'", e);
                 return null;
             }
