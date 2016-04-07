@@ -28,6 +28,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -103,6 +105,14 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         EditorActivationStrategy editorActivationStrategy;
+        final SelectionAdapter enterListener = new SelectionAdapter() {
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                if (doubleClickHandler != null) {
+                    doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
+                }
+            }
+        };
         if (contentProvider instanceof ITreeContentProvider) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
@@ -118,6 +128,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 public void handleEvent(Event event) {
                     // Just do nothing
                 }});
+            tree.addSelectionListener(enterListener);
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
@@ -128,6 +139,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             //itemsEditor = new TableEditor(table);
             editorActivationStrategy = new EditorActivationStrategy(tableViewer);
             TableViewerEditor.create(tableViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
+            table.addSelectionListener(enterListener);
         }
         //editorActivationStrategy.setEnableEditorActivationWithKeyboard(true);
         renderer = createRenderer();
@@ -145,6 +157,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             }
         });
         itemsViewer.getControl().addListener(SWT.PaintItem, new PaintListener());
+        GridData gd = new GridData(GridData.FILL_BOTH);
+        itemsViewer.getControl().setLayoutData(gd);
+        //PropertiesContributor.getInstance().addLazyListener(this);
+
+        // Add selection listener
         itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
             public void selectionChanged(SelectionChangedEvent event)
@@ -155,19 +172,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 } else {
                     setCurListObject((OBJECT_TYPE) selection.getFirstElement());
                 }
-            }
-        });
-        GridData gd = new GridData(GridData.FILL_BOTH);
-        itemsViewer.getControl().setLayoutData(gd);
-        //PropertiesContributor.getInstance().addLazyListener(this);
 
-        // Add selection listener
-        itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
                 String status;
-                IStructuredSelection selection = (IStructuredSelection)itemsViewer.getSelection();
                 if (selection.isEmpty()) {
                     status = ""; //$NON-NLS-1$
                 } else if (selection.size() == 1) {
