@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMConstants;
 import org.jkiss.dbeaver.model.qm.QMObjectType;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -108,7 +109,7 @@ public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPr
                     UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
                 }
             });
-            textOutputFolder = UIUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null);
+            textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null);
             textHistoryDays = UIUtils.createLabelText(storageSettings, CoreMessages.pref_page_query_manager_label_days_to_store_log, "", SWT.BORDER, new GridData(50, SWT.DEFAULT)); //$NON-NLS-2$
             textHistoryDays.setEnabled(false);
         }

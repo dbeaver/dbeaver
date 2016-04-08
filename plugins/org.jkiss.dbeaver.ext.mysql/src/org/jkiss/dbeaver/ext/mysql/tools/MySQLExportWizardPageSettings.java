@@ -23,8 +23,6 @@ import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +33,7 @@ import java.io.File;
 class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportWizard>
 {
 
-    private Text outputFileText;
+    private Text outputFolderText;
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
     private Button addDropStatementsCheck;
@@ -94,30 +92,16 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.comments);
         removeDefiner.addSelectionListener(changeListener);
 
-        Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 3, GridData.FILL_HORIZONTAL, 0);
-        outputFileText = UIUtils.createLabelText(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, null);
-        if (wizard.getOutputFolder() != null) {
-            outputFileText.setText(wizard.getOutputFolder().getAbsolutePath());
-        }
-        outputFileText.addModifyListener(new ModifyListener() {
+        Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
+        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, new ModifyListener() {
             @Override
-            public void modifyText(ModifyEvent e)
-            {
+            public void modifyText(ModifyEvent e) {
                 updateState();
             }
         });
-        Button browseButton = new Button(outputGroup, SWT.PUSH);
-        browseButton.setImage(DBeaverIcons.getImage(DBIcon.TREE_FOLDER));
-        browseButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                File file = DialogUtils.selectFileForSave(getShell(), MySQLMessages.tools_db_export_wizard_page_settings_file_selector_title, new String[]{"*.sql", "*.txt", "*.*"}, outputFileText.getText()); //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-                if (file != null) {
-                    outputFileText.setText(file.getAbsolutePath());
-                    updateState();
-                }
-            }
-        });
+        if (wizard.getOutputFolder() != null) {
+            outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
+        }
 
         createSecurityGroup(composite);
 
@@ -126,7 +110,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
     private void updateState()
     {
-        String fileName = outputFileText.getText();
+        String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
         switch (methodCombo.getSelectionIndex()) {
             case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;

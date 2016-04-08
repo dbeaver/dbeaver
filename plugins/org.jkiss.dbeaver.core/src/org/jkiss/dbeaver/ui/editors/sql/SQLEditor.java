@@ -987,11 +987,12 @@ public class SQLEditor extends SQLEditorBase implements
             jobsRunning += queryProcessor.curJobRunning.get();
         }
         if (jobsRunning > 0) {
-            MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
-            messageBox.setMessage(CoreMessages.editors_sql_save_on_close_message);
-            messageBox.setText(CoreMessages.editors_sql_save_on_close_text);
-            messageBox.open();
-            return ISaveablePart2.CANCEL;
+            log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
+//            MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
+//            messageBox.setMessage(CoreMessages.editors_sql_save_on_close_message);
+//            messageBox.setText(CoreMessages.editors_sql_save_on_close_text);
+//            messageBox.open();
+//            return ISaveablePart2.CANCEL;
         }
 
         for (QueryProcessor queryProcessor : queryProcessors) {

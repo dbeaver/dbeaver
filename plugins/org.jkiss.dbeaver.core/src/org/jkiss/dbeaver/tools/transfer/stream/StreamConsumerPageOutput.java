@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -75,7 +76,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     updatePageCompletion();
                 }
             });
-            directoryText = UIUtils.createOutputFolderChooser(generalSettings, null, new ModifyListener() {
+            directoryText = DialogUtils.createOutputFolderChooser(generalSettings, null, new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
                     settings.setOutputFolder(directoryText.getText());
