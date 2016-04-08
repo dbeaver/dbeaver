@@ -75,7 +75,12 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     @Override
     public final OBJECT_TYPE createNewObject(DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
-        OBJECT_TYPE newObject = createDatabaseObject(commandContext, parent, copyFrom);
+        OBJECT_TYPE newObject;
+        try {
+            newObject = createDatabaseObject(commandContext, parent, copyFrom);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException("Can't create object here.\nWrong container type: " + parent.getClass().getSimpleName());
+        }
         if (newObject == null) {
             return null;
         }

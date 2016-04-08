@@ -72,6 +72,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
 
     boolean isShowSystemObjects();
 
+    boolean isShowUtilityObjects();
+
     boolean isConnectionReadOnly();
 
     boolean isDefaultAutoCommit();

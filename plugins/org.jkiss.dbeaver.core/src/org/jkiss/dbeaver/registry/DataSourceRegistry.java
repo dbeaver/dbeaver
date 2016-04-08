@@ -428,7 +428,12 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             xml.addAttribute(RegistryConstants.ATTR_LOGIN_DATE, dataSource.getLoginDate().getTime());
         }
         xml.addAttribute(RegistryConstants.ATTR_SAVE_PASSWORD, dataSource.isSavePassword());
-        xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
+        if (dataSource.isShowSystemObjects()) {
+            xml.addAttribute(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS, dataSource.isShowSystemObjects());
+        }
+        if (dataSource.isShowUtilityObjects()) {
+            xml.addAttribute(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS, dataSource.isShowUtilityObjects());
+        }
         xml.addAttribute(RegistryConstants.ATTR_READ_ONLY, dataSource.isConnectionReadOnly());
         if (!CommonUtils.isEmpty(dataSource.getFolderPath())) {
             xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolderPath());
@@ -721,6 +726,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     }
                     curDataSource.setSavePassword(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SAVE_PASSWORD)));
                     curDataSource.setShowSystemObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_SYSTEM_OBJECTS)));
+                    curDataSource.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS)));
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     curDataSource.setFolderPath(atts.getValue(RegistryConstants.ATTR_FOLDER));
                     {

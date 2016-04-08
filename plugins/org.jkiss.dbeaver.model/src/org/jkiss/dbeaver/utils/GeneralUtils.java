@@ -366,12 +366,17 @@ public class GeneralUtils {
     @NotNull
     public static String getExceptionMessage(@NotNull Throwable ex)
     {
-        StringBuilder msg = new StringBuilder(/*CommonUtils.getShortClassName(ex.getClass())*/);
+/*
+        StringBuilder msg = new StringBuilder(*/
+/*CommonUtils.getShortClassName(ex.getClass())*//*
+);
         msg.append(ex.getClass().getSimpleName());
         if (ex.getMessage() != null) {
             msg.append(": ").append(ex.getMessage());
         }
         return msg.toString().trim();
+*/
+        return ex.getMessage();
     }
 
     @NotNull

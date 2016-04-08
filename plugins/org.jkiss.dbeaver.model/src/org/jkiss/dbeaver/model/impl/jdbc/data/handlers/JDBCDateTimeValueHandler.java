@@ -74,6 +74,9 @@ public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
             if (e.getCause() instanceof ParseException) {
                 // [SQLite] workaround.
                 try {
+                    //return getValueFromObject(session, type, ((JDBCResultSet) resultSet).getObject(index + 1), false);
+                    // Do not convert to Date object because table column has STRING type
+                    // and it will be converted in string at late binding stage making incorrect string value: Date.toString()
                     return ((JDBCResultSet) resultSet).getObject(index + 1);
                 } catch (SQLException e1) {
                     // Ignore
