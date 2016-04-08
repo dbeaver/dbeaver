@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.registry.maven.MavenRegistry;
 import org.jkiss.dbeaver.registry.maven.MavenRepository;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
@@ -187,7 +188,7 @@ public class PrefPageDrivers extends PreferencePage implements IWorkbenchPrefere
 
         {
             Group drivers = UIUtils.createControlGroup(composite, CoreMessages.pref_page_drivers_group_location, 2, GridData.FILL_HORIZONTAL, 300);
-            customDriversHome = UIUtils.createOutputFolderChooser(drivers, "Local folder", null);
+            customDriversHome = DialogUtils.createOutputFolderChooser(drivers, "Local folder", null);
         }
 
 
