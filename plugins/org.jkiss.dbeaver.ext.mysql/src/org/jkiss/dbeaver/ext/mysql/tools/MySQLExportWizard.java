@@ -86,8 +86,8 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
 
     public void setOutputFolder(File outputFolder)
     {
-        if (outputFolder != null && outputFolder.getParentFile() != null) {
-            DialogUtils.setCurDialogFolder(outputFolder.getParentFile().getAbsolutePath());
+        if (outputFolder != null) {
+            DialogUtils.setCurDialogFolder(outputFolder.getAbsolutePath());
         }
         this.outputFolder = outputFolder;
     }

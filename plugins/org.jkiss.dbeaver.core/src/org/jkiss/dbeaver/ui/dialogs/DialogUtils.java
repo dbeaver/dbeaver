@@ -18,10 +18,11 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.FileDialog;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -33,9 +34,11 @@ import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -50,7 +53,16 @@ public class DialogUtils {
 
     static final Log log = Log.getLog(DialogUtils.class);
 
-    public static String curDialogFolder = System.getProperty("user.home");
+    private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
+
+    public static String curDialogFolder;
+
+    static {
+        curDialogFolder = DBeaverCore.getGlobalPreferenceStore().getString(DIALOG_FOLDER_PROPERTY);
+        if (CommonUtils.isEmpty(curDialogFolder)) {
+            curDialogFolder = RuntimeUtils.getUserHomeDir().getAbsolutePath();
+        }
+    }
 
     public static File selectFileForSave(Shell parentShell, String valueName)
     {
@@ -110,12 +122,12 @@ public class DialogUtils {
 
     public static String openFileDialog(FileDialog fileDialog)
     {
-        if (curDialogFolder == null) {
+        if (curDialogFolder != null) {
             fileDialog.setFilterPath(curDialogFolder);
         }
         String fileName = fileDialog.open();
         if (!CommonUtils.isEmpty(fileName)) {
-            curDialogFolder = fileDialog.getFilterPath();
+            setCurDialogFolder(fileDialog.getFilterPath());
         }
         return fileName;
     }
@@ -213,6 +225,41 @@ public class DialogUtils {
 
     public static void setCurDialogFolder(String curDialogFolder)
     {
+        DBeaverCore.getGlobalPreferenceStore().setValue(DIALOG_FOLDER_PROPERTY, curDialogFolder);
         DialogUtils.curDialogFolder = curDialogFolder;
+    }
+
+    @NotNull
+    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label,
+        @Nullable ModifyListener changeListener)
+    {
+        final String message = label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory;
+        UIUtils.createControlLabel(parent, message);
+        final TextWithOpen directoryText = new TextWithOpen(parent) {
+            @Override
+            protected void openBrowser() {
+                DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
+                dialog.setMessage("Choose target directory");
+                dialog.setText(message);
+                String directory = getText();
+                if (CommonUtils.isEmpty(directory)) {
+                    directory = curDialogFolder;
+                }
+                if (!CommonUtils.isEmpty(directory)) {
+                    dialog.setFilterPath(directory);
+                }
+                directory = dialog.open();
+                if (directory != null) {
+                    setText(directory);
+                    setCurDialogFolder(directory);
+                }
+            }
+        };
+        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        if (changeListener != null) {
+            directoryText.getTextControl().addModifyListener(changeListener);
+        }
+
+        return directoryText.getTextControl();
     }
 }

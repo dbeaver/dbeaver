@@ -55,7 +55,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -878,36 +877,6 @@ public class UIUtils {
     public static void setHelp(Control control, String helpContextID)
     {
         setHelp(control, DBeaverCore.PLUGIN_ID, helpContextID);
-    }
-
-    @NotNull
-    public static Text createOutputFolderChooser(final Composite parent, @Nullable String label,
-        @Nullable ModifyListener changeListener)
-    {
-        final String message = label != null ? label : CoreMessages.data_transfer_wizard_output_label_directory;
-        UIUtils.createControlLabel(parent, message);
-        final TextWithOpen directoryText = new TextWithOpen(parent) {
-            @Override
-            protected void openBrowser() {
-                DirectoryDialog dialog = new DirectoryDialog(parent.getShell(), SWT.NONE);
-                dialog.setMessage("Choose target directory");
-                dialog.setText(message);
-                String directory = getText();
-                if (!CommonUtils.isEmpty(directory)) {
-                    dialog.setFilterPath(directory);
-                }
-                directory = dialog.open();
-                if (directory != null) {
-                    setText(directory);
-                }
-            }
-        };
-        directoryText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        if (changeListener != null) {
-            directoryText.getTextControl().addModifyListener(changeListener);
-        }
-
-        return directoryText.getTextControl();
     }
 
     public static String makeAnchor(String text)
