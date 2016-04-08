@@ -27,6 +27,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 
 class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
 
@@ -98,7 +99,7 @@ class CompareObjectsPageOutput extends ActiveWizardPage<CompareObjectsWizard> {
                 }
             });
 
-            outputFolderText = UIUtils.createOutputFolderChooser(outputSettings, null, null);
+            outputFolderText = DialogUtils.createOutputFolderChooser(outputSettings, null, null);
             outputFolderText.setText(settings.getOutputFolder());
             UIUtils.enableWithChildren(outputFolderText.getParent(), settings.getOutputType() == CompareObjectsSettings.OutputType.FILE);
             outputFolderText.addModifyListener(new ModifyListener() {
