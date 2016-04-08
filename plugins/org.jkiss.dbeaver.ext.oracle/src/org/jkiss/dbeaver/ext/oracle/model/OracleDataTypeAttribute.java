@@ -83,7 +83,7 @@ public class OracleDataTypeAttribute extends OracleDataTypeMember implements DBS
     @Override
     public long getMaxLength()
     {
-        return length;
+        return length == null ? 0 : length;
     }
 
     @Override

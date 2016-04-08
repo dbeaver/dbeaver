@@ -78,6 +78,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private Spinner keepAliveInterval;
 
     private Button showSystemObjects;
+    private Button showUtilityObjects;
     private Button readOnlyConnection;
     private Button eventsButton;
     private Font boldFont;
@@ -183,6 +184,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
+                showUtilityObjects.setSelection(dataSourceDescriptor.isShowUtilityObjects());
                 readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
                 isolationLevel.add("");
                 if (dataSourceDescriptor.isConnected()) {
@@ -225,6 +227,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             connectionTypeCombo.select(0);
             autocommit.setSelection(((DBPConnectionType)connectionTypeCombo.getData(0)).isAutocommit());
             showSystemObjects.setSelection(true);
+            showUtilityObjects.setSelection(false);
             readOnlyConnection.setSelection(false);
             isolationLevel.setEnabled(false);
             defaultSchema.setText("");
@@ -413,6 +416,12 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
                 showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
+                showUtilityObjects = UIUtils.createCheckbox(
+                    miscGroup,
+                    CoreMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
+                    dataSourceDescriptor == null || dataSourceDescriptor.isShowUtilityObjects());
+                showUtilityObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
                 readOnlyConnection = UIUtils.createCheckbox(
                     miscGroup,
                     CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
@@ -523,6 +532,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
         dataSource.setDefaultActiveObject(defaultSchema.getText());
         dataSource.setShowSystemObjects(showSystemObjects.getSelection());
+        dataSource.setShowUtilityObjects(showUtilityObjects.getSelection());
         dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
         if (!dataSource.isSavePassword()) {
             dataSource.resetPassword();
