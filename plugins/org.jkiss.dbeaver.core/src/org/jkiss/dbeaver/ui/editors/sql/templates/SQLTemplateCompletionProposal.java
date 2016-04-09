@@ -146,8 +146,9 @@ public class SQLTemplateCompletionProposal implements ICompletionProposal, IComp
             for (int i = 0; i != variables.length; i++) {
                 SQLVariable variable = (SQLVariable) variables[i];
 
-                if (variable.isUnambiguous())
-                    continue;
+                // Always calc positions.
+//                if (variable.isUnambiguous())
+//                    continue;
 
                 LinkedPositionGroup group = new LinkedPositionGroup();
 
