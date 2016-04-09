@@ -28,7 +28,7 @@ public abstract class SQLContextTypeAbstract extends TemplateContextType {
     }
 
     private void addGlobalResolvers() {
-        //addResolver(new GlobalTemplateVariables.Cursor());
+        addResolver(new GlobalTemplateVariables.Cursor());
         addResolver(new GlobalTemplateVariables.WordSelection());
         addResolver(new GlobalTemplateVariables.LineSelection());
         addResolver(new GlobalTemplateVariables.Dollar());
