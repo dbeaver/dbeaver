@@ -34,6 +34,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 {
 
     private Text outputFolderText;
+    private Text outputFileText;
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
     private Button addDropStatementsCheck;
@@ -99,6 +100,13 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
                 updateState();
             }
         });
+        outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
+        outputFileText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                wizard.outputFilePattern = outputFileText.getText();
+            }
+        });
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }
@@ -112,6 +120,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     {
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
+        wizard.setOutputFilePattern(outputFileText.getText());
         switch (methodCombo.getSelectionIndex()) {
             case 0: wizard.method = MySQLExportWizard.DumpMethod.ONLINE; break;
             case 1: wizard.method = MySQLExportWizard.DumpMethod.LOCK_ALL_TABLES; break;

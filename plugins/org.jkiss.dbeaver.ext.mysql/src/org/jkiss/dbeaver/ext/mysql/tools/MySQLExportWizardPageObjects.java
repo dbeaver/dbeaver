@@ -108,11 +108,11 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
             }
         });
 
-        final Button exportViewsCheck = UIUtils.createCheckbox(objectsGroup, "Export views", false);
+        final Button exportViewsCheck = UIUtils.createCheckbox(objectsGroup, "Show views", false);
         exportViewsCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                wizard.exportViews = exportViewsCheck.getSelection();
+                wizard.showViews = exportViewsCheck.getSelection();
                 loadTables(null);
             }
         });
@@ -134,7 +134,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 }
                 tables.add((MySQLTableBase) object);
                 if (((MySQLTableBase) object).isView()) {
-                    wizard.exportViews = true;
+                    wizard.showViews = true;
                     exportViewsCheck.setSelection(true);
                 }
             } else if (object.getDataSource() instanceof MySQLDataSource) {
@@ -206,7 +206,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                 try {
                     final List<MySQLTableBase> objects = new ArrayList<>();
                     objects.addAll(curCatalog.getTables(monitor));
-                    if (wizard.exportViews) {
+                    if (wizard.showViews) {
                         objects.addAll(curCatalog.getViews(monitor));
                     }
                     Collections.sort(objects, DBUtils.nameComparator());

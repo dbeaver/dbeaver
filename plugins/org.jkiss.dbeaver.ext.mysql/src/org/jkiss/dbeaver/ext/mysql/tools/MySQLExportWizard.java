@@ -26,11 +26,13 @@ import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -38,6 +40,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -45,12 +48,16 @@ import java.io.*;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExportInfo> implements IExportWizard {
 
+    public static final String VARIABLE_DATABASE = "database";
+    public static final String VARIABLE_TABLE = "table";
+    public static final String VARIABLE_TIMESTAMP = "timestamp";
 
     public enum DumpMethod {
         ONLINE,
@@ -59,6 +66,8 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     }
 
     private File outputFolder;
+
+    String outputFilePattern;
     DumpMethod method;
     boolean noCreateStatements;
     boolean addDropStatements = true;
@@ -67,7 +76,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     boolean dumpEvents;
     boolean comments;
     boolean removeDefiner;
-    boolean exportViews;
+    boolean showViews;
     public List<MySQLDatabaseExportInfo> objects = new ArrayList<>();
 
     private MySQLExportWizardPageObjects objectsPage;
@@ -77,7 +86,21 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         super(objects, MySQLMessages.tools_db_export_wizard_task_name);
         this.method = DumpMethod.NORMAL;
         this.outputFolder = new File(DialogUtils.getCurDialogFolder()); //$NON-NLS-1$ //$NON-NLS-2$
-	}
+
+        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        this.outputFilePattern = store.getString("MySQL.export.outputFilePattern");
+        if (CommonUtils.isEmpty(this.outputFilePattern)) {
+            this.outputFilePattern = "dump-${database}-${timestamp}.sql";
+        }
+        noCreateStatements = CommonUtils.getBoolean(store.getString("MySQL.export.noCreateStatements"), false);
+        addDropStatements = CommonUtils.getBoolean(store.getString("MySQL.export.addDropStatements"), true);
+        disableKeys = CommonUtils.getBoolean(store.getString("MySQL.export.disableKeys"), true);
+        extendedInserts = CommonUtils.getBoolean(store.getString("MySQL.export.extendedInserts"), true);
+        dumpEvents = CommonUtils.getBoolean(store.getString("MySQL.export.dumpEvents"), false);
+        comments = CommonUtils.getBoolean(store.getString("MySQL.export.comments"), false);
+        removeDefiner = CommonUtils.getBoolean(store.getString("MySQL.export.removeDefiner"), false);
+        showViews = CommonUtils.getBoolean(store.getString("MySQL.export.showViews"), false);
+    }
 
     public File getOutputFolder()
     {
@@ -90,6 +113,14 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
             DialogUtils.setCurDialogFolder(outputFolder.getAbsolutePath());
         }
         this.outputFolder = outputFolder;
+    }
+
+    public String getOutputFilePattern() {
+        return outputFilePattern;
+    }
+
+    public void setOutputFilePattern(String outputFilePattern) {
+        this.outputFilePattern = outputFilePattern;
     }
 
     @Override
@@ -131,7 +162,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
             MySQLMessages.tools_db_export_wizard_title,
             NLS.bind(MySQLMessages.tools_db_export_wizard_message_export_completed, getObjectsName()),
             SWT.ICON_INFORMATION);
-        UIUtils.launchProgram(outputFolder.getAbsoluteFile().getParentFile().getAbsolutePath());
+        UIUtils.launchProgram(outputFolder.getAbsolutePath());
 	}
 
     @Override
@@ -174,6 +205,18 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
             }
         }
         objectsPage.saveState();
+
+        final DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        store.setValue("MySQL.export.outputFilePattern", this.outputFilePattern);
+        store.setValue("MySQL.export.noCreateStatements", noCreateStatements);
+        store.setValue("MySQL.export.addDropStatements", addDropStatements);
+        store.setValue("MySQL.export.disableKeys", disableKeys);
+        store.setValue("MySQL.export.extendedInserts", extendedInserts);
+        store.setValue("MySQL.export.dumpEvents", dumpEvents);
+        store.setValue("MySQL.export.comments", comments);
+        store.setValue("MySQL.export.removeDefiner", removeDefiner);
+        store.setValue("MySQL.export.showViews", showViews);
+
         return super.performFinish();
     }
 
@@ -213,12 +256,35 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
     }
 
     @Override
-    protected void startProcessHandler(DBRProgressMonitor monitor, MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
+    protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLDatabaseExportInfo arg, ProcessBuilder processBuilder, Process process)
     {
         logPage.startLogReader(
             processBuilder,
             process.getErrorStream());
-        File outFile = new File(outputFolder, "dump-" + arg.getDatabase().getName() + "-" + RuntimeUtils.getCurrentTimeStamp() + ".sql");
+
+        String outFileName = GeneralUtils.replaceVariables(outputFilePattern, new GeneralUtils.IVariableResolver() {
+            @Override
+            public String get(String name) {
+                switch (name) {
+                    case VARIABLE_DATABASE:
+                        return arg.getDatabase().getName();
+                    case VARIABLE_TABLE:
+                        final Iterator<MySQLTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
+                        if (iterator != null && iterator.hasNext()) {
+                            return iterator.next().getName();
+                        } else {
+                            return "null";
+                        }
+                    case VARIABLE_TIMESTAMP:
+                        return RuntimeUtils.getCurrentTimeStamp();
+                    default:
+                        System.getProperty(name);
+                }
+                return null;
+            }
+        });
+
+        File outFile = new File(outputFolder, outFileName);
         boolean isFiltering = removeDefiner;
         Thread job = isFiltering ?
             new DumpFilterJob(monitor, process.getInputStream(), outFile) :
