@@ -88,7 +88,7 @@ public class RuntimeUtils {
 
     public static String getCurrentTimeStamp()
     {
-        return new SimpleDateFormat("yyyyMMddhhmm", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
+        return new SimpleDateFormat("yyyyMMddHHmm", Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
         c.setTime(new Date());
