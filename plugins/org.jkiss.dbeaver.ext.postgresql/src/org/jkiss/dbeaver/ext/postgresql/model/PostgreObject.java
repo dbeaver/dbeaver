@@ -35,6 +35,6 @@ public interface PostgreObject extends DBSObject {
     /**
      * OID
      */
-    int getObjectId();
+    long getObjectId();
 
 }

@@ -170,7 +170,6 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         List<PostgreTableBase> result = new ArrayList<>(si.size());
         for (int i1 = 0; i1 < si.size(); i1++) {
             result.add(si.get(i1).getAssociatedEntity());
-
         }
         return result;
     }
@@ -184,7 +183,6 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         List<PostgreTableBase> result = new ArrayList<>(si.size());
         for (int i1 = 0; i1 < si.size(); i1++) {
             result.add(si.get(i1).getParentObject());
-
         }
         return result;
     }
@@ -198,7 +196,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhrelid=? AND c.oid=i.inhparent " +
                     "ORDER BY i.inhseqno")) {
-                    dbStat.setInt(1, getObjectId());
+                    dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             final int parentSchemaId = JDBCUtils.safeGetInt(dbResult, "relnamespace");
@@ -243,7 +241,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                     "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid")) {
-                    dbStat.setInt(1, getObjectId());
+                    dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
                             final int subSchemaId = JDBCUtils.safeGetInt(dbResult, "relnamespace");

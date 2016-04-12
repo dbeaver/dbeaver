@@ -168,7 +168,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             "SELECT e.enumlabel \n" +
                 "FROM pg_catalog.pg_enum e\n" +
                 "WHERE e.enumtypid=?")) {
-            dbStat.setInt(1, getObjectId());
+            dbStat.setLong(1, getObjectId());
             try (JDBCResultSet rs = dbStat.executeQuery()) {
                 List<String> values = new ArrayList<>();
                 while (rs.nextRow()) {
@@ -221,7 +221,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return typeId;
     }
 

@@ -32,7 +32,7 @@ import java.sql.SQLException;
  */
 public class PostgreForeignServer extends PostgreInformation {
 
-    private int oid;
+    private long oid;
     private String name;
     private String type;
     private String version;
@@ -50,7 +50,7 @@ public class PostgreForeignServer extends PostgreInformation {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "srvname");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "srvowner");
         this.dataWrapperId = JDBCUtils.safeGetInt(dbResult, "srvfdw");
@@ -83,7 +83,7 @@ public class PostgreForeignServer extends PostgreInformation {
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

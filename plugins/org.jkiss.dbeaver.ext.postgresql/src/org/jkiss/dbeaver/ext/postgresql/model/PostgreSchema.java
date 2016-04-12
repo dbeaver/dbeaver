@@ -59,9 +59,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     static final Log log = Log.getLog(PostgreSchema.class);
 
     private PostgreDatabase database;
-    private int oid;
+    private long oid;
     private String name;
-    private int ownerId;
+    private long ownerId;
     private boolean persisted;
 
     public final CollationCache collationCache = new CollationCache();
@@ -91,7 +91,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "nspowner");
         this.persisted = true;
     }
@@ -111,7 +111,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return this.oid;
     }
 
@@ -325,7 +325,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                     "\nWHERE c.collnamespace=?" +
                     "\nORDER BY c.oid"
             );
-            dbStat.setInt(1, PostgreSchema.this.getObjectId());
+            dbStat.setLong(1, PostgreSchema.this.getObjectId());
             return dbStat;
         }
 
@@ -348,7 +348,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                     "\nWHERE e.extnamespace=?" +
                     "\nORDER BY e.oid"
             );
-            dbStat.setInt(1, PostgreSchema.this.getObjectId());
+            dbStat.setLong(1, PostgreSchema.this.getObjectId());
             return dbStat;
         }
 
@@ -376,7 +376,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 "SELECT c.oid,c.*,d.description FROM pg_catalog.pg_class c\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n" +
                 "WHERE c.relnamespace=? AND c.relkind not in ('i','c')");
-            dbStat.setInt(1, getObjectId());
+            dbStat.setLong(1, getObjectId());
             return dbStat;
         }
 
@@ -431,9 +431,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {
-                dbStat.setInt(1, forTable.getObjectId());
+                dbStat.setLong(1, forTable.getObjectId());
             } else {
-                dbStat.setInt(1, PostgreSchema.this.getObjectId());
+                dbStat.setLong(1, PostgreSchema.this.getObjectId());
             }
             return dbStat;
         }
@@ -476,9 +476,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             sql.append("\nORDER BY c.oid");
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forParent == null) {
-                dbStat.setInt(1, schema.getObjectId());
+                dbStat.setLong(1, schema.getObjectId());
             } else {
-                dbStat.setInt(1, forParent.getObjectId());
+                dbStat.setLong(1, forParent.getObjectId());
             }
             return dbStat;
         }
@@ -619,9 +619,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
 
             JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
             if (forTable != null) {
-                dbStat.setInt(1, forTable.getObjectId());
+                dbStat.setLong(1, forTable.getObjectId());
             } else {
-                dbStat.setInt(1, PostgreSchema.this.getObjectId());
+                dbStat.setLong(1, PostgreSchema.this.getObjectId());
             }
             return dbStat;
         }
@@ -695,7 +695,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                     "\nWHERE p.pronamespace=?" +
                     "\nORDER BY p.proname"
             );
-            dbStat.setInt(1, getObjectId());
+            dbStat.setLong(1, getObjectId());
             return dbStat;
         }
 

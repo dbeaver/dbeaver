@@ -32,7 +32,7 @@ public class PostgreAccessMethod extends PostgreInformation {
     public static final String CAT_ROUTINES = "Routines";
     public static final String CAT_FLAGS = "Flags";
 
-    private int oid;
+    private long oid;
     private String name;
     private int operatorStrategies;
     private int supportRoutines;
@@ -58,7 +58,7 @@ public class PostgreAccessMethod extends PostgreInformation {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "amname");
         this.operatorStrategies = JDBCUtils.safeGetInt(dbResult, "amstrategies");
         this.supportRoutines = JDBCUtils.safeGetInt(dbResult, "amsupport");
@@ -85,7 +85,7 @@ public class PostgreAccessMethod extends PostgreInformation {
 
     @Property(viewable = true, order = 2)
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

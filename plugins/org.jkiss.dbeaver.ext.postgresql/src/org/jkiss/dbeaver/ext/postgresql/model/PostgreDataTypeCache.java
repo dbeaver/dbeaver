@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
-import org.jkiss.utils.IntKeyMap;
+import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -36,7 +36,7 @@ import java.util.List;
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
     static final Log log = Log.getLog(PostgreDataTypeCache.class);
-    private IntKeyMap<PostgreDataType> dataTypeMap = new IntKeyMap<>();
+    private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
 
     @Override
     public void clearCache() {
@@ -75,7 +75,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
             "SELECT t.oid,t.* \n" +
                 "FROM pg_catalog.pg_type t WHERE typnamespace=?\n" +
                 "ORDER by t.oid");
-        dbStat.setInt(1, owner.getObjectId());
+        dbStat.setLong(1, owner.getObjectId());
         return dbStat;
     }
 
@@ -85,7 +85,7 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
         return PostgreDataType.readDataType(session, owner, dbResult);
     }
 
-    public PostgreDataType getDataType(int oid) {
+    public PostgreDataType getDataType(long oid) {
         return dataTypeMap.get(oid);
     }
 

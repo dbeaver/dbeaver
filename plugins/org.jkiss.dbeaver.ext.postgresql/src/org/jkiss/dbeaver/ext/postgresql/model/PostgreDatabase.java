@@ -56,7 +56,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     static final Log log = Log.getLog(PostgreDatabase.class);
 
     private PostgreDataSource dataSource;
-    private int oid;
+    private long oid;
     private String name;
     private int ownerId;
     private int encodingId;
@@ -87,7 +87,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     private void loadInfo(JDBCResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "datname");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "datdba");
         this.encodingId = JDBCUtils.safeGetInt(dbResult, "encoding");
@@ -106,7 +106,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return this.oid;
     }
 
@@ -285,7 +285,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return schemaCache.getObject(monitor, this, name);
     }
 
-    public PostgreSchema getSchema(DBRProgressMonitor monitor, int oid) throws DBException {
+    public PostgreSchema getSchema(DBRProgressMonitor monitor, long oid) throws DBException {
         if (this != dataSource.getDefaultInstance()) {
             throw new DBException("Can't access non-default database");
         }

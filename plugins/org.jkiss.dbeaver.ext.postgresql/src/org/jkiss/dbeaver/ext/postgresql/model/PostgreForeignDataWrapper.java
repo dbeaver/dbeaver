@@ -32,7 +32,7 @@ import java.sql.SQLException;
  */
 public class PostgreForeignDataWrapper extends PostgreInformation {
 
-    private int oid;
+    private long oid;
     private String name;
     private String[] options;
     private int ownerId;
@@ -50,7 +50,7 @@ public class PostgreForeignDataWrapper extends PostgreInformation {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "fdwname");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "fdwowner");
         this.handlerProcId = JDBCUtils.safeGetInt(dbResult, "fdwhandler");
@@ -73,7 +73,7 @@ public class PostgreForeignDataWrapper extends PostgreInformation {
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 
