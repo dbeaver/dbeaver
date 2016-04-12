@@ -178,7 +178,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             try {
                 String serverVersionStr = JDBCUtils.queryString(session, "SHOW server_version");
                 if (!CommonUtils.isEmpty(serverVersionStr)) {
-                    this.serverVersion = new Version(serverVersionStr);
+                    try {
+                        this.serverVersion = new Version(serverVersionStr);
+                    } catch (Exception e) {
+                        log.debug("Can't parse server version [" + serverVersionStr + "]");
+                    }
                 }
             } catch (SQLException e) {
                 log.debug(e);
