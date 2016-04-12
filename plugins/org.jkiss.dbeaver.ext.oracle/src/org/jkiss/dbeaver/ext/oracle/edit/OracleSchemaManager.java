@@ -68,8 +68,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
-        OracleSchema newSchema = new OracleSchema(parent, null);
-        newSchema.setName(dialog.getUser().getName());
+        OracleSchema newSchema = new OracleSchema(parent, -1, dialog.getUser().getName());
         newSchema.setUser(dialog.getUser());
 
         return newSchema;

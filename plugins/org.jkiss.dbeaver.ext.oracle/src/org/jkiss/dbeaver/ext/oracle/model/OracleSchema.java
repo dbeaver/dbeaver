@@ -74,25 +74,23 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     private Date createTime;
     private transient OracleUser user;
 
-    OracleSchema(OracleDataSource dataSource, long id, String name)
+    public OracleSchema(OracleDataSource dataSource, long id, String name)
     {
-        super(dataSource, true);
+        super(dataSource, id > 0);
         this.id = id;
         this.name = name;
     }
 
-    public OracleSchema(OracleDataSource dataSource, ResultSet dbResult)
+    public OracleSchema(@NotNull OracleDataSource dataSource, @NotNull ResultSet dbResult)
     {
-        super(dataSource, dbResult != null);
-        if (dbResult != null) {
-            this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
-            this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
-            if (this.name == null) {
-                log.warn("Empty schema name fetched");
-                this.name = "? " + super.hashCode();
-            }
-            this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
+        super(dataSource, true);
+        this.id = JDBCUtils.safeGetLong(dbResult, "USER_ID");
+        this.name = JDBCUtils.safeGetString(dbResult, "USERNAME");
+        if (CommonUtils.isEmpty(this.name)) {
+            log.warn("Empty schema name fetched");
+            this.name = "? " + super.hashCode();
         }
+        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED");
     }
 
     public boolean isPublic()
