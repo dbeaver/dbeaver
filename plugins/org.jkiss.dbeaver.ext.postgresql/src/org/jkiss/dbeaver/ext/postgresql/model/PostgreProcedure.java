@@ -74,7 +74,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
-    private int oid;
+    private long oid;
     private String procSrc;
     private String body;
     private int ownerId;
@@ -111,7 +111,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private void loadInfo(ResultSet dbResult) {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "proowner");
         this.languageId = JDBCUtils.safeGetInt(dbResult, "prolang");
@@ -215,7 +215,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

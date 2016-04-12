@@ -29,7 +29,7 @@ import java.sql.SQLException;
  */
 public class PostgreLanguage extends PostgreInformation {
 
-    private int oid;
+    private long oid;
     private String name;
     private int ownerId;
     private boolean userDefined;
@@ -48,7 +48,7 @@ public class PostgreLanguage extends PostgreInformation {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "lanname");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "lanowner");
         this.userDefined = JDBCUtils.safeGetBoolean(dbResult, "lanispl");
@@ -68,7 +68,7 @@ public class PostgreLanguage extends PostgreInformation {
 
     @Property(viewable = true, order = 2)
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

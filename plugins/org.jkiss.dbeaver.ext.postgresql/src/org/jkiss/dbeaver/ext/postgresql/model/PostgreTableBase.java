@@ -42,7 +42,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 {
     static final Log log = Log.getLog(PostgreTableBase.class);
 
-    private int oid;
+    private long oid;
     private String description;
 
     protected PostgreTableBase(PostgreSchema catalog)
@@ -55,7 +55,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         ResultSet dbResult)
     {
         super(catalog, JDBCUtils.safeGetString(dbResult, "relname"), true);
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
@@ -72,7 +72,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return this.oid;
     }
 

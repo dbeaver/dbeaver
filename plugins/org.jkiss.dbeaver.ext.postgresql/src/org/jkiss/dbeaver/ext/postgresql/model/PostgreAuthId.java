@@ -36,7 +36,7 @@ public class PostgreAuthId implements PostgreObject {
     public static final String CAT_FLAGS = "Flags";
 
     private final PostgreDatabase database;
-    private int oid;
+    private long oid;
     private String name;
     private boolean superUser;
     private boolean inherit;
@@ -59,7 +59,7 @@ public class PostgreAuthId implements PostgreObject {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "rolname");
         this.superUser = JDBCUtils.safeGetBoolean(dbResult, "rolsuper");
         this.inherit = JDBCUtils.safeGetBoolean(dbResult, "rolinherit");
@@ -112,7 +112,7 @@ public class PostgreAuthId implements PostgreObject {
 
     @Property(viewable = true, order = 2)
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

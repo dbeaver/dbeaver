@@ -35,12 +35,12 @@ import java.util.List;
 public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject {
     static final Log log = Log.getLog(PostgreTableConstraintBase.class);
 
-    private int oid;
+    private long oid;
 
     public PostgreTableConstraintBase(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, null, constraintType, true);
 
-        this.oid = JDBCUtils.safeGetInt(resultSet, "oid");
+        this.oid = JDBCUtils.safeGetLong(resultSet, "oid");
     }
 
     public PostgreTableConstraintBase(PostgreTableBase table, DBSEntityConstraintType constraintType) {
@@ -71,7 +71,7 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

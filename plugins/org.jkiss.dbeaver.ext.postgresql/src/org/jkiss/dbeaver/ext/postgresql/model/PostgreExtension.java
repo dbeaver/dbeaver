@@ -32,7 +32,7 @@ import java.sql.SQLException;
 public class PostgreExtension implements PostgreObject {
 
     private PostgreSchema schema;
-    private int oid;
+    private long oid;
     private String name;
     private String version;
 
@@ -46,7 +46,7 @@ public class PostgreExtension implements PostgreObject {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "extname");
         this.version = JDBCUtils.safeGetString(dbResult, "extversion");
     }
@@ -66,7 +66,7 @@ public class PostgreExtension implements PostgreObject {
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

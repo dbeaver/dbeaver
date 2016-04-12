@@ -32,7 +32,7 @@ import java.sql.SQLException;
  */
 public class PostgreTablespace extends PostgreInformation {
 
-    private int oid;
+    private long oid;
     private String name;
     private int ownerId;
     private Object[] options;
@@ -47,7 +47,7 @@ public class PostgreTablespace extends PostgreInformation {
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
-        this.oid = JDBCUtils.safeGetInt(dbResult, "oid");
+        this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "spcname");
         this.ownerId = JDBCUtils.safeGetInt(dbResult, "spcowner");
         this.options = JDBCUtils.safeGetArray(dbResult, "spcoptions");
@@ -62,7 +62,7 @@ public class PostgreTablespace extends PostgreInformation {
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return oid;
     }
 

@@ -55,7 +55,7 @@ public class PostgreCharset extends PostgreInformation {
     }
 
     @Override
-    public int getObjectId() {
+    public long getObjectId() {
         return encodingId;
     }
 

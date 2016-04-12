@@ -121,7 +121,7 @@ public class PostgreUtils {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AbstractObjectCache<OWNER,OBJECT> cache,
         @NotNull OWNER owner,
-        int objectId)
+        long objectId)
         throws DBException
     {
         for (OBJECT object : cache.getAllObjects(monitor, owner)) {
@@ -162,9 +162,9 @@ public class PostgreUtils {
         }
     }
     
-    public static int getAttributePrecision(int typeOid, int typeMod) {
+    public static int getAttributePrecision(long typeOid, int typeMod) {
         //typeOid = convertArrayToBaseOid(typeOid);
-        switch (typeOid) {
+        switch ((int) typeOid) {
             case PostgreOid.INT2:
                 return 5;
 
@@ -224,9 +224,9 @@ public class PostgreUtils {
         }
     }
 
-    public static int getDisplaySize(int oid, int typmod) {
+    public static int getDisplaySize(long oid, int typmod) {
         //oid = convertArrayToBaseOid(oid);
-        switch(oid) {
+        switch((int)oid) {
             case PostgreOid.INT2:
                 return 6; // -32768 to +32767
             case PostgreOid.INT4:
@@ -275,7 +275,7 @@ public class PostgreUtils {
                 // date = '294276-11-20' = 12 --enable-integer-datetimes
                 // zone = '+11:30' = 6;
 
-                switch(oid) {
+                switch((int)oid) {
                     case PostgreOid.TIME:
                         return 8 + secondSize;
                     case PostgreOid.TIMETZ:
@@ -313,9 +313,9 @@ public class PostgreUtils {
         }
     }
 
-    public static int getScale(int oid, int typmod) {
+    public static int getScale(long oid, int typmod) {
         //oid = convertArrayToBaseOid(oid);
-        switch(oid) {
+        switch((int)oid) {
             case PostgreOid.FLOAT4:
                 return 8;
             case PostgreOid.FLOAT8:
