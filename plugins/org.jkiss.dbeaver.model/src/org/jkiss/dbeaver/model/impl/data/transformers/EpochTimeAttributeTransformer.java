@@ -26,8 +26,10 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Transforms numeric attribute value into epoch time
@@ -50,7 +52,8 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number) {
-                return new Date(((Number) value).longValue()).toString();
+                return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH).format(
+                    new Date(((Number) value).longValue()));
             }
             return DBUtils.getDefaultValueDisplayString(value, format);
         }
