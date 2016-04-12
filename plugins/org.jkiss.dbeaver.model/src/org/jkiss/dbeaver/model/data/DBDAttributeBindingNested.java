@@ -39,8 +39,6 @@ public abstract class DBDAttributeBindingNested extends DBDAttributeBinding impl
     {
         super(valueHandler);
         this.parent = parent;
-        this.valueHandler = valueHandler;
-        this.valueRenderer = valueHandler;
     }
 
     @NotNull

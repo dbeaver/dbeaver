@@ -185,7 +185,7 @@ public class DBDAttributeBindingMeta extends DBDAttributeBinding {
     public boolean setEntityAttribute(@Nullable DBSEntityAttribute entityAttribute) {
         this.entityAttribute = entityAttribute;
         if (entityAttribute != null && !haveEqualsTypes(metaAttribute, entityAttribute)) {
-            valueRenderer = valueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
+            valueHandler = DBUtils.findValueHandler(getDataSource(), entityAttribute);
             return true;
         }
         return false;

@@ -39,15 +39,15 @@ import java.util.List;
 public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
     @NotNull
     protected DBDValueHandler valueHandler;
-    @NotNull
-    protected DBDValueRenderer valueRenderer;
+    //@NotNull
+    //protected DBDValueRenderer valueRenderer;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 
     protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
         this.valueHandler = valueHandler;
-        this.valueRenderer = valueHandler;
+        //this.valueRenderer = valueHandler;
     }
 
     @Nullable
@@ -108,12 +108,16 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     @NotNull
     public DBDValueRenderer getValueRenderer() {
-        return valueRenderer;
+        return valueHandler;
     }
 
-    public void setValueRenderer(@NotNull DBDValueRenderer renderer) {
-        this.valueRenderer = renderer;
+    public void setValueHandler(@NotNull DBDValueHandler valueHandler) {
+        this.valueHandler = valueHandler;
     }
+
+//    public void setValueRenderer(@NotNull DBDValueRenderer renderer) {
+//        this.valueRenderer = renderer;
+//    }
 
     @NotNull
     public DBSAttributeBase getAttribute()
