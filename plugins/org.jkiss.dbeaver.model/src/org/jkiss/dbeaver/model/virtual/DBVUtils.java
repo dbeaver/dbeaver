@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.List;
 
@@ -103,6 +104,9 @@ public abstract class DBVUtils {
                     i++;
                 }
             }
+        }
+        if (tdList.isEmpty()) {
+            return null;
         }
         DBDAttributeTransformer[] result = new DBDAttributeTransformer[tdList.size()];
         for (int i = 0; i < tdList.size(); i++) {

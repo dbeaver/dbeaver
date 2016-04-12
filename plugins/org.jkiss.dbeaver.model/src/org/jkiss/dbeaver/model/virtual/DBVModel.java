@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -233,6 +234,7 @@ public class DBVModel extends DBVContainer {
         private DBVContainer curContainer = null;
         private DBVEntity curEntity = null;
         private DBVEntityAttribute curAttribute = null;
+        private DBVTransformSettings curTransformSettings = null;
         private DBVEntityConstraint curConstraint;
         private DBVColorOverride curColor;
         private boolean colorValue = false;
@@ -287,6 +289,26 @@ public class DBVModel extends DBVContainer {
                         curEntity.addVirtualAttribute(curAttribute);
                     }
                     break;
+                case TAG_TRANSFORM:
+                    curTransformSettings = new DBVTransformSettings();
+                    if (curAttribute != null) {
+                        curAttribute.setTransformSettings(curTransformSettings);
+                    } else if (curEntity != null) {
+                        curEntity.setTransformSettings(curTransformSettings);
+                    }
+                    break;
+                case TAG_INCLUDE:
+                case TAG_EXCLUDE:
+                    String transformerId = atts.getValue(ATTR_ID);
+                    if (curTransformSettings != null && !CommonUtils.isEmpty(transformerId)) {
+                        final DBDAttributeTransformerDescriptor transformer = dataSourceContainer.getApplication().getValueHandlerRegistry().getTransformer(transformerId);
+                        if (transformer == null) {
+                            log.warn("Transformer '" + transformerId + "' not found");
+                        } else {
+                            curTransformSettings.enableTransformer(transformer, TAG_INCLUDE.equals(localName));
+                        }
+                    }
+                    break;
                 case TAG_COLOR:
                     if (curEntity != null) {
                         try {
@@ -335,6 +357,8 @@ public class DBVModel extends DBVContainer {
                         curAttribute = curAttribute.getParent();
                     }
                     break;
+                case TAG_TRANSFORM:
+                    curTransformSettings = null;
                 case TAG_COLOR:
                     curColor = null;
                     break;
