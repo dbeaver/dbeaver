@@ -75,7 +75,7 @@ public class PostgreSessionManager implements DBAServerSessionManager<PostgreSes
     {
         try {
             try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement("SELECT pg_catalog.pg_terminate_backend(?)")) {
-                dbStat.setInt(1, sessionType.getPid());
+                dbStat.setLong(1, sessionType.getPid());
                 dbStat.execute();
             }
         }

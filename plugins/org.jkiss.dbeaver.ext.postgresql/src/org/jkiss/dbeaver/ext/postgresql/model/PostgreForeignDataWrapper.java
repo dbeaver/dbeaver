@@ -35,10 +35,10 @@ public class PostgreForeignDataWrapper extends PostgreInformation {
     private long oid;
     private String name;
     private String[] options;
-    private int ownerId;
-    private int handlerProcId;
-    private int validatorProcId;
-    private int handlerSchemaId;
+    private long ownerId;
+    private long handlerProcId;
+    private long validatorProcId;
+    private long handlerSchemaId;
 
     public PostgreForeignDataWrapper(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
@@ -52,10 +52,10 @@ public class PostgreForeignDataWrapper extends PostgreInformation {
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "fdwname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "fdwowner");
-        this.handlerProcId = JDBCUtils.safeGetInt(dbResult, "fdwhandler");
-        this.validatorProcId = JDBCUtils.safeGetInt(dbResult, "fdwvalidator");
-        this.handlerSchemaId = JDBCUtils.safeGetInt(dbResult, "handler_schema_id");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "fdwowner");
+        this.handlerProcId = JDBCUtils.safeGetLong(dbResult, "fdwhandler");
+        this.validatorProcId = JDBCUtils.safeGetLong(dbResult, "fdwvalidator");
+        this.handlerSchemaId = JDBCUtils.safeGetLong(dbResult, "handler_schema_id");
         this.options = JDBCUtils.safeGetArray(dbResult, "fdwoptions");
     }
 

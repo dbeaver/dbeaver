@@ -34,7 +34,7 @@ public class PostgreTablespace extends PostgreInformation {
 
     private long oid;
     private String name;
-    private int ownerId;
+    private long ownerId;
     private Object[] options;
 
     public PostgreTablespace(PostgreDatabase database, ResultSet dbResult)
@@ -49,7 +49,7 @@ public class PostgreTablespace extends PostgreInformation {
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "spcname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "spcowner");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "spcowner");
         this.options = JDBCUtils.safeGetArray(dbResult, "spcoptions");
     }
 

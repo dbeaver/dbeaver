@@ -72,17 +72,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         "regdictionary",
     };
 
-    private int typeId;
+    private long typeId;
     private PostgreTypeType typeType;
     private PostgreTypeCategory typeCategory;
 
-    private final int ownerId;
+    private final long ownerId;
     private boolean isByValue;
     private boolean isPreferred;
     private String arrayDelimiter;
-    private int classId;
-    private int elementTypeId;
-    private int arrayItemTypeId;
+    private long classId;
+    private long elementTypeId;
+    private long arrayItemTypeId;
     private String inputFunc;
     private String outputFunc;
     private String receiveFunc;
@@ -93,16 +93,16 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private PostgreTypeAlign align = PostgreTypeAlign.c;
     private PostgreTypeStorage storage = PostgreTypeStorage.p;
     private boolean isNotNull;
-    private int baseTypeId;
+    private long baseTypeId;
     private int typeMod;
     private int arrayDim;
-    private int collationId;
+    private long collationId;
     private String defaultValue;
 
     private final AttributeCache attributeCache;
     private Object[] enumValues;
 
-    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, int typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
+    public PostgreDataType(@NotNull JDBCSession monitor, @NotNull PostgreSchema owner, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
 
         this.typeId = typeId;
@@ -125,13 +125,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             log.debug(e);
         }
 
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "typowner");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "typowner");
         this.isByValue = JDBCUtils.safeGetBoolean(dbResult, "typbyval");
         this.isPreferred = JDBCUtils.safeGetBoolean(dbResult, "typispreferred");
         this.arrayDelimiter = JDBCUtils.safeGetString(dbResult, "typdelim");
-        this.classId = JDBCUtils.safeGetInt(dbResult, "typrelid");
-        this.elementTypeId = JDBCUtils.safeGetInt(dbResult, "typelem");
-        this.arrayItemTypeId = JDBCUtils.safeGetInt(dbResult, "typarray");
+        this.classId = JDBCUtils.safeGetLong(dbResult, "typrelid");
+        this.elementTypeId = JDBCUtils.safeGetLong(dbResult, "typelem");
+        this.arrayItemTypeId = JDBCUtils.safeGetLong(dbResult, "typarray");
         this.inputFunc = JDBCUtils.safeGetString(dbResult, "typinput");
         this.outputFunc = JDBCUtils.safeGetString(dbResult, "typoutput");
         this.receiveFunc = JDBCUtils.safeGetString(dbResult, "typreceive");
@@ -150,10 +150,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             log.debug(e);
         }
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
-        this.baseTypeId = JDBCUtils.safeGetInt(dbResult, "typbasetype");
+        this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
         this.typeMod = JDBCUtils.safeGetInt(dbResult, "typtypmod");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "typndims");
-        this.collationId = JDBCUtils.safeGetInt(dbResult, "typcollation");
+        this.collationId = JDBCUtils.safeGetLong(dbResult, "typcollation");
         this.defaultValue = JDBCUtils.safeGetString(dbResult, "typdefault");
 
         this.attributeCache = hasAttributes() ? new AttributeCache() : null;
@@ -321,7 +321,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Property(category = CAT_MODIFIERS)
-    public int getCollationId() {
+    public long getCollationId() {
         return collationId;
     }
 
@@ -349,14 +349,14 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return typeType == PostgreTypeType.c && classId >= 0;
     }
 
-    private PostgreDataType resolveType(int typeId) {
+    private PostgreDataType resolveType(long typeId) {
         return getDatabase().getDataType(typeId);
     }
 
     public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        int schemaId = JDBCUtils.safeGetInt(dbResult, "typnamespace");
-        int typeId = JDBCUtils.safeGetInt(dbResult, "oid");
+        //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+        long typeId = JDBCUtils.safeGetLong(dbResult, "oid");
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
@@ -379,9 +379,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             valueType = Types.VARCHAR;
         } else {
             if (typeCategory == null) {
-                final int typElem = JDBCUtils.safeGetInt(dbResult, "typelem");
+                final long typElem = JDBCUtils.safeGetLong(dbResult, "typelem");
                 // In old PostgreSQL versions
-                switch (typeId) {
+                switch ((int) typeId) {
                     case PostgreOid.BIT:
                         valueType = Types.BIT;
                         break;
@@ -590,7 +590,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
                 "\nWHERE a.attnum > 0 AND NOT a.attisdropped AND c.oid=?" +
                 "\nORDER BY a.attnum");
-            dbStat.setInt(1, postgreDataType.classId);
+            dbStat.setLong(1, postgreDataType.classId);
             return dbStat;
         }
 

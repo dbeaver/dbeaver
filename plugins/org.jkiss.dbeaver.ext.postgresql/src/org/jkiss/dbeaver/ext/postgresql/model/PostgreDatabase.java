@@ -41,7 +41,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.utils.IntKeyMap;
+import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
 import java.util.Collection;
@@ -58,14 +58,14 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     private PostgreDataSource dataSource;
     private long oid;
     private String name;
-    private int ownerId;
-    private int encodingId;
+    private long ownerId;
+    private long encodingId;
     private String collate;
     private String ctype;
     private boolean isTemplate;
     private boolean allowConnect;
     private int connectionLimit;
-    private int tablespaceId;
+    private long tablespaceId;
 
     public final AuthIdCache authIdCache = new AuthIdCache();
     public final AccessMethodCache accessMethodCache = new AccessMethodCache();
@@ -75,7 +75,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public final EncodingCache encodingCache = new EncodingCache();
     public final TablespaceCache tablespaceCache = new TablespaceCache();
     public final SchemaCache schemaCache = new SchemaCache();
-    public final IntKeyMap<PostgreDataType> dataTypeCache = new IntKeyMap<>();
+    public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
 
     public PostgreDatabase(PostgreDataSource dataSource, JDBCResultSet dbResult)
         throws SQLException
@@ -89,14 +89,14 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "datname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "datdba");
-        this.encodingId = JDBCUtils.safeGetInt(dbResult, "encoding");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "datdba");
+        this.encodingId = JDBCUtils.safeGetLong(dbResult, "encoding");
         this.collate = JDBCUtils.safeGetString(dbResult, "datcollate");
         this.ctype = JDBCUtils.safeGetString(dbResult, "datctype");
         this.isTemplate = JDBCUtils.safeGetBoolean(dbResult, "datistemplate");
         this.allowConnect = JDBCUtils.safeGetBoolean(dbResult, "datallowconn");
         this.connectionLimit = JDBCUtils.safeGetInt(dbResult, "datconnlimit");
-        this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "dattablespace");
+        this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "dattablespace");
     }
 
     @NotNull
@@ -297,7 +297,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return null;
     }
 
-    PostgreTableBase findTable(DBRProgressMonitor monitor, int schemaId, int tableId)
+    PostgreTableBase findTable(DBRProgressMonitor monitor, long schemaId, long tableId)
         throws DBException
     {
         PostgreSchema schema = getSchema(monitor, schemaId);
@@ -395,7 +395,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         }
     }
 
-    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, int schemaId, int procId)
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long schemaId, long procId)
         throws DBException
     {
         final PostgreSchema schema = getSchema(monitor, schemaId);
@@ -405,7 +405,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return null;
     }
 
-    public PostgreDataType getDataType(int typeId) {
+    public PostgreDataType getDataType(long typeId) {
         if (typeId <= 0) {
             return null;
         }

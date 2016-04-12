@@ -55,8 +55,8 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         deleteRule = getRuleFromAction(JDBCUtils.safeGetString(resultSet, "confdeltype"));
 
         final DBRProgressMonitor monitor = resultSet.getSession().getProgressMonitor();
-        final int refSchemaId = JDBCUtils.safeGetInt(resultSet, "refnamespace");
-        final int refTableId = JDBCUtils.safeGetInt(resultSet, "confrelid");
+        final long refSchemaId = JDBCUtils.safeGetLong(resultSet, "refnamespace");
+        final long refTableId = JDBCUtils.safeGetLong(resultSet, "confrelid");
         refTable = table.getDatabase().findTable(
             monitor,
             refSchemaId,
@@ -134,7 +134,9 @@ public class PostgreTableForeignKey extends PostgreTableConstraintBase implement
         columns.addAll((Collection<? extends PostgreTableForeignKeyColumn>) children);
 
         final List<PostgreAttribute> lst = new ArrayList<>(children.size());
-        for (PostgreTableConstraintColumn c : children) lst.add(((PostgreTableForeignKeyColumn)c).getReferencedColumn());
+        for (PostgreTableConstraintColumn c : children) {
+            lst.add(((PostgreTableForeignKeyColumn)c).getReferencedColumn());
+        }
         try {
             refConstraint = DBUtils.findEntityConstraint(monitor, refTable, lst);
         } catch (DBException e) {

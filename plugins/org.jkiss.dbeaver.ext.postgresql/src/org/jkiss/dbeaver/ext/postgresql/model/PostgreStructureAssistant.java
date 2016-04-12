@@ -138,8 +138,8 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    final int schemaId = JDBCUtils.safeGetInt(dbResult, "relnamespace");
-                    final int tableId = JDBCUtils.safeGetInt(dbResult, "oid");
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                    final long tableId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
                     final PostgreSchema tableSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
                     objects.add(new AbstractObjectReference(tableName, tableSchema, null, RelationalObjectType.TYPE_TABLE) {
@@ -178,8 +178,8 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    final int schemaId = JDBCUtils.safeGetInt(dbResult, "pronamespace");
-                    final int procId = JDBCUtils.safeGetInt(dbResult, "oid");
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
+                    final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final PostgreSchema procSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
                     objects.add(new AbstractObjectReference(procName, procSchema, null, RelationalObjectType.TYPE_PROCEDURE) {
@@ -218,8 +218,8 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    final int schemaId = JDBCUtils.safeGetInt(dbResult, "connamespace");
-                    final int constrId = JDBCUtils.safeGetInt(dbResult, "oid");
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "connamespace");
+                    final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
                     final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
                     objects.add(new AbstractObjectReference(constrName, constrSchema, null, RelationalObjectType.TYPE_TABLE) {
