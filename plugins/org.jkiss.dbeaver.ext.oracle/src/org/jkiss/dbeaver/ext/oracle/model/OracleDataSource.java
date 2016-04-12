@@ -470,12 +470,14 @@ public class OracleDataSource extends JDBCDataSource
     public String getPlanTableName(JDBCSession session)
         throws SQLException
     {
-        String tableName = getContainer().getPreferenceStore().getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
-        if (!CommonUtils.isEmpty(tableName)) {
-            return tableName;
-        }
         if (planTableName == null) {
-            String[] candidateNames = new String[] {"PLAN_TABLE", "TOAD_PLAN_TABLE"};
+            String[] candidateNames;
+            String tableName = getContainer().getPreferenceStore().getString(OracleConstants.PREF_EXPLAIN_TABLE_NAME);
+            if (!CommonUtils.isEmpty(tableName)) {
+                candidateNames = new String[] { tableName };
+            } else {
+                candidateNames = new String[]{"PLAN_TABLE", "TOAD_PLAN_TABLE"};
+            }
             for (String candidate : candidateNames) {
                 try {
                     JDBCUtils.executeSQL(session, "SELECT 1 FROM " + candidate);
@@ -487,25 +489,26 @@ public class OracleDataSource extends JDBCDataSource
                 break;
             }
             if (planTableName == null) {
+                final String newPlanTableName = candidateNames[0];
                 // Plan table not found - try to create new one
                 if (!UIUtils.confirmAction(
                     DBeaverUI.getActiveWorkbenchShell(),
                     "Oracle PLAN_TABLE missing",
                     "PLAN_TABLE not found in current user's session. " +
-                        "Do you want DBeaver to create new PLAN_TABLE?"))
+                        "Do you want DBeaver to create new PLAN_TABLE (" + newPlanTableName + ")?"))
                 {
                     return null;
                 }
-                planTableName = createPlanTable(session);
+                planTableName = createPlanTable(session, newPlanTableName);
             }
         }
         return planTableName;
     }
 
-    private String createPlanTable(JDBCSession session) throws SQLException
+    private String createPlanTable(JDBCSession session, String tableName) throws SQLException
     {
-        JDBCUtils.executeSQL(session, OracleConstants.PLAN_TABLE_DEFINITION);
-        return "PLAN_TABLE";
+        JDBCUtils.executeSQL(session, OracleConstants.PLAN_TABLE_DEFINITION.replace("${TABLE_NAME}", tableName));
+        return tableName;
     }
 
     @Override
