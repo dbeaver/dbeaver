@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -25,8 +26,6 @@ import org.jkiss.dbeaver.model.data.DBDPreferences;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-
-import java.sql.Types;
 
 /**
  * MySQL data types provider
@@ -43,8 +42,7 @@ public class MySQLValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        int typeID = typedObject.getTypeID();
-        if (typeID == Types.DATE || typeID == Types.TIME || typeID == Types.TIMESTAMP) {
+        if (typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new MySQLDateTimeValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;
