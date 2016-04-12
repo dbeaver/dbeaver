@@ -656,7 +656,7 @@ public class OracleDataSource extends JDBCDataSource
         {
             setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
             // Add predefined types
-            if (owner.activeSchemaName != null && getCachedObject(owner.activeSchemaName) == null) {
+            if (!CommonUtils.isEmpty(owner.activeSchemaName) && getCachedObject(owner.activeSchemaName) == null) {
                 cacheObject(
                     new OracleSchema(owner, -1, owner.activeSchemaName));
             }
