@@ -36,10 +36,12 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows) throws DBException {
+        // TODO: Change attribute type (to DATETIME)
         attribute.setValueHandler(new EpochValueHandler(attribute.getValueHandler()));
     }
 
     private class EpochValueHandler extends ProxyValueHandler {
+
         public EpochValueHandler(DBDValueHandler target) {
             super(target);
         }
