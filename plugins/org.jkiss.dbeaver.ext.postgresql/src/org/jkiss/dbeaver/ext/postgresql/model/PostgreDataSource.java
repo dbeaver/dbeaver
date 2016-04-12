@@ -291,6 +291,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             for (JDBCExecutionContext context : allContexts) {
                 context.reconnect(monitor);
             }
+            getDefaultInstance().cacheDataTypes(monitor);
         }
         finally {
             databaseSwitchInProgress = false;
