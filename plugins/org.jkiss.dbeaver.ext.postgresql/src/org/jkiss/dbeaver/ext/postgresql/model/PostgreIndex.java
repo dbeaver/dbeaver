@@ -48,7 +48,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private boolean isReady;
     private String description;
     private List<PostgreIndexColumn> columns = new ArrayList<>();
-    private int amId;
+    private long amId;
 
     public PostgreIndex(PostgreTableBase parent, String indexName, ResultSet dbResult) {
         super(
@@ -67,7 +67,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         this.isReady = JDBCUtils.safeGetBoolean(dbResult, "indisready");
 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
-        this.amId = JDBCUtils.safeGetInt(dbResult, "relam");
+        this.amId = JDBCUtils.safeGetLong(dbResult, "relam");
     }
 
     public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType) {

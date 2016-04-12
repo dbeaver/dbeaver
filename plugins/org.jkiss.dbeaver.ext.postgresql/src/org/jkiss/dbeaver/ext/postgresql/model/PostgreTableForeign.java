@@ -40,7 +40,7 @@ import java.sql.SQLException;
  */
 public class PostgreTableForeign extends PostgreTable implements DBPImageProvider
 {
-    private int foreignServerId;
+    private long foreignServerId;
     private String[] foreignOptions;
 
     public PostgreTableForeign(PostgreSchema catalog)
@@ -76,7 +76,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPImageProvide
                 stat.setLong(1, getObjectId());
                 try (JDBCResultSet result = stat.executeQuery()) {
                     if (result.next()) {
-                        foreignServerId = JDBCUtils.safeGetInt(result, "ftserver");
+                        foreignServerId = JDBCUtils.safeGetLong(result, "ftserver");
                         foreignOptions = JDBCUtils.safeGetArray(result, "ftoptions");
                     }
                 }

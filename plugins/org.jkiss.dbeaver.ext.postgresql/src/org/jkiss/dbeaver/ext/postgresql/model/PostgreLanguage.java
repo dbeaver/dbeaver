@@ -31,7 +31,7 @@ public class PostgreLanguage extends PostgreInformation {
 
     private long oid;
     private String name;
-    private int ownerId;
+    private long ownerId;
     private boolean userDefined;
     private boolean trusted;
     private String handlerId;
@@ -50,7 +50,7 @@ public class PostgreLanguage extends PostgreInformation {
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "lanname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "lanowner");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "lanowner");
         this.userDefined = JDBCUtils.safeGetBoolean(dbResult, "lanispl");
         this.trusted = JDBCUtils.safeGetBoolean(dbResult, "lanpltrusted");
         this.handlerId = JDBCUtils.safeGetString(dbResult, "lanplcallfoid");
@@ -73,7 +73,7 @@ public class PostgreLanguage extends PostgreInformation {
     }
 
     @Property(viewable = true, order = 3)
-    public int getOwnerId() {
+    public long getOwnerId() {
         return ownerId;
     }
 

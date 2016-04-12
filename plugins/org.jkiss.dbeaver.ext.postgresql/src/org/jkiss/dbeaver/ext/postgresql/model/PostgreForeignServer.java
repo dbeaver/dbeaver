@@ -37,8 +37,8 @@ public class PostgreForeignServer extends PostgreInformation {
     private String type;
     private String version;
     private String[] options;
-    private int ownerId;
-    private int dataWrapperId;
+    private long ownerId;
+    private long dataWrapperId;
 
     public PostgreForeignServer(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
@@ -52,8 +52,8 @@ public class PostgreForeignServer extends PostgreInformation {
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "srvname");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "srvowner");
-        this.dataWrapperId = JDBCUtils.safeGetInt(dbResult, "srvfdw");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "srvowner");
+        this.dataWrapperId = JDBCUtils.safeGetLong(dbResult, "srvfdw");
         this.type = JDBCUtils.safeGetString(dbResult, "srvtype");
         this.version = JDBCUtils.safeGetString(dbResult, "srvversion");
         this.options = JDBCUtils.safeGetArray(dbResult, "srvoptions");

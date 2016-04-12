@@ -92,7 +92,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         throws SQLException
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "nspowner");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "nspowner");
         this.persisted = true;
     }
 
@@ -171,7 +171,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         return indexCache.getObjects(monitor, this, null);
     }
 
-    public PostgreTableBase getTable(DBRProgressMonitor monitor, int tableId)
+    public PostgreTableBase getTable(DBRProgressMonitor monitor, long tableId)
         throws DBException
     {
         for (PostgreClass table : tableCache.getAllObjects(monitor, this)) {

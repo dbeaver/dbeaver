@@ -29,7 +29,7 @@ import java.sql.SQLException;
  */
 public class PostgreCharset extends PostgreInformation {
 
-    private int encodingId;
+    private long encodingId;
     private String name;
 
     public PostgreCharset(PostgreDatabase database, ResultSet dbResult)
@@ -43,7 +43,7 @@ public class PostgreCharset extends PostgreInformation {
         throws SQLException
     {
         this.name = JDBCUtils.safeGetString(dbResult, "encname");
-        this.encodingId = JDBCUtils.safeGetInt(dbResult, "encid");
+        this.encodingId = JDBCUtils.safeGetLong(dbResult, "encid");
     }
 
     @NotNull

@@ -77,8 +77,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private long oid;
     private String procSrc;
     private String body;
-    private int ownerId;
-    private int languageId;
+    private long ownerId;
+    private long languageId;
     private float execCost;
     private float estRows;
     private PostgreDataType varArrayType;
@@ -113,8 +113,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private void loadInfo(ResultSet dbResult) {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
-        this.ownerId = JDBCUtils.safeGetInt(dbResult, "proowner");
-        this.languageId = JDBCUtils.safeGetInt(dbResult, "prolang");
+        this.ownerId = JDBCUtils.safeGetLong(dbResult, "proowner");
+        this.languageId = JDBCUtils.safeGetLong(dbResult, "prolang");
         this.execCost = JDBCUtils.safeGetFloat(dbResult, "procost");
         this.estRows = JDBCUtils.safeGetFloat(dbResult, "prorows");
 
@@ -182,7 +182,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
 
         {
-            final int varTypeId = JDBCUtils.safeGetInt(dbResult, "provariadic");
+            final long varTypeId = JDBCUtils.safeGetLong(dbResult, "provariadic");
             if (varTypeId != 0) {
                 varArrayType = container.getDatabase().getDataType(varTypeId);
             }
@@ -200,7 +200,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             log.debug(e);
         }
         {
-            final int retTypeId = JDBCUtils.safeGetInt(dbResult, "prorettype");
+            final long retTypeId = JDBCUtils.safeGetLong(dbResult, "prorettype");
             if (retTypeId != 0) {
                 returnType = container.getDatabase().getDataType(retTypeId);
             }

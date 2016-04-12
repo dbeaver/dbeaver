@@ -51,7 +51,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
     private boolean hasOids;
-    private int tablespaceId;
+    private long tablespaceId;
     private List<PostgreTableInheritance> superTables;
     private List<PostgreTableInheritance> subTables;
 
@@ -67,7 +67,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         super(catalog, dbResult);
 
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
-        this.tablespaceId = JDBCUtils.safeGetInt(dbResult, "reltablespace");
+        this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
     }
 
     public SimpleObjectCache<PostgreTable, PostgreTableForeignKey> getForeignKeyCache() {
@@ -199,8 +199,8 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
-                            final int parentSchemaId = JDBCUtils.safeGetInt(dbResult, "relnamespace");
-                            final int parentTableId = JDBCUtils.safeGetInt(dbResult, "inhparent");
+                            final long parentSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                            final long parentTableId = JDBCUtils.safeGetLong(dbResult, "inhparent");
                             PostgreSchema schema = getDatabase().getSchema(monitor, parentSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find parent table's schema '" + parentSchemaId + "'");
@@ -244,8 +244,8 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.next()) {
-                            final int subSchemaId = JDBCUtils.safeGetInt(dbResult, "relnamespace");
-                            final int subTableId = JDBCUtils.safeGetInt(dbResult, "inhrelid");
+                            final long subSchemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                            final long subTableId = JDBCUtils.safeGetLong(dbResult, "inhrelid");
                             PostgreSchema schema = getDatabase().getSchema(monitor, subSchemaId);
                             if (schema == null) {
                                 log.warn("Can't find sub-table's schema '" + subSchemaId + "'");
