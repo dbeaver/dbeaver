@@ -90,7 +90,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         dumpEventsCheck.addSelectionListener(changeListener);
         commentsCheck = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_addnl_comments, wizard.comments);
         commentsCheck.addSelectionListener(changeListener);
-        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.comments);
+        removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.removeDefiner);
         removeDefiner.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
