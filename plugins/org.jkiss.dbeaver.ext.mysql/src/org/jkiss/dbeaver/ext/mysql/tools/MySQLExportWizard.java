@@ -365,7 +365,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
 
                 LineNumberReader reader = new LineNumberReader(new InputStreamReader(input, ContentUtils.DEFAULT_CHARSET));
                 try (OutputStream output = new FileOutputStream(outFile)) {
-                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output));
+                    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(output, ContentUtils.DEFAULT_CHARSET));
                     for (;;) {
                         String line = reader.readLine();
                         if (line == null) {
@@ -386,7 +386,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
                         writer.write(line);
                         writer.newLine();
                     }
-                    output.flush();
+                    writer.flush();
                 }
             } catch (IOException e) {
                 logPage.appendLog(e.getMessage());
