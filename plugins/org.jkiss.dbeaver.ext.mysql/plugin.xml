@@ -371,4 +371,10 @@
         </handler>
     </extension>
 
+    <!-- Exclude broken driver versions -->
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <ignoreArtifactVersion id="mysql:mysql-connector-java:6.0.2"/>
+        <ignoreArtifactVersion id="org.mariadb.jdbc:mariadb-java-client:1.4.0"/>
+    </extension>
+
 </plugin>

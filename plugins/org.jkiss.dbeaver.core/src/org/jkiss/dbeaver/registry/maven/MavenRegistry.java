@@ -39,6 +39,7 @@ public class MavenRegistry
     public static final String MAVEN_LOCAL_REPO_FOLDER = "maven-local";
 
     private static MavenRegistry instance = null;
+    private final Set<String> ignoredArtifactVersions = new HashSet<>();
 
     public synchronized static MavenRegistry getInstance()
     {
@@ -58,6 +59,10 @@ public class MavenRegistry
     {
     }
 
+    boolean isVersionIgnored(String ref) {
+        return ignoredArtifactVersions.contains(ref);
+    }
+
     private void init() {
         loadStandardRepositories();
         loadCustomRepositories();
@@ -68,8 +73,12 @@ public class MavenRegistry
         {
             IConfigurationElement[] extElements = Platform.getExtensionRegistry().getConfigurationElementsFor(MavenRepository.EXTENSION_ID);
             for (IConfigurationElement ext : extElements) {
-                MavenRepository repository = new MavenRepository(ext);
-                repositories.add(repository);
+                if ("repository".equals(ext.getName())) {
+                    MavenRepository repository = new MavenRepository(ext);
+                    repositories.add(repository);
+                } else if ("ignoreArtifactVersion".equals(ext.getName())) {
+                    ignoredArtifactVersions.add(ext.getAttribute("id"));
+                }
             }
         }
         // Create local repository
