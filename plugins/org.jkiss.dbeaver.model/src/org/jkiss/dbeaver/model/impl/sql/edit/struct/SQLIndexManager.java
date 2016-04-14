@@ -53,8 +53,11 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         index.setName(indexName);
 
         StringBuilder decl = new StringBuilder(40);
-        decl
-            .append("CREATE INDEX ").append(indexName) //$NON-NLS-1$
+        decl.append("CREATE ");
+        if (index.isUnique()) {
+            decl.append("UNIQUE ");
+        }
+        decl.append("INDEX ").append(indexName) //$NON-NLS-1$
             .append(" ON ").append(table.getFullQualifiedName()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
         // Get columns using void monitor

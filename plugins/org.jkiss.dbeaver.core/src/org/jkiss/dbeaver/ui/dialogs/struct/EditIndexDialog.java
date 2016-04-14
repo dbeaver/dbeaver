@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -45,6 +46,7 @@ public class EditIndexDialog extends AttributesSelectorDialog {
 
     private List<DBSIndexType> indexTypes;
     private DBSIndexType selectedIndexType;
+    private boolean unique;
 
     public EditIndexDialog(
         Shell shell,
@@ -78,6 +80,14 @@ public class EditIndexDialog extends AttributesSelectorDialog {
                 selectedIndexType = indexTypes.get(typeCombo.getSelectionIndex());
             }
         });
+
+        final Button uniqueButton = UIUtils.createLabelCheckbox(panel, "Unique", false);
+        uniqueButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                unique = uniqueButton.getSelection();
+            }
+        });
     }
 
     public DBSIndexType getIndexType()
@@ -85,4 +95,7 @@ public class EditIndexDialog extends AttributesSelectorDialog {
         return selectedIndexType;
     }
 
+    public boolean isUnique() {
+        return unique;
+    }
 }

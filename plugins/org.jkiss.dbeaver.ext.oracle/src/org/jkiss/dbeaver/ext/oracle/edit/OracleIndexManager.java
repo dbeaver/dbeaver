@@ -72,7 +72,7 @@ public class OracleIndexManager extends SQLIndexManager<OracleTableIndex, Oracle
             parent.getSchema(),
             parent,
             DBObjectNameCaseTransformer.transformName(parent.getDataSource(), idxName.toString()),
-            false,
+            editDialog.isUnique(),
             editDialog.getIndexType());
         int colIndex = 1;
         for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
