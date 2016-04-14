@@ -97,9 +97,19 @@ public class MavenArtifact implements IMavenIdentifier
                 log.warn("Error parsing artifact directory", e);
             }
         } finally {
+            removeIgnoredVersions();
             monitor.worked(1);
         }
         metadataLoaded = true;
+    }
+
+    private void removeIgnoredVersions() {
+        for (Iterator<String> iter = versions.iterator(); iter.hasNext(); ) {
+            String version = iter.next();
+            if (MavenRegistry.getInstance().isVersionIgnored(groupId + ":" + artifactId + ":" + version)) {
+                iter.remove();
+            }
+        }
     }
 
     private void parseDirectory(InputStream dirStream) throws IOException, XMLException {
