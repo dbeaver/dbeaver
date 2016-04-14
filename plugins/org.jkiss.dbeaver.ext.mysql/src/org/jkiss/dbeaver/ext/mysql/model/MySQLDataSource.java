@@ -94,6 +94,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
+        } else {
+            // Newer MySQL servers/connectors requires explicit SSL disable
+            props.put("useSSL", "false");
         }
 /*
         if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
