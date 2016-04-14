@@ -167,19 +167,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
         }
 
-        if (!CommonUtils.isEmpty(params)) {
-            StringBuilder paramsSignature = new StringBuilder(64);
-            paramsSignature.append("(");
-            for (int i = 0; i < params.size(); i++) {
-                if (i > 0) paramsSignature.append(',');
-                final PostgreDataType dataType = params.get(i).getParameterType();
-                paramsSignature.append(dataType.getName());
-            }
-            paramsSignature.append(")");
-            this.overloadedName = this.name + paramsSignature.toString();
-        } else {
-            this.overloadedName = this.name;
-        }
+        this.overloadedName = makeOverloadedName(false);
 
         {
             final long varTypeId = JDBCUtils.safeGetLong(dbResult, "provariadic");
@@ -352,6 +340,27 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(category = CAT_FLAGS, viewable = true, order = 106)
     public ProcedureVolatile getProcVolatile() {
         return procVolatile;
+    }
+
+    private String makeOverloadedName(boolean quote) {
+        String selfName = quote ? DBUtils.getQuotedIdentifier(this) : name;
+        if (!CommonUtils.isEmpty(params)) {
+            StringBuilder paramsSignature = new StringBuilder(64);
+            paramsSignature.append("(");
+            for (int i = 0; i < params.size(); i++) {
+                if (i > 0) paramsSignature.append(',');
+                final PostgreDataType dataType = params.get(i).getParameterType();
+                paramsSignature.append(dataType.getName());
+            }
+            paramsSignature.append(")");
+            return selfName + paramsSignature.toString();
+        } else {
+            return selfName + "()";
+        }
+    }
+
+    public String getFullQualifiedSignature() {
+        return DBUtils.getQuotedIdentifier(getContainer()) + "." + makeOverloadedName(true);
     }
 
     @Override
