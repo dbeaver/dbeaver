@@ -64,7 +64,7 @@ public class GenericIndexManager extends SQLIndexManager<GenericTableIndex, Gene
 
         final GenericTableIndex index = new GenericTableIndex(
             parent,
-            false,
+            !editDialog.isUnique(),
             null,
             0,
             null,

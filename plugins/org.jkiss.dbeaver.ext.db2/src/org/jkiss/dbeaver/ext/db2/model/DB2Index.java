@@ -113,12 +113,13 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
 
         // DF: Could have been done in constructor. More "readable" to do it here
         this.db2IndexType = CommonUtils.valueOf(DB2IndexType.class, JDBCUtils.safeGetStringTrimmed(dbResult, "INDEXTYPE"));
-        this.indexType = db2IndexType.getDBSIndexType();
+        this.indexType = db2IndexType == null ? DBSIndexType.UNKNOWN : db2IndexType.getDBSIndexType();
     }
 
-    public DB2Index(DB2TableBase db2Table, String indexName, DBSIndexType indexType)
+    public DB2Index(DB2TableBase db2Table, String indexName, DBSIndexType indexType, DB2UniqueRule uniqueRule)
     {
         super(db2Table.getSchema(), db2Table, indexName, indexType, false);
+        this.uniqueRule = uniqueRule;
     }
 
     // -----------------

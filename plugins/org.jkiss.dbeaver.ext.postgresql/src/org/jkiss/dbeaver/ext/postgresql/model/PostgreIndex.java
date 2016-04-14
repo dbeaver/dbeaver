@@ -70,8 +70,9 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         this.amId = JDBCUtils.safeGetLong(dbResult, "relam");
     }
 
-    public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType) {
+    public PostgreIndex(PostgreTableBase parent, String name, DBSIndexType indexType, boolean unique) {
         super(parent.getContainer(), parent, name, indexType, false);
+        this.isUnique = unique;
     }
 
     @NotNull

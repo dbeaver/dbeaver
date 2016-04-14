@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.db2.model.DB2IndexColumn;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2IndexType;
+import org.jkiss.dbeaver.ext.db2.model.dict.DB2UniqueRule;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -89,7 +90,11 @@ public class DB2IndexManager extends SQLIndexManager<DB2Index, DB2TableBase> {
         String indexBaseName = String.format(CONS_IX_NAME, tableName, colName);
         String indexName = DBObjectNameCaseTransformer.transformName(db2Table.getDataSource(), indexBaseName);
 
-        DB2Index index = new DB2Index(db2Table, indexName, editDialog.getIndexType());
+        DB2Index index = new DB2Index(
+            db2Table,
+            indexName,
+            editDialog.getIndexType(),
+            editDialog.isUnique() ? DB2UniqueRule.U : DB2UniqueRule.D);
 
         int colIndex = 1;
         for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {

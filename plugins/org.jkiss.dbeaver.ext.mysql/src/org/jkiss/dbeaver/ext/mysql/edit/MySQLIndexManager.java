@@ -62,7 +62,7 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
 
         final MySQLTableIndex index = new MySQLTableIndex(
             parent,
-            false,
+            !editDialog.isUnique(),
             null,
             editDialog.getIndexType(),
             null);

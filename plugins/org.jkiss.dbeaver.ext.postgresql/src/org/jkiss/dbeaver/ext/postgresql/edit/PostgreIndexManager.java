@@ -63,7 +63,8 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
         final PostgreIndex index = new PostgreIndex(
             parent,
             idxName.toString(),
-            editDialog.getIndexType());
+            editDialog.getIndexType(),
+            editDialog.isUnique());
         int colIndex = 1;
         for (DBSEntityAttribute tableColumn : editDialog.getSelectedAttributes()) {
             if (colIndex == 1) {
