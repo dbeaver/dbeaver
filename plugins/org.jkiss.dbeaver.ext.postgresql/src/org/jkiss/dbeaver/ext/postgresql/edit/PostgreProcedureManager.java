@@ -88,15 +88,17 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
     {
+        String objectType = command.getObject().isAggregate() ? "AGGREGATE" : "FUNCTION";
         return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Drop procedure", "DROP PROCEDURE " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-2$
         };
     }
 
     private DBEPersistAction[] createOrReplaceProcedureQuery(PostgreProcedure procedure)
     {
+        String objectType = procedure.isAggregate() ? "AGGREGATE" : "FUNCTION";
         return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
+            new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " IF EXISTS " + procedure.getFullQualifiedSignature()), //$NON-NLS-2$ //$NON-NLS-3$
             new SQLDatabasePersistAction("Create procedure", procedure.getBody()) //$NON-NLS-2$
         };
     }
