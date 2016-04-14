@@ -85,7 +85,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     @Property(viewable = true, order = 5)
     public boolean isUnique()
     {
-        return !isUnique;
+        return isUnique;
     }
 
     @Property(viewable = false, order = 20)
