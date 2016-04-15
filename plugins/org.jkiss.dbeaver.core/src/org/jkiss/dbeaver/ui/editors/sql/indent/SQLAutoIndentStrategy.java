@@ -105,6 +105,9 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                 return false;
             }
         }
+        if (quoteStart == -1 || quoteEnd == -1) {
+            return false;
+        }
         StringBuilder result = new StringBuilder(sourceCode.length());
         char prevChar = (char)-1;
         boolean inString = true;
