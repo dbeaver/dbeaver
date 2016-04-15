@@ -20,11 +20,14 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -37,6 +40,7 @@ import java.util.List;
  * Base attribute binding
  */
 public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
+
     @NotNull
     protected DBDValueHandler valueHandler;
     //@NotNull
@@ -106,14 +110,15 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return valueHandler;
     }
 
+    public void setValueHandler(@NotNull DBDValueHandler valueHandler) {
+        this.valueHandler = valueHandler;
+    }
+
     @NotNull
     public DBDValueRenderer getValueRenderer() {
         return valueHandler;
     }
 
-    public void setValueHandler(@NotNull DBDValueHandler valueHandler) {
-        this.valueHandler = valueHandler;
-    }
 
 //    public void setValueRenderer(@NotNull DBDValueRenderer renderer) {
 //        this.valueRenderer = renderer;
@@ -173,8 +178,13 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @NotNull
     @Override
     public String getFullQualifiedName() {
+        final DBPDataSource dataSource = getDataSource();
         if (getParentObject() == null) {
-            return DBUtils.getQuotedIdentifier(getDataSource(), getName());
+            return DBUtils.getQuotedIdentifier(dataSource, getName());
+        }
+        char structSeparator = SQLConstants.STRUCT_SEPARATOR;
+        if (dataSource instanceof SQLDataSource) {
+            structSeparator = ((SQLDataSource) dataSource).getSQLDialect().getStructSeparator();
         }
         StringBuilder query = new StringBuilder();
         boolean hasPrevIdentifier = false;
@@ -184,9 +194,9 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 continue;
             }
             if (hasPrevIdentifier) {
-                query.insert(0, '.');
+                query.insert(0, structSeparator);
             }
-            query.insert(0, DBUtils.getQuotedIdentifier(getDataSource(), attribute.getName()));
+            query.insert(0, DBUtils.getQuotedIdentifier(dataSource, attribute.getName()));
             hasPrevIdentifier = true;
         }
 
@@ -196,11 +206,6 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @Override
     public boolean isPersisted() {
         return false;
-    }
-
-    @Override
-    public String toString() {
-        return getName() + " [" + getOrdinalPosition() + "]";
     }
 
     /**
@@ -215,7 +220,9 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         }
         DBDAttributeBinding p = this;
         for (int i = 0; i < grand; i++) {
-            assert p != null;
+            if (p == null) {
+                throw new IllegalArgumentException("Bad parent depth: " + grand);
+            }
             p = p.getParentObject();
         }
         return p;
@@ -254,6 +261,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
                 transformer.transformAttribute(session, this, rows);
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return getName() + " [" + getOrdinalPosition() + "]";
     }
 
 }
