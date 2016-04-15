@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * DBD binding transformer.
@@ -33,7 +34,11 @@ public interface DBDAttributeTransformer
     /**
      * Transforms attribute
      */
-    void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows)
+    void transformAttribute(
+        @NotNull DBCSession session,
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull List<Object[]> rows,
+        @NotNull Map<String, Object> options)
         throws DBException;
 
 }

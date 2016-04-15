@@ -71,7 +71,7 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    public static DBDAttributeTransformer[] findAttributeTransformers(DBDAttributeBinding binding, boolean custom)
+    public static DBDAttributeTransformer[] findAttributeTransformers(DBDAttributeBinding binding, Boolean custom)
     {
         DBPDataSource dataSource = binding.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();

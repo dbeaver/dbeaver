@@ -21,31 +21,30 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 /**
- * Transforms numeric attribute value into epoch time
+ * Transforms numeric attribute value into string in a specified radix
  */
-public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
+public class RadixAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, Map<String, Object> options) throws DBException {
-        // TODO: Change attribute type (to DATETIME)
-        attribute.setValueHandler(new EpochValueHandler(attribute.getValueHandler()));
+        attribute.setValueHandler(new RadixValueHandler(attribute.getValueHandler()));
     }
 
-    private class EpochValueHandler extends ProxyValueHandler {
+    private class RadixValueHandler extends ProxyValueHandler {
 
-        public EpochValueHandler(DBDValueHandler target) {
+        public RadixValueHandler(DBDValueHandler target) {
             super(target);
         }
 
@@ -53,8 +52,7 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number) {
-                return new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ENGLISH).format(
-                    new Date(((Number) value).longValue()));
+                return Long.toHexString(((Number) value).longValue());
             }
             return DBUtils.getDefaultValueDisplayString(value, format);
         }
