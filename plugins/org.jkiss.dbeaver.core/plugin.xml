@@ -2401,8 +2401,25 @@
                 id="org.jkiss.dbeaver.core.EpochTimeAttributeTransformer"
                 name="Epoch Time"
                 description="Evaluate integer value as timestamp in Epoch (C, Unix, Java, etc) time"
-                applyByDefault="false">
+                applyByDefault="false"
+                custom="true">
             <type kind="NUMERIC"/>
+            <propertyGroup label="Properties">
+                <property id="unit" label="Unit" type="string" description="Measure unit - seconds, milliseconds, etc" defaultValue="milliseconds" required="true" validValues="seconds,milliseconds,nanoseconds"/>
+            </propertyGroup>
+        </transformer>
+        <transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.RadixAttributeTransformer"
+                id="org.jkiss.dbeaver.core.RadixAttributeTransformer"
+                name="Number Radix"
+                description="Represents numbers in a specified radix"
+                applyByDefault="false"
+                custom="true">
+            <type kind="NUMERIC"/>
+            <propertyGroup label="Properties">
+                <property id="radix" label="Radix" type="integer" description="Number radix" defaultValue="10" required="true" validValues="2,8,10,16,32"/>
+                <property id="prefix" label="Show prefix" type="boolean" description="Shows radix prefix (0x for hex)" defaultValue="false" required="true"/>
+            </propertyGroup>
         </transformer>
 
     </extension>

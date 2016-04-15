@@ -254,11 +254,11 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {
         DBSAttributeBase attribute = getAttribute();
-        final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, false);
+        final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, null);
         if (transformers != null) {
             session.getProgressMonitor().subTask("Transform attribute '" + attribute.getName() + "'");
             for (DBDAttributeTransformer transformer : transformers) {
-                transformer.transformAttribute(session, this, rows);
+                transformer.transformAttribute(session, this, rows, null);
             }
         }
     }

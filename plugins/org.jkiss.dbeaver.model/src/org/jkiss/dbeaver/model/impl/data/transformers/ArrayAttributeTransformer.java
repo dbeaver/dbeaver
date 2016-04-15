@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Transforms attribute of array type into hierarchy of attributes
@@ -35,7 +36,7 @@ import java.util.List;
 public class ArrayAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, Map<String, Object> options) throws DBException {
         DBSDataType collectionType;
         if (attribute.getAttribute() instanceof DBSTypedObjectEx) {
             collectionType = ((DBSTypedObjectEx) attribute.getAttribute()).getDataType();

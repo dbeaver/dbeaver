@@ -31,7 +31,7 @@ import java.util.Set;
 public class DBVTransformSettings {
     private Set<String> excludedTransformers, includedTransformers;
     private String customTransformer;
-    private Map<String, String> rendererProperties;
+    private Map<String, Object> transformOptions;
 
     public Set<String> getExcludedTransformers() {
         return excludedTransformers;
@@ -70,8 +70,8 @@ public class DBVTransformSettings {
         return customTransformer;
     }
 
-    public Map<String, String> getRendererProperties() {
-        return rendererProperties;
+    public Map<String, Object> getTransformOptions() {
+        return transformOptions;
     }
 
     public boolean hasValuableData() {
