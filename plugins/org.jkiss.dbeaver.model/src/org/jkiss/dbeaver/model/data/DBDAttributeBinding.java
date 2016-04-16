@@ -44,15 +44,14 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
 
     @NotNull
     protected DBDValueHandler valueHandler;
-    //@NotNull
-    //protected DBDValueRenderer valueRenderer;
+    @Nullable
+    protected DBSAttributeBase presentationAttribute;
     @Nullable
     private List<DBDAttributeBinding> nestedBindings;
 
     protected DBDAttributeBinding(@NotNull DBDValueHandler valueHandler)
     {
         this.valueHandler = valueHandler;
-        //this.valueRenderer = valueHandler;
     }
 
     @Nullable
@@ -85,10 +84,38 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     public abstract DBCAttributeMetaData getMetaAttribute();
 
     /**
-     * Entity attribute (may be null)
+     * Entity attribute (may be null).
+     * It is always null if {@link #lateBinding(DBCSession, List)} wasn't called
      */
     @Nullable
     public abstract DBSEntityAttribute getEntityAttribute();
+
+    /**
+     * Most valuable attribute reference.
+     * @return resolved entity attribute or just meta attribute
+     */
+    @NotNull
+    public DBSAttributeBase getAttribute()
+    {
+        DBSEntityAttribute attr = getEntityAttribute();
+        return attr == null ? getMetaAttribute() : attr;
+    }
+
+    /**
+     * Presentation attribute.
+     * Usually the same as {@link #getAttribute()} but may be explicitly set by attribute transformers.
+     */
+    @NotNull
+    public DBSAttributeBase getPresentationAttribute() {
+        if (presentationAttribute != null) {
+            return presentationAttribute;
+        }
+        return getAttribute();
+    }
+
+    public void setPresentationAttribute(@Nullable DBSAttributeBase presentationAttribute) {
+        this.presentationAttribute = presentationAttribute;
+    }
 
     /**
      * Row identifier (may be null)
@@ -118,18 +145,6 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     @NotNull
     public DBDValueRenderer getValueRenderer() {
         return valueHandler;
-    }
-
-
-//    public void setValueRenderer(@NotNull DBDValueRenderer renderer) {
-//        this.valueRenderer = renderer;
-//    }
-
-    @NotNull
-    public DBSAttributeBase getAttribute()
-    {
-        DBSEntityAttribute attr = getEntityAttribute();
-        return attr == null ? getMetaAttribute() : attr;
     }
 
     public boolean matches(DBSAttributeBase attr, boolean searchByName) {
