@@ -105,6 +105,12 @@ class TransformerSettingsDialog extends BaseDialog {
     @Override
     protected void okPressed()
     {
+        final Map<Object, Object> properties = propertySource.getProperties();
+        for (Map.Entry<Object, Object> prop : properties.entrySet()) {
+            if (prop.getValue() != null) {
+                settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());
+            }
+        }
         super.okPressed();
     }
 
