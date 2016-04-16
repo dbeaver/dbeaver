@@ -41,29 +41,30 @@ public class PropertySourceCustom implements DBPPropertySource {
     {
     }
 
-    public PropertySourceCustom(Collection<? extends DBPPropertyDescriptor> properties, Map<Object, Object> values)
+    public PropertySourceCustom(Collection<? extends DBPPropertyDescriptor> properties, Map<?, ?> values)
     {
         addProperties(properties);
         setValues(values);
     }
 
-    public void setValues(Map<Object, Object> values)
+    public void setValues(Map<?, ?> values)
     {
         this.originalValues = new HashMap<>();
         // Set only allowed properties + transform property types
-        for (Map.Entry<Object, Object> value : values.entrySet()) {
-            Object propValue = value.getValue();
-            for (DBPPropertyDescriptor prop : props) {
-                if (prop.getId().equals(value.getKey())) {
-                    if (propValue instanceof String) {
-                        propValue = GeneralUtils.convertString((String) value.getValue(), prop.getDataType());
+        if (values != null) {
+            for (Map.Entry<?, ?> value : values.entrySet()) {
+                Object propValue = value.getValue();
+                for (DBPPropertyDescriptor prop : props) {
+                    if (prop.getId().equals(value.getKey())) {
+                        if (propValue instanceof String) {
+                            propValue = GeneralUtils.convertString((String) value.getValue(), prop.getDataType());
+                        }
+                        originalValues.put(value.getKey(), propValue);
+                        break;
                     }
-                    originalValues.put(value.getKey(), propValue);
-                    break;
                 }
             }
         }
-
     }
 
     public void setDefaultValues(Map<Object, Object> defaultValues)
