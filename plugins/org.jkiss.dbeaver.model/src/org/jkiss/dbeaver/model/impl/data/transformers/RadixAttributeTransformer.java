@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.model.impl.data.transformers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -43,6 +45,10 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
     public static final String PROP_BITS = "bits";
     public static final String PROP_PREFIX = "prefix";
 
+    public static final String PREFIX_HEX = "0x";
+    public static final String PREFIX_OCT = "0";
+    public static final String PREFIX_BIN = "0b";
+
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         int radix = 16;
@@ -59,6 +65,8 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         }
 
         attribute.setValueHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix));
+        attribute.setPresentationAttribute(
+            new TransformerPresentationAttribute(attribute, "StringNumber", -1, DBPDataKind.STRING));
     }
 
     private class RadixValueHandler extends ProxyValueHandler {
@@ -82,16 +90,35 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
                 final String strValue = Long.toString(longValue, radix).toUpperCase(Locale.ENGLISH);
                 if (showPrefix) {
                     if (radix == 16) {
-                        return "0x" + strValue;
+                        return PREFIX_HEX + strValue;
                     } else if (radix == 8) {
-                        return "0" + strValue;
+                        return PREFIX_OCT + strValue;
                     } else if (radix == 2) {
-                        return "0b" + strValue;
+                        return PREFIX_BIN + strValue;
                     }
                 }
                 return strValue;
             }
             return DBUtils.getDefaultValueDisplayString(value, format);
+        }
+
+        @Nullable
+        @Override
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+            if (object instanceof String) {
+                String strValue = (String) object;
+                if (showPrefix) {
+                    if (radix == 16 && strValue.startsWith(PREFIX_HEX)) {
+                        strValue = strValue.substring(2);
+                    } else if (radix == 8 && strValue.startsWith(PREFIX_OCT)) {
+                        strValue = strValue.substring(1);
+                    } else if (radix == 2 && strValue.startsWith(PREFIX_BIN)) {
+                        strValue = strValue.substring(2);
+                    }
+                }
+                return Long.parseLong(strValue, radix);
+            }
+            return super.getValueFromObject(session, type, object, copy);
         }
     }
 }

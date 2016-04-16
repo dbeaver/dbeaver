@@ -2400,7 +2400,7 @@
                 class="org.jkiss.dbeaver.model.impl.data.transformers.EpochTimeAttributeTransformer"
                 id="org.jkiss.dbeaver.core.EpochTimeAttributeTransformer"
                 name="Epoch Time"
-                description="Evaluate integer value as timestamp in Epoch (C, Unix, Java, etc) time"
+                description="Represents integer value as timestamp in Epoch (C, Unix, POSIX, Java, etc) time - the number of seconds that have elapsed since 1970/01/01 00:00:00 (UTC)"
                 applyByDefault="false"
                 custom="true">
             <type kind="NUMERIC"/>
