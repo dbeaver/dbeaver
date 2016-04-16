@@ -20,10 +20,7 @@ package org.jkiss.dbeaver.model.virtual;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Virtual model object
@@ -31,7 +28,7 @@ import java.util.Set;
 public class DBVTransformSettings {
     private Set<String> excludedTransformers, includedTransformers;
     private String customTransformer;
-    private Map<String, Object> transformOptions;
+    private Map<String, String> transformOptions;
 
     public Set<String> getExcludedTransformers() {
         return excludedTransformers;
@@ -70,8 +67,23 @@ public class DBVTransformSettings {
         return customTransformer;
     }
 
-    public Map<String, Object> getTransformOptions() {
+    public void setCustomTransformer(String customTransformer) {
+        this.customTransformer = customTransformer;
+    }
+
+    public Map<String, String> getTransformOptions() {
         return transformOptions;
+    }
+
+    public void setTransformOption(String name, String value) {
+        if (this.transformOptions == null) {
+            this.transformOptions = new LinkedHashMap<>();
+        }
+        this.transformOptions.put(name, value);
+    }
+
+    public void setTransformOptions(Map<String, String> transformOptions) {
+        this.transformOptions = transformOptions;
     }
 
     public boolean hasValuableData() {
@@ -105,7 +117,5 @@ public class DBVTransformSettings {
         return true;
     }
 
-    public void setCustomTransformer(String customTransformer) {
-        this.customTransformer = customTransformer;
-    }
+
 }

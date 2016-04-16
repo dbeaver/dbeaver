@@ -53,6 +53,7 @@ public class DBVModel extends DBVContainer {
     private static final String ATTR_ID = "id"; //$NON-NLS-1$
     private static final String ATTR_NAME = "name"; //$NON-NLS-1$
     private static final String ATTR_DESCRIPTION = "description"; //$NON-NLS-1$
+    private static final String ATTR_CUSTOM = "custom"; //$NON-NLS-1$
     private static final String TAG_PROPERTY = "property"; //$NON-NLS-1$
     private static final String ATTR_VALUE = "value"; //$NON-NLS-1$
     private static final String ATTR_TYPE = "type"; //$NON-NLS-1$
@@ -163,6 +164,9 @@ public class DBVModel extends DBVContainer {
                 final DBVTransformSettings transformSettings = attr.getTransformSettings();
                 if (transformSettings != null && transformSettings.hasValuableData()) {
                     try (final XMLBuilder.Element e4 = xml.startElement(TAG_TRANSFORM)) {
+                        if (!CommonUtils.isEmpty(transformSettings.getCustomTransformer())) {
+                            xml.addAttribute(ATTR_CUSTOM, transformSettings.getCustomTransformer());
+                        }
                         for (String id : CommonUtils.safeCollection(transformSettings.getIncludedTransformers())) {
                             try (final XMLBuilder.Element e5 = xml.startElement(TAG_INCLUDE)) {
                                 xml.addAttribute(ATTR_ID, id);
@@ -171,6 +175,17 @@ public class DBVModel extends DBVContainer {
                         for (String id : CommonUtils.safeCollection(transformSettings.getExcludedTransformers())) {
                             try (final XMLBuilder.Element e5 = xml.startElement(TAG_EXCLUDE)) {
                                 xml.addAttribute(ATTR_ID, id);
+                            }
+                        }
+                        final Map<String, String> transformOptions = transformSettings.getTransformOptions();
+                        if (transformOptions != null) {
+                            for (Map.Entry<String, String> prop : transformOptions.entrySet()) {
+                                try (final XMLBuilder.Element e5 = xml.startElement(TAG_PROPERTY)) {
+                                    if (prop.getValue() != null) {
+                                        xml.addAttribute(ATTR_NAME, prop.getKey());
+                                        xml.addAttribute(ATTR_VALUE, prop.getValue());
+                                    }
+                                }
                             }
                         }
                     }
@@ -262,7 +277,11 @@ public class DBVModel extends DBVContainer {
                     curContainer.addEntity(curEntity);
                     break;
                 case TAG_PROPERTY:
-                    if (curEntity != null) {
+                    if (curTransformSettings != null) {
+                        curTransformSettings.setTransformOption(
+                            atts.getValue(ATTR_NAME),
+                            atts.getValue(ATTR_VALUE));
+                    } else if (curEntity != null) {
                         curEntity.setProperty(
                             atts.getValue(ATTR_NAME),
                             atts.getValue(ATTR_VALUE));
@@ -291,6 +310,7 @@ public class DBVModel extends DBVContainer {
                     break;
                 case TAG_TRANSFORM:
                     curTransformSettings = new DBVTransformSettings();
+                    curTransformSettings.setCustomTransformer(atts.getValue(ATTR_CUSTOM));
                     if (curAttribute != null) {
                         curAttribute.setTransformSettings(curTransformSettings);
                     } else if (curEntity != null) {

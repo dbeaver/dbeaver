@@ -38,7 +38,7 @@ import java.util.Map;
 public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, Map<String, Object> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         // TODO: Change attribute type (to DATETIME)
         attribute.setValueHandler(new EpochValueHandler(attribute.getValueHandler()));
     }

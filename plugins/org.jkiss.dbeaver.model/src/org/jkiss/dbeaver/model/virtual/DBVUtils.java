@@ -26,16 +26,18 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.ArrayUtils;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Virtual model utils
  */
 public abstract class DBVUtils {
 
-    public static DBVTransformSettings getTransformSettings(DBDAttributeBinding binding, boolean create) {
+    @Nullable
+    public static DBVTransformSettings getTransformSettings(@NotNull DBDAttributeBinding binding, boolean create) {
         DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
         if (entityAttribute != null) {
             DBVEntity vEntity = findVirtualEntity(entityAttribute.getParentObject(), create);
@@ -49,7 +51,8 @@ public abstract class DBVUtils {
         return null;
     }
 
-    public static DBVTransformSettings getTransformSettings(DBVEntityAttribute attribute, boolean create) {
+    @Nullable
+    public static DBVTransformSettings getTransformSettings(@NotNull DBVEntityAttribute attribute, boolean create) {
         if (attribute.getTransformSettings() != null) {
             return attribute.getTransformSettings();
         } else if (create) {
@@ -64,6 +67,19 @@ public abstract class DBVUtils {
         return null;
     }
 
+    @NotNull
+    public static Map<String, String> getAttributeTransformersOptions(@NotNull DBDAttributeBinding binding) {
+        Map<String, String> options = null;
+        final DBVTransformSettings transformSettings = getTransformSettings(binding, false);
+        if (transformSettings != null) {
+            options = transformSettings.getTransformOptions();
+        }
+        if (options != null) {
+            return options;
+        }
+        return Collections.emptyMap();
+    }
+
     @Nullable
     public static DBVEntity findVirtualEntity(@NotNull DBSEntity source, boolean create)
     {
@@ -71,7 +87,7 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    public static DBDAttributeTransformer[] findAttributeTransformers(DBDAttributeBinding binding, Boolean custom)
+    public static DBDAttributeTransformer[] findAttributeTransformers(@NotNull DBDAttributeBinding binding, @Nullable Boolean custom)
     {
         DBPDataSource dataSource = binding.getDataSource();
         DBPDataSourceContainer container = dataSource.getContainer();
@@ -114,4 +130,5 @@ public abstract class DBVUtils {
         }
         return result;
     }
+
 }
