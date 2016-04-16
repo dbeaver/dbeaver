@@ -98,7 +98,7 @@ public abstract class DBVUtils {
         if (!filtered) {
             // Leave only default transformers
             for (int i = 0; i < tdList.size();) {
-                if (!tdList.get(i).isApplicableByDefault()) {
+                if (tdList.get(i).isCustom() || !tdList.get(i).isApplicableByDefault()) {
                     tdList.remove(i);
                 } else {
                     i++;
