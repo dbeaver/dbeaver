@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
@@ -45,7 +46,7 @@ public class UUIDValueManager extends BaseValueManager {
             case PANEL:
                 return new StringInlineEditor(controller) {
                     @Override
-                    public Object extractEditorValue() {
+                    public Object extractEditorValue() throws DBCException {
                         String strValue = (String) super.extractEditorValue();
                         if (strValue == null || strValue.isEmpty()) {
                             return null;

@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -245,32 +244,31 @@ public class TextViewDialog extends ValueViewDialog {
     public Object extractEditorValue()
     {
         Object prevValue = getValueController().getValue();
+        Object rawValue;
         if (prevValue instanceof DBDContent) {
-            DBCExecutionContext context = getValueController().getExecutionContext();
-            try (DBCSession session = context.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor")) {
-                if (ContentUtils.isTextContent((DBDContent) prevValue)) {
-                    String strValue = isTextEditorActive() ? textEdit.getText() : getBinaryString();
-                    return getValueController().getValueHandler().getValueFromObject(
-                        session,
-                        getValueController().getValueType(),
-                        strValue,
-                        false);
-                } else {
-                    byte[] bytesValue = isTextEditorActive() ? GeneralUtils.convertToBytes(textEdit.getText()) : getBinaryContent();
-                    return getValueController().getValueHandler().getValueFromObject(
-                        session,
-                        getValueController().getValueType(),
-                        bytesValue,
-                        false);
-                }
-            } catch (Exception e) {
-                UIUtils.showErrorDialog(getShell(), "Extract editor value", "Can't extract editor value", e);
-                return null;
+            if (ContentUtils.isTextContent((DBDContent) prevValue)) {
+                rawValue = isTextEditorActive() ? textEdit.getText() : getBinaryString();
+            } else {
+                rawValue = isTextEditorActive() ? GeneralUtils.convertToBytes(textEdit.getText()) : getBinaryContent();
             }
-        } else if (isTextEditorActive()) {
-            return textEdit.getText();
         } else {
-            return getBinaryString();
+            if (isTextEditorActive()) {
+                rawValue = textEdit.getText();
+            } else {
+                rawValue = getBinaryString();
+            }
+        }
+
+        DBCExecutionContext context = getValueController().getExecutionContext();
+        try (DBCSession session = context.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor")) {
+            return getValueController().getValueHandler().getValueFromObject(
+                session,
+                getValueController().getValueType(),
+                rawValue,
+                false);
+        } catch (Exception e) {
+            UIUtils.showErrorDialog(getShell(), "Extract editor value", "Can't extract editor value", e);
+            return null;
         }
     }
 
@@ -313,12 +311,8 @@ public class TextViewDialog extends ValueViewDialog {
             }
         } else {
             // Should be string
-            if (value == null) {
-                value = "";
-            } else {
-                value = DBUtils.getDefaultValueDisplayString(value, DBDDisplayFormat.EDIT);
-            }
-            String strValue = CommonUtils.toString(value);
+            final IValueController valueController = getValueController();
+            final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
             textEdit.setText(strValue);
             if (hexEditControl != null) {
                 setBinaryContent(strValue);
