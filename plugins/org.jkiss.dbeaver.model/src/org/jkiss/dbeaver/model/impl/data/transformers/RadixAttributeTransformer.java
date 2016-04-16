@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Locale;
@@ -38,22 +39,57 @@ import java.util.Map;
  */
 public class RadixAttributeTransformer implements DBDAttributeTransformer {
 
+    public static final String PROP_RADIX = "radix";
+    public static final String PROP_BITS = "bits";
+    public static final String PROP_PREFIX = "prefix";
+
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
-        attribute.setValueHandler(new RadixValueHandler(attribute.getValueHandler()));
+        int radix = 16;
+        int bits = 32;
+        boolean showPrefix = false;
+        if (options.containsKey(PROP_RADIX)) {
+            radix = CommonUtils.toInt(options.get(PROP_RADIX), radix);
+        }
+        if (options.containsKey(PROP_BITS)) {
+            bits = CommonUtils.toInt(options.get(PROP_BITS), bits);
+        }
+        if (options.containsKey(PROP_PREFIX)) {
+            showPrefix = CommonUtils.getBoolean(options.get(PROP_PREFIX), showPrefix);
+        }
+
+        attribute.setValueHandler(new RadixValueHandler(attribute.getValueHandler(), radix, bits, showPrefix));
     }
 
     private class RadixValueHandler extends ProxyValueHandler {
 
-        public RadixValueHandler(DBDValueHandler target) {
+        private int radix;
+        private int bits;
+        private boolean showPrefix;
+
+        public RadixValueHandler(DBDValueHandler target, int radix, int bits, boolean showPrefix) {
             super(target);
+            this.radix = radix;
+            this.bits = bits;
+            this.showPrefix = showPrefix;
         }
 
         @NotNull
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number) {
-                return Long.toHexString(((Number) value).longValue()).toUpperCase(Locale.ENGLISH);
+                final long longValue = ((Number) value).longValue();
+                final String strValue = Long.toString(longValue, radix).toUpperCase(Locale.ENGLISH);
+                if (showPrefix) {
+                    if (radix == 16) {
+                        return "0x" + strValue;
+                    } else if (radix == 8) {
+                        return "0" + strValue;
+                    } else if (radix == 2) {
+                        return "0b" + strValue;
+                    }
+                }
+                return strValue;
             }
             return DBUtils.getDefaultValueDisplayString(value, format);
         }
