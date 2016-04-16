@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Locale;
 
 /**
- * MySQLConnectionPage
+ * PostgreConnectionPage
  */
 public class PostgreConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {

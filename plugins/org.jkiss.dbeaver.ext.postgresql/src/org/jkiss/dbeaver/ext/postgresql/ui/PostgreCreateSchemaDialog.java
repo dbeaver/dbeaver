@@ -43,7 +43,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * MySQLCreateDatabaseDialog
+ * PostgreCreateSchemaDialog
  */
 public class PostgreCreateSchemaDialog extends BaseDialog
 {

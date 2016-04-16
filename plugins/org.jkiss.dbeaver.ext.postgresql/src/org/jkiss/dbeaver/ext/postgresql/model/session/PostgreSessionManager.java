@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * MySQL session manager
+ * Postgre session manager
  */
 public class PostgreSessionManager implements DBAServerSessionManager<PostgreSession> {
 
