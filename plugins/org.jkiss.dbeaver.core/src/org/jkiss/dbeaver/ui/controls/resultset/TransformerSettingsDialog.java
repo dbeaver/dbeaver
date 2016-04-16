@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
@@ -76,7 +77,10 @@ class TransformerSettingsDialog extends BaseDialog {
         if (transformer != null) {
             final Composite placeholder = UIUtils.createControlGroup(composite, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
             UIUtils.createLabelText(placeholder, "Name", transformer.getName(), SWT.READ_ONLY);
-            UIUtils.createLabelText(placeholder, "Info", transformer.getDescription(), SWT.READ_ONLY | SWT.WRAP);
+            final Text infoText = UIUtils.createLabelText(placeholder, "Info", transformer.getDescription(), SWT.READ_ONLY | SWT.WRAP);
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.widthHint = 300;
+            infoText.setLayoutData(gd);
         }
 
         Map<String, String> transformOptions = settings.getTransformOptions();
