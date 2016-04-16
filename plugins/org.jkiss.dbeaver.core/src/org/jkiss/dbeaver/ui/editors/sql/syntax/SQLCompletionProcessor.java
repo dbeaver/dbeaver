@@ -524,6 +524,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     if (startPart != null && !child.getName().toUpperCase().startsWith(startPart)) {
                         continue;
                     }
+                    if (child instanceof DBPHiddenObject && ((DBPHiddenObject) child).isHidden()) {
+                        // Skip hidden
+                        continue;
+                    }
                     proposals.add(makeProposalsFromObject(monitor, child));
                 }
             }
