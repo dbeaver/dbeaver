@@ -38,10 +38,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLConstants;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -432,7 +429,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 // Bad pattern - seems to be a bad token
                 return null;
             }
-            matcher = aliasPattern.matcher(activeQuery);
+            String testQuery = SQLUtils.stripComments(editor.getSyntaxManager().getDialect(), activeQuery);
+            matcher = aliasPattern.matcher(testQuery);
             if (!matcher.find()) {
                 return null;
             }
