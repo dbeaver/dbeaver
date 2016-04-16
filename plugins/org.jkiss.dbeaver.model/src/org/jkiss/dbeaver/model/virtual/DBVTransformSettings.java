@@ -86,7 +86,8 @@ public class DBVTransformSettings {
         }
         for (int i = 0; i < descriptors.size();) {
             final DBDAttributeTransformerDescriptor descriptor = descriptors.get(i);
-            if ((descriptor.isApplicableByDefault() && excludedTransformers != null && excludedTransformers.contains(descriptor.getId())) ||
+            if ((descriptor.isCustom() && !descriptor.getId().equals(customTransformer)) ||
+                (descriptor.isApplicableByDefault() && excludedTransformers != null && excludedTransformers.contains(descriptor.getId())) ||
                 (!descriptor.isApplicableByDefault() && includedTransformers != null && !includedTransformers.contains(descriptor.getId())))
             {
                 descriptors.remove(i);
