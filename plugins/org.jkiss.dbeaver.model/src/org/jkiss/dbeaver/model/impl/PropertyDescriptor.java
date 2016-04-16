@@ -212,4 +212,8 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return validValues;
     }
 
+    @Override
+    public String toString() {
+        return id + " (" + name + ")";
+    }
 }

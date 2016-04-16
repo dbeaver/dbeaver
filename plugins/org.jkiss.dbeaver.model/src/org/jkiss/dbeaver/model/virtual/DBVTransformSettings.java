@@ -97,4 +97,7 @@ public class DBVTransformSettings {
         return true;
     }
 
+    public void setCustomTransformer(String customTransformer) {
+        this.customTransformer = customTransformer;
+    }
 }
