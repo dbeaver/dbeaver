@@ -40,7 +40,7 @@ import java.util.Map;
 public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, Map<String, Object> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         DBSDataType dataType;
         if (attribute.getAttribute() instanceof DBSTypedObjectEx) {
             dataType = ((DBSTypedObjectEx) attribute.getAttribute()).getDataType();

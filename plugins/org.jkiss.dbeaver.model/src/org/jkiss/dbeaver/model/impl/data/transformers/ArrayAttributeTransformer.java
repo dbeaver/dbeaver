@@ -36,7 +36,7 @@ import java.util.Map;
 public class ArrayAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, Map<String, Object> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         DBSDataType collectionType;
         if (attribute.getAttribute() instanceof DBSTypedObjectEx) {
             collectionType = ((DBSTypedObjectEx) attribute.getAttribute()).getDataType();

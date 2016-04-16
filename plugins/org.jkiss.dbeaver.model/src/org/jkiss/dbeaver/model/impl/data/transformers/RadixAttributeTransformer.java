@@ -39,7 +39,7 @@ import java.util.Map;
 public class RadixAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
-    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, Map<String, Object> options) throws DBException {
+    public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         attribute.setValueHandler(new RadixValueHandler(attribute.getValueHandler()));
     }
 

@@ -38,7 +38,7 @@ public interface DBDAttributeTransformer
         @NotNull DBCSession session,
         @NotNull DBDAttributeBinding attribute,
         @NotNull List<Object[]> rows,
-        @NotNull Map<String, Object> options)
+        @NotNull Map<String, String> options)
         throws DBException;
 
 }

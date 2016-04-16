@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Base attribute binding
@@ -257,8 +258,9 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         final DBDAttributeTransformer[] transformers = DBVUtils.findAttributeTransformers(this, null);
         if (transformers != null) {
             session.getProgressMonitor().subTask("Transform attribute '" + attribute.getName() + "'");
+            final Map<String, String> transformerOptions = DBVUtils.getAttributeTransformersOptions(this);
             for (DBDAttributeTransformer transformer : transformers) {
-                transformer.transformAttribute(session, this, rows, null);
+                transformer.transformAttribute(session, this, rows, transformerOptions);
             }
         }
     }
