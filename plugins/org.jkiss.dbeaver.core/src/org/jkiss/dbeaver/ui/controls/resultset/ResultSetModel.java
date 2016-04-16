@@ -68,6 +68,7 @@ public class ResultSetModel {
     private transient boolean metadataChanged;
     private transient boolean sourceChanged;
     private transient boolean metadataDynamic;
+    private boolean transformInProgress;
 
     public static class AttributeColorSettings {
         private DBCLogicalOperator operator;
@@ -120,14 +121,12 @@ public class ResultSetModel {
         }
     };
 
-    public ResultSetModel()
-    {
+    public ResultSetModel() {
         dataFilter = createDataFilter();
     }
 
     @NotNull
-    public DBDDataFilter createDataFilter()
-    {
+    public DBDDataFilter createDataFilter() {
         fillVisibleAttributes();
         List<DBDAttributeConstraint> constraints = new ArrayList<>(attributes.length);
         for (DBDAttributeBinding binding : attributes) {
@@ -153,8 +152,7 @@ public class ResultSetModel {
         return metadataChanged;
     }
 
-    public boolean isSingleSource()
-    {
+    public boolean isSingleSource() {
         return singleSourceCells;
     }
 
@@ -163,11 +161,11 @@ public class ResultSetModel {
      * If result set is a result of joins or contains synthetic attributes then
      * single source is null. If driver doesn't support meta information
      * for queries then is will null.
+     *
      * @return single source entity
      */
     @Nullable
-    public DBSEntity getSingleSource()
-    {
+    public DBSEntity getSingleSource() {
         if (!singleSourceCells) {
             return null;
         }
@@ -180,8 +178,7 @@ public class ResultSetModel {
         return null;
     }
 
-    public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row)
-    {
+    public void resetCellValue(DBDAttributeBinding attr, ResultSetRow row) {
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
         } else if (row.changes != null && row.changes.containsKey(attr)) {
@@ -194,8 +191,7 @@ public class ResultSetModel {
         }
     }
 
-    public void refreshChangeCount()
-    {
+    public void refreshChangeCount() {
         changesCount = 0;
         for (ResultSetRow row : curRows) {
             if (row.getState() != ResultSetRow.STATE_NORMAL) {
@@ -211,31 +207,26 @@ public class ResultSetModel {
     }
 
     @NotNull
-    public DBDAttributeBinding[] getAttributes()
-    {
+    public DBDAttributeBinding[] getAttributes() {
         return attributes;
     }
 
     @NotNull
-    public DBDAttributeBinding getAttribute(int index)
-    {
+    public DBDAttributeBinding getAttribute(int index) {
         return attributes[index];
     }
 
     @NotNull
-    public List<DBDAttributeBinding> getVisibleAttributes()
-    {
+    public List<DBDAttributeBinding> getVisibleAttributes() {
         return visibleAttributes;
     }
 
-    public int getVisibleAttributeCount()
-    {
+    public int getVisibleAttributeCount() {
         return visibleAttributes.size();
     }
 
     @Nullable
-    public List<DBDAttributeBinding> getVisibleAttributes(DBDAttributeBinding parent)
-    {
+    public List<DBDAttributeBinding> getVisibleAttributes(DBDAttributeBinding parent) {
         final List<DBDAttributeBinding> nestedBindings = parent.getNestedBindings();
         if (nestedBindings == null || nestedBindings.isEmpty()) {
             return null;
@@ -251,13 +242,11 @@ public class ResultSetModel {
     }
 
     @NotNull
-    public DBDAttributeBinding getVisibleAttribute(int index)
-    {
+    public DBDAttributeBinding getVisibleAttribute(int index) {
         return visibleAttributes.get(index);
     }
 
-    public void setAttributeVisibility(@NotNull DBDAttributeBinding attribute, boolean visible)
-    {
+    public void setAttributeVisibility(@NotNull DBDAttributeBinding attribute, boolean visible) {
         DBDAttributeConstraint constraint = dataFilter.getConstraint(attribute);
         if (constraint != null && constraint.isVisible() != visible) {
             constraint.setVisible(visible);
@@ -272,14 +261,12 @@ public class ResultSetModel {
     }
 
     @Nullable
-    public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute)
-    {
+    public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute) {
         return DBUtils.findBinding(attributes, attribute);
     }
 
     @Nullable
-    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity entity, @NotNull String attrName)
-    {
+    DBDAttributeBinding getAttributeBinding(@Nullable DBSEntity entity, @NotNull String attrName) {
         for (DBDAttributeBinding attribute : visibleAttributes) {
             DBDRowIdentifier rowIdentifier = attribute.getRowIdentifier();
             if ((entity == null || (rowIdentifier != null && rowIdentifier.getEntity() == entity)) &&
@@ -290,13 +277,11 @@ public class ResultSetModel {
         return null;
     }
 
-    public boolean isEmpty()
-    {
+    public boolean isEmpty() {
         return getRowCount() <= 0 || visibleAttributes.size() <= 0;
     }
 
-    public int getRowCount()
-    {
+    public int getRowCount() {
         return curRows.size();
     }
 
@@ -306,14 +291,12 @@ public class ResultSetModel {
     }
 
     @NotNull
-    public Object[] getRowData(int index)
-    {
+    public Object[] getRowData(int index) {
         return curRows.get(index).values;
     }
 
     @NotNull
-    public ResultSetRow getRow(int index)
-    {
+    public ResultSetRow getRow(int index) {
         return curRows.get(index);
     }
 
@@ -352,18 +335,16 @@ public class ResultSetModel {
     /**
      * Updates cell value. Saves previous value.
      *
-     * @param attr Attribute
-     * @param row row index
+     * @param attr  Attribute
+     * @param row   row index
      * @param value new value
      * @return true on success
      */
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value)
-    {
+    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value) {
         return updateCellValue(attr, row, value, true);
     }
 
-    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value, boolean updateChanges)
-    {
+    public boolean updateCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable Object value, boolean updateChanges) {
         int depth = attr.getLevel();
         int rootIndex;
         if (depth == 0) {
@@ -452,12 +433,12 @@ public class ResultSetModel {
 
     /**
      * Sets new metadata of result set
+     *
      * @param newAttributes attributes metadata
      */
-    public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes)
-    {
+    public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes) {
         boolean update = false;
-        if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
+        if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata() || transformInProgress) {
             update = true;
         } else {
 /*
@@ -481,8 +462,7 @@ public class ResultSetModel {
 
         if (update) {
             if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
-                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource())
-            {
+                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
                 // the same source
                 sourceChanged = false;
             } else {
@@ -526,8 +506,7 @@ public class ResultSetModel {
         }
     }
 
-    public void setData(@NotNull List<Object[]> rows)
-    {
+    public void setData(@NotNull List<Object[]> rows) {
         // Clear previous data
         this.clearData();
 
@@ -634,8 +613,7 @@ public class ResultSetModel {
         }
     }
 
-    public void appendData(@NotNull List<Object[]> rows)
-    {
+    public void appendData(@NotNull List<Object[]> rows) {
         int rowCount = rows.size();
         int firstRowNum = curRows.size();
         List<ResultSetRow> newRows = new ArrayList<>(rowCount);
@@ -647,8 +625,7 @@ public class ResultSetModel {
         updateRowColors(newRows);
     }
 
-    void clearData()
-    {
+    void clearData() {
         // Refresh all rows
         this.releaseAll();
         this.curRows = new ArrayList<>();
@@ -656,18 +633,15 @@ public class ResultSetModel {
         hasData = false;
     }
 
-    public boolean hasData()
-    {
+    public boolean hasData() {
         return hasData;
     }
 
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         return changesCount != 0;
     }
 
-    public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute)
-    {
+    public boolean isAttributeReadOnly(@NotNull DBDAttributeBinding attribute) {
         if (attribute.getMetaAttribute().isReadOnly()) {
             return true;
         }
@@ -679,18 +653,19 @@ public class ResultSetModel {
         return (dataContainer.getSupportedFeatures() & DBSDataManipulator.DATA_UPDATE) == 0;
     }
 
-    public boolean isUpdateInProgress()
-    {
+    public boolean isUpdateInProgress() {
         return updateInProgress;
     }
 
-    void setUpdateInProgress(boolean updateInProgress)
-    {
+    void setUpdateInProgress(boolean updateInProgress) {
         this.updateInProgress = updateInProgress;
     }
 
-    ResultSetRow addNewRow(int rowNum, @NotNull Object[] data)
-    {
+    public void setTransformInProgress(boolean transformInProgress) {
+        this.transformInProgress = transformInProgress;
+    }
+
+    ResultSetRow addNewRow(int rowNum, @NotNull Object[] data) {
         ResultSetRow newRow = new ResultSetRow(curRows.size(), data);
         newRow.setVisualNumber(rowNum);
         newRow.setState(ResultSetRow.STATE_ADDED);
@@ -702,12 +677,12 @@ public class ResultSetModel {
 
     /**
      * Removes row with specified index from data
+     *
      * @param row row
      * @return true if row was physically removed (only in case if this row was previously added)
      * or false if it just marked as deleted
      */
-    boolean deleteRow(@NotNull ResultSetRow row)
-    {
+    boolean deleteRow(@NotNull ResultSetRow row) {
         if (row.getState() == ResultSetRow.STATE_ADDED) {
             cleanupRow(row);
             return true;
@@ -719,15 +694,13 @@ public class ResultSetModel {
         }
     }
 
-    void cleanupRow(@NotNull ResultSetRow row)
-    {
+    void cleanupRow(@NotNull ResultSetRow row) {
         row.release();
         this.curRows.remove(row.getVisualNumber());
         this.shiftRows(row, -1);
     }
 
-    boolean cleanupRows(Collection<ResultSetRow> rows)
-    {
+    boolean cleanupRows(Collection<ResultSetRow> rows) {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
             List<ResultSetRow> rowsToRemove = new ArrayList<>(rows);
@@ -746,8 +719,7 @@ public class ResultSetModel {
         }
     }
 
-    private void shiftRows(@NotNull ResultSetRow relative, int delta)
-    {
+    private void shiftRows(@NotNull ResultSetRow relative, int delta) {
         for (ResultSetRow row : curRows) {
             if (row.getVisualNumber() >= relative.getVisualNumber()) {
                 row.setVisualNumber(row.getVisualNumber() + delta);
@@ -758,25 +730,23 @@ public class ResultSetModel {
         }
     }
 
-    private void releaseAll()
-    {
+    private void releaseAll() {
         for (ResultSetRow row : curRows) {
             row.release();
         }
     }
 
-    public DBDDataFilter getDataFilter()
-    {
+    public DBDDataFilter getDataFilter() {
         return dataFilter;
     }
 
     /**
      * Sets new data filter
+     *
      * @param dataFilter data filter
      * @return true if visible attributes were changed. Spreadsheet has to be refreshed
      */
-    boolean setDataFilter(DBDDataFilter dataFilter)
-    {
+    boolean setDataFilter(DBDDataFilter dataFilter) {
         this.dataFilter = dataFilter;
         // Check if filter misses some attributes
         List<DBDAttributeConstraint> newConstraints = new ArrayList<>();
@@ -804,8 +774,7 @@ public class ResultSetModel {
         return false;
     }
 
-    void updateDataFilter(DBDDataFilter filter)
-    {
+    void updateDataFilter(DBDDataFilter filter) {
         this.visibleAttributes.clear();
         Collections.addAll(this.visibleAttributes, this.attributes);
         for (DBDAttributeConstraint constraint : filter.getConstraints()) {
@@ -836,15 +805,13 @@ public class ResultSetModel {
         this.dataFilter.setAnyConstraint(filter.isAnyConstraint());
     }
 
-    public void resetOrdering()
-    {
+    public void resetOrdering() {
         final boolean hasOrdering = dataFilter.hasOrdering();
         // Sort locally
         final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
         Collections.sort(curRows, new Comparator<ResultSetRow>() {
             @Override
-            public int compare(ResultSetRow row1, ResultSetRow row2)
-            {
+            public int compare(ResultSetRow row1, ResultSetRow row2) {
                 if (!hasOrdering) {
                     return row1.getRowNumber() - row2.getRowNumber();
                 }
@@ -863,7 +830,7 @@ public class ResultSetModel {
                     } else if (DBUtils.isNullValue(cell2)) {
                         result = -1;
                     } else if (cell1 instanceof Comparable) {
-                        result = ((Comparable)cell1).compareTo(cell2);
+                        result = ((Comparable) cell1).compareTo(cell2);
                     } else {
                         String str1 = String.valueOf(cell1);
                         String str2 = String.valueOf(cell2);
@@ -895,13 +862,11 @@ public class ResultSetModel {
         }
     }
 
-    public DBCStatistics getStatistics()
-    {
+    public DBCStatistics getStatistics() {
         return statistics;
     }
 
-    public void setStatistics(DBCStatistics statistics)
-    {
+    public void setStatistics(DBCStatistics statistics) {
         this.statistics = statistics;
     }
 }

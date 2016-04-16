@@ -77,7 +77,7 @@ public interface IResultSetController extends DBPContextProvider {
     /**
      * Refreshes data. Reads data from underlying data container
      */
-    void refreshData(@Nullable Runnable onSuccess);
+    boolean refreshData(@Nullable Runnable onSuccess);
 
     boolean isRefreshInProgress();
 
