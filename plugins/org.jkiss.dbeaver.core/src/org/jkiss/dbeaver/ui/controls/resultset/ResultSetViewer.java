@@ -1181,13 +1181,35 @@ public class ResultSetViewer extends Viewer
         }
         List<? extends DBDAttributeTransformerDescriptor> customTransformers =
             registry.findTransformers(dataSource, attr, true);
+        if (customTransformers != null && !customTransformers.isEmpty()) {
+            for (final DBDAttributeTransformerDescriptor descriptor : customTransformers) {
+                manager.add(new Action(descriptor.getName(), IAction.AS_RADIO_BUTTON) {
+                    @Override
+                    public void run() {
+                        final DBVTransformSettings ts = DBVUtils.getTransformSettings(attr, true);
+                        if (ts == null) {
+                            log.debug("Can't get transformer settings for '" + DBUtils.getObjectFullName(attr) + "'");
+                            return;
+                        }
+                        ts.setCustomTransformer(descriptor.getId());
+                        dataSource.getContainer().persistConfiguration();
+                    }
 
+                    @Override
+                    public boolean isChecked() {
+                        return
+                            transformSettings != null &&
+                            descriptor.getId().equals(transformSettings.getCustomTransformer());
+                    }
+                });
+            }
+        }
         if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
-            MenuManager customTransformerMenu = new MenuManager(
-                customTransformer == null ? attr.getDataKind().name() : customTransformer.getName(),
-                DBeaverIcons.getImageDescriptor(customTransformer == null ? DBUtils.getTypeImage(attr) : customTransformer.getIcon()),
-                null);
-            manager.add(customTransformerMenu);
+//            MenuManager customTransformerMenu = new MenuManager(
+//                customTransformer == null ? attr.getDataKind().name() : customTransformer.getName(),
+//                DBeaverIcons.getImageDescriptor(customTransformer == null ? DBUtils.getTypeImage(attr) : customTransformer.getIcon()),
+//                null);
+//            manager.add(customTransformerMenu);
             manager.add(new Action("Settings ...") {
 
             });
@@ -1198,9 +1220,6 @@ public class ResultSetViewer extends Viewer
             registry.findTransformers(dataSource, attr, false);
         if (applicableTransformers != null) {
             for (final DBDAttributeTransformerDescriptor descriptor : applicableTransformers) {
-                if (descriptor.isCustom()) {
-                    continue;
-                }
                 manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
                     @Override
                     public void run() {

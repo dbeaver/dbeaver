@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -37,7 +38,7 @@ public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<D
     private boolean applyByDefault;
     private boolean custom;
     private final DBPImage icon;
-    private List<DBPPropertyDescriptor> properties;
+    private List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
     public AttributeTransformerDescriptor(IConfigurationElement config)
     {
@@ -49,7 +50,9 @@ public class AttributeTransformerDescriptor extends DataTypeAbstractDescriptor<D
         this.custom = "true".equals(config.getAttribute("custom"));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
-        properties = PropertyDescriptor.extractProperties(config);
+        for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
+            properties.addAll(PropertyDescriptor.extractProperties(prop));
+        }
     }
 
     @Override
