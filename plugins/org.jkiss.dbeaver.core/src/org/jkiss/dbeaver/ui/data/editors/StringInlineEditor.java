@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
 
@@ -50,15 +52,19 @@ public class StringInlineEditor extends BaseValueEditor<Text> {
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        control.setText(CommonUtils.toString(value));
+        final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+        control.setText(strValue);
         if (valueController.getEditType() == IValueController.EditType.INLINE) {
             control.selectAll();
         }
     }
 
     @Override
-    public Object extractEditorValue()
-    {
-        return control.getText();
+    public Object extractEditorValue() throws DBCException {
+        return valueController.getValueHandler().getValueFromObject(
+            null,
+            valueController.getValueType(),
+            control.getText(),
+            false);
     }
 }
