@@ -67,38 +67,5 @@ public class PostgreServerHome extends JDBCClientHome {
     public String getDataDirectory() {
         return dataDirectory;
     }
-/*
-    private String getFullServerVersion()
-    {
-        String cmd = new File(
-            new File(getHomePath(), "bin"),
-            MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
 
-        try {
-            Process p = Runtime.getRuntime().exec(new String[] {cmd, "-V"});
-            try {
-                BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                try {
-                    String line;
-                    while ((line = input.readLine()) != null) {
-                        int pos = line.indexOf("Distrib ");
-                        if (pos != -1) {
-                            pos += 8;
-                            int pos2 = line.indexOf(",", pos);
-                            return line.substring(pos, pos2);
-                        }
-                    }
-                } finally {
-                    IOUtils.close(input);
-                }
-            } finally {
-                p.destroy();
-            }
-        }
-        catch (Exception ex) {
-            log.warn("Error reading MySQL server version from " + cmd, ex);
-        }
-        return null;
-    }
-*/
 }

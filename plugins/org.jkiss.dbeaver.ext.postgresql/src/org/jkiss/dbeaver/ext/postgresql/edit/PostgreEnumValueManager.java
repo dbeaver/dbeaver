@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
 import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 /**
- * MySQL ENUM value manager
+ * PostgreSQL ENUM value manager
  */
 public class PostgreEnumValueManager extends BaseValueManager {
 

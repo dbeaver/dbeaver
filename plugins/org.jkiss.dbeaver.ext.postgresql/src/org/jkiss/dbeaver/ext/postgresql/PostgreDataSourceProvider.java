@@ -48,11 +48,6 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
         // Set utf-8 as default charset
         connectionsProps.put("characterEncoding", "utf-8");
         connectionsProps.put("tinyInt1isBit", "false");
-        // Auth plugins
-//        connectionsProps.put("authenticationPlugins",
-//            "com.mysql.jdbc.authentication.MysqlClearPasswordPlugin," +
-//            "com.mysql.jdbc.authentication.MysqlOldPasswordPlugin," +
-//            "org.jkiss.jdbc.mysql.auth.DialogAuthenticationPlugin");
     }
 
     public static Map<String,String> getConnectionsProps() {
