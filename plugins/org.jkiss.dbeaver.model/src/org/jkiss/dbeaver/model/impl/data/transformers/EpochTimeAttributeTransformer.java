@@ -21,13 +21,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -42,6 +45,8 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
     private static final String PROP_UNIT = "unit";
 
+    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+
     enum EpochUnit {
         seconds,
         milliseconds,
@@ -50,7 +55,9 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
-        // TODO: Change attribute type (to DATETIME)
+        attribute.setPresentationAttribute(
+            new TransformerPresentationAttribute(attribute, "EpochTime", -1, DBPDataKind.DATETIME));
+
         EpochUnit unit = EpochUnit.milliseconds;
         if (options.containsKey(PROP_UNIT)) {
             try {
@@ -78,10 +85,22 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
                     case seconds: dateValue *= 1000; break;
                     case nanoseconds: dateValue /= 1000; break;
                 }
-                return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH).format(
-                    new Date(dateValue));
+                return DEFAULT_TIME_FORMAT.format(new Date(dateValue));
             }
             return DBUtils.getDefaultValueDisplayString(value, format);
+        }
+
+        @Nullable
+        @Override
+        public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
+            if (object instanceof String) {
+                try {
+                    return DEFAULT_TIME_FORMAT.parse((String) object).getTime();
+                } catch (ParseException e) {
+                    log.error("Error parsing time value", e);
+                }
+            }
+            return super.getValueFromObject(session, type, object, copy);
         }
     }
 }
