@@ -77,8 +77,8 @@ class TransformerSettingsDialog extends BaseDialog {
             final Composite placeholder = UIUtils.createControlGroup(composite, "Transformer", 2, GridData.FILL_HORIZONTAL, -1);
             UIUtils.createLabelText(placeholder, "Name", transformer.getName(), SWT.READ_ONLY);
             UIUtils.createLabelText(placeholder, "Info", transformer.getDescription(), SWT.READ_ONLY | SWT.WRAP);
-
         }
+
         Map<String, String> transformOptions = settings.getTransformOptions();
         if (transformOptions == null) {
             transformOptions = Collections.emptyMap();
@@ -105,7 +105,7 @@ class TransformerSettingsDialog extends BaseDialog {
     @Override
     protected void okPressed()
     {
-        final Map<Object, Object> properties = propertySource.getProperties();
+        final Map<Object, Object> properties = propertySource.getPropertiesWithDefaults();
         for (Map.Entry<Object, Object> prop : properties.entrySet()) {
             if (prop.getValue() != null) {
                 settings.setTransformOption(prop.getKey().toString(), prop.getValue().toString());

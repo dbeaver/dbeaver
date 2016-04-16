@@ -1236,8 +1236,16 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public void run() {
                         if (isChecked()) {
-                            getTransformSettings().setCustomTransformer(descriptor.getId());
-                            saveTransformerSettings();
+                            final DBVTransformSettings settings = getTransformSettings();
+                            final String oldCustomTransformer = settings.getCustomTransformer();
+                            settings.setCustomTransformer(descriptor.getId());
+                            TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
+                                ResultSetViewer.this, attr, settings);
+                            if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                                saveTransformerSettings();
+                            } else {
+                                settings.setCustomTransformer(oldCustomTransformer);
+                            }
                         }
                     }
                 };
