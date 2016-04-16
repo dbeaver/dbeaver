@@ -1167,6 +1167,25 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    private static class TransformerAction extends Action {
+        private final DBDAttributeBinding attrribute;
+        public TransformerAction(DBDAttributeBinding attr, String text, int style) {
+            super(text, style);
+            this.attrribute = attr;
+        }
+        @NotNull
+        DBVTransformSettings getTransformSettings() {
+            final DBVTransformSettings settings = DBVUtils.getTransformSettings(attrribute, true);
+            if (settings == null) {
+                throw new IllegalStateException("Can't get/create transformer settings for '" + attrribute.getFullQualifiedName() + "'");
+            }
+            return settings;
+        }
+        protected void saveTransformerSettings() {
+            attrribute.getDataSource().getContainer().persistConfiguration();
+        }
+    }
+
     private void fillAttributeTransformersMenu(IMenuManager manager, final DBDAttributeBinding attr) {
         final DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer == null) {
@@ -1182,17 +1201,24 @@ public class ResultSetViewer extends Viewer
         List<? extends DBDAttributeTransformerDescriptor> customTransformers =
             registry.findTransformers(dataSource, attr, true);
         if (customTransformers != null && !customTransformers.isEmpty()) {
+            manager.add(new TransformerAction(attr, "None", IAction.AS_RADIO_BUTTON) {
+                @Override
+                public void run() {
+                    getTransformSettings().setCustomTransformer(null);
+                    saveTransformerSettings();
+                }
+
+                @Override
+                public boolean isChecked() {
+                    return transformSettings == null || CommonUtils.isEmpty(transformSettings.getCustomTransformer());
+                }
+            });
             for (final DBDAttributeTransformerDescriptor descriptor : customTransformers) {
-                manager.add(new Action(descriptor.getName(), IAction.AS_RADIO_BUTTON) {
+                manager.add(new TransformerAction(attr, descriptor.getName(), IAction.AS_RADIO_BUTTON) {
                     @Override
                     public void run() {
-                        final DBVTransformSettings ts = DBVUtils.getTransformSettings(attr, true);
-                        if (ts == null) {
-                            log.debug("Can't get transformer settings for '" + DBUtils.getObjectFullName(attr) + "'");
-                            return;
-                        }
-                        ts.setCustomTransformer(descriptor.getId());
-                        dataSource.getContainer().persistConfiguration();
+                        getTransformSettings().setCustomTransformer(descriptor.getId());
+                        saveTransformerSettings();
                     }
 
                     @Override
@@ -1205,36 +1231,23 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
-//            MenuManager customTransformerMenu = new MenuManager(
-//                customTransformer == null ? attr.getDataKind().name() : customTransformer.getName(),
-//                DBeaverIcons.getImageDescriptor(customTransformer == null ? DBUtils.getTypeImage(attr) : customTransformer.getIcon()),
-//                null);
-//            manager.add(customTransformerMenu);
             manager.add(new Action("Settings ...") {
 
             });
         }
-        manager.add(new Separator());
 
         List<? extends DBDAttributeTransformerDescriptor> applicableTransformers =
             registry.findTransformers(dataSource, attr, false);
         if (applicableTransformers != null) {
+            manager.add(new Separator());
+
             for (final DBDAttributeTransformerDescriptor descriptor : applicableTransformers) {
-                manager.add(new Action(descriptor.getName(), IAction.AS_CHECK_BOX) {
+                manager.add(new TransformerAction(attr, descriptor.getName(), IAction.AS_CHECK_BOX) {
                     @Override
                     public void run() {
-                        final DBVTransformSettings ts = DBVUtils.getTransformSettings(attr, true);
-                        if (ts == null) {
-                            log.debug("Can't get transformer settings for '" + DBUtils.getObjectFullName(attr) + "'");
-                            return;
-                        }
-                        final boolean include = !isChecked();
-                        System.out.println("Include " + attr.getName() + " transformer " + descriptor.getName() + "=" + include);
-                        ts.enableTransformer(descriptor, include);
-
-                        dataSource.getContainer().persistConfiguration();
+                        getTransformSettings().enableTransformer(descriptor, !isChecked());
+                        saveTransformerSettings();
                     }
-
                     @Override
                     public boolean isChecked() {
                         if (transformSettings != null) {
