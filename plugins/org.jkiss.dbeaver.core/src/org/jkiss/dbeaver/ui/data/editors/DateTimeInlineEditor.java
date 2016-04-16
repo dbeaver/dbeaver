@@ -23,6 +23,9 @@ import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
@@ -51,8 +54,10 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 
     @Override
     public Object extractEditorValue() throws DBException {
-        final String strValue = timeEditor.getValue();
-        return valueController.getValueHandler().getValueFromObject(null, valueController.getValueType(), strValue, false);
+        try (DBCSession session = valueController.getExecutionContext().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
+            final String strValue = timeEditor.getValue();
+            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false);
+        }
     }
 
     @Override

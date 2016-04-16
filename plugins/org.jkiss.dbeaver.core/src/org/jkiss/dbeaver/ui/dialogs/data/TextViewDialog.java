@@ -259,8 +259,7 @@ public class TextViewDialog extends ValueViewDialog {
             }
         }
 
-        DBCExecutionContext context = getValueController().getExecutionContext();
-        try (DBCSession session = context.openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make content value from editor")) {
+        try (DBCSession session = getValueController().getExecutionContext().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make text value from editor")) {
             return getValueController().getValueHandler().getValueFromObject(
                 session,
                 getValueController().getValueType(),

@@ -24,6 +24,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.utils.CommonUtils;
 
@@ -61,10 +65,12 @@ public class StringInlineEditor extends BaseValueEditor<Text> {
 
     @Override
     public Object extractEditorValue() throws DBCException {
-        return valueController.getValueHandler().getValueFromObject(
-            null,
-            valueController.getValueType(),
-            control.getText(),
-            false);
+        try (DBCSession session = valueController.getExecutionContext().openSession(VoidProgressMonitor.INSTANCE, DBCExecutionPurpose.UTIL, "Make string value from editor")) {
+            return valueController.getValueHandler().getValueFromObject(
+                session,
+                valueController.getValueType(),
+                control.getText(),
+                false);
+        }
     }
 }
