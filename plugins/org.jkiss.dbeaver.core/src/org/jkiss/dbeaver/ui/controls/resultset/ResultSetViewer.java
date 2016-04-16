@@ -1167,11 +1167,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private static class TransformerAction extends Action {
+    private class TransformerAction extends Action {
         private final DBDAttributeBinding attrribute;
-        public TransformerAction(DBDAttributeBinding attr, String text, int style) {
+        public TransformerAction(DBDAttributeBinding attr, String text, int style, boolean checked) {
             super(text, style);
             this.attrribute = attr;
+            setChecked(checked);
         }
         @NotNull
         DBVTransformSettings getTransformSettings() {
@@ -1183,6 +1184,16 @@ public class ResultSetViewer extends Viewer
         }
         protected void saveTransformerSettings() {
             attrribute.getDataSource().getContainer().persistConfiguration();
+            getModel().setTransformInProgress(true);
+            final Runnable finalizer = new Runnable() {
+                @Override
+                public void run() {
+                    getModel().setTransformInProgress(false);
+                }
+            };
+            if (!refreshData(finalizer)) {
+                finalizer.run();
+            }
         }
     }
 
@@ -1201,33 +1212,36 @@ public class ResultSetViewer extends Viewer
         List<? extends DBDAttributeTransformerDescriptor> customTransformers =
             registry.findTransformers(dataSource, attr, true);
         if (customTransformers != null && !customTransformers.isEmpty()) {
-            manager.add(new TransformerAction(attr, "None", IAction.AS_RADIO_BUTTON) {
+            manager.add(new TransformerAction(
+                attr,
+                "None",
+                IAction.AS_RADIO_BUTTON,
+                transformSettings == null || CommonUtils.isEmpty(transformSettings.getCustomTransformer()))
+            {
                 @Override
                 public void run() {
-                    getTransformSettings().setCustomTransformer(null);
-                    saveTransformerSettings();
-                }
-
-                @Override
-                public boolean isChecked() {
-                    return transformSettings == null || CommonUtils.isEmpty(transformSettings.getCustomTransformer());
+                    if (isChecked()) {
+                        getTransformSettings().setCustomTransformer(null);
+                        saveTransformerSettings();
+                    }
                 }
             });
             for (final DBDAttributeTransformerDescriptor descriptor : customTransformers) {
-                manager.add(new TransformerAction(attr, descriptor.getName(), IAction.AS_RADIO_BUTTON) {
+                final TransformerAction action = new TransformerAction(
+                    attr,
+                    descriptor.getName(),
+                    IAction.AS_RADIO_BUTTON,
+                    transformSettings != null && descriptor.getId().equals(transformSettings.getCustomTransformer()))
+                {
                     @Override
                     public void run() {
-                        getTransformSettings().setCustomTransformer(descriptor.getId());
-                        saveTransformerSettings();
+                        if (isChecked()) {
+                            getTransformSettings().setCustomTransformer(descriptor.getId());
+                            saveTransformerSettings();
+                        }
                     }
-
-                    @Override
-                    public boolean isChecked() {
-                        return
-                            transformSettings != null &&
-                            descriptor.getId().equals(transformSettings.getCustomTransformer());
-                    }
-                });
+                };
+                manager.add(action);
             }
         }
         if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
@@ -1242,22 +1256,21 @@ public class ResultSetViewer extends Viewer
             manager.add(new Separator());
 
             for (final DBDAttributeTransformerDescriptor descriptor : applicableTransformers) {
-                manager.add(new TransformerAction(attr, descriptor.getName(), IAction.AS_CHECK_BOX) {
+                boolean checked;
+                if (transformSettings != null) {
+                    if (descriptor.isApplicableByDefault()) {
+                        checked = !transformSettings.isExcluded(descriptor.getId());
+                    } else {
+                        checked = transformSettings.isIncluded(descriptor.getId());
+                    }
+                } else {
+                    checked = descriptor.isApplicableByDefault();
+                }
+                manager.add(new TransformerAction(attr, descriptor.getName(), IAction.AS_CHECK_BOX, checked) {
                     @Override
                     public void run() {
                         getTransformSettings().enableTransformer(descriptor, !isChecked());
                         saveTransformerSettings();
-                    }
-                    @Override
-                    public boolean isChecked() {
-                        if (transformSettings != null) {
-                            if (descriptor.isApplicableByDefault()) {
-                                return !transformSettings.isExcluded(descriptor.getId());
-                            } else {
-                                return transformSettings.isIncluded(descriptor.getId());
-                            }
-                        }
-                        return descriptor.isApplicableByDefault();
                     }
                 });
             }
@@ -1557,14 +1570,16 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void refreshData(@Nullable Runnable onSuccess) {
+    public boolean refreshData(@Nullable Runnable onSuccess) {
         DBSDataContainer dataContainer = getDataContainer();
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
-            runDataPump(dataContainer, null, 0, segmentSize, -1, onSuccess);
+            return runDataPump(dataContainer, null, 0, segmentSize, -1, onSuccess);
+        } else {
+            return false;
         }
     }
 
@@ -1625,7 +1640,7 @@ public class ResultSetViewer extends Viewer
         return getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS);
     }
 
-    synchronized void runDataPump(
+    synchronized boolean runDataPump(
         @NotNull final DBSDataContainer dataContainer,
         @Nullable final DBDDataFilter dataFilter,
         final int offset,
@@ -1635,7 +1650,7 @@ public class ResultSetViewer extends Viewer
     {
         if (dataPumpJob != null) {
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Data read is in progress - can't run another", SWT.ICON_WARNING);
-            return;
+            return false;
         }
         // Read data
         final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
@@ -1717,11 +1732,15 @@ public class ResultSetViewer extends Viewer
                             updateFiltersText(error == null);
                             updateToolbar();
                             fireResultSetLoad();
-
-                            if (finalizer != null) {
-                                finalizer.run();
-                            }
                         } finally {
+                            if (finalizer != null) {
+                                try {
+                                    finalizer.run();
+                                } catch (Throwable e) {
+                                    log.error(e);
+                                }
+                            }
+
                             dataPumpJob = null;
                         }
                     }
@@ -1731,6 +1750,8 @@ public class ResultSetViewer extends Viewer
         dataPumpJob.setOffset(offset);
         dataPumpJob.setMaxRows(maxRows);
         dataPumpJob.schedule();
+
+        return true;
     }
 
     private void clearData()

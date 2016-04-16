@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -52,7 +53,7 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
         @Override
         public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
             if (value instanceof Number) {
-                return Long.toHexString(((Number) value).longValue());
+                return Long.toHexString(((Number) value).longValue()).toUpperCase(Locale.ENGLISH);
             }
             return DBUtils.getDefaultValueDisplayString(value, format);
         }

@@ -86,10 +86,17 @@ public class DBVTransformSettings {
         }
         for (int i = 0; i < descriptors.size();) {
             final DBDAttributeTransformerDescriptor descriptor = descriptors.get(i);
-            if ((descriptor.isCustom() && !descriptor.getId().equals(customTransformer)) ||
-                (descriptor.isApplicableByDefault() && excludedTransformers != null && excludedTransformers.contains(descriptor.getId())) ||
-                (!descriptor.isApplicableByDefault() && includedTransformers != null && !includedTransformers.contains(descriptor.getId())))
-            {
+            boolean valid;
+            if (descriptor.isCustom()) {
+                valid = descriptor.getId().equals(customTransformer);
+            } else {
+                if (descriptor.isApplicableByDefault()) {
+                    valid = (excludedTransformers == null || !excludedTransformers.contains(descriptor.getId()));
+                } else {
+                    valid = includedTransformers != null && includedTransformers.contains(descriptor.getId());
+                }
+            }
+            if (!valid) {
                 descriptors.remove(i);
             } else {
                 i++;
