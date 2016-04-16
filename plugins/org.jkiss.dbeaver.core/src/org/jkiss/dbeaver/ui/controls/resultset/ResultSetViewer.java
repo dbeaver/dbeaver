@@ -1246,7 +1246,14 @@ public class ResultSetViewer extends Viewer
         }
         if (customTransformer != null && !CommonUtils.isEmpty(customTransformer.getProperties())) {
             manager.add(new Action("Settings ...") {
-
+                @Override
+                public void run() {
+                    TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
+                        ResultSetViewer.this, attr, transformSettings);
+                    if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                        dataSource.getContainer().persistConfiguration();
+                    }
+                }
             });
         }
 
