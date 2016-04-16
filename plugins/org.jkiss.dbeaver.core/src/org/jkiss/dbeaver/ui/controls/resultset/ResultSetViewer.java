@@ -1100,7 +1100,7 @@ public class ResultSetViewer extends Viewer
                     dataSource.getContainer().getApplication().getValueHandlerRegistry().findTransformers(
                         dataSource, attr, null);
                 if (!CommonUtils.isEmpty(transformers)) {
-                    MenuManager transformersMenu = new MenuManager("Transformers");
+                    MenuManager transformersMenu = new MenuManager("View as");
                     transformersMenu.setRemoveAllWhenShown(true);
                     transformersMenu.addMenuListener(new IMenuListener() {
                         @Override
@@ -1110,7 +1110,7 @@ public class ResultSetViewer extends Viewer
                     });
                     viewMenu.add(transformersMenu);
                 } else {
-                    final Action customizeAction = new Action("Transformers") {};
+                    final Action customizeAction = new Action("View as") {};
                     customizeAction.setEnabled(false);
                     viewMenu.add(customizeAction);
                 }
@@ -1214,7 +1214,7 @@ public class ResultSetViewer extends Viewer
         if (customTransformers != null && !customTransformers.isEmpty()) {
             manager.add(new TransformerAction(
                 attr,
-                "None",
+                "Default",
                 IAction.AS_RADIO_BUTTON,
                 transformSettings == null || CommonUtils.isEmpty(transformSettings.getCustomTransformer()))
             {
