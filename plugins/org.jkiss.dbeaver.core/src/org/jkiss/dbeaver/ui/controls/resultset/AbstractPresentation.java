@@ -42,9 +42,11 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
     private static final String PRESENTATION_CONTROL_ID = "org.jkiss.dbeaver.ui.resultset.presentation";
 
+    @NotNull
     protected IResultSetController controller;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
 
+    @NotNull
     public IResultSetController getController() {
         return controller;
     }
