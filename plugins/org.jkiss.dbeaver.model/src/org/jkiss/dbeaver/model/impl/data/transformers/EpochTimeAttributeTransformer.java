@@ -96,8 +96,8 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (object instanceof String) {
                 try {
                     return DEFAULT_TIME_FORMAT.parse((String) object).getTime();
-                } catch (ParseException e) {
-                    log.error("Error parsing time value", e);
+                } catch (Exception e) {
+                    log.debug("Error parsing time value", e);
                 }
             }
             return super.getValueFromObject(session, type, object, copy);
