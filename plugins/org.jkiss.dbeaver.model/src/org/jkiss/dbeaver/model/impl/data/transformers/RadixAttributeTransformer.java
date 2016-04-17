@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.data.transformers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -40,6 +41,8 @@ import java.util.Map;
  * Transforms numeric attribute value into string in a specified radix
  */
 public class RadixAttributeTransformer implements DBDAttributeTransformer {
+
+    static final Log log = Log.getLog(RadixAttributeTransformer.class);
 
     public static final String PROP_RADIX = "radix";
     public static final String PROP_BITS = "bits";
@@ -116,7 +119,11 @@ public class RadixAttributeTransformer implements DBDAttributeTransformer {
                         strValue = strValue.substring(2);
                     }
                 }
-                return Long.parseLong(strValue, radix);
+                try {
+                    return Long.parseLong(strValue, radix);
+                } catch (NumberFormatException e) {
+                    log.debug(e);
+                }
             }
             return super.getValueFromObject(session, type, object, copy);
         }
