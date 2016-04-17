@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IStorageEditorInput;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -39,7 +40,7 @@ import java.io.InputStream;
 /**
  * StringEditorInput
  */
-public class StringEditorInput implements IEditorInput {
+public class StringEditorInput implements IEditorInput, IStorageEditorInput {
 
     public static final IEditorInput EMPTY_INPUT = new StringEditorInput("<empty>", "", true, ContentUtils.DEFAULT_CHARSET);
     private String name;
@@ -55,6 +56,7 @@ public class StringEditorInput implements IEditorInput {
         this.encoding = encoding;
 	}
 
+/*
 	public int hashCode() {
 		return buffer.hashCode();
 	}
@@ -69,6 +71,7 @@ public class StringEditorInput implements IEditorInput {
 		StringEditorInput other = (StringEditorInput) obj;
 		return buffer.equals(other.buffer);
 	}
+*/
 
 	@Override
     public boolean exists() {
@@ -93,6 +96,7 @@ public class StringEditorInput implements IEditorInput {
 		return null;
 	}
 
+    @Override
 	public IStorage getStorage() {
         if (storage == null) {
             storage = new StringStorage();

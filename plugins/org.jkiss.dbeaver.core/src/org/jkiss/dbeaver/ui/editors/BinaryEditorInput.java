@@ -25,6 +25,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
+import org.eclipse.ui.IStorageEditorInput;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -39,7 +40,7 @@ import java.util.Arrays;
 /**
  * BinaryEditorInput
  */
-public class BinaryEditorInput implements IEditorInput {
+public class BinaryEditorInput implements IEditorInput, IStorageEditorInput {
 
     private String name;
     private byte[] value;
@@ -54,6 +55,7 @@ public class BinaryEditorInput implements IEditorInput {
         this.encoding = encoding;
 	}
 
+/*
 	public int hashCode() {
 		return Arrays.hashCode(value);
 	}
@@ -68,6 +70,7 @@ public class BinaryEditorInput implements IEditorInput {
 		BinaryEditorInput other = (BinaryEditorInput) obj;
 		return Arrays.equals(value, other.value);
 	}
+*/
 
 	@Override
     public boolean exists() {
@@ -89,6 +92,7 @@ public class BinaryEditorInput implements IEditorInput {
 		return null;
 	}
 
+    @Override
 	public IStorage getStorage() {
         if (storage == null) {
             storage = new ByteStorage();
