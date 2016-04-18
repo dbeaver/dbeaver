@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -96,12 +97,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         if (ownerSchema != null) {
             nsList.add(0, ownerSchema);
         } else {
+/*
             for (String sn : dataSource.getSearchPath()) {
                 final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), sn);
                 if (schema != null) {
                     nsList.add(schema);
                 }
             }
+*/
         }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
@@ -126,10 +129,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.oid,x.relname,x.relnamespace FROM pg_catalog.pg_class x " +
                 "WHERE x.relkind in('r','v','m') AND x.relname LIKE ? " +
-                " AND x.relnamespace IN (?)" +
+                (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (?)") +
                 " ORDER BY x.relname LIMIT " + maxResults)) {
             dbStat.setString(1, tableNameMask.toLowerCase(Locale.ENGLISH));
-            if (schema != null) {
+            if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -166,10 +169,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT DISTINCT x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
                 "WHERE x.proname LIKE ? " +
-                " AND x.pronamespace IN (?) " +
+                (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (?)") +
                 " ORDER BY x.proname LIMIT " + maxResults)) {
             dbStat.setString(1, procNameMask.toLowerCase(Locale.ENGLISH));
-            if (schema != null) {
+            if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -206,10 +209,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.oid,x.conname,x.connamespace FROM pg_catalog.pg_constraint x " +
                 "WHERE x.conname LIKE ? " +
-                " AND x.connamespace IN (?)" +
+                (CommonUtils.isEmpty(schema) ? "" : " AND x.connamespace IN (?)") +
                 " ORDER BY x.conname LIMIT " + maxResults)) {
             dbStat.setString(1, constrNameMask.toLowerCase(Locale.ENGLISH));
-            if (schema != null) {
+            if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
