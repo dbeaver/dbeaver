@@ -347,7 +347,7 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         }
     }
 
-    private static Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_]*`", Pattern.CASE_INSENSITIVE);
+    private static Pattern DEFINER_PATTER = Pattern.compile("DEFINER\\s*=\\s*`[^*]*`@`[0-9a-z\\-_\\.]*`", Pattern.CASE_INSENSITIVE);
 
     class DumpFilterJob extends DumpJob {
         protected DumpFilterJob(DBRProgressMonitor monitor, InputStream stream, File outFile)
