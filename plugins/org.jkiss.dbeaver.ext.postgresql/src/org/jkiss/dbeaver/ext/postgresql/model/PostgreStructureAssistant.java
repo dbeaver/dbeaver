@@ -97,6 +97,9 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         if (ownerSchema != null) {
             nsList.add(0, ownerSchema);
         } else {
+            // Do not limit object search with search path
+            // Otherwise you can't find anything else.
+            // But maybe autocomplete should work only with search path???
 /*
             for (String sn : dataSource.getSearchPath()) {
                 final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), sn);
