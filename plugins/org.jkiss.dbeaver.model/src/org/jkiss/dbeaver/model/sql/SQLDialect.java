@@ -233,4 +233,12 @@ public interface SQLDialect {
      * True if anonymous SQL blocks must be finished with delimiter
      */
     boolean isDelimiterAfterBlock();
+    
+    String prepareUpdateStatement(
+    		String schemaName, String tableName, String tableAlias,
+    		String[] keyColNames, Object[] keyColVals, String[] valColNames);
+    
+    String prepareDeleteStatement(String schemaName, String tableName, String tableAlias, String[] keyColNames);
+    
+    String prepareInsertStatement(String schemaName, String tableName, String[] keyColNames);
 }

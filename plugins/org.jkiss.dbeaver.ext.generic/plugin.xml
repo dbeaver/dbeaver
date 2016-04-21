@@ -597,6 +597,15 @@
                     <parameter name="supports-scroll" value="false"/>
                 </driver>
                 <driver
+                    id="phoenix"
+                    label="PhoenixHBase"
+                    class="org.apache.phoenix.jdbc.PhoenixDriver"
+                    sampleURL="jdbc:phoenix:{host}"
+                    webURL="http://phoenix.apache.org/"
+                    description="Driver for Phoenix HBase Database">
+                    <file type="jar" path="repo:/drivers/phoeinx/phoenix-blahblah.jar"/>
+                </driver>
+                <driver
                     id="csvjdbc"
                     label="CSV/DBF"
                     category="Flat files (CSV)"
