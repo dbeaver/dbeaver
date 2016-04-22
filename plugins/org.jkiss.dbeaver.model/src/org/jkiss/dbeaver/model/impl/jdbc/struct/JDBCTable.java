@@ -306,7 +306,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             	String schemaName = JDBCTable.this.getContainer().getName();
                 String tableName = getFullQualifiedName();
                 
-                List<String> attrColNames = new ArrayList<>();
+                List<String> attrColNames = new ArrayList<String>();
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
                     if (attribute.isPseudoAttribute() || DBUtils.isNullValue(attributeValues[i])) {
@@ -315,7 +315,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     attrColNames.add(getAttributeName(attribute));
                 }
                 
-                String[] colNames = (String[]) attrColNames.toArray();
+                String[] colNames = (String[]) attrColNames.toArray(new String[attrColNames.size()]);
                 String query = dialect.prepareInsertStatement(schemaName, tableName, colNames);
 
                 // Execute
@@ -428,10 +428,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 
                 for (int i = 0; i < keyAttributes.length; i++) {
                 	DBSAttributeBase keyAttribute = keyAttributes[i];
+                	keyColVals[i] = attributeValues[i];
                 	keyColNames[i] = appendAttributeCriteria(tableAlias, dialect, keyAttribute, keyColVals[i]);
+                	
                 }
                 
-                String query = dialect.prepareDeleteStatement(schemaName, tableName, tableAlias, keyColNames);
+                String query = dialect.prepareDeleteStatement(schemaName, tableName, tableAlias, keyColNames, keyColVals);
 
                 // Execute
                 DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);

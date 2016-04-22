@@ -4,7 +4,163 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="phoenixServer" class="org.jkiss.dbeaver.ext.vertica.model.PhoenixMetaModel" driverClass="org.apache.phoenix.jdbc.PhoenixDriver"/>
+        <meta id="phoenixServer" class="org.jkiss.dbeaver.ext.phoenix.model.PhoenixMetaModel" 
+        	driverClass="org.apache.phoenix.jdbc.PhoenixDriver"/>
+    </extension>
+    
+    
+   <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <datasource
+            class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+            description="Generic JDBC connector"
+            id="phoenixSource"
+            label="Generic"
+            icon="icons/database.png">
+            <tree path="generic" label="Generic data source">
+                <items label="#catalog" path="catalog" property="catalogs" icon="#database" optional="true">
+                    <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
+                            <items label="%tree.table.node.name" path="table" property="physicalTables" icon="#table">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                    <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
+                                        <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableForeignKey" label="%tree.foreign_keys.node.name" icon="#foreign-keys" description="Table foreign keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
+                                    <items label="%tree.foreign_key.node.name" path="association" property="associations" icon="#foreign-key">
+                                        <items label="%tree.foreign_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Table indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                                    <items label="%tree.index.node.name" path="index" property="indexes" icon="#index">
+                                        <items label="%tree.index_columns.node.name" path="column" property="attributeReferences" icon="#column" navigable="false" inline="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                    <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
+                                        <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
+                                        </items>
+                                    </items>
+                                </folder>
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                                    <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                                </folder>
+                                <items label="%tree.sub_table.node.name" optional="true" path="subtable" property="subTables" icon="#table" recursive=".." visibleIf="!object.view">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
+                            <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
+                            <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
+                                </items>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
+                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
+                                </items>
+                            </items>
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
+                            <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
+                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
+                        </folder>
+                    </items>
+                </items>
+            </tree>
+
+            <driver-properties>
+                <propertyGroup label="Parameters" description="Custom driver parameters">
+                    <property id="supports-indexes" label="Driver supports indexes" description="Driver supports table indexes" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
+                    <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries sepration in scripts" type="string" required="false" defaultValue=";"/>
+                    <property id="meta-model" label="Meta model type" description="Type of metadata reading model - standard or indexed" type="string" required="false" defaultValue="" validValues="standard,indexed"/>
+                    <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="null" validValues="null,%"/>
+                    <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
+                    <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
+                    <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
+                    <property id="create-url-param" label="Create database parameter" description="Database create URL parameter" type="string" required="false" defaultValue=""/>
+                    <property id="supports-multiple-results" label="Driver supports multiple results" description="Driver supports multiple results for a single query." type="boolean" required="false" defaultValue="false"/>
+                    <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
+                </propertyGroup>
+                <propertyGroup label="Queries" description="Custom driver queries">
+                    <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
+                    <property id="query-set-active-db" label="Set active database" description="Query to change active database" type="string" required="false" defaultValue=""/>
+                    <property id="active-entity-type" label="Active object type" description="Type of selectable object (schema, catalog)" type="string" required="false" defaultValue="" validValues="catalog,schema"/>
+                    <property id="supports-scroll" label="Driver supports results scrolling" description="Driver supports resultset scrolling" type="boolean" required="false" defaultValue="false"/>
+                </propertyGroup>
+                <propertyGroup label="DDL" description="DDL generation options">
+                    <property id="ddl-drop-column-short" label="Drop column short syntax" description="Use 'ALTER TABLE DROP column-name' instead of standard syntax" type="boolean" required="false" defaultValue="false"/>
+                    <property id="legacy-sql-dialect" label="Use legacy SQL dialect for DDL" description="Use legacy SQL dialect for DDL" type="boolean" required="false" defaultValue="false"/>
+                </propertyGroup>
+            </driver-properties>
+
+            <drivers managable="true">
+
+                <driver
+                    id="phoenix"
+                    label="PhoenixHBase"
+                    class="org.apache.phoenix.jdbc.PhoenixDriver"
+                    sampleURL="jdbc:phoenix:{host}"
+                    webURL="http://phoenix.apache.org/"
+                    description="Driver for Phoenix HBase Database">
+                    <file type="jar" path="repo:/drivers/phoeinx/phoenix-blahblah.jar"/>
+                </driver>
+            </drivers>
+
+
+            <views>
+                <view
+                    id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
+                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                    label="%dialog.connection.header"
+                    class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                    icon="icons/database.png">
+                </view>
+                <view
+                      class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                      icon="icons/database.png"
+                      id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
+                      label="%dialog.connection.header"
+                      targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
+        </datasource>
+    </extension>
+    
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
+                description="phoenix data types provider"
+                id="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
+                label="Phoenix data types provider">
+
+            <datasource id="phoenixSource"/>
+            <type standard="ARRAY"/>
+        </provider>
     </extension>
     
 

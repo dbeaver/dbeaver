@@ -387,7 +387,7 @@ public class BasicSQLDialect implements SQLDialect {
     	return query.toString();
     }
     
-    public String prepareDeleteStatement(String schemaName, String tableName, String tableAlias, String[] keyColNames)
+    public String prepareDeleteStatement(String schemaName, String tableName, String tableAlias, String[] keyColNames, Object[] keyColVals)
     {
     	// Make query
         StringBuilder query = new StringBuilder();
@@ -402,7 +402,13 @@ public class BasicSQLDialect implements SQLDialect {
             if (hasKey) query.append(" AND "); //$NON-NLS-1$
             hasKey = true;
             String keyColName = keyColNames[i];
+            Object keyColVal = keyColVals[i];
             query.append(keyColName);
+            if (DBUtils.isNullValue(keyColVal)) {
+                query.append(" IS NULL"); //$NON-NLS-1$
+            } else {
+                query.append("=?"); //$NON-NLS-1$
+            }
         }
     	return query.toString();
     }

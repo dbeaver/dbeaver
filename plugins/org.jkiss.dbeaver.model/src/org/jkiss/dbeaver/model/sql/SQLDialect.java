@@ -238,7 +238,7 @@ public interface SQLDialect {
     		String schemaName, String tableName, String tableAlias,
     		String[] keyColNames, Object[] keyColVals, String[] valColNames);
     
-    String prepareDeleteStatement(String schemaName, String tableName, String tableAlias, String[] keyColNames);
+    String prepareDeleteStatement(String schemaName, String tableName, String tableAlias, String[] keyColNames, Object[] keyColVals);
     
     String prepareInsertStatement(String schemaName, String tableName, String[] keyColNames);
 }
