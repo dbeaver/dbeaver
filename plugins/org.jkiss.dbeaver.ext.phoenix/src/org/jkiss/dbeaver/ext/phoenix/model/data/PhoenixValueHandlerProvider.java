@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.sql.Types;
 
 /**
- * PostgreValueHandlerProvider
+ * PhoenixValueHandlerProvider
  */
 public class PhoenixValueHandlerProvider implements DBDValueHandlerProvider {
 

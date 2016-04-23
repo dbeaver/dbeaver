@@ -33,6 +33,8 @@ public class GenericDataTypeCache extends JDBCBasicDataTypeCache
         // but different scale/precision properties
         ignoredTypes.add("NUMBER");
         ignoredTypes.add("NUMERIC");
+        
+        this.fillStandardTypes(owner);
     }
 
 }

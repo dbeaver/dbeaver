@@ -1,19 +1,37 @@
 package org.jkiss.dbeaver.ext.phoenix.model;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 
 
 public class PhoenixSQLDialect extends GenericSQLDialect {
+	public static final String[] PHOENIXHBASE_RESERVED_KEYWORDS = {
+		"UPSERT"
+	};
 
 	public PhoenixSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData) {
 		super(dataSource, metaData);
 	}
 	
-
+	@Override
+    protected void loadStandardKeywords()
+    {
+    	super.loadStandardKeywords();
+    	Set<String> all = new HashSet<>();
+        Collections.addAll(all, PHOENIXHBASE_RESERVED_KEYWORDS);
+    	addKeywords(all, DBPKeywordType.KEYWORD);
+    }
+	
+	@Override
 	public String prepareUpdateStatement(
     		String schemaName, String tableName, String tableAlias,
     		String[] keyColNames, Object[] keyColVals, String[] valColNames)

@@ -30,7 +30,7 @@ import java.sql.Array;
 
 
 /**
- * PostgreArrayValueHandler
+ * PhoenixArrayValueHandler
  */
 public class PhoenixArrayValueHandler extends JDBCArrayValueHandler {
     public static final PhoenixArrayValueHandler INSTANCE = new PhoenixArrayValueHandler();
@@ -40,29 +40,11 @@ public class PhoenixArrayValueHandler extends JDBCArrayValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
-        if (object != null && object.getClass().getSimpleName().equals(PHOENIX_ARRAY_TYPE)) {
-        	
-            final Object value = extractArrayValue(object);
-            return JDBCArray.makeArray((JDBCSession) session, (Array)value);
-            
+        if (object != null && object.getClass().getSimpleName().contains(PHOENIX_ARRAY_TYPE)) {
+            return JDBCArray.makeArray((JDBCSession) session, (Array)object);
         }
         return super.getValueFromObject(session, type, object, copy);
     }
-    
-    public static Object extractArrayValue(Object phxArrayObject) {
-        if (phxArrayObject == null) {
-            return null;
-        }
-        
-        Method getValueMethod = null;
-        try {
-        	getValueMethod = phxArrayObject.getClass().getMethod("getArray");
-        	return getValueMethod.invoke(phxArrayObject);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-
+   
 
 }
