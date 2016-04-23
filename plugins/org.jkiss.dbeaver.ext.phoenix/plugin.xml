@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="phoenixServer" class="org.jkiss.dbeaver.ext.phoenix.model.PhoenixMetaModel" 
+        	driverClass="org.apache.phoenix.jdbc.PhoenixDriver"/>
+    </extension>
+    
+ 
+    <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <provider
+                class="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
+                description="phoenix data types provider"
+                id="org.jkiss.dbeaver.ext.phoenix.model.data.PhoenixValueHandlerProvider"
+                label="Phoenix data types provider">
+
+            <datasource id="generic" /> 
+            <type standard="ARRAY"/>
+        </provider>
+    </extension>
+    
+
+</plugin>

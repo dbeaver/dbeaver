@@ -23,11 +23,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -341,6 +346,94 @@ public class BasicSQLDialect implements SQLDialect {
         addKeywords(all, DBPKeywordType.KEYWORD);
         addKeywords(types, DBPKeywordType.TYPE);
         addKeywords(functions, DBPKeywordType.FUNCTION);
+    }
+    
+
+    public String prepareUpdateStatement(
+    		String schemaName, String tableName, String tableAlias,
+    		String[] keyColNames, Object[] keyColVals, String[] valColNames)
+    {
+    	// Make query
+        StringBuilder query = new StringBuilder();
+        query.append("UPDATE ").append(tableName);
+        if (tableAlias != null) {
+            query.append(' ').append(tableAlias);
+        }
+        query.append("\nSET "); //$NON-NLS-1$ //$NON-NLS-2$
+
+        boolean hasKey = false;
+        for (String valColName : valColNames) {
+            if (hasKey) query.append(","); //$NON-NLS-1$
+            hasKey = true;
+            if (tableAlias != null) {
+                query.append(tableAlias).append(getStructSeparator());
+            }
+            query.append(valColName).append("=?"); //$NON-NLS-1$
+        }
+        query.append("\nWHERE "); //$NON-NLS-1$
+        hasKey = false;
+        for (int i = 0; i < keyColNames.length; i++) {
+            String keyColName = keyColNames[i];
+            Object keyColVal = keyColVals[i];
+            if (hasKey) query.append(" AND "); //$NON-NLS-1$
+            hasKey = true;
+            query.append(keyColName);
+            if (DBUtils.isNullValue(keyColVal)) {
+                query.append(" IS NULL"); //$NON-NLS-1$
+            } else {
+                query.append("=?"); //$NON-NLS-1$
+            }
+        }
+    	return query.toString();
+    }
+    
+    public String prepareDeleteStatement(String schemaName, String tableName, String tableAlias, String[] keyColNames, Object[] keyColVals)
+    {
+    	// Make query
+        StringBuilder query = new StringBuilder();
+        query.append("DELETE FROM ").append(tableName);
+        if (tableAlias != null) {
+            query.append(' ').append(tableAlias);
+        }
+        query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
+
+        boolean hasKey = false;
+        for (int i = 0; i < keyColNames.length; i++) {
+            if (hasKey) query.append(" AND "); //$NON-NLS-1$
+            hasKey = true;
+            String keyColName = keyColNames[i];
+            Object keyColVal = keyColVals[i];
+            query.append(keyColName);
+            if (DBUtils.isNullValue(keyColVal)) {
+                query.append(" IS NULL"); //$NON-NLS-1$
+            } else {
+                query.append("=?"); //$NON-NLS-1$
+            }
+        }
+    	return query.toString();
+    }
+    
+    public String prepareInsertStatement(String schemaName, String tableName, String[] keyColNames)
+    {
+    	// Make query
+        StringBuilder query = new StringBuilder(200);
+        query.append("INSERT INTO ").append(tableName).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+
+        boolean hasKey = false;
+        for (int i = 0; i < keyColNames.length; i++) {
+            if (hasKey) query.append(","); //$NON-NLS-1$
+            hasKey = true;
+            query.append(keyColNames[i]);
+        }
+        query.append(")\nVALUES ("); //$NON-NLS-1$
+        hasKey = false;
+        for (int i = 0; i < keyColNames.length; i++) {
+            if (hasKey) query.append(","); //$NON-NLS-1$
+            hasKey = true;
+            query.append("?"); //$NON-NLS-1$
+        }
+        query.append(")"); //$NON-NLS-1$
+    	return query.toString();
     }
 
 }

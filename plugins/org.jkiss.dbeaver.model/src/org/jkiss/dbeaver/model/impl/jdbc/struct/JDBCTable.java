@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -300,32 +301,22 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             @NotNull
             @Override
             protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
-                // Make query
-                StringBuilder query = new StringBuilder(200);
-                query.append("INSERT INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
-
-                boolean hasKey = false;
+            	SQLDialect dialect = ((SQLDataSource) session.getDataSource()).getSQLDialect();
+            
+            	String schemaName = JDBCTable.this.getContainer().getName();
+                String tableName = getFullQualifiedName();
+                
+                List<String> attrColNames = new ArrayList<String>();
                 for (int i = 0; i < attributes.length; i++) {
                     DBSAttributeBase attribute = attributes[i];
                     if (attribute.isPseudoAttribute() || DBUtils.isNullValue(attributeValues[i])) {
                         continue;
                     }
-                    if (hasKey) query.append(","); //$NON-NLS-1$
-                    hasKey = true;
-                    query.append(getAttributeName(attribute));
+                    attrColNames.add(getAttributeName(attribute));
                 }
-                query.append(")\nVALUES ("); //$NON-NLS-1$
-                hasKey = false;
-                for (int i = 0; i < attributes.length; i++) {
-                    DBSAttributeBase attribute = attributes[i];
-                    if (attribute.isPseudoAttribute() || DBUtils.isNullValue(attributeValues[i])) {
-                        continue;
-                    }
-                    if (hasKey) query.append(","); //$NON-NLS-1$
-                    hasKey = true;
-                    query.append("?"); //$NON-NLS-1$
-                }
-                query.append(")"); //$NON-NLS-1$
+                
+                String[] colNames = (String[]) attrColNames.toArray(new String[attrColNames.size()]);
+                String query = dialect.prepareInsertStatement(schemaName, tableName, colNames);
 
                 // Execute
                 DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
@@ -369,34 +360,28 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (dialect.supportsAliasInUpdate()) {
                     tableAlias = DEFAULT_TABLE_ALIAS;
                 }
-                // Make query
-                StringBuilder query = new StringBuilder();
-                query.append("UPDATE ").append(getFullQualifiedName());
-                if (tableAlias != null) {
-                    query.append(' ').append(tableAlias);
+                
+                String schemaName = JDBCTable.this.getContainer().getName();
+                String tableName = getFullQualifiedName();
+                String[] valColNames = new String[updateAttributes.length];
+                for (int i = 0; i < updateAttributes.length; i++) {
+                	DBSAttributeBase attribute = updateAttributes[i];
+                	valColNames[i] = getAttributeName(attribute);
                 }
-                query.append("\nSET "); //$NON-NLS-1$ //$NON-NLS-2$
-
-                boolean hasKey = false;
-                for (DBSAttributeBase attribute : updateAttributes) {
-                    if (hasKey) query.append(","); //$NON-NLS-1$
-                    hasKey = true;
-                    if (tableAlias != null) {
-                        query.append(tableAlias).append(dialect.getStructSeparator());
-                    }
-                    query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
-                }
-                query.append("\nWHERE "); //$NON-NLS-1$
-                hasKey = false;
+                
+                String[] keyColNames = new String[keyAttributes.length];
+                Object[] keyColVals = new Object[keyAttributes.length];
+                
                 for (int i = 0; i < keyAttributes.length; i++) {
-                    DBSAttributeBase attribute = keyAttributes[i];
-                    if (hasKey) query.append(" AND "); //$NON-NLS-1$
-                    hasKey = true;
-                    appendAttributeCriteria(tableAlias, dialect, query, attribute, attributeValues[updateAttributes.length + i]);
+                	DBSAttributeBase keyAttribute = keyAttributes[i];
+                	keyColVals[i] = attributeValues[updateAttributes.length + i];
+                	keyColNames[i] = appendAttributeCriteria(tableAlias, dialect, keyAttribute, keyColVals[i]);
                 }
+                
+                String query = dialect.prepareUpdateStatement(schemaName, tableName, tableAlias, keyColNames, keyColVals, valColNames);
 
                 // Execute
-                DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
+                DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query, false, false, keysReceiver != null);
 
                 dbStat.setStatementSource(source);
                 return dbStat;
@@ -434,20 +419,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     tableAlias = DEFAULT_TABLE_ALIAS;
                 }
 
-                // Make query
-                StringBuilder query = new StringBuilder();
-                query.append("DELETE FROM ").append(getFullQualifiedName());
-                if (tableAlias != null) {
-                    query.append(' ').append(tableAlias);
-                }
-                query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
-
-                boolean hasKey = false;
+                String schemaName = JDBCTable.this.getContainer().getName();
+                String tableName = getFullQualifiedName();
+               
+                
+                String[] keyColNames = new String[keyAttributes.length];
+                Object[] keyColVals = new Object[keyAttributes.length];
+                
                 for (int i = 0; i < keyAttributes.length; i++) {
-                    if (hasKey) query.append(" AND "); //$NON-NLS-1$
-                    hasKey = true;
-                    appendAttributeCriteria(tableAlias, dialect, query, keyAttributes[i], attributeValues[i]);
+                	DBSAttributeBase keyAttribute = keyAttributes[i];
+                	keyColVals[i] = attributeValues[i];
+                	keyColNames[i] = appendAttributeCriteria(tableAlias, dialect, keyAttribute, keyColVals[i]);
+                	
                 }
+                
+                String query = dialect.prepareDeleteStatement(schemaName, tableName, tableAlias, keyColNames, keyColVals);
 
                 // Execute
                 DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false);
@@ -502,7 +488,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
-    private void appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, StringBuilder query, DBSAttributeBase attribute, Object value) {
+    private String appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, DBSAttributeBase attribute, Object value) {
         DBDPseudoAttribute pseudoAttribute = null;
         if (attribute.isPseudoAttribute()) {
             if (attribute instanceof DBDAttributeBinding) {
@@ -518,18 +504,16 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 tableAlias = this.getFullQualifiedName();
             }
             String criteria = pseudoAttribute.translateExpression(tableAlias);
-            query.append(criteria);
+            return criteria;
         } else {
+        	StringBuilder resultBuilder = new StringBuilder();
             if (tableAlias != null) {
-                query.append(tableAlias).append(dialect.getStructSeparator());
+            	resultBuilder.append(tableAlias).append(dialect.getStructSeparator());
             }
-            query.append(getAttributeName(attribute));
+            resultBuilder.append(getAttributeName(attribute));
+            return resultBuilder.toString();
         }
-        if (DBUtils.isNullValue(value)) {
-            query.append(" IS NULL"); //$NON-NLS-1$
-        } else {
-            query.append("=?"); //$NON-NLS-1$
-        }
+        
     }
 
     /**
