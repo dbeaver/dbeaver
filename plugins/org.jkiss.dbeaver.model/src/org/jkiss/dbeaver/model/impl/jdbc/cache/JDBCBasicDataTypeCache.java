@@ -52,6 +52,7 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull JDBCDataSource owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         String name = JDBCUtils.safeGetString(dbResult, JDBCConstants.TYPE_NAME);
@@ -76,6 +77,7 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
 
     // SQL-92 standard types
     // plus a few de-facto standard types
+    @SuppressWarnings("unchecked")
     public void fillStandardTypes(DBSObject owner)
     {
         List<DBSDataType> standardTypes = new ArrayList<>();
