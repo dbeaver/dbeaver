@@ -303,6 +303,10 @@ public class JDBCSQLDialect extends BasicSQLDialect {
         this.supportsSubqueries = supportsSubqueries;
     }
 
+    public boolean supportsUpsertStatement() {
+        return false;
+    }
+
     @NotNull
     @Override
     public TreeSet<String> getDataTypes(@NotNull DBPDataSource dataSource) {

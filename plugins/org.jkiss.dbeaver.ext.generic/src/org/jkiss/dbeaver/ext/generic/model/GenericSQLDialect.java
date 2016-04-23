@@ -45,12 +45,17 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     private final String scriptDelimiter;
     private final boolean legacySQLDialect;
+    private final boolean suportsUpsert;
 
     public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
         super("Generic", metaData);
         scriptDelimiter = CommonUtils.toString(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
         legacySQLDialect = CommonUtils.toBoolean(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_LEGACY_DIALECT));
+        suportsUpsert = dataSource.getMetaModel().supportsUpsertStatement();
+        if (suportsUpsert) {
+            addSQLKeyword("UPSERT");
+        }
     }
 
     @NotNull
@@ -69,5 +74,10 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     public boolean isLegacySQLDialect() {
         return legacySQLDialect;
+    }
+
+    @Override
+    public boolean supportsUpsertStatement() {
+        return suportsUpsert;
     }
 }
