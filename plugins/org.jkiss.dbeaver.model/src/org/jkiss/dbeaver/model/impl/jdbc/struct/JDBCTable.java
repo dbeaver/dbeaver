@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -302,7 +303,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             protected DBCStatement prepareStatement(@NotNull DBCSession session, Object[] attributeValues) throws DBCException {
                 // Make query
                 StringBuilder query = new StringBuilder(200);
-                query.append("INSERT INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
+                query
+                    .append(useUpsert(session) ? "UPSERT" : "INSERT")
+                    .append(" INTO ").append(getFullQualifiedName()).append(" ("); //$NON-NLS-1$ //$NON-NLS-2$
 
                 boolean hasKey = false;
                 for (int i = 0; i < attributes.length; i++) {
@@ -356,6 +359,13 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         @Nullable DBDDataReceiver keysReceiver, @NotNull final DBCExecutionSource source)
         throws DBCException
     {
+        if (useUpsert(session)) {
+            return insertData(
+                session,
+                ArrayUtils.concatArrays(updateAttributes, keyAttributes),
+                keysReceiver,
+                source);
+        }
         readRequiredMeta(session.getProgressMonitor());
 
         DBSAttributeBase[] attributes = ArrayUtils.concatArrays(updateAttributes, keyAttributes);
@@ -468,6 +478,12 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 }
             }
         };
+    }
+
+    private boolean useUpsert(@NotNull DBCSession session) {
+        SQLDialect dialect = session.getDataSource() instanceof SQLDataSource ?
+            ((SQLDataSource) session.getDataSource()).getSQLDialect() : null;
+        return dialect instanceof JDBCSQLDialect && ((JDBCSQLDialect) dialect).supportsUpsertStatement();
     }
 
     private String getAttributeName(@NotNull DBSAttributeBase attribute) {

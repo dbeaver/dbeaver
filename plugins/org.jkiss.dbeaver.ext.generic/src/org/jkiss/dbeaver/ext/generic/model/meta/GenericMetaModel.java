@@ -299,4 +299,8 @@ public class GenericMetaModel {
         return null;
     }
 
+    public boolean supportsUpsertStatement() {
+        return false;
+    }
+
 }
