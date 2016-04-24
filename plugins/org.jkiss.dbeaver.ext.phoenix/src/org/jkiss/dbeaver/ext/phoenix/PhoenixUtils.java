@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.phoenix;
 import org.jkiss.dbeaver.Log;
 
 /**
- * VerticaUtils
+ * PhoenixUtils
  */
 public class PhoenixUtils {
 
