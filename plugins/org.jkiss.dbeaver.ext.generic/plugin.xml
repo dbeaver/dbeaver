@@ -604,7 +604,7 @@
                     webURL="http://phoenix.apache.org/"
                     description="Driver for Apache Phoenix HBase Database">
                     <parameter name="omit-type-cache" value="true"/>
-                    <file type="jar" path="repo:/drivers/phoeinx/phoenix-4.7.0-HBase-1.1-client.jar.jar"/>
+                    <file type="jar" path="maven:/org.apache.phoenix:phoenix-core:RELEASE"/>
                 </driver>
                 <driver
                     id="csvjdbc"
