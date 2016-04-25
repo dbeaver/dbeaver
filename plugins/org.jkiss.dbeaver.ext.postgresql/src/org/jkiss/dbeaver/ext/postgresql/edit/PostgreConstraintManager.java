@@ -85,11 +85,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     @Override
     protected String getDropConstraintPattern(PostgreTableConstraintBase constraint)
     {
-        if (constraint.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-            return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP PRIMARY KEY"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        } else {
-            return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        }
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
 }
