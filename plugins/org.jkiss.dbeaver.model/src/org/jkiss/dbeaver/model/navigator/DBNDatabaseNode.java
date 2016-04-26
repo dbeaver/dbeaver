@@ -321,11 +321,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         try {
             model.fireNodeUpdate(source, this, DBNEvent.NodeChange.LOCK);
 
-            try {
-                this.reloadChildren(monitor);
-            } catch (DBException e) {
-                log.error(e);
-            }
+            this.reloadChildren(monitor);
 
             model.fireNodeUpdate(source, this, DBNEvent.NodeChange.REFRESH);
         } finally {

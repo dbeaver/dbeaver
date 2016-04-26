@@ -22,18 +22,20 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 
 import java.util.*;
@@ -93,9 +95,18 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
     public static void refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
     {
         Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
+            public Throwable error;
+
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-
+                addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        if (error != null) {
+                            UIUtils.showErrorDialog(null, "Refresh", "Error refreshing node", error);
+                        }
+                    }
+                });
                 Set<DBNNode> refreshedSet = new HashSet<>();
                 for (DBNNode node : refreshObjects) {
                     if (node.isDisposed() || node.isLocked()) {
@@ -122,8 +133,8 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             refreshedSet.add(refreshed);
                         }
                     }
-                    catch (DBException ex) {
-                        log.error("Can't refresh navigator node", ex);
+                    catch (Throwable ex) {
+                        error = ex;
                     }
                 }
                 return Status.OK_STATUS;
