@@ -53,4 +53,6 @@ public class SQLPreferenceConstants
 
     public final static String SQL_FORMAT_KEYWORD_CASE_AUTO =           "SQLEditor.format.keywordCaseAuto";
     public final static String SQL_FORMAT_EXTRACT_FROM_SOURCE =         "SQLEditor.format.extractFromSource";
+
+    public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd";
 }
