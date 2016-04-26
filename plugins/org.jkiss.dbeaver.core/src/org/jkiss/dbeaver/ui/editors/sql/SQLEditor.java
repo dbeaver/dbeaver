@@ -1581,7 +1581,11 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
 
-            if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
+            DBPPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+            if (preferenceStore.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END)) {
+                getEditorControl().getDisplay().beep();
+            }
+            if (result.getQueryTime() > preferenceStore.getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
                         "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + GeneralUtils.getDefaultLineSeparator() +
                                 CommonUtils.truncateString(query == null ? "" : query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
