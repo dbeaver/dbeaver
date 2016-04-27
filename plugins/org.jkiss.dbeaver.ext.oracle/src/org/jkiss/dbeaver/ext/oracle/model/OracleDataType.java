@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -339,6 +340,11 @@ public class OracleDataType extends OracleObject<DBSObject>
     public int getMaxScale()
     {
         return typeDesc == null ? 0 : typeDesc.maxScale;
+    }
+
+    @Override
+    public DBCLogicalOperator[] getSupportedOperators() {
+        return DBUtils.getDefaultOperators(this);
     }
 
     @Override

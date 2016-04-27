@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
+import org.jkiss.utils.ArrayUtils;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -139,11 +140,15 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         continue;
                     }
                 }
+                DBCLogicalOperator[] supportedOperators = DBUtils.getAttributeOperators(attribute);
                 DBCLogicalOperator operator;
                 Object value;
                 switch (attribute.getDataKind()) {
                     case NUMERIC:
                         if (!params.searchNumbers) {
+                            continue;
+                        }
+                        if (!ArrayUtils.contains(supportedOperators, DBCLogicalOperator.EQUALS)) {
                             continue;
                         }
                         operator = DBCLogicalOperator.EQUALS;
@@ -174,8 +179,15 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         if (attribute.getMaxLength() > 0 && attribute.getMaxLength() < params.searchString.length()) {
                             continue;
                         }
-                        operator = DBCLogicalOperator.LIKE;
-                        value = "%" + params.searchString + "%";
+                        if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.LIKE)) {
+                            operator = DBCLogicalOperator.LIKE;
+                            value = "%" + params.searchString + "%";
+                        } else if (ArrayUtils.contains(supportedOperators, DBCLogicalOperator.EQUALS)) {
+                            operator = DBCLogicalOperator.EQUALS;
+                            value = params.searchString;
+                        } else {
+                            continue;
+                        }
                         break;
                     default:
                         continue;

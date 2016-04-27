@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -351,6 +352,100 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return getDatabase().getDataType(typeId);
     }
 
+    @NotNull
+    @Override
+    public DBSEntityType getEntityType() {
+        return DBSEntityType.TYPE;
+    }
+
+    @Override
+    public Collection<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
+    }
+
+    @Override
+    public PostgreDataTypeAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
+        return attributeCache == null ? null : attributeCache.getObject(monitor, this, attributeName);
+    }
+
+    @Override
+    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @Override
+    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return null;
+    }
+
+    @NotNull
+    @Override
+    public DBCLogicalOperator[] getSupportedOperators() {
+        if (dataKind == DBPDataKind.STRING) {
+            if (typeCategory == PostgreTypeCategory.S) {
+                return new DBCLogicalOperator[]{
+                    DBCLogicalOperator.IS_NULL,
+                    DBCLogicalOperator.IS_NOT_NULL,
+                    DBCLogicalOperator.EQUALS,
+                    DBCLogicalOperator.NOT_EQUALS,
+                    DBCLogicalOperator.GREATER,
+                    DBCLogicalOperator.LESS,
+                    DBCLogicalOperator.LIKE,
+                };
+            } else {
+                return new DBCLogicalOperator[] {
+                    DBCLogicalOperator.IS_NULL,
+                    DBCLogicalOperator.IS_NOT_NULL
+                };
+            }
+        }
+        return new DBCLogicalOperator[0];
+    }
+
+    @Override
+    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (attributeCache != null) {
+            attributeCache.clearCache();
+        }
+        if (typeCategory == PostgreTypeCategory.E) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Refresh enum values")) {
+                readEnumValues(session);
+            }
+        }
+        return true;
+    }
+
+    public Object[] getEnumValues() {
+        return enumValues;
+    }
+
+    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid) as def_value,dsc.description" +
+                "\nFROM pg_catalog.pg_attribute a" +
+                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+                "\nWHERE a.attnum > 0 AND NOT a.attisdropped AND c.oid=?" +
+                "\nORDER BY a.attnum");
+            dbStat.setLong(1, postgreDataType.classId);
+            return dbStat;
+        }
+
+        @Override
+        protected PostgreDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+            return new PostgreDataTypeAttribute(postgreDataType, resultSet);
+        }
+    }
+
     public static PostgreDataType readDataType(@NotNull JDBCSession session, @NotNull PostgreSchema schema, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         //long schemaId = JDBCUtils.safeGetLong(dbResult, "typnamespace");
@@ -527,76 +622,6 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             name,
             typeLength,
             dbResult);
-    }
-
-    @NotNull
-    @Override
-    public DBSEntityType getEntityType() {
-        return DBSEntityType.TYPE;
-    }
-
-    @Override
-    public Collection<PostgreDataTypeAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return attributeCache == null ? null : attributeCache.getAllObjects(monitor, this);
-    }
-
-    @Override
-    public PostgreDataTypeAttribute getAttribute(@NotNull DBRProgressMonitor monitor, @NotNull String attributeName) throws DBException {
-        return attributeCache == null ? null : attributeCache.getObject(monitor, this, attributeName);
-    }
-
-    @Override
-    public Collection<? extends DBSEntityConstraint> getConstraints(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    public Collection<? extends DBSEntityAssociation> getAssociations(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    public Collection<? extends DBSEntityAssociation> getReferences(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return null;
-    }
-
-    @Override
-    public boolean refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (attributeCache != null) {
-            attributeCache.clearCache();
-        }
-        if (typeCategory == PostgreTypeCategory.E) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Refresh enum values")) {
-                readEnumValues(session);
-            }
-        }
-        return true;
-    }
-
-    public Object[] getEnumValues() {
-        return enumValues;
-    }
-
-    class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
-
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType) throws SQLException {
-            JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid) as def_value,dsc.description" +
-                "\nFROM pg_catalog.pg_attribute a" +
-                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                "\nWHERE a.attnum > 0 AND NOT a.attisdropped AND c.oid=?" +
-                "\nORDER BY a.attnum");
-            dbStat.setLong(1, postgreDataType.classId);
-            return dbStat;
-        }
-
-        @Override
-        protected PostgreDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new PostgreDataTypeAttribute(postgreDataType, resultSet);
-        }
     }
 
 }

@@ -170,6 +170,7 @@ public class DB2RoutineParm implements DBSProcedureParameter, DBSTypedObject, DB
         return dataTypeSchema;
     }
 
+    @Nullable
     @Override
     @Property(viewable = true, order = 3)
     public DB2DataType getDataType()

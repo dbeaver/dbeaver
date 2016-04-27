@@ -119,6 +119,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return getTable().getDataSource();
     }
 
+    @Nullable
     @NotNull
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = DataTypeListProvider.class)
