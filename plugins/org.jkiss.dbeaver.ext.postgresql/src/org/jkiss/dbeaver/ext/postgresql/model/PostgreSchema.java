@@ -655,8 +655,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 long colNumber = keyNumbers[i];
                 final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, (int) colNumber);
                 if (attr == null) {
-                    log.warn("Bad index attribute index: " + colNumber);
-                    continue;
+                    if (colNumber == 0) {
+                        // It's ok, function index or something
+                    } else {
+                        log.warn("Bad index attribute index: " + colNumber);
+                    }
+                    return null;
                 }
                 PostgreIndexColumn col = new PostgreIndexColumn(
                     object,
