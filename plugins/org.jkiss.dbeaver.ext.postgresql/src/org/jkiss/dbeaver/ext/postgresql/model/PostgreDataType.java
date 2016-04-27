@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
@@ -75,6 +76,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private long typeId;
     private PostgreTypeType typeType;
     private PostgreTypeCategory typeCategory;
+    private DBPDataKind dataKind;
 
     private final long ownerId;
     private boolean isByValue;
@@ -124,6 +126,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         } catch (Exception e) {
             log.debug(e);
         }
+
+        this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
 
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "typowner");
         this.isByValue = JDBCUtils.safeGetBoolean(dbResult, "typbyval");
@@ -196,14 +200,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public DBPDataKind getDataKind()
     {
-        switch (typeCategory) {
-            case A: return DBPDataKind.ARRAY;
-            case B: return DBPDataKind.BOOLEAN;
-            case C: return DBPDataKind.STRUCT;
-            case D: return DBPDataKind.DATETIME;
-            case E: return DBPDataKind.OBJECT;
-            case N: return DBPDataKind.NUMERIC;
-            case S: return DBPDataKind.STRING;
+        if (dataKind != null) {
+            return dataKind;
         }
         return super.getDataKind();
     }
@@ -363,17 +361,18 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
         PostgreTypeCategory typeCategory;
-            final String catString = JDBCUtils.safeGetString(dbResult, "typcategory");
-            if (catString == null) {
+        final String catString = JDBCUtils.safeGetString(dbResult, "typcategory");
+        if (catString == null) {
+            typeCategory = null;
+        } else {
+            try {
+                typeCategory = PostgreTypeCategory.valueOf(catString.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.debug(e);
                 typeCategory = null;
-            } else {
-                try {
-                    typeCategory = PostgreTypeCategory.valueOf(catString.toUpperCase());
-                } catch (IllegalArgumentException e) {
-                    log.debug(e);
-                    typeCategory = null;
-                }
             }
+        }
+
         int valueType;
         if (ArrayUtils.contains(OID_TYPES, name) || name.equals("hstore")) {
             valueType = Types.VARCHAR;
