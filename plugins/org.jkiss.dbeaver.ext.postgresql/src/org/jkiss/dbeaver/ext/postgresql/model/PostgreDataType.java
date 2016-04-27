@@ -404,7 +404,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                 };
             }
         }
-        return new DBCLogicalOperator[0];
+        return super.getSupportedOperators();
     }
 
     @Override
