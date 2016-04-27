@@ -232,6 +232,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return dataTypeSchema;
     }
 
+    @Nullable
     @Property(viewable = true, editable = true, updatable = true, order = 21, listProvider = DB2ColumnDataTypeListProvider.class)
     public DBSDataType getDataType()
     {

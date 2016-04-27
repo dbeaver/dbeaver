@@ -1305,6 +1305,18 @@ public final class DBUtils {
         }
     }
 
+    @NotNull
+    public static DBCLogicalOperator[] getAttributeOperators(DBSTypedObject attribute) {
+        if (attribute instanceof DBSTypedObjectEx) {
+            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+            if (dataType != null) {
+                return dataType.getSupportedOperators();
+            }
+        }
+        return getDefaultOperators(attribute);
+    }
+
+    @NotNull
     public static DBCLogicalOperator[] getDefaultOperators(DBSTypedObject attribute) {
         List<DBCLogicalOperator> operators = new ArrayList<>();
         DBPDataKind dataKind = attribute.getDataKind();

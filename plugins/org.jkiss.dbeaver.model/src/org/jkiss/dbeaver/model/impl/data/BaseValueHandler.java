@@ -55,7 +55,7 @@ public abstract class BaseValueHandler implements DBDValueHandler {
     @NotNull
     @Override
     public DBCLogicalOperator[] getSupportedOperators(@NotNull DBSTypedObject attribute) {
-        return DBUtils.getDefaultOperators(attribute);
+        return DBUtils.getAttributeOperators(attribute);
     }
 
 }

@@ -20,7 +20,9 @@ package org.jkiss.dbeaver.model.impl.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -78,6 +80,12 @@ public abstract class AbstractDataType<DS extends DBPDataSource> implements DBSD
     @Override
     public int getMaxScale() {
         return 0;
+    }
+
+    @NotNull
+    @Override
+    public DBCLogicalOperator[] getSupportedOperators() {
+        return DBUtils.getDefaultOperators(this);
     }
 
     @Override

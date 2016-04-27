@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
 import java.util.List;
@@ -40,7 +37,7 @@ import java.util.Map;
 /**
  * Base attribute binding
  */
-public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBPQualifiedObject {
+public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase, DBSTypedObjectEx, DBPQualifiedObject {
 
     @NotNull
     protected DBDValueHandler valueHandler;
@@ -266,6 +263,16 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
             level++;
         }
         return level;
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType getDataType() {
+        DBSEntityAttribute attribute = getEntityAttribute();
+        if (attribute instanceof DBSTypedObjectEx) {
+            return ((DBSTypedObjectEx) attribute).getDataType();
+        }
+        return null;
     }
 
     public void lateBinding(@NotNull DBCSession session, List<Object[]> rows) throws DBException {

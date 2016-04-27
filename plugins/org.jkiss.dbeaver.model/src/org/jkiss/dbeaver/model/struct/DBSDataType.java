@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -43,4 +44,6 @@ public interface DBSDataType extends DBSObject, DBSTypedObject
 
     int getMaxScale();
 
+    @NotNull
+    DBCLogicalOperator[] getSupportedOperators();
 }

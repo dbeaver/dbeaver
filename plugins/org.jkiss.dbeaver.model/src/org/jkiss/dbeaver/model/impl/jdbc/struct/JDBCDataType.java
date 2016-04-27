@@ -21,7 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
@@ -166,7 +168,12 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
     {
         return maxScale;
     }
-    
+
+    @Override
+    public DBCLogicalOperator[] getSupportedOperators() {
+        return DBUtils.getDefaultOperators(this);
+    }
+
     public String toString()
     {
         return owner.getName() + "." + name;
