@@ -183,4 +183,9 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     public boolean isHidden() {
         return isPrimary;
     }
+
+    @Override
+    public String toString() {
+        return getName() + "(" + columns +")";
+    }
 }
