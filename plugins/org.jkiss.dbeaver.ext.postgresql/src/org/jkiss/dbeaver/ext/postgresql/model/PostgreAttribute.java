@@ -133,6 +133,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Override
+    public DBPDataKind getDataKind() {
+        return dataType.getDataKind();
+    }
+
+    @Override
     @Property(viewable = true, editable = true, updatable = true, valueRenderer = DBPositiveNumberTransformer.class, order = 21)
     public long getMaxLength()
     {
