@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
 import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
@@ -96,9 +97,12 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             final Collection<? extends DBSEntityAttributeRef> columns = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
             boolean firstColumn = true;
             for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
+                final DBSEntityAttribute attribute = constraintColumn.getAttribute();
                 if (!firstColumn) decl.append(","); //$NON-NLS-1$
                 firstColumn = false;
-                decl.append(constraintColumn.getAttribute().getName());
+                if (attribute != null) {
+                    decl.append(attribute.getName());
+                }
             }
         } catch (DBException e) {
             log.error("Can't obtain reference attributes", e);
@@ -112,7 +116,10 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
                 for (DBSEntityAttributeRef constraintColumn : CommonUtils.safeCollection(columns)) {
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
-                    decl.append(DBUtils.getQuotedIdentifier(constraintColumn.getAttribute()));
+                    final DBSEntityAttribute attribute = constraintColumn.getAttribute();
+                    if (attribute != null) {
+                        decl.append(DBUtils.getQuotedIdentifier(attribute));
+                    }
                 }
             } catch (DBException e) {
                 log.error("Can't obtain ref constraint reference attributes", e);

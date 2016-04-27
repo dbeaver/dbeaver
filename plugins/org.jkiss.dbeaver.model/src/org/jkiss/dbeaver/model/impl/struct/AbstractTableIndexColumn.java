@@ -48,7 +48,7 @@ public abstract class AbstractTableIndexColumn implements DBSTableIndexColumn, D
         return null;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntityAttribute getAttribute()
     {

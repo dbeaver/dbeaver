@@ -50,6 +50,7 @@ public class GenericTableIndexColumn extends AbstractTableIndexColumn
         this.ascending = source.ascending;
     }
 
+    @NotNull
     @Override
     public GenericTableIndex getIndex()
     {
@@ -64,6 +65,7 @@ public class GenericTableIndexColumn extends AbstractTableIndexColumn
         return tableColumn.getName();
     }
 
+    @Nullable
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public GenericTableColumn getTableColumn()

@@ -598,7 +598,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @NotNull DBSAttributeBase attribute)
+    public static DBDAttributeBinding findBinding(@NotNull DBDAttributeBinding[] bindings, @Nullable DBSAttributeBase attribute)
     {
         for (DBDAttributeBinding binding : bindings) {
             if (binding.matches(attribute, true)) {
@@ -755,7 +755,10 @@ public final class DBUtils {
         }
         List<DBSEntityAttribute> attributes = new ArrayList<>(constraintColumns.size());
         for (DBSEntityAttributeRef column : constraintColumns) {
-            attributes.add(column.getAttribute());
+            final DBSEntityAttribute attribute = column.getAttribute();
+            if (attribute != null) {
+                attributes.add(attribute);
+            }
         }
         return attributes;
     }
@@ -780,7 +783,8 @@ public final class DBUtils {
         Collection<? extends DBSEntityAttributeRef> columns = constraint.getAttributeReferences(monitor);
         if (columns != null) {
             for (DBSEntityAttributeRef constraintColumn : columns) {
-                if (constraintColumn.getAttribute().getName().equals(columnName)) {
+                final DBSEntityAttribute attribute = constraintColumn.getAttribute();
+                if (attribute != null && attribute.getName().equals(columnName)) {
                     return constraintColumn;
                 }
             }

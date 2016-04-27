@@ -156,6 +156,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
         return db2Index;
     }
 
+    @NotNull
     @Override
     public DB2Index getIndex()
     {
@@ -200,6 +201,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     // Properties
     // -----------------
 
+    @Nullable
     @Override
     // col name in index name
     @Property(viewable = true, order = 1, id = "name")

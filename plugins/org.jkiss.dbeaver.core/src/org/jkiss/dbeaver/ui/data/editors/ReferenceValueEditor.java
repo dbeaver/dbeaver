@@ -355,39 +355,43 @@ public class ReferenceValueEditor {
                             break;
                         }
                         DBSEntityAttribute precAttribute = precColumn.getAttribute();
-                        DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
-                        if (rowAttr != null) {
-                            Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
-                            precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
+                        if (precAttribute != null) {
+                            DBDAttributeBinding rowAttr = DBUtils.findBinding(rowAttributes, precAttribute);
+                            if (rowAttr != null) {
+                                Object precValue = attributeController.getRowController().getAttributeValue(rowAttr);
+                                precedingKeys.add(new DBDAttributeValue(precAttribute, precValue));
+                            }
                         }
                     }
                 }
-                try (DBCSession session = getExecutionContext().openSession(
-                    monitor,
-                    DBCExecutionPurpose.UTIL,
-                    NLS.bind(CoreMessages.dialog_value_view_context_name, fkColumn.getAttribute().getName())))
-                {
-                    final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
-                    DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
-                    Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
-                        session,
-                        refColumn,
-                        pattern,
-                        precedingKeys,
-                        100);
-                    for (DBDLabelValuePair pair : enumValues) {
-                        keyValues.put(pair.getValue(), pair.getLabel());
-                    }
-                    if (monitor.isCanceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkColumn.getAttribute());
-                    UIUtils.runInUI(null, new Runnable() {
-                        @Override
-                        public void run() {
-                            updateDictionarySelector(keyValues, fkColumn, colHandler);
+                final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
+                if (fkAttribute != null) {
+                    try (DBCSession session = getExecutionContext().openSession(
+                        monitor,
+                        DBCExecutionPurpose.UTIL,
+                        NLS.bind(CoreMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
+                        final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+                        DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
+                        Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
+                            session,
+                            refColumn,
+                            pattern,
+                            precedingKeys,
+                            100);
+                        for (DBDLabelValuePair pair : enumValues) {
+                            keyValues.put(pair.getValue(), pair.getLabel());
                         }
-                    });
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                        final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkAttribute);
+                        UIUtils.runInUI(null, new Runnable() {
+                            @Override
+                            public void run() {
+                                updateDictionarySelector(keyValues, fkColumn, colHandler);
+                            }
+                        });
+                    }
                 }
 
             } catch (DBException e) {

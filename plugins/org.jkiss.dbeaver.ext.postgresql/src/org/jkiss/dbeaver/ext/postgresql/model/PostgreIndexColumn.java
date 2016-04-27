@@ -29,6 +29,7 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
 {
     private PostgreIndex index;
     private PostgreAttribute tableColumn;
+    private String expression;
     private int ordinalPosition;
     private boolean ascending;
     private boolean nullable;
@@ -36,33 +37,26 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
     public PostgreIndexColumn(
         PostgreIndex index,
         PostgreAttribute tableColumn,
+        String expression,
         int ordinalPosition,
         boolean ascending,
         boolean nullable)
     {
         this.index = index;
         this.tableColumn = tableColumn;
+        this.expression = expression;
         this.ordinalPosition = ordinalPosition;
         this.ascending = ascending;
         this.nullable = nullable;
     }
 
-    PostgreIndexColumn(PostgreIndex toIndex, PostgreIndexColumn source)
-    {
-        this.index = toIndex;
-        this.tableColumn = source.tableColumn;
-        this.ordinalPosition = source.ordinalPosition;
-        this.ascending = source.ascending;
-        this.nullable = source.nullable;
-    }
-
+    @NotNull
     @Override
     public PostgreIndex getIndex()
     {
         return index;
     }
 
-    //@Property(name = "Name", viewable = true, order = 1)
     @NotNull
     @Override
     public String getName()
@@ -70,11 +64,18 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
         return tableColumn.getName();
     }
 
+    @Nullable
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public PostgreAttribute getTableColumn()
     {
         return tableColumn;
+    }
+
+    @Nullable
+    @Property(viewable = true, order = 5)
+    public String getExpression() {
+        return expression;
     }
 
     @Override
