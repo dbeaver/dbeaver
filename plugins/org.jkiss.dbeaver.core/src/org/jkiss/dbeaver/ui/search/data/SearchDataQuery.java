@@ -171,6 +171,9 @@ public class SearchDataQuery implements IObjectSearchQuery {
                             continue;
                         }
                     case STRING:
+                        if (attribute.getMaxLength() > 0 && attribute.getMaxLength() < params.searchString.length()) {
+                            continue;
+                        }
                         operator = DBCLogicalOperator.LIKE;
                         value = "%" + params.searchString + "%";
                         break;
