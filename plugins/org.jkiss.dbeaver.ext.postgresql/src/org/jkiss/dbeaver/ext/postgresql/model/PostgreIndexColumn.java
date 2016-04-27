@@ -59,23 +59,18 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
 
     @NotNull
     @Override
+    @Property(viewable = true, order = 1)
     public String getName()
     {
-        return tableColumn.getName();
+        return tableColumn == null ? expression : tableColumn.getName();
     }
 
     @Nullable
     @Override
-    @Property(id = "name", viewable = true, order = 1)
+    @Property(viewable = true, order = 1)
     public PostgreAttribute getTableColumn()
     {
         return tableColumn;
-    }
-
-    @Nullable
-    @Property(viewable = true, order = 5)
-    public String getExpression() {
-        return expression;
     }
 
     @Override
@@ -102,7 +97,7 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
     @Override
     public String getDescription()
     {
-        return tableColumn.getDescription();
+        return tableColumn == null ? null : tableColumn.getDescription();
     }
 
     @Override

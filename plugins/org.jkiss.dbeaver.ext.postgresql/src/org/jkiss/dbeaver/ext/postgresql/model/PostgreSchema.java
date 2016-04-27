@@ -416,7 +416,7 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             throws SQLException
         {
             StringBuilder sql = new StringBuilder();
-            sql.append("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid) as def_value,dsc.description" +
+            sql.append("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
                 "\nFROM pg_catalog.pg_attribute a" +
                 "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
@@ -605,7 +605,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             StringBuilder sql = new StringBuilder();
             sql.append(
                 "SELECT i.*,i.indkey as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description");
-            sql.append(supportsExprIndex ? ",pg_catalog.pg_get_expr(i.indexprs, i.indrelid) as expr" : "");
+            if (supportsExprIndex) {
+                sql.append(",pg_catalog.pg_get_expr(i.indexprs, i.indrelid, true) as expr");
+            }
             sql.append(
                 "\nFROM pg_catalog.pg_index i" +
                 "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +
@@ -660,9 +662,9 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
                 String attrExpression = null;
                 final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, (int) colNumber);
                 if (attr == null) {
-                    if (colNumber == 0) {
+                    if (colNumber == 0 && expr != null) {
                         // It's ok, function index or something
-                        attrExpression = expr;
+                        attrExpression = JDBCUtils.queryString(session, "select pg_catalog.pg_get_indexdef(?, ?, true)", object.getIndexId(), i + 1);
                     } else {
                         log.warn("Bad index attribute index: " + colNumber);
                     }

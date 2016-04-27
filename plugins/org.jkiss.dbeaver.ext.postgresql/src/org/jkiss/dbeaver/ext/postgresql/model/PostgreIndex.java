@@ -38,6 +38,7 @@ import java.util.List;
  */
 public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements DBPHiddenObject
 {
+    private long indexId;
     private boolean isUnique;
     private boolean isPrimary; // Primary index - implicit
     private boolean isExclusion;
@@ -57,6 +58,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             indexName,
             DBSIndexType.UNKNOWN,
             true);
+        this.indexId = JDBCUtils.safeGetLong(dbResult, "indexrelid");
         this.isUnique = JDBCUtils.safeGetBoolean(dbResult, "indisunique");
         this.isPrimary = JDBCUtils.safeGetBoolean(dbResult, "indisprimary");
         this.isExclusion = JDBCUtils.safeGetBoolean(dbResult, "indisexclusion");
@@ -80,6 +82,10 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     public PostgreDataSource getDataSource()
     {
         return getTable().getDataSource();
+    }
+
+    public long getIndexId() {
+        return indexId;
     }
 
     @Override
