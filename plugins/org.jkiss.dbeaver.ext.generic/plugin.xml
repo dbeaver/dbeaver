@@ -421,6 +421,9 @@
                     webURL="http://sun.com"
                     description="ODBC bridge driver">
                     <os name="win32"/>
+                    <file type="jar" path="repo:/drivers/odbc/jdbc-odbc-bridge-jre7.jar"/>
+                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/odbc/x86/JdbcOdbc.dll"/>
+                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/odbc/x64/JdbcOdbc.dll"/>
                 </driver>
                 <driver
                     id="derby"
