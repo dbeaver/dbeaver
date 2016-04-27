@@ -56,6 +56,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
         this.nullable = source.nullable;
     }
 
+    @NotNull
     @Override
     public MySQLTableIndex getIndex()
     {
@@ -70,6 +71,7 @@ public class MySQLTableIndexColumn extends AbstractTableIndexColumn
         return tableColumn.getName();
     }
 
+    @Nullable
     @Override
     @Property(id = "name", viewable = true, order = 1)
     public MySQLTableColumn getTableColumn()

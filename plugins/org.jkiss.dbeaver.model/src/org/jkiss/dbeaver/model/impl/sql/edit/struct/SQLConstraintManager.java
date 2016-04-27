@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
@@ -93,9 +94,13 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
             if (attrs != null) {
                 boolean firstColumn = true;
                 for (DBSEntityAttributeRef constraintColumn : attrs) {
+                    final DBSEntityAttribute attribute = constraintColumn.getAttribute();
+                    if (attribute == null) {
+                        continue;
+                    }
                     if (!firstColumn) decl.append(","); //$NON-NLS-1$
                     firstColumn = false;
-                    decl.append(DBUtils.getQuotedIdentifier(constraintColumn.getAttribute()));
+                    decl.append(DBUtils.getQuotedIdentifier(attribute));
                 }
             }
         } catch (DBException e) {

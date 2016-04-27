@@ -74,6 +74,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                 new PostgreIndexColumn(
                     index,
                     (PostgreAttribute) tableColumn,
+                    null,
                     colIndex++,
                     true,
                     false));

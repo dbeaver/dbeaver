@@ -51,7 +51,8 @@ public class DBDPseudoReferrer implements DBSEntityReferrer, DBSEntityAttributeR
     @Override
     public String getDescription()
     {
-        return this.getAttribute().getDescription();
+        final DBSEntityAttribute attribute = getAttribute();
+        return attribute == null ? null : attribute.getDescription();
     }
 
     @NotNull

@@ -144,7 +144,7 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
         return valueHandler;
     }
 
-    public boolean matches(DBSAttributeBase attr, boolean searchByName) {
+    public boolean matches(@Nullable DBSAttributeBase attr, boolean searchByName) {
         if (attr != null && (this == attr || getMetaAttribute() == attr || getEntityAttribute() == attr)) {
             return true;
         }

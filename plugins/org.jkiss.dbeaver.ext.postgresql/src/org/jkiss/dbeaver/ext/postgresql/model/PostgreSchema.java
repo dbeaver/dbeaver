@@ -601,9 +601,12 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema owner, PostgreTableBase forTable)
             throws SQLException
         {
+            boolean supportsExprIndex = getDataSource().isVersionAtLeast(7, 4);
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.*,i.indkey as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description" +
+                "SELECT i.*,i.indkey as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description");
+            sql.append(supportsExprIndex ? ",pg_catalog.pg_get_expr(i.indexprs, i.indrelid) as expr" : "");
+            sql.append(
                 "\nFROM pg_catalog.pg_index i" +
                 "\nINNER JOIN pg_catalog.pg_class c ON c.oid=i.indexrelid" +
                 "\nINNER JOIN pg_catalog.pg_class tc ON tc.oid=i.indrelid" +
@@ -648,23 +651,26 @@ public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshab
             if (keyNumbers == null) {
                 return null;
             }
+            String expr = JDBCUtils.safeGetString(dbResult, "expr");
             List<PostgreTableColumn> attributes = parent.getAttributes(dbResult.getSession().getProgressMonitor());
             assert attributes != null;
             PostgreIndexColumn[] result = new PostgreIndexColumn[keyNumbers.length];
             for (int i = 0; i < keyNumbers.length; i++) {
                 long colNumber = keyNumbers[i];
+                String attrExpression = null;
                 final PostgreAttribute attr = PostgreUtils.getAttributeByNum(attributes, (int) colNumber);
                 if (attr == null) {
                     if (colNumber == 0) {
                         // It's ok, function index or something
+                        attrExpression = expr;
                     } else {
                         log.warn("Bad index attribute index: " + colNumber);
                     }
-                    return null;
                 }
                 PostgreIndexColumn col = new PostgreIndexColumn(
                     object,
                     attr,
+                    attrExpression,
                     i,
                     true,
                     false);

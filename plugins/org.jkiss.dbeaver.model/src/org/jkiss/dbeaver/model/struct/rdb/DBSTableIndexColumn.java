@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -25,12 +27,14 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface DBSTableIndexColumn extends DBSObject,DBSEntityAttributeRef
 {
+    @NotNull
     DBSTableIndex getIndex();
 
     int getOrdinalPosition();
 
     boolean isAscending();
 
+    @Nullable
     DBSTableColumn getTableColumn();
 
 }
