@@ -243,11 +243,49 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         }
     }
 
-    private void findTableColumnsByMask(JDBCSession session, @Nullable final List<PostgreSchema> catalog, String constrNameMask, int maxResults, List<DBSObjectReference> objects)
+    private void findTableColumnsByMask(JDBCSession session, @Nullable final List<PostgreSchema> schema, String columnNameMask, int maxResults, List<DBSObjectReference> objects)
         throws SQLException, DBException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
+        // Load constraints
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT x.attname,x.attrelid,x.atttypid,c.relnamespace " +
+                "FROM pg_catalog.pg_attribute x, pg_catalog.pg_class c\n" +
+                "WHERE c.oid=x.attrelid AND x.attname LIKE ? " +
+                (CommonUtils.isEmpty(schema) ? "" : " AND c.relnamespace IN (?)") +
+                " ORDER BY x.attname LIMIT " + maxResults)) {
+            dbStat.setString(1, columnNameMask.toLowerCase(Locale.ENGLISH));
+            if (!CommonUtils.isEmpty(schema)) {
+                PostgreUtils.setArrayParameter(dbStat, 2, schema);
+            }
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                int tableNum = maxResults;
+                while (dbResult.next() && tableNum-- > 0) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
+                    final long tableId = JDBCUtils.safeGetLong(dbResult, "attrelid");
+                    final String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
+                    final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    if (constrSchema == null) {
+                        log.debug("Schema '" + schemaId + "' not found");
+                        continue;
+                    }
+                    objects.add(new AbstractObjectReference(attributeName, constrSchema, null, RelationalObjectType.TYPE_TABLE) {
+                        @Override
+                        public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
+                            final PostgreTableBase table = PostgreUtils.getObjectById(monitor, constrSchema.tableCache, constrSchema, tableId);
+                            if (table == null) {
+                                throw new DBException("Table '" + tableId + "' not found in schema '" + constrSchema.getName() + "'");
+                            }
+                            return table.getAttribute(monitor, attributeName);
+                        }
+                    });
+                }
+            }
+        }
     }
 
     private void findDataTypesByMask(JDBCSession session, List<PostgreSchema> catalog, String objectNameMask, int maxResults, List<DBSObjectReference> references) {
