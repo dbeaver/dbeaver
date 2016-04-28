@@ -42,6 +42,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
     private Button invalidateBeforeExecuteCheck;
     private Spinner executeTimeoutText;
+    private Button soundOnQueryEnd;
 
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
@@ -80,7 +81,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
             store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
-            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)
+            store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END)
         ;
     }
 
@@ -109,6 +111,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
                 executeTimeoutText.setIncrement(1);
                 executeTimeoutText.setMinimum(1);
                 executeTimeoutText.setMaximum(100000);
+
+                soundOnQueryEnd = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, false);
             }
         }
 
@@ -177,6 +181,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         try {
             invalidateBeforeExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE));
             executeTimeoutText.setSelection(store.getInt(DBeaverPreferences.STATEMENT_TIMEOUT));
+            soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
@@ -202,6 +207,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         try {
             store.setValue(DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, invalidateBeforeExecuteCheck.getSelection());
             store.setValue(DBeaverPreferences.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
+            store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
 
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
