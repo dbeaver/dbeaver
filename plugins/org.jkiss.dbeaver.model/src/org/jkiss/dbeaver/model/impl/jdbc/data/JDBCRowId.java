@@ -28,7 +28,7 @@ import java.sql.RowId;
  */
 public class JDBCRowId implements DBDValue {
 
-    static final Log log = Log.getLog(JDBCRowId.class);
+    private static final Log log = Log.getLog(JDBCRowId.class);
 
     private RowId value;
 

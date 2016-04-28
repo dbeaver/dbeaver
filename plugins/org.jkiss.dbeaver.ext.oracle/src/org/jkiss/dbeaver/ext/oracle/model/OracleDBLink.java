@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,6 +32,8 @@ import java.util.Date;
  * DB Link
  */
 public class OracleDBLink extends OracleSchemaObject {
+
+    private static final Log log = Log.getLog(OracleDBLink.class);
 
     private String userName;
     private String host;

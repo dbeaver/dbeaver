@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.runtime.properties;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -43,6 +44,8 @@ import java.util.List;
  */
 public class PropertySourceEditable extends PropertySourceAbstract implements DBPObject, IPropertySourceEditable
 {
+    private static final Log log = Log.getLog(PropertySourceEditable.class);
+
     private DBECommandContext commandContext;
     private PropertyChangeCommand lastCommand = null;
     //private final List<IPropertySourceListener> listeners = new ArrayList<IPropertySourceListener>();

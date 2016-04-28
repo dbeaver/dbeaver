@@ -36,7 +36,7 @@ import java.util.List;
 
 public class CompareObjectsHandler extends AbstractHandler {
 
-    static final Log log = Log.getLog(CompareObjectsHandler.class);
+    private static final Log log = Log.getLog(CompareObjectsHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

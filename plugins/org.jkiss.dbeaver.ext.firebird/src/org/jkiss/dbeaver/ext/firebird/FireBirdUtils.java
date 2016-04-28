@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  */
 public class FireBirdUtils {
 
-    static final Log log = Log.getLog(FireBirdUtils.class);
+    private static final Log log = Log.getLog(FireBirdUtils.class);
 
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException

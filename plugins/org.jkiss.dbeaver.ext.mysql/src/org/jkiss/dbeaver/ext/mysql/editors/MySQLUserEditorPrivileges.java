@@ -49,7 +49,7 @@ import java.util.List;
  */
 public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
 {
-    static final Log log = Log.getLog(MySQLUserEditorPrivileges.class);
+    private static final Log log = Log.getLog(MySQLUserEditorPrivileges.class);
 
     private PageControl pageControl;
     private Table catalogsTable;

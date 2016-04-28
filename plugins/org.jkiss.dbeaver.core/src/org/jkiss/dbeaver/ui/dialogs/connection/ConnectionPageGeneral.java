@@ -65,7 +65,7 @@ import java.util.List;
  * General connection page (common for all connection types)
  */
 class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
-    static final Log log = Log.getLog(ConnectionPageGeneral.class);
+    private static final Log log = Log.getLog(ConnectionPageGeneral.class);
 
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;

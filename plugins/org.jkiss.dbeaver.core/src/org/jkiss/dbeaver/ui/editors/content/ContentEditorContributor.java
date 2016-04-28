@@ -47,7 +47,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ContentEditorContributor extends MultiPageEditorActionBarContributor
 {
-    static final Log log = Log.getLog(ContentEditorContributor.class);
+    private static final Log log = Log.getLog(ContentEditorContributor.class);
 
     private final BasicTextEditorActionContributor textContributor;
     private ContentEditor activeEditor;

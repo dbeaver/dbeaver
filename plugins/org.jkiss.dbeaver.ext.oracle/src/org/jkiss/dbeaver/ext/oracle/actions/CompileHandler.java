@@ -67,7 +67,7 @@ import java.util.Map;
 
 public class CompileHandler extends AbstractHandler implements IElementUpdater
 {
-    static final Log log = Log.getLog(CompileHandler.class);
+    private static final Log log = Log.getLog(CompileHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException

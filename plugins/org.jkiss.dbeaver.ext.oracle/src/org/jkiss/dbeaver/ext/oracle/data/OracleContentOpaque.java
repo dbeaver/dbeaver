@@ -43,7 +43,7 @@ import java.sql.SQLException;
  */
 public abstract class OracleContentOpaque<OPAQUE_TYPE extends Object> extends JDBCContentLOB {
 
-    static final Log log = Log.getLog(OracleContentOpaque.class);
+    private static final Log log = Log.getLog(OracleContentOpaque.class);
 
     private OPAQUE_TYPE opaque;
     private InputStream tmpStream;

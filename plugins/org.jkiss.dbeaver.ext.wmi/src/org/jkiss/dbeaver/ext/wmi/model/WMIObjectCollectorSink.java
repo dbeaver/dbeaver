@@ -27,7 +27,7 @@ import java.util.List;
 
 class WMIObjectCollectorSink implements WMIObjectSink
 {
-    static final Log log = Log.getLog(WMIObjectCollectorSink.class);
+    private static final Log log = Log.getLog(WMIObjectCollectorSink.class);
 
     private final DBRProgressMonitor monitor;
     private final WMIService service;

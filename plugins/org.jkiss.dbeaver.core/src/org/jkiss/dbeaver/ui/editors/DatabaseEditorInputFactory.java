@@ -47,7 +47,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DatabaseEditorInputFactory implements IElementFactory
 {
-    static final Log log = Log.getLog(DatabaseEditorInputFactory.class);
+    private static final Log log = Log.getLog(DatabaseEditorInputFactory.class);
 
     public static final String ID_FACTORY = DatabaseEditorInputFactory.class.getName(); //$NON-NLS-1$
 

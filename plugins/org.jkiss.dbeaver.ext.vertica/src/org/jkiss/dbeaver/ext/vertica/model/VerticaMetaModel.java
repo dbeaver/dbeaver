@@ -43,7 +43,7 @@ import java.sql.SQLException;
  */
 public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
-    static final Log log = Log.getLog(VerticaMetaModel.class);
+    private static final Log log = Log.getLog(VerticaMetaModel.class);
 
     public VerticaMetaModel(IConfigurationElement cfg) {
         super(cfg);

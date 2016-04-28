@@ -28,7 +28,7 @@ import java.io.IOException;
  */
 public class SQLTemplatesRegistry {
 
-    static final Log log = Log.getLog(SQLTemplatesRegistry.class);
+    private static final Log log = Log.getLog(SQLTemplatesRegistry.class);
     private static SQLTemplatesRegistry instance;
 
     private ContextTypeRegistry templateContextTypeRegistry;

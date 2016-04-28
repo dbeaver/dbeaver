@@ -30,7 +30,7 @@ import java.sql.Savepoint;
  */
 public class JDBCSavepointImpl implements DBCSavepoint, Savepoint {
 
-    static final Log log = Log.getLog(JDBCSavepointImpl.class);
+    private static final Log log = Log.getLog(JDBCSavepointImpl.class);
 
     private JDBCExecutionContext context;
     private Savepoint original;

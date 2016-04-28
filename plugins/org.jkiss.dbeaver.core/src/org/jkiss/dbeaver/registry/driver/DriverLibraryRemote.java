@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 
@@ -30,6 +31,8 @@ import java.net.URL;
  */
 public class DriverLibraryRemote extends DriverLibraryLocal
 {
+    private static final Log log = Log.getLog(DriverLibraryRemote.class);
+
     public static final String DOWNLOAD_DIR = "remote";
 
     public static final String[] SUPPORTED_PROTOCOLS = {

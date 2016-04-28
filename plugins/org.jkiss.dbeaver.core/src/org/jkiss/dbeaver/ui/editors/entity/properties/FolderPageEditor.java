@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.ui.editors.SubEditorSite;
  */
 public class FolderPageEditor extends FolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
 
-    static final Log log = Log.getLog(FolderPageEditor.class);
+    private static final Log log = Log.getLog(FolderPageEditor.class);
 
     private IDatabaseEditor mainEditor;
     private EntityEditorDescriptor editorDescriptor;

@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class JDBCDataSourceInfo implements DBPDataSourceInfo
 {
-    static final Log log = Log.getLog(JDBCDataSourceInfo.class);
+    private static final Log log = Log.getLog(JDBCDataSourceInfo.class);
 
     public static final String TERM_SCHEMA = ModelMessages.model_jdbc_Schema;
     public static final String TERM_PROCEDURE = ModelMessages.model_jdbc_Procedure;

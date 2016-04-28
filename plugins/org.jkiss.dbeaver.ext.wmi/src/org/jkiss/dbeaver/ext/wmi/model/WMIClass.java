@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.wmi.Activator;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -45,6 +46,8 @@ import java.util.List;
 public class WMIClass extends WMIContainer
     implements DBSEntity, DBPCloseableObject, DBPQualifiedObject, DBPSystemObject, DBSDataContainer, DBPImageProvider
 {
+    private static final Log log = Log.getLog(WMIClass.class);
+
     static final String ICON_LOCATION_PREFIX = "platform:/plugin/" + Activator.PLUGIN_ID + "/icons/";
 
     private static DBPImage IMG_CLASS;

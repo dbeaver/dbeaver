@@ -35,7 +35,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class StyledTextFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
-    static final Log log = Log.getLog(StyledTextFindReplaceTarget.class);
+    private static final Log log = Log.getLog(StyledTextFindReplaceTarget.class);
 
     private final StyledText text;
     private Pattern searchPattern;

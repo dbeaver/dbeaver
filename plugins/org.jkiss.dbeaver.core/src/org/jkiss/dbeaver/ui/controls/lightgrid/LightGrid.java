@@ -43,7 +43,7 @@ import java.util.List;
  */
 public abstract class LightGrid extends Canvas {
 
-    static final Log log = Log.getLog(LightGrid.class);
+    private static final Log log = Log.getLog(LightGrid.class);
 
     public static final int MAX_TOOLTIP_LENGTH = 1000;
 

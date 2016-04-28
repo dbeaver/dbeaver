@@ -43,7 +43,7 @@ import java.sql.Types;
  */
 public class JDBCReferenceValueHandler extends JDBCComplexValueHandler {
 
-    static final Log log = Log.getLog(JDBCReferenceValueHandler.class);
+    private static final Log log = Log.getLog(JDBCReferenceValueHandler.class);
 
     public static final JDBCReferenceValueHandler INSTANCE = new JDBCReferenceValueHandler();
 

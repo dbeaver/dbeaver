@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
  */
 public class DBXTreeIcon
 {
-    static final Log log = Log.getLog(DBXTreeIcon.class);
+    private static final Log log = Log.getLog(DBXTreeIcon.class);
 
     private String exprString;
     private DBPImage icon;

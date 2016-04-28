@@ -72,7 +72,7 @@ public class DBeaverCore implements DBPApplication {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
 
-    static final Log log = Log.getLog(DBeaverCore.class);
+    private static final Log log = Log.getLog(DBeaverCore.class);
 
     public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 

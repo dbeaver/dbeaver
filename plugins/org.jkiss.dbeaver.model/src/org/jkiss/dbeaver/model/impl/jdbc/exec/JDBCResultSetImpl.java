@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class JDBCResultSetImpl implements JDBCResultSet {
 
-    static final Log log = Log.getLog(JDBCResultSetImpl.class);
+    private static final Log log = Log.getLog(JDBCResultSetImpl.class);
 
     private JDBCSession session;
     private JDBCStatement statement;

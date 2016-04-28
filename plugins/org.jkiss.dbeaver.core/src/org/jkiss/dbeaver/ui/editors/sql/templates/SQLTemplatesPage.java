@@ -51,7 +51,7 @@ import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
  */
 public class SQLTemplatesPage extends AbstractTemplatesPage {
 
-    static final Log log = Log.getLog(SQLTemplatesPage.class);
+    private static final Log log = Log.getLog(SQLTemplatesPage.class);
 
     private static final String PREFERENCE_PAGE_ID = "org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage"; //$NON-NLS-1$
 

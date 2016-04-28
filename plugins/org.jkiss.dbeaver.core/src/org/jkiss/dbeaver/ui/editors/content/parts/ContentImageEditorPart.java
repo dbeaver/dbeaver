@@ -46,7 +46,7 @@ import java.io.InputStream;
  */
 public class ContentImageEditorPart extends EditorPart implements ContentEditorPart, IResourceChangeListener {
 
-    static final Log log = Log.getLog(ContentImageEditorPart.class);
+    private static final Log log = Log.getLog(ContentImageEditorPart.class);
 
     private ImageEditor imageViewer;
     private boolean contentValid;

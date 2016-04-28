@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -40,6 +41,7 @@ import java.sql.SQLException;
  */
 public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
+    private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
     private DBDDataFormatter formatter;
 
     public JDBCNumberValueHandler(DBDDataFormatterProfile formatterProfile)

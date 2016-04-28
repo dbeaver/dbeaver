@@ -33,7 +33,7 @@ import java.util.List;
 
 class ApplicationCSSManager {
 
-    static final Log log = Log.getLog(ApplicationCSSManager.class);
+    private static final Log log = Log.getLog(ApplicationCSSManager.class);
     private static final String EXTRA_CSS = "\n" +
         ".MPartStack {\n" +
 //        "  swt-tab-renderer: null;\n" +

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -47,6 +48,8 @@ import java.util.List;
  */
 public class MySQLView extends MySQLTableBase
 {
+    private static final Log log = Log.getLog(MySQLView.class);
+
     public enum CheckOption {
         NONE(null),
         CASCADE("CASCADED"),

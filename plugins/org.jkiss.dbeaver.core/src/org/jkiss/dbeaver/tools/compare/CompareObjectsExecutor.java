@@ -36,7 +36,7 @@ import java.util.*;
 
 public class CompareObjectsExecutor {
 
-    static final Log log = Log.getLog(CompareObjectsExecutor.class);
+    private static final Log log = Log.getLog(CompareObjectsExecutor.class);
 
     private final Object PROPS_LOCK = new Object();
 

@@ -32,7 +32,7 @@ import java.sql.ResultSet;
  */
 public class OracleTableConstraint extends OracleTableConstraintBase {
 
-    static final Log log = Log.getLog(OracleTableConstraint.class);
+    private static final Log log = Log.getLog(OracleTableConstraint.class);
 
     private String searchCondition;
 

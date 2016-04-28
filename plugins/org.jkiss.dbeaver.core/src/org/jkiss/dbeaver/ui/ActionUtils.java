@@ -47,7 +47,7 @@ import org.jkiss.dbeaver.model.DBPImage;
  */
 public class ActionUtils
 {
-    static final Log log = Log.getLog(ActionUtils.class);
+    private static final Log log = Log.getLog(ActionUtils.class);
 
     public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
     {

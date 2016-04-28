@@ -21,6 +21,7 @@ import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -37,6 +38,8 @@ import java.util.List;
  */
 public class DBNProject extends DBNResource implements IAdaptable
 {
+    private static final Log log = Log.getLog(DBNProject.class);
+
     public DBNProject(DBNNode parentNode, IProject project, DBPResourceHandler handler)
     {
         super(parentNode, project, handler);

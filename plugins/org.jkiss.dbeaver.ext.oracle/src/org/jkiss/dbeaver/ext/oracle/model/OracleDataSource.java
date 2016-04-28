@@ -58,7 +58,7 @@ import java.util.regex.Pattern;
 public class OracleDataSource extends JDBCDataSource
     implements DBSObjectSelector, DBCServerOutputReader, DBCQueryPlanner, IAdaptable
 {
-    static final Log log = Log.getLog(OracleDataSource.class);
+    private static final Log log = Log.getLog(OracleDataSource.class);
 
     //private final static Map<String, OCIClassLoader> ociClassLoadersCache = new HashMap<String, OCIClassLoader>();
 

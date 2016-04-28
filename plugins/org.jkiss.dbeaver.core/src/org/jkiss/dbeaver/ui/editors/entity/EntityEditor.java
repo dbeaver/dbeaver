@@ -78,7 +78,7 @@ import java.util.*;
 public class EntityEditor extends MultiPageDatabaseEditor
     implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
 {
-    static final Log log = Log.getLog(EntityEditor.class);
+    private static final Log log = Log.getLog(EntityEditor.class);
 
     private static class EditorDefaults {
         String pageId;

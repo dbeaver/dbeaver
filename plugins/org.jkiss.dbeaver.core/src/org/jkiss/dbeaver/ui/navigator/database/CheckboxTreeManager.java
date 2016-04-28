@@ -37,7 +37,7 @@ import java.util.*;
 
 public class CheckboxTreeManager implements ICheckStateListener {
 
-    static final Log log = Log.getLog(CheckboxTreeManager.class);
+    private static final Log log = Log.getLog(CheckboxTreeManager.class);
 
     private final CheckboxTreeViewer viewer;
     private final Class<?>[] targetTypes;

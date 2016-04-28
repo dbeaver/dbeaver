@@ -42,7 +42,7 @@ import java.util.*;
  */
 public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DBSObject, CHILD extends DBSObject> extends
     JDBCObjectCache<OWNER, OBJECT> implements DBSStructCache<OWNER, OBJECT, CHILD> {
-    static final Log log = Log.getLog(JDBCStructCache.class);
+    private static final Log log = Log.getLog(JDBCStructCache.class);
 
     private final Object objectNameColumn;
     private volatile boolean childrenCached = false;

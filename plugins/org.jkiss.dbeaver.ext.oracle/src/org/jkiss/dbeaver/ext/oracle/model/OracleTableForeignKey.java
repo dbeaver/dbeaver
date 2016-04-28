@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
@@ -38,6 +39,8 @@ import java.sql.ResultSet;
  */
 public class OracleTableForeignKey extends OracleTableConstraintBase implements DBSTableForeignKey
 {
+    private static final Log log = Log.getLog(OracleTableForeignKey.class);
+
     private OracleTableConstraint referencedKey;
     private DBSForeignKeyModifyRule deleteRule;
 

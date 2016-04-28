@@ -35,7 +35,7 @@ public class JDBCBooleanValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCBooleanValueHandler INSTANCE = new JDBCBooleanValueHandler();
 
-    static final Log log = Log.getLog(JDBCBooleanValueHandler.class);
+    private static final Log log = Log.getLog(JDBCBooleanValueHandler.class);
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index)

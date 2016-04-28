@@ -38,7 +38,7 @@ import java.util.List;
  */
 public abstract class SQLObjectResolver<T extends DBSObject> extends TemplateVariableResolver {
 
-    static final Log log = Log.getLog(SQLObjectResolver.class);
+    private static final Log log = Log.getLog(SQLObjectResolver.class);
 
     public SQLObjectResolver(String type, String description)
     {

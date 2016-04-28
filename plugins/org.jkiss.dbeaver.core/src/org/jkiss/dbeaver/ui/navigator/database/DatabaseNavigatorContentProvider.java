@@ -38,7 +38,7 @@ import java.util.List;
  * DatabaseNavigatorContentProvider
 */
 class DatabaseNavigatorContentProvider implements IStructuredContentProvider, ITreeContentProvider {
-    static final Log log = Log.getLog(DatabaseNavigatorContentProvider.class);
+    private static final Log log = Log.getLog(DatabaseNavigatorContentProvider.class);
 
     private static final Object[] EMPTY_CHILDREN = new Object[0];
 

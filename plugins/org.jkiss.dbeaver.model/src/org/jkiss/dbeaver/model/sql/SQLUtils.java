@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
  */
 public final class SQLUtils {
 
-    static final Log log = Log.getLog(SQLUtils.class);
+    private static final Log log = Log.getLog(SQLUtils.class);
 
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
     public static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);

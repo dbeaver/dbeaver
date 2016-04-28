@@ -33,7 +33,7 @@ import java.sql.ResultSet;
 public abstract class OracleDataTypeMember implements DBSEntityElement
 {
 
-    static final Log log = Log.getLog(OracleDataTypeMember.class);
+    private static final Log log = Log.getLog(OracleDataTypeMember.class);
 
     private OracleDataType dataType;
     protected String name;

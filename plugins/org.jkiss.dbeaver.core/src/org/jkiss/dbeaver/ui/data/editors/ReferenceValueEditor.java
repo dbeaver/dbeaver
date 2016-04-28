@@ -69,7 +69,7 @@ import java.util.List;
  */
 public class ReferenceValueEditor {
 
-    static final Log log = Log.getLog(ReferenceValueEditor.class);
+    private static final Log log = Log.getLog(ReferenceValueEditor.class);
 
     private IValueController valueController;
     private IValueEditor valueEditor;

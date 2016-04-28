@@ -36,7 +36,7 @@ import java.util.Map;
 
 public class SQLQueryParameterRegistry
 {
-    static final Log log = Log.getLog(SQLQueryParameterRegistry.class);
+    private static final Log log = Log.getLog(SQLQueryParameterRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "parameter-bindings.xml"; //$NON-NLS-1$
     public static final String TAG_PARAMETER = "parameter";

@@ -30,7 +30,7 @@ import java.io.*;
  */
 public class BytesContentStorage implements DBDContentStorage {
 
-    static final Log log = Log.getLog(BytesContentStorage.class);
+    private static final Log log = Log.getLog(BytesContentStorage.class);
 
     private byte[] data;
     private String encoding;

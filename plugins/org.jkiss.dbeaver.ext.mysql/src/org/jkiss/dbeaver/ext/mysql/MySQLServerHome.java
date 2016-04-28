@@ -31,7 +31,7 @@ import java.io.InputStreamReader;
  */
 public class MySQLServerHome extends JDBCClientHome {
 
-    static final Log log = Log.getLog(MySQLServerHome.class);
+    private static final Log log = Log.getLog(MySQLServerHome.class);
 
     private String name;
     private String version;

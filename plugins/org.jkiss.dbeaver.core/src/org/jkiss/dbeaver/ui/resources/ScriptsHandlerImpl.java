@@ -41,7 +41,7 @@ import java.util.Collections;
  */
 public class ScriptsHandlerImpl extends AbstractResourceHandler {
 
-    static final Log log = Log.getLog(ScriptsHandlerImpl.class);
+    private static final Log log = Log.getLog(ScriptsHandlerImpl.class);
 
     @Override
     public int getFeatures(IResource resource)

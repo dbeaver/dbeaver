@@ -40,7 +40,7 @@ import java.sql.Savepoint;
  */
 public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSource> implements DBCTransactionManager
 {
-    static final Log log = Log.getLog(JDBCExecutionContext.class);
+    private static final Log log = Log.getLog(JDBCExecutionContext.class);
 
     private volatile Connection connection;
     private volatile Boolean autoCommit;

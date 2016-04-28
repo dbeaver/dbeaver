@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  */
 public class MavenArtifact implements IMavenIdentifier
 {
-    static final Log log = Log.getLog(MavenArtifact.class);
+    private static final Log log = Log.getLog(MavenArtifact.class);
 
     public static final String MAVEN_METADATA_XML = "maven-metadata.xml";
 

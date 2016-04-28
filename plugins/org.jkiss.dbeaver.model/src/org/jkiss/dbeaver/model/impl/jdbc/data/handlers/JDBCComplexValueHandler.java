@@ -35,7 +35,7 @@ import java.sql.SQLException;
  */
 public abstract class JDBCComplexValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = Log.getLog(JDBCComplexValueHandler.class);
+    private static final Log log = Log.getLog(JDBCComplexValueHandler.class);
 
     public static final String PROP_CATEGORY_COMPLEX = "Complex";
 

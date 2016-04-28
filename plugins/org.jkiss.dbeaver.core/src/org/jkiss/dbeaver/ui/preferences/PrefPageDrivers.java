@@ -52,7 +52,7 @@ import java.net.URL;
  */
 public class PrefPageDrivers extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
-    static final Log log = Log.getLog(PrefPageDrivers.class);
+    private static final Log log = Log.getLog(PrefPageDrivers.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.drivers"; //$NON-NLS-1$
 

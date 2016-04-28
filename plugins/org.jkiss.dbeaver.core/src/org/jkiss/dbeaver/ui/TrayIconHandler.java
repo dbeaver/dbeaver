@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 public class TrayIconHandler {
 
-    static final Log log = Log.getLog(TrayIconHandler.class);
+    private static final Log log = Log.getLog(TrayIconHandler.class);
 
     // AWT tray icon. SWT TrayItem do not support displayMessage function
     private TrayIcon trayItem;

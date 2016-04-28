@@ -44,7 +44,7 @@ import java.util.TreeSet;
  */
 public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject
 {
-    static final Log log = Log.getLog(PostgreAttribute.class);
+    private static final Log log = Log.getLog(PostgreAttribute.class);
 
     @NotNull
     private PostgreDataType dataType;

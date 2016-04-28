@@ -44,7 +44,7 @@ import java.util.*;
 
 public class SearchDataQuery implements IObjectSearchQuery {
 
-    static final Log log = Log.getLog(SearchDataQuery.class);
+    private static final Log log = Log.getLog(SearchDataQuery.class);
 
     private final SearchDataParams params;
 

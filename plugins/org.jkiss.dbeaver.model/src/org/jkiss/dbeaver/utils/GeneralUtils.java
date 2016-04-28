@@ -45,7 +45,7 @@ import java.util.regex.Pattern;
  */
 public class GeneralUtils {
 
-    static final Log log = Log.getLog(GeneralUtils.class);
+    private static final Log log = Log.getLog(GeneralUtils.class);
 
     public static final String DEFAULT_FILE_CHARSET_NAME = "UTF-8";
     public static final Charset UTF8_CHARSET = Charset.forName("UTF-8");

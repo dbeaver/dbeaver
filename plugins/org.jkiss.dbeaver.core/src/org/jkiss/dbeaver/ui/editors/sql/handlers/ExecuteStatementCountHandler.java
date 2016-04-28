@@ -45,7 +45,7 @@ import java.util.List;
 
 public class ExecuteStatementCountHandler extends AbstractHandler implements SQLQueryTransformer {
 
-    static final Log log = Log.getLog(ExecuteStatementCountHandler.class);
+    private static final Log log = Log.getLog(ExecuteStatementCountHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

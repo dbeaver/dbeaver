@@ -40,7 +40,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLCompletionProposal implements ICompletionProposal, ICompletionProposalExtension2 {
 
-    static final Log log = Log.getLog(SQLCompletionProposal.class);
+    private static final Log log = Log.getLog(SQLCompletionProposal.class);
 
     private SQLSyntaxManager syntaxManager;
 

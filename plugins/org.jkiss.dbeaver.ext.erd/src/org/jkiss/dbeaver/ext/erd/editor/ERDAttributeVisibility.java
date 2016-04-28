@@ -36,7 +36,7 @@ public enum ERDAttributeVisibility
 
     private final String title;
 
-    static final Log log = Log.getLog(ERDAttributeVisibility.class);
+    private static final Log log = Log.getLog(ERDAttributeVisibility.class);
 
     ERDAttributeVisibility(String title)
     {

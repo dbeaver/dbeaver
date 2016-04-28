@@ -31,7 +31,7 @@ import java.math.BigInteger;
  */
 public class PrefUtils {
 
-    static final Log log = Log.getLog(PrefUtils.class);
+    private static final Log log = Log.getLog(PrefUtils.class);
 
     public static void savePreferenceStore(DBPPreferenceStore store)
     {

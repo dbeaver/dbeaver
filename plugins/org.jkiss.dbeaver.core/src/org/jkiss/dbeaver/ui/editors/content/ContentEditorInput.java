@@ -53,7 +53,7 @@ import java.io.*;
  */
 public class ContentEditorInput implements IPathEditorInput, DBPContextProvider
 {
-    static final Log log = Log.getLog(ContentEditorInput.class);
+    private static final Log log = Log.getLog(ContentEditorInput.class);
 
     private IValueController valueController;
     private ContentEditorPart[] editorParts;

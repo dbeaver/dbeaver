@@ -43,7 +43,7 @@ import java.util.concurrent.Executor;
  */
 public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, DBRBlockingObject {
 
-    static final Log log = Log.getLog(JDBCConnectionImpl.class);
+    private static final Log log = Log.getLog(JDBCConnectionImpl.class);
 
     @NotNull
     final JDBCExecutionContext context;

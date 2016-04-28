@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
  */
 public class EntityEditorPropertyTester extends PropertyTester
 {
-    static final Log log = Log.getLog(EntityEditorPropertyTester.class);
+    private static final Log log = Log.getLog(EntityEditorPropertyTester.class);
 
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.entity";
     public static final String PROP_DIRTY = "dirty";

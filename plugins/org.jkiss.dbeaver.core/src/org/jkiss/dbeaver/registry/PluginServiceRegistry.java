@@ -30,7 +30,7 @@ import java.util.List;
 
 public class PluginServiceRegistry
 {
-    static final Log log = Log.getLog(PluginServiceRegistry.class);
+    private static final Log log = Log.getLog(PluginServiceRegistry.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.pluginService"; //$NON-NLS-1$
 

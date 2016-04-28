@@ -60,7 +60,7 @@ import java.util.List;
  * ObjectListControl
  */
 public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl {
-    static final Log log = Log.getLog(ObjectListControl.class);
+    private static final Log log = Log.getLog(ObjectListControl.class);
 
     private final static LazyValue DEF_LAZY_VALUE = new LazyValue("..."); //$NON-NLS-1$
     private final static String DATA_OBJECT_COLUMN = "objectColumn"; //$NON-NLS-1$

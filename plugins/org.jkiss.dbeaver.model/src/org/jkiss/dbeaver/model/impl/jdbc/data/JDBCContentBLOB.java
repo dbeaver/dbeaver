@@ -46,7 +46,7 @@ import java.sql.SQLFeatureNotSupportedException;
  */
 public class JDBCContentBLOB extends JDBCContentLOB {
 
-    static final Log log = Log.getLog(JDBCContentBLOB.class);
+    private static final Log log = Log.getLog(JDBCContentBLOB.class);
 
     private Blob blob;
     private InputStream tmpStream;

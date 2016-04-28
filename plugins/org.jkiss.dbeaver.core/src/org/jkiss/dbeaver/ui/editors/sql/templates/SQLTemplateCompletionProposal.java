@@ -30,7 +30,7 @@ import org.eclipse.swt.graphics.Point;
  */
 public class SQLTemplateCompletionProposal implements ICompletionProposal, ICompletionProposalExtension, ICompletionProposalExtension2, ICompletionProposalExtension3 {
 
-    static final Log log = Log.getLog(SQLTemplateCompletionProposal.class);
+    private static final Log log = Log.getLog(SQLTemplateCompletionProposal.class);
 
     private final Template fTemplate;
     private final SQLContext fContext;

@@ -41,7 +41,7 @@ import java.util.Locale;
  * RuntimeUtils
  */
 public class RuntimeUtils {
-    static final Log log = Log.getLog(RuntimeUtils.class);
+    private static final Log log = Log.getLog(RuntimeUtils.class);
 
     @SuppressWarnings("unchecked")
     public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)

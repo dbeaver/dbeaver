@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjectResolver<T> {
 
-    static final Log log = Log.getLog(SQLContainerResolver.class);
+    private static final Log log = Log.getLog(SQLContainerResolver.class);
     public static final String VAR_NAME_SCHEMA = "schema";
     public static final String VAR_NAME_CATALOG = "catalog";
 

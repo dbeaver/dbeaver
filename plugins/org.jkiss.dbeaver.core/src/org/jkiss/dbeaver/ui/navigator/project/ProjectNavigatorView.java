@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 public class ProjectNavigatorView extends NavigatorViewBase // CommonNavigator
 {
 
-    static final Log log = Log.getLog(ProjectNavigatorView.class);
+    private static final Log log = Log.getLog(ProjectNavigatorView.class);
 
     public static final String VIEW_ID = "org.jkiss.dbeaver.core.projectNavigator";
 

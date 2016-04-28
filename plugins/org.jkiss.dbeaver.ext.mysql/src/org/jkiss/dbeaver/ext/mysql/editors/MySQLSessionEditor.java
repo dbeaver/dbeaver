@@ -46,7 +46,7 @@ import java.util.Collections;
  */
 public class MySQLSessionEditor extends AbstractSessionEditor
 {
-    static final Log log = Log.getLog(MySQLSessionEditor.class);
+    private static final Log log = Log.getLog(MySQLSessionEditor.class);
 
     private KillSessionAction killSessionAction;
     private KillSessionAction terminateQueryAction;

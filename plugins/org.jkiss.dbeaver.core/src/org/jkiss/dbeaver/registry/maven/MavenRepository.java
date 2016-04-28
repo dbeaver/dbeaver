@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class MavenRepository
 {
-    static final Log log = Log.getLog(MavenRepository.class);
+    private static final Log log = Log.getLog(MavenRepository.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.mavenRepository";
 

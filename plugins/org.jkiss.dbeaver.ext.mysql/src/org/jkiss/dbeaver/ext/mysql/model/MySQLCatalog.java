@@ -58,7 +58,7 @@ import java.util.List;
  */
 public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
 {
-    static final Log log = Log.getLog(MySQLCatalog.class);
+    private static final Log log = Log.getLog(MySQLCatalog.class);
 
     final TableCache tableCache = new TableCache();
     final ProceduresCache proceduresCache = new ProceduresCache();

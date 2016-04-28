@@ -38,7 +38,7 @@ import java.sql.SQLException;
  */
 public abstract class JDBCAbstractValueHandler extends BaseValueHandler {
 
-    static final Log log = Log.getLog(JDBCAbstractValueHandler.class);
+    private static final Log log = Log.getLog(JDBCAbstractValueHandler.class);
 
     @Override
     public final Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index)

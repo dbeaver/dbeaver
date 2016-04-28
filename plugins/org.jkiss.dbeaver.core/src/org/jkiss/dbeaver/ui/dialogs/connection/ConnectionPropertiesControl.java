@@ -42,7 +42,7 @@ import java.util.*;
  */
 public class ConnectionPropertiesControl extends PropertyTreeViewer {
 
-    static final Log log = Log.getLog(ConnectionPropertiesControl.class);
+    private static final Log log = Log.getLog(ConnectionPropertiesControl.class);
 
     public static final String USER_PROPERTIES_CATEGORY = CoreMessages.controls_connection_properties_category_user_properties;
 

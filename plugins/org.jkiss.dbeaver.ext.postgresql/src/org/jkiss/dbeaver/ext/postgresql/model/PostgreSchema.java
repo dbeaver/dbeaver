@@ -56,7 +56,7 @@ import java.util.List;
  */
 public class PostgreSchema implements DBSSchema, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, PostgreObject {
 
-    static final Log log = Log.getLog(PostgreSchema.class);
+    private static final Log log = Log.getLog(PostgreSchema.class);
 
     private PostgreDatabase database;
     private long oid;

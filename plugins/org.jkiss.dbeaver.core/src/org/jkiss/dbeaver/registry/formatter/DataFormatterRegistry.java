@@ -43,7 +43,7 @@ import java.util.Map;
 
 public class DataFormatterRegistry
 {
-    static final Log log = Log.getLog(DataFormatterRegistry.class);
+    private static final Log log = Log.getLog(DataFormatterRegistry.class);
 
     public static final String CONFIG_FILE_NAME = "dataformat-profiles.xml"; //$NON-NLS-1$
 

@@ -32,7 +32,7 @@ import java.lang.reflect.Method;
  */
 public class EditorUtils {
 
-    static final Log log = Log.getLog(EditorUtils.class);
+    private static final Log log = Log.getLog(EditorUtils.class);
 
     @Nullable
     public static IFile getFileFromEditorInput(IEditorInput editorInput)

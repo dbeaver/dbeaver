@@ -47,7 +47,7 @@ import java.util.*;
 */
 class ResultSetPersister {
 
-    static final Log log = Log.getLog(ResultSetPersister.class);
+    private static final Log log = Log.getLog(ResultSetPersister.class);
 
     /**
      * Data update listener

@@ -50,7 +50,7 @@ import java.util.List;
 
 public class DatabaseSearchDialog extends HelpEnabledDialog implements IObjectSearchContainer {
 
-    static final Log log = Log.getLog(DatabaseSearchDialog.class);
+    private static final Log log = Log.getLog(DatabaseSearchDialog.class);
 
     private static final int SEARCH_ID = 1000;
     private static final String PROVIDER_PREF_NAME = "search.dialog.cur-provider";

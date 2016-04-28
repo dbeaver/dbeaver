@@ -37,7 +37,7 @@ import java.util.List;
 
 class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
 
-    static final Log log = Log.getLog(DataTransferPageFinal.class);
+    private static final Log log = Log.getLog(DataTransferPageFinal.class);
 
     private Table resultTable;
     private boolean activated = false;

@@ -46,7 +46,7 @@ import java.util.Map;
  */
 public class DataSourceProviderDescriptor extends AbstractDescriptor
 {
-    static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
+    private static final Log log = Log.getLog(DataSourceProviderDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataSourceProvider"; //$NON-NLS-1$
 

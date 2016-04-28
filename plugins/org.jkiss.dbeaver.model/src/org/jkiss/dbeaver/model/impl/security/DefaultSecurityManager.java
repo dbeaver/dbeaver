@@ -31,7 +31,7 @@ import java.security.cert.CertificateFactory;
  */
 public class DefaultSecurityManager implements DBPSecurityManager {
 
-    static final Log log = Log.getLog(DefaultSecurityManager.class);
+    private static final Log log = Log.getLog(DefaultSecurityManager.class);
     private static final char[] DEFAULT_PASSWORD = "".toCharArray();
     public static final String JKS_EXTENSION = ".jks";
 

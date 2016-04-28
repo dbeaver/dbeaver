@@ -32,7 +32,7 @@ import java.io.ByteArrayInputStream;
 
 public class SQLEditorInputFactory implements IElementFactory
 {
-    static final Log log = Log.getLog(SQLEditorInputFactory.class);
+    private static final Log log = Log.getLog(SQLEditorInputFactory.class);
 
     private static final String ID_FACTORY = SQLEditorInputFactory.class.getName(); //$NON-NLS-1$
 

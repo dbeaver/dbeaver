@@ -62,7 +62,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
             UIIcon.PROGRESS4, UIIcon.PROGRESS5, UIIcon.PROGRESS6, UIIcon.PROGRESS7,
             UIIcon.PROGRESS8, UIIcon.PROGRESS9
     };
-    static final Log log = Log.getLog(ResultSetDataPumpJob.class);
+    private static final Log log = Log.getLog(ResultSetDataPumpJob.class);
 
     private DBSDataContainer dataContainer;
     private DBDDataFilter dataFilter;

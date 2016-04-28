@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
 
-    static final Log log = Log.getLog(ResultSetPresentationDescriptor.class);
+    private static final Log log = Log.getLog(ResultSetPresentationDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resultset.presentation"; //NON-NLS-1 //$NON-NLS-1$
 

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
  */
 public class PostgreServerHome extends JDBCClientHome {
 
-    static final Log log = Log.getLog(PostgreServerHome.class);
+    private static final Log log = Log.getLog(PostgreServerHome.class);
 
     private String name;
     private String version;

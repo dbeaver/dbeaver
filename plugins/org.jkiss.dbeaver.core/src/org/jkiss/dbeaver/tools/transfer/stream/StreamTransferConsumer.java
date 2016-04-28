@@ -54,7 +54,7 @@ import java.util.zip.ZipOutputStream;
 */
 public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
-    static final Log log = Log.getLog(StreamTransferConsumer.class);
+    private static final Log log = Log.getLog(StreamTransferConsumer.class);
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 

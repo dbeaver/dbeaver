@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class ResourceUtils {
 
-    static final Log log = Log.getLog(ResourceUtils.class);
+    private static final Log log = Log.getLog(ResourceUtils.class);
 
     public static final String SCRIPT_FILE_EXTENSION = "sql"; //$NON-NLS-1$
 

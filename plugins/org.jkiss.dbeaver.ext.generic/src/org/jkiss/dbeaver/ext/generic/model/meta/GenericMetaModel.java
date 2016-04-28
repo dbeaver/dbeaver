@@ -48,7 +48,7 @@ import java.util.*;
  */
 public class GenericMetaModel {
 
-    static final Log log = Log.getLog(GenericMetaModel.class);
+    private static final Log log = Log.getLog(GenericMetaModel.class);
 
     private String id;
     private final Map<String, GenericMetaObject> objects = new HashMap<>();

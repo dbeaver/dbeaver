@@ -39,7 +39,7 @@ import java.net.URL;
  */
 public class DBeaverApplication implements IApplication
 {
-    static final Log log = Log.getLog(DBeaverApplication.class);
+    private static final Log log = Log.getLog(DBeaverApplication.class);
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
 
     /* (non-Javadoc)

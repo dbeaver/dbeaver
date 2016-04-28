@@ -35,7 +35,7 @@ import java.util.List;
  */
 public abstract class GenericObjectContainer implements GenericStructContainer,DBPRefreshableObject
 {
-    static final Log log = Log.getLog(GenericObjectContainer.class);
+    private static final Log log = Log.getLog(GenericObjectContainer.class);
 
     @NotNull
     private final GenericDataSource dataSource;

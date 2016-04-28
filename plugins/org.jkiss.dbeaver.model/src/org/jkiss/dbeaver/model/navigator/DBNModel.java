@@ -50,7 +50,7 @@ import java.util.Map;
  * (e.g. TreeViewer sometimes update only first TreeItem corresponding to model certain model object).
  */
 public class DBNModel implements IResourceChangeListener {
-    static final Log log = Log.getLog(DBNModel.class);
+    private static final Log log = Log.getLog(DBNModel.class);
 
     private final DBPApplication application;
     private DBNRoot root;

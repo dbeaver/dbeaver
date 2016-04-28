@@ -22,11 +22,14 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 public class NavigatorHandlerProjectSelect extends NavigatorHandlerObjectBase {
+
+    private static final Log log = Log.getLog(NavigatorHandlerProjectSelect.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

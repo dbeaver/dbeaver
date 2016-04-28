@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.Log;
  */
 public class PhoenixUtils {
 
-    static final Log log = Log.getLog(PhoenixUtils.class);
+    private static final Log log = Log.getLog(PhoenixUtils.class);
 
 
 }

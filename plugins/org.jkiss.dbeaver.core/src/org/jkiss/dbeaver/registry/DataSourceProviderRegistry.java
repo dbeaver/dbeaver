@@ -40,7 +40,7 @@ import java.util.*;
 
 public class DataSourceProviderRegistry
 {
-    static final Log log = Log.getLog(DataSourceProviderRegistry.class);
+    private static final Log log = Log.getLog(DataSourceProviderRegistry.class);
 
     private static DataSourceProviderRegistry instance = null;
 

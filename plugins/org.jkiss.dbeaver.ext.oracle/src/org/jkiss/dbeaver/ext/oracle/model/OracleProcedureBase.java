@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -40,7 +41,7 @@ import java.util.Iterator;
  */
 public abstract class OracleProcedureBase<PARENT extends DBSObjectContainer> extends OracleObject<PARENT> implements DBSProcedure
 {
-    //static final Log log = Log.getLog(OracleProcedure.class);
+    static final Log log = Log.getLog(OracleProcedureBase.class);
 
     private DBSProcedureType procedureType;
     private final ArgumentsCache argumentsCache = new ArgumentsCache();

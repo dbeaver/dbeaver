@@ -51,7 +51,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
 
     public static final String PAGE_NAME = "networkHandlersSettings";
 
-    static final Log log = Log.getLog(ConnectionPageNetwork.class);
+    private static final Log log = Log.getLog(ConnectionPageNetwork.class);
     private TabFolder handlersFolder;
     private DataSourceDescriptor prevDataSource;
 

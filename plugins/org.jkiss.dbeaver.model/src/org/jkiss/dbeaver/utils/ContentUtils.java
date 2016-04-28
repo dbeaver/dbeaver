@@ -45,7 +45,7 @@ public class ContentUtils {
     static final int STREAM_COPY_BUFFER_SIZE = 10000;
     private static final String LOB_DIR = ".lob"; //$NON-NLS-1$
 
-    static final Log log = Log.getLog(ContentUtils.class);
+    private static final Log log = Log.getLog(ContentUtils.class);
 
     public static final String DEFAULT_CHARSET = "UTF-8";
 

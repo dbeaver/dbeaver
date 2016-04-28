@@ -35,7 +35,7 @@ import java.util.*;
  */
 public class MySQLUtils {
 
-    static final Log log = Log.getLog(MySQLUtils.class);
+    private static final Log log = Log.getLog(MySQLUtils.class);
 
     private static Map<String, Integer> typeMap = new HashMap<>();
     public static final String COLUMN_POSTFIX_PRIV = "_priv";

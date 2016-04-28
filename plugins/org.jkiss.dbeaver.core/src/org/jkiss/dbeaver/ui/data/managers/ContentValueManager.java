@@ -55,7 +55,7 @@ import java.util.List;
  */
 public class ContentValueManager extends BaseValueManager {
 
-    static final Log log = Log.getLog(ContentValueManager.class);
+    private static final Log log = Log.getLog(ContentValueManager.class);
 
     public static final String PROP_CATEGORY_CONTENT = "CONTENT";
 

@@ -38,7 +38,7 @@ import java.sql.SQLException;
  * JDBCColumnMetaData
  */
 public class JDBCColumnMetaData implements DBCAttributeMetaData, DBPImageProvider {
-    static final Log log = Log.getLog(JDBCColumnMetaData.class);
+    private static final Log log = Log.getLog(JDBCColumnMetaData.class);
 
     public static final String PROP_CATEGORY_COLUMN = "Column";
 

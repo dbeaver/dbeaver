@@ -41,7 +41,7 @@ import java.nio.ByteBuffer;
 */
 public class ContentInlineEditor extends BaseValueEditor<Text> {
     private static final int MAX_STRING_LENGTH = 0xfffff;
-    static final Log log = Log.getLog(ContentInlineEditor.class);
+    private static final Log log = Log.getLog(ContentInlineEditor.class);
 
     private final boolean isText;
 

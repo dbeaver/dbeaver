@@ -53,7 +53,7 @@ import java.util.List;
  */
 public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, PostgreObject, DBSObjectSelector {
 
-    static final Log log = Log.getLog(PostgreDatabase.class);
+    private static final Log log = Log.getLog(PostgreDatabase.class);
 
     private PostgreDataSource dataSource;
     private long oid;

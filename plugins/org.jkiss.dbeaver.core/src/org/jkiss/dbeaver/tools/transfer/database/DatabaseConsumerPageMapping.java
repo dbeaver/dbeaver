@@ -60,7 +60,7 @@ import java.util.Map;
 
 public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWizard> {
 
-    static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
+    private static final Log log = Log.getLog(DatabaseConsumerPageMapping.class);
 
     public static final String TARGET_NAME_BROWSE = "[browse]";
     private TreeViewer mappingViewer;

@@ -41,7 +41,7 @@ import java.util.Map;
 
 class TransformerSettingsDialog extends BaseDialog {
 
-    static final Log log = Log.getLog(TransformerSettingsDialog.class);
+    private static final Log log = Log.getLog(TransformerSettingsDialog.class);
 
     private final ResultSetViewer viewer;
     private final DBDAttributeBinding attr;

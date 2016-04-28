@@ -44,7 +44,7 @@ import java.util.Collection;
  */
 public class PostgreSequence extends PostgreTableBase implements DBSSequence, DBPQualifiedObject
 {
-    static final Log log = Log.getLog(PostgreSequence.class);
+    private static final Log log = Log.getLog(PostgreSequence.class);
 
     public static class AdditionalInfo {
         private volatile boolean loaded = false;

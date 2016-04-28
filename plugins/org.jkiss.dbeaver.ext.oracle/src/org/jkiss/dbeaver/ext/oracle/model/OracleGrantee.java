@@ -39,7 +39,7 @@ import java.util.Collection;
  */
 public abstract class OracleGrantee extends OracleGlobalObject implements DBAUser, DBPSaveableObject
 {
-    static final Log log = Log.getLog(OracleGrantee.class);
+    private static final Log log = Log.getLog(OracleGrantee.class);
 
     final RolePrivCache rolePrivCache = new RolePrivCache();
     final SystemPrivCache systemPrivCache = new SystemPrivCache();

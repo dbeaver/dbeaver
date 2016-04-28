@@ -35,7 +35,7 @@ import java.util.Collection;
  */
 public abstract class WMIPropertySource implements DBPPropertySource
 {
-    static final Log log = Log.getLog(WMIPropertySource.class);
+    private static final Log log = Log.getLog(WMIPropertySource.class);
     private static final DBPPropertyDescriptor[] EMPTY_PROPERTIES = new DBPPropertyDescriptor[0];
 
     protected abstract WMIQualifiedObject getQualifiedObject();

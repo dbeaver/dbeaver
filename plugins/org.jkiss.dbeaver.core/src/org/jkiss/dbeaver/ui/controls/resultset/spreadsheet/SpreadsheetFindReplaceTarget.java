@@ -43,7 +43,7 @@ import java.util.regex.PatternSyntaxException;
  */
 class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTargetExtension, IFindReplaceTargetExtension3 {
 
-    static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
+    private static final Log log = Log.getLog(SpreadsheetFindReplaceTarget.class);
 
     private final SpreadsheetPresentation owner;
     private Pattern searchPattern;

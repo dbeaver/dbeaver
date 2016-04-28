@@ -44,7 +44,7 @@ import java.util.*;
  */
 public class ResultSetModel {
 
-    static final Log log = Log.getLog(ResultSetModel.class);
+    private static final Log log = Log.getLog(ResultSetModel.class);
 
     // Attributes
     private DBDAttributeBinding[] attributes = new DBDAttributeBinding[0];

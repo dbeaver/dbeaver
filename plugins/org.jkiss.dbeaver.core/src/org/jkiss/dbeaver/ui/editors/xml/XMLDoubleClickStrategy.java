@@ -25,7 +25,7 @@ import org.eclipse.jface.text.ITextViewer;
 
 
 public class XMLDoubleClickStrategy implements ITextDoubleClickStrategy {
-    static final Log log = Log.getLog(XMLDoubleClickStrategy.class);
+    private static final Log log = Log.getLog(XMLDoubleClickStrategy.class);
 
 	protected ITextViewer fText;
 

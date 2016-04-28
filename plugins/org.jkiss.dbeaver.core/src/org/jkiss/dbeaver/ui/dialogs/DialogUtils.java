@@ -51,7 +51,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class DialogUtils {
 
-    static final Log log = Log.getLog(DialogUtils.class);
+    private static final Log log = Log.getLog(DialogUtils.class);
 
     private static final String DIALOG_FOLDER_PROPERTY = "dialog.default.folder";
 

@@ -39,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class EntityEditorDescriptor extends AbstractContextDescriptor
 {
-    static final Log log = Log.getLog(EntityEditorDescriptor.class);
+    private static final Log log = Log.getLog(EntityEditorDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.databaseEditor"; //NON-NLS-1 //$NON-NLS-1$
 

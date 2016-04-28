@@ -54,7 +54,7 @@ import java.util.Map;
 public class OracleDataType extends OracleObject<DBSObject>
     implements DBSDataType, DBSEntity, DBPQualifiedObject, OracleSourceObjectEx {
 
-    static final Log log = Log.getLog(OracleTableForeignKey.class);
+    private static final Log log = Log.getLog(OracleTableForeignKey.class);
     public static final String TYPE_CODE_COLLECTION = "COLLECTION";
     public static final String TYPE_CODE_OBJECT = "OBJECT";
 
@@ -540,7 +540,7 @@ public class OracleDataType extends OracleObject<DBSObject>
             try {
                 typeSchema = dataSource.getSchema(monitor, typeOwner);
                 if (typeSchema == null) {
-                    OracleUtils.log.error("Type attr schema '" + typeOwner + "' not found");
+                    log.error("Type attr schema '" + typeOwner + "' not found");
                 } else {
                     type = typeSchema.getDataType(monitor, typeName);
                 }

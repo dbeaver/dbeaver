@@ -63,7 +63,7 @@ import java.util.*;
  * @author Serge Rieder
  */
 public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPropertyChangeListener, DBPEventListener {
-    static final Log log = Log.getLog(ERDGraphicalViewer.class);
+    private static final Log log = Log.getLog(ERDGraphicalViewer.class);
 
     private ERDEditorPart editor;
 	private ValidationMessageHandler messageHandler;

@@ -68,7 +68,7 @@ import java.util.List;
  */
 public class DriverEditDialog extends HelpEnabledDialog
 {
-    static final Log log = Log.getLog(DriverEditDialog.class);
+    private static final Log log = Log.getLog(DriverEditDialog.class);
 
     private static final String DIALOG_ID = "DBeaver.DriverEditDialog";//$NON-NLS-1$
 

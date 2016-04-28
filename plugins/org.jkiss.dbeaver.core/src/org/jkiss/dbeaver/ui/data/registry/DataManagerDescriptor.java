@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class DataManagerDescriptor extends AbstractDescriptor
 {
-    static final Log log = Log.getLog(DataManagerDescriptor.class);
+    private static final Log log = Log.getLog(DataManagerDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataManager"; //$NON-NLS-1$
     public static final String TAG_MANAGER = "manager"; //$NON-NLS-1$

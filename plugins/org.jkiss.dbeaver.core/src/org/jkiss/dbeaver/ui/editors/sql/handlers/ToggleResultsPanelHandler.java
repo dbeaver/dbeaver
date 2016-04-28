@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 public class ToggleResultsPanelHandler extends AbstractHandler {
 
-    static final Log log = Log.getLog(ToggleResultsPanelHandler.class);
+    private static final Log log = Log.getLog(ToggleResultsPanelHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {

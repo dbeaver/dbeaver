@@ -49,7 +49,7 @@ import java.nio.charset.CodingErrorAction;
  */
 public class FileRefDocumentProvider extends BaseTextDocumentProvider {
 
-    static final Log log = Log.getLog(FileRefDocumentProvider.class);
+    private static final Log log = Log.getLog(FileRefDocumentProvider.class);
 
     private static final int DEFAULT_BUFFER_SIZE = 10000;
 

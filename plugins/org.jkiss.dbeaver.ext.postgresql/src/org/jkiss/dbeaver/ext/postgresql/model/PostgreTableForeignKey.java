@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,6 +40,8 @@ import java.util.List;
  */
 public class PostgreTableForeignKey extends PostgreTableConstraintBase implements DBSTableForeignKey
 {
+    private static final Log log = Log.getLog(PostgreTableForeignKey.class);
+
     private DBSForeignKeyModifyRule updateRule;
     private DBSForeignKeyModifyRule deleteRule;
     private DBSEntityConstraint refConstraint;

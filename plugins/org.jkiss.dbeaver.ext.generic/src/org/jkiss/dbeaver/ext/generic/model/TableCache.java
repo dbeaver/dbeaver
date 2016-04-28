@@ -44,7 +44,7 @@ import java.util.Set;
  */
 public class TableCache extends JDBCStructCache<GenericStructContainer, GenericTable, GenericTableColumn> {
 
-    static final Log log = Log.getLog(TableCache.class);
+    private static final Log log = Log.getLog(TableCache.class);
 
     // Tables types which are not actually a table
     // This is needed for some strange JDBC drivers which returns not a table objects

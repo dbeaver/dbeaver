@@ -38,7 +38,7 @@ import java.util.List;
  */
 public abstract class DBXTreeNode
 {
-    static final Log log = Log.getLog(DBXTreeNode.class);
+    private static final Log log = Log.getLog(DBXTreeNode.class);
 
     private final AbstractDescriptor source;
     private final DBXTreeNode parent;

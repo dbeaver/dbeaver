@@ -31,7 +31,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class LoadingJob<RESULT>  extends AbstractJob {
 
-    static final Log log = Log.getLog(LoadingJob.class);
+    private static final Log log = Log.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
 
@@ -132,7 +132,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     }
 
     static class LoadingUIJob<RESULT> extends AbstractUIJob {
-        static final Log log = Log.getLog(LoadingUIJob.class);
+        private static final Log log = Log.getLog(LoadingUIJob.class);
 
         private static final long DELAY = 200;
 

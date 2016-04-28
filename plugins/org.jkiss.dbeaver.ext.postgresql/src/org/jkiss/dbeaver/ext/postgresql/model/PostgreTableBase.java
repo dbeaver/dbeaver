@@ -40,7 +40,7 @@ import java.util.List;
  */
 public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject
 {
-    static final Log log = Log.getLog(PostgreTableBase.class);
+    private static final Log log = Log.getLog(PostgreTableBase.class);
 
     private long oid;
     private String description;

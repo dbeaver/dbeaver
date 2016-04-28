@@ -45,7 +45,7 @@ import java.util.List;
  */
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBSObjectUnique, DBPOverloadedObject
 {
-    static final Log log = Log.getLog(PostgreProcedure.class);
+    private static final Log log = Log.getLog(PostgreProcedure.class);
     private static final String CAT_FLAGS = "Flags";
     private static final String CAT_PROPS = "Properties";
     private static final String CAT_STATS = "Statistics";

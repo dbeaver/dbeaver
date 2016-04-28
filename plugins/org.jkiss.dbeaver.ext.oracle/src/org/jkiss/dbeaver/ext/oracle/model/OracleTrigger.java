@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
 {
-    static final Log log = Log.getLog(OracleTrigger.class);
+    private static final Log log = Log.getLog(OracleTrigger.class);
 
     public enum BaseObjectType {
         TABLE,

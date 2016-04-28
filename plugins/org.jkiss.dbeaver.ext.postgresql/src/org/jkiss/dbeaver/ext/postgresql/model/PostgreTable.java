@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -48,6 +49,8 @@ import java.util.List;
  */
 public abstract class PostgreTable extends PostgreTableReal implements DBDPseudoAttributeContainer
 {
+    private static final Log log = Log.getLog(PostgreTable.class);
+
     private SimpleObjectCache<PostgreTable, PostgreTableForeignKey> foreignKeys = new SimpleObjectCache<>();
 
     private boolean hasOids;

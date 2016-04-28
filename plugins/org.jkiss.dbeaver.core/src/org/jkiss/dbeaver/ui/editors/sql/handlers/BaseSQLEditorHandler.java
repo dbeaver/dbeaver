@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 
 public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
 
-    static final Log log = Log.getLog(BaseSQLEditorHandler.class);
+    private static final Log log = Log.getLog(BaseSQLEditorHandler.class);
 
     @Nullable
     protected DBPDataSourceContainer getCurrentConnection(ExecutionEvent event)

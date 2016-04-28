@@ -40,7 +40,7 @@ import java.util.Map;
  */
 public class SSHTunnelImpl implements DBWTunnel {
 
-    static final Log log = Log.getLog(SSHTunnelImpl.class);
+    private static final Log log = Log.getLog(SSHTunnelImpl.class);
 
     private static final int CONNECT_TIMEOUT = 10000;
     public static final String LOCALHOST_NAME = "127.0.0.1";

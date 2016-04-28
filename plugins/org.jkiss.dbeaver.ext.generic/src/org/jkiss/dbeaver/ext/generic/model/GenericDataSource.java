@@ -55,7 +55,7 @@ import java.util.List;
 public class GenericDataSource extends JDBCDataSource
     implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer
 {
-    static final Log log = Log.getLog(GenericDataSource.class);
+    private static final Log log = Log.getLog(GenericDataSource.class);
 
     private final TableTypeCache tableTypeCache;
     private final JDBCBasicDataTypeCache dataTypeCache;

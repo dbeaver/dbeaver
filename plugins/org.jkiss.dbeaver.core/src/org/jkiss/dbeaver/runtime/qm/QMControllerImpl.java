@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class QMControllerImpl implements QMController {
 
-    static final Log log = Log.getLog(QMControllerImpl.class);
+    private static final Log log = Log.getLog(QMControllerImpl.class);
 
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;

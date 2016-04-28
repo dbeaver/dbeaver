@@ -43,7 +43,7 @@ import java.sql.SQLXML;
  */
 public class JDBCContentXML extends JDBCContentLOB {
 
-    static final Log log = Log.getLog(JDBCContentXML.class);
+    private static final Log log = Log.getLog(JDBCContentXML.class);
 
     protected SQLXML xml;
 

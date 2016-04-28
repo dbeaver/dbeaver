@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class RadixAttributeTransformer implements DBDAttributeTransformer {
 
-    static final Log log = Log.getLog(RadixAttributeTransformer.class);
+    private static final Log log = Log.getLog(RadixAttributeTransformer.class);
 
     public static final String PROP_RADIX = "radix";
     public static final String PROP_BITS = "bits";

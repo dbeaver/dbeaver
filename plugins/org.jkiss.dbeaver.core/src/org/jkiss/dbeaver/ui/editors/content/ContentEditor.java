@@ -92,7 +92,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     //public static final long MAX_TEXT_LENGTH = 10 * 1024 * 1024;
     //public static final long MAX_IMAGE_LENGTH = 10 * 1024 * 1024;
 
-    static final Log log = Log.getLog(ContentEditor.class);
+    private static final Log log = Log.getLog(ContentEditor.class);
 
     static class ContentPartInfo {
         ContentEditorPart editorPart;

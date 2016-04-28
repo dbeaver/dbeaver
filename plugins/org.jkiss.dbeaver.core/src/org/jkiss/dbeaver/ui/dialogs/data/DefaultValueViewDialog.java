@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -37,6 +38,8 @@ import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
  * Uses panel editor inside of value viewer.
  */
 public class DefaultValueViewDialog extends ValueViewDialog {
+
+    private static final Log log = Log.getLog(DefaultValueViewDialog.class);
 
     private IValueEditor panelEditor;
 

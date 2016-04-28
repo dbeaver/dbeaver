@@ -41,7 +41,7 @@ import java.util.Collection;
  */
 public abstract class PostgreTableReal extends PostgreTableBase
 {
-    static final Log log = Log.getLog(PostgreTableReal.class);
+    private static final Log log = Log.getLog(PostgreTableReal.class);
 
     private long rowCountEstimate;
     private Long rowCount;

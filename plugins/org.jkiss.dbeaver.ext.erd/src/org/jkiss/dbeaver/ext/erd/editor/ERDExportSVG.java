@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
  */
 public class ERDExportSVG
 {
-    static final Log log = Log.getLog(ERDExportSVG.class);
+    private static final Log log = Log.getLog(ERDExportSVG.class);
 
     private final EntityDiagram diagram;
     private final DiagramPart diagramPart;

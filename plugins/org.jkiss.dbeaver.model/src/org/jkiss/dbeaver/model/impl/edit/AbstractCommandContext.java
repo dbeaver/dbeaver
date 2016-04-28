@@ -38,7 +38,7 @@ import java.util.*;
  */
 public abstract class AbstractCommandContext implements DBECommandContext {
 
-    static final Log log = Log.getLog(AbstractCommandContext.class);
+    private static final Log log = Log.getLog(AbstractCommandContext.class);
 
     private final DBCExecutionContext executionContext;
     private final List<CommandInfo> commands = new ArrayList<>();

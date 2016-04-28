@@ -55,7 +55,7 @@ import java.util.List;
  */
 public class OracleCompilerDialog extends BaseDialog
 {
-    static final Log log = Log.getLog(OracleCompilerDialog.class);
+    private static final Log log = Log.getLog(OracleCompilerDialog.class);
 
     private static final int COMPILE_ID = 1000;
     private static final int COMPILE_ALL_ID = 1001;

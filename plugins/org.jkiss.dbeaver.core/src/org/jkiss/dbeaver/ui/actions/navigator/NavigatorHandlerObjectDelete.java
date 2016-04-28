@@ -37,6 +37,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
@@ -55,6 +56,8 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import java.util.*;
 
 public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
+    private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
+
     private IStructuredSelection structSelection;
     private Boolean deleteAll;
     private List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<>();

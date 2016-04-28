@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -38,6 +39,7 @@ import java.util.*;
  */
 public class DBNResource extends DBNNode
 {
+    private static final Log log = Log.getLog(DBNResource.class);
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
 
     private IResource resource;

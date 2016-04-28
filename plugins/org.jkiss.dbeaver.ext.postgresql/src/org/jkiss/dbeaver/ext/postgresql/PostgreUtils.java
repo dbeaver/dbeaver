@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class PostgreUtils {
 
-    static final Log log = Log.getLog(PostgreUtils.class);
+    private static final Log log = Log.getLog(PostgreUtils.class);
     
     private static final int UNKNOWN_LENGTH = -1;
 

@@ -42,7 +42,7 @@ import java.util.*;
  */
 public abstract class PropertySourceAbstract implements DBPPropertyManager, IPropertySourceMulti
 {
-    static final Log log = Log.getLog(PropertySourceAbstract.class);
+    private static final Log log = Log.getLog(PropertySourceAbstract.class);
 
     private Object sourceObject;
     private Object object;

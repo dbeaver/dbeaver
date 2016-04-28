@@ -49,7 +49,7 @@ import java.util.*;
  */
 public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 {
-    static final Log log = Log.getLog(SQLHyperlinkDetector.class);
+    private static final Log log = Log.getLog(SQLHyperlinkDetector.class);
 
     private final SQLEditorBase editor;
     private SQLSyntaxManager syntaxManager;

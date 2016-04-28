@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -35,6 +36,8 @@ import org.jkiss.wmi.service.WMIObjectAttribute;
  */
 public class WMIClassAttribute extends WMIClassElement<WMIObjectAttribute> implements DBSEntityAttribute, DBPImageProvider
 {
+    private static final Log log = Log.getLog(WMIClassAttribute.class);
+
     protected WMIClassAttribute(WMIClass wmiClass, WMIObjectAttribute attribute)
     {
         super(wmiClass, attribute);

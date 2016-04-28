@@ -40,7 +40,7 @@ import java.util.List;
 public class SQLAnnotationHover extends AbstractSQLEditorTextHover
     implements ITextHover, IAnnotationHover, ITextHoverExtension, ITextHoverExtension2
 {
-    static final Log log = Log.getLog(SQLAnnotationHover.class);
+    private static final Log log = Log.getLog(SQLAnnotationHover.class);
 
     private List<Annotation> annotations = new ArrayList<>();
     private SQLEditorBase editor;

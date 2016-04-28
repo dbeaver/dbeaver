@@ -40,7 +40,7 @@ import java.sql.Types;
 @Deprecated
 public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache
 {
-    static final Log log = Log.getLog(PostgreGenericTypeCache.class);
+    private static final Log log = Log.getLog(PostgreGenericTypeCache.class);
 
     private static String[] OID_TYPES = new String[] {
         "regproc",

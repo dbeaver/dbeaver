@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.registry.RegistryConstants;
 
 public class ObjectSearchProvider extends AbstractDescriptor
 {
-    static final Log log = Log.getLog(ObjectSearchProvider.class);
+    private static final Log log = Log.getLog(ObjectSearchProvider.class);
 
     private String id;
     private String label;

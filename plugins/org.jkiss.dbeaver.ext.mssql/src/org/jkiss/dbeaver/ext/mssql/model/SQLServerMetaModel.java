@@ -46,7 +46,7 @@ import java.util.List;
  */
 public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
-    static final Log log = Log.getLog(SQLServerMetaModel.class);
+    private static final Log log = Log.getLog(SQLServerMetaModel.class);
 
     public SQLServerMetaModel(IConfigurationElement cfg) {
         super(cfg);

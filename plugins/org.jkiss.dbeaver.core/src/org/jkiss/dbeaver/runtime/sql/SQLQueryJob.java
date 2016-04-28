@@ -65,7 +65,7 @@ import java.util.List;
  */
 public class SQLQueryJob extends DataSourceJob implements Closeable
 {
-    static final Log log = Log.getLog(SQLQueryJob.class);
+    private static final Log log = Log.getLog(SQLQueryJob.class);
 
     public static final Object STATS_RESULTS = new Object();
 

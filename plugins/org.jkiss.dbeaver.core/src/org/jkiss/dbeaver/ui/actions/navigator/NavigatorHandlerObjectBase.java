@@ -58,7 +58,7 @@ import java.util.List;
 
 public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
-    static final Log log = Log.getLog(NavigatorHandlerObjectBase.class);
+    private static final Log log = Log.getLog(NavigatorHandlerObjectBase.class);
 
     static boolean updateUI = true;
 

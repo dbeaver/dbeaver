@@ -23,6 +23,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
@@ -36,8 +37,9 @@ import java.util.List;
  */
 public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
+    private static final Log log = Log.getLog(ERDAssociation.class);
 
-	private ERDEntity primaryKeyEntity;
+    private ERDEntity primaryKeyEntity;
 	private ERDEntity foreignKeyEntity;
     private List<Point> initBends;
     private Boolean identifying;

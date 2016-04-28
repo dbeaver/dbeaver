@@ -27,7 +27,7 @@ import java.util.List;
 
 public class OracleHomeDescriptor extends JDBCClientHome
 {
-    static final Log log = Log.getLog(OracleHomeDescriptor.class);
+    private static final Log log = Log.getLog(OracleHomeDescriptor.class);
 
 /*
     private static final String JAR_OJDBC6 = "ojdbc6.jar";

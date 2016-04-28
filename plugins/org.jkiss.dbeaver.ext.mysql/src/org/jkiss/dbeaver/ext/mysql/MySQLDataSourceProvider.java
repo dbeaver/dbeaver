@@ -39,7 +39,7 @@ import java.util.*;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
 
-    static final Log log = Log.getLog(MySQLDataSourceProvider.class);
+    private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
     private static final String REGISTRY_ROOT_32 = "SOFTWARE\\MySQL AB";
     private static final String REGISTRY_ROOT_64 = "SOFTWARE\\Wow6432Node\\MYSQL AB";

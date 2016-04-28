@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class SQLAttributeResolver extends TemplateVariableResolver {
 
-    static final Log log = Log.getLog(SQLAttributeResolver.class);
+    private static final Log log = Log.getLog(SQLAttributeResolver.class);
 
     public SQLAttributeResolver()
     {

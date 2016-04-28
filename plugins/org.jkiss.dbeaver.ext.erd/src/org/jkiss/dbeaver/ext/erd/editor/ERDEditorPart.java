@@ -96,7 +96,7 @@ import java.util.*;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
 {
-    static final Log log = Log.getLog(ERDEditorPart.class);
+    private static final Log log = Log.getLog(ERDEditorPart.class);
 
     protected ProgressControl progressControl;
 

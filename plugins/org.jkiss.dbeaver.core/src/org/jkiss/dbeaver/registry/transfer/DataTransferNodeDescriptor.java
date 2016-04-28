@@ -39,7 +39,7 @@ import java.util.Locale;
  */
 public class DataTransferNodeDescriptor extends AbstractDescriptor
 {
-    static final Log log = Log.getLog(DataTransferNodeDescriptor.class);
+    private static final Log log = Log.getLog(DataTransferNodeDescriptor.class);
 
     enum NodeType {
         PRODUCER,

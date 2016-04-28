@@ -43,7 +43,7 @@ public class SQLExternalFormatter implements SQLFormatter {
 
     public static final String FORMATTER_ID = "EXTERNAL";
 
-    static final Log log = Log.getLog(SQLExternalFormatter.class);
+    private static final Log log = Log.getLog(SQLExternalFormatter.class);
 
     @Override
     public String format(String source, SQLFormatterConfiguration configuration) {
