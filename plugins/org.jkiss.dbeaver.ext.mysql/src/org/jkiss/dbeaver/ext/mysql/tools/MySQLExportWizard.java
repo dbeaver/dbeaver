@@ -189,7 +189,11 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         }
         if (addDropStatements) cmd.add("--add-drop-table"); //$NON-NLS-1$
         if (disableKeys) cmd.add("--disable-keys"); //$NON-NLS-1$
-        if (extendedInserts) cmd.add("--extended-insert"); //$NON-NLS-1$
+        if (extendedInserts) {
+            cmd.add("--extended-insert"); //$NON-NLS-1$
+        } else {
+            cmd.add("--skip-extended-insert"); //$NON-NLS-1$
+        }
         if (dumpEvents) cmd.add("--events"); //$NON-NLS-1$
         if (comments) cmd.add("--comments"); //$NON-NLS-1$
     }
