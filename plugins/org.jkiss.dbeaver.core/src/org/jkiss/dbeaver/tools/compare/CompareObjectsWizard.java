@@ -43,7 +43,7 @@ import java.util.List;
 
 public class CompareObjectsWizard extends Wizard implements IExportWizard {
 
-    static final Log log = Log.getLog(CompareObjectsWizard.class);
+    private static final Log log = Log.getLog(CompareObjectsWizard.class);
 
     private static final String RS_COMPARE_WIZARD_DIALOG_SETTINGS = "CompareWizard";//$NON-NLS-1$
 

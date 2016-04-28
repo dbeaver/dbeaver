@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 class FilterValueEditDialog extends BaseDialog {
 
-    static final Log log = Log.getLog(FilterValueEditDialog.class);
+    private static final Log log = Log.getLog(FilterValueEditDialog.class);
 
     private final ResultSetViewer viewer;
     private final DBDAttributeBinding attr;

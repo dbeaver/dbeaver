@@ -52,7 +52,7 @@ import java.util.regex.Pattern;
 
 public class ScriptsImportWizard extends Wizard implements IImportWizard {
 
-    static final Log log = Log.getLog(ScriptsImportWizard.class);
+    private static final Log log = Log.getLog(ScriptsImportWizard.class);
     private ScriptsImportWizardPage pageMain;
 
     public ScriptsImportWizard() {

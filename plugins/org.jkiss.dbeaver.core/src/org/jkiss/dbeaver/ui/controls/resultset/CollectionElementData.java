@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class CollectionElementData {
 
-    static final Log log = Log.getLog(CollectionElementData.class);
+    private static final Log log = Log.getLog(CollectionElementData.class);
 
     final DBDAttributeBinding collectionBinding;
     final DBDAttributeBindingElement[] elements;

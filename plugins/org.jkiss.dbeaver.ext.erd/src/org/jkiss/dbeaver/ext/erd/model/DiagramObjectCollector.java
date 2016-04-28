@@ -39,7 +39,7 @@ import java.util.*;
  */
 public class DiagramObjectCollector {
 
-    static final Log log = Log.getLog(DiagramObjectCollector.class);
+    private static final Log log = Log.getLog(DiagramObjectCollector.class);
 
     private final EntityDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<>();

@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class DriverFileSource
 {
-    static final Log log = Log.getLog(DriverFileSource.class);
+    private static final Log log = Log.getLog(DriverFileSource.class);
 
     public static class FileInfo {
         private final String name;

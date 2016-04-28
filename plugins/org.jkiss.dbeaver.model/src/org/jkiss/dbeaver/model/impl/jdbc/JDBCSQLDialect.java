@@ -40,7 +40,7 @@ import java.util.*;
  */
 public class JDBCSQLDialect extends BasicSQLDialect {
 
-    static final Log log = Log.getLog(JDBCSQLDialect.class);
+    private static final Log log = Log.getLog(JDBCSQLDialect.class);
 
     private String name;
     private String identifierQuoteString;

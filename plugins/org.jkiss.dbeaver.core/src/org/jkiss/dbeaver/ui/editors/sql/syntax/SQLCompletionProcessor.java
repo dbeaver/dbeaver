@@ -60,7 +60,7 @@ import java.util.regex.PatternSyntaxException;
  */
 public class SQLCompletionProcessor implements IContentAssistProcessor
 {
-    static final Log log = Log.getLog(SQLCompletionProcessor.class);
+    private static final Log log = Log.getLog(SQLCompletionProcessor.class);
 
     private enum QueryType {
         TABLE,

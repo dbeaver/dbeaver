@@ -33,7 +33,7 @@ import java.util.List;
  */
 public abstract class OracleTableConstraintBase extends JDBCTableConstraint<OracleTableBase> {
 
-    static final Log log = Log.getLog(OracleTableConstraintBase.class);
+    private static final Log log = Log.getLog(OracleTableConstraintBase.class);
 
     private OracleObjectStatus status;
     private List<OracleTableConstraintColumn> columns;

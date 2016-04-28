@@ -34,7 +34,7 @@ import java.util.Map;
 
 public class OCIUtils
 {
-    static final Log log = Log.getLog(OCIUtils.class);
+    private static final Log log = Log.getLog(OCIUtils.class);
 
     public static final String WIN_REG_ORACLE = "SOFTWARE\\ORACLE";
     public static final String WIN_REG_ORA_HOME = "ORACLE_HOME";

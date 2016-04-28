@@ -36,7 +36,7 @@ import java.sql.ResultSet;
  */
 public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 {
-    static final Log log = Log.getLog(MySQLTrigger.class);
+    private static final Log log = Log.getLog(MySQLTrigger.class);
 
     private MySQLCatalog catalog;
     private MySQLTable table;

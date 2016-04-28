@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
-    static final Log log = Log.getLog(PostgreDataTypeCache.class);
+    private static final Log log = Log.getLog(PostgreDataTypeCache.class);
     private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
 
     @Override

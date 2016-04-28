@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class InformixMetaModel extends GenericMetaModel
 {
-    static final Log log = Log.getLog(InformixMetaModel.class);
+    private static final Log log = Log.getLog(InformixMetaModel.class);
 
     public InformixMetaModel(IConfigurationElement cfg) {
         super(cfg);

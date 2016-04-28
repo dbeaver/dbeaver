@@ -48,7 +48,7 @@ import java.util.List;
  * JDBCUtils
  */
 public class JDBCUtils {
-    static final Log log = Log.getLog(JDBCUtils.class);
+    private static final Log log = Log.getLog(JDBCUtils.class);
     public static final int CONNECTION_VALIDATION_TIMEOUT = 5000;
 
     @Nullable

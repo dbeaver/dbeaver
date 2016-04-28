@@ -25,7 +25,7 @@ import java.util.jar.JarFile;
 
 public class DriverClassFindJob implements IRunnableWithProgress {
 
-    static final Log log = Log.getLog(DriverClassFindJob.class);
+    private static final Log log = Log.getLog(DriverClassFindJob.class);
 
     public static final String OBJECT_CLASS_NAME = "java/lang/Object";
     public static final String CLASS_FILE_EXT = ".class";

@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class DBIcon implements DBPImage
 {
-    static final Log log = Log.getLog(DBIcon.class);
+    private static final Log log = Log.getLog(DBIcon.class);
 
     public static final DBIcon TREE = new DBIcon("tree", "tree/tree.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_ADMIN = new DBIcon("admin", "tree/admin.png"); //$NON-NLS-1$ //$NON-NLS-2$

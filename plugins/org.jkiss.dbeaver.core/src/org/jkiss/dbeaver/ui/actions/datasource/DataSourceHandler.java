@@ -59,7 +59,7 @@ import java.util.Collection;
 
 public class DataSourceHandler
 {
-    static final Log log = Log.getLog(DataSourceHandler.class);
+    private static final Log log = Log.getLog(DataSourceHandler.class);
 
     public static final int END_TRANSACTION_WAIT_TIME = 3000;
 

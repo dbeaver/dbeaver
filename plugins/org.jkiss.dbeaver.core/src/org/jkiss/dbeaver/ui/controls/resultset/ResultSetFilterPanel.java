@@ -66,7 +66,7 @@ import java.util.regex.Pattern;
  */
 class ResultSetFilterPanel extends Composite
 {
-    static final Log log = Log.getLog(ResultSetFilterPanel.class);
+    private static final Log log = Log.getLog(ResultSetFilterPanel.class);
 
     public static final int MIN_FILTER_TEXT_WIDTH = 50;
     public static final int MIN_FILTER_TEXT_HEIGHT = 20;

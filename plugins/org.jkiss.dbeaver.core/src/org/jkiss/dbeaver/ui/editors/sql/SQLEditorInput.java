@@ -45,7 +45,7 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 {
     public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
 
-    static final Log log = Log.getLog(SQLEditorInput.class);
+    private static final Log log = Log.getLog(SQLEditorInput.class);
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";

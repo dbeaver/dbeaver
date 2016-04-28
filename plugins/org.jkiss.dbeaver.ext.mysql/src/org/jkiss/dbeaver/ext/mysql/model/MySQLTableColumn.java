@@ -44,7 +44,7 @@ import java.util.regex.Pattern;
  */
 public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBPNamedObject2
 {
-    static final Log log = Log.getLog(MySQLTableColumn.class);
+    private static final Log log = Log.getLog(MySQLTableColumn.class);
 
     private static Pattern enumPattern = Pattern.compile("'([^']*)'");
     private String fullTypeName;

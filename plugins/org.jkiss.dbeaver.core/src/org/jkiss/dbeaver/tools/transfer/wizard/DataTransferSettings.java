@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class DataTransferSettings {
 
-    static final Log log = Log.getLog(DataTransferSettings.class);
+    private static final Log log = Log.getLog(DataTransferSettings.class);
 
     private static final int DEFAULT_THREADS_NUM = 1;
 

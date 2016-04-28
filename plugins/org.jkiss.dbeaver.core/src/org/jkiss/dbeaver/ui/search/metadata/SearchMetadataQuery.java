@@ -38,7 +38,7 @@ import java.util.List;
 
 public class SearchMetadataQuery implements IObjectSearchQuery {
 
-    static final Log log = Log.getLog(SearchMetadataQuery.class);
+    private static final Log log = Log.getLog(SearchMetadataQuery.class);
 
     private final DBSStructureAssistant structureAssistant;
     private final SearchMetadataParams params;

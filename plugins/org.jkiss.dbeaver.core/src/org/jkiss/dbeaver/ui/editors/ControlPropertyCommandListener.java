@@ -36,7 +36,7 @@ import java.util.Date;
  */
 public class ControlPropertyCommandListener<OBJECT_TYPE extends DBSObject> {
 
-    static final Log log = Log.getLog(ControlPropertyCommandListener.class);
+    private static final Log log = Log.getLog(ControlPropertyCommandListener.class);
 
     private final AbstractDatabaseObjectEditor<OBJECT_TYPE> objectEditor;
     private final Widget widget;

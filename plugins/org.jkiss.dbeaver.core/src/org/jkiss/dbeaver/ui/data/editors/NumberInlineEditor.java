@@ -39,7 +39,7 @@ import java.util.Locale;
 */
 public class NumberInlineEditor extends BaseValueEditor<Text> {
 
-    static final Log log = Log.getLog(NumberInlineEditor.class);
+    private static final Log log = Log.getLog(NumberInlineEditor.class);
     private static final int MAX_NUMBER_LENGTH = 100;
 
     private DBDDataFormatterProfile formatterProfile;

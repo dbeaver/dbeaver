@@ -39,7 +39,7 @@ import java.util.Collections;
  */
 public abstract class DriverLibraryAbstract implements DBPDriverLibrary
 {
-    static final Log log = Log.getLog(DriverLibraryAbstract.class);
+    private static final Log log = Log.getLog(DriverLibraryAbstract.class);
 
     protected final DriverDescriptor driver;
     protected final FileType type;

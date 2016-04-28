@@ -35,7 +35,7 @@ import java.io.IOException;
  */
 public class DBeaverVersionChecker extends AbstractJob {
 
-    static final Log log = Log.getLog(DBeaverVersionChecker.class);
+    private static final Log log = Log.getLog(DBeaverVersionChecker.class);
 
     private final boolean showAlways;
 

@@ -151,7 +151,7 @@ public enum OracleObjectType implements DBSObjectType {
 	WINDOW_GROUP("WINDOW GROUP", null, DBSObject.class, null),
 	XML_SCHEMA("XML SCHEMA", null, DBSObject.class, null);
     
-    static final Log log = Log.getLog(OracleObjectType.class);
+    private static final Log log = Log.getLog(OracleObjectType.class);
 
     private static Map<String, OracleObjectType> typeMap = new HashMap<>();
 

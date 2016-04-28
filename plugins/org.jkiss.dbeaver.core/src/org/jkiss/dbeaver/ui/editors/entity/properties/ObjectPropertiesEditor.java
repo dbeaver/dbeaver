@@ -69,7 +69,7 @@ import java.util.Map;
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
     implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, INavigatorModelView
 {
-    static final Log log = Log.getLog(ObjectPropertiesEditor.class);
+    private static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
     private FolderComposite folderComposite;
     private ObjectEditorPageControl pageControl;

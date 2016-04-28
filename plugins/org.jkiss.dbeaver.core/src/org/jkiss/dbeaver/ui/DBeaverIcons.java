@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class DBeaverIcons
 {
-    static final Log log = Log.getLog(DBeaverIcons.class);
+    private static final Log log = Log.getLog(DBeaverIcons.class);
 
     private static class IconDescriptor {
         String id;

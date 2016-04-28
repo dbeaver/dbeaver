@@ -47,7 +47,7 @@ import java.util.ResourceBundle;
  */
 public class SQLTemplateStore extends TemplateStore {
 
-    static final Log log = Log.getLog(SQLTemplateStore.class);
+    private static final Log log = Log.getLog(SQLTemplateStore.class);
     public static final String PREF_STORE_KEY = "org.jkiss.dbeaver.core.sql_templates";
 
     public SQLTemplateStore(ContextTypeRegistry registry)

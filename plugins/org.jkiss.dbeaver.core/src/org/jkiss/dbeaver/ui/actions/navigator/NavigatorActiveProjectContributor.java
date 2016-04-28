@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 
 public class NavigatorActiveProjectContributor extends ContributionItem
 {
-    static final Log log = Log.getLog(NavigatorActiveProjectContributor.class);
+    private static final Log log = Log.getLog(NavigatorActiveProjectContributor.class);
 
     @Override
     public void fill(Menu menu, int index)

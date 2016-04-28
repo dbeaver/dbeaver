@@ -29,6 +29,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -47,6 +48,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
+
+    private static final Log log = Log.getLog(OpenSQLEditorHandler.class);
 
     @Nullable
     @Override
@@ -75,7 +78,6 @@ public class OpenSQLEditorHandler extends BaseSQLEditorHandler {
         catch (CoreException e) {
             log.error(e);
         }
-
 
         return null;
     }

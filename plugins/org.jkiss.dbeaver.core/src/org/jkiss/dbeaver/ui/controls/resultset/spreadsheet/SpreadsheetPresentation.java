@@ -111,7 +111,7 @@ import java.util.*;
  */
 public class SpreadsheetPresentation extends AbstractPresentation implements IResultSetEditor, ISelectionProvider, IStatefulControl, IAdaptable  {
 
-    static final Log log = Log.getLog(SpreadsheetPresentation.class);
+    private static final Log log = Log.getLog(SpreadsheetPresentation.class);
 
     private static final String VIEW_PANEL_VISIBLE = "viewPanelVisible";
     private static final String VIEW_PANEL_RATIO = "viewPanelRatio";

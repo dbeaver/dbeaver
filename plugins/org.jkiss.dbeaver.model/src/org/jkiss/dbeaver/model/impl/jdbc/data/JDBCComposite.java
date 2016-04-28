@@ -47,7 +47,7 @@ import java.util.Date;
  */
 public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
 
-    static final Log log = Log.getLog(JDBCComposite.class);
+    private static final Log log = Log.getLog(JDBCComposite.class);
 
     @NotNull
     protected DBSDataType type;

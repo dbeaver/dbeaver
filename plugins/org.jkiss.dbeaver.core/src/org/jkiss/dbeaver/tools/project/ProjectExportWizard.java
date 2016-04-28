@@ -54,7 +54,7 @@ import java.util.zip.ZipOutputStream;
 
 public class ProjectExportWizard extends Wizard implements IExportWizard {
 
-    static final Log log = Log.getLog(ProjectExportWizard.class);
+    private static final Log log = Log.getLog(ProjectExportWizard.class);
 
     public static final int COPY_BUFFER_SIZE = 5000;
     public static final String PROJECT_DESC_FILE = ".project";

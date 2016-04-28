@@ -32,7 +32,7 @@ import java.sql.ResultSet;
  */
 public class PostgreTrigger extends AbstractTrigger implements PostgreScriptObject
 {
-    static final Log log = Log.getLog(PostgreTrigger.class);
+    private static final Log log = Log.getLog(PostgreTrigger.class);
 
     private PostgreTableBase table;
     private String body;

@@ -62,7 +62,7 @@ import java.util.Locale;
  */
 public class ScriptSelectorPanel {
 
-    static final Log log = Log.getLog(ScriptSelectorPanel.class);
+    private static final Log log = Log.getLog(ScriptSelectorPanel.class);
     public static final String CONFIG_BOUNDS_PARAM = "bounds";
 
     private final IWorkbenchWindow workbenchWindow;

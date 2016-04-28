@@ -55,7 +55,7 @@ public class ZestGraphLayout
 {
 
 /*
-    static final Log log = Log.getLog(ZestGraphLayout.class);
+    private static final Log log = Log.getLog(ZestGraphLayout.class);
 
     List<LayoutEntity> entities = new ArrayList<LayoutEntity>();
     List<LayoutRelationship> relationships = new ArrayList<LayoutRelationship>();

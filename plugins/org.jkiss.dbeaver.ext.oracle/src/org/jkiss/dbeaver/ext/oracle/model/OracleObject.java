@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class OracleObject<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject
 {
-    static final Log log = Log.getLog(OracleObject.class);
+    private static final Log log = Log.getLog(OracleObject.class);
 
 
     protected final PARENT parent;

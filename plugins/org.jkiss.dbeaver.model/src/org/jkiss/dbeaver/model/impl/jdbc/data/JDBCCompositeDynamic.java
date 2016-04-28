@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -36,7 +37,8 @@ import java.sql.Struct;
  */
 public class JDBCCompositeDynamic extends JDBCComposite {
 
-    //public static final int MAX_ITEMS_IN_STRING = 100;
+    private static final Log log = Log.getLog(JDBCCompositeDynamic.class);
+        //public static final int MAX_ITEMS_IN_STRING = 100;
 
 
     public JDBCCompositeDynamic(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {

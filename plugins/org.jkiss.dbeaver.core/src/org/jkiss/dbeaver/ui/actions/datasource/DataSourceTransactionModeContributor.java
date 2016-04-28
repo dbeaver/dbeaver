@@ -24,6 +24,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -42,6 +43,8 @@ import java.util.List;
 
 public class DataSourceTransactionModeContributor extends DataSourceMenuContributor
 {
+    private static final Log log = Log.getLog(DataSourceTransactionModeContributor.class);
+
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems)
     {

@@ -36,7 +36,7 @@ import java.util.List;
  */
 public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource> implements DBCExecutionContext
 {
-    static final Log log = Log.getLog(AbstractExecutionContext.class);
+    private static final Log log = Log.getLog(AbstractExecutionContext.class);
 
     @NotNull
     protected final DATASOURCE dataSource;

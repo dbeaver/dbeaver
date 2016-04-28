@@ -60,7 +60,7 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         }
     }
 
-    static final Log log = Log.getLog(PropertyDescriptor.class);
+    private static final Log log = Log.getLog(PropertyDescriptor.class);
 
     public static final String TAG_PROPERTY_GROUP = "propertyGroup"; //NON-NLS-1
     public static final String NAME_UNDEFINED = "<undefined>"; //NON-NLS-1

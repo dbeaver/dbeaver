@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -33,6 +34,8 @@ import java.sql.SQLException;
 public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
 
     public static final JDBCStringValueHandler INSTANCE = new JDBCStringValueHandler();
+
+    private static final Log log = Log.getLog(JDBCStringValueHandler.class);
 
     @Override
     protected Object fetchColumnValue(

@@ -30,7 +30,7 @@ public class ExternalResourceDescriptor extends AbstractDescriptor
 {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resources"; //$NON-NLS-1$
 
-    static final Log log = Log.getLog(ExternalResourceDescriptor.class);
+    private static final Log log = Log.getLog(ExternalResourceDescriptor.class);
     private final String name;
 
     public ExternalResourceDescriptor(IConfigurationElement config)

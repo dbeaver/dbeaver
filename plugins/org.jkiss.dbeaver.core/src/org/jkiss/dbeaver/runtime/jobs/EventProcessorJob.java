@@ -37,7 +37,7 @@ import java.util.Map;
  */
 public abstract class EventProcessorJob extends AbstractJob {
 
-    static final Log log = Log.getLog(EventProcessorJob.class);
+    private static final Log log = Log.getLog(EventProcessorJob.class);
 
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_PORT = "port";

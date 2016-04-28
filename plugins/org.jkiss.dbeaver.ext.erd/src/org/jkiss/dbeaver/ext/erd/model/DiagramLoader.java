@@ -63,7 +63,7 @@ import java.util.*;
  */
 public class DiagramLoader
 {
-    static final Log log = Log.getLog(DiagramLoader.class);
+    private static final Log log = Log.getLog(DiagramLoader.class);
 
     public static final String TAG_DIAGRAM = "diagram";
     public static final String TAG_ENTITIES = "entities";

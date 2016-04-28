@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.Log;
  */
 public class SQLServerUtils {
 
-    static final Log log = Log.getLog(SQLServerUtils.class);
+    private static final Log log = Log.getLog(SQLServerUtils.class);
 
 
 }

@@ -55,7 +55,7 @@ import java.util.Locale;
  */
 public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass
 {
-    static final Log log = Log.getLog(PostgreDataType.class);
+    private static final Log log = Log.getLog(PostgreDataType.class);
 
     private static final String CAT_MAIN = "Main";
     private static final String CAT_MISC = "Miscellaneous";

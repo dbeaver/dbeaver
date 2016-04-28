@@ -46,7 +46,7 @@ import java.util.*;
 */
 public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseConsumerSettings, IDataTransferProcessor> {
 
-    static final Log log = Log.getLog(DatabaseTransferConsumer.class);
+    private static final Log log = Log.getLog(DatabaseTransferConsumer.class);
 
     private DBSDataContainer sourceObject;
     private DBSDataManipulator targetObject;

@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
-    static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
+    private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
     public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
     {

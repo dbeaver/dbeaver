@@ -51,7 +51,7 @@ import java.util.Map;
  */
 public class DatabaseConsumerSettings implements IDataTransferSettings {
 
-    static final Log log = Log.getLog(DatabaseConsumerSettings.class);
+    private static final Log log = Log.getLog(DatabaseConsumerSettings.class);
 
     private String containerNodePath;
     private DBNDatabaseNode containerNode;

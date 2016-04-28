@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class PairListControl<ELEMENT> extends Composite
 {
-    static final Log log = Log.getLog(PairListControl.class);
+    private static final Log log = Log.getLog(PairListControl.class);
 
     public static final int MOVE_LEFT = 0;
     public static final int MOVE_RIGHT = 1;

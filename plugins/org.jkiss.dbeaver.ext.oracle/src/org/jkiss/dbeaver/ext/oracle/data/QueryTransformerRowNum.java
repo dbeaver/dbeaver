@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 */
 public class QueryTransformerRowNum implements DBCQueryTransformer {
 
-    static final Log log = Log.getLog(QueryTransformerRowNum.class);
+    private static final Log log = Log.getLog(QueryTransformerRowNum.class);
 
     private Number offset;
     private Number length;

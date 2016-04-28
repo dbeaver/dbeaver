@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.runtime.jobs;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,6 +35,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class ConnectJob extends EventProcessorJob
 {
+    private static final Log log = Log.getLog(ConnectJob.class);
+
     private volatile Thread connectThread;
     protected boolean initialize = true;
     protected boolean reflect = true;

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
  */
 class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
 
-    static final Log log = Log.getLog(WorkbenchContextListener.class);
+    private static final Log log = Log.getLog(WorkbenchContextListener.class);
 
     public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
     public static final String SQL_EDITOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql";

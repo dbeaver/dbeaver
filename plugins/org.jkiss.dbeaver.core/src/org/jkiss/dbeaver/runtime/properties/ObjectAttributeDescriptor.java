@@ -37,6 +37,7 @@ import java.util.*;
 public abstract class ObjectAttributeDescriptor {
 
     static final Log log = Log.getLog(ObjectAttributeDescriptor.class);
+
     public static final Comparator<ObjectAttributeDescriptor> ATTRIBUTE_DESCRIPTOR_COMPARATOR = new Comparator<ObjectAttributeDescriptor>() {
         @Override
         public int compare(ObjectAttributeDescriptor o1, ObjectAttributeDescriptor o2) {

@@ -50,7 +50,7 @@ import java.util.List;
  */
 class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage
 {
-    static final Log log = Log.getLog(DriverDescriptor.class);
+    private static final Log log = Log.getLog(DriverDescriptor.class);
 
     @NotNull
     private final ConnectionWizard wizard;

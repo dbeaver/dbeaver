@@ -35,7 +35,7 @@ public enum OracleDDLFormat {
     private final boolean showSegments;
     private final boolean showTablespace;
 
-    static final Log log = org.jkiss.dbeaver.Log.getLog(OracleDDLFormat.class);
+    private static final Log log = org.jkiss.dbeaver.Log.getLog(OracleDDLFormat.class);
 
     private OracleDDLFormat(String title, boolean showStorage, boolean showSegments, boolean showTablespace)
     {

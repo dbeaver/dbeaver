@@ -44,7 +44,7 @@ import java.util.Arrays;
  */
 public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentStorage, DBDContentCached {
 
-    static final Log log = Log.getLog(JDBCContentBytes.class);
+    private static final Log log = Log.getLog(JDBCContentBytes.class);
 
     private byte[] originalData;
     private byte[] data;

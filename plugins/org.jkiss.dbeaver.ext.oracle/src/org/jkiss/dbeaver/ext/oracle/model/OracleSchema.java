@@ -52,7 +52,7 @@ import java.util.*;
  */
 public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer
 {
-    static final Log log = Log.getLog(OracleSchema.class);
+    private static final Log log = Log.getLog(OracleSchema.class);
 
     final public TableCache tableCache = new TableCache();
     final public MViewCache mviewCache = new MViewCache();

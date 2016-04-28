@@ -42,7 +42,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public class PrefPageResources extends PreferencePage implements IWorkbenchPreferencePage
 {
-    static final Log log = Log.getLog(PrefPageResources.class);
+    private static final Log log = Log.getLog(PrefPageResources.class);
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.resources"; //$NON-NLS-1$
 

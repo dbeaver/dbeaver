@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class DataFormatterDescriptor extends AbstractDescriptor
 {
-    static final Log log = Log.getLog(DataFormatterDescriptor.class);
+    private static final Log log = Log.getLog(DataFormatterDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataFormatter"; //$NON-NLS-1$
 

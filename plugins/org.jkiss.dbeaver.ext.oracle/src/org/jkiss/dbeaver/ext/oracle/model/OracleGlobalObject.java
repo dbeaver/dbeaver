@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public abstract class OracleGlobalObject implements DBSObject, DBPSaveableObject
 {
-    static final Log log = Log.getLog(OracleGlobalObject.class);
+    private static final Log log = Log.getLog(OracleGlobalObject.class);
 
     private final OracleDataSource dataSource;
     private boolean persisted;

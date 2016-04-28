@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
  */
 public abstract class AbstractJob extends Job
 {
-    static final Log log = Log.getLog(AbstractJob.class);
+    private static final Log log = Log.getLog(AbstractJob.class);
 
     public static final int TIMEOUT_BEFORE_BLOCK_CANCEL = 400;
 

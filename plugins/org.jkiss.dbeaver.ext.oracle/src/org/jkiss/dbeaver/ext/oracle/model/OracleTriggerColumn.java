@@ -33,7 +33,7 @@ import java.sql.ResultSet;
  */
 public class OracleTriggerColumn extends AbstractTriggerColumn
 {
-    static final Log log = Log.getLog(OracleTriggerColumn.class);
+    private static final Log log = Log.getLog(OracleTriggerColumn.class);
 
     private OracleTrigger trigger;
     private String name;

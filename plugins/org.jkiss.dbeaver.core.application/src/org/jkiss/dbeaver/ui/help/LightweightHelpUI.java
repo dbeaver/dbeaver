@@ -39,7 +39,7 @@ import java.util.Enumeration;
  */
 public class LightweightHelpUI extends AbstractHelpUI {
 
-    static final Log log = Log.getLog(LightweightHelpUI.class);
+    private static final Log log = Log.getLog(LightweightHelpUI.class);
 
     private boolean useHelpView = true;
 

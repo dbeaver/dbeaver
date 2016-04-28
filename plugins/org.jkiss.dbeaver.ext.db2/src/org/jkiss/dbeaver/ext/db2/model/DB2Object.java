@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Abstract DB2 object
  */
 public abstract class DB2Object<PARENT extends DBSObject> implements DBSObject, DBPSaveableObject {
-    static final Log log = Log.getLog(DB2Object.class);
+    private static final Log log = Log.getLog(DB2Object.class);
 
     protected final PARENT parent;
     protected String name;

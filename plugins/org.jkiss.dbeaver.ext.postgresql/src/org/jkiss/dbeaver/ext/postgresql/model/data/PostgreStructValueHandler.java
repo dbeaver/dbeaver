@@ -46,7 +46,7 @@ import java.util.Iterator;
  * PostgreArrayValueHandler
  */
 public class PostgreStructValueHandler extends JDBCStructValueHandler {
-    static final Log log = Log.getLog(PostgreStructValueHandler.class);
+    private static final Log log = Log.getLog(PostgreStructValueHandler.class);
     public static final PostgreStructValueHandler INSTANCE = new PostgreStructValueHandler();
 
     @Override

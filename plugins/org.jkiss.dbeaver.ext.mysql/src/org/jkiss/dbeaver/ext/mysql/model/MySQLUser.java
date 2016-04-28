@@ -47,7 +47,7 @@ import java.util.regex.Matcher;
  */
 public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObject
 {
-    static final Log log = Log.getLog(MySQLUser.class);
+    private static final Log log = Log.getLog(MySQLUser.class);
 
     private MySQLDataSource dataSource;
     private String userName;

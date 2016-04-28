@@ -38,7 +38,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
  */
 public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
 
-    static final Log log = Log.getLog(DatabaseTransferProducer.class);
+    private static final Log log = Log.getLog(DatabaseTransferProducer.class);
 
     @NotNull
     private DBSDataContainer dataContainer;

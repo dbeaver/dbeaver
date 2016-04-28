@@ -64,7 +64,7 @@ import java.util.regex.Pattern;
  */
 public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
 {
-    static final Log log = Log.getLog(MySQLDataSource.class);
+    private static final Log log = Log.getLog(MySQLDataSource.class);
 
     private final JDBCBasicDataTypeCache dataTypeCache;
     private List<MySQLEngine> engines;

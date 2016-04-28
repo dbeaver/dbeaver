@@ -41,7 +41,7 @@ import java.util.*;
  * Maven artifact version descriptor (POM).
  */
 public class MavenArtifactVersion implements IMavenIdentifier {
-    static final Log log = Log.getLog(MavenArtifactVersion.class);
+    private static final Log log = Log.getLog(MavenArtifactVersion.class);
 
     public static final String PROP_PROJECT_VERSION = "project.version";
     public static final String PROP_PROJECT_GROUP_ID = "project.groupId";

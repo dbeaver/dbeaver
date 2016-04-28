@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
-    static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
+    private static final Log log = Log.getLog(SQLAutoIndentStrategy.class);
     private static final int MINIMUM_SOUCE_CODE_LENGTH = 10;
 
     private String partitioning;

@@ -33,7 +33,7 @@ import java.util.List;
  * PostgreTableConstraintBase
  */
 public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject {
-    static final Log log = Log.getLog(PostgreTableConstraintBase.class);
+    private static final Log log = Log.getLog(PostgreTableConstraintBase.class);
 
     private long oid;
 

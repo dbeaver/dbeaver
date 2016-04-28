@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
@@ -44,6 +45,8 @@ import java.util.Map;
  * Stores information about execution in query manager and operated progress monitor.
  */
 public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStatement> implements JDBCPreparedStatement {
+
+    private static final Log log = Log.getLog(JDBCPreparedStatementImpl.class);
 
     private static final Object NULL_VALUE = new Object();
 

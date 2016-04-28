@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public class MySQLParameter implements DBSObject
 {
-    static final Log log = Log.getLog(MySQLParameter.class);
+    private static final Log log = Log.getLog(MySQLParameter.class);
 
     private final MySQLDataSource dataSource;
     private final String name;

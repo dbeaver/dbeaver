@@ -71,7 +71,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     @Deprecated
     public static final String DEFAULT_ACTIVE_OBJECT = "default.activeObject"; //$NON-NLS-1$
 
-    static final Log log = Log.getLog(DataSourceRegistry.class);
+    private static final Log log = Log.getLog(DataSourceRegistry.class);
 
     public static final String OLD_CONFIG_FILE_NAME = "data-sources.xml"; //$NON-NLS-1$
 

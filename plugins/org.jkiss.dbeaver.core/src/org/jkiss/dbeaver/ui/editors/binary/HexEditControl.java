@@ -50,7 +50,7 @@ import java.util.List;
  */
 public class HexEditControl extends Composite {
 
-    static final Log log = Log.getLog(HexEditControl.class);
+    private static final Log log = Log.getLog(HexEditControl.class);
 
     public static final String DEFAULT_FONT_NAME = "Courier New"; //$NON-NLS-1$"
     public static final FontData DEFAULT_FONT_DATA = new FontData(DEFAULT_FONT_NAME, 10, SWT.NORMAL);

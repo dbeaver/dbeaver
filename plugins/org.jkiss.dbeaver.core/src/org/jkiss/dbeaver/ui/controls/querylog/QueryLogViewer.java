@@ -75,7 +75,7 @@ import java.util.Locale;
  */
 public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPreferenceListener {
 
-    static final Log log = Log.getLog(QueryLogViewer.class);
+    private static final Log log = Log.getLog(QueryLogViewer.class);
 
     private static final String QUERY_LOG_CONTROL_ID = "org.jkiss.dbeaver.ui.qm.log"; //$NON-NLS-1$
     private static final String VIEWER_ID = "DBeaver.QM.LoigViewer";

@@ -31,7 +31,7 @@ import java.util.*;
  */
 public class DriverDependencies implements DBPDriverDependencies
 {
-    static final Log log = Log.getLog(DriverDependencies.class);
+    private static final Log log = Log.getLog(DriverDependencies.class);
 
     final List<DBPDriverLibrary> rootLibraries;
     final List<DependencyNode> rootNodes = new ArrayList<>();

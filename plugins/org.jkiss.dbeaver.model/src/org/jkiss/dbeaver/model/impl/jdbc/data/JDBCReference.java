@@ -34,7 +34,7 @@ import java.sql.SQLException;
  */
 public class JDBCReference implements DBDReference {
 
-    static final Log log = Log.getLog(JDBCReference.class);
+    private static final Log log = Log.getLog(JDBCReference.class);
 
     private DBSDataType type;
     private Ref value;

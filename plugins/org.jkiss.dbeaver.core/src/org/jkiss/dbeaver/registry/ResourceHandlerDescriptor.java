@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class ResourceHandlerDescriptor extends AbstractDescriptor
 {
-    static final Log log = Log.getLog(ResourceHandlerDescriptor.class);
+    private static final Log log = Log.getLog(ResourceHandlerDescriptor.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 

@@ -32,7 +32,7 @@ import java.net.*;
  * WebUtils
  */
 public class WebUtils {
-    static final Log log = Log.getLog(WebUtils.class);
+    private static final Log log = Log.getLog(WebUtils.class);
 
 
     public static InputStream openConnectionStream(String urlString) throws IOException {

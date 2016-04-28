@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,6 +32,8 @@ import java.util.*;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
+    private static final Log log = Log.getLog(DBNProjectDatabases.class);
+
     private List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBNNode[] children;

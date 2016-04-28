@@ -42,7 +42,7 @@ import java.util.List;
  */
 public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
 
-    static final Log log = Log.getLog(QMLogFileWriter.class);
+    private static final Log log = Log.getLog(QMLogFileWriter.class);
 
     private File logFile;
     private boolean enabled;

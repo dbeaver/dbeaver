@@ -54,7 +54,7 @@ import java.util.zip.ZipFile;
 
 public class ProjectImportWizard extends Wizard implements IImportWizard {
 
-    static final Log log = Log.getLog(ProjectImportWizard.class);
+    private static final Log log = Log.getLog(ProjectImportWizard.class);
 
     private ProjectImportData data = new ProjectImportData();
 

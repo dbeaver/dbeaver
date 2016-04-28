@@ -43,7 +43,7 @@ import java.util.Set;
  */
 public class ClientHomesSelector extends Composite
 {
-    static final Log log = Log.getLog(ClientHomesSelector.class);
+    private static final Log log = Log.getLog(ClientHomesSelector.class);
 
     private Combo homesCombo;
     //private Label versionLabel;

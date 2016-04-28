@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class OracleUserProfile extends OracleGlobalObject
 {
-    static final Log log = Log.getLog(OracleUserProfile.class);
+    private static final Log log = Log.getLog(OracleUserProfile.class);
 
     private String name;
     private List<ProfileResource> resources;
@@ -75,7 +75,7 @@ public class OracleUserProfile extends OracleGlobalObject
      */
     public static class ProfileResource extends OracleObject<OracleUserProfile>
     {
-        static final Log log = Log.getLog(ProfileResource.class);
+        private static final Log log = Log.getLog(ProfileResource.class);
 
         private String type;
         private String limit;

@@ -58,7 +58,7 @@ import java.util.List;
  */
 public class DBeaverUI implements DBUICallback {
 
-    static final Log log = Log.getLog(DBeaverUI.class);
+    private static final Log log = Log.getLog(DBeaverUI.class);
 
     private static DBeaverUI instance;
 

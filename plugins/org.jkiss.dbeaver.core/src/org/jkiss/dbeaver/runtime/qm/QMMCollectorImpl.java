@@ -38,7 +38,7 @@ import java.util.*;
  */
 public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMCollector {
 
-    static final Log log = Log.getLog(QMMCollectorImpl.class);
+    private static final Log log = Log.getLog(QMMCollectorImpl.class);
 
     private static final long EVENT_DISPATCH_PERIOD = 250;
     private static final int MAX_HISTORY_EVENTS = 1000;

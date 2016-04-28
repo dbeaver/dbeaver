@@ -49,7 +49,7 @@ import org.jkiss.utils.CommonUtils;
  */
 abstract class ViewValuePanel extends Composite {
 
-    static final Log log = Log.getLog(ViewValuePanel.class);
+    private static final Log log = Log.getLog(ViewValuePanel.class);
     public static final String CMD_SAVE_VALUE = "org.jkiss.dbeaver.core.resultset.cell.save";
 
     private final IResultSetController resultSet;

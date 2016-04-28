@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class DataTypeProviderRegistry implements DBDRegistry
 {
-    static final Log log = Log.getLog(DataTypeProviderRegistry.class);
+    private static final Log log = Log.getLog(DataTypeProviderRegistry.class);
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTypeProvider"; //$NON-NLS-1$
 

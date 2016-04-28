@@ -36,7 +36,7 @@ import java.util.Map;
  */
 public class GlobalProxySelector extends ProxySelector {
 
-    static final Log log = Log.getLog(GlobalProxySelector.class);
+    private static final Log log = Log.getLog(GlobalProxySelector.class);
 
     private final ProxySelector parent;
 

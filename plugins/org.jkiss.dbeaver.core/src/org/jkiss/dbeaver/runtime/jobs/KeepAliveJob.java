@@ -42,7 +42,7 @@ public class KeepAliveJob extends AbstractJob
 {
     public static final int MONITOR_INTERVAL = 5000; // once per 5 seconds
 
-    static final Log log = Log.getLog(KeepAliveJob.class);
+    private static final Log log = Log.getLog(KeepAliveJob.class);
 
     private Map<String, Long> checkCache = new HashMap<>();
     private final Set<String> pingCache = new HashSet<>();

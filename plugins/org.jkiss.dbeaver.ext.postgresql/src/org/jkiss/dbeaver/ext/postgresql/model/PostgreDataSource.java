@@ -63,7 +63,7 @@ import java.util.regex.Pattern;
 public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelector, DBSInstanceContainer, DBCQueryPlanner, IAdaptable
 {
 
-    static final Log log = Log.getLog(PostgreDataSource.class);
+    private static final Log log = Log.getLog(PostgreDataSource.class);
 
     private final DatabaseCache databaseCache = new DatabaseCache();
     private String activeDatabaseName;

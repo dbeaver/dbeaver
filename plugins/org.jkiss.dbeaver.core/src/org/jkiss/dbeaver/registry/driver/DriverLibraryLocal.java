@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -37,6 +38,7 @@ import java.util.Collection;
  */
 public class DriverLibraryLocal extends DriverLibraryAbstract
 {
+    private static final Log log = Log.getLog(DriverLibraryLocal.class);
 
     public DriverLibraryLocal(DriverDescriptor driver, FileType type, String path) {
         super(driver, type, path);

@@ -32,7 +32,7 @@ import java.util.Arrays;
  */
 public class StringContentStorage implements DBDContentStorage, DBDContentCached {
 
-    static final Log log = Log.getLog(StringContentStorage.class);
+    private static final Log log = Log.getLog(StringContentStorage.class);
 
     private String data;
 

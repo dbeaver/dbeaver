@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -43,6 +44,7 @@ import java.util.Collection;
  */
 public abstract class OracleTablePhysical extends OracleTableBase implements DBSObjectLazy<OracleDataSource>
 {
+    private static final Log log = Log.getLog(OracleTablePhysical.class);
 
     //private boolean valid;
     private long rowCount;

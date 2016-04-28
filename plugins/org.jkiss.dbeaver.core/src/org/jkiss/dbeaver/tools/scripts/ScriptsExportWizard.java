@@ -45,7 +45,7 @@ import java.util.List;
 
 public class ScriptsExportWizard extends Wizard implements IExportWizard {
 
-    static final Log log = Log.getLog(ScriptsExportWizard.class);
+    private static final Log log = Log.getLog(ScriptsExportWizard.class);
 
     private ScriptsExportWizardPage mainPage;
 

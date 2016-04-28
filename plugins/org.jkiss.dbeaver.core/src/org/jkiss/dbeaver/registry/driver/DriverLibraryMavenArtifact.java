@@ -40,7 +40,7 @@ import java.util.List;
  */
 public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 {
-    static final Log log = Log.getLog(DriverLibraryMavenArtifact.class);
+    private static final Log log = Log.getLog(DriverLibraryMavenArtifact.class);
 
     public static final String PATH_PREFIX = "maven:/";
 

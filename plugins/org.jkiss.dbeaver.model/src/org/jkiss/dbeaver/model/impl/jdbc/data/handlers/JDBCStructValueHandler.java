@@ -48,7 +48,7 @@ import java.sql.Types;
  */
 public class JDBCStructValueHandler extends JDBCComplexValueHandler implements DBDValueHandlerComposite {
 
-    static final Log log = Log.getLog(JDBCStructValueHandler.class);
+    private static final Log log = Log.getLog(JDBCStructValueHandler.class);
 
     public static final JDBCStructValueHandler INSTANCE = new JDBCStructValueHandler();
 

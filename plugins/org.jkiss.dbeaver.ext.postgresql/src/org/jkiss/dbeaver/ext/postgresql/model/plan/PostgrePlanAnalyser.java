@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class PostgrePlanAnalyser implements DBCPlan {
 
-    static final Log log = Log.getLog(PostgrePlanAnalyser.class);
+    private static final Log log = Log.getLog(PostgrePlanAnalyser.class);
 
     private String query;
     private List<DBCPlanNode> rootNodes;

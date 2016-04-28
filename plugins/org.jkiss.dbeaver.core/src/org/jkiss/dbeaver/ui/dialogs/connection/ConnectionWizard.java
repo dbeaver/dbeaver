@@ -60,7 +60,7 @@ import java.util.Map;
  */
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard {
-    static final Log log = Log.getLog(ConnectionWizard.class);
+    private static final Log log = Log.getLog(ConnectionWizard.class);
 
     // protected final IProject project;
     protected final DBPDataSourceRegistry dataSourceRegistry;

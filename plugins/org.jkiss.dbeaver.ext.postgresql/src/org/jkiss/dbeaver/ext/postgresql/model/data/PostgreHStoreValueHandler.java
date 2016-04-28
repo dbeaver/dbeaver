@@ -32,7 +32,7 @@ import java.sql.Types;
  * PostgreHStoreValueHandler
  */
 public class PostgreHStoreValueHandler extends JDBCStringValueHandler {
-    static final Log log = Log.getLog(PostgreHStoreValueHandler.class);
+    private static final Log log = Log.getLog(PostgreHStoreValueHandler.class);
     public static final PostgreHStoreValueHandler INSTANCE = new PostgreHStoreValueHandler();
 
     @Override

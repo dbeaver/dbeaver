@@ -49,7 +49,7 @@ import java.sql.SQLFeatureNotSupportedException;
  */
 public class JDBCContentCLOB extends JDBCContentLOB implements DBDContent {
 
-    static final Log log = Log.getLog(JDBCContentCLOB.class);
+    private static final Log log = Log.getLog(JDBCContentCLOB.class);
 
     private Clob clob;
     private Reader tmpReader;

@@ -34,7 +34,7 @@ import java.util.Map;
  */
 class ResultSetDataReceiver implements DBDDataReceiver {
 
-    static final Log log = Log.getLog(ResultSetDataReceiver.class);
+    private static final Log log = Log.getLog(ResultSetDataReceiver.class);
 
     private ResultSetViewer resultSetViewer;
     private int columnsCount;

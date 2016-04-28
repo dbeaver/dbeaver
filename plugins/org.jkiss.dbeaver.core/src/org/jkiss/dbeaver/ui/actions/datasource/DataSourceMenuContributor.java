@@ -29,7 +29,7 @@ import java.util.List;
 
 public abstract class DataSourceMenuContributor extends CompoundContributionItem
 {
-    static final Log log = Log.getLog(DataSourceMenuContributor.class);
+    private static final Log log = Log.getLog(DataSourceMenuContributor.class);
 
     @Override
     protected IContributionItem[] getContributionItems()

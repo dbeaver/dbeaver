@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public class PingJob extends AbstractJob
 {
-    static final Log log = Log.getLog(PingJob.class);
+    private static final Log log = Log.getLog(PingJob.class);
 
     private final DBPDataSource dataSource;
 

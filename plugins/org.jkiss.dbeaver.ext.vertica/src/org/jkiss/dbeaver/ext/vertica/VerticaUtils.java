@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.Log;
  */
 public class VerticaUtils {
 
-    static final Log log = Log.getLog(VerticaUtils.class);
+    private static final Log log = Log.getLog(VerticaUtils.class);
 
 
 }

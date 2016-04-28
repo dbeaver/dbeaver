@@ -42,7 +42,7 @@ import java.util.*;
 
 public class NavigatorHandlerRefresh extends AbstractHandler {
 
-    static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
+    private static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
 
     public static final Object FORCE_REFRESH = new Object();
 

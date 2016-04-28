@@ -41,7 +41,7 @@ import java.util.List;
  */
 public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCStatement {
 
-    static final Log log = Log.getLog(JDBCStatementImpl.class);
+    private static final Log log = Log.getLog(JDBCStatementImpl.class);
 
     protected final JDBCSession connection;
     protected final STATEMENT original;

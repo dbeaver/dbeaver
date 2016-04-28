@@ -49,7 +49,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     extends AbstractTableConstraint<TABLE>
     implements DBSConstraintEnumerable, DBPSaveableObject
 {
-    static final Log log = Log.getLog(JDBCTableConstraint.class);
+    private static final Log log = Log.getLog(JDBCTableConstraint.class);
 
     private boolean persisted;
 

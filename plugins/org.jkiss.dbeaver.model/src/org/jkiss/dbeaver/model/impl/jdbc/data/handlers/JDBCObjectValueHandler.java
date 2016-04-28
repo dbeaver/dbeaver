@@ -42,7 +42,7 @@ import java.sql.SQLException;
  */
 public class JDBCObjectValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = Log.getLog(JDBCObjectValueHandler.class);
+    private static final Log log = Log.getLog(JDBCObjectValueHandler.class);
 
     public static final JDBCObjectValueHandler INSTANCE = new JDBCObjectValueHandler();
 

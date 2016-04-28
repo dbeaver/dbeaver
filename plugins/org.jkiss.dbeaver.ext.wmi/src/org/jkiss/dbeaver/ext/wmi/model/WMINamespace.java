@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -38,6 +39,8 @@ import java.util.List;
  * WMI Namespace
  */
 public class WMINamespace extends WMIContainer implements DBSObjectContainer, DBPCloseableObject {
+
+    private static final Log log = Log.getLog(WMINamespace.class);
 
     protected WMIDataSource dataSource;
     private String name;

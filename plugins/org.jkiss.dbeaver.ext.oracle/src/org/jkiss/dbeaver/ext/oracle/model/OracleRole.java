@@ -30,7 +30,7 @@ import java.sql.ResultSet;
  */
 public class OracleRole extends OracleGrantee implements DBARole
 {
-    static final Log log = Log.getLog(OracleRole.class);
+    private static final Log log = Log.getLog(OracleRole.class);
 
     private String name;
     private String authentication;

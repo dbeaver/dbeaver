@@ -25,7 +25,7 @@ import org.eclipse.swt.custom.StyleRange;
 
 public class NonRuleBasedDamagerRepairer implements IPresentationDamager, IPresentationRepairer {
 
-    static final Log log = Log.getLog(NonRuleBasedDamagerRepairer.class);
+    private static final Log log = Log.getLog(NonRuleBasedDamagerRepairer.class);
 
 	/** The document this object works on */
 	protected IDocument fDocument;

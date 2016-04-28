@@ -46,7 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 */
 public class XMLPanelEditor extends ContentPanelEditor {
 
-    static final Log log = Log.getLog(XMLPanelEditor.class);
+    private static final Log log = Log.getLog(XMLPanelEditor.class);
     private final IEditorSite subSite;
     private XMLEditor editor;
 

@@ -68,7 +68,7 @@ public class DataSourceDescriptor
         DBPStatefulObject,
         DBPRefreshableObject
 {
-    static final Log log = Log.getLog(DataSourceDescriptor.class);
+    private static final Log log = Log.getLog(DataSourceDescriptor.class);
 
     public static class FilterMapping {
         public final String typeName;

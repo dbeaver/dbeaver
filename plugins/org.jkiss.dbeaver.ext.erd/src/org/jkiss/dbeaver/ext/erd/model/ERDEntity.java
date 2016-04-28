@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -40,7 +41,9 @@ import java.util.*;
  */
 public class ERDEntity extends ERDObject<DBSEntity>
 {
-	private List<ERDEntityAttribute> columns;
+    private static final Log log = Log.getLog(ERDEntity.class);
+
+    private List<ERDEntityAttribute> columns;
 
 	private List<ERDAssociation> primaryKeyRelationships;
 	private List<ERDAssociation> foreignKeyRelationships;

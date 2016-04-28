@@ -43,7 +43,7 @@ import java.util.Map;
  */
 public class ERDExportGraphML
 {
-    static final Log log = Log.getLog(ERDExportGraphML.class);
+    private static final Log log = Log.getLog(ERDExportGraphML.class);
 
     private final EntityDiagram diagram;
     private final DiagramPart diagramPart;

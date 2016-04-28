@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
  */
 public class BaseBrowserView extends ViewPart {
 
-    static final Log log = Log.getLog(BaseBrowserView.class);
+    private static final Log log = Log.getLog(BaseBrowserView.class);
 
     public static final String MEMENTO_URL = "url"; //$NON-NLS-1$
 

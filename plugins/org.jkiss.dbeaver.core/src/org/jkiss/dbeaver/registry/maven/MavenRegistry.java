@@ -32,7 +32,7 @@ import java.util.*;
 
 public class MavenRegistry
 {
-    static final Log log = Log.getLog(MavenRegistry.class);
+    private static final Log log = Log.getLog(MavenRegistry.class);
 
     public static final String MAVEN_LOCAL_REPO_ID = "local";
     public static final String MAVEN_LOCAL_REPO_NAME = "Local Repository";

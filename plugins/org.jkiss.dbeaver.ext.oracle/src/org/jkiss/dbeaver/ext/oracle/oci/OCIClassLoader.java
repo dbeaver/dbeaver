@@ -27,7 +27,7 @@ import java.io.FilenameFilter;
  */
 public class OCIClassLoader extends ClassLoader
 {
-    static final Log log = Log.getLog(OCIClassLoader.class);
+    private static final Log log = Log.getLog(OCIClassLoader.class);
 
     //private OracleHomeDescriptor oracleHomeDescriptor;
     private File[] oraHomeLibraries;

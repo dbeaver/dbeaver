@@ -54,7 +54,7 @@ import java.util.Set;
 
 class ScriptsExportWizardPage extends WizardPage {
 
-    static final Log log = Log.getLog(ScriptsExportWizardPage.class);
+    private static final Log log = Log.getLog(ScriptsExportWizardPage.class);
 
     static final String PREF_SCRIPTS_EXPORT_OUT_DIR = "export.scripts.out.dir"; //$NON-NLS-1$
 

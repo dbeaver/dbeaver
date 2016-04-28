@@ -44,7 +44,7 @@ import java.sql.*;
  */
 public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
 
-    static final Log log = Log.getLog(JDBCContentValueHandler.class);
+    private static final Log log = Log.getLog(JDBCContentValueHandler.class);
 
     public static final JDBCContentValueHandler INSTANCE = new JDBCContentValueHandler();
 

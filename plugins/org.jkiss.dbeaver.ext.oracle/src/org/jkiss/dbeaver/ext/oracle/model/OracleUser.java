@@ -38,7 +38,7 @@ import java.util.Collection;
  */
 public class OracleUser extends OracleGrantee implements DBAUser, DBSObjectLazy<OracleDataSource>
 {
-    static final Log log = Log.getLog(OracleUser.class);
+    private static final Log log = Log.getLog(OracleUser.class);
 
     private long id;
     private String name;

@@ -51,7 +51,7 @@ import org.jkiss.utils.CommonUtils;
  */
 public abstract class ValueViewDialog extends Dialog implements IValueEditorStandalone {
 
-    static final Log log = Log.getLog(ValueViewDialog.class);
+    private static final Log log = Log.getLog(ValueViewDialog.class);
 
     private static int dialogCount = 0;
     public static final String SETTINGS_SECTION_DI = "ValueViewDialog";

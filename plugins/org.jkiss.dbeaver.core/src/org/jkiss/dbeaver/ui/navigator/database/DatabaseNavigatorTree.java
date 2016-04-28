@@ -54,7 +54,7 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DatabaseNavigatorTree extends Composite implements INavigatorListener
 {
-    static final Log log = Log.getLog(DatabaseNavigatorTree.class);
+    private static final Log log = Log.getLog(DatabaseNavigatorTree.class);
 
     private TreeViewer treeViewer;
     private DBNModel model;

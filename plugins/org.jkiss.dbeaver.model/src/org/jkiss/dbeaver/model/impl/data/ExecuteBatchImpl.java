@@ -40,7 +40,7 @@ import java.util.List;
 */
 public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatch {
 
-    static final Log log = Log.getLog(ExecuteBatchImpl.class);
+    private static final Log log = Log.getLog(ExecuteBatchImpl.class);
 
     protected final DBSAttributeBase[] attributes;
     protected final List<Object[]> values = new ArrayList<>();

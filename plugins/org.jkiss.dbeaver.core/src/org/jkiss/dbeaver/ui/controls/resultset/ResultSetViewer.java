@@ -106,7 +106,7 @@ import java.util.List;
 public class ResultSetViewer extends Viewer
     implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
-    static final Log log = Log.getLog(ResultSetViewer.class);
+    private static final Log log = Log.getLog(ResultSetViewer.class);
 
     @NotNull
     private static IResultSetFilterManager filterManager = new SimpleFilterManager();

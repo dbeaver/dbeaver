@@ -41,7 +41,7 @@ import java.util.*;
  */
 public class JDBCCompositeStatic extends JDBCComposite {
 
-    static final Log log = Log.getLog(JDBCCompositeStatic.class);
+    private static final Log log = Log.getLog(JDBCCompositeStatic.class);
 
     public JDBCCompositeStatic(@NotNull JDBCComposite struct, @NotNull DBRProgressMonitor monitor) throws DBCException {
         super(struct, monitor);

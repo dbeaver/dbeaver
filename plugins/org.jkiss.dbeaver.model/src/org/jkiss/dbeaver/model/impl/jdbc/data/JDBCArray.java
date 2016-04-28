@@ -50,7 +50,7 @@ import java.util.List;
  */
 public class JDBCArray implements DBDCollection, DBDValueCloneable {
 
-    static final Log log = Log.getLog(JDBCArray.class);
+    private static final Log log = Log.getLog(JDBCArray.class);
 
     private Object[] contents;
     private final DBSDataType type;

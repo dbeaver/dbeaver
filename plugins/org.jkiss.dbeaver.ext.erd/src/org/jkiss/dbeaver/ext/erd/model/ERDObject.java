@@ -44,7 +44,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 {
-    static final Log log = Log.getLog(ERDObject.class);
+    private static final Log log = Log.getLog(ERDObject.class);
 
 	public static final String CHILD = "CHILD";
 	public static final String REORDER = "REORDER";

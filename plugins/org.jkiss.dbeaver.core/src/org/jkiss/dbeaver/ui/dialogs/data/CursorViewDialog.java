@@ -26,6 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -43,9 +44,11 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
 /**
- * TextViewDialog
+ * CursorViewDialog
  */
 public class CursorViewDialog extends ValueViewDialog implements IResultSetContainer {
+
+    private static final Log log = Log.getLog(CursorViewDialog.class);
 
     private DBDCursor value;
     private ResultSetViewer resultSetViewer;

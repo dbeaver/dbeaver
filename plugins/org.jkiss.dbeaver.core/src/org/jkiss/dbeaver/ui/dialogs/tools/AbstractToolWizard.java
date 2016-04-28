@@ -49,7 +49,7 @@ import java.util.List;
 public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_ARG>
         extends Wizard implements DBRRunnableWithProgress {
 
-    static final Log log = Log.getLog(AbstractToolWizard.class);
+    private static final Log log = Log.getLog(AbstractToolWizard.class);
 
     private final List<BASE_OBJECT> databaseObjects;
     private DBPClientHome clientHome;

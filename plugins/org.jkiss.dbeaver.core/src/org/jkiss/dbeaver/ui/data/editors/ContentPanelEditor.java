@@ -55,7 +55,7 @@ import java.nio.ByteBuffer;
 */
 public class ContentPanelEditor extends BaseValueEditor<Control> implements IValueEditorStandalone {
 
-    static final Log log = Log.getLog(ContentPanelEditor.class);
+    private static final Log log = Log.getLog(ContentPanelEditor.class);
 
     public ContentPanelEditor(IValueController controller) {
         super(controller);

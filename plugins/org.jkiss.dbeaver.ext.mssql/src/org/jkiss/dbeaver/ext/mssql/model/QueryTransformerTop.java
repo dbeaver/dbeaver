@@ -33,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 */
 public class QueryTransformerTop implements DBCQueryTransformer {
 
-    static final Log log = Log.getLog(QueryTransformerTop.class);
+    private static final Log log = Log.getLog(QueryTransformerTop.class);
 
     private Number offset;
     private Number length;

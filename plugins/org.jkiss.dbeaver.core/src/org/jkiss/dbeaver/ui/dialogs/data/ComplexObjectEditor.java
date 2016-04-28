@@ -57,7 +57,7 @@ import java.lang.reflect.InvocationTargetException;
  */
 public class ComplexObjectEditor extends TreeViewer {
 
-    static final Log log = Log.getLog(ComplexObjectEditor.class);
+    private static final Log log = Log.getLog(ComplexObjectEditor.class);
 
     private IWorkbenchPartSite partSite;
     private DBCExecutionContext executionContext;

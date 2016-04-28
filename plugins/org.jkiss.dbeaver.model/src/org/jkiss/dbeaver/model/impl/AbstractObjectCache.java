@@ -35,7 +35,7 @@ import java.util.*;
  */
 public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extends DBSObject> implements DBSObjectCache<OWNER, OBJECT>
 {
-    static final Log log = Log.getLog(AbstractObjectCache.class);
+    private static final Log log = Log.getLog(AbstractObjectCache.class);
 
     private List<OBJECT> objectList;
     private Map<String, OBJECT> objectMap;

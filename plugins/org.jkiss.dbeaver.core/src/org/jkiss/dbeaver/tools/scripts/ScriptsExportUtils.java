@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.resources.ResourceUtils;
  */
 class ScriptsExportUtils {
 
-    static final Log log = Log.getLog(ScriptsExportUtils.class);
+    private static final Log log = Log.getLog(ScriptsExportUtils.class);
 
     static DBNNode getScriptsNode()
     {

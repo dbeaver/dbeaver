@@ -47,7 +47,7 @@ import java.util.Map;
  * @author Serge Rieder
  */
 public class DirectedGraphLayoutVisitor {
-    static final Log log = Log.getLog(DirectedGraphLayoutVisitor.class);
+    private static final Log log = Log.getLog(DirectedGraphLayoutVisitor.class);
 
     Map<EditPart, Object> partToNodesMap;
     DirectedGraph graph;

@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ui.data.IValueManager;
  */
 public abstract class BaseValueManager implements IValueManager {
 
-    static final Log log = Log.getLog(BaseValueManager.class);
+    private static final Log log = Log.getLog(BaseValueManager.class);
 
     @Nullable
     public static Object makeNullValue(@NotNull final IValueController valueController)

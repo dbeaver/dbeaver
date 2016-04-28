@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class DefaultProgressMonitor implements DBRProgressMonitor {
 
-    static final Log log = Log.getLog(DefaultProgressMonitor.class);
+    private static final Log log = Log.getLog(DefaultProgressMonitor.class);
 
     private IProgressMonitor nestedMonitor;
     private List<DBRBlockingObject> blocks = null;

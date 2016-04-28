@@ -28,6 +28,7 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -53,6 +54,8 @@ import java.lang.reflect.InvocationTargetException;
  * Standalone ERD editor
  */
 public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProvider, IResourceChangeListener {
+
+    private static final Log log = Log.getLog(ERDEditorStandalone.class);
 
     /**
      * No-arg constructor

@@ -66,7 +66,7 @@ import java.util.*;
  */
 public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 {
-    static final Log log = Log.getLog(DriverDescriptor.class);
+    private static final Log log = Log.getLog(DriverDescriptor.class);
 
     public static final String DRIVERS_FOLDER = "drivers"; //$NON-NLS-1$
     public static final String PROP_DRIVERS_LOCATION = "DRIVERS_LOCATION";

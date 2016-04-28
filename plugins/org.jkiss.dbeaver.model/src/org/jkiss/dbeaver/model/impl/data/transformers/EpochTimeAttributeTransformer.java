@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
 
-    static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
+    private static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
     private static final String PROP_UNIT = "unit";
 
     private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);

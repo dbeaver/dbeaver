@@ -36,7 +36,7 @@ import org.osgi.framework.Bundle;
  */
 public abstract class AbstractDescriptor {
 
-    static final Log log = Log.getLog(AbstractDescriptor.class);
+    private static final Log log = Log.getLog(AbstractDescriptor.class);
 
     public static final String VAR_OBJECT = "object";
     public static final String VAR_CONTEXT = "context";

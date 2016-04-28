@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -32,6 +33,7 @@ import java.util.UUID;
  * UUID value manager
  */
 public class UUIDValueManager extends BaseValueManager {
+    private static final Log log = Log.getLog(UUIDValueManager.class);
 
     @NotNull
     @Override

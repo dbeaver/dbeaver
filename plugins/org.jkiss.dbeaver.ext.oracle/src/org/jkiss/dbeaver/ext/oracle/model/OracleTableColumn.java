@@ -47,7 +47,7 @@ import java.util.List;
  */
 public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implements DBSTableColumn, DBSTypedObjectEx, DBPHiddenObject, DBPNamedObject2
 {
-    static final Log log = Log.getLog(OracleTableColumn.class);
+    private static final Log log = Log.getLog(OracleTableColumn.class);
 
     private OracleDataType type;
     private OracleDataTypeModifier typeMod;

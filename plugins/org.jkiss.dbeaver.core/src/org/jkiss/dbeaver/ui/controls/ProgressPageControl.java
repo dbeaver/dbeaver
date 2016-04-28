@@ -51,7 +51,7 @@ import java.util.ArrayList;
  */
 public class ProgressPageControl extends Composite implements ISearchContextProvider
 {
-    static final Log log = Log.getLog(ProgressPageControl.class);
+    private static final Log log = Log.getLog(ProgressPageControl.class);
 
     private final static int PROGRESS_MIN = 0;
     private final static int PROGRESS_MAX = 20;

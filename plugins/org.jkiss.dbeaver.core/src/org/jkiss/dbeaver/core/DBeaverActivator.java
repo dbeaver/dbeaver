@@ -42,7 +42,7 @@ import java.util.ResourceBundle;
  */
 public class DBeaverActivator extends AbstractUIPlugin
 {
-    static final Log log = Log.getLog(DBeaverActivator.class);
+    private static final Log log = Log.getLog(DBeaverActivator.class);
 
     // The shared instance
     private static DBeaverActivator instance;

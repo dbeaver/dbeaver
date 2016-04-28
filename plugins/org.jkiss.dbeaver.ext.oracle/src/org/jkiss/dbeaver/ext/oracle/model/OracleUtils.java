@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
  */
 public class OracleUtils {
 
-    static final Log log = Log.getLog(OracleUtils.class);
+    private static final Log log = Log.getLog(OracleUtils.class);
 
     public static String getDDL(
         DBRProgressMonitor monitor,

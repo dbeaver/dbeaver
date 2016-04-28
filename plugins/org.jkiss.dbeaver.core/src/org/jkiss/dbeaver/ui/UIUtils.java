@@ -91,7 +91,7 @@ import java.util.SortedMap;
  */
 public class UIUtils {
 
-    static final Log log = Log.getLog(UIUtils.class);
+    private static final Log log = Log.getLog(UIUtils.class);
 
     public static final String DEFAULT_TIMESTAMP_PATTERN = "yyyy.MM.dd HH:mm";
     public static final String INLINE_WIDGET_EDITOR_ID = "org.jkiss.dbeaver.ui.InlineWidgetEditor";

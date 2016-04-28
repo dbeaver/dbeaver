@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.Log;
  */
 public class DerbyUtils {
 
-    static final Log log = Log.getLog(DerbyUtils.class);
+    private static final Log log = Log.getLog(DerbyUtils.class);
 
 
 }

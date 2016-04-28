@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class ViewerColumnController {
 
-    static final Log log = Log.getLog(ViewerColumnController.class);
+    private static final Log log = Log.getLog(ViewerColumnController.class);
 
     private static final String DATA_KEY = ViewerColumnController.class.getSimpleName();
 

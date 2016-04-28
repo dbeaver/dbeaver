@@ -53,7 +53,7 @@ import java.util.Collection;
 public abstract class OracleTableBase extends JDBCTable<OracleDataSource, OracleSchema>
     implements DBPNamedObject2, DBPRefreshableObject, OracleStatefulObject
 {
-    static final Log log = Log.getLog(OracleTableBase.class);
+    private static final Log log = Log.getLog(OracleTableBase.class);
 
     public static class TableAdditionalInfo {
         volatile boolean loaded = false;

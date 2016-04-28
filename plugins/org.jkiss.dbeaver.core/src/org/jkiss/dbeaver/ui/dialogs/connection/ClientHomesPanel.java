@@ -52,7 +52,7 @@ import java.util.Set;
  */
 public class ClientHomesPanel extends Composite
 {
-    static final Log log = Log.getLog(ClientHomesPanel.class);
+    private static final Log log = Log.getLog(ClientHomesPanel.class);
 
     private static String lastHomeDirectory;
 

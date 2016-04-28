@@ -36,7 +36,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.*;
 
 public class ProjectRegistry implements DBPProjectManager {
-    static final Log log = Log.getLog(ProjectRegistry.class);
+    private static final Log log = Log.getLog(ProjectRegistry.class);
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
     private static final String[] IGNORED_FILES = {
