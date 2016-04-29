@@ -46,7 +46,7 @@ class SQLLogFilter implements QMEventFilter {
         // - session changes (if session belongs to active datasource)
         QMMObject object = event.getObject();
         if (object instanceof QMMSessionInfo) {
-            return Objects.equals(((QMMSessionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
+            return editor.getDataSourceContainer() != null && Objects.equals(((QMMSessionInfo) object).getContainerId(), editor.getDataSourceContainer().getId());
         } else {
             if (object instanceof QMMStatementExecuteInfo) {
                 return belongsToEditor(((QMMStatementExecuteInfo) object).getStatement().getSession());
