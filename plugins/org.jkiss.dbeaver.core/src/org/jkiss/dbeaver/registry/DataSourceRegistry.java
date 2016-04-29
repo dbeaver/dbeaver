@@ -282,6 +282,9 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     }
 
     private void loadDataSources(boolean refresh) {
+        if (!project.isOpen()) {
+            return;
+        }
         ParseResults parseResults = new ParseResults();
         try {
             for (IResource res : project.members(IContainer.INCLUDE_HIDDEN)) {

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.actions.navigator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -57,6 +58,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             Class<?> childType = container.getChildrenClass();
             if (childType == null) {
                 throw new DBException("Can't determine child element type for container '" + container + "'");
+            }
+            if (childType == IProject.class) {
+                return NavigatorHandlerProjectCreate.createNewProject(workbenchWindow);
             }
 
             DBSObject sourceObject = copyFrom == null ? null : copyFrom.getObject();
