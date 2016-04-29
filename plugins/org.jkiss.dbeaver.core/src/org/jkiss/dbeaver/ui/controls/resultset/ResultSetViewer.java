@@ -1350,8 +1350,11 @@ public class ResultSetViewer extends Viewer
         }
 
         DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+        if (refConstraint == null) {
+            throw new DBException("Broken association (referenced constraint missing)");
+        }
         if (!(refConstraint instanceof DBSEntityReferrer)) {
-            throw new DBException("Referenced constraint [" + refConstraint + "] is no a referrer");
+            throw new DBException("Referenced constraint [" + refConstraint + "] is not a referrer");
         }
         DBSEntity targetEntity = refConstraint.getParentObject();
         if (targetEntity == null) {

@@ -123,45 +123,46 @@ public class ReferenceValueEditor {
 
         if (refConstraint instanceof DBSEntityAssociation) {
             final DBSEntityAssociation association = (DBSEntityAssociation)refConstraint;
-            final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
-            Composite labelGroup = UIUtils.createPlaceholder(parent, 2);
-            labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            Link dictLabel = UIUtils.createLink(
-                labelGroup,
-                NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refTable.getName()), new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    // Open
-                    final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
-                    DBeaverUI.runInUI(window, new DBRRunnableWithProgress() {
+            if (association.getReferencedConstraint() != null) {
+                final DBSEntity refTable = association.getReferencedConstraint().getParentObject();
+                Composite labelGroup = UIUtils.createPlaceholder(parent, 2);
+                labelGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                Link dictLabel = UIUtils.createLink(
+                    labelGroup,
+                    NLS.bind(CoreMessages.dialog_value_view_label_dictionary, refTable.getName()), new SelectionAdapter() {
                         @Override
-                        public void run(DBRProgressMonitor monitor)
-                            throws InvocationTargetException, InterruptedException
-                        {
-                            DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
-                                monitor,
-                                refTable,
-                                true
-                            );
-                            if (tableNode != null) {
-                                NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
-                            }
+                        public void widgetSelected(SelectionEvent e) {
+                            // Open
+                            final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
+                            DBeaverUI.runInUI(window, new DBRRunnableWithProgress() {
+                                @Override
+                                public void run(DBRProgressMonitor monitor)
+                                    throws InvocationTargetException, InterruptedException {
+                                    DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
+                                        monitor,
+                                        refTable,
+                                        true
+                                    );
+                                    if (tableNode != null) {
+                                        NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
+                                    }
+                                }
+                            });
                         }
                     });
-                }
-            });
-            dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+                dictLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
-            Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    EditDictionaryDialog dialog = new EditDictionaryDialog(parent.getShell(), "Dictionary structure", refTable);
-                    if (dialog.open() == IDialogConstants.OK_ID) {
-                        loaderJob.schedule();
+                Link hintLabel = UIUtils.createLink(labelGroup, "(<a>Define Description</a>)", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        EditDictionaryDialog dialog = new EditDictionaryDialog(parent.getShell(), "Dictionary structure", refTable);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            loaderJob.schedule();
+                        }
                     }
-                }
-            });
-            hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+                });
+                hintLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
+            }
         }
 
         editorSelector = new Table(parent, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL);

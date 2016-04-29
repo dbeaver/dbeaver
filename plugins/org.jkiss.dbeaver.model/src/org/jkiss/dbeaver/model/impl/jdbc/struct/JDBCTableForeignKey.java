@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
@@ -33,15 +34,16 @@ public abstract class JDBCTableForeignKey<
     extends JDBCTableConstraint<TABLE>
     implements DBSTableForeignKey
 {
+    @Nullable
     protected PRIMARY_KEY referencedKey;
     protected DBSForeignKeyModifyRule deleteRule;
     protected DBSForeignKeyModifyRule updateRule;
 
     public JDBCTableForeignKey(
-        TABLE table,
-        String name,
-        String description,
-        PRIMARY_KEY referencedKey,
+        @NotNull TABLE table,
+        @NotNull String name,
+        @Nullable String description,
+        @Nullable PRIMARY_KEY referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         boolean persisted)
@@ -55,10 +57,10 @@ public abstract class JDBCTableForeignKey<
     @Property(viewable = true, order = 3)
     public TABLE getReferencedTable()
     {
-        return referencedKey.getTable();
+        return referencedKey == null ? null : referencedKey.getTable();
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(id = "reference", viewable = true, order = 4)
     public PRIMARY_KEY getReferencedConstraint()

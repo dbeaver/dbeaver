@@ -341,10 +341,12 @@ public class ERDEntity extends ERDObject<DBSEntity>
         }
         for (Iterator<DBSEntityAssociation> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
             final DBSEntityAssociation fk = iter.next();
-            ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getParentObject());
-            if (refEntity != null) {
-                new ERDAssociation(fk, refEntity, this, reflect);
-                iter.remove();
+            if (fk.getReferencedConstraint() != null) {
+                ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getParentObject());
+                if (refEntity != null) {
+                    new ERDAssociation(fk, refEntity, this, reflect);
+                    iter.remove();
+                }
             }
         }
     }

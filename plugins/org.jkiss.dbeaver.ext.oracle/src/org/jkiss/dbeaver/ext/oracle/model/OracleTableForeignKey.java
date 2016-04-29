@@ -99,7 +99,7 @@ public class OracleTableForeignKey extends OracleTableConstraintBase implements 
         return referencedKey == null ? null : referencedKey.getTable();
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(id = "reference", viewable = true, order = 4)
     public OracleTableConstraint getReferencedConstraint()

@@ -298,34 +298,42 @@ public class MySQLTable extends MySQLTableBase
 
                     MySQLTable pkTable = getDataSource().findTable(monitor, pkTableCatalog, pkTableName);
                     if (pkTable == null) {
-                        log.warn("Can't find PK table " + pkTableName);
-                        continue;
+                        log.debug("Can't find PK table " + pkTableName);
+                        if (references) {
+                            continue;
+                        }
                     }
                     MySQLTable fkTable = getDataSource().findTable(monitor, fkTableCatalog, fkTableName);
                     if (fkTable == null) {
                         log.warn("Can't find FK table " + fkTableName);
-                        continue;
+                        if (!references) {
+                            continue;
+                        }
                     }
-                    MySQLTableColumn pkColumn = pkTable.getAttribute(monitor, pkColumnName);
+                    MySQLTableColumn pkColumn = pkTable == null ? null : pkTable.getAttribute(monitor, pkColumnName);
                     if (pkColumn == null) {
-                        log.warn("Can't find PK table " + pkTable.getFullQualifiedName() + " column " + pkColumnName);
-                        continue;
+                        log.debug("Can't find PK table " + pkTableName + " column " + pkColumnName);
+                        if (references) {
+                            continue;
+                        }
                     }
-                    MySQLTableColumn fkColumn = fkTable.getAttribute(monitor, fkColumnName);
+                    MySQLTableColumn fkColumn = fkTable == null ? null : fkTable.getAttribute(monitor, fkColumnName);
                     if (fkColumn == null) {
-                        log.warn("Can't find FK table " + fkTable.getFullQualifiedName() + " column " + fkColumnName);
-                        continue;
+                        log.debug("Can't find FK table " + fkTableName + " column " + fkColumnName);
+                        if (!references) {
+                            continue;
+                        }
                     }
 
                     // Find PK
                     MySQLTableConstraint pk = null;
-                    if (pkName != null) {
+                    if (pkTable != null && pkName != null) {
                         pk = DBUtils.findObject(pkTable.getConstraints(monitor), pkName);
                         if (pk == null) {
                             log.warn("Unique key '" + pkName + "' not found in table " + pkTable.getFullQualifiedName());
                         }
                     }
-                    if (pk == null) {
+                    if (pk == null && pkTable != null) {
                         Collection<MySQLTableConstraint> constraints = pkTable.getConstraints(monitor);
                         if (constraints != null) {
                             for (MySQLTableConstraint pkConstraint : constraints) {
@@ -336,7 +344,7 @@ public class MySQLTable extends MySQLTableBase
                             }
                         }
                     }
-                    if (pk == null) {
+                    if (pk == null && pkTable != null) {
                         log.warn("Can't find primary key for table " + pkTable.getFullQualifiedName());
                         // Too bad. But we have to create new fake PK for this FK
                         String pkFullName = pkTable.getFullQualifiedName() + "." + pkName;
@@ -350,7 +358,7 @@ public class MySQLTable extends MySQLTableBase
 
                     // Find (or create) FK
                     MySQLTableForeignKey fk = null;
-                    if (references) {
+                    if (references && fkTable != null) {
                         fk = DBUtils.findObject(fkTable.getAssociations(monitor), fkName);
                         if (fk == null) {
                             log.warn("Can't find foreign key '" + fkName + "' for table " + fkTable.getFullQualifiedName());

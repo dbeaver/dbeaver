@@ -86,7 +86,7 @@ public class WMIClassInheritance implements DBSEntityAssociation
         return DBSEntityConstraintType.INHERITANCE;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntityConstraint getReferencedConstraint()
     {
