@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.Pair;
 
 import java.util.*;
@@ -270,6 +271,15 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public String escapeString(String string) {
         return string.replace("'", "''");
+    }
+
+    @NotNull
+    @Override
+    public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
+        if (value instanceof UUID) {
+            return '\'' + strValue + '\'';
+        }
+        return strValue;
     }
 
     @NotNull

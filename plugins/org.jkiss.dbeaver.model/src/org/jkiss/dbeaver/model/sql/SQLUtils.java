@@ -374,7 +374,6 @@ public final class SQLUtils {
         switch (attribute.getDataKind()) {
             case BOOLEAN:
             case NUMERIC:
-            case DATETIME:
                 return strValue;
             case CONTENT:
                 if (value instanceof DBDContent) {
@@ -389,8 +388,8 @@ public final class SQLUtils {
                 }
                 return '\'' + strValue + '\'';
             default:
-                if (value instanceof UUID) {
-                    return '\'' + strValue + '\'';
+                if (sqlDialect != null) {
+                    return sqlDialect.escapeScriptValue(attribute, value, strValue);
                 }
                 return strValue;
         }
