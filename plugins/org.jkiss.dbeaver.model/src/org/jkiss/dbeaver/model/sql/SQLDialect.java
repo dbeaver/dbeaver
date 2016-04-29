@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.Pair;
 
 import java.util.Collection;
@@ -210,6 +211,15 @@ public interface SQLDialect {
      */
     @NotNull
     String escapeString(String string);
+
+    /**
+     * Encode value to string format (to use it in scripts, e.g. in INSERT/UPDATE statements)
+     * @param attribute
+     * @param value       original value
+     * @param strValue    string representation (default result)
+     */
+    @NotNull
+    String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue);
 
     @NotNull
     MultiValueInsertMode getMultiValueInsertMode();
