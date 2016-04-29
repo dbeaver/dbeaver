@@ -23,9 +23,11 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -43,7 +45,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.List;
 
 /**
  * Settings connection page. Hosts particular drivers' connection pages
@@ -299,7 +300,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
             return subPages;
         } else {
-            return null;
+            return extraPages;
         }
     }
 
