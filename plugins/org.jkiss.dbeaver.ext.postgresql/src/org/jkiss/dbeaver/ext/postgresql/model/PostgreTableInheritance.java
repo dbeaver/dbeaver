@@ -49,7 +49,7 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase implemen
         this.sequenceNum = sequenceNum;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DBSEntityConstraint getReferencedConstraint() {
         return this;

@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.db2.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
@@ -115,7 +116,7 @@ public class DB2TableReference extends JDBCTableConstraint<DB2Table> implements 
         return refTable;
     }
 
-    @NotNull
+    @Nullable
     @Override
     @Property(id = "reference", viewable = false)
     public DB2TableUniqueKey getReferencedConstraint()

@@ -166,12 +166,17 @@ class ForeignKeysCache extends JDBCCompositeCache<GenericStructContainer, Generi
         throws SQLException, DBException
     {
         String pkColumnName = GenericUtils.safeGetStringTrimmed(foreignKeyObject, dbResult, JDBCConstants.PKCOLUMN_NAME);
+        GenericPrimaryKey referencedConstraint = foreignKey.getReferencedConstraint();
+        if (referencedConstraint == null) {
+            log.warn("Null reference constraint in FK '" + foreignKey.getFullQualifiedName() + "'");
+            return null;
+        }
         GenericTableConstraintColumn pkColumn = (GenericTableConstraintColumn)DBUtils.getConstraintAttribute(
             session.getProgressMonitor(),
-            foreignKey.getReferencedConstraint(),
+            referencedConstraint,
             pkColumnName);
         if (pkColumn == null) {
-            log.warn("Can't find PK table " + foreignKey.getReferencedConstraint().getTable().getFullQualifiedName() + " column " + pkColumnName);
+            log.warn("Can't find PK table " + referencedConstraint.getTable().getFullQualifiedName() + " column " + pkColumnName);
             return null;
         }
         int keySeq = GenericUtils.safeGetInt(foreignKeyObject, dbResult, JDBCConstants.KEY_SEQ);

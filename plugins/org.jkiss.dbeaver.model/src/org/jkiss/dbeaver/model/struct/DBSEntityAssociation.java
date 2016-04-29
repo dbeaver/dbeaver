@@ -17,14 +17,14 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 /**
  * DBSEntityAssociation
  */
 public interface DBSEntityAssociation extends DBSEntityConstraint {
 
-    @NotNull
+    @Nullable
     DBSEntityConstraint getReferencedConstraint();
 
     DBSEntity getAssociatedEntity();

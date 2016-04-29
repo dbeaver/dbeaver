@@ -108,7 +108,7 @@ public abstract class SQLForeignKeyManager<OBJECT_TYPE extends JDBCTableConstrai
             log.error("Can't obtain reference attributes", e);
         }
         final DBSEntityConstraint refConstraint = foreignKey.getReferencedConstraint();
-        decl.append(") REFERENCES ").append(DBUtils.getObjectFullName(refConstraint.getParentObject())).append("("); //$NON-NLS-1$ //$NON-NLS-2$
+        decl.append(") REFERENCES ").append(refConstraint == null ? "<?>" : DBUtils.getObjectFullName(refConstraint.getParentObject())).append("("); //$NON-NLS-1$ //$NON-NLS-2$
         if (refConstraint instanceof DBSEntityReferrer) {
             try {
                 boolean firstColumn = true;
