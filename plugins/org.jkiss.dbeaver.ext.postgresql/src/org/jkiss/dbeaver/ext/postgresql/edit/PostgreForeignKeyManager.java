@@ -64,7 +64,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
 
         final PostgreTableForeignKey foreignKey = new PostgreTableForeignKey(
             table,
-            (PostgreTableConstraint) editDialog.getUniqueConstraint(),
+            editDialog.getUniqueConstraint(),
             editDialog.getOnDeleteRule(),
             editDialog.getOnUpdateRule());
         foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
