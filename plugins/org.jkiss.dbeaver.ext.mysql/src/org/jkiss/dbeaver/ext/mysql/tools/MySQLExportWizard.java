@@ -55,6 +55,7 @@ import java.util.regex.Pattern;
 
 class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExportInfo> implements IExportWizard {
 
+    public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_DATABASE = "database";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
@@ -272,6 +273,8 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
                 switch (name) {
                     case VARIABLE_DATABASE:
                         return arg.getDatabase().getName();
+                    case VARIABLE_HOST:
+                        return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
                     case VARIABLE_TABLE:
                         final Iterator<MySQLTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
                         if (iterator != null && iterator.hasNext()) {
