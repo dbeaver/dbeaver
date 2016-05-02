@@ -82,6 +82,26 @@ public final class SQLUtils {
 
     public static String stripComments(String query, @Nullable String mlCommentStart, @Nullable String mlCommentEnd, String[] slComments)
     {
+        String leading = "", trailing = "";
+        {
+            int startPos, endPos;
+            for (startPos = 0; startPos < query.length(); startPos++) {
+                if (!Character.isWhitespace(query.charAt(startPos))) {
+                    break;
+                }
+            }
+            for (endPos = query.length() - 1; endPos > startPos; endPos--) {
+                if (!Character.isWhitespace(query.charAt(endPos))) {
+                    break;
+                }
+            }
+            if (startPos > 0) {
+                leading = query.substring(0, startPos);
+            }
+            if (endPos < query.length() - 1) {
+                trailing = query.substring(endPos + 1);
+            }
+        }
         query = query.trim();
         if (mlCommentStart != null && mlCommentEnd != null) {
             Pattern stripPattern = Pattern.compile(
@@ -104,7 +124,7 @@ public final class SQLUtils {
                 }
             }
         }
-        return query;
+        return leading + query + trailing;
     }
 
     public static List<String> splitFilter(String filter)
