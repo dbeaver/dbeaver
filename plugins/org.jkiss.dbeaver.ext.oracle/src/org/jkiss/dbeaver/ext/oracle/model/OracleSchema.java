@@ -842,13 +842,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema oracleSchema) throws SQLException
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema schema) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT *\n" +
-                "FROM SYS.ALL_TRIGGERS WHERE OWNER=?\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(schema.getDataSource()) + "TRIGGERS WHERE OWNER=?\n" +
                 "ORDER BY TRIGGER_NAME");
-            dbStat.setString(1, oracleSchema.getName());
+            dbStat.setString(1, schema.getName());
             return dbStat;
         }
 
