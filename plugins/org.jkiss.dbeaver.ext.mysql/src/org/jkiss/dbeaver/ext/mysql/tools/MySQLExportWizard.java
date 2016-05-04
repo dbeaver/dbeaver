@@ -243,12 +243,12 @@ class MySQLExportWizard extends AbstractToolWizard<DBSObject, MySQLDatabaseExpor
         if (objects.isEmpty()) {
             // no dump
         } else if (!CommonUtils.isEmpty(arg.getTables())) {
-            cmd.add(DBUtils.getQuotedIdentifier(arg.getDatabase()));
+            cmd.add(arg.getDatabase().getName());
             for (MySQLTableBase table : arg.getTables()) {
-                cmd.add(DBUtils.getQuotedIdentifier(table));
+                cmd.add(table.getName());
             }
         } else {
-            cmd.add(DBUtils.getQuotedIdentifier(arg.getDatabase()));
+            cmd.add(arg.getDatabase().getName());
         }
 
         return cmd;
