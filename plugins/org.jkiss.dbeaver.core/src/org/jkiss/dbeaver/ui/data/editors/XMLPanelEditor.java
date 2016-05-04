@@ -123,12 +123,15 @@ public class XMLPanelEditor extends ContentPanelEditor {
         }
         editor.createPartControl(editPlaceholder);
         StyledText control = editor.getTextViewer().getTextWidget();
+        // Do not dispose here - text editor has its own dispose listener
+/*
         control.addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
                 editor.dispose();
             }
         });
+*/
         return control;
 
 //        Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
