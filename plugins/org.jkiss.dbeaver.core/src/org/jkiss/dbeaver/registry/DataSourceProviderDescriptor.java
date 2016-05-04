@@ -295,7 +295,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             null,
             false,
             true, false, false,
-            config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
+            config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
+            null);
         loadTreeChildren(config, treeRoot);
         loadTreeIcon(treeRoot, config);
         return treeRoot;
@@ -337,6 +338,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 folder.setDescription(config.getAttribute(RegistryConstants.ATTR_DESCRIPTION));
                 child = folder;
             } else if (nodeType.equals(RegistryConstants.TAG_ITEMS)) {
+                String recursive = config.getAttribute(RegistryConstants.ATTR_RECURSIVE);
                 child = new DBXTreeItem(
                     this,
                     parent,
@@ -349,7 +351,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
-                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF));
+                    config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
+                    recursive);
             } else if (nodeType.equals(RegistryConstants.TAG_OBJECT)) {
                 child = new DBXTreeObject(
                     this,

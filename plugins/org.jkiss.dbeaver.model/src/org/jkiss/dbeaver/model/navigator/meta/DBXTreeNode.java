@@ -51,8 +51,9 @@ public abstract class DBXTreeNode
     private final boolean virtual;
     //private final boolean embeddable;
     private Expression visibleIf;
+    private DBXTreeNode recursiveLink;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, String visibleIf)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, String visibleIf, String recursive)
     {
         this.source = source;
         this.parent = parent;
@@ -70,6 +71,15 @@ public abstract class DBXTreeNode
                 log.warn(e);
             }
         }
+        if (recursive != null) {
+            recursiveLink = this;
+            for (String path : recursive.split("/")) {
+                if (path.equals("..")) {
+                    recursiveLink = recursiveLink.parent;
+                }
+            }
+        }
+        this.recursiveLink = recursiveLink;
     }
 
     public AbstractDescriptor getSource()
@@ -176,10 +186,10 @@ public abstract class DBXTreeNode
         this.children.add(child);
     }
 
-//    public DBXTreeNode getRecursiveLink()
-//    {
-//        return recursiveLink;
-//    }
+    public DBXTreeNode getRecursiveLink()
+    {
+        return recursiveLink;
+    }
 
     public DBPImage getDefaultIcon()
     {
