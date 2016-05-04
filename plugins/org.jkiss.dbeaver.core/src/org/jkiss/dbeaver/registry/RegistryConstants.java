@@ -110,6 +110,7 @@ public class RegistryConstants {
 
     public static final String ATTR_REF = "ref"; //$NON-NLS-1$
     public static final String ATTR_VISIBLE_IF = "visibleIf"; //$NON-NLS-1$
+    public static final String ATTR_RECURSIVE = "recursive"; //$NON-NLS-1$
     public static final String ATTR_NAVIGABLE = "navigable"; //$NON-NLS-1$
     public static final String ATTR_ITEM_LABEL = "itemLabel"; //$NON-NLS-1$
     public static final String ATTR_PROPERTY = "property"; //$NON-NLS-1$
