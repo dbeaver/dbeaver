@@ -79,7 +79,6 @@ public abstract class DBXTreeNode
                 }
             }
         }
-        this.recursiveLink = recursiveLink;
     }
 
     public AbstractDescriptor getSource()
@@ -129,7 +128,7 @@ public abstract class DBXTreeNode
     public boolean hasChildren(DBNNode context, boolean navigable)
     {
         if (CommonUtils.isEmpty(children)) {
-            return false;
+            return recursiveLink != null && recursiveLink.hasChildren(context, navigable);
         }
         if (context == null) {
             return true;
@@ -163,6 +162,9 @@ public abstract class DBXTreeNode
             }
         }
         if (children == null) {
+            if (recursiveLink != null) {
+                return recursiveLink.getChildren(context);
+            }
             return Collections.emptyList();
         }
         return children;
