@@ -49,11 +49,12 @@ public abstract class DBXTreeNode
     private final boolean navigable;
     private final boolean inline;
     private final boolean virtual;
+    private boolean standaloneNode;
     //private final boolean embeddable;
     private Expression visibleIf;
     private DBXTreeNode recursiveLink;
 
-    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, String visibleIf, String recursive)
+    public DBXTreeNode(AbstractDescriptor source, DBXTreeNode parent, String id, boolean navigable, boolean inline, boolean virtual, boolean standalone, String visibleIf, String recursive)
     {
         this.source = source;
         this.parent = parent;
@@ -64,6 +65,7 @@ public abstract class DBXTreeNode
         this.navigable = navigable;
         this.inline = inline;
         this.virtual = virtual;
+        this.standaloneNode = standalone;
         if (!CommonUtils.isEmpty(visibleIf)) {
             try {
                 this.visibleIf = AbstractDescriptor.parseExpression(visibleIf);
@@ -108,6 +110,10 @@ public abstract class DBXTreeNode
     public boolean isVirtual()
     {
         return virtual;
+    }
+
+    public boolean isStandaloneNode() {
+        return standaloneNode;
     }
 
     public DBXTreeNode getParent()

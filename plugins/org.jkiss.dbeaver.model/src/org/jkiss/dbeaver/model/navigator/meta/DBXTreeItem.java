@@ -44,10 +44,11 @@ public class DBXTreeItem extends DBXTreeNode
         boolean navigable,
         boolean inline,
         boolean virtual,
+        boolean standalone,
         String visibleIf,
         String recursiveLink)
     {
-        super(source, parent, id, navigable, inline, virtual, visibleIf, recursiveLink);
+        super(source, parent, id, navigable, inline, virtual, standalone, visibleIf, recursiveLink);
         this.label = label;
         this.itemLabel = itemLabel == null ? label : itemLabel;
         this.path = path;
