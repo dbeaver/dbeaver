@@ -44,6 +44,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     public static final char DEF_DELIMITER = ',';
+    public static final String DEF_QUOTE_CHAR = "\"";
 
     enum HeaderPosition {
         none,
@@ -79,7 +80,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
         } else {
             delimiter = DEF_DELIMITER;
         }
-        String quoteStr = String.valueOf(site.getProperties().get(PROP_QUOTE_CHAR));
+        Object quoteProp = site.getProperties().get(PROP_QUOTE_CHAR);
+        String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
             quoteChar = quoteStr.charAt(0);
         }
