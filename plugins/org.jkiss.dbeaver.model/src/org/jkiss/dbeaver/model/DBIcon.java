@@ -98,6 +98,7 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_FOLDER_CONSTRAINT = new DBIcon("constraints", "tree/folder_constraint.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_FOLDER_INFO = new DBIcon("folder_info", "tree/folder_info.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TREE_KEY = new DBIcon("key", "tree/key.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon TREE_FOLDER_KEY = new DBIcon("folder_key", "tree/folder_key.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PROJECT = new DBIcon("project", "project.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon CONNECTIONS = new DBIcon("connections", "connections.png"); //$NON-NLS-1$ //$NON-NLS-2$
