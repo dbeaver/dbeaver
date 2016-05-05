@@ -43,6 +43,7 @@ public class QMMSessionInfo extends QMMObject {
     private QMMStatementInfo statementStack;
     private QMMStatementExecuteInfo executionStack;
     private QMMTransactionInfo transaction;
+    //private Throwable stack;
 
     public QMMSessionInfo(DBCExecutionContext context, boolean transactional, QMMSessionInfo previous)
     {
@@ -59,6 +60,7 @@ public class QMMSessionInfo extends QMMObject {
         if (transactional) {
             this.transaction = new QMMTransactionInfo(this, null);
         }
+        //stack = new RuntimeException();
     }
 
     @Override

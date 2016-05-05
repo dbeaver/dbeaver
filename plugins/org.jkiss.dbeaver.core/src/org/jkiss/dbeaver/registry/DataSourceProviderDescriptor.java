@@ -294,7 +294,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             config.getAttribute(RegistryConstants.ATTR_PATH),
             null,
             false,
-            true, false, false,
+            true, false, false, false,
             config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
             null);
         loadTreeChildren(config, treeRoot);
@@ -351,6 +351,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_NAVIGABLE), true),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_INLINE)),
                     CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_VIRTUAL)),
+                    CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_STANDALONE)),
                     config.getAttribute(RegistryConstants.ATTR_VISIBLE_IF),
                     recursive);
             } else if (nodeType.equals(RegistryConstants.TAG_OBJECT)) {
