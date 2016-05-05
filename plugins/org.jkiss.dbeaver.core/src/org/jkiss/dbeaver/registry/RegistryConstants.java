@@ -116,6 +116,7 @@ public class RegistryConstants {
     public static final String ATTR_PROPERTY = "property"; //$NON-NLS-1$
     public static final String ATTR_OPTIONAL = "optional"; //$NON-NLS-1$
     public static final String ATTR_VIRTUAL = "virtual"; //$NON-NLS-1$
+    public static final String ATTR_STANDALONE = "standalone"; //$NON-NLS-1$
     public static final String ATTR_INLINE = "inline"; //$NON-NLS-1$
     public static final String ATTR_EDITOR = "editor"; //$NON-NLS-1$
     public static final String ATTR_IF = "if"; //$NON-NLS-1$
