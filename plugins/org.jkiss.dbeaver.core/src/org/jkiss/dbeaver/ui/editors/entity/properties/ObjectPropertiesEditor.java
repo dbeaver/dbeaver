@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -374,24 +375,25 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         final DBNDatabaseNode node = part.getEditorInput().getNavigatorNode();
         final DBSObject object = node.getObject();
 
-        // Collect tabs from navigator tree model
-        DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-            {
-                collectNavigatorTabs(monitor, part, node, tabList);
+        if (!node.getMeta().isStandaloneNode()) {
+            // Collect tabs from navigator tree model
+            DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) {
+                    collectNavigatorTabs(monitor, part, node, tabList);
+                }
+            };
+            try {
+                if (node.needsInitialization()) {
+                    DBeaverUI.runInProgressService(tabsCollector);
+                } else {
+                    tabsCollector.run(VoidProgressMonitor.INSTANCE);
+                }
+            } catch (InvocationTargetException e) {
+                log.error(e.getTargetException());
+            } catch (InterruptedException e) {
+                // just go further
             }
-        };
-        try {
-            if (node.needsInitialization()) {
-                DBeaverUI.runInProgressService(tabsCollector);
-            } else {
-                tabsCollector.run(VoidProgressMonitor.INSTANCE);
-            }
-        } catch (InvocationTargetException e) {
-            log.error(e.getTargetException());
-        } catch (InterruptedException e) {
-            // just go further
         }
 
         // Query for entity editors
