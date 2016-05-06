@@ -2551,9 +2551,10 @@ public class ResultSetViewer extends Viewer
         }
 
         protected Control  createControl(Composite parent) {
-            final int textWidth = parent.getFont().getFontData()[0].getHeight() * 10;
             combo = new CImageCombo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             combo.add(DBeaverIcons.getImage(DBIcon.TYPE_UNKNOWN), "", null, null);
+            final int textWidth = parent.getFont().getFontData()[0].getHeight() * 10;
+            combo.setWidthHint(textWidth);
             if (toolitem != null) {
                 toolitem.setWidth(textWidth);
             }
