@@ -204,6 +204,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case ITextEditorActionDefinitionIds.LINE_GOTO: {
+                ResultSetRow currentRow = rsv.getCurrentRow();
                 final int rowCount = rsv.getModel().getRowCount();
                 if (rowCount <= 0) {
                     break;
@@ -212,7 +213,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     HandlerUtil.getActiveShell(event),
                     "Go to Row",
                     "Enter row number (1.." + rowCount + ")",
-                    String.valueOf(rowCount),
+                    String.valueOf(currentRow == null ? 1 : currentRow.getVisualNumber() + 1),
                     new IInputValidator() {
                         @Override
                         public String isValid(String input) {
