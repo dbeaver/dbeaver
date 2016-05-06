@@ -22,7 +22,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.IFindReplaceTarget;
+import org.eclipse.jface.window.Window;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -35,6 +40,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -59,13 +65,20 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
-    public static final String CMD_NAVIGATE_BACK = "org.jkiss.dbeaver.core.resultset.navigateBack";
-    public static final String CMD_NAVIGATE_FORWARD = "org.jkiss.dbeaver.core.resultset.navigateForward";
+
+    public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
+        //IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+        if (activePart instanceof IResultSetContainer) {
+            return ((IResultSetContainer) activePart).getResultSetViewer();
+        } else if (activePart instanceof MultiPageAbstractEditor) {
+            return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
+        }
+        return null;
+    }
 
     @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         final ResultSetViewer rsv = getActiveResultSet(HandlerUtil.getActivePart(event));
         if (rsv == null) {
             return null;
@@ -156,7 +169,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     DBeaverActivator.getCoreResourceBundle(),
                     "Editor.FindReplace.",
                     HandlerUtil.getActiveShell(event),
-                    (IFindReplaceTarget) rsv.getAdapter(IFindReplaceTarget.class));
+                    rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();
                 break;
             case CMD_NAVIGATE_LINK:
@@ -190,20 +203,55 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 }
                 break;
             }
+            case ITextEditorActionDefinitionIds.LINE_GOTO: {
+                final int rowCount = rsv.getModel().getRowCount();
+                if (rowCount <= 0) {
+                    break;
+                }
+                GotoLineDialog d = new GotoLineDialog(
+                    HandlerUtil.getActiveShell(event),
+                    "Go to Row",
+                    "Enter row number (1.." + rowCount + ")",
+                    String.valueOf(rowCount),
+                    new IInputValidator() {
+                        @Override
+                        public String isValid(String input) {
+                            try {
+                                int i = Integer.parseInt(input);
+                                if (i <= 0 || rowCount < i) {
+                                    return "Invalid row number";
+                                }
+                            } catch (NumberFormatException x) {
+                                return "Not a number";
+                            }
+
+                            return null;
+                        }
+                    });
+                if (d.open() == Window.OK) {
+                    int line = Integer.parseInt(d.getValue());
+                    rsv.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.LAST);
+                }
+
+                System.out.println(1);
+                break;
+            }
         }
 
 
         return null;
     }
 
-    public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
-        //IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
-        if (activePart instanceof IResultSetContainer) {
-            return ((IResultSetContainer) activePart).getResultSetViewer();
-        } else if (activePart instanceof MultiPageAbstractEditor) {
-            return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
+    static class GotoLineDialog extends InputDialog {
+        private static final String DIALOG_ID = "ResultSetCommandHandler.GotoLineDialog";
+
+        public GotoLineDialog(Shell parent, String title, String message, String initialValue, IInputValidator validator) {
+            super(parent, title, message, initialValue, validator);
         }
-        return null;
+
+        protected IDialogSettings getDialogBoundsSettings() {
+            return UIUtils.getDialogSettings(DIALOG_ID);
+        }
     }
 
 }
