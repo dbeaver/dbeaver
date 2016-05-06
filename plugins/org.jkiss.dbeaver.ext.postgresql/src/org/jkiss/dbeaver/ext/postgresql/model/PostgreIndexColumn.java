@@ -113,4 +113,8 @@ public class PostgreIndexColumn extends AbstractTableIndexColumn
         return index.getDataSource();
     }
 
+    @Override
+    public String toString() {
+        return tableColumn == null ? "NULL" : tableColumn.toString();
+    }
 }
