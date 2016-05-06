@@ -1708,15 +1708,15 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             </menu>
-            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.view" label="View">
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
-            </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="File">
                 <command commandId="org.eclipse.ui.file.revert"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
             </menu>
+        </menuContribution>
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->

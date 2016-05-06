@@ -46,7 +46,7 @@
    </extension>
 
    <extension point="org.eclipse.ui.menus">
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=navigator_additions">
             <command commandId="org.jkiss.dbeaver.test.object.validate">
                <visibleWhen>
                    <with variable="selection">

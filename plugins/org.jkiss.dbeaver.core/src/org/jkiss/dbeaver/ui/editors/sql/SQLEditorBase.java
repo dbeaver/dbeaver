@@ -18,10 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.rules.FastPartitioner;
 import org.eclipse.jface.text.rules.IToken;
@@ -53,9 +50,11 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
@@ -65,7 +64,10 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.ResourceBundle;
+import java.util.Set;
 
 /**
  * SQL Executor
@@ -369,9 +371,18 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         super.editorContextMenuAboutToShow(menu);
 
         menu.add(new Separator("content"));//$NON-NLS-1$
-        addAction(menu, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
-        addAction(menu, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
-        addAction(menu, SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
+        addAction(menu, IWorkbenchActionConstants.MB_ADDITIONS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
+        addAction(menu, IWorkbenchActionConstants.MB_ADDITIONS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
+        {
+            MenuManager formatMenu = new MenuManager("Format", "format");
+            IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
+            if (formatAction != null) {
+                formatMenu.add(formatAction);
+            }
+            formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.single"));
+            formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.multi"));
+            menu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, formatMenu);
+        }
     }
 
     public void reloadSyntaxRules()
