@@ -318,6 +318,7 @@
         <image commandId="org.jkiss.dbeaver.core.resultset.applyChanges" icon="icons/sql/accept.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" icon="icons/sql/cancel.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.toggleMode" icon="icons/sql/grid.png"/>
+        <image commandId="org.jkiss.dbeaver.core.resultset.navigateLink" icon="icons/misc/link.png"/>
         <!--<image commandId="org.jkiss.dbeaver.core.resultset.cell.save" icon="icons/misc/confirm.png"/>-->
         <image commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" icon="icons/sql/details.png"/>
 
