@@ -331,7 +331,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         if (recordMode) {
             // Refresh meta if we are in record mode
-            refreshData(recordMode, false);
+            refreshData(true, false);
         }
     }
 
