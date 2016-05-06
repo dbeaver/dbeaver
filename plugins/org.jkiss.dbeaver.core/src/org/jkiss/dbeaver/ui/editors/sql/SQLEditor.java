@@ -553,6 +553,23 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public void toggleActivePanel() {
+        if (sashForm.getMaximizedControl() == null) {
+            if (UIUtils.hasFocus(resultTabs)) {
+                getEditorControl().setFocus();
+            } else {
+                CTabItem selTab = resultTabs.getSelection();
+                if (selTab != null) {
+                    ResultSetViewer viewer = getResultSetViewer();
+                    if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
+                        viewer.getActivePresentation().getControl().setFocus();
+                    } else {
+                        selTab.getControl().setFocus();
+                    }
+                }
+            }
+        }
+    }
 
     @Override
     public IPathEditorInput getEditorInput()

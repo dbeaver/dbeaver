@@ -21,16 +21,19 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-public class ToggleResultsPanelHandler extends AbstractHandler {
+public class SwitchPanelHandler extends AbstractHandler {
+
+    private static final Log log = Log.getLog(SwitchPanelHandler.class);
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         SQLEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), SQLEditor.class);
         if (editor != null) {
-            editor.toggleResultPanel();
+            editor.toggleActivePanel();
         }
         return null;
     }
