@@ -37,10 +37,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSelectItem;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -259,7 +256,7 @@ public class ResultSetUtils
                     Collection<? extends DBSTableIndex> indexes = ((DBSTable)table).getIndexes(monitor);
                     if (!CommonUtils.isEmpty(indexes)) {
                         for (DBSTableIndex index : indexes) {
-                            if (index.isUnique()) {
+                            if (DBUtils.isIdentifierIndex(monitor, index)) {
                                 identifiers.add(index);
                                 break;
                             }
@@ -276,7 +273,7 @@ public class ResultSetUtils
                 Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
                 if (constraints != null) {
                     for (DBSEntityConstraint constraint : constraints) {
-                        if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
+                        if (DBUtils.isIdentifierConstraint(monitor, constraint)) {
                             identifiers.add((DBSEntityReferrer) constraint);
                         }
                     }

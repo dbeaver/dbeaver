@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -60,15 +61,19 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         decl.append("INDEX ").append(indexName) //$NON-NLS-1$
             .append(" ON ").append(table.getFullQualifiedName()) //$NON-NLS-1$
             .append(" ("); //$NON-NLS-1$
-        // Get columns using void monitor
-        boolean firstColumn = true;
-        for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE))) {
-            if (!firstColumn) decl.append(","); //$NON-NLS-1$
-            firstColumn = false;
-            decl.append(indexColumn.getName());
-            if (!indexColumn.isAscending()) {
-                decl.append(" DESC"); //$NON-NLS-1$
+        try {
+            // Get columns using void monitor
+            boolean firstColumn = true;
+            for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE))) {
+                if (!firstColumn) decl.append(","); //$NON-NLS-1$
+                firstColumn = false;
+                decl.append(indexColumn.getName());
+                if (!indexColumn.isAscending()) {
+                    decl.append(" DESC"); //$NON-NLS-1$
+                }
             }
+        } catch (DBException e) {
+            log.error(e);
         }
         decl.append(")"); //$NON-NLS-1$
 

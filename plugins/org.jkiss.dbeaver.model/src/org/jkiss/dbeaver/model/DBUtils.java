@@ -648,31 +648,32 @@ public final class DBUtils {
         }
 
         List<DBSEntityConstraint> identifiers = new ArrayList<>();
-        // Check constraints
-        Collection<? extends DBSEntityConstraint> uniqueKeys = entity.getConstraints(monitor);
-        if (uniqueKeys != null) {
-            for (DBSEntityConstraint constraint : uniqueKeys) {
-                if (constraint.getConstraintType().isUnique() &&
-                    constraint instanceof DBSEntityReferrer &&
-                    !CommonUtils.isEmpty(((DBSEntityReferrer)constraint).getAttributeReferences(monitor)))
-                {
-                    identifiers.add(constraint);
-                }
-            }
-        }
-        if (identifiers.isEmpty() && entity instanceof DBSTable) {
-            // Check indexes only if no unique constraints found
+
+        // Check indexes
+        if (entity instanceof DBSTable) {
             try {
                 Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
                 if (!CommonUtils.isEmpty(indexes)) {
                     for (DBSTableIndex index : indexes) {
-                        if (index.isUnique() && !CommonUtils.isEmpty(index.getAttributeReferences(monitor))) {
+                        if (isIdentifierIndex(monitor, index)) {
                             identifiers.add(index);
                         }
                     }
                 }
             } catch (DBException e) {
                 log.debug(e);
+            }
+        }
+
+        // Check constraints only if no unique indexes found
+        if (identifiers.isEmpty()) {
+            Collection<? extends DBSEntityConstraint> uniqueKeys = entity.getConstraints(monitor);
+            if (uniqueKeys != null) {
+                for (DBSEntityConstraint constraint : uniqueKeys) {
+                    if (isIdentifierConstraint(monitor, constraint)) {
+                        identifiers.add(constraint);
+                    }
+                }
             }
         }
 
@@ -695,6 +696,40 @@ public final class DBUtils {
         } else {
             return Collections.emptyList();
         }
+    }
+
+    public static boolean isIdentifierIndex(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
+        if (!index.isUnique()) {
+            return false;
+        }
+        List<? extends DBSTableIndexColumn> attrs = index.getAttributeReferences(monitor);
+        if (attrs == null || attrs.isEmpty()) {
+            return false;
+        }
+        for (DBSTableIndexColumn col : attrs) {
+            if (col.getTableColumn() != null && !col.getTableColumn().isRequired()) {
+                // Do not use indexes with NULL columns (because they are not actually unique: #424)
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean isIdentifierConstraint(DBRProgressMonitor monitor, DBSEntityConstraint constraint) throws DBException {
+        if (constraint instanceof DBSEntityReferrer && constraint.getConstraintType().isUnique()) {
+            List<? extends DBSEntityAttributeRef> attrs = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+            if (attrs == null || attrs.isEmpty()) {
+                return false;
+            }
+            for (DBSEntityAttributeRef col : attrs) {
+                if (col.getAttribute() != null && !col.getAttribute().isRequired()) {
+                    // Do not use constraints with NULL columns (because they are not actually unique: #424)
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     public static DBSEntityConstraint findEntityConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity, @NotNull Collection<? extends DBSEntityAttribute> attributes)
