@@ -42,7 +42,8 @@ public interface IResultSetPresentation {
         FIRST,
         PREVIOUS,
         NEXT,
-        LAST
+        LAST,
+        CURRENT
     }
 
     void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent);

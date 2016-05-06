@@ -31,6 +31,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -371,6 +372,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             if (lineNum < FIRST_ROW_LINE) {
                 lineNum = FIRST_ROW_LINE;
             }
+            int lineOffset = text.getOffsetAtLine(lineNum);
+            int xOffset = caretOffset - lineOffset;
             int totalLines = text.getLineCount();
             switch (position) {
                 case FIRST:
@@ -385,11 +388,15 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 case LAST:
                     lineNum = totalLines - 1;
                     break;
+                case CURRENT:
+                    lineNum = controller.getCurrentRow().getVisualNumber() + FIRST_ROW_LINE;
+                    break;
             }
             if (lineNum < FIRST_ROW_LINE || lineNum >= totalLines) {
                 return;
             }
             int newOffset = text.getOffsetAtLine(lineNum);
+            newOffset += xOffset;
             text.setCaretOffset(newOffset);
             //text.setSelection(newOffset, 0);
             text.showSelection();

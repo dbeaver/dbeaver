@@ -320,6 +320,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     spreadsheet.shiftCursor(0, spreadsheet.getItemCount(), false);
                 }
                 break;
+            case CURRENT:
+                if (curRow != null) {
+                    GridPos curPos = spreadsheet.getCursorPosition();
+                    GridCell newCell = spreadsheet.posToCell(new GridPos(curPos.col, curRow.getVisualNumber()));
+                    if (newCell != null) {
+                        spreadsheet.setCursor(newCell, false);
+                    }
+                }
+                break;
         }
         if (controller.isRecordMode()) {
             // Update focus cell
