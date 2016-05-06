@@ -50,7 +50,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 public class ResultSetCommandHandler extends AbstractHandler {
 
     public static final String CMD_TOGGLE_MODE = "org.jkiss.dbeaver.core.resultset.toggleMode";
+    public static final String CMD_TOGGLE_RESULT_PANEL = "org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel";
     public static final String CMD_SWITCH_PRESENTATION = "org.jkiss.dbeaver.core.resultset.switchPresentation";
+    public static final String CMD_SWITCH_PANEL = "org.jkiss.dbeaver.ui.editors.sql.switch.panel";
     public static final String CMD_ROW_FIRST = "org.jkiss.dbeaver.core.resultset.row.first";
     public static final String CMD_ROW_PREVIOUS = "org.jkiss.dbeaver.core.resultset.row.previous";
     public static final String CMD_ROW_NEXT = "org.jkiss.dbeaver.core.resultset.row.next";

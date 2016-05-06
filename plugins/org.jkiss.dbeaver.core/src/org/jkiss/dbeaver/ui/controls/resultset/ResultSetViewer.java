@@ -44,6 +44,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -1074,7 +1075,7 @@ public class ResultSetViewer extends Viewer
         }
 
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
-            // Export and other utility methods
+            // Filters and View
             manager.add(new Separator());
             {
                 MenuManager filtersMenu = new MenuManager(
@@ -1136,8 +1137,28 @@ public class ResultSetViewer extends Viewer
                 manager.add(viewMenu);
             }
 
-            if (ActionUtils.isCommandEnabled(ResultSetCommandHandler.CMD_NAVIGATE_LINK, site)) {
-                manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_NAVIGATE_LINK));
+            {
+                // Navigate
+                MenuManager navigateMenu = new MenuManager(
+                    "Navigate",
+                    null,
+                    "navigate"); //$NON-NLS-1$
+                if (ActionUtils.isCommandEnabled(ResultSetCommandHandler.CMD_NAVIGATE_LINK, site)) {
+                    navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_NAVIGATE_LINK));
+                    navigateMenu.add(new Separator());
+                }
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PANEL));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_MODE));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_RESULT_PANEL));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
+                navigateMenu.add(new Separator());
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ITextEditorActionDefinitionIds.LINE_GOTO));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_FIRST));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_NEXT));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_PREVIOUS));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_LAST));
+
+                manager.add(navigateMenu);
             }
         }
 
