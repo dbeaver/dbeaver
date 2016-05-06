@@ -73,7 +73,7 @@ public interface IResultSetPresentation {
      * {@link org.jkiss.dbeaver.ui.controls.resultset.IResultSetController#fillContextMenu} which then will
      * call this function.
      * Cool, huh?
-     * @param menu    manu
+     * @param menu    menu
      */
     void fillMenu(@NotNull IMenuManager menu);
 
