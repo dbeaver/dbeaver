@@ -96,6 +96,9 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                     controller.setCurrentRow(model.getRow(model.getRowCount() - 1));
                 }
                 break;
+            case CURRENT:
+                // do nothing
+                break;
         }
         if (controller.isRecordMode()) {
             refreshData(true, false);

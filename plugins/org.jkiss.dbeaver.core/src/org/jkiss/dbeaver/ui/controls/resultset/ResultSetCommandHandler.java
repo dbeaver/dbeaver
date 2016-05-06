@@ -220,7 +220,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                             try {
                                 int i = Integer.parseInt(input);
                                 if (i <= 0 || rowCount < i) {
-                                    return "Invalid row number";
+                                    return "Row number is out of range";
                                 }
                             } catch (NumberFormatException x) {
                                 return "Not a number";
@@ -231,7 +231,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     });
                 if (d.open() == Window.OK) {
                     int line = Integer.parseInt(d.getValue());
-                    rsv.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.LAST);
+                    rsv.setCurrentRow(rsv.getModel().getRow(line - 1));
+                    rsv.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
                 }
 
                 System.out.println(1);
