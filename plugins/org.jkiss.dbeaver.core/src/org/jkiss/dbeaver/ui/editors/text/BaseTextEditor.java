@@ -65,6 +65,9 @@ import java.util.Map;
  */
 public abstract class BaseTextEditor extends AbstractDecoratedTextEditor implements ISingleControlEditor {
 
+    public static final String GROUP_SQL_PREFERENCES = "sql.preferences";
+    public static final String GROUP_SQL_ADDITIONS = "sql.additions";
+
     private static Map<String, Integer> ACTION_TRANSLATE_MAP;
 
     public static Map<String, Integer> getActionMap()
@@ -137,6 +140,10 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         menu.add(new Separator(IWorkbenchActionConstants.GROUP_ADD));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
         menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+        menu.add(new Separator());
+        menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
+        menu.add(new Separator());
+        menu.add(new GroupMarker(GROUP_SQL_PREFERENCES));
 
         if (isEditable()) {
             addAction(menu, ITextEditorActionConstants.GROUP_UNDO, ITextEditorActionConstants.UNDO);
@@ -154,8 +161,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
         IAction preferencesAction = getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);
         if (preferencesAction != null) {
-            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator(ITextEditorActionConstants.GROUP_SETTINGS));
-            menu.appendToGroup(ITextEditorActionConstants.GROUP_SETTINGS, preferencesAction);
+            menu.appendToGroup(GROUP_SQL_PREFERENCES, preferencesAction);
         }
     }
 
