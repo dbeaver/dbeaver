@@ -1672,18 +1672,18 @@
                 </command>
                 <separator name="misc" visible="true"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel">
-                    <visibleWhen>
+                    <enabledWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
-                    </visibleWhen>
+                    </enabledWhen>
                 </command>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel">
-                    <visibleWhen>
+                    <enabledWhen>
                         <with variable="activeEditor">
                             <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"/>
                         </with>
-                    </visibleWhen>
+                    </enabledWhen>
                 </command>
             </menu>
         </menuContribution>
@@ -1712,6 +1712,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             <separator name="other" visible="true"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
+            <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
         </menuContribution>
 
         <!-- QM menu & toolbar -->
