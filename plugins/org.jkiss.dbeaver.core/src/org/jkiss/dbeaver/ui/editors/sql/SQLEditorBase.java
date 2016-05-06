@@ -379,6 +379,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             if (formatAction != null) {
                 formatMenu.add(formatAction);
             }
+            formatMenu.add(getAction(ITextEditorActionConstants.UPPER_CASE));
+            formatMenu.add(getAction(ITextEditorActionConstants.LOWER_CASE));
+            formatMenu.add(new Separator());
+            formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.word.wrap"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.single"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.multi"));
             menu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, formatMenu);
