@@ -1700,19 +1700,23 @@
         </menuContribution-->
 
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
-            <separator name="files" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
-            <separator name="execute" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
-            <separator name="other" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
-            <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="Execute" icon="icons/sql/sql_exec.png">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
+            </menu>
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.view" label="View">
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
+            </menu>
+            <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="File">
+                <command commandId="org.eclipse.ui.file.revert"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.open.file"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
+            </menu>
         </menuContribution>
 
         <!-- QM menu & toolbar -->

@@ -372,8 +372,6 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         addAction(menu, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
-        //addAction(menu, ACTION_DEFINE_FOLDING_REGION);
-        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
     public void reloadSyntaxRules()

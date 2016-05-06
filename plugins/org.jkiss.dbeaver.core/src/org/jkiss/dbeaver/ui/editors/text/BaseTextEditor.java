@@ -23,7 +23,10 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.action.GroupMarker;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.TextViewer;
@@ -32,8 +35,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
+import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -121,7 +126,37 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     @Override
     protected void editorContextMenuAboutToShow(IMenuManager menu)
     {
-        super.editorContextMenuAboutToShow(menu);
+        //super.editorContextMenuAboutToShow(menu);
+
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_UNDO));
+        menu.add(new GroupMarker(ITextEditorActionConstants.GROUP_SAVE));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_COPY));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_PRINT));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_EDIT));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_FIND));
+        menu.add(new Separator(IWorkbenchActionConstants.GROUP_ADD));
+        menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
+        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+
+        if (isEditable()) {
+            addAction(menu, ITextEditorActionConstants.GROUP_UNDO, ITextEditorActionConstants.UNDO);
+            addAction(menu, ITextEditorActionConstants.GROUP_SAVE, ITextEditorActionConstants.SAVE);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.CUT);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.COPY);
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.PASTE);
+            IAction action= getAction(ITextEditorActionConstants.QUICK_ASSIST);
+            if (action != null && action.isEnabled()) {
+                addAction(menu, ITextEditorActionConstants.GROUP_EDIT, ITextEditorActionConstants.QUICK_ASSIST);
+            }
+        } else {
+            addAction(menu, ITextEditorActionConstants.GROUP_COPY, ITextEditorActionConstants.COPY);
+        }
+
+        IAction preferencesAction = getAction(ITextEditorActionConstants.CONTEXT_PREFERENCES);
+        if (preferencesAction != null) {
+            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator(ITextEditorActionConstants.GROUP_SETTINGS));
+            menu.appendToGroup(ITextEditorActionConstants.GROUP_SETTINGS, preferencesAction);
+        }
     }
 
     public TextViewer getTextViewer()
