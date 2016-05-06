@@ -21,6 +21,10 @@ import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.Accessible;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -105,6 +109,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         tableEditor.minimumWidth = 50;
 
         hookContextMenu();
+        hookAccessibility();
 
         {
             super.addDisposeListener(new DisposeListener() {
@@ -396,4 +401,38 @@ public class Spreadsheet extends LightGrid implements Listener {
         tableEditor.setEditor(editor, pos.col, pos.row);
     }
 
+    ////////////////////////////////////////////////////////////
+    // Accessibility support
+
+    private void hookAccessibility() {
+        final Accessible accessible = getAccessible();
+
+        accessible.addAccessibleListener(new GridAccessibleListener());
+        addCursorChangeListener(new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                accessible.selectionChanged();
+            }
+        });
+    }
+
+    private static class GridAccessibleListener implements AccessibleListener {
+        @Override
+        public void getName(AccessibleEvent e) {
+            e.result = "Results grid";
+        }
+
+        @Override
+        public void getHelp(AccessibleEvent e) {
+        }
+
+        @Override
+        public void getKeyboardShortcut(AccessibleEvent e) {
+        }
+
+        @Override
+        public void getDescription(AccessibleEvent e) {
+            e.result = "Results grid";
+        }
+    }
 }
