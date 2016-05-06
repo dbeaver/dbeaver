@@ -370,6 +370,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 command.validateCommand();
             } catch (final DBException e) {
+                log.debug(e);
                 UIUtils.runInUI(null, new Runnable() {
                     @Override
                     public void run()

@@ -57,7 +57,7 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getBody())) {
+        if (CommonUtils.isEmpty(command.getObject().getDeclaration())) {
             throw new DBException("Procedure body cannot be empty");
         }
     }
@@ -99,7 +99,7 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     {
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
-            new SQLDatabasePersistAction("Create procedure", procedure.getClientBody()) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Create procedure", procedure.getDeclaration()) //$NON-NLS-2$
         };
     }
 
