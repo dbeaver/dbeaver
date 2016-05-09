@@ -1363,7 +1363,7 @@ public final class DBUtils {
             operators.add(DBCLogicalOperator.IS_NULL);
             operators.add(DBCLogicalOperator.IS_NOT_NULL);
         }
-        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID || dataKind == DBPDataKind.OBJECT) {
+        if (dataKind == DBPDataKind.BOOLEAN || dataKind == DBPDataKind.ROWID || dataKind == DBPDataKind.OBJECT || dataKind == DBPDataKind.BINARY) {
             operators.add(DBCLogicalOperator.EQUALS);
             operators.add(DBCLogicalOperator.NOT_EQUALS);
         } else if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.STRING) {
