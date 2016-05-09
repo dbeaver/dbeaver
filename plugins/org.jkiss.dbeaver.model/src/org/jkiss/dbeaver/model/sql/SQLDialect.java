@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.utils.Pair;
@@ -243,4 +244,7 @@ public interface SQLDialect {
      * True if anonymous SQL blocks must be finished with delimiter
      */
     boolean isDelimiterAfterBlock();
+
+    DBDBinaryFormatter getNativeBinaryFormatter();
+
 }
