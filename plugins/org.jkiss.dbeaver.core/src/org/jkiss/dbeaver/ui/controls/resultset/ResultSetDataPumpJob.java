@@ -107,7 +107,6 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
-        RuntimeUtils.setThreadName("ResultSetDataPump [" + dataContainer + "]");
         error = null;
         pumpStartTime = System.currentTimeMillis();
         DBRProgressMonitor proxyMonitor = new ProxyProgressMonitor(monitor) {
