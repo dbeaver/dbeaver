@@ -149,10 +149,14 @@ class ResultSetFilterPanel extends Composite
             this.filtersText.addPaintListener(new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
-                    if (filtersText.isEnabled() && filtersText.getCharCount() == 0) {
+                    final boolean supportsDataFilter = viewer.supportsDataFilter();
+                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
-                        e.gc.drawText("Enter an SQL expression to filter results", 2, 0);
+                        e.gc.drawText(supportsDataFilter ?
+                            "Enter an SQL expression to filter results" :
+                            "Data filter is not supported",
+                            2, 0);
                         e.gc.setFont(null);
                     }
                 }
@@ -326,6 +330,7 @@ class ResultSetFilterPanel extends Composite
 
     void enableFilters(boolean enableFilters) {
         if (enableFilters) {
+            final boolean supportsDataFilter = viewer.supportsDataFilter();
             if (filtersEnableState != null) {
                 filtersEnableState.restore();
                 filtersEnableState = null;
@@ -334,8 +339,9 @@ class ResultSetFilterPanel extends Composite
             List<ResultSetViewer.StateItem> stateHistory = viewer.getStateHistory();
 
             String filterText = filtersText.getText();
-            filtersApplyButton.setEnabled(true);
-            filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
+            filtersText.setEnabled(supportsDataFilter);
+            filtersApplyButton.setEnabled(supportsDataFilter);
+            filtersClearButton.setEnabled(supportsDataFilter && !CommonUtils.isEmpty(filterText));
             // Update history buttons
             if (historyPosition > 0) {
                 historyBackButton.setEnabled(true);
