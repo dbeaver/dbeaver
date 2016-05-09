@@ -1583,12 +1583,19 @@ public final class DBUtils {
     }
 
     public static String formatBinaryString(@NotNull DBPDataSource dataSource, @NotNull byte[] data, @NotNull DBDDisplayFormat format) {
-        DBDBinaryFormatter formatter = getBinaryPresentation(dataSource);
-        int maxLength = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
+        DBDBinaryFormatter formatter;
+        if (format == DBDDisplayFormat.NATIVE && dataSource instanceof SQLDataSource) {
+            formatter = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter();
+        } else {
+            formatter = getBinaryPresentation(dataSource);
+        }
         // Convert bytes to string
         int length = data.length;
-        if (format == DBDDisplayFormat.UI && length > maxLength) {
-            length = maxLength;
+        if (format == DBDDisplayFormat.UI) {
+            int maxLength = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN);
+            if (length > maxLength) {
+                length = maxLength;
+            }
         }
         String string = formatter.toString(data, 0, length);
         if (length == data.length) {

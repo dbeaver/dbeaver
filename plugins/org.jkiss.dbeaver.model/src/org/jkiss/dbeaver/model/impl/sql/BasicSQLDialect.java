@@ -23,8 +23,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
-import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
@@ -277,7 +278,7 @@ public class BasicSQLDialect implements SQLDialect {
     @NotNull
     @Override
     public String escapeScriptValue(DBSAttributeBase attribute, @NotNull Object value, @NotNull String strValue) {
-        if (value instanceof UUID || value instanceof DBDContent) {
+        if (value instanceof UUID) {
             return '\'' + escapeString(strValue) + '\'';
         }
         return strValue;
@@ -330,6 +331,11 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public boolean isDelimiterAfterBlock() {
         return false;
+    }
+
+    @Override
+    public DBDBinaryFormatter getNativeBinaryFormatter() {
+        return BinaryFormatterHex.INSTANCE;
     }
 
     protected void loadStandardKeywords()

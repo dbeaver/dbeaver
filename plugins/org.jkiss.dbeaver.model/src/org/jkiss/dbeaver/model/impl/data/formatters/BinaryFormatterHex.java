@@ -25,6 +25,11 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
  */
 public class BinaryFormatterHex implements DBDBinaryFormatter {
 
+    public static final BinaryFormatterHex INSTANCE = new BinaryFormatterHex();
+
+    private static final String HEX_PREFIX = "0x";
+    private static final String HEX_PREFIX2 = "0X";
+
     @Override
     public String getId()
     {
@@ -46,12 +51,15 @@ public class BinaryFormatterHex implements DBDBinaryFormatter {
             chars[i * 2] = hex.charAt(0);
             chars[i * 2 + 1] = hex.charAt(1);
         }
-        return new String(chars);
+        return HEX_PREFIX + new String(chars);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
+        if (string.startsWith(HEX_PREFIX) || string.startsWith(HEX_PREFIX2)) {
+            string = string.substring(2);
+        }
         int length = string.length();
         if (length > 0 && length % 2 != 0) {
             length--;

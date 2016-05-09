@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
  */
 public interface DBDBinaryFormatter {
 
-    static DBDBinaryFormatter FORMATS[] = {
+    DBDBinaryFormatter FORMATS[] = {
         new BinaryFormatterString(),
         new BinaryFormatterHex(),
         new BinaryFormatterBase64(),
