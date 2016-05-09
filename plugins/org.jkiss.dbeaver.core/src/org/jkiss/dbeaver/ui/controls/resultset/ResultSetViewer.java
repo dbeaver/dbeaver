@@ -2339,7 +2339,7 @@ public class ResultSetViewer extends Viewer
     {
         Object value = type.getValue(this, attribute, operator, true);
         DBCExecutionContext executionContext = getExecutionContext();
-        String strValue = executionContext == null ? String.valueOf(value) : SQLUtils.convertValueToSQL(executionContext.getDataSource(), attribute, value);
+        String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {
