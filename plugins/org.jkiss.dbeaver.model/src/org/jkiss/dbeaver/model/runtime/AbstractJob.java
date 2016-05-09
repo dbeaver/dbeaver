@@ -94,6 +94,8 @@ public abstract class AbstractJob extends Job
         progressMonitor = RuntimeUtils.makeMonitor(monitor);
         blockCanceled = false;
         CURRENT_JOB.set(this);
+        final Thread currentThread = Thread.currentThread();
+        final String oldThreadName = currentThread.getName();
         try {
             finished = false;
             RuntimeUtils.setThreadName(getName());
@@ -102,6 +104,7 @@ public abstract class AbstractJob extends Job
         } finally {
             CURRENT_JOB.remove();
             finished = true;
+            currentThread.setName(oldThreadName);
         }
     }
 
