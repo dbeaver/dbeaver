@@ -237,10 +237,7 @@ public class ResultSetViewer extends Viewer
                     }
                 }
 
-                if (container.isReadyToRun() &&
-                    !model.isUpdateInProgress() &&
-                    (!CommonUtils.isEmpty(whereCondition) || (model.getVisibleAttributeCount() > 0 && supportsDataFilter())))
-                {
+                if (container.isReadyToRun() && !model.isUpdateInProgress() && model.getVisibleAttributeCount() > 0) {
                     enableFilters = true;
                 }
             }
