@@ -45,13 +45,17 @@ public class BinaryFormatterHex implements DBDBinaryFormatter {
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
+        return HEX_PREFIX + new String(toHexChars(bytes, offset, length));
+    }
+
+    protected static char[] toHexChars(byte[] bytes, int offset, int length) {
         char[] chars = new char[length * 2];
         for (int i = 0; i < length; i++) {
             String hex = GeneralUtils.byteToHex[bytes[offset + i] & 0x0ff];
             chars[i * 2] = hex.charAt(0);
             chars[i * 2 + 1] = hex.charAt(1);
         }
-        return HEX_PREFIX + new String(chars);
+        return chars;
     }
 
     @Override
