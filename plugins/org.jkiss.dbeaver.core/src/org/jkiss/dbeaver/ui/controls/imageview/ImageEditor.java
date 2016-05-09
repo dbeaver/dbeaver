@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Text;
 
 import java.io.InputStream;
 
@@ -37,13 +38,13 @@ public class ImageEditor extends ImageViewer {
     private Color redColor = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
     private Color blackColor = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
 
-    private Label messageLabel;
+    private Text messageLabel;
 
     public ImageEditor(Composite parent, int style)
     {
         super(parent, style);
 
-        setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
+        //setBackground(Display.getCurrent().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
 
         {
             // Status & toolbar
@@ -56,7 +57,7 @@ public class ImageEditor extends ImageViewer {
             layout.horizontalSpacing = 0;
             statusGroup.setLayout(layout);
 
-            messageLabel = new Label(statusGroup, SWT.NONE);
+            messageLabel = new Text(statusGroup, SWT.READ_ONLY);
             messageLabel.setText(""); //$NON-NLS-1$
             gd = new GridData(GridData.FILL_HORIZONTAL);
             messageLabel.setLayoutData(gd);
