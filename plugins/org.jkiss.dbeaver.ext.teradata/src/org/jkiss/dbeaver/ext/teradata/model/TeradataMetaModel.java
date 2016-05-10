@@ -18,22 +18,15 @@
 package org.jkiss.dbeaver.ext.teradata.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.SQLException;
@@ -41,10 +34,8 @@ import java.sql.SQLException;
 /**
  * TeradataMetaModel
  */
-public class TeradataMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
+public class TeradataMetaModel extends GenericMetaModel
 {
-    private static final Log log = Log.getLog(TeradataMetaModel.class);
-
     public TeradataMetaModel(IConfigurationElement cfg) {
         super(cfg);
     }
@@ -52,8 +43,10 @@ public class TeradataMetaModel extends GenericMetaModel implements DBCQueryTrans
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Teradata object definition")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT EXPORT_OBJECTS('','" + sourceObject.getFullQualifiedName() + "');")) {
+        boolean isView = sourceObject.isView();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Teradata object DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SHOW " + (isView ? "VIEW" : "TABLE") + " " + sourceObject.getFullQualifiedName())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     StringBuilder sql = new StringBuilder();
                     while (dbResult.nextRow()) {
@@ -73,15 +66,21 @@ public class TeradataMetaModel extends GenericMetaModel implements DBCQueryTrans
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        return super.getProcedureDDL(monitor, sourceObject);
+        GenericDataSource dataSource = sourceObject.getDataSource();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Teradata procedure source")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SHOW PROCEDURE " + sourceObject.getFullQualifiedName())) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (dbResult.nextRow()) {
+                        sql.append(dbResult.getString(1));
+                    }
+                    return sql.toString();
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
     }
 
-    @Nullable
-    @Override
-    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
-        if (type == DBCQueryTransformType.RESULT_SET_LIMIT) {
-            return new QueryTransformerLimit(false);
-        }
-        return null;
-    }
 }

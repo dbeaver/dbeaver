@@ -23,7 +23,7 @@
     </requires>
 
     <plugin
-            id="org.jkiss.dbeaver.ext.generic"
+            id="org.jkiss.dbeaver.ext.derby"
             download-size="0"
             install-size="0"
             version="0.0.0"
@@ -35,7 +35,13 @@
             version="0.0.0"
             unpack="false"/>
     <plugin
-            id="org.jkiss.dbeaver.ext.postgresql"
+            id="org.jkiss.dbeaver.ext.generic"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+    <plugin
+            id="org.jkiss.dbeaver.ext.informix"
             download-size="0"
             install-size="0"
             version="0.0.0"
@@ -47,26 +53,25 @@
             version="0.0.0"
             unpack="false"/>
     <plugin
-            id="org.jkiss.dbeaver.ext.vertica"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
             id="org.jkiss.dbeaver.ext.phoenix"
             download-size="0"
             install-size="0"
             version="0.0.0"
             unpack="false"/>
     <plugin
-            id="org.jkiss.dbeaver.ext.informix"
+            id="org.jkiss.dbeaver.ext.postgresql"
             download-size="0"
             install-size="0"
             version="0.0.0"
             unpack="false"/>
-
     <plugin
-            id="org.jkiss.dbeaver.ext.derby"
+            id="org.jkiss.dbeaver.ext.teradata"
+            download-size="0"
+            install-size="0"
+            version="0.0.0"
+            unpack="false"/>
+    <plugin
+            id="org.jkiss.dbeaver.ext.vertica"
             download-size="0"
             install-size="0"
             version="0.0.0"
