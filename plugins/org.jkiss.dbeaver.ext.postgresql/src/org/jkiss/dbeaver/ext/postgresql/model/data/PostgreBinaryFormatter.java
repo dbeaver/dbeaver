@@ -17,9 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 /**
  * PostgreBinaryFormatter
