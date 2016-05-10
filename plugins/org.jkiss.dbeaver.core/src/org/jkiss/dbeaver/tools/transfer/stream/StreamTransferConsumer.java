@@ -24,6 +24,7 @@ import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -439,31 +441,39 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         {
             try (final InputStream stream = cs.getContentStream()) {
                 exportSite.flush();
-                switch (settings.getLobEncoding()) {
-                    case BASE64:
-                    {
-                        Base64.encode(stream, cs.getContentLength(), writer);
-                        break;
-                    }
-                    case HEX:
-                    {
-                        writer.write("0x"); //$NON-NLS-1$
-                        byte[] buffer = new byte[5000];
-                        for (;;) {
-                            int count = stream.read(buffer);
-                            if (count <= 0) {
-                                break;
+                final DBPDataSource dataSource = sourceObject.getDataSource();
+                if (dataSource instanceof SQLDataSource) {
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
+                    IOUtils.copyStream(stream, buffer);
+
+                    final byte[] bytes = buffer.toByteArray();
+                    final String binaryString = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
+                    writer.write(binaryString);
+                } else {
+                    switch (settings.getLobEncoding()) {
+                        case BASE64: {
+                            Base64.encode(stream, cs.getContentLength(), writer);
+                            break;
+                        }
+                        case HEX: {
+                            writer.write("0x"); //$NON-NLS-1$
+                            byte[] buffer = new byte[5000];
+                            for (; ; ) {
+                                int count = stream.read(buffer);
+                                if (count <= 0) {
+                                    break;
+                                }
+                                GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
                             }
-                            GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
+                            break;
                         }
-                        break;
+                        default:
+                            // Binary stream
+                            try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
+                                IOUtils.copyText(reader, writer);
+                            }
+                            break;
                     }
-                    default:
-                        // Binary stream
-                        try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
-                            IOUtils.copyText(reader, writer);
-                        }
-                        break;
                 }
             }
         }

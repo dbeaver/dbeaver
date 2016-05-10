@@ -144,9 +144,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cs.getContentReader());
                     } else {
-                        out.write(quoteChar);
+//                        out.write(quoteChar);
                         getSite().writeBinaryData(cs);
-                        out.write(quoteChar);
+//                        out.write(quoteChar);
                     }
                 }
                 finally {
