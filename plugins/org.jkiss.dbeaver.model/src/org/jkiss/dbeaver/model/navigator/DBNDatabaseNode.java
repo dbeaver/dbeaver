@@ -354,6 +354,9 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         final List<DBNDatabaseNode> toList)
         throws DBException
     {
+        if (monitor.isCanceled()) {
+            return;
+        }
         this.filtered = false;
 
         List<DBXTreeNode> childMetas = meta.getChildren(this);
