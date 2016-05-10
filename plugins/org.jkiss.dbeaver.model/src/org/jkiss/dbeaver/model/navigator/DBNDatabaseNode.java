@@ -370,7 +370,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             if (child instanceof DBXTreeItem) {
                 final DBXTreeItem item = (DBXTreeItem) child;
                 boolean isLoaded = loadTreeItems(monitor, item, oldList, toList);
-                if (!isLoaded && item.isOptional()) {
+                if (!isLoaded && item.isOptional() && item.getRecursiveLink() == null) {
                     // This may occur only if no child nodes was read
                     // Then we try to go on next DBX level
                     loadChildren(monitor, item, oldList, toList);
