@@ -252,8 +252,7 @@ public class TextUtils {
             final char queryChar = queryLowerCase.charAt(queryIndex);
 
             boolean termCharacterMatchFound = false;
-            for (; termIndex < termLowerCase.length()
-                && !termCharacterMatchFound; termIndex++) {
+            for (; termIndex < termLowerCase.length(); termIndex++) {
                 final char termChar = termLowerCase.charAt(termIndex);
 
                 if (queryChar == termChar) {
@@ -271,11 +270,16 @@ public class TextUtils {
                     }
 
                     previousMatchingCharacterIndex = termIndex;
+                    termIndex++;
 
                     // we can leave the nested loop. Every character in the
                     // query can match at most one character in the term.
                     termCharacterMatchFound = true;
+                    break;
                 }
+            }
+            if (!termCharacterMatchFound) {
+                return 0;
             }
         }
 
