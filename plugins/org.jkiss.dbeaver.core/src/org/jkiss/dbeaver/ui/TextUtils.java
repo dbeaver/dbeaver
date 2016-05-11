@@ -222,6 +222,10 @@ public class TextUtils {
      * One point is given for every matched character. Subsequent matches yield two bonus points. A higher score
      * indicates a higher similarity.
      */
+    public static int fuzzyScore(CharSequence term, CharSequence query) {
+        return fuzzyScore(term, query, Locale.getDefault());
+    }
+
     public static int fuzzyScore(CharSequence term, CharSequence query, Locale locale) {
         if (term == null || query == null) {
             throw new IllegalArgumentException("Strings must not be null");
