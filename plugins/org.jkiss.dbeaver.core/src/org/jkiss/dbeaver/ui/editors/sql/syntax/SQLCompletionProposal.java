@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -200,14 +201,17 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             wordPart = wordPart.substring(divPos + 1);
         }
         String wordLower = wordPart.toLowerCase();
-        if (!CommonUtils.isEmpty(wordPart) &&
-            (replacementFull.startsWith(wordLower) ||
-                (this.replacementLast != null && this.replacementLast.startsWith(wordLower)))) {
-            setPosition(wordDetector);
-            return true;
-        } else {
-            return false;
+        if (!CommonUtils.isEmpty(wordPart)) {
+            if (
+                (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 && (CommonUtils.isEmpty(event.getText()) || TextUtils.fuzzyScore(replacementFull, event.getText()) > 0)) ||
+                (this.replacementLast != null && TextUtils.fuzzyScore(this.replacementLast, wordLower) > 0)
+                )
+            {
+                setPosition(wordDetector);
+                return true;
+            }
         }
+        return false;
     }
 
     public boolean hasStructObject() {

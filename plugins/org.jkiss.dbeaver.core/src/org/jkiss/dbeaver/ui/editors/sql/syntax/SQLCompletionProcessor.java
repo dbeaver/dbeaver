@@ -526,7 +526,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         // Skip hidden
                         continue;
                     }
-                    int score = startPart == null ? 1 : TextUtils.fuzzyScore(child.getName(), startPart, Locale.getDefault());
+                    int score = startPart == null ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
                     if (score > 0) {
                         matchedObjects.add(child);
                         scoredMatches.put(child.getName(), score);
