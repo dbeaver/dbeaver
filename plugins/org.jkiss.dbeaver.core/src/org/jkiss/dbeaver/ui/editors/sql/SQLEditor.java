@@ -105,7 +105,6 @@ public class SQLEditor extends SQLEditorBase implements
     DBPContextProvider,
     DBPEventListener,
     ISaveablePart2,
-    IResultSetContainer,
     DBPDataSourceUser,
     DBPDataSourceHandler,
     DBPPreferenceListener
@@ -375,7 +374,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (required == IFindReplaceTarget.class) {
             return findReplaceTarget;
         }
-        ResultSetViewer resultsView = getResultSetViewer();
+        ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
             Object adapter = resultsView.getAdapter(required);
             if (adapter != null) {
@@ -444,7 +443,7 @@ public class SQLEditor extends SQLEditorBase implements
             @Override
             public void keyTraversed(TraverseEvent e) {
                 if (e.detail == SWT.TRAVERSE_PAGE_NEXT) {
-                    ResultSetViewer viewer = getResultSetViewer();
+                    ResultSetViewer viewer = getActiveResultSetViewer();
                     if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
                         viewer.getActivePresentation().getControl().setFocus();
                         e.doit = false;
@@ -560,7 +559,7 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 CTabItem selTab = resultTabs.getSelection();
                 if (selTab != null) {
-                    ResultSetViewer viewer = getResultSetViewer();
+                    ResultSetViewer viewer = getActiveResultSetViewer();
                     if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
                         viewer.getActivePresentation().getControl().setFocus();
                     } else {
@@ -712,7 +711,7 @@ public class SQLEditor extends SQLEditorBase implements
         try {
             checkSession();
         } catch (DBException ex) {
-            ResultSetViewer viewer = getResultSetViewer();
+            ResultSetViewer viewer = getActiveResultSetViewer();
             if (viewer != null) {
                 viewer.setStatus(ex.getMessage(), true);
             }
@@ -784,7 +783,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void setStatus(String status, boolean error)
     {
-        ResultSetViewer resultsView = getResultSetViewer();
+        ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
             resultsView.setStatus(status, error);
         }
@@ -1025,8 +1024,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Nullable
-    @Override
-    public ResultSetViewer getResultSetViewer()
+    public ResultSetViewer getActiveResultSetViewer()
     {
         if (resultTabs == null || resultTabs.isDisposed()) {
             return null;
@@ -1037,28 +1035,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults().getResultSetViewer();
-    }
-
-    @Nullable
-    @Override
-    public DBSDataContainer getDataContainer()
-    {
-        return curQueryProcessor == null ? null : curQueryProcessor.getCurrentResults();
-    }
-
-    @Override
-    public boolean isReadyToRun()
-    {
-        if (resultTabs == null) {
-            return false;
-        }
-        CTabItem curTab = resultTabs.getSelection();
-        if (curTab != null && curTab.getData() instanceof QueryResultsContainer) {
-            return ((QueryResultsContainer)curTab.getData()).isReadyToRun();
-        }
-
-        return curQueryProcessor != null &&
-                curQueryProcessor.getFirstResults().isReadyToRun();
     }
 
     private void showScriptPositionRuler(boolean show)
@@ -1683,7 +1659,7 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean lastFocusInEditor = true;
         @Override
         public IFindReplaceTarget getTarget() {
-            ResultSetViewer rsv = getResultSetViewer();
+            ResultSetViewer rsv = getActiveResultSetViewer();
             boolean focusInEditor = getTextViewer().getTextWidget().isFocusControl();
             if (!focusInEditor) {
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
@@ -1707,7 +1683,7 @@ public class SQLEditor extends SQLEditorBase implements
         private boolean lastFocusInEditor = true;
         @Override
         public ISelectionProvider getProvider() {
-            ResultSetViewer rsv = getResultSetViewer();
+            ResultSetViewer rsv = getActiveResultSetViewer();
             boolean focusInEditor = getTextViewer().getTextWidget().isFocusControl();
             if (!focusInEditor) {
                 if (rsv != null && rsv.getActivePresentation().getControl().isFocusControl()) {
