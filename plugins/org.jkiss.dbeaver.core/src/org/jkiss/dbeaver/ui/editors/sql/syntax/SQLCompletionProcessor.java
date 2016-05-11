@@ -518,7 +518,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             } else if (parent instanceof DBSEntity) {
                 children = ((DBSEntity)parent).getAttributes(monitor);
             }
-            if (children != null && !children.isEmpty() && startPart != null) {
+            if (children != null && !children.isEmpty()) {
                 List<DBSObject> matchedObjects = new ArrayList<>();
                 final Map<String, Integer> scoredMatches = new HashMap<>();
                 for (DBSObject child : children) {
@@ -526,7 +526,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         // Skip hidden
                         continue;
                     }
-                    int score = TextUtils.fuzzyScore(child.getName(), startPart, Locale.getDefault());
+                    int score = startPart == null ? 1 : TextUtils.fuzzyScore(child.getName(), startPart, Locale.getDefault());
                     if (score > 0) {
                         matchedObjects.add(child);
                         scoredMatches.put(child.getName(), score);
@@ -538,7 +538,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         public int compare(DBSObject o1, DBSObject o2) {
                             int score1 = scoredMatches.get(o1.getName());
                             int score2 = scoredMatches.get(o2.getName());
-                            return score1 - score2;
+                            return score2 - score1;
                         }
                     });
                     for (DBSObject child : matchedObjects) {
