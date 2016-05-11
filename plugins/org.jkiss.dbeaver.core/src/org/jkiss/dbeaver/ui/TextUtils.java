@@ -255,6 +255,10 @@ public class TextUtils {
                 if (queryChar == termChar) {
                     // simple character matches result in one point
                     score++;
+                    if (termIndex == 0 || !Character.isLetter(termLowerCase.charAt(termIndex - 1))) {
+                        // Previous character was a divider
+                        score++;
+                    }
 
                     // subsequent character matches further improve
                     // the score.
