@@ -533,14 +533,19 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     }
                 }
                 if (!matchedObjects.isEmpty()) {
-                    Collections.sort(matchedObjects, new Comparator<DBSObject>() {
-                        @Override
-                        public int compare(DBSObject o1, DBSObject o2) {
-                            int score1 = scoredMatches.get(o1.getName());
-                            int score2 = scoredMatches.get(o2.getName());
-                            return score2 - score1;
-                        }
-                    });
+                    if (startPart != null) {
+                        Collections.sort(matchedObjects, new Comparator<DBSObject>() {
+                            @Override
+                            public int compare(DBSObject o1, DBSObject o2) {
+                                int score1 = scoredMatches.get(o1.getName());
+                                int score2 = scoredMatches.get(o2.getName());
+                                if (score1 == score2) {
+                                    return o1.getName().compareTo(o2.getName());
+                                }
+                                return score2 - score1;
+                            }
+                        });
+                    }
                     for (DBSObject child : matchedObjects) {
                         proposals.add(makeProposalsFromObject(monitor, child));
                     }
