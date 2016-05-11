@@ -1580,7 +1580,7 @@ public class ResultSetViewer extends Viewer
             });
         } else {
             UIUtils.showErrorDialog(
-                viewerPanel.getShell(),
+                null,
                 "Error executing query",
                 dataContainer == null ?
                     "Viewer detached from data source" :
@@ -1809,7 +1809,7 @@ public class ResultSetViewer extends Viewer
     public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
     {
         if (!model.isSingleSource()) {
-            UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Can't save data for result set from multiple sources");
+            UIUtils.showErrorDialog(null, "Apply changes error", "Can't save data for result set from multiple sources");
             return false;
         }
         try {
@@ -1823,13 +1823,13 @@ public class ResultSetViewer extends Viewer
             if (needPK) {
                 // If we have deleted or updated rows then check for unique identifier
                 if (!checkEntityIdentifier()) {
-                    //UIUtils.showErrorDialog(getControl().getShell(), "Can't apply changes", "Can't apply data changes - not unique identifier defined");
+                    //UIUtils.showErrorDialog(null, "Can't apply changes", "Can't apply data changes - not unique identifier defined");
                     return false;
                 }
             }
             return new ResultSetPersister(this).applyChanges(monitor, listener);
         } catch (DBException e) {
-            UIUtils.showErrorDialog(getControl().getShell(), "Apply changes error", "Error saving changes in database", e);
+            UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
             return false;
         }
     }
@@ -1978,7 +1978,7 @@ public class ResultSetViewer extends Viewer
         DBSEntity entity = model.getSingleSource();
         if (entity == null) {
             UIUtils.showErrorDialog(
-                viewerPanel.getShell(),
+                null,
                 "Unrecognized entity",
                 "Can't detect source entity");
             return false;
@@ -2011,13 +2011,13 @@ public class ResultSetViewer extends Viewer
                 // We shouldn't be here ever!
                 // Virtual id should be created if we missing natural one
                 UIUtils.showErrorDialog(
-                    viewerPanel.getShell(),
+                    null,
                     "No entity identifier",
                     "Entity " + entity.getName() + " has no unique key");
                 return false;
             } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
                 UIUtils.showErrorDialog(
-                    viewerPanel.getShell(),
+                    null,
                     "No entity identifier",
                     "Attributes of '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey()) + "' are missing in result set");
                 return false;
