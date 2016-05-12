@@ -117,6 +117,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propInfo.expensive();
     }
 
+    public boolean isNumeric()
+    {
+        Class<?> propType = getGetter().getReturnType();
+        return propType != null && BeanUtils.isNumericType(propType);
+    }
+
     public boolean supportsPreview()
     {
         return propInfo.supportsPreview();

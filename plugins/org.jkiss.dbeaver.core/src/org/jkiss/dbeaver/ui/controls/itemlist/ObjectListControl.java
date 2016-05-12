@@ -704,15 +704,16 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         if (objectColumn == null) {
             Item columnItem;
             ViewerColumn newColumn;
+            boolean numeric = prop.isNumeric();
             if (renderer.isTree()) {
-                TreeViewerColumn viewerColumn = new TreeViewerColumn ((TreeViewer) itemsViewer, SWT.NONE);
+                TreeViewerColumn viewerColumn = new TreeViewerColumn ((TreeViewer) itemsViewer, numeric ? SWT.RIGHT : SWT.NONE);
                 viewerColumn.getColumn().setText(prop.getDisplayName());
                 viewerColumn.getColumn().setToolTipText(prop.getDescription());
                 viewerColumn.getColumn().addListener(SWT.Selection, renderer.getSortListener());
                 newColumn = viewerColumn;
                 columnItem = viewerColumn.getColumn();
             } else {
-                TableViewerColumn viewerColumn = new TableViewerColumn ((TableViewer) itemsViewer, SWT.NONE);
+                TableViewerColumn viewerColumn = new TableViewerColumn ((TableViewer) itemsViewer, numeric ? SWT.RIGHT : SWT.NONE);
                 viewerColumn.getColumn().setText(prop.getDisplayName());
                 viewerColumn.getColumn().setToolTipText(prop.getDescription());
                 //column.setData(prop);
