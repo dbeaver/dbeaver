@@ -65,7 +65,7 @@ class GridColumnRenderer extends AbstractRenderer
         return font != null ? font : grid.normalFont;
     }
 
-    public void paint(GC gc, Rectangle bounds, boolean selected, Object element) {
+    public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
         //GridColumn col = grid.getColumnByElement(cell.col);
         //AbstractRenderer arrowRenderer = col.getSortRenderer();
         int sortOrder = grid.getContentProvider().getSortOrder(element);
@@ -78,7 +78,7 @@ class GridColumnRenderer extends AbstractRenderer
 
         boolean drawSelected = false;
 
-        if (flat && selected) {
+        if (flat && (selected || hovering)) {
             gc.setBackground(grid.getCellHeaderSelectionBackground());
             //gc.setForeground(grid.getCellHeaderSelectionForeground());
         } else {

@@ -20,8 +20,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
-import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -30,7 +28,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.impl.data.DateTimeValueHandler;
+import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -41,14 +40,11 @@ import java.util.Date;
 /**
  * JDBC string value handler
  */
-public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
-
-    private DBDDataFormatterProfile formatterProfile;
-    protected DBDDataFormatter formatter;
+public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
     public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
-        this.formatterProfile = formatterProfile;
+        super(formatterProfile);
     }
 
     @Override
@@ -113,44 +109,10 @@ public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
         }
     }
 
-    @Override
-    public Date getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
-    {
-        if (object == null) {
-            return null;
-        } else if (object instanceof Date) {
-            return (Date) (copy ? ((Date)object).clone() : object);
-        } else if (object instanceof String) {
-            String strValue = (String)object;
-            try {
-                return (Date) getFormatter(type).parseValue(strValue, null);
-            } catch (ParseException e) {
-                // Try to parse with standard date/time formats
-
-                //DateFormat.get
-                try {
-                    // Try to parse as java date
-                    @SuppressWarnings("deprecation")
-                    Date result = new Date(strValue);
-                    return result;
-                } catch (Exception e1) {
-                    log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
-                    return null;
-                }
-            }
-        } else {
-            log.warn("Unrecognized type '" + object.getClass().getName() + "' - can't convert to date/time value");
-            return null;
-        }
-    }
-
     @NotNull
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value == null) {
-            return super.getValueDisplayString(column, null, format);
-        }
         if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Calendar cal = Calendar.getInstance();
             cal.setTime((Date) value);
@@ -171,11 +133,18 @@ public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
                         "','YYYY-MM-DD HH24:MI:SS')";
             }
         } else {
-            try {
-                return getFormatter(column).formatValue(value);
-            } catch (Exception e) {
-                return String.valueOf(value);
-            }
+            return super.getValueDisplayString(column, null, format);
+        }
+    }
+
+
+    @NotNull
+    protected String getFormatterId(DBSTypedObject column)
+    {
+        switch (column.getTypeID()) {
+            case java.sql.Types.TIME: return DBDDataFormatter.TYPE_NAME_TIME;
+            case java.sql.Types.DATE: return DBDDataFormatter.TYPE_NAME_DATE;
+            default: return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
         }
     }
 
@@ -219,44 +188,6 @@ public class JDBCDateTimeValueHandler extends DateTimeValueHandler {
         } else {
             return null;
         }
-    }
-
-    protected static String getTwoDigitValue(int value)
-    {
-        if (value < 10) {
-            return "0" + value;
-        } else {
-            return String.valueOf(value);
-        }
-    }
-
-    public DBDDataFormatter getFormatter(String typeId)
-    {
-        try {
-            return formatterProfile.createFormatter(typeId);
-        } catch (Exception e) {
-            log.error("Can't create formatter for datetime value handler", e); //$NON-NLS-1$
-            return DefaultDataFormatter.INSTANCE;
-        }
-    }
-
-    @NotNull
-    public DBDDataFormatter getFormatter(DBSTypedObject column)
-    {
-        if (formatter == null) {
-            switch (column.getTypeID()) {
-                case java.sql.Types.TIME:
-                    formatter = getFormatter(DBDDataFormatter.TYPE_NAME_TIME);
-                    break;
-                case java.sql.Types.DATE:
-                    formatter = getFormatter(DBDDataFormatter.TYPE_NAME_DATE);
-                    break;
-                default:
-                    formatter = getFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP);
-                    break;
-            }
-        }
-        return formatter;
     }
 
 }
