@@ -24,10 +24,7 @@ import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -376,6 +373,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
         ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
+            if (required == ResultSetViewer.class) {
+                return resultsView;
+            }
             Object adapter = resultsView.getAdapter(required);
             if (adapter != null) {
                 return adapter;
@@ -525,6 +525,25 @@ public class SQLEditor extends SQLEditorBase implements
                             public void run()
                             {
                                 closeExtraResultTabs(null);
+                            }
+                        });
+                    }
+                    final CTabItem activeTab = resultTabs.getSelection();
+                    if (activeTab != null && resultTabs.indexOf(activeTab) > 0 && activeTab.getData() instanceof QueryResultsContainer) {
+                        manager.add(new Separator());
+                        final boolean isPinned = !activeTab.getShowClose();
+                        manager.add(new Action(isPinned ? "Unpin tab" : "Pin tab") {
+                            @Override
+                            public void run()
+                            {
+                                activeTab.setShowClose(!activeTab.getShowClose());
+                            }
+                        });
+                        manager.add(new Action("Set tab title") {
+                            @Override
+                            public void run()
+                            {
+
                             }
                         });
                     }
@@ -794,7 +813,7 @@ public class SQLEditor extends SQLEditorBase implements
         // Close all tabs except first one
         for (int i = resultTabs.getItemCount() - 1; i > 0; i--) {
             CTabItem item = resultTabs.getItem(i);
-            if (item.getData() instanceof QueryResultsContainer) {
+            if (item.getData() instanceof QueryResultsContainer && item.getShowClose()) {
                 QueryResultsContainer resultsProvider = (QueryResultsContainer)item.getData();
                 if (queryProcessor != null && queryProcessor != resultsProvider.queryProcessor) {
                     continue;
