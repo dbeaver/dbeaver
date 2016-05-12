@@ -114,15 +114,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             log.warn(e);
         }
 
-        // Always use alias. Some criteria doesn't work without alias
-        // (e.g. structured attributes in Oracle requires table alias)
-        String tableAlias = null;
-        if (dataSource instanceof SQLDataSource) {
-            if (((SQLDataSource )dataSource).getSQLDialect().supportsAliasInSelect()) {
-                tableAlias = DEFAULT_TABLE_ALIAS;
-            }
-        }
-
         DBDPseudoAttribute rowIdAttribute = null;
         if ((flags & FLAG_READ_PSEUDO) != 0 && this instanceof DBDPseudoAttributeContainer) {
             try {
@@ -133,6 +124,19 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 log.warn("Can't get pseudo attributes for '" + getName() + "'", e);
             }
         }
+
+        // Always use alias if we have criteria or ROWID.
+        // Some criteria doesn't work without alias
+        // (e.g. structured attributes in Oracle requires table alias)
+        String tableAlias = null;
+        if (dataFilter.hasConditions() || rowIdAttribute != null) {
+            if (dataSource instanceof SQLDataSource) {
+                if (((SQLDataSource) dataSource).getSQLDialect().supportsAliasInSelect()) {
+                    tableAlias = DEFAULT_TABLE_ALIAS;
+                }
+            }
+        }
+
         if (rowIdAttribute != null && tableAlias == null) {
             log.warn("Can't query ROWID - table alias not supported");
             rowIdAttribute = null;
