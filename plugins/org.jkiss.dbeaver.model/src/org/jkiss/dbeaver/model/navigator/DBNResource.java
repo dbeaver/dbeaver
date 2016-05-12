@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.ui.IContributorResourceAdapter;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -37,7 +39,7 @@ import java.util.*;
 /**
  * DBNResource
  */
-public class DBNResource extends DBNNode
+public class DBNResource extends DBNNode// implements IContributorResourceAdapter
 {
     private static final Log log = Log.getLog(DBNResource.class);
     private static final DBNNode[] EMPTY_NODES = new DBNNode[0];
@@ -440,4 +442,21 @@ public class DBNResource extends DBNNode
         return resource == null ? null : new Date(resource.getLocation().toFile().lastModified()).toString();
     }
 
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (resource != null && adapter.isAssignableFrom(resource.getClass())) {
+            return adapter.cast(resource);
+        }
+        return super.getAdapter(adapter);
+    }
+
+/*
+    @Override
+    public IResource getAdaptedResource(IAdaptable adaptable) {
+        if (adaptable instanceof DBNResource) {
+            return ((DBNResource) adaptable).resource;
+        }
+        return null;
+    }
+*/
 }

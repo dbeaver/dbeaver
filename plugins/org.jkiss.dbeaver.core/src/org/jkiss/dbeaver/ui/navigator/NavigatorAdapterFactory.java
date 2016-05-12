@@ -90,12 +90,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
             }
         } else if (IResource.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNResource) {
-                IResource resource = ((DBNResource) adaptableObject).getResource();
-                if (resource != null && adapterType.isAssignableFrom(resource.getClass())) {
-                    return resource;
-                } else {
-                    return null;
-                }
+                return ((DBNResource) adaptableObject).getAdapter(adapterType);
             }
         } else if (adapterType == IPropertySource.class) {
             DBPObject dbObject = null;
