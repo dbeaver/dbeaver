@@ -83,6 +83,7 @@ class ProjectCreateWizardPageSettings extends WizardPage {
             @Override
             public void modifyText(ModifyEvent e) {
                 createData.setPath(new File(projectPathText.getText()));
+                updateState();
             }
         });
 
@@ -106,6 +107,11 @@ class ProjectCreateWizardPageSettings extends WizardPage {
 
     private void updateState()
     {
+        if (createData.getPath().exists()) {
+            setErrorMessage("Path '" + createData.getPath().getAbsolutePath() + "' exists (import).");
+        } else {
+            setErrorMessage(null);
+        }
         getContainer().updateButtons();
     }
 

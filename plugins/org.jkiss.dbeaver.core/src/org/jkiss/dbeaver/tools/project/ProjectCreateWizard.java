@@ -100,6 +100,7 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
             description.setComment(data.getDescription());
         }
         description.setLocation(new Path(data.getPath().getAbsolutePath()));
+        //description.set
         //project.setDescription(description, RuntimeUtils.getNestedMonitor(monitor));
 
         final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
