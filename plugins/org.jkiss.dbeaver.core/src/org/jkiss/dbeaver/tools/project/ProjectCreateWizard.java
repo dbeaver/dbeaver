@@ -21,6 +21,8 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -92,15 +94,22 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
         if (project.exists()) {
             throw new DBException(NLS.bind(CoreMessages.dialog_project_create_wizard_error_already_exists, data.getName()));
         }
-        project.create(RuntimeUtils.getNestedMonitor(monitor));
 
-        project.open(RuntimeUtils.getNestedMonitor(monitor));
-
+        final IProjectDescription description = workspace.newProjectDescription(project.getName());
         if (!CommonUtils.isEmpty(data.getDescription())) {
-            final IProjectDescription description = workspace.newProjectDescription(project.getName());
             description.setComment(data.getDescription());
-            project.setDescription(description, RuntimeUtils.getNestedMonitor(monitor));
         }
+        description.setLocation(new Path(data.getPath().getAbsolutePath()));
+        //project.setDescription(description, RuntimeUtils.getNestedMonitor(monitor));
+
+        final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
+        if (!project.exists()) {
+            project.create(description, nestedMonitor);
+        } else {
+            project.open(nestedMonitor);
+        }
+
+        project.open(nestedMonitor);
     }
 
 }
