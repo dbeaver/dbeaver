@@ -21,9 +21,8 @@ package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.bundle.ModelActivator;
-import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMConstants;
@@ -117,7 +116,7 @@ public final class ModelPreferences
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_MAX_ROWS_USE_SQL, false);
-        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_PRESENTATION, DBDBinaryFormatter.FORMATS[0].getId());
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_PRESENTATION, DBConstants.BINARY_FORMATS[0].getId());
         PrefUtils.setDefaultPreferenceValue(store, RESULT_SET_BINARY_STRING_MAX_LEN, 32);
 
         // QM

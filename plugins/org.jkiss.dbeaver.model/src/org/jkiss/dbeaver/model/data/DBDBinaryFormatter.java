@@ -26,12 +26,6 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterString;
  */
 public interface DBDBinaryFormatter {
 
-    DBDBinaryFormatter FORMATS[] = {
-        new BinaryFormatterString(),
-        new BinaryFormatterHex(),
-        new BinaryFormatterBase64(),
-    };
-
     String getId();
 
     String getTitle();

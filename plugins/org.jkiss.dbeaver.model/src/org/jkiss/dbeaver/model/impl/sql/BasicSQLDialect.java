@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
@@ -335,7 +336,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
-        return BinaryFormatterHex.INSTANCE;
+        return BinaryFormatterHexNative.INSTANCE;
     }
 
     protected void loadStandardKeywords()
