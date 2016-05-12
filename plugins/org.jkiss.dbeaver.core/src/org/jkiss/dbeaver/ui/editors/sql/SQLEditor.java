@@ -109,6 +109,7 @@ public class SQLEditor extends SQLEditorBase implements
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
 
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
+    private static Image IMG_DATA_GRID_LOCKED = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid_locked.png").createImage(); //$NON-NLS-1$
     private static Image IMG_EXPLAIN_PLAN = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
     private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
     private static Image IMG_OUTPUT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output.png").createImage(); //$NON-NLS-1$
@@ -530,13 +531,14 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                     final CTabItem activeTab = resultTabs.getSelection();
                     if (activeTab != null && resultTabs.indexOf(activeTab) > 0 && activeTab.getData() instanceof QueryResultsContainer) {
+                        final QueryResultsContainer resultsContainer = (QueryResultsContainer)activeTab.getData();
                         manager.add(new Separator());
-                        final boolean isPinned = !activeTab.getShowClose();
+                        final boolean isPinned = resultsContainer.isPinned();
                         manager.add(new Action(isPinned ? "Unpin tab" : "Pin tab") {
                             @Override
                             public void run()
                             {
-                                activeTab.setShowClose(!activeTab.getShowClose());
+                                resultsContainer.setPinned(!isPinned);
                             }
                         });
                         manager.add(new Action("Set tab title") {
@@ -760,7 +762,11 @@ public class SQLEditor extends SQLEditorBase implements
                 queryProcessor.processQueries(Collections.singletonList(query), true, export);
             }
         } else {
-            // Use current tab
+            // Use current tab.
+            // If current tab was pinned then use first tab
+            if (curQueryProcessor.getFirstResults().isPinned()) {
+                curQueryProcessor = queryProcessors.get(0);
+            }
             closeExtraResultTabs(curQueryProcessor);
             resultTabs.setSelection(curQueryProcessor.getFirstResults().tabItem);
             curQueryProcessor.processQueries(queries, false, export);
@@ -1359,6 +1365,15 @@ public class SQLEditor extends SQLEditorBase implements
             });
         }
 
+        public boolean isPinned() {
+            return resultTabs.indexOf(tabItem) > 0 && !tabItem.getShowClose();
+        }
+
+        public void setPinned(boolean pinned) {
+            tabItem.setShowClose(!pinned);
+            tabItem.setImage(pinned ? IMG_DATA_GRID_LOCKED : IMG_DATA_GRID);
+        }
+
         @Override
         public DBCExecutionContext getExecutionContext() {
             return SQLEditor.this.getExecutionContext();
@@ -1480,6 +1495,7 @@ public class SQLEditor extends SQLEditorBase implements
         public String toString() {
             return "SQL Query / " + SQLEditor.this.getEditorInput().getName();
         }
+
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
