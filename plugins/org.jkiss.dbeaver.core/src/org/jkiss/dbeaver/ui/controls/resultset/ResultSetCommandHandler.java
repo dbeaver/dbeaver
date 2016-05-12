@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -74,8 +75,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
             return ((IResultSetContainer) activePart).getResultSetViewer();
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
+        } else {
+            return activePart.getAdapter(ResultSetViewer.class);
         }
-        return null;
     }
 
     @Nullable
