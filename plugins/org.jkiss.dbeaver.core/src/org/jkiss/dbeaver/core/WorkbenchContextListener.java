@@ -25,6 +25,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -41,9 +42,11 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
     public static final String SQL_EDITOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql";
+    public static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
 
     private IContextActivation activationNavigator;
     private IContextActivation activationSQL;
+    private IContextActivation activationResults;
 
     public WorkbenchContextListener() {
         // Register in already created windows and pages
@@ -122,6 +125,12 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                     contextService.deactivateContext(activationSQL);
                 }
                 activationSQL = contextService.activateContext(SQL_EDITOR_CONTEXT_ID);
+            }
+            if (part.getAdapter(ResultSetViewer.class) != null) {
+                if (activationResults != null) {
+                    contextService.deactivateContext(activationResults);
+                }
+                activationResults = contextService.activateContext(RESULTS_CONTEXT_ID);
             }
         }
         finally {

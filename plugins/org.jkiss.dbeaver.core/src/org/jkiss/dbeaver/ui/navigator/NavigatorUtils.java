@@ -63,7 +63,6 @@ import java.util.*;
 public class NavigatorUtils {
 
     public static final String MB_NAVIGATOR_ADDITIONS = "navigator_additions";
-    public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
 
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
     {

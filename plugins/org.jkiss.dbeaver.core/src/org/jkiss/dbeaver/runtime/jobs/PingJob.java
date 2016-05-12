@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.ArrayList;
+
 /**
  * PingJob
  */
@@ -46,7 +48,7 @@ public class PingJob extends AbstractJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         log.debug("Ping connection " + dataSource.getContainer().getId());
-        for (final DBCExecutionContext context : dataSource.getAllContexts()) {
+        for (final DBCExecutionContext context : new ArrayList<>(dataSource.getAllContexts())) {
             try {
                 context.isContextAlive(monitor);
             } catch (Exception e) {
