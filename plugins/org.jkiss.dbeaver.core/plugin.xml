@@ -1757,9 +1757,10 @@
     <extension point="org.eclipse.ui.bindings">
 
         <key commandId="org.jkiss.dbeaver.ui.tools.menu" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+`"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+TAB"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.navigateLink" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SPACE"/>
+
+        <key commandId="org.jkiss.dbeaver.core.resultset.toggleMode" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="TAB"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+TAB"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.navigateLink" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SPACE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.first" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
@@ -1767,14 +1768,14 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+PAGE_DOWN"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+END"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.add" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.copy" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+INSERT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.delete" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+DELETE"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.applyChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+S"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.rejectChanges" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+R"/>
         <!--<key commandId="org.jkiss.dbeaver.core.resultset.cell.save" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ENTER"/>-->
-        <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.grid.togglePreview" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F7"/>
 
         <key commandId="org.jkiss.dbeaver.core.edit.copy.special" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+C"/>
         <key commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+D"/>
@@ -1785,7 +1786,7 @@
         <!-- SQL Editor -->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>
         <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
-        <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+L"/>
+        <!--<key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+L"/>-->
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+\"/>
@@ -1816,6 +1817,11 @@
               parentId="org.eclipse.ui.contexts.window"
               name="Database navigator context"
               description="Database navigator context"/>
+        <context
+                id="org.jkiss.dbeaver.ui.context.resultset"
+                parentId="org.eclipse.ui.contexts.window"
+                name="Results viewer context"
+                description="Results viewer context"/>
         <context
               id="org.jkiss.dbeaver.ui.editors.sql"
               name="SQL Editor Context"
