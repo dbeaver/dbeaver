@@ -186,6 +186,7 @@ public abstract class LightGrid extends Canvas {
      */
     private int headerHeight = 0;
 
+    boolean hoveringOnHeader = false;
     boolean hoveringOnColumnSorter = false;
     boolean hoveringOnLink = false;
 
@@ -1845,6 +1846,7 @@ public abstract class LightGrid extends Canvas {
     private void handleHoverOnColumnHeader(int x, int y)
     {
         boolean overSorter = false, overResizer = false;
+        hoveringOnHeader = false;
         if (y <= headerHeight) {
             int x2 = 0;
 
@@ -1864,19 +1866,30 @@ public abstract class LightGrid extends Canvas {
                 }
             } else {
                 for (GridColumn column : columns) {
-                    if (column.isOverSortArrow(x - x2, y)) {
-                        overSorter = true;
-                        columnBeingSorted = column;
-                        break;
+                    if (x >= x2 && x <= x2 + column.getWidth()) {
+                        hoveringOnHeader = true;
+                        if (column.isOverSortArrow(x - x2, y)) {
+                            overSorter = true;
+                            columnBeingSorted = column;
+                            break;
+                        }
+                        if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
+                            overResizer = true;
+                            columnBeingResized = column;
+                            break;
+                        }
                     }
                     x2 += column.getWidth();
-                    if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
-                        overResizer = true;
-                        columnBeingResized = column;
-                        break;
-                    }
                 }
             }
+            // Redraw header
+//            GC gc = new GC(this);
+//            try {
+//                paintHeader(gc);
+//            } catch (Exception e) {
+//                gc.dispose();
+//            }
+
         } else if (x <= rowHeaderWidth) {
             // Hover in row header
         }
@@ -2128,7 +2141,8 @@ public abstract class LightGrid extends Canvas {
             paintHeight = columnHeight * (maxColumnDepth - level + 1);
         }
         Rectangle bounds = new Rectangle(x, y, column.getWidth(), paintHeight);
-        columnHeaderRenderer.paint(gc, bounds, selectedColumns.contains(column), column.getElement());
+        boolean hover = hoveringOnHeader && hoveringColumn == column;
+        columnHeaderRenderer.paint(gc, bounds, selectedColumns.contains(column), hover, column.getElement());
         if (!CommonUtils.isEmpty(children)) {
             // Draw child columns
             level++;

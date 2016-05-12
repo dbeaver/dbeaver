@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
@@ -518,15 +519,36 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 children = ((DBSEntity)parent).getAttributes(monitor);
             }
             if (children != null && !children.isEmpty()) {
+                List<DBSObject> matchedObjects = new ArrayList<>();
+                final Map<String, Integer> scoredMatches = new HashMap<>();
                 for (DBSObject child : children) {
-                    if (startPart != null && !child.getName().toUpperCase().startsWith(startPart)) {
-                        continue;
-                    }
                     if (child instanceof DBPHiddenObject && ((DBPHiddenObject) child).isHidden()) {
                         // Skip hidden
                         continue;
                     }
-                    proposals.add(makeProposalsFromObject(monitor, child));
+                    int score = startPart == null ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
+                    if (score > 0) {
+                        matchedObjects.add(child);
+                        scoredMatches.put(child.getName(), score);
+                    }
+                }
+                if (!matchedObjects.isEmpty()) {
+                    if (startPart != null) {
+                        Collections.sort(matchedObjects, new Comparator<DBSObject>() {
+                            @Override
+                            public int compare(DBSObject o1, DBSObject o2) {
+                                int score1 = scoredMatches.get(o1.getName());
+                                int score2 = scoredMatches.get(o2.getName());
+                                if (score1 == score2) {
+                                    return o1.getName().compareTo(o2.getName());
+                                }
+                                return score2 - score1;
+                            }
+                        });
+                    }
+                    for (DBSObject child : matchedObjects) {
+                        proposals.add(makeProposalsFromObject(monitor, child));
+                    }
                 }
             }
         } catch (DBException e) {
