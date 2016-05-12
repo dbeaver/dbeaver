@@ -15,44 +15,41 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.data;
-
-import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
+package org.jkiss.dbeaver.model.impl.data.formatters;
 
 /**
- * PostgreBinaryFormatter
+ * Hex formatter
  */
-public class PostgreBinaryFormatter extends BinaryFormatterHex {
+public class BinaryFormatterHexNative extends BinaryFormatterHex {
 
-    public static final PostgreBinaryFormatter INSTANCE = new PostgreBinaryFormatter();
-    private static final String HEX_PREFIX = "decode('";
-    private static final String HEX_POSTFIX = "','hex')";
+    public static final BinaryFormatterHexNative INSTANCE = new BinaryFormatterHexNative();
+
+    private static final String HEX_PREFIX = "0x";
+    private static final String HEX_PREFIX2 = "0X";
 
     @Override
     public String getId()
     {
-        return "pghex";
+        return "hex_native";
     }
 
     @Override
     public String getTitle()
     {
-        return "PostgreSQL Hex";
+        return "Hex";
     }
 
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return HEX_PREFIX + super.toString(bytes, offset, length) + HEX_POSTFIX;
+        return HEX_PREFIX + super.toString(bytes, offset, length);
     }
 
     @Override
     public byte[] toBytes(String string)
     {
-        if (string.startsWith(HEX_PREFIX)) {
-            string = string.substring(
-                HEX_PREFIX.length(),
-                string.length() - HEX_POSTFIX.length());
+        if (string.startsWith(HEX_PREFIX) || string.startsWith(HEX_PREFIX2)) {
+            string = string.substring(2);
         }
         return super.toBytes(string);
     }

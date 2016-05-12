@@ -1316,13 +1316,13 @@ public final class DBUtils {
                 return formatter;
             }
         }
-        return DBDBinaryFormatter.FORMATS[0];
+        return DBConstants.BINARY_FORMATS[0];
     }
 
     @Nullable
     public static DBDBinaryFormatter getBinaryPresentation(String id)
     {
-        for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
+        for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
             if (formatter.getId().equals(id)) {
                 return formatter;
             }

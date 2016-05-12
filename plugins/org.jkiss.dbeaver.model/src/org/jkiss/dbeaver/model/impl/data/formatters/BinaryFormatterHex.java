@@ -27,9 +27,6 @@ public class BinaryFormatterHex implements DBDBinaryFormatter {
 
     public static final BinaryFormatterHex INSTANCE = new BinaryFormatterHex();
 
-    private static final String HEX_PREFIX = "0x";
-    private static final String HEX_PREFIX2 = "0X";
-
     @Override
     public String getId()
     {
@@ -45,7 +42,7 @@ public class BinaryFormatterHex implements DBDBinaryFormatter {
     @Override
     public String toString(byte[] bytes, int offset, int length)
     {
-        return HEX_PREFIX + new String(toHexChars(bytes, offset, length));
+        return new String(toHexChars(bytes, offset, length));
     }
 
     protected static char[] toHexChars(byte[] bytes, int offset, int length) {
@@ -61,9 +58,6 @@ public class BinaryFormatterHex implements DBDBinaryFormatter {
     @Override
     public byte[] toBytes(String string)
     {
-        if (string.startsWith(HEX_PREFIX) || string.startsWith(HEX_PREFIX2)) {
-            string = string.substring(2);
-        }
         int length = string.length();
         if (length > 0 && length % 2 != 0) {
             length--;

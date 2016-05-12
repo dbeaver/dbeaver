@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -103,7 +104,7 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             //binaryShowStrings = UIUtils.createLabelCheckbox(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_use_strings, false);
 
             binaryPresentationCombo = UIUtils.createLabelCombo(binaryGroup, CoreMessages.pref_page_database_resultsets_label_binary_presentation, SWT.DROP_DOWN | SWT.READ_ONLY);
-            for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
+            for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
                 binaryPresentationCombo.add(formatter.getTitle());
             }
 
@@ -191,7 +192,7 @@ public class PrefPageResultSetBinaries extends TargetPrefPage
             store.setValue(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
 
             String presentationTitle = binaryPresentationCombo.getItem(binaryPresentationCombo.getSelectionIndex());
-            for (DBDBinaryFormatter formatter : DBDBinaryFormatter.FORMATS) {
+            for (DBDBinaryFormatter formatter : DBConstants.BINARY_FORMATS) {
                 if (formatter.getTitle().equals(presentationTitle)) {
                     store.setValue(ModelPreferences.RESULT_SET_BINARY_PRESENTATION, formatter.getId());
                     break;
