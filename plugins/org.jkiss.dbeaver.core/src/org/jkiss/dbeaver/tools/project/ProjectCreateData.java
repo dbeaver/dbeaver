@@ -18,6 +18,8 @@
 
 package org.jkiss.dbeaver.tools.project;
 
+import java.io.File;
+
 /**
  * Create data
  */
@@ -25,6 +27,7 @@ class ProjectCreateData {
 
     private String name;
     private String description;
+    private File path;
 
     public String getName()
     {
@@ -44,5 +47,13 @@ class ProjectCreateData {
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public File getPath() {
+        return path;
+    }
+
+    public void setPath(File path) {
+        this.path = path;
     }
 }
