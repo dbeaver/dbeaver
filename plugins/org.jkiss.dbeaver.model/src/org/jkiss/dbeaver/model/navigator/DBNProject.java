@@ -76,7 +76,8 @@ public class DBNProject extends DBNResource
     public String getNodeDescription()
     {
         try {
-            return getProject().getDescription().getComment();
+            final IProject project = getProject();
+            return project == null ? null : project.getDescription().getComment();
         } catch (CoreException e) {
             log.debug(e);
             return null;
