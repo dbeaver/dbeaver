@@ -190,7 +190,6 @@ public class NavigatorUtils {
                     return;
                 }
 
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
                 manager.add(new GroupMarker(MB_NAVIGATOR_ADDITIONS));
 
                 if (workbenchSite != null) {
@@ -215,6 +214,8 @@ public class NavigatorUtils {
                 }
 
                 manager.add(new Separator());
+
+                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
                 manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
                 IServiceLocator serviceLocator;
