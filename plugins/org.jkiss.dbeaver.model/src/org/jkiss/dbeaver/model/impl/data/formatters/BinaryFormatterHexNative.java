@@ -18,7 +18,8 @@
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
 /**
- * Hex formatter
+ * Hex formatter.
+ * Formats binary data to hex with preceding 0x
  */
 public class BinaryFormatterHexNative extends BinaryFormatterHex {
 
