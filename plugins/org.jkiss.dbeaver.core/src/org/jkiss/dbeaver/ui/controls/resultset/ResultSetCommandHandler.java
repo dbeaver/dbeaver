@@ -75,8 +75,10 @@ public class ResultSetCommandHandler extends AbstractHandler {
             return ((IResultSetContainer) activePart).getResultSetViewer();
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
-        } else {
+        } else if (activePart != null) {
             return activePart.getAdapter(ResultSetViewer.class);
+        } else {
+            return null;
         }
     }
 
