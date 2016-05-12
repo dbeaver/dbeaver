@@ -124,7 +124,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 ((IFolder)resource).delete(true, false, new NullProgressMonitor());
             } else if (resource instanceof IProject) {
                 // Delete project (with all contents)
-                final boolean deleteContent = UIUtils.confirmAction(workbenchWindow.getShell(), "Delete project", "Delete project contents?");
+                final boolean deleteContent = UIUtils.confirmAction(workbenchWindow.getShell(), "Delete project", "Delete project '" + resource.getName() + "' contents?");
                 ((IProject) resource).delete(deleteContent, true, new NullProgressMonitor());
             } else if (resource != null) {
                 resource.delete(true, new NullProgressMonitor());
