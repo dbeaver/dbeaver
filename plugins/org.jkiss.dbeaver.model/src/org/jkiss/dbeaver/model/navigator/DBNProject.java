@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -36,7 +35,7 @@ import java.util.List;
 /**
  * DBNProject
  */
-public class DBNProject extends DBNResource implements IAdaptable
+public class DBNProject extends DBNResource
 {
     private static final Log log = Log.getLog(DBNProject.class);
 
@@ -97,13 +96,11 @@ public class DBNProject extends DBNResource implements IAdaptable
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBNProject.class) {
-            return this;
-        } else if (adapter == IProject.class) {
-            return getProject();
+            return adapter.cast(this);
         }
-        return null;
+        return super.getAdapter(adapter);
     }
 
     @Override
