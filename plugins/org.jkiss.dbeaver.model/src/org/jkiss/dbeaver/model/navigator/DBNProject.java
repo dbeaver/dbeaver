@@ -173,4 +173,11 @@ public class DBNProject extends DBNResource
             super.handleChildResourceChange(delta);
         }
     }
+
+    public void openProject() {
+        final DBNProjectDatabases databases = getDatabases();
+        if (databases != null) {
+            databases.getDataSourceRegistry().refreshConfig();
+        }
+    }
 }

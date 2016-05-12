@@ -79,6 +79,12 @@ class ProjectCreateWizardPageSettings extends WizardPage {
         final File projectHome = new File(projectParentDir, DEFAULT_PROJECT_NAME);
         createData.setPath(projectHome);
         projectPathText.setText(projectHome.getAbsolutePath());
+        projectPathText.getTextControl().addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                createData.setPath(new File(projectPathText.getText()));
+            }
+        });
 
         projectNameText.addModifyListener(new ModifyListener() {
             @Override
