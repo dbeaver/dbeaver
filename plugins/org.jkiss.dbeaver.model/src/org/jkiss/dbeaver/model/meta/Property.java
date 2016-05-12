@@ -92,6 +92,11 @@ public @interface Property
 
     String helpContextId() default ""; //NON-NLS-1
 
+    /**
+     * Can be used to format numbers and date/time property values
+     */
+    String format() default ""; //NON-NLS-1
+
     Class<? extends IPropertyValueTransformer> valueTransformer() default IPropertyValueTransformer.class;
 
     Class<? extends IPropertyValueListProvider> listProvider() default IPropertyValueListProvider.class;
