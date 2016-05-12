@@ -133,7 +133,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                         "','YYYY-MM-DD HH24:MI:SS')";
             }
         } else {
-            return super.getValueDisplayString(column, null, format);
+            return super.getValueDisplayString(column, value, format);
         }
     }
 
