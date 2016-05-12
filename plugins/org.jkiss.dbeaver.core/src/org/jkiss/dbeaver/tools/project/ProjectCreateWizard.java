@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -100,8 +101,7 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
             description.setComment(data.getDescription());
         }
         description.setLocation(new Path(data.getPath().getAbsolutePath()));
-        //description.set
-        //project.setDescription(description, RuntimeUtils.getNestedMonitor(monitor));
+        description.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
 
         final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
         if (!project.exists()) {

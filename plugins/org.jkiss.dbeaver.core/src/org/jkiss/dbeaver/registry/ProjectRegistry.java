@@ -17,19 +17,20 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.*;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.DBPProjectManager;
-import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
+import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -306,6 +307,7 @@ public class ProjectRegistry implements DBPProjectManager {
             project.open(monitor);
             final IProjectDescription description = workspace.newProjectDescription(project.getName());
             description.setComment("General DBeaver project");
+            description.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
             project.setDescription(description, monitor);
 
             return project;

@@ -2277,6 +2277,13 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.ui.general" label="update http proxy"/>
     </extension>
 
+    <extension point="org.eclipse.core.resources.natures" id="org.jkiss.dbeaver.DBeaverNature" name="DBeaver Nature">
+        <runtime>
+            <run class="org.jkiss.dbeaver.core.DBeaverNature">
+            </run>
+        </runtime>
+    </extension>
+
     <!-- DBeaver extensions -->
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
