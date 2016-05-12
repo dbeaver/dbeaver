@@ -36,6 +36,7 @@
 		<module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
 		<module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
 		<module>plugins/org.jkiss.dbeaver.ext.vertica</module>
+		<module>plugins/org.jkiss.dbeaver.ext.teradata</module>
 		<module>plugins/org.jkiss.dbeaver.ext.wmi</module>
 		<module>plugins/org.jkiss.dbeaver.model</module>
 		<module>plugins/org.jkiss.dbeaver.test</module>
