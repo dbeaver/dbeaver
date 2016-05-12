@@ -106,11 +106,10 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
         final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
         if (!project.exists()) {
             project.create(description, nestedMonitor);
+            project.open(nestedMonitor);
         } else {
             project.open(nestedMonitor);
         }
-
-        project.open(nestedMonitor);
     }
 
 }
