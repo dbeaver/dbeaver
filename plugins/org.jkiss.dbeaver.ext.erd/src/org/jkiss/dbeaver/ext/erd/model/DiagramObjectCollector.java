@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSFolder;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.utils.CommonUtils;
 
@@ -94,9 +91,14 @@ public class DiagramObjectCollector {
         container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
         final Collection<? extends DBSObject> children = container.getChildren(monitor);
         if (!CommonUtils.isEmpty(children)) {
+            Class<? extends DBSObject> childType = container.getChildType(monitor);
+            DBSObjectFilter objectFilter = container.getDataSource().getContainer().getObjectFilter(childType, container, true);
             for (DBSObject entity : children) {
                 if (monitor.isCanceled()) {
                     break;
+                }
+                if (objectFilter != null && !objectFilter.matches(entity.getName())) {
+                    continue;
                 }
                 if (entity instanceof DBSEntity) {
                     tables.add((DBSEntity) entity);

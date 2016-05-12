@@ -189,14 +189,22 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 log.error("Error caching structure", e);
             }
             Collection<? extends DBSObject> entities = objectContainer.getChildren(monitor);
-            for (DBSObject entity : CommonUtils.safeCollection(entities)) {
-                if (entity instanceof DBSEntity) {
-                    final DBSEntity entity1 = (DBSEntity) entity;
-                    if (entity1.getEntityType() == DBSEntityType.TABLE ||
-                        entity1.getEntityType() == DBSEntityType.CLASS ||
-                        entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY)
-                    {
-                        result.add(entity1);
+            if (entities != null) {
+                Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
+                DBSObjectFilter objectFilter = objectContainer.getDataSource().getContainer().getObjectFilter(childType, objectContainer, true);
+
+                for (DBSObject entity : entities) {
+                    if (entity instanceof DBSEntity) {
+                        if (objectFilter != null && objectFilter.isEnabled() && !objectFilter.matches(entity.getName())) {
+                            continue;
+                        }
+
+                        final DBSEntity entity1 = (DBSEntity) entity;
+                        if (entity1.getEntityType() == DBSEntityType.TABLE ||
+                            entity1.getEntityType() == DBSEntityType.CLASS ||
+                            entity1.getEntityType() == DBSEntityType.VIRTUAL_ENTITY) {
+                            result.add(entity1);
+                        }
                     }
                 }
             }
