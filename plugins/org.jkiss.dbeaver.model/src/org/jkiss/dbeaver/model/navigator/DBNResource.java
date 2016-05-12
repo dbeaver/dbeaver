@@ -58,8 +58,6 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     protected void dispose(boolean reflect)
     {
         if (this.handler != null) {
-            this.resource = null;
-            this.handler = null;
             if (children != null) {
                 for (DBNNode child : children) {
                     child.dispose(reflect);
@@ -69,6 +67,8 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
             if (reflect) {
                 getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
             }
+            this.resource = null;
+            this.handler = null;
         }
         super.dispose(reflect);
     }
