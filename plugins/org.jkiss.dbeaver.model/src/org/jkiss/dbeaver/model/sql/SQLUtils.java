@@ -504,7 +504,7 @@ public final class SQLUtils {
     }
 
     @NotNull
-    public static String generateComment(DBPDataSource dataSource, String comment)
+    public static String generateCommentLine(DBPDataSource dataSource, String comment)
     {
         String slComment = SQLConstants.ML_COMMENT_END;
         if (dataSource instanceof SQLDataSource) {
