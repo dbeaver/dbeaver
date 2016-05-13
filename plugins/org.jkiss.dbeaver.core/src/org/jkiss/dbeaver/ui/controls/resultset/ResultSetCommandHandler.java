@@ -36,14 +36,25 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ResultSetCommandHandler
@@ -67,6 +78,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_ROW_DELETE = "org.jkiss.dbeaver.core.resultset.row.delete";
     public static final String CMD_APPLY_CHANGES = "org.jkiss.dbeaver.core.resultset.applyChanges";
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
+    public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
 
     public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
@@ -149,6 +161,32 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case CMD_REJECT_CHANGES:
                 rsv.rejectChanges();
                 break;
+            case CMD_GENERATE_SCRIPT: {
+                try {
+                    final List<DBEPersistAction> sqlScript = new ArrayList<>();
+                    DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                            List<DBEPersistAction> script = rsv.generateChangesScript(monitor);
+                            if (script != null) {
+                                sqlScript.addAll(script);
+                            }
+                        }
+                    });
+                    String scriptText = DBUtils.generateScript(sqlScript.toArray(new DBEPersistAction[sqlScript.size()]), false);
+                    ViewSQLDialog dialog = new ViewSQLDialog(
+                        HandlerUtil.getActivePart(event).getSite(),
+                        rsv.getExecutionContext(),
+                        CoreMessages.editors_entity_dialog_preview_title,
+                        UIIcon.SQL_PREVIEW,
+                        scriptText);
+                    dialog.open();
+
+                } catch (InvocationTargetException e) {
+                    UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Script generation", "Can't generate changes script", e.getTargetException());
+                }
+                break;
+            }
             case IWorkbenchCommandConstants.EDIT_COPY:
                 ResultSetUtils.copyToClipboard(
                     presentation.copySelectionToString(
