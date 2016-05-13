@@ -110,10 +110,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         checkEnabled = (style & SWT.CHECK) != 0;
 
         // Create tree
-        // TODO: there are problems with this tree when we have a lot of items.
-        // TODO: I may set SWT.SINGLE style and it'll solve the problem at least when traversing tree
-        // TODO: But we need multiple selection (to copy, export, etc)
-        // TODO: need to do something with it
         int treeStyle = SWT.H_SCROLL | SWT.V_SCROLL | style;
         if (checkEnabled) {
             return new CheckboxTreeViewer(parent, treeStyle);
@@ -331,7 +327,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             disposeOldEditor();
             final TreeItem newSelection = treeViewer.getTree().getItem(new Point(e.x, e.y));
             if (newSelection == null) {
-                //curSelection = null;
                 return;
             }
 
@@ -340,7 +335,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 curSelection = null;
                 return;
             }
-            if (curSelection != null && curSelection == newSelection) {
+            if (curSelection != null && curSelection == newSelection && renameJob.selection == null) {
+                renameJob.selection = curSelection;
                 renameJob.schedule(1000);
             }
             curSelection = newSelection;
@@ -348,6 +344,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         private class RenameJob extends AbstractUIJob {
             private volatile boolean canceled = false;
+            public TreeItem selection;
+
             public RenameJob()
             {
                 super("Rename ");
@@ -357,19 +355,19 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             protected IStatus runInUIThread(DBRProgressMonitor monitor)
             {
                 try {
-                    if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection != null && !canceled) {
+                    if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
+                        final TreeItem itemToRename = selection;
                         getDisplay().asyncExec(new Runnable() {
                             @Override
                             public void run()
                             {
-                                if (curSelection != null) {
-                                    renameItem(curSelection);
-                                }
+                                renameItem(itemToRename);
                             }
                         });
                     }
                 } finally {
                     canceled = false;
+                    selection = null;
                 }
                 return Status.OK_STATUS;
             }
