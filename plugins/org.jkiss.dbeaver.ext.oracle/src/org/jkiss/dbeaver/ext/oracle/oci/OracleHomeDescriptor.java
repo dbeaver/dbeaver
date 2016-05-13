@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -113,7 +114,7 @@ public class OracleHomeDescriptor extends JDBCClientHome
     public Collection<String> getOraServiceNames()
     {
         if (tnsNames == null) {
-            tnsNames = OCIUtils.readTnsNames(getHomePath(), true);
+            tnsNames = new ArrayList<>(OCIUtils.readTnsNames(getHomePath(), true).keySet());
         }
         return tnsNames;
     }
