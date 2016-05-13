@@ -233,7 +233,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             // or get list of root database objects
             if (wordPart.length() == 0) {
                 // Get root objects
-                DBSObject rootObject = null;
+                DBPObject rootObject = null;
                 if (queryType == QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
                     rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
@@ -242,8 +242,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     DBSObject selectedObject = getDefaultObject(dataSource);
                     if (selectedObject != null) {
                         makeProposalsFromChildren(monitor, selectedObject, null, proposals);
+                        rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
+                    } else {
+                        rootObject = dataSource;
                     }
-                    rootObject = dataSource;
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(monitor, rootObject, null, proposals);
@@ -330,6 +332,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                     structureAssistant.getAutoCompleteObjectTypes(),
                                     wordDetector.removeQuotes(token),
                                     wordDetector.isQuoted(token),
+                                    false,
                                     2);
                                 if (!references.isEmpty()) {
                                     childObject = references.iterator().next().resolveObject(monitor);
@@ -483,6 +486,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                         structureAssistant.getAutoCompleteObjectTypes(),
                         wordDetector.removeQuotes(objectNameMask),
                         wordDetector.isQuoted(objectNameMask),
+                        false,
                         2);
                     if (!tables.isEmpty()) {
                         return tables.iterator().next().resolveObject(monitor);
@@ -500,7 +504,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     private void makeProposalsFromChildren(
         DBRProgressMonitor monitor,
-        DBSObject parent,
+        DBPObject parent,
         @Nullable String startPart,
         List<SQLCompletionProposal> proposals)
     {
@@ -570,6 +574,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 assistant.getAutoCompleteObjectTypes(),
                 wordDetector.removeQuotes(objectName) + "%",
                 wordDetector.isQuoted(objectName),
+                false,
                 100);
             for (DBSObjectReference reference : references) {
                 proposals.add(makeProposalsFromObject(monitor, reference, reference.getObjectType().getImage()));
@@ -771,7 +776,14 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     {
         DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
         if (objectSelector != null) {
-            return objectSelector.getSelectedObject();
+            DBSObject selectedObject1 = objectSelector.getSelectedObject();
+            if (selectedObject1 != null) {
+                DBSObjectSelector objectSelector2 = DBUtils.getAdapter(DBSObjectSelector.class, selectedObject1);
+                if (objectSelector2 != null) {
+                    return objectSelector2.getSelectedObject();
+                }
+            }
+            return selectedObject1;
         }
         return null;
     }

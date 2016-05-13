@@ -317,7 +317,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         colorLightGreen = sharedColors.getColor(new RGB(0xE4, 0xFF, 0xB5));
         colorLightRed = sharedColors.getColor(new RGB(0xFF, 0x63, 0x47));
         colorLightYellow = sharedColors.getColor(new RGB(0xFF, 0xE4, 0xB5));
-        colorGray = sharedColors.getColor(new RGB(0x50, 0x50, 0x50));
+        colorGray = sharedColors.getColor(new RGB(0x00, 0x00, 0x00));
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         // Create log table
@@ -522,6 +522,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     Color getObjectForeground(QMMetaEvent event)
     {
+        if (getObjectBackground(event) != null) {
+            return colorGray;
+        }
+/*
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();
             if (exec.getStatement().getPurpose().isUser()) {
@@ -530,6 +534,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 return colorGray;
             }
         }
+*/
         return null;
     }
 

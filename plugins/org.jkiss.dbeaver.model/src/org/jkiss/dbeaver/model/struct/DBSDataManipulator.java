@@ -21,10 +21,13 @@ package org.jkiss.dbeaver.model.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+
+import java.util.List;
 
 /**
  * Data manipulator.
@@ -41,6 +44,9 @@ public interface DBSDataManipulator extends DBSDataContainer {
 
         @NotNull
         DBCStatistics execute(@NotNull DBCSession session) throws DBCException;
+
+        @NotNull
+        void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions) throws DBCException;
 
         void close();
     }

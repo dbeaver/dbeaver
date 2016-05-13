@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
@@ -222,14 +223,14 @@ public abstract class SQLEditorNested<T extends DBSObject>
             final Document document = new Document();
 
             if (sourceText == null) {
-                document.set("-- Loading '" + getEditorInput().getName() + "' source...");
+                document.set(SQLUtils.generateCommentLine(getDataSource(), "Loading '" + getEditorInput().getName() + "' source..."));
                 TasksJob.runTask("Read source", new DBRRunnableWithProgress() {
                     @Override
                     public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {
                             sourceText = getSourceText(monitor);
                             if (sourceText == null) {
-                                sourceText = "-- Empty source";
+                                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
                             }
                         } catch (Throwable e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";

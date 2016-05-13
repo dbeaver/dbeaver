@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -168,7 +169,7 @@ public abstract class GenerateSQLDialog extends BaseSQLDialog {
             }
             return sql.toString();
         } else {
-            return "-- Not-SQL data source";
+            return SQLUtils.generateCommentLine(dataSource, "Non-SQL data source");
         }
     }
 

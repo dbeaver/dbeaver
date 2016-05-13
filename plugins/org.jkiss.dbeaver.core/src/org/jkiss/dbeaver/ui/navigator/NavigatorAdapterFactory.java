@@ -53,7 +53,6 @@ public class NavigatorAdapterFactory implements IAdapterFactory
         DBSDataContainer.class,
         DBSDataManipulator.class,
         DBPDataSourceContainer.class,
-//        DBPContextProvider.class,
         IPropertySource.class,
         IProject.class,
         IFolder.class,
@@ -63,21 +62,21 @@ public class NavigatorAdapterFactory implements IAdapterFactory
     };
 
     @Override
-    public Object getAdapter(Object adaptableObject, Class adapterType)
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
         if (adapterType == DBPDataSourceContainer.class) {
             if (adaptableObject instanceof DBNDataSource) {
-                return ((DBNDataSource)adaptableObject).getDataSourceContainer();
+                return adapterType.cast(((DBNDataSource) adaptableObject).getDataSourceContainer());
             }
             DBSObject object = DBUtils.getFromObject(adaptableObject);
             if (object == null) {
                 return null;
             }
             if (object instanceof DBPDataSourceContainer) {
-                return object;
+                return adapterType.cast(object);
             }
             DBPDataSource dataSource = object.getDataSource();
-            return dataSource == null ? null : dataSource.getContainer();
+            return dataSource == null ? null : adapterType.cast(dataSource.getContainer());
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
             DBPObject object = null;
             if (adaptableObject instanceof DBSWrapper) {
@@ -86,7 +85,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
                 object = (DBPObject) adaptableObject;
             }
             if (object != null && adapterType.isAssignableFrom(object.getClass())) {
-                return object;
+                return adapterType.cast(object);
             }
         } else if (IResource.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof DBNResource) {
@@ -100,19 +99,19 @@ public class NavigatorAdapterFactory implements IAdapterFactory
                 dbObject = (DBPObject) adaptableObject;
             }
             if (dbObject instanceof IPropertySource) {
-                return dbObject;
+                return adapterType.cast(dbObject);
             }
             if (dbObject instanceof DBPPropertySource) {
-                return new PropertySourceDelegate((DBPPropertySource) dbObject);
+                return adapterType.cast(new PropertySourceDelegate((DBPPropertySource) dbObject));
             }
             if (dbObject instanceof IAdaptable) {
                 Object adapter = ((IAdaptable) dbObject).getAdapter(IPropertySource.class);
                 if (adapter != null) {
-                    return adapter;
+                    return adapterType.cast(adapter);
                 }
                 adapter = ((IAdaptable) dbObject).getAdapter(DBPPropertySource.class);
                 if (adapter != null) {
-                    return new PropertySourceDelegate((DBPPropertySource) adapter);
+                    return adapterType.cast(new PropertySourceDelegate((DBPPropertySource) adapter));
                 }
             }
             if (dbObject != null) {
@@ -124,31 +123,29 @@ public class NavigatorAdapterFactory implements IAdapterFactory
                     props.addProperty(null, "name", CoreMessages.model_navigator_Name, meta.getName()); //$NON-NLS-1$
                     props.addProperty(null, "desc", CoreMessages.model_navigator_Description, meta.getDescription()); //$NON-NLS-1$
                 }
-                return new PropertySourceDelegate(props);
+                return adapterType.cast(new PropertySourceDelegate(props));
             }
         } else if (adapterType == IWorkbenchAdapter.class) {
             // Workbench adapter
             if (adaptableObject instanceof DBNNode) {
                 final DBNNode node = (DBNNode)adaptableObject;
-                return new WorkbenchAdapter() {
+                WorkbenchAdapter workbenchAdapter = new WorkbenchAdapter() {
                     @Override
-                    public ImageDescriptor getImageDescriptor(Object object)
-                    {
+                    public ImageDescriptor getImageDescriptor(Object object) {
                         return DBeaverIcons.getImageDescriptor(node.getNodeIconDefault());
                     }
 
                     @Override
-                    public String getLabel(Object o)
-                    {
+                    public String getLabel(Object o) {
                         return node.getNodeName();
                     }
 
                     @Override
-                    public Object getParent(Object o)
-                    {
+                    public Object getParent(Object o) {
                         return node.getParentNode();
                     }
                 };
+                return adapterType.cast(workbenchAdapter);
             } else {
                 return null;
             }

@@ -86,6 +86,7 @@ public class SearchMetadataQuery implements IObjectSearchQuery {
                 objectTypes.toArray(new DBSObjectType[objectTypes.size()]),
                 objectNameMask,
                 params.isCaseSensitive(),
+                true,
                 params.getMaxResults());
             List<DBNNode> nodes = new ArrayList<>();
             for (DBSObjectReference reference : objects) {
