@@ -259,10 +259,8 @@ public class OCIUtils
         return null;
     }
 
-    /**
-     * Reads TNS names from a specified Oracle home or system variable TNS_ADMIN.
-     */
-    public static List<String> readTnsNames(@Nullable File oraHome, boolean checkTnsAdmin)
+    @Nullable
+    public static File findTnsNamesFile(@Nullable File oraHome, boolean checkTnsAdmin)
     {
         File tnsNamesFile = null;
         if (checkTnsAdmin) {
@@ -275,7 +273,20 @@ public class OCIUtils
             tnsNamesFile = new File (oraHome, TNSNAMES_FILE_PATH + TNSNAMES_FILE_NAME);
         }
         if (tnsNamesFile != null && tnsNamesFile.exists()) {
-            return parseTnsNames(tnsNamesFile.getAbsolutePath());
+            return tnsNamesFile;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Reads TNS names from a specified Oracle home or system variable TNS_ADMIN.
+     */
+    public static List<String> readTnsNames(@Nullable File oraHome, boolean checkTnsAdmin)
+    {
+        File tnsNamesFile = findTnsNamesFile(oraHome, checkTnsAdmin);
+        if (tnsNamesFile != null) {
+            return parseTnsNames(tnsNamesFile);
         } else {
             return Collections.emptyList();
         }
@@ -284,11 +295,10 @@ public class OCIUtils
     /**
      * Reads TNS names from a specified file.
      */
-    public static List<String> parseTnsNames(String tnsnamesPath)
+    public static List<String> parseTnsNames(File tnsnamesOra)
     {
         ArrayList<String> aliases = new ArrayList<>();
 
-        File tnsnamesOra = new File (tnsnamesPath);
         if (tnsnamesOra.exists()) {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
@@ -306,7 +316,7 @@ public class OCIUtils
                             if (!extFile.exists()) {
                                 extFile = new File(tnsnamesOra.getParent(), filePath);
                             }
-                            aliases.addAll(parseTnsNames(extFile.getAbsolutePath()));
+                            aliases.addAll(parseTnsNames(extFile));
                         } else {
                             aliases.add(alias.trim());
                         }
