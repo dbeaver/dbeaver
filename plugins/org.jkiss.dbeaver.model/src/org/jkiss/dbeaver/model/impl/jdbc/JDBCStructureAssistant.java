@@ -68,13 +68,14 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
+        boolean globalSearch,
         int maxResults)
         throws DBException
     {
         List<DBSObjectReference> references = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), ModelMessages.model_jdbc_find_objects_by_name)) {
             for (DBSObjectType type : objectTypes) {
-                findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, maxResults - references.size(), references);
+                findObjectsByMask(session, type, parentObject, objectNameMask, caseSensitive, globalSearch, maxResults - references.size(), references);
                 if (references.size() >= maxResults) {
                     break;
                 }
@@ -92,7 +93,7 @@ public abstract class JDBCStructureAssistant implements DBSStructureAssistant
         DBSObject parentObject,
         String objectNameMask,
         boolean caseSensitive,
-        int maxResults,
+        boolean globalSearch, int maxResults,
         List<DBSObjectReference> references)
         throws DBException, SQLException;
 

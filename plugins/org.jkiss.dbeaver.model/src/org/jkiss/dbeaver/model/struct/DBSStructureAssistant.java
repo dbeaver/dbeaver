@@ -36,12 +36,25 @@ public interface DBSStructureAssistant
 
     DBSObjectType[] getAutoCompleteObjectTypes();
 
+    /**
+     * Search objects matching specified mask.
+     * @param monitor           monitor
+     * @param parentObject      parent (schema or catalog)
+     * @param objectTypes       type of objects to search
+     * @param objectNameMask    name mask
+     * @param caseSensitive     case sensitive search (ignored by some implementations)
+     * @param globalSearch      search in all available schemas/catalogs. If false then search with respect of active schema/catalog
+     * @param maxResults        maximum number of results
+     * @return object references
+     * @throws DBException
+     */
     Collection<DBSObjectReference> findObjectsByMask(
         DBRProgressMonitor monitor,
         @Nullable DBSObject parentObject,
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
+        boolean globalSearch,
         int maxResults) throws DBException;
 
 }
