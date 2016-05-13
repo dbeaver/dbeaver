@@ -186,13 +186,13 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     {
         String oraHome = oraHomeSelector.getSelectedHome();
         if (CommonUtils.isEmpty(oraHome)) {
-            return OCIUtils.readTnsNames(null, true);
+            return OCIUtils.readTnsNames(null, true).keySet();
         } else {
             OracleHomeDescriptor home = OCIUtils.getOraHomeByName(oraHome);
             if (home != null) {
                 return home.getOraServiceNames();
             } else {
-                return OCIUtils.readTnsNames(new File(oraHome), true);
+                return OCIUtils.readTnsNames(new File(oraHome), true).keySet();
             }
         }
     }
