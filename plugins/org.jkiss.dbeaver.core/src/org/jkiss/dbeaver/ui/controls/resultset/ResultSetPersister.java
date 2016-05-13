@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -100,6 +101,8 @@ class ResultSetPersister {
     private final List<DataStatementInfo> deleteStatements = new ArrayList<>();
     private final List<DataStatementInfo> updateStatements = new ArrayList<>();
 
+    private final List<DBEPersistAction> script = new ArrayList<>();
+
     ResultSetPersister(@NotNull ResultSetViewer viewer)
     {
         this.viewer = viewer;
@@ -113,7 +116,7 @@ class ResultSetPersister {
      * @param monitor progress monitor
      * @param listener value listener
      */
-    boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable DataUpdateListener listener)
+    boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, @Nullable DataUpdateListener listener)
         throws DBException
     {
         collectChanges();
@@ -121,7 +124,11 @@ class ResultSetPersister {
         prepareDeleteStatements();
         prepareInsertStatements();
         prepareUpdateStatements();
-        return execute(monitor, listener);
+        return execute(monitor, generateScript, listener);
+    }
+
+    public List<DBEPersistAction> getScript() {
+        return script;
     }
 
     private void collectChanges() {
@@ -225,14 +232,14 @@ class ResultSetPersister {
         }
     }
 
-    private boolean execute(@Nullable DBRProgressMonitor monitor, @Nullable final DataUpdateListener listener)
+    private boolean execute(@Nullable DBRProgressMonitor monitor, boolean generateScript, @Nullable final DataUpdateListener listener)
         throws DBException
     {
         DBCExecutionContext executionContext = viewer.getContainer().getExecutionContext();
         if (executionContext == null) {
             throw new DBCException("No execution context");
         }
-        DataUpdaterJob job = new DataUpdaterJob(listener, executionContext);
+        DataUpdaterJob job = new DataUpdaterJob(generateScript, listener, executionContext);
         if (monitor == null) {
             job.schedule();
             return true;
@@ -340,15 +347,17 @@ class ResultSetPersister {
     }
 
     private class DataUpdaterJob extends DataSourceJob {
+        private final boolean generateScript;
         private final DataUpdateListener listener;
         private boolean autocommit;
         private DBCStatistics updateStats, insertStats, deleteStats;
         private DBCSavepoint savepoint;
         private Throwable error;
 
-        protected DataUpdaterJob(@Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
+        protected DataUpdaterJob(boolean generateScript, @Nullable DataUpdateListener listener, @NotNull DBCExecutionContext executionContext)
         {
             super(CoreMessages.controls_resultset_viewer_job_update, DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
+            this.generateScript = generateScript;
             this.listener = listener;
         }
 
@@ -370,37 +379,38 @@ class ResultSetPersister {
                 model.setUpdateInProgress(false);
             }
 
-            // Reflect changes
-            UIUtils.runInUI(viewer.getSite().getShell(), new Runnable() {
-                @Override
-                public void run()
-                {
-                    boolean rowsChanged = false;
-                    if (DataUpdaterJob.this.autocommit || error == null) {
-                        rowsChanged = reflectChanges();
-                    }
-                    if (!viewer.getControl().isDisposed()) {
-                        //releaseStatements();
-                        viewer.redrawData(rowsChanged);
-                        viewer.updateEditControls();
-                        if (error == null) {
-                            viewer.setStatus(
-                                NLS.bind(
-                                    CoreMessages.controls_resultset_viewer_status_inserted_,
-                                    new Object[]{
-                                        DataUpdaterJob.this.insertStats.getRowsUpdated(),
-                                        DataUpdaterJob.this.deleteStats.getRowsUpdated(),
-                                        DataUpdaterJob.this.updateStats.getRowsUpdated()}));
-                        } else {
-                            UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
-                            viewer.setStatus(GeneralUtils.getFirstMessage(error), true);
+            if (!generateScript) {
+                // Reflect changes
+                UIUtils.runInUI(viewer.getSite().getShell(), new Runnable() {
+                    @Override
+                    public void run() {
+                        boolean rowsChanged = false;
+                        if (DataUpdaterJob.this.autocommit || error == null) {
+                            rowsChanged = reflectChanges();
                         }
+                        if (!viewer.getControl().isDisposed()) {
+                            //releaseStatements();
+                            viewer.redrawData(rowsChanged);
+                            viewer.updateEditControls();
+                            if (error == null) {
+                                viewer.setStatus(
+                                    NLS.bind(
+                                        CoreMessages.controls_resultset_viewer_status_inserted_,
+                                        new Object[]{
+                                            DataUpdaterJob.this.insertStats.getRowsUpdated(),
+                                            DataUpdaterJob.this.deleteStats.getRowsUpdated(),
+                                            DataUpdaterJob.this.updateStats.getRowsUpdated()}));
+                            } else {
+                                UIUtils.showErrorDialog(viewer.getSite().getShell(), "Data error", "Error synchronizing data with database", error);
+                                viewer.setStatus(GeneralUtils.getFirstMessage(error), true);
+                            }
+                        }
+                        viewer.fireResultSetChange();
                     }
-                    viewer.fireResultSetChange();
+                });
+                if (this.listener != null) {
+                    this.listener.onUpdate(error == null);
                 }
-            });
-            if (this.listener != null) {
-                this.listener.onUpdate(error == null);
             }
 
             return Status.OK_STATUS;
@@ -413,7 +423,8 @@ class ResultSetPersister {
                 monitor.beginTask(
                     CoreMessages.controls_resultset_viewer_monitor_aply_changes,
                     ResultSetPersister.this.deleteStatements.size() + ResultSetPersister.this.insertStatements.size() + ResultSetPersister.this.updateStatements.size() + 1);
-                if (txnManager != null) {
+
+                if (!generateScript && txnManager != null) {
                     monitor.subTask(CoreMessages.controls_resultset_check_autocommit_state);
                     try {
                         this.autocommit = txnManager.isAutoCommit();
@@ -423,7 +434,7 @@ class ResultSetPersister {
                     }
                 }
                 monitor.worked(1);
-                if (txnManager != null) {
+                if (!generateScript && txnManager != null) {
                     if (!this.autocommit && txnManager.supportsSavepoints()) {
                         try {
                             this.savepoint = txnManager.setSavepoint(monitor, null);
@@ -444,7 +455,11 @@ class ResultSetPersister {
                                 new ExecutionSource(dataContainer));
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                                deleteStats.accumulate(batch.execute(session));
+                                if (generateScript) {
+                                    batch.generatePersistActions(session, script);
+                                } else {
+                                    deleteStats.accumulate(batch.execute(session));
+                                }
                             } finally {
                                 batch.close();
                             }
@@ -466,7 +481,11 @@ class ResultSetPersister {
                                 new ExecutionSource(dataContainer));
                             try {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
-                                insertStats.accumulate(batch.execute(session));
+                                if (generateScript) {
+                                    batch.generatePersistActions(session, script);
+                                } else {
+                                    insertStats.accumulate(batch.execute(session));
+                                }
                             } finally {
                                 batch.close();
                             }
@@ -498,7 +517,11 @@ class ResultSetPersister {
                                 }
                                 // Execute
                                 batch.add(attributes);
-                                updateStats.accumulate(batch.execute(session));
+                                if (generateScript) {
+                                    batch.generatePersistActions(session, script);
+                                } else {
+                                    updateStats.accumulate(batch.execute(session));
+                                }
                             } finally {
                                 batch.close();
                             }
@@ -512,7 +535,7 @@ class ResultSetPersister {
 
                     return null;
                 } finally {
-                    if (txnManager != null && this.savepoint != null) {
+                    if (!generateScript && txnManager != null && this.savepoint != null) {
                         try {
                             txnManager.releaseSavepoint(monitor, this.savepoint);
                         } catch (Throwable e) {
@@ -534,14 +557,16 @@ class ResultSetPersister {
         private void processStatementError(DataStatementInfo statement, DBCSession session)
         {
             statement.executed = false;
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
-            if (txnManager != null) {
-                try {
-                    if (!txnManager.isAutoCommit()) {
-                        txnManager.rollback(session, savepoint);
+            if (!generateScript) {
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(getExecutionContext());
+                if (txnManager != null) {
+                    try {
+                        if (!txnManager.isAutoCommit()) {
+                            txnManager.rollback(session, savepoint);
+                        }
+                    } catch (Throwable e) {
+                        log.debug("Error during transaction rollback", e);
                     }
-                } catch (Throwable e) {
-                    log.debug("Error during transaction rollback", e);
                 }
             }
         }

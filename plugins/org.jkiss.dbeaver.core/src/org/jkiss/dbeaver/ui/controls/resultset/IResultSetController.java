@@ -29,8 +29,11 @@ import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+
+import java.util.List;
 
 /**
  * IResultSetController
@@ -73,6 +76,8 @@ public interface IResultSetController extends DBPContextProvider {
     boolean applyChanges(@Nullable DBRProgressMonitor monitor);
 
     void rejectChanges();
+
+    List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor);
 
     /**
      * Refreshes data. Reads data from underlying data container

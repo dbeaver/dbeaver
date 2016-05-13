@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.local.StatResultSet;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -636,6 +637,7 @@ public class ResultSetViewer extends Viewer
         // handle own commands
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_APPLY_CHANGES));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_REJECT_CHANGES));
+        toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_GENERATE_SCRIPT));
         toolBarManager.add(new Separator());
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
         toolBarManager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
@@ -1808,9 +1810,46 @@ public class ResultSetViewer extends Viewer
      */
     public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
     {
+        ResultSetPersister persister = createDataPersister();
+        if (persister != null) {
+            try {
+                return persister.applyChanges(monitor, false, listener);
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void rejectChanges()
+    {
+        ResultSetPersister persister = createDataPersister();
+        if (persister != null) {
+            persister.rejectChanges();
+        }
+    }
+
+    @Override
+    public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor)
+    {
+        ResultSetPersister persister = createDataPersister();
+        if (persister != null) {
+            try {
+                persister.applyChanges(monitor, true, null);
+                return persister.getScript();
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
+            }
+        }
+        return null;
+    }
+
+    private ResultSetPersister createDataPersister()
+    {
         if (!model.isSingleSource()) {
             UIUtils.showErrorDialog(null, "Apply changes error", "Can't save data for result set from multiple sources");
-            return false;
+            return null;
         }
         try {
             boolean needPK = false;
@@ -1824,22 +1863,15 @@ public class ResultSetViewer extends Viewer
                 // If we have deleted or updated rows then check for unique identifier
                 if (!checkEntityIdentifier()) {
                     //UIUtils.showErrorDialog(null, "Can't apply changes", "Can't apply data changes - not unique identifier defined");
-                    return false;
+                    return null;
                 }
             }
-            return new ResultSetPersister(this).applyChanges(monitor, listener);
+            return new ResultSetPersister(this);
         } catch (DBException e) {
             UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
-            return false;
+            return null;
         }
     }
-
-    @Override
-    public void rejectChanges()
-    {
-        new ResultSetPersister(this).rejectChanges();
-    }
-
 
     void addNewRow(final boolean copyCurrent)
     {
