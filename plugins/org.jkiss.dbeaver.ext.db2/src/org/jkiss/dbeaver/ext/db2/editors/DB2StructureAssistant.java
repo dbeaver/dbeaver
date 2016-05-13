@@ -102,7 +102,7 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
     @Override
     public Collection<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
-        DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, int maxResults) throws DBException
+                                                            DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
     {
 
         LOG.debug(objectNameMask);

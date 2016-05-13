@@ -26,6 +26,7 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -126,7 +127,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 }
                 activationSQL = contextService.activateContext(SQL_EDITOR_CONTEXT_ID);
             }
-            if (part.getAdapter(ResultSetViewer.class) != null) {
+            if (part instanceof EntityEditor || part.getAdapter(ResultSetViewer.class) != null) {
                 if (activationResults != null) {
                     contextService.deactivateContext(activationResults);
                 }

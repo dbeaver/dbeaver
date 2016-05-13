@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.ArrayUtils;
@@ -73,6 +75,24 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     @Override
     public DBCStatistics execute(@NotNull DBCSession session) throws DBCException
     {
+        return processBatch(session, null);
+    }
+
+    @Override
+    public void generatePersistActions(@NotNull DBCSession session, @NotNull List<DBEPersistAction> actions) throws DBCException {
+        processBatch(session, actions);
+    }
+
+    /**
+     * Execute batch OR generate batch script.
+     * @param session    session
+     * @param actions    script actions. If not null then no execution will be done
+     * @return execution statistics
+     * @throws DBCException
+     */
+    @NotNull
+    private DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions) throws DBCException
+    {
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
         for (int i = 0; i < attributes.length; i++) {
             if (attributes[i] instanceof DBDAttributeBinding) {
@@ -112,7 +132,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     System.arraycopy(nulls, 0, prevNulls, 0, nulls.length);
                     if (!reuse && statementsInBatch > 0) {
                         // Flush batch
-                        flushBatch(statistics, statement);
+                        if (actions == null) {
+                            flushBatch(statistics, statement);
+                        }
                         statement.close();
                         statement = null;
                         statementsInBatch = 0;
@@ -125,24 +147,38 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 }
                 try {
                     bindStatement(handlers, statement, rowValues);
-                    if (useBatch) {
-                        statement.addToBatch();
-                        statementsInBatch++;
+                    if (actions == null) {
+                        if (useBatch) {
+                            statement.addToBatch();
+                            statementsInBatch++;
+                        } else {
+                            // Execute each row separately
+                            long startTime = System.currentTimeMillis();
+                            executeStatement(statement);
+                            statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+
+                            long rowCount = statement.getUpdateRowCount();
+                            if (rowCount > 0) {
+                                statistics.addRowsUpdated(rowCount);
+                            }
+
+                            // Read keys
+                            if (keysReceiver != null) {
+                                readKeys(statement.getSession(), statement, keysReceiver);
+                            }
+                        }
                     } else {
-                        // Execute each row separately
-                        long startTime = System.currentTimeMillis();
-                        executeStatement(statement);
-                        statistics.addExecuteTime(System.currentTimeMillis() - startTime);
-
-                        long rowCount = statement.getUpdateRowCount();
-                        if (rowCount > 0) {
-                            statistics.addRowsUpdated(rowCount);
+                        String queryString;
+                        if (statement instanceof DBCParameterizedStatement) {
+                            queryString = ((DBCParameterizedStatement)statement).getFormattedQuery();
+                        } else {
+                            queryString = statement.getQueryString();
                         }
-
-                        // Read keys
-                        if (keysReceiver != null) {
-                            readKeys(statement.getSession(), statement, keysReceiver);
-                        }
+                        actions.add(
+                            new SQLDatabasePersistAction(
+                                "Execute statement",
+                                queryString,
+                                DBEPersistAction.ActionType.NORMAL));
                     }
                 } finally {
                     if (!reuse) {
@@ -153,7 +189,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             values.clear();
 
             if (statementsInBatch > 0) {
-                flushBatch(statistics, statement);
+                if (actions == null) {
+                    flushBatch(statistics, statement);
+                }
                 statement.close();
                 statement = null;
             }

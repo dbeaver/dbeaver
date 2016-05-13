@@ -46,6 +46,7 @@ public class SQLConstants {
     public static final String STR_QUOTE_DOUBLE = "\"";
     public static final String ML_COMMENT_START = "/*";
     public static final String ML_COMMENT_END = "*/";
+    public static final String SL_COMMENT = "--";
 
     public static final String[] TABLE_KEYWORDS = {
         "FROM",

@@ -414,7 +414,7 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static <T> T getAdapter(@NotNull Class<T> adapterType, @Nullable DBPObject object)
+    public static <T> T getAdapter(@NotNull Class<T> adapterType, @Nullable Object object)
     {
         if (object instanceof DBPDataSourceContainer) {
             // Root object's parent is data source container (not datasource)

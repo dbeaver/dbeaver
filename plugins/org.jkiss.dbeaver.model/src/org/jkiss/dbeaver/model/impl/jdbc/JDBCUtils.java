@@ -746,7 +746,7 @@ public class JDBCUtils {
             return DBUtils.generateScript(ddlActions, addComments);
         }
         log.debug("Table editor not found for " + table.getClass().getName());
-        return "-- Can't generate DDL: table editor not found for " + table.getClass().getName();
+        return SQLUtils.generateCommentLine(table.getDataSource(), "Can't generate DDL: table editor not found for " + table.getClass().getName());
     }
 
 }

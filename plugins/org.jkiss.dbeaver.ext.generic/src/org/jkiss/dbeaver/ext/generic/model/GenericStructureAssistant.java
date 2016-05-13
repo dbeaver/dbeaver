@@ -76,7 +76,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         GenericSchema schema = parentObject instanceof GenericSchema ? (GenericSchema)parentObject : null;
         GenericCatalog catalog = parentObject instanceof GenericCatalog ? (GenericCatalog)parentObject :

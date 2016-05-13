@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
@@ -480,7 +482,7 @@ public final class SQLUtils {
                         break;
                     }
                     line = line.trim();
-                    if (line.startsWith("--") ||
+                    if (line.startsWith(SQLConstants.SL_COMMENT) ||
                         line.startsWith("Rem") ||
                         line.startsWith("rem") ||
                         line.startsWith("REM")
@@ -501,4 +503,16 @@ public final class SQLUtils {
         return null;
     }
 
+    @NotNull
+    public static String generateCommentLine(DBPDataSource dataSource, String comment)
+    {
+        String slComment = SQLConstants.ML_COMMENT_END;
+        if (dataSource instanceof SQLDataSource) {
+            String[] slComments = ((SQLDataSource) dataSource).getSQLDialect().getSingleLineComments();
+            if (!ArrayUtils.isEmpty(slComments)) {
+                slComment = slComments[0];
+            }
+        }
+        return slComment + " " + comment + GeneralUtils.getDefaultLineSeparator();
+    }
 }

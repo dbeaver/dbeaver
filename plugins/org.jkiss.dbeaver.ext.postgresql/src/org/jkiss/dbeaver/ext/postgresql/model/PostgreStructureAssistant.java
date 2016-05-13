@@ -88,7 +88,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
     }
 
     @Override
-    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
+    protected void findObjectsByMask(JDBCSession session, DBSObjectType objectType, DBSObject parentObject, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults, List<DBSObjectReference> references) throws DBException, SQLException
     {
         PostgreSchema ownerSchema = parentObject instanceof PostgreSchema ? (PostgreSchema) parentObject : null;
         final PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
@@ -96,18 +96,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         List<PostgreSchema> nsList = new ArrayList<>();
         if (ownerSchema != null) {
             nsList.add(0, ownerSchema);
-        } else {
-            // Do not limit object search with search path
-            // Otherwise you can't find anything else.
-            // But maybe autocomplete should work only with search path???
-/*
+        } else if (!globalSearch) {
+            // Limit object search with search path
             for (String sn : dataSource.getSearchPath()) {
                 final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), sn);
                 if (schema != null) {
                     nsList.add(schema);
                 }
             }
-*/
         }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {

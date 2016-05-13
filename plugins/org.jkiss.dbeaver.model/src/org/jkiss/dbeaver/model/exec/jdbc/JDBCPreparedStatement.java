@@ -17,17 +17,17 @@
  */
 package org.jkiss.dbeaver.model.exec.jdbc;
 
+import org.jkiss.dbeaver.model.exec.DBCParameterizedStatement;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 /**
  * JDBC statement
  */
-public interface JDBCPreparedStatement extends PreparedStatement, JDBCStatement {
+public interface JDBCPreparedStatement extends PreparedStatement, JDBCStatement, DBCParameterizedStatement {
 
     PreparedStatement getOriginal();
-
-    String getFormattedQuery();
 
     @Override
     JDBCResultSet executeQuery()
