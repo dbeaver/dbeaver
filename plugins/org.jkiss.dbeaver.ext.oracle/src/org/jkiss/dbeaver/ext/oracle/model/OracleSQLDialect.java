@@ -29,10 +29,6 @@ import java.util.Collections;
  * Oracle SQL dialect
  */
 class OracleSQLDialect extends JDBCSQLDialect {
-    private static final String[] ORACLE_LINE_COMMENTS = {
-        "--",
-        //"^rem"
-    };
 
     public OracleSQLDialect(JDBCDatabaseMetaData metaData) {
         super("Oracle", metaData);
@@ -263,11 +259,6 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;
-    }
-
-    @Override
-    public String[] getSingleLineComments() {
-        return ORACLE_LINE_COMMENTS;
     }
 
     @Override

@@ -339,11 +339,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     @Override
     public String[] getDefaultPrefixes(ISourceViewer sourceViewer, String contentType)
     {
-        return new String[]
-            {
-                "--", ""
-            }
-            ; //$NON-NLS-1$ //$NON-NLS-2$
+        return new String[] { SQLConstants.SL_COMMENT, "" };
     }
 
     @Override

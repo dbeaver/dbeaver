@@ -42,7 +42,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     public static final BasicSQLDialect INSTANCE = new BasicSQLDialect();
 
-    private static final String[] DEFAULT_LINE_COMMENTS = {"--"};
+    private static final String[] DEFAULT_LINE_COMMENTS = {SQLConstants.SL_COMMENT};
 
     // Keywords
     private TreeMap<String, DBPKeywordType> allKeywords = new TreeMap<>();
