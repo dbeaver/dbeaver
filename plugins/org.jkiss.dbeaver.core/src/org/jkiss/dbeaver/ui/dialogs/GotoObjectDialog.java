@@ -138,6 +138,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
                 nameMask,
                 false,
+                true,
                 1000);
             for (DBSObjectReference ref : result) {
                 contentProvider.add(ref, itemsFilter);

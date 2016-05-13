@@ -221,7 +221,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 }
 
                 DBSObjectType[] objectTypes = structureAssistant.getHyperlinkObjectTypes();
-                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, word, caseSensitive, 10);
+                Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(monitor, container, objectTypes, word, caseSensitive, false, 10);
                 if (!CommonUtils.isEmpty(objects)) {
                     cache.references.addAll(objects);
                 }

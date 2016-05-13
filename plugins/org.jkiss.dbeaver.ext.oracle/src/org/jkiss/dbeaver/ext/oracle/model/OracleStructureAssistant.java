@@ -92,7 +92,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
         DBSObjectType[] objectTypes,
         String objectNameMask,
         boolean caseSensitive,
-        int maxResults)
+        boolean globalSearch, int maxResults)
         throws DBException
     {
         OracleSchema schema = parentObject instanceof OracleSchema ? (OracleSchema) parentObject : null;
