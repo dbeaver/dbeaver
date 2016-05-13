@@ -146,8 +146,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     statistics.setQueryText(statement.getQueryString());
                 }
                 try {
+                    bindStatement(handlers, statement, rowValues);
                     if (actions == null) {
-                        bindStatement(handlers, statement, rowValues);
                         if (useBatch) {
                             statement.addToBatch();
                             statementsInBatch++;
@@ -168,10 +168,16 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                             }
                         }
                     } else {
+                        String queryString;
+                        if (statement instanceof DBCParameterizedStatement) {
+                            queryString = ((DBCParameterizedStatement)statement).getFormattedQuery();
+                        } else {
+                            queryString = statement.getQueryString();
+                        }
                         actions.add(
                             new SQLDatabasePersistAction(
                                 "Execute statement",
-                                statement.getQueryString(),
+                                queryString,
                                 DBEPersistAction.ActionType.NORMAL));
                     }
                 } finally {

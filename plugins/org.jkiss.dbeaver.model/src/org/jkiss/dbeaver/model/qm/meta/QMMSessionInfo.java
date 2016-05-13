@@ -18,11 +18,7 @@
 package org.jkiss.dbeaver.model.qm.meta;
 
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCSavepoint;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 
@@ -166,7 +162,6 @@ public class QMMSessionInfo extends QMMObject {
                 return exec;
             }
         }
-        log.warn("Statement " + statement + " execution meta info not found");
         return null;
     }
 
@@ -174,8 +169,8 @@ public class QMMSessionInfo extends QMMObject {
     {
         QMMStatementInfo stat = getStatement(statement);
         if (stat != null) {
-            String queryString = statement instanceof JDBCPreparedStatement ?
-                ((JDBCPreparedStatement) statement).getFormattedQuery() : statement.getQueryString();
+            String queryString = statement instanceof DBCParameterizedStatement ?
+                ((DBCParameterizedStatement) statement).getFormattedQuery() : statement.getQueryString();
             final QMMTransactionSavepointInfo savepoint =
                 isTransactional() && getTransaction() != null ?
                     getTransaction().getCurrentSavepoint() : null;
