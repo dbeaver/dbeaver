@@ -180,7 +180,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     if (!sqlScript.isEmpty()) {
                         String scriptText = DBUtils.generateScript(sqlScript.toArray(new DBEPersistAction[sqlScript.size()]), false);
                         scriptText =
-                            SQLUtils.generateComment(
+                            SQLUtils.generateCommentLine(
                                 rsv.getExecutionContext().getDataSource(),
                                 "Actual parameter values may differ, what you see is a default string representation of values") +
                             scriptText;
