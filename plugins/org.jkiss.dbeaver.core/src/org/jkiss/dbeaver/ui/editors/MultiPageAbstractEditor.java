@@ -102,11 +102,12 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
                 tabFolder.setTopRight(topRight, SWT.RIGHT | SWT.WRAP);
             }
             tabFolder.setTabPosition(SWT.TOP);
+//            tabFolder.setSimple(false);
             //tabFolder.setBorderVisible(true);
             Layout parentLayout = tabFolder.getParent().getLayout();
             if (parentLayout instanceof FillLayout) {
-                ((FillLayout)parentLayout).marginHeight = 5;
-                //((FillLayout)parentLayout).marginWidth = 5;
+                ((FillLayout)parentLayout).marginHeight = 0;
+//                ((FillLayout)parentLayout).marginWidth = 5;
             }
         }
     }
