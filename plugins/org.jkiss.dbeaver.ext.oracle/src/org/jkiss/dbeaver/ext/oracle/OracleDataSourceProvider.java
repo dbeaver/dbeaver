@@ -97,19 +97,17 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             final String clientHomeId = connectionInfo.getClientHomeId();
             if (!CommonUtils.isEmpty(clientHomeId)) {
                 final OracleHomeDescriptor oraHome = OCIUtils.getOraHome(clientHomeId);
-                if (oraHome != null) {
-                    final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHome.getHomePath(), true);
-                    final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
-                    if (!CommonUtils.isEmpty(tnsDescription)) {
-                        url.append(tnsDescription);
-                    } else {
-                        final File tnsNamesFile = OCIUtils.findTnsNamesFile(oraHome.getHomePath(), true);
-                        if (tnsNamesFile != null && tnsNamesFile.exists()) {
-                            System.setProperty("oracle.net.tns_admin", tnsNamesFile.getAbsolutePath());
-                        }
-                        url.append(connectionInfo.getDatabaseName());
-                    }
+
+                final File oraHomePath = oraHome == null ? null : oraHome.getHomePath();
+                final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, true);
+                final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
+                if (!CommonUtils.isEmpty(tnsDescription)) {
+                    url.append(tnsDescription);
                 } else {
+                    final File tnsNamesFile = OCIUtils.findTnsNamesFile(oraHomePath, true);
+                    if (tnsNamesFile != null && tnsNamesFile.exists()) {
+                        System.setProperty("oracle.net.tns_admin", tnsNamesFile.getAbsolutePath());
+                    }
                     url.append(connectionInfo.getDatabaseName());
                 }
             }

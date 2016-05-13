@@ -263,11 +263,14 @@ public class OCIUtils
         if (checkTnsAdmin) {
             String tnsAdmin = System.getenv(VAR_TNS_ADMIN);
             if (tnsAdmin != null) {
-                tnsNamesFile = new File (CommonUtils.removeTrailingSlash(tnsAdmin) + "/" + TNSNAMES_FILE_NAME);
+                tnsNamesFile = new File (tnsAdmin, TNSNAMES_FILE_NAME);
             }
         }
         if ((tnsNamesFile == null || !tnsNamesFile.exists()) && oraHome != null) {
             tnsNamesFile = new File (oraHome, TNSNAMES_FILE_PATH + TNSNAMES_FILE_NAME);
+            if (!tnsNamesFile.exists()) {
+                tnsNamesFile = new File (oraHome, TNSNAMES_FILE_NAME);
+            }
         }
         if (tnsNamesFile != null && tnsNamesFile.exists()) {
             return tnsNamesFile;
@@ -338,9 +341,7 @@ public class OCIUtils
                 // do nothing
                 log.debug(e);
             }
-        }
-        else {
-            // do nothing
+        } else {
             log.debug("TNS names file '" + tnsnamesOra + "' doesn't exist");
         }
         return aliases;
