@@ -32,7 +32,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.*;
@@ -54,7 +53,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
@@ -225,17 +223,12 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     }
 
     @Override
-    protected ISourceViewer createSourceViewer(Composite parent,
-                                               IVerticalRuler ruler, int styles)
+    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles)
     {
-        OverviewRuler overviewRuler = null;
-        if (hasAnnotations()) {
-            overviewRuler = new OverviewRuler(
-                getAnnotationAccess(),
-                VERTICAL_RULER_WIDTH,
-                getSharedColors());
-        }
-        SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, overviewRuler);
+        fAnnotationAccess= getAnnotationAccess();
+        fOverviewRuler= createOverviewRuler(getSharedColors());
+
+        SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, fOverviewRuler);
 
         getSourceViewerDecorationSupport(sourceViewer);
 
@@ -259,7 +252,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     }
 
     @NotNull
-    protected SQLEditorSourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles, OverviewRuler overviewRuler) {
+    protected SQLEditorSourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles, IOverviewRuler overviewRuler) {
         return new SQLEditorSourceViewer(
                 parent,
                 ruler,
