@@ -1996,9 +1996,14 @@
         </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.main.connectionTypes" name="Connection Types">
             <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
-                </or>
+                <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+            </enabledWhen>
+        </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="DBeaver Settings">
+            <enabledWhen>
+                <adapt type="org.eclipse.core.resources.IProject">
+                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
+                </adapt>
             </enabledWhen>
         </page>
     </extension>
@@ -2605,11 +2610,11 @@
         <handler class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl" name="SQL scripts" managable="true">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="Navigator bookmarks" managable="true">
             <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>

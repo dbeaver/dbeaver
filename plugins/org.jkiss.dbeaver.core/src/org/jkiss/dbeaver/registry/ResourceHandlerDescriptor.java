@@ -44,6 +44,8 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
+    private String name;
+    private boolean managable;
     private ObjectType handlerType;
     private DBPResourceHandler handler;
     private List<IContentType> contentTypes = new ArrayList<>();
@@ -55,6 +57,8 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     {
         super(config);
 
+        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
@@ -91,6 +95,14 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     {
         this.handler = null;
         this.handlerType = null;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public boolean isManagable() {
+        return managable;
     }
 
     public synchronized DBPResourceHandler getHandler()
