@@ -108,7 +108,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeListener);
 
-        setDocumentProvider(new SQLDocumentProvider());
+        //setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this, getPreferenceStore()));
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
