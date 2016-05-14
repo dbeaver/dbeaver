@@ -371,8 +371,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         super.editorContextMenuAboutToShow(menu);
 
         menu.add(new Separator("content"));//$NON-NLS-1$
-        addAction(menu, IWorkbenchActionConstants.MB_ADDITIONS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
-        addAction(menu, IWorkbenchActionConstants.MB_ADDITIONS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
+        addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
+        addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         {
             MenuManager formatMenu = new MenuManager("Format", "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
@@ -385,7 +385,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.word.wrap"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.single"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.multi"));
-            menu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, formatMenu);
+            menu.insertAfter(GROUP_SQL_ADDITIONS, formatMenu);
         }
     }
 
@@ -406,7 +406,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
 
             ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
-            if (projectionViewer != null && document.getLength() > 0) {
+            if (projectionViewer != null && projectionViewer.getAnnotationModel() != null && document.getLength() > 0) {
                 // Refresh viewer
                 //projectionViewer.getTextWidget().redraw();
                 try {

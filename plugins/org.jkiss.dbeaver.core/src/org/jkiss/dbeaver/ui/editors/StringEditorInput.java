@@ -114,6 +114,11 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
         return buffer;
     }
 
+    public void setText(String text) {
+        buffer.setLength(0);
+        buffer.append(text);
+    }
+
     public String toString() {
 		return buffer.toString(); //$NON-NLS-1$ //$NON-NLS-2$
 	}
