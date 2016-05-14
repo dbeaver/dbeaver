@@ -1810,67 +1810,59 @@ public class ResultSetViewer extends Viewer
      */
     public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
     {
-        ResultSetPersister persister = createDataPersister();
-        if (persister != null) {
-            try {
-                return persister.applyChanges(monitor, false, listener);
-            } catch (DBException e) {
-                UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
-            }
+        try {
+            ResultSetPersister persister = createDataPersister();
+            return persister.applyChanges(monitor, false, listener);
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
+            return false;
         }
-        return false;
     }
 
     @Override
     public void rejectChanges()
     {
-        ResultSetPersister persister = createDataPersister();
-        if (persister != null) {
-            persister.rejectChanges();
+        try {
+            createDataPersister().rejectChanges();
+        } catch (DBException e) {
+            log.debug(e);
         }
     }
 
     @Override
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor)
     {
-        ResultSetPersister persister = createDataPersister();
-        if (persister != null) {
-            try {
-                persister.applyChanges(monitor, true, null);
-                return persister.getScript();
-            } catch (DBException e) {
-                UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
-            }
+        try {
+            ResultSetPersister persister = createDataPersister();
+            persister.applyChanges(monitor, true, null);
+            return persister.getScript();
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(null, "SQL script generate error", "Error saving changes in database", e);
+            return Collections.emptyList();
         }
-        return null;
     }
 
+    @NotNull
     private ResultSetPersister createDataPersister()
+        throws DBException
     {
         if (!model.isSingleSource()) {
-            UIUtils.showErrorDialog(null, "Apply changes error", "Can't save data for result set from multiple sources");
-            return null;
+            throw new DBException("Can't save data for result set from multiple sources");
         }
-        try {
-            boolean needPK = false;
-            for (ResultSetRow row : model.getAllRows()) {
-                if (row.getState() == ResultSetRow.STATE_REMOVED || (row.getState() == ResultSetRow.STATE_NORMAL && row.isChanged())) {
-                    needPK = true;
-                    break;
-                }
+        boolean needPK = false;
+        for (ResultSetRow row : model.getAllRows()) {
+            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.getState() == ResultSetRow.STATE_NORMAL && row.isChanged())) {
+                needPK = true;
+                break;
             }
-            if (needPK) {
-                // If we have deleted or updated rows then check for unique identifier
-                if (!checkEntityIdentifier()) {
-                    //UIUtils.showErrorDialog(null, "Can't apply changes", "Can't apply data changes - not unique identifier defined");
-                    return null;
-                }
-            }
-            return new ResultSetPersister(this);
-        } catch (DBException e) {
-            UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
-            return null;
         }
+        if (needPK) {
+            // If we have deleted or updated rows then check for unique identifier
+            if (!checkEntityIdentifier()) {
+                throw new DBException("No unique identifier defined");
+            }
+        }
+        return new ResultSetPersister(this);
     }
 
     void addNewRow(final boolean copyCurrent)
