@@ -18,39 +18,31 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.jface.preference.ColorSelector;
-import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
-import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.events.FocusAdapter;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.dialogs.ResourceSelectionDialog;
+import org.eclipse.ui.dialogs.ContainerSelectionDialog;
+import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPConnectionType;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.File;
 
 /**
  * PrefPageConnectionTypes
@@ -96,7 +88,7 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
                 {
                     disposeOldEditor();
 
-                    TableItem item = resourceTable.getItem(new Point(0, e.y));
+                    final TableItem item = resourceTable.getItem(new Point(0, e.y));
                     if (item == null) {
                         return;
                     }
@@ -105,13 +97,47 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
                         return;
                     }
                     if (columnIndex == 1) {
-                        ResourceSelectionDialog dialog = new ResourceSelectionDialog(resourceTable.getShell(), project, "Select " + item.getText(0) + " root folder");
-                        dialog.open();
-                        final Text editor = new Text(resourceTable, SWT.NONE);
-                        editor.setText(item.getText(1));
-                        editor.selectAll();
-                        handlerTableEditor.setEditor(editor, item, 1);
-                        editor.setFocus();
+                        final String resourcePath = item.getText(1);
+                        if (project != null) {
+                            final IFolder folder = project.getFolder(resourcePath);
+                            ContainerSelectionDialog dialog = new ContainerSelectionDialog(resourceTable.getShell(), folder, true, "Select " + item.getText(0) + " root folder");
+                            dialog.showClosedProjects(false);
+                            dialog.setValidator(new ISelectionValidator() {
+                                @Override
+                                public String isValid(Object selection) {
+                                    if (selection instanceof IPath) {
+                                        final File file = ((IPath) selection).toFile();
+                                        if (file.isHidden() || file.getName().startsWith(".")) {
+                                            return "Can't use hidden folders";
+                                        }
+                                        final String[] segments = ((IPath) selection).segments();
+                                        if (!project.getName().equals(segments[0])) {
+                                            return "Can't store resources in another project";
+                                        }
+                                    }
+                                    return null;
+                                }
+                            });
+                            if (dialog.open() == IDialogConstants.OK_ID) {
+                                final Object[] result = dialog.getResult();
+                                if (result.length == 1 && result[0] instanceof IPath) {
+                                    final IPath plainPath = ((IPath) result[0]).removeFirstSegments(1).removeTrailingSeparator();
+                                    item.setText(1, plainPath.toString());
+                                }
+                            }
+                        } else {
+                            final Text editor = new Text(resourceTable, SWT.NONE);
+                            editor.setText(resourcePath);
+                            editor.selectAll();
+                            handlerTableEditor.setEditor(editor, item, 1);
+                            editor.setFocus();
+                            editor.addFocusListener(new FocusAdapter() {
+                                @Override
+                                public void focusLost(FocusEvent e) {
+                                    item.setText(1, editor.getText());
+                                }
+                            });
+                        }
                     }
                 }
             });
