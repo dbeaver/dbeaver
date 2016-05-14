@@ -1339,6 +1339,7 @@ public class SQLEditor extends SQLEditorBase implements
                 public void run() {
                     if (statement != null) {
                         resultsProvider.query = statement;
+                        resultsProvider.lastGoodQuery = statement;
                         resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
                         // Special statements (not real statements) have their name in data
                         if (isStatsResult) {
@@ -1427,7 +1428,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public boolean isReadyToRun()
         {
-            return queryProcessor.curJob != null && queryProcessor.curJobRunning.get() == 0;
+            return queryProcessor.curJob == null || queryProcessor.curJobRunning.get() == 0;
         }
 
         @Override
