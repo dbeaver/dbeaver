@@ -1709,7 +1709,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate"/>
         </menuContribution-->
 
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="Execute" icon="icons/sql/sql_exec.png">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
@@ -1724,7 +1724,7 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
             </menu>
         </menuContribution>
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
         </menuContribution>

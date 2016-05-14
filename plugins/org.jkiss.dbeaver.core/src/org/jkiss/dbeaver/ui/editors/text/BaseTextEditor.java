@@ -67,6 +67,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     public static final String GROUP_SQL_PREFERENCES = "sql.preferences";
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
+    public static final String GROUP_SQL_EXTRAS = "sql.extras";
 
     private static Map<String, Integer> ACTION_TRANSLATE_MAP;
 
@@ -139,9 +140,11 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         menu.add(new Separator(ITextEditorActionConstants.GROUP_FIND));
         menu.add(new Separator(IWorkbenchActionConstants.GROUP_ADD));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
-        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         menu.add(new Separator());
         menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
+        menu.add(new GroupMarker(GROUP_SQL_EXTRAS));
+        menu.add(new Separator());
+        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         menu.add(new Separator());
         menu.add(new GroupMarker(GROUP_SQL_PREFERENCES));
 
