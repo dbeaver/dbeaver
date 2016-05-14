@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.utils.ArrayUtils;
@@ -46,6 +47,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     private String name;
     private boolean managable;
+    private DBPImage icon;
     private ObjectType handlerType;
     private DBPResourceHandler handler;
     private List<IContentType> contentTypes = new ArrayList<>();
@@ -59,6 +61,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         for (IConfigurationElement contentTypeBinding : ArrayUtils.safeArray(config.getChildren("contentTypeBinding"))) {
             String contentTypeId = contentTypeBinding.getAttribute("contentTypeId");
@@ -103,6 +106,10 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     public boolean isManagable() {
         return managable;
+    }
+
+    public DBPImage getIcon() {
+        return icon;
     }
 
     public synchronized DBPResourceHandler getHandler()

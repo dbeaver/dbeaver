@@ -2610,11 +2610,11 @@
         <handler class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl" name="SQL scripts" managable="true">
+        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl" name="SQL scripts" managable="true" icon="icons/scripts.png">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="Navigator bookmarks" managable="true">
+        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="Navigator bookmarks" managable="true" icon="icons/bookmark_folder.png">
             <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>

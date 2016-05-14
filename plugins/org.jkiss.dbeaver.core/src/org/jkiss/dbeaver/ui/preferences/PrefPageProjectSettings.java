@@ -38,8 +38,10 @@ import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.dialogs.ContainerSelectionDialog;
 import org.eclipse.ui.dialogs.ISelectionValidator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.io.File;
@@ -164,6 +166,10 @@ public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbe
             }
             TableItem item = new TableItem(resourceTable, SWT.NONE);
             item.setData(descriptor);
+            final DBPImage icon = descriptor.getIcon();
+            if (icon != null) {
+                item.setImage(DBeaverIcons.getImage(icon));
+            }
             item.setText(0, descriptor.getName());
 
             if (descriptor.getDefaultRoot() != null) {
