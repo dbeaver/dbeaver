@@ -203,16 +203,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (dataSourceContainer != null) {
             dataSourceContainer.getPreferenceStore().addPropertyChangeListener(this);
         }
-        IPathEditorInput input = getEditorInput();
+        IEditorInput input = getEditorInput();
         if (input == null) {
             return false;
         }
         IFile file = EditorUtils.getFileFromEditorInput(input);
-        if (file == null || !file.exists()) {
-            log.warn("File '" + input.getPath() + "' doesn't exists");
-            return false;
+        if (file != null && file.exists()) {
+            SQLEditorInput.setScriptDataSource(file, container, true);
         }
-        SQLEditorInput.setScriptDataSource(file, container, true);
         checkConnected();
 
         onDataSourceChange();
@@ -316,7 +314,7 @@ public class SQLEditor extends SQLEditorBase implements
         protected IStatus run(DBRProgressMonitor monitor) {
             monitor.beginTask("Open SQLEditor isolated connection", 1);
             try {
-                String title = "SQLEditor <" + getEditorInput().getPath().removeFileExtension().lastSegment() + ">";
+                String title = "SQLEditor <" + getEditorInput().getName() + ">";
                 monitor.subTask("Open context " + title);
                 executionContext = dataSource.openIsolatedContext(monitor, title);
             } catch (DBException e) {
@@ -592,12 +590,6 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
-    public IPathEditorInput getEditorInput()
-    {
-        return (IPathEditorInput) super.getEditorInput();
-    }
-
-    @Override
     public void init(IEditorSite site, IEditorInput editorInput)
         throws PartInitException
     {
@@ -615,16 +607,15 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
-        if (!(editorInput instanceof IPathEditorInput)) {
-            throw new PartInitException("Invalid Input: Must be " + IPathEditorInput.class.getSimpleName());
-        }
         IFile file = EditorUtils.getFileFromEditorInput(editorInput);
-        if (file == null || !file.exists()) {
-            throw new PartInitException("File '" + ((IPathEditorInput) editorInput).getPath() + "' doesn't exists");
-        }
+//        if (file == null || !file.exists()) {
+//            throw new PartInitException("Can't obtain file reference from editor input '" + editorInput + "'");
+//        }
         super.doSetInput(editorInput);
 
-        setDataSourceContainer(SQLEditorInput.getScriptDataSource(file));
+        if (file != null) {
+            setDataSourceContainer(SQLEditorInput.getScriptDataSource(file));
+        }
     }
 
     @Override
@@ -1614,7 +1605,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
-                        "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + GeneralUtils.getDefaultLineSeparator() +
+                        "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +
                                 CommonUtils.truncateString(query == null ? "" : query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }
         }

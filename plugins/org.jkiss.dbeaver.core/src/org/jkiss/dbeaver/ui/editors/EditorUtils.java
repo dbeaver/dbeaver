@@ -18,14 +18,21 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IStorage;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IPathEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.File;
 import java.lang.reflect.Method;
+import java.net.URL;
 
 /**
  * EditorUtils
@@ -37,9 +44,23 @@ public class EditorUtils {
     @Nullable
     public static IFile getFileFromEditorInput(IEditorInput editorInput)
     {
-        if (editorInput instanceof IFileEditorInput) {
+        if (editorInput == null) {
+            return null;
+        } else if (editorInput instanceof IFileEditorInput) {
             return ((IFileEditorInput) editorInput).getFile();
+        } else if (editorInput instanceof IPathEditorInput) {
+            final IPath path = ((IPathEditorInput) editorInput).getPath();
+            return ContentUtils.convertPathToWorkspaceFile(path);
+        } else if (editorInput instanceof IURIEditorInput) {
+            //((IURIEditorInput) editorInput).getURI()
         }
+        // Try to get path input adapter (works for external files)
+        final IPathEditorInput pathInput = editorInput.getAdapter(IPathEditorInput.class);
+        if (pathInput != null) {
+            final IPath path = pathInput.getPath();
+            return ContentUtils.convertPathToWorkspaceFile(path);
+        }
+
         try {
             Method getFileMethod = editorInput.getClass().getMethod("getFile");
             if (IFile.class.isAssignableFrom(getFileMethod.getReturnType())) {
@@ -49,10 +70,41 @@ public class EditorUtils {
             //log.debug("Error getting file from editor input with reflection: " + e.getMessage());
             // Just ignore
         }
-        if (editorInput instanceof IPathEditorInput && ((IPathEditorInput) editorInput).getPath() != null) {
-            return ContentUtils.convertPathToWorkspaceFile(((IPathEditorInput) editorInput).getPath());
-        } else {
-            return null;
-        }
+        return null;
     }
+
+    public static IStorage getStorageFromInput(Object element)
+    {
+        if (element instanceof IAdaptable) {
+            IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
+            if (storage != null) {
+                return storage;
+            }
+        }
+        if (element instanceof IEditorInput) {
+            IFile file = getFileFromEditorInput((IEditorInput) element);
+            if (file != null) {
+                return file;
+            }
+        }
+        return null;
+    }
+
+    public static File getLocalFileFromInput(Object element)
+    {
+        if (element instanceof IEditorInput) {
+            IFile file = getFileFromEditorInput((IEditorInput) element);
+            if (file != null) {
+                return file.getLocation().toFile();
+            }
+            if (element instanceof IURIEditorInput) {
+                final File localFile = new File(((IURIEditorInput) element).getURI());
+                if (localFile.exists()) {
+                    return localFile;
+                }
+            }
+        }
+        return null;
+    }
+
 }
