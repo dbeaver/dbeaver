@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.ui.IActionDelegate;
-import org.eclipse.ui.IPageLayout;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.actions.ActionFactory;
 import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
@@ -153,6 +150,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
         windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
         windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
+/*
         windowMenu.add(new Separator());
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
         windowMenu.add(new ToggleViewAction(QueryManagerView.VIEW_ID));
@@ -160,16 +158,16 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
         windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROGRESS_VIEW));
         windowMenu.add(new ToggleViewAction(IActionConstants.LOG_VIEW_ID));
-        windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        windowMenu.add(new Separator());
-/*
+*/
         {
-            MenuManager showViewMenuMgr = new MenuManager(IDEWorkbenchMessages.Workbench_showView, "showView"); //$NON-NLS-1$
-            IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(window);
+            MenuManager showViewMenuMgr = new MenuManager("Show View", "showView"); //$NON-NLS-1$
+            IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
             showViewMenuMgr.add(showViewMenu);
             windowMenu.add(showViewMenuMgr);
         }
-*/
+
+        windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+        windowMenu.add(new Separator());
 
         // Help
         helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));

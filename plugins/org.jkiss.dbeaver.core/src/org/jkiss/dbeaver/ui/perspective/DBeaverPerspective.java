@@ -17,12 +17,14 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
+import org.eclipse.jface.action.Separator;
 import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.IPlaceholderFolderLayout;
 import org.eclipse.ui.texteditor.templates.TemplatesView;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
@@ -82,11 +84,21 @@ public class DBeaverPerspective implements IPerspectiveFactory
         bottomRight.addPlaceholder(IPageLayout.ID_PROP_SHEET);
         bottomRight.addPlaceholder(IPageLayout.ID_PROGRESS_VIEW);
         bottomRight.addPlaceholder(IPageLayout.ID_OUTLINE);
+        bottomRight.addPlaceholder(IPageLayout.ID_TASK_LIST);
+        bottomRight.addPlaceholder(IPageLayout.ID_BOOKMARKS);
 
         // Search views
         bottomRight.addPlaceholder("org.eclipse.search.ui.views.SearchView");
         bottomRight.addPlaceholder("org.jkiss.dbeaver.ui.search.DatabaseSearchView");
         bottomRight.addPlaceholder("org.jkiss.dbeaver.core.shellProcess");
+
+        // Add view shortcuts
+        layout.addShowViewShortcut(DatabaseNavigatorView.VIEW_ID);
+        layout.addShowViewShortcut(ProjectNavigatorView.VIEW_ID);
+        layout.addShowViewShortcut(ProjectExplorerView.VIEW_ID);
+        layout.addShowViewShortcut(IPageLayout.ID_PROP_SHEET);
+        layout.addShowViewShortcut(QueryManagerView.VIEW_ID);
+        layout.addShowViewShortcut(IActionConstants.LOG_VIEW_ID);
     }
 
 }
