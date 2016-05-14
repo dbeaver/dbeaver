@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
@@ -160,7 +160,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             autoFoldersCheck = UIUtils.createLabelCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, false);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
 
-            String[] vars = new String[] {SQLEditorInput.VAR_CONNECTION_NAME, SQLEditorInput.VAR_DRIVER_NAME, SQLEditorInput.VAR_FILE_NAME, SQLEditorInput.VAR_FILE_EXT};
+            String[] vars = new String[] {SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT};
             String[] explain = new String[] {"Connection name", "Database driver name", "File name", "File extension"};
             StringBuilder legend = new StringBuilder("Supported variables: ");
             for (int i = 0; i <vars.length; i++) {
