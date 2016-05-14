@@ -50,7 +50,7 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 /**
  * TargetPrefPage
  */
-public abstract class TargetPrefPage extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
+public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     static final Log log = Log.getLog(TargetPrefPage.class);
 

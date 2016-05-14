@@ -50,7 +50,7 @@ import java.net.URL;
 /**
  * PrefPageDrivers
  */
-public class PrefPageDrivers extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
+public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     private static final Log log = Log.getLog(PrefPageDrivers.class);
 

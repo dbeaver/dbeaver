@@ -35,6 +35,8 @@ import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings;
+import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -58,6 +60,9 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
     public void addPages() {
         super.addPages();
         addPage(new ProjectCreateWizardPageSettings(data));
+        final PrefPageProjectSettings projectSettingsPref = new PrefPageProjectSettings();
+        WizardPrefPage projectSettingsPage = new WizardPrefPage(projectSettingsPref, "Resources", "Project resources");
+        addPage(projectSettingsPage);
     }
 
 	@Override

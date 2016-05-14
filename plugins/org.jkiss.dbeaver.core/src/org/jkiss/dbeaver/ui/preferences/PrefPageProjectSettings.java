@@ -55,7 +55,7 @@ import java.util.Map;
 /**
  * PrefPageConnectionTypes
  */
-public class PrefPageProjectSettings extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
+public class PrefPageProjectSettings extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.projectSettings"; //$NON-NLS-1$
 
