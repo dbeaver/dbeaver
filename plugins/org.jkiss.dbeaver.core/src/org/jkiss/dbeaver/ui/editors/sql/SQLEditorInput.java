@@ -24,19 +24,17 @@ import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPContextProvider;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * SQLEditorInput
@@ -47,67 +45,15 @@ public class SQLEditorInput extends ProjectFileEditorInput implements IPersistab
 
     private static final Log log = Log.getLog(SQLEditorInput.class);
 
-    public static final String VAR_CONNECTION_NAME = "connectionName";
-    public static final String VAR_FILE_NAME = "fileName";
-    public static final String VAR_FILE_EXT = "fileExt";
-    public static final String VAR_DRIVER_NAME = "driverName";
-
-    public static final String DEFAULT_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
-
-    private String scriptName;
-
     public SQLEditorInput(IFile file)
     {
         super(file);
-        this.scriptName = file.getFullPath().removeFileExtension().lastSegment();
     }
 
     @Override
     public DBPDataSourceContainer getDataSourceContainer()
     {
         return getScriptDataSource(getFile());
-    }
-
-    @Override
-    public String getName()
-    {
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        DBPPreferenceStore preferenceStore;
-        if (dataSourceContainer != null) {
-            preferenceStore = dataSourceContainer.getPreferenceStore();
-        } else {
-            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
-        }
-        String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
-        Map<String, Object> vars = new HashMap<>();
-        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getName());
-        vars.put(VAR_FILE_NAME, scriptName);
-        vars.put(VAR_FILE_EXT, getFile().getFullPath().getFileExtension());
-        vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
-        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
-    }
-
-    @Override
-    public String getToolTipText()
-    {
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer == null) {
-            return super.getName();
-        }
-        return
-            "Script: " + getFile().getName() +
-            " \nConnection: " + dataSourceContainer.getName() +
-            " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
-            " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
-    }
-
-    @Override
-    public IPersistableElement getPersistable()
-    {
-//        if (!restoreEditorState()) {
-//            return null;
-//        }
-        return this;
     }
 
     @Override

@@ -89,8 +89,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -114,6 +113,12 @@ public class SQLEditor extends SQLEditorBase implements
     private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
     private static Image IMG_OUTPUT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output.png").createImage(); //$NON-NLS-1$
     private static Image IMG_OUTPUT_ALERT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output_alert.png").createImage(); //$NON-NLS-1$
+
+    public static final String VAR_CONNECTION_NAME = "connectionName";
+    public static final String VAR_FILE_NAME = "fileName";
+    public static final String DEFAULT_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
+    public static final String VAR_FILE_EXT = "fileExt";
+    public static final String VAR_DRIVER_NAME = "driverName";
 
     private SashForm sashForm;
     private Control editorControl;
@@ -616,6 +621,41 @@ public class SQLEditor extends SQLEditorBase implements
         if (file != null) {
             setDataSourceContainer(SQLEditorInput.getScriptDataSource(file));
         }
+        setPartName(getEditorName());
+    }
+
+    @Override
+    public String getTitleToolTip() {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer == null) {
+            return super.getTitleToolTip();
+        }
+        final IEditorInput editorInput = getEditorInput();
+        return
+            "Script: " + (editorInput == null ? "" : editorInput.getName()) +
+                " \nConnection: " + dataSourceContainer.getName() +
+                " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
+                " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
+    }
+
+    private String getEditorName() {
+        final IFile file = EditorUtils.getFileFromEditorInput(getEditorInput());
+        String scriptName = file == null ? "null" : file.getFullPath().removeFileExtension().lastSegment();
+
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBPPreferenceStore preferenceStore;
+        if (dataSourceContainer != null) {
+            preferenceStore = dataSourceContainer.getPreferenceStore();
+        } else {
+            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+        }
+        String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
+        Map<String, Object> vars = new HashMap<>();
+        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getName());
+        vars.put(VAR_FILE_NAME, scriptName);
+        vars.put(VAR_FILE_EXT, file == null ? "" : file.getFullPath().getFileExtension());
+        vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
+        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
     }
 
     @Override
