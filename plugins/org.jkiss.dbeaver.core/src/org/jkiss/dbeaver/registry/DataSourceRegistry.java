@@ -368,6 +368,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         catch (XMLException ex) {
             throw new DBException("Datasource config parse error", ex);
         }
+        updateProjectNature();
     }
 
     void saveDataSources()
