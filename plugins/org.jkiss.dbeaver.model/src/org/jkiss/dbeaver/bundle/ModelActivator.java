@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.bundle;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.osgi.framework.BundleContext;
 
 import java.io.File;
@@ -72,7 +72,7 @@ public class ModelActivator extends Plugin
     public synchronized PrintStream getDebugWriter()
     {
         if (debugWriter == null) {
-            File logPath = Platform.getLogFileLocation().toFile().getParentFile();
+            File logPath = GeneralUtils.getMetadataFolder();
             File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
             if (debugLogFile.exists()) {
                 if (!debugLogFile.delete()) {

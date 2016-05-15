@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.model.DBPApplication;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.DBPProjectManager;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
@@ -32,18 +33,17 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.actions.GlobalPropertyTester;
 import org.jkiss.dbeaver.ui.resources.DefaultResourceHandlerImpl;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.*;
 import java.util.*;
 
-public class ProjectRegistry implements DBPProjectManager {
+public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManager {
     private static final Log log = Log.getLog(ProjectRegistry.class);
 
     private static final String PROP_PROJECT_ACTIVE = "project.active";
-    private static final String[] IGNORED_FILES = {
-        DataSourceRegistry.CONFIG_FILE_NAME,
-        DataSourceRegistry.OLD_CONFIG_FILE_NAME
-    };
+    private static final String EXT_FILES_PROPS_STORE = "dbeaver-external-files.data";
 
     private final List<ResourceHandlerDescriptor> handlerDescriptors = new ArrayList<>();
     private final Map<String, ResourceHandlerDescriptor> rootMapping = new HashMap<>();
@@ -53,12 +53,15 @@ public class ProjectRegistry implements DBPProjectManager {
     private IProject activeProject;
     private IWorkspace workspace;
 
+    private final Map<String, Map<String, Object>> externalFileProperties = new HashMap<>();
+
     private final List<DBPProjectListener> projectListeners = new ArrayList<>();
 
     public ProjectRegistry(IWorkspace workspace)
     {
         this.workspace = workspace;
         loadExtensions(Platform.getExtensionRegistry());
+        loadExternalFileProperties();
     }
 
     public void loadExtensions(IExtensionRegistry registry)
@@ -361,4 +364,65 @@ public class ProjectRegistry implements DBPProjectManager {
         }
     }
 
+    @Override
+    public Map<String, Object> getFileProperties(File file) {
+        return externalFileProperties.get(file.getAbsolutePath());
+    }
+
+    @Override
+    public Object getFileProperty(File file, String property) {
+        final Map<String, Object> fileProps = externalFileProperties.get(file.getAbsolutePath());
+        return fileProps == null ? null : fileProps.get(property);
+    }
+
+    @Override
+    public void setFileProperty(File file, String property, Object value) {
+        final String filePath = file.getAbsolutePath();
+        Map<String, Object> fileProps = externalFileProperties.get(filePath);
+        if (fileProps == null) {
+            fileProps = new HashMap<>();
+            externalFileProperties.put(filePath, fileProps);
+        }
+        if (value == null) {
+            fileProps.remove(property);
+        } else {
+            fileProps.put(property, value);
+        }
+
+        saveExternalFileProperties();
+    }
+
+    private void loadExternalFileProperties() {
+        externalFileProperties.clear();
+        File propsFile = new File(
+            GeneralUtils.getMetadataFolder(),
+            EXT_FILES_PROPS_STORE);
+        if (propsFile.exists()) {
+            try (InputStream is = new FileInputStream(propsFile)) {
+                try (ObjectInputStream ois = new ObjectInputStream(is)) {
+                    final Object object = ois.readObject();
+                    if (object instanceof Map) {
+                        externalFileProperties.putAll((Map) object);
+                    } else {
+                        log.error("Bad external files properties data format: " + object);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Error saving external files properties", e);
+            }
+        }
+    }
+
+    private void saveExternalFileProperties() {
+        File propsFile = new File(
+            GeneralUtils.getMetadataFolder(),
+            EXT_FILES_PROPS_STORE);
+        try (OutputStream os = new FileOutputStream(propsFile)) {
+            try (ObjectOutputStream oos = new ObjectOutputStream(os)) {
+                oos.writeObject(externalFileProperties);
+            }
+        } catch (Exception e) {
+            log.error("Error saving external files properties", e);
+        }
+    }
 }
