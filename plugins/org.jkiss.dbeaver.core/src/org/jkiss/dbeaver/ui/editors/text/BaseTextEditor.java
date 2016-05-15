@@ -242,7 +242,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     public void saveToExternalFile()
     {
         IEditorInput editorInput = getEditorInput();
-        IFile curFile = EditorUtils.getFileFromEditorInput(editorInput);
+        IFile curFile = EditorUtils.getFileFromInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
 
         final Document document = getDocument();

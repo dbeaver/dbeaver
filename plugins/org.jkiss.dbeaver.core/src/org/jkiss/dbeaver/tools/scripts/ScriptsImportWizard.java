@@ -166,7 +166,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             }
             // Set datasource
             if (importData.getDataSourceContainer() != null) {
-                EditorUtils.setScriptDataSource(targetFile, importData.getDataSourceContainer());
+                EditorUtils.setFileDataSource(targetFile, importData.getDataSourceContainer());
             }
             // Done
             monitor.worked(1);

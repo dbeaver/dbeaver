@@ -147,7 +147,7 @@ public class ResourceUtils {
         try {
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    final DBPDataSourceContainer scriptDataSource = EditorUtils.getScriptDataSource((IFile) resource);
+                    final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
                     if (container == null || scriptDataSource == container) {
                         result.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     }
@@ -167,7 +167,7 @@ public class ResourceUtils {
         try {
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                    final DBPDataSourceContainer scriptDataSource = EditorUtils.getScriptDataSource((IFile) resource);
+                    final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
                     if (containers == null || ArrayUtils.containsRef(containers, scriptDataSource)) {
                         result.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     }
@@ -189,7 +189,7 @@ public class ResourceUtils {
         boolean hasScripts = false;
         for (IResource resource : ((IFolder)folder.resource).members()) {
             if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
-                final DBPDataSourceContainer scriptDataSource = EditorUtils.getScriptDataSource((IFile) resource);
+                final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
                 if (containers == null || ArrayUtils.containsRef(containers, scriptDataSource)) {
                     folder.children.add(new ResourceInfo((IFile) resource, scriptDataSource));
                     hasScripts = true;
@@ -231,7 +231,7 @@ public class ResourceUtils {
 
         // Save ds container reference
         if (dataSourceContainer != null) {
-            EditorUtils.setScriptDataSource(tempFile, dataSourceContainer);
+            EditorUtils.setFileDataSource(tempFile, dataSourceContainer);
         }
 
         return tempFile;

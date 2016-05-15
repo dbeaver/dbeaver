@@ -184,7 +184,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
 
     private IFile getEditorFile()
     {
-        return EditorUtils.getFileFromEditorInput(getEditorInput());
+        return EditorUtils.getFileFromInput(getEditorInput());
     }
 
     @Override

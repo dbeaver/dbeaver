@@ -101,7 +101,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
     {
         if (resource instanceof IFile) {
-            DBPDataSourceContainer dataSource = EditorUtils.getScriptDataSource((IFile) resource);
+            DBPDataSourceContainer dataSource = EditorUtils.getFileDataSource((IFile) resource);
             return dataSource == null ? null : Collections.singleton(dataSource);
         }
         return null;
