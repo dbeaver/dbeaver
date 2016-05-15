@@ -43,6 +43,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     private Button dumpEventsCheck;
     private Button commentsCheck;
     private Button removeDefiner;
+    private Button binaryInHex;
 
     protected MySQLExportWizardPageSettings(MySQLExportWizard wizard)
     {
@@ -92,6 +93,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         commentsCheck.addSelectionListener(changeListener);
         removeDefiner = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_remove_definer, wizard.removeDefiner);
         removeDefiner.addSelectionListener(changeListener);
+        binaryInHex = UIUtils.createCheckbox(settingsGroup, MySQLMessages.tools_db_export_wizard_page_settings_checkbox_binary_hex, wizard.binariesInHex);
+        binaryInHex.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, new ModifyListener() {
@@ -133,6 +136,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         wizard.dumpEvents = dumpEventsCheck.getSelection();
         wizard.comments = commentsCheck.getSelection();
         wizard.removeDefiner = removeDefiner.getSelection();
+        wizard.binariesInHex = binaryInHex.getSelection();
 
         getContainer().updateButtons();
     }
