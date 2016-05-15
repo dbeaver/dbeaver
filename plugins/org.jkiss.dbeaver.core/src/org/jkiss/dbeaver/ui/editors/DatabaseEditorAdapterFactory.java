@@ -23,6 +23,7 @@ import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -36,17 +37,21 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
     private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBPDataSourceContainer.class };
 
     @Override
-    public Object getAdapter(Object adaptableObject, Class adapterType)
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
         if (adapterType == DBPDataSourceContainer.class) {
+            if (adaptableObject instanceof IDataSourceContainerProviderEx) {
+                return adapterType.cast(((IDataSourceContainerProviderEx) adaptableObject).getDataSourceContainer());
+            }
             if (adaptableObject instanceof IEditorPart) {
                 adaptableObject = ((IEditorPart) adaptableObject) .getEditorInput();
             }
             if (adaptableObject instanceof DBPDataSourceContainer) {
-                return adaptableObject;
-            }
-            if (adaptableObject instanceof IDataSourceContainerProvider) {
-                return ((IDataSourceContainerProvider)adaptableObject).getDataSourceContainer();
+                return adapterType.cast(adaptableObject);
+            } else if (adaptableObject instanceof IDataSourceContainerProvider) {
+                return adapterType.cast(((IDataSourceContainerProvider) adaptableObject).getDataSourceContainer());
+            } else if (adaptableObject instanceof IEditorInput) {
+                return adapterType.cast(EditorUtils.getInputDataSource((IEditorInput) adaptableObject));
             }
             return null;
         } else if (DBPObject.class.isAssignableFrom(adapterType)) {
@@ -57,7 +62,7 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
                     if (node != null) {
                         DBSObject object = ((DBSWrapper)node).getObject();
                         if (object != null && adapterType.isAssignableFrom(object.getClass())) {
-                            return object;
+                            return adapterType.cast(object);
                         }
                     }
                 }
