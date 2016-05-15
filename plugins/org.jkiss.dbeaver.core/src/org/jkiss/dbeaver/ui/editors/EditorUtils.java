@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
@@ -113,6 +114,21 @@ public class EditorUtils {
             }
         }
         return null;
+    }
+
+    public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput)
+    {
+        if (editorInput instanceof IDatabaseEditorInput) {
+            final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+            if (object != null) {
+                return object.getDataSource().getContainer();
+            }
+            return null;
+        } else if (editorInput instanceof IFileEditorInput) {
+            return getScriptDataSource(((IFileEditorInput) editorInput).getFile());
+        } else {
+            return null;
+        }
     }
 
     @Nullable

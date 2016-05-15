@@ -1901,9 +1901,9 @@
         <page id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="Common Settings">
            <enabledWhen>
                <or>
-                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                  <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
-                  <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                   <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                   <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                   <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                </or>
            </enabledWhen>
         </page>
@@ -1911,8 +1911,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1920,8 +1920,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1929,8 +1929,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1939,8 +1939,8 @@
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                     <instanceof value="org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1948,8 +1948,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1957,8 +1957,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
            </enabledWhen>
         </page>
@@ -1966,8 +1966,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1975,8 +1975,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1984,8 +1984,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -2024,15 +2024,17 @@
             <adapter type="org.eclipse.core.resources.IFolder"/>
             <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
         </factory>
-        <factory adaptableType="org.eclipse.ui.IWorkbenchPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+        </factory>
+        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         </factory>
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
-        <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
         <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
     </extension>
 
