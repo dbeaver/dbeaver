@@ -224,7 +224,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                         }
                     });
                 } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
+                    UIUtils.showErrorDialog(null, "Table list", "Can't read table list", e);
                 }
                 return Status.OK_STATUS;
             }
