@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -48,7 +49,6 @@ import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -279,7 +279,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 newFile.createLink(location, IResource.NONE, null);
                 newFile.setPersistentProperty(EditorUtils.PROP_DATA_SOURCE_ID, curFile.getPersistentProperty(EditorUtils.PROP_DATA_SOURCE_ID));
 
-                SQLEditorInput newInput = new SQLEditorInput(newFile);
+                FileEditorInput newInput = new FileEditorInput(newFile);
                 init(getEditorSite(), newInput);
             } catch (CoreException e) {
                 UIUtils.showErrorDialog(getSite().getShell(), "File link", "Can't link SQL editor with external file", e);
