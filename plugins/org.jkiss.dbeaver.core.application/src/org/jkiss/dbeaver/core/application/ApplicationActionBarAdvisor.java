@@ -116,8 +116,21 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //recentMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
 
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+        fileMenu.add(new Separator());
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
+        fileMenu.add(new Separator());
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.PRINT_EXT));
+        fileMenu.add(new Separator());
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.OPEN_EXT));
+        fileMenu.add(new Separator());
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
+        fileMenu.add(new Separator());
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
+        fileMenu.add(new Separator());
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MRU));
         fileMenu.add(new Separator());
 
         fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
