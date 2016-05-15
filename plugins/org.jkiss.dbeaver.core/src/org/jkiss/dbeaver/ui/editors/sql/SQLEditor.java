@@ -150,7 +150,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     public IProject getProject()
     {
-        IFile file = EditorUtils.getFileFromEditorInput(getEditorInput());
+        IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ? null : file.getProject();
     }
 
@@ -209,13 +209,10 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.getPreferenceStore().addPropertyChangeListener(this);
         }
         IEditorInput input = getEditorInput();
-        if (input == null) {
-            return false;
+        if (input != null) {
+            EditorUtils.setInputDataSource(input, container, true);
         }
-        IFile file = EditorUtils.getFileFromEditorInput(input);
-        if (file != null && file.exists()) {
-            EditorUtils.setScriptDataSource(file, container, true);
-        }
+
         checkConnected();
 
         onDataSourceChange();
@@ -612,15 +609,9 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
-        IFile file = EditorUtils.getFileFromEditorInput(editorInput);
-//        if (file == null || !file.exists()) {
-//            throw new PartInitException("Can't obtain file reference from editor input '" + editorInput + "'");
-//        }
         super.doSetInput(editorInput);
 
-        if (file != null) {
-            setDataSourceContainer(EditorUtils.getScriptDataSource(file));
-        }
+        setDataSourceContainer(EditorUtils.getInputDataSource(editorInput));
         setPartName(getEditorName());
     }
 
@@ -649,7 +640,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private String getEditorName() {
-        final IFile file = EditorUtils.getFileFromEditorInput(getEditorInput());
+        final IFile file = EditorUtils.getFileFromInput(getEditorInput());
         File localFile = file == null ? EditorUtils.getLocalFileFromInput(getEditorInput()) : null;
         String scriptName;
         if (file != null) {
@@ -947,7 +938,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void dispose()
     {
-        IFile sqlFile = EditorUtils.getFileFromEditorInput(getEditorInput());
+        IFile sqlFile = EditorUtils.getFileFromInput(getEditorInput());
 
         // Release ds container
         releaseContainer();

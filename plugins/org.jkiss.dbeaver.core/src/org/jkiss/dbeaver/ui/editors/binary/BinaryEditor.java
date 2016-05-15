@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
@@ -55,11 +56,9 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     private static final Log log = Log.getLog(HexEditControl.class);
 
-    //static final String textSavingFilePleaseWait = "Saving file, please wait";
-
     private HexManager manager;
     private DBPPreferenceListener preferencesChangeListener = null;
-    private Set<ISelectionChangedListener> selectionListeners = null;  // of ISelectionChangedListener
+    private Set<ISelectionChangedListener> selectionListeners = null;
 
     public BinaryEditor()
     {
@@ -120,17 +119,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void createPartControl(Composite parent)
     {
-        IEditorInput editorInput = getEditorInput();
-        IStorage storage = null;
-        {
-            IFile file = EditorUtils.getFileFromEditorInput(editorInput);
-            if (file != null) {
-                storage = file;
-            }
-        }
-        if (storage == null) {
-            storage = editorInput.getAdapter(IStorage.class);
-        }
+        IStorage storage = EditorUtils.getStorageFromInput(getEditorInput());
 
         manager = new HexManager();
         manager.setTextFont(HexPreferencesPage.getPrefFontData());
@@ -196,17 +185,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
                 }
             }
         });
-        getSite().getPage().addSelectionListener(//getSite().getPage().getActiveEditor().getSite().getId(),
-             new ISelectionListener() {
-                 @Override
-                 public void selectionChanged(IWorkbenchPart part,
-                                              ISelection selection)
-                 {
-                     //if ("org.jkiss.dbeaver.ui.editors.binary".equals(part.getSite().getId())) return;
-                 }
-             });
-//	getSite().setSelectionProvider(this);
-
     }
 
     private void createEditorAction(IActionBars bars, String id)
@@ -216,7 +194,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
 
     private void loadBinaryContent()
     {
-        String charset = null;
+        String charset = GeneralUtils.DEFAULT_FILE_CHARSET_NAME;
         IEditorInput editorInput = getEditorInput();
         File systemFile = null;
         if (editorInput instanceof IPathEditorInput) {
@@ -265,7 +243,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     {
         IEditorInput editorInput = getEditorInput();
         // Sync file changes
-        IFile file = EditorUtils.getFileFromEditorInput(editorInput);
+        IFile file = EditorUtils.getFileFromInput(editorInput);
         if (file != null) {
             final IPath absolutePath = file.getLocation();
             File systemFile = absolutePath.toFile();
@@ -291,14 +269,14 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     }
 
     @Override
-    public Object getAdapter(Class required)
+    public <T> T getAdapter(Class<T> adapter)
     {
-        if (BinaryContent.class.isAssignableFrom(required)) {
-            return manager.getContent();
-        } else if (HexManager.class.isAssignableFrom(required)) {
-            return manager;
+        if (BinaryContent.class.isAssignableFrom(adapter)) {
+            return adapter.cast(manager.getContent());
+        } else if (HexManager.class.isAssignableFrom(adapter)) {
+            return adapter.cast(manager);
         } else {
-            return super.getAdapter(required);
+            return super.getAdapter(adapter);
         }
     }
 
@@ -358,7 +336,6 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
     @Override
     public void setFocus()
     {
-        // useless. It is called before ActionBarContributor.setActiveEditor() so focusing is done there
     }
 
 
@@ -443,24 +420,35 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         @Override
         public void run()
         {
-            if (actionId.equals(IWorkbenchCommandConstants.EDIT_UNDO))
-                manager.doUndo();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_REDO))
-                manager.doRedo();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_CUT))
-                manager.doCut();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY))
-                manager.doCopy();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_PASTE))
-                manager.doPaste();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_DELETE))
-                manager.doDelete();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL))
-                manager.doSelectAll();
-            else if (actionId.equals(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE))
-                manager.doFind();
-            else if (actionId.equals(ITextEditorActionDefinitionIds.LINE_GOTO))
-                manager.doGoTo();
+            switch (actionId) {
+                case IWorkbenchCommandConstants.EDIT_UNDO:
+                    manager.doUndo();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_REDO:
+                    manager.doRedo();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_CUT:
+                    manager.doCut();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_COPY:
+                    manager.doCopy();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_PASTE:
+                    manager.doPaste();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_DELETE:
+                    manager.doDelete();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_SELECT_ALL:
+                    manager.doSelectAll();
+                    break;
+                case IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE:
+                    manager.doFind();
+                    break;
+                case ITextEditorActionDefinitionIds.LINE_GOTO:
+                    manager.doGoTo();
+                    break;
+            }
         }
     }
 

@@ -51,7 +51,7 @@ public class EditorUtils {
     private static final Log log = Log.getLog(EditorUtils.class);
 
     @Nullable
-    public static IFile getFileFromEditorInput(IEditorInput editorInput)
+    public static IFile getFileFromInput(IEditorInput editorInput)
     {
         if (editorInput == null) {
             return null;
@@ -91,7 +91,7 @@ public class EditorUtils {
             }
         }
         if (element instanceof IEditorInput) {
-            IFile file = getFileFromEditorInput((IEditorInput) element);
+            IFile file = getFileFromInput((IEditorInput) element);
             if (file != null) {
                 return file;
             }
@@ -102,7 +102,7 @@ public class EditorUtils {
     public static File getLocalFileFromInput(Object element)
     {
         if (element instanceof IEditorInput) {
-            IFile file = getFileFromEditorInput((IEditorInput) element);
+            IFile file = getFileFromInput((IEditorInput) element);
             if (file != null) {
                 return file.getLocation().toFile();
             }
@@ -116,6 +116,9 @@ public class EditorUtils {
         return null;
     }
 
+    //////////////////////////////////////////////////////////
+    // Datasource <-> resource manipulations
+
     public static DBPDataSourceContainer getInputDataSource(IEditorInput editorInput)
     {
         if (editorInput instanceof IDatabaseEditorInput) {
@@ -125,14 +128,14 @@ public class EditorUtils {
             }
             return null;
         } else if (editorInput instanceof IFileEditorInput) {
-            return getScriptDataSource(((IFileEditorInput) editorInput).getFile());
+            return getFileDataSource(((IFileEditorInput) editorInput).getFile());
         } else {
             return null;
         }
     }
 
     @Nullable
-    public static DBPDataSourceContainer getScriptDataSource(IFile file)
+    public static DBPDataSourceContainer getFileDataSource(IFile file)
     {
         try {
             if (!file.exists()) {
@@ -151,12 +154,22 @@ public class EditorUtils {
         }
     }
 
-    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer)
+    public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
     {
-        setScriptDataSource(file, dataSourceContainer, false);
+        IFile file = getFileFromInput(editorInput);
+        if (file != null) {
+            setFileDataSource(file, dataSourceContainer, notify);
+        } else {
+            log.error("Can't set datasource for input " + editorInput);
+        }
     }
 
-    public static void setScriptDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
+    public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer)
+    {
+        setFileDataSource(file, dataSourceContainer, false);
+    }
+
+    public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
     {
         try {
             file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
