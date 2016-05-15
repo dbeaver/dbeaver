@@ -419,6 +419,11 @@ public class SQLEditor extends SQLEditorBase implements
         onDataSourceChange();
     }
 
+    @Override
+    protected void setExternalFileProperties(IEditorInput input) {
+        EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
+    }
+
     private void createResultTabs()
     {
         resultTabs = new CTabFolder(sashForm, SWT.TOP | SWT.FLAT);
