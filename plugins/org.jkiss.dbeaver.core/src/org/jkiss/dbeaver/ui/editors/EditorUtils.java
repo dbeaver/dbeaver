@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -32,11 +33,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -46,7 +49,9 @@ import java.lang.reflect.Method;
  */
 public class EditorUtils {
 
-    public static final QualifiedName PROP_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", "sql-editor-data-source-id");
+    public static final String PROP_SQL_DATA_SOURCE = "sql-editor-data-source-id";
+    public static final String PROP_SQL_PROJECT = "sql-editor-project-id";
+    public static final QualifiedName QN_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", PROP_SQL_DATA_SOURCE);
 
     private static final Log log = Log.getLog(EditorUtils.class);
 
@@ -127,10 +132,31 @@ public class EditorUtils {
                 return object.getDataSource().getContainer();
             }
             return null;
-        } else if (editorInput instanceof IFileEditorInput) {
-            return getFileDataSource(((IFileEditorInput) editorInput).getFile());
         } else {
-            return null;
+            IFile file = getFileFromInput(editorInput);
+            if (file != null) {
+                return getFileDataSource(file);
+            } else {
+                File localFile = getLocalFileFromInput(editorInput);
+                if (localFile != null) {
+                    final DBPExternalFileManager efManager = DBeaverCore.getInstance().getExternalFileManager();
+                    String dataSourceId = (String) efManager.getFileProperty(localFile, PROP_SQL_DATA_SOURCE);
+                    String projectName = (String) efManager.getFileProperty(localFile, PROP_SQL_PROJECT);
+                    if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
+                        return null;
+                    }
+                    final IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectName);
+                    if (project == null || !project.exists()) {
+                        log.error("Can't locate project '" + projectName + "' in workspace");
+                        return null;
+                    }
+                    DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
+                    return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
+
+                } else {
+                    return null;
+                }
+            }
         }
     }
 
@@ -141,7 +167,7 @@ public class EditorUtils {
             if (!file.exists()) {
                 return null;
             }
-            String dataSourceId = file.getPersistentProperty(PROP_DATA_SOURCE_ID);
+            String dataSourceId = file.getPersistentProperty(QN_DATA_SOURCE_ID);
             if (dataSourceId != null) {
                 DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
                 return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
@@ -160,7 +186,20 @@ public class EditorUtils {
         if (file != null) {
             setFileDataSource(file, dataSourceContainer, notify);
         } else {
-            log.error("Can't set datasource for input " + editorInput);
+            File localFile = getLocalFileFromInput(editorInput);
+            if (localFile != null) {
+                final DBPExternalFileManager efManager = DBeaverCore.getInstance().getExternalFileManager();
+                efManager.setFileProperty(
+                    localFile,
+                    PROP_SQL_PROJECT,
+                    dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
+                efManager.setFileProperty(
+                    localFile,
+                    PROP_SQL_DATA_SOURCE,
+                    dataSourceContainer == null ? null : dataSourceContainer.getId());
+            } else {
+                log.error("Can't set datasource for input " + editorInput);
+            }
         }
     }
 
@@ -172,7 +211,7 @@ public class EditorUtils {
     public static void setFileDataSource(@NotNull IFile file, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
     {
         try {
-            file.setPersistentProperty(PROP_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
+            file.setPersistentProperty(QN_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
             if (notify) {
                 final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(file.getProject());
                 if (projectNode != null) {
