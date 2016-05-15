@@ -28,9 +28,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -58,7 +58,7 @@ public class NavigatorHandlerAssociateScript extends NavigatorHandlerObjectBase 
             DBPDataSourceContainer dataSourceDescriptor = SelectDataSourceDialog.selectDataSource(activeShell);
             if (dataSourceDescriptor != null) {
                 for (IFile script : scripts) {
-                    SQLEditorInput.setScriptDataSource(script, dataSourceDescriptor, true);
+                    EditorUtils.setScriptDataSource(script, dataSourceDescriptor, true);
                 }
             }
         }

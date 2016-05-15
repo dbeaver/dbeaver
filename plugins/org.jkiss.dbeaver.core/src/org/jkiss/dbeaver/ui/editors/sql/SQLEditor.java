@@ -214,7 +214,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         IFile file = EditorUtils.getFileFromEditorInput(input);
         if (file != null && file.exists()) {
-            SQLEditorInput.setScriptDataSource(file, container, true);
+            EditorUtils.setScriptDataSource(file, container, true);
         }
         checkConnected();
 
@@ -397,7 +397,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
             }
         }
-        setPartName(getEditorInput().getName());
+        setPartName(getEditorName());
         return dataSourceContainer != null && dataSourceContainer.isConnected();
     }
 
@@ -619,7 +619,7 @@ public class SQLEditor extends SQLEditorBase implements
         super.doSetInput(editorInput);
 
         if (file != null) {
-            setDataSourceContainer(SQLEditorInput.getScriptDataSource(file));
+            setDataSourceContainer(EditorUtils.getScriptDataSource(file));
         }
         setPartName(getEditorName());
     }
@@ -631,8 +631,18 @@ public class SQLEditor extends SQLEditorBase implements
             return super.getTitleToolTip();
         }
         final IEditorInput editorInput = getEditorInput();
+        String scriptPath;
+        if (editorInput instanceof IFileEditorInput) {
+            scriptPath = ((IFileEditorInput) editorInput).getFile().getFullPath().toString();
+        } else if (editorInput instanceof IPathEditorInput) {
+            scriptPath = ((IPathEditorInput) editorInput).getPath().toString();
+        } else if (editorInput instanceof IURIEditorInput) {
+            scriptPath = ((IURIEditorInput) editorInput).getURI().toString();
+        } else {
+            scriptPath = "<not a file>";
+        }
         return
-            "Script: " + (editorInput == null ? "" : editorInput.getName()) +
+            "Script: " + scriptPath +
                 " \nConnection: " + dataSourceContainer.getName() +
                 " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
                 " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
@@ -640,7 +650,15 @@ public class SQLEditor extends SQLEditorBase implements
 
     private String getEditorName() {
         final IFile file = EditorUtils.getFileFromEditorInput(getEditorInput());
-        String scriptName = file == null ? "null" : file.getFullPath().removeFileExtension().lastSegment();
+        File localFile = file == null ? EditorUtils.getLocalFileFromInput(getEditorInput()) : null;
+        String scriptName;
+        if (file != null) {
+            scriptName = file.getFullPath().removeFileExtension().lastSegment();
+        } else if (localFile != null) {
+            scriptName = localFile.getName();
+        } else {
+            scriptName = "<object>";
+        }
 
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         DBPPreferenceStore preferenceStore;
@@ -651,9 +669,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
         String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
         Map<String, Object> vars = new HashMap<>();
-        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getName());
+        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "none" : dataSourceContainer.getName());
         vars.put(VAR_FILE_NAME, scriptName);
-        vars.put(VAR_FILE_EXT, file == null ? "" : file.getFullPath().getFileExtension());
+        vars.put(VAR_FILE_EXT,
+            file == null ? "" : file.getFullPath().getFileExtension());
         vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
         return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
     }

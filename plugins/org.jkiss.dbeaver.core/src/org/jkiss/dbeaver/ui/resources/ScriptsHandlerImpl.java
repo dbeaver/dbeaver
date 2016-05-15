@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
@@ -100,7 +101,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
     {
         if (resource instanceof IFile) {
-            DBPDataSourceContainer dataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+            DBPDataSourceContainer dataSource = EditorUtils.getScriptDataSource((IFile) resource);
             return dataSource == null ? null : Collections.singleton(dataSource);
         }
         return null;

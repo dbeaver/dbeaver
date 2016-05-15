@@ -277,7 +277,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
                 IFolder scriptsFolder = ResourceUtils.getScriptsFolder(curFile.getProject(), true);
                 IFile newFile = scriptsFolder.getFile(location.lastSegment());
                 newFile.createLink(location, IResource.NONE, null);
-                newFile.setPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID, curFile.getPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID));
+                newFile.setPersistentProperty(EditorUtils.PROP_DATA_SOURCE_ID, curFile.getPersistentProperty(EditorUtils.PROP_DATA_SOURCE_ID));
 
                 SQLEditorInput newInput = new SQLEditorInput(newFile);
                 init(getEditorSite(), newInput);
