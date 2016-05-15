@@ -576,7 +576,10 @@ public class SQLEditor extends SQLEditorBase implements
     public void toggleActivePanel() {
         if (sashForm.getMaximizedControl() == null) {
             if (UIUtils.hasFocus(resultTabs)) {
-                getEditorControl().setFocus();
+                final Control editorControl = getEditorControl();
+                if (editorControl != null) {
+                    editorControl.setFocus();
+                }
             } else {
                 CTabItem selTab = resultTabs.getSelection();
                 if (selTab != null) {
@@ -1657,7 +1660,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
                         "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +
-                                CommonUtils.truncateString(query == null ? "" : query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
+                                CommonUtils.truncateString(query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }
         }
 
@@ -1747,7 +1750,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             lastFocusInEditor = focusInEditor;
             if (!focusInEditor && rsv != null) {
-                IFindReplaceTarget nested = (IFindReplaceTarget) rsv.getAdapter(IFindReplaceTarget.class);
+                IFindReplaceTarget nested = rsv.getAdapter(IFindReplaceTarget.class);
                 if (nested != null) {
                     return nested;
                 }

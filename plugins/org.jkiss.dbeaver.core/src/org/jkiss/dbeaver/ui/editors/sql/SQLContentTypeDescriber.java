@@ -39,6 +39,6 @@ public class SQLContentTypeDescriber implements IContentDescriber {
     @Override
     public QualifiedName[] getSupportedOptions()
     {
-        return new QualifiedName[] { EditorUtils.PROP_DATA_SOURCE_ID };
+        return new QualifiedName[] { EditorUtils.QN_DATA_SOURCE_ID};
     }
 }
