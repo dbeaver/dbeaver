@@ -57,9 +57,9 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
-import org.jkiss.dbeaver.ui.controls.folders.IFolder;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderListener;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -76,7 +76,7 @@ import java.util.*;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, IFolderContainer
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer
 {
     private static final Log log = Log.getLog(EntityEditor.class);
 
@@ -96,14 +96,14 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private final Map<String, IEditorPart> editorMap = new LinkedHashMap<>();
     private IEditorPart activeEditor;
     private DBECommandAdapter commandListener;
-    private IFolderListener folderListener;
+    private ITabbedFolderListener folderListener;
     private boolean hasPropertiesEditor;
     private Map<IEditorPart, IEditorActionBarContributor> actionContributors = new HashMap<>();
     private volatile boolean saveInProgress = false;
 
     public EntityEditor()
     {
-        folderListener = new IFolderListener() {
+        folderListener = new ITabbedFolderListener() {
             @Override
             public void folderSelected(String folderId)
             {
@@ -487,13 +487,13 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
         this.activeEditor = getActiveEditor();
-        if (activeEditor instanceof IFolderContainer) {
+        if (activeEditor instanceof ITabbedFolderContainer) {
             String defFolderId = editorInput.getDefaultFolderId();
             if (defFolderId == null && editorDefaults != null) {
                 defFolderId = editorDefaults.folderId;
             }
             if (defFolderId != null) {
-                ((IFolderContainer)activeEditor).switchFolder(defFolderId);
+                ((ITabbedFolderContainer)activeEditor).switchFolder(defFolderId);
             }
         }
 
@@ -581,10 +581,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Nullable
     @Override
-    public IFolder getActiveFolder()
+    public ITabbedFolder getActiveFolder()
     {
-        if (getActiveEditor() instanceof IFolderContainer) {
-            ((IFolderContainer)getActiveEditor()).getActiveFolder();
+        if (getActiveEditor() instanceof ITabbedFolderContainer) {
+            ((ITabbedFolderContainer)getActiveEditor()).getActiveFolder();
         }
         return null;
     }
@@ -593,11 +593,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
     public void switchFolder(String folderId)
     {
         for (IEditorPart editor : editorMap.values()) {
-            if (editor instanceof IFolderContainer) {
+            if (editor instanceof ITabbedFolderContainer) {
                 if (getActiveEditor() != editor) {
                     setActiveEditor(editor);
                 }
-                ((IFolderContainer)editor).switchFolder(folderId);
+                ((ITabbedFolderContainer)editor).switchFolder(folderId);
             }
         }
 //        if (getActiveEditor() instanceof IFolderedPart) {
@@ -606,12 +606,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public void addFolderListener(IFolderListener listener)
+    public void addFolderListener(ITabbedFolderListener listener)
     {
     }
 
     @Override
-    public void removeFolderListener(IFolderListener listener)
+    public void removeFolderListener(ITabbedFolderListener listener)
     {
     }
 
@@ -657,8 +657,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
             editorMap.put(descriptor.getId(), editor);
 
-            if (editor instanceof IFolderContainer) {
-                ((IFolderContainer) editor).addFolderListener(folderListener);
+            if (editor instanceof ITabbedFolderContainer) {
+                ((ITabbedFolderContainer) editor).addFolderListener(folderListener);
             }
 
             return true;

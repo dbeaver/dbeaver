@@ -32,7 +32,7 @@ package org.jkiss.dbeaver.ui.controls.folders;
 /**
  * Abstract folder page
  */
-public abstract class FolderPage implements IFolder {
+public abstract class TabbedFolderPage implements ITabbedFolder {
 
     @Override
     public void setFocus() {

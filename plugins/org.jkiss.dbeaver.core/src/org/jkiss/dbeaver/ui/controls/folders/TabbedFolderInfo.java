@@ -34,16 +34,16 @@ import org.jkiss.dbeaver.model.DBPImage;
 /**
  * Folder info
  */
-public class FolderInfo {
+public class TabbedFolderInfo {
 
     private final String id;
     private final String text;
     private final DBPImage image;
     private final String tooltip;
     private final boolean embeddable;
-    private final IFolder contents;
+    private final ITabbedFolder contents;
 
-    public FolderInfo(String id, String text, DBPImage image, String tooltip, boolean embeddable, IFolder contents) {
+    public TabbedFolderInfo(String id, String text, DBPImage image, String tooltip, boolean embeddable, ITabbedFolder contents) {
         this.id = id;
         this.text = text;
         this.image = image;
@@ -76,7 +76,7 @@ public class FolderInfo {
         return embeddable;
     }
 
-    public IFolder getContents() {
+    public ITabbedFolder getContents() {
         return contents;
     }
 }

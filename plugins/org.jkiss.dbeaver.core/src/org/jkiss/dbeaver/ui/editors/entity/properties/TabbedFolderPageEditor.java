@@ -34,8 +34,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
-import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderEditorSite;
+import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorManager;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorContributorUser;
@@ -44,9 +44,9 @@ import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 /**
  * EditorWrapperSection
  */
-public class FolderPageEditor extends FolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
+public class TabbedFolderPageEditor extends TabbedFolderPage implements IDatabaseEditorContributorUser, ISaveablePart, IRefreshablePart, IAdaptable {
 
-    private static final Log log = Log.getLog(FolderPageEditor.class);
+    private static final Log log = Log.getLog(TabbedFolderPageEditor.class);
 
     private IDatabaseEditor mainEditor;
     private EntityEditorDescriptor editorDescriptor;
@@ -54,7 +54,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
     private IEditorActionBarContributor actionContributor;
     private IEditorSite nestedEditorSite;
 
-    public FolderPageEditor(IDatabaseEditor mainEditor, EntityEditorDescriptor editorDescriptor) {
+    public TabbedFolderPageEditor(IDatabaseEditor mainEditor, EntityEditorDescriptor editorDescriptor) {
         this.mainEditor = mainEditor;
         this.editorDescriptor = editorDescriptor;
     }
@@ -70,7 +70,7 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         final IWorkbenchPartSite ownerSite = this.mainEditor.getSite();
         if (ownerSite instanceof MultiPageEditorSite) {
             final MultiPageEditorPart ownerMultiPageEditor = ((MultiPageEditorSite) ownerSite).getMultiPageEditor();
-            nestedEditorSite = new FolderPageEditorSite(ownerMultiPageEditor, editor);
+            nestedEditorSite = new TabbedFolderPageEditorSite(ownerMultiPageEditor, editor);
 
             // Add property change forwarding
             // We need it to tell owner editor about dirty state change
@@ -247,9 +247,9 @@ public class FolderPageEditor extends FolderPage implements IDatabaseEditorContr
         return editor != null && editor.isSaveOnCloseNeeded();
     }
 
-    private class FolderPageEditorSite extends MultiPageEditorSite implements IFolderEditorSite {
+    private class TabbedFolderPageEditorSite extends MultiPageEditorSite implements ITabbedFolderEditorSite {
 
-        public FolderPageEditorSite(MultiPageEditorPart multiPageEditor, IEditorPart editor) {
+        public TabbedFolderPageEditorSite(MultiPageEditorPart multiPageEditor, IEditorPart editor) {
             super(multiPageEditor, editor);
         }
 

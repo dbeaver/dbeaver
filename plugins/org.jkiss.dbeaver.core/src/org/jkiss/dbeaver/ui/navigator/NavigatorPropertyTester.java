@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 
 /**
@@ -50,8 +50,8 @@ public class NavigatorPropertyTester extends PropertyTester
             return ((INavigatorModelView) activePart);
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveNavigator(((MultiPageAbstractEditor) activePart).getActiveEditor());
-        } else if (activePart instanceof IFolderContainer) {
-            Object activeFolder = ((IFolderContainer) activePart).getActiveFolder();
+        } else if (activePart instanceof ITabbedFolderContainer) {
+            Object activeFolder = ((ITabbedFolderContainer) activePart).getActiveFolder();
             if (activeFolder instanceof INavigatorModelView) {
                 return (INavigatorModelView)activeFolder;
             } else if (activeFolder instanceof IWorkbenchPart) {
