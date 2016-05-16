@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.swt.dnd.DropTargetAdapter;
+import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -29,8 +30,11 @@ import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.internal.ide.EditorAreaDropAdapter;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
+import org.eclipse.ui.part.MarkerTransfer;
+import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -73,7 +77,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         configurer.setShowStatusLine(true);
         configurer.setShowProgressIndicator(true);
         configurer.configureEditorAreaDropListener(new EditorAreaDropAdapter());
+
         configurer.addEditorAreaTransfer(EditorInputTransfer.getInstance());
+        configurer.addEditorAreaTransfer(ResourceTransfer.getInstance());
+        configurer.addEditorAreaTransfer(FileTransfer.getInstance());
+        configurer.addEditorAreaTransfer(MarkerTransfer.getInstance());
+        configurer.configureEditorAreaDropListener(new org.eclipse.ui.internal.ide.EditorAreaDropAdapter(
+            configurer.getWindow()));
 
         //PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
         //preferenceManager.remove("org.eclipse.ui.preferencePages.Workbench/org.eclipse.ui.preferencePages.Perspectives");

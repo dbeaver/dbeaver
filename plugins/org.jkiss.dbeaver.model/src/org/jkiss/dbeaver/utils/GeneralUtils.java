@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -404,6 +405,10 @@ public class GeneralUtils {
             log.warn("Error deserializing object [" + text + "]", e);
             return null;
         }
+    }
+
+    public static File getMetadataFolder() {
+        return Platform.getLogFileLocation().toFile().getParentFile();
     }
 
 }

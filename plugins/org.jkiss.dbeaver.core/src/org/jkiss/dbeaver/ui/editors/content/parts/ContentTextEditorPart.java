@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.ui.editors.content.parts;
 
 import org.eclipse.ui.IEditorActionBarContributor;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorPart;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.utils.MimeTypes;
 
 import javax.activation.MimeType;

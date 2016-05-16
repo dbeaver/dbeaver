@@ -129,7 +129,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.views">
-        <category id="org.jkiss.dbeaver.core.category" name="DBeaver"/>
+        <category id="org.jkiss.dbeaver.core.category" name="Database"/>
         <view
                 id="org.jkiss.dbeaver.core.databaseNavigator"
                 category="org.jkiss.dbeaver.core.category"
@@ -1709,7 +1709,7 @@
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.validate"/>
         </menuContribution-->
 
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.execute" label="Execute" icon="icons/sql/sql_exec.png">
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
@@ -1724,7 +1724,7 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.save.file"/>
             </menu>
         </menuContribution>
-        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.additions">
+        <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=sql.extras">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"/>
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel"/>
         </menuContribution>
@@ -1901,9 +1901,9 @@
         <page id="org.jkiss.dbeaver.preferences.main.common" class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral" name="Common Settings">
            <enabledWhen>
                <or>
-                  <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                  <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
-                  <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                   <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                   <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                   <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                </or>
            </enabledWhen>
         </page>
@@ -1911,8 +1911,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1920,8 +1920,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1929,8 +1929,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1939,8 +1939,8 @@
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                     <instanceof value="org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1948,8 +1948,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1957,8 +1957,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
            </enabledWhen>
         </page>
@@ -1966,8 +1966,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1975,8 +1975,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1984,8 +1984,8 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>
@@ -1996,9 +1996,14 @@
         </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.main.connectionTypes" name="Connection Types">
             <enabledWhen>
-                <or>
-                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
-                </or>
+                <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+            </enabledWhen>
+        </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="DBeaver Settings">
+            <enabledWhen>
+                <adapt type="org.eclipse.core.resources.IProject">
+                    <test property="org.eclipse.core.resources.projectNature" value="org.jkiss.dbeaver.DBeaverNature"/>
+                </adapt>
             </enabledWhen>
         </page>
     </extension>
@@ -2019,15 +2024,17 @@
             <adapter type="org.eclipse.core.resources.IFolder"/>
             <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
         </factory>
-        <factory adaptableType="org.eclipse.ui.IWorkbenchPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+        <factory adaptableType="org.eclipse.ui.IEditorPart" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+        </factory>
+        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         </factory>
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
-        <factory id="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInputFactory"/>
         <factory id="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorInputFactory"/>
     </extension>
 
@@ -2605,11 +2612,11 @@
         <handler class="org.jkiss.dbeaver.ui.resources.ProjectHandlerImpl">
             <resourceTypeBinding resourceType="org.eclipse.core.resources.IProject"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.ScriptsHandlerImpl" name="SQL scripts" managable="true" icon="icons/scripts.png">
             <root folder="Scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </handler>
-        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl">
+        <handler class="org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl" name="Navigator bookmarks" managable="true" icon="icons/bookmark_folder.png">
             <root folder="Bookmarks"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.bookmark"/>
         </handler>

@@ -89,8 +89,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collections;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -114,6 +113,12 @@ public class SQLEditor extends SQLEditorBase implements
     private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
     private static Image IMG_OUTPUT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output.png").createImage(); //$NON-NLS-1$
     private static Image IMG_OUTPUT_ALERT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output_alert.png").createImage(); //$NON-NLS-1$
+
+    public static final String VAR_CONNECTION_NAME = "connectionName";
+    public static final String VAR_FILE_NAME = "fileName";
+    public static final String DEFAULT_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
+    public static final String VAR_FILE_EXT = "fileExt";
+    public static final String VAR_DRIVER_NAME = "driverName";
 
     private SashForm sashForm;
     private Control editorControl;
@@ -145,7 +150,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Nullable
     public IProject getProject()
     {
-        IFile file = EditorUtils.getFileFromEditorInput(getEditorInput());
+        IFile file = EditorUtils.getFileFromInput(getEditorInput());
         return file == null ? null : file.getProject();
     }
 
@@ -203,16 +208,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (dataSourceContainer != null) {
             dataSourceContainer.getPreferenceStore().addPropertyChangeListener(this);
         }
-        IPathEditorInput input = getEditorInput();
-        if (input == null) {
-            return false;
+        IEditorInput input = getEditorInput();
+        if (input != null) {
+            EditorUtils.setInputDataSource(input, container, true);
         }
-        IFile file = EditorUtils.getFileFromEditorInput(input);
-        if (file == null || !file.exists()) {
-            log.warn("File '" + input.getPath() + "' doesn't exists");
-            return false;
-        }
-        SQLEditorInput.setScriptDataSource(file, container, true);
+
         checkConnected();
 
         onDataSourceChange();
@@ -316,7 +316,7 @@ public class SQLEditor extends SQLEditorBase implements
         protected IStatus run(DBRProgressMonitor monitor) {
             monitor.beginTask("Open SQLEditor isolated connection", 1);
             try {
-                String title = "SQLEditor <" + getEditorInput().getPath().removeFileExtension().lastSegment() + ">";
+                String title = "SQLEditor <" + getEditorInput().getName() + ">";
                 monitor.subTask("Open context " + title);
                 executionContext = dataSource.openIsolatedContext(monitor, title);
             } catch (DBException e) {
@@ -394,7 +394,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
             }
         }
-        setPartName(getEditorInput().getName());
+        setPartName(getEditorName());
         return dataSourceContainer != null && dataSourceContainer.isConnected();
     }
 
@@ -417,6 +417,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         onDataSourceChange();
+    }
+
+    @Override
+    protected void setExternalFileProperties(IEditorInput input) {
+        EditorUtils.setInputDataSource(input, getDataSourceContainer(), false);
     }
 
     private void createResultTabs()
@@ -576,7 +581,10 @@ public class SQLEditor extends SQLEditorBase implements
     public void toggleActivePanel() {
         if (sashForm.getMaximizedControl() == null) {
             if (UIUtils.hasFocus(resultTabs)) {
-                getEditorControl().setFocus();
+                final Control editorControl = getEditorControl();
+                if (editorControl != null) {
+                    editorControl.setFocus();
+                }
             } else {
                 CTabItem selTab = resultTabs.getSelection();
                 if (selTab != null) {
@@ -589,12 +597,6 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
         }
-    }
-
-    @Override
-    public IPathEditorInput getEditorInput()
-    {
-        return (IPathEditorInput) super.getEditorInput();
     }
 
     @Override
@@ -615,16 +617,63 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     protected void doSetInput(IEditorInput editorInput) throws CoreException
     {
-        if (!(editorInput instanceof IPathEditorInput)) {
-            throw new PartInitException("Invalid Input: Must be " + IPathEditorInput.class.getSimpleName());
-        }
-        IFile file = EditorUtils.getFileFromEditorInput(editorInput);
-        if (file == null || !file.exists()) {
-            throw new PartInitException("File '" + ((IPathEditorInput) editorInput).getPath() + "' doesn't exists");
-        }
         super.doSetInput(editorInput);
 
-        setDataSourceContainer(SQLEditorInput.getScriptDataSource(file));
+        setDataSourceContainer(EditorUtils.getInputDataSource(editorInput));
+        setPartName(getEditorName());
+    }
+
+    @Override
+    public String getTitleToolTip() {
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        if (dataSourceContainer == null) {
+            return super.getTitleToolTip();
+        }
+        final IEditorInput editorInput = getEditorInput();
+        String scriptPath;
+        if (editorInput instanceof IFileEditorInput) {
+            scriptPath = ((IFileEditorInput) editorInput).getFile().getFullPath().toString();
+        } else if (editorInput instanceof IPathEditorInput) {
+            scriptPath = ((IPathEditorInput) editorInput).getPath().toString();
+        } else if (editorInput instanceof IURIEditorInput) {
+            scriptPath = ((IURIEditorInput) editorInput).getURI().toString();
+        } else {
+            scriptPath = "<not a file>";
+        }
+        return
+            "Script: " + scriptPath +
+                " \nConnection: " + dataSourceContainer.getName() +
+                " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
+                " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
+    }
+
+    private String getEditorName() {
+        final IFile file = EditorUtils.getFileFromInput(getEditorInput());
+        File localFile = file == null ? EditorUtils.getLocalFileFromInput(getEditorInput()) : null;
+        String scriptName;
+        if (file != null) {
+            scriptName = file.getFullPath().removeFileExtension().lastSegment();
+        } else if (localFile != null) {
+            scriptName = localFile.getName();
+        } else {
+            scriptName = "<object>";
+        }
+
+        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        DBPPreferenceStore preferenceStore;
+        if (dataSourceContainer != null) {
+            preferenceStore = dataSourceContainer.getPreferenceStore();
+        } else {
+            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
+        }
+        String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
+        Map<String, Object> vars = new HashMap<>();
+        vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "none" : dataSourceContainer.getName());
+        vars.put(VAR_FILE_NAME, scriptName);
+        vars.put(VAR_FILE_EXT,
+            file == null ? "" : file.getFullPath().getFileExtension());
+        vars.put(VAR_DRIVER_NAME, dataSourceContainer == null ? "?" : dataSourceContainer.getDriver().getFullName());
+        return GeneralUtils.replaceVariables(pattern, new GeneralUtils.MapResolver(vars));
     }
 
     @Override
@@ -897,7 +946,7 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void dispose()
     {
-        IFile sqlFile = EditorUtils.getFileFromEditorInput(getEditorInput());
+        IFile sqlFile = EditorUtils.getFileFromInput(getEditorInput());
 
         // Release ds container
         releaseContainer();
@@ -1308,6 +1357,7 @@ public class SQLEditor extends SQLEditorBase implements
                 public void run() {
                     if (statement != null) {
                         resultsProvider.query = statement;
+                        resultsProvider.lastGoodQuery = statement;
                         resultsProvider.tabItem.setToolTipText(CommonUtils.truncateString(statement.getQuery(), 1000));
                         // Special statements (not real statements) have their name in data
                         if (isStatsResult) {
@@ -1396,7 +1446,7 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public boolean isReadyToRun()
         {
-            return queryProcessor.curJob != null && queryProcessor.curJobRunning.get() == 0;
+            return queryProcessor.curJob == null || queryProcessor.curJobRunning.get() == 0;
         }
 
         @Override
@@ -1614,8 +1664,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
             if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
                 DBeaverUI.notifyAgent(
-                        "Query completed [" + getEditorInput().getPath().lastSegment() + "]" + GeneralUtils.getDefaultLineSeparator() +
-                                CommonUtils.truncateString(query == null ? "" : query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
+                        "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +
+                                CommonUtils.truncateString(query.getQuery(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }
         }
 
@@ -1705,7 +1755,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             lastFocusInEditor = focusInEditor;
             if (!focusInEditor && rsv != null) {
-                IFindReplaceTarget nested = (IFindReplaceTarget) rsv.getAdapter(IFindReplaceTarget.class);
+                IFindReplaceTarget nested = rsv.getAdapter(IFindReplaceTarget.class);
                 if (nested != null) {
                     return nested;
                 }

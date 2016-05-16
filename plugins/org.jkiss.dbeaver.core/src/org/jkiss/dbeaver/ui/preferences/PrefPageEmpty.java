@@ -26,7 +26,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 /**
  * PrefPageEmpty
  */
-public class PrefPageEmpty extends PreferencePage implements IWorkbenchPreferencePage
+public class PrefPageEmpty extends AbstractPrefPage implements IWorkbenchPreferencePage
 {
     public PrefPageEmpty()
     {

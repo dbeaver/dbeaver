@@ -65,7 +65,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         } else if (activePart instanceof SQLEditor) {
             ProjectExplorerView explorerView = (ProjectExplorerView)activePage.findView(ProjectExplorerView.VIEW_ID);
             if (explorerView != null) {
-                IFile file = EditorUtils.getFileFromEditorInput(((SQLEditor) activePart).getEditorInput());
+                IFile file = EditorUtils.getFileFromInput(((SQLEditor) activePart).getEditorInput());
                 if (file != null) {
                     showResourceInNavigator(explorerView, file);
                     activePage.activate(explorerView);

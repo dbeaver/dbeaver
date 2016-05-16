@@ -54,6 +54,9 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
     @Override
     public void createControl(Composite parent)
     {
+        if (preferencePage instanceof AbstractPrefPage) {
+            ((AbstractPrefPage) preferencePage).disableButtons();
+        }
         preferencePage.createControl(parent);
     }
 

@@ -184,7 +184,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
 
     private IFile getEditorFile()
     {
-        return EditorUtils.getFileFromEditorInput(getEditorInput());
+        return EditorUtils.getFileFromInput(getEditorInput());
     }
 
     @Override
@@ -198,9 +198,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
                 if (object instanceof DBSObject) {
                     DBSObject dbObject = (DBSObject) object;
                     DBPDataSource dataSource = dbObject.getDataSource();
-                    if (dataSource != null) {
-                        return dataSource.getDefaultContext(true);
-                    }
+                    return dataSource.getDefaultContext(true);
                 }
             }
         }

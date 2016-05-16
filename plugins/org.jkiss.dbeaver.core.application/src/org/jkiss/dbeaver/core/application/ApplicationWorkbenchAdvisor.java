@@ -24,6 +24,7 @@ import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
+import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -70,7 +71,11 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     public void initialize(IWorkbenchConfigurer configurer)
     {
         super.initialize(configurer);
+        // make sure we always save and restore workspace state
         configurer.setSaveAndRestore(true);
+
+        // register workspace IDE adapters
+        IDE.registerAdapters();
 
         TrayDialog.setDialogHelpAvailable(true);
     }
