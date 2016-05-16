@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -47,8 +48,9 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
         return super.getFeatures(resource);
     }
 
+    @NotNull
     @Override
-    public String getTypeName(IResource resource)
+    public String getTypeName(@NotNull IResource resource)
     {
         final ProgramInfo program = ProgramInfo.getProgram(resource);
         if (program != null) {
@@ -58,13 +60,14 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public String getResourceDescription(IResource resource)
+    public String getResourceDescription(@NotNull IResource resource)
     {
         return "";
     }
 
+    @NotNull
     @Override
-    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
         ProgramInfo program = ProgramInfo.getProgram(resource);
@@ -75,7 +78,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(IResource resource) throws CoreException, DBException
+    public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
             IEditorDescriptor desc = PlatformUI.getWorkbench().

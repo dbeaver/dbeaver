@@ -18,8 +18,10 @@
 package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -46,26 +48,28 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         return 0;
     }
 
+    @NotNull
     @Override
-    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         return new DBNResource(parentNode, resource, this);
     }
 
     @Override
-    public void openResource(IResource resource) throws CoreException, DBException
+    public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
         //throw new DBException("Resource open is not implemented");
     }
 
+    @NotNull
     @Override
-    public String getTypeName(IResource resource)
+    public String getTypeName(@NotNull IResource resource)
     {
         return "resource";
     }
 
     @Override
-    public String getResourceDescription(IResource resource)
+    public String getResourceDescription(@NotNull IResource resource)
     {
         return resource.getName();
     }
@@ -75,6 +79,12 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
     public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
     {
         return null;
+    }
+
+    @NotNull
+    @Override
+    public String getResourceNodeName(@NotNull IResource resource) {
+        return resource.getName();
     }
 
 }

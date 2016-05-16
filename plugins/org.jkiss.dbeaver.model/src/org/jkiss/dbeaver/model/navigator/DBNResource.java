@@ -88,10 +88,10 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
     @Property(viewable = true, order = 1)
     public String getNodeName()
     {
-        if (resource == null) {
+        if (resource == null || handler == null) {
             return null;
         }
-        return resource.getName();
+        return handler.getResourceNodeName(resource);
 //        if (resource instanceof IFile) {
 //
 //        }
