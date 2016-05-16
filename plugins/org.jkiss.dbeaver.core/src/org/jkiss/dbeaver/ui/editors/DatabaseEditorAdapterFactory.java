@@ -40,8 +40,8 @@ public class DatabaseEditorAdapterFactory implements IAdapterFactory
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
         if (adapterType == DBPDataSourceContainer.class) {
-            if (adaptableObject instanceof IDataSourceContainerProviderEx) {
-                return adapterType.cast(((IDataSourceContainerProviderEx) adaptableObject).getDataSourceContainer());
+            if (adaptableObject instanceof IDataSourceContainerProvider) {
+                return adapterType.cast(((IDataSourceContainerProvider) adaptableObject).getDataSourceContainer());
             }
             if (adaptableObject instanceof IEditorPart) {
                 adaptableObject = ((IEditorPart) adaptableObject) .getEditorInput();
