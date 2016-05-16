@@ -56,7 +56,19 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
         final IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
         final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-        if (activePart instanceof NavigatorViewBase) {
+
+        if (activePart instanceof ProjectExplorerView) {
+            if (activeEditor instanceof SQLEditor) {
+                IFile file = EditorUtils.getFileFromInput(activeEditor.getEditorInput());
+                if (file != null) {
+                    showResourceInNavigator((ProjectExplorerView)activePart, file);
+                    activePage.activate(activePart);
+                }
+            } else if (activeEditor.getEditorInput() instanceof ProjectFileEditorInput) {
+                IFile editorFile = ((ProjectFileEditorInput) activeEditor.getEditorInput()).getFile();
+                showResourceInNavigator((NavigatorViewBase) activePart, editorFile);
+            }
+        } else if (activePart instanceof NavigatorViewBase) {
             if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
                 DBNNode dbnNode = editorInput.getNavigatorNode();
@@ -64,9 +76,6 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                     NavigatorViewBase view = (NavigatorViewBase)activePart;
                     view.showNode(dbnNode);
                 }
-            } else if (activeEditor.getEditorInput() instanceof ProjectFileEditorInput) {
-                IFile editorFile = ((ProjectFileEditorInput)activeEditor.getEditorInput()).getFile();
-                showResourceInNavigator((NavigatorViewBase) activePart, editorFile);
             } else if (activeEditor instanceof IDataSourceContainerProvider) {
                 DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
                 @NotNull
@@ -96,23 +105,8 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                     });
                 }
             }
-        } else if (activePart instanceof EntityEditor) {
-            DBNDatabaseNode curNode = ((EntityEditor) activePart).getEditorInput().getNavigatorNode();
-            DatabaseNavigatorView dbNavigatorView = (DatabaseNavigatorView)activePage.findView(DatabaseNavigatorView.VIEW_ID);
-            if (dbNavigatorView != null) {
-                dbNavigatorView.showNode(curNode);
-                activePage.activate(dbNavigatorView);
-            }
-        } else if (activePart instanceof SQLEditor) {
-            ProjectExplorerView explorerView = (ProjectExplorerView)activePage.findView(ProjectExplorerView.VIEW_ID);
-            if (explorerView != null) {
-                IFile file = EditorUtils.getFileFromInput(((SQLEditor) activePart).getEditorInput());
-                if (file != null) {
-                    showResourceInNavigator(explorerView, file);
-                    activePage.activate(explorerView);
-                }
-            }
         }
+
         return null;
     }
 
