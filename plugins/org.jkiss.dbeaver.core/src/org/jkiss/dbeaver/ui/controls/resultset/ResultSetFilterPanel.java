@@ -588,7 +588,10 @@ class ResultSetFilterPanel extends Composite
 
         @Override
         public Point computeSize(int wHint, int hHint, boolean changed) {
-            int maxWidth = viewer.getControl().getParent().getSize().x / 4;
+            int maxWidth = 0;
+            for (Control control = viewer.getControl().getParent(); maxWidth == 0 && control != null; control = control.getParent()) {
+                maxWidth = control.getSize().x / 4;
+            }
             Point textSize = sizingGC.textExtent(activeDisplayName);
             Image image = DBeaverIcons.getImage(getActiveObjectImage());
             if (image != null) {

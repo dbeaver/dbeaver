@@ -28,10 +28,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPApplication;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.DBPProjectManager;
-import org.jkiss.dbeaver.model.DBPSecurityManager;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.security.DefaultSecurityManager;
@@ -370,6 +367,10 @@ public class DBeaverCore implements DBPApplication {
 
     public ProjectRegistry getProjectRegistry()
     {
+        return projectRegistry;
+    }
+
+    public DBPExternalFileManager getExternalFileManager() {
         return projectRegistry;
     }
 

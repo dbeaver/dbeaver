@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,7 +37,7 @@ import org.jkiss.utils.CommonUtils;
  * This page is used to modify preferences only. They are stored in the preference store that belongs
  * to the main plug-in class. That way, preferences can be accessed directly via the preference store.
  */
-public class HexPreferencesPage extends PreferencePage implements IWorkbenchPreferencePage {
+public class HexPreferencesPage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
     public static final String PROP_FONT_DATA = "prop.hex.font.data";
 

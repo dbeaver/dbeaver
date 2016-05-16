@@ -47,11 +47,13 @@ public abstract class BaseSQLDialog extends BaseDialog {
 
     private IEditorSite subSite;
     private SQLEditorBase sqlViewer;
+    private StringEditorInput sqlInput;
 
     public BaseSQLDialog(final IWorkbenchPartSite parentSite, String title, @Nullable DBPImage image)
     {
         super(parentSite.getShell(), title, image);
         this.subSite = new SubEditorSite(parentSite);
+        this.sqlInput = new StringEditorInput(title, "", true, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
     }
 
     protected boolean isWordWrap() {
@@ -149,7 +151,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     protected void updateSQL()
     {
         try {
-            StringEditorInput sqlInput = new StringEditorInput(getShell().getText(), getSQLText(), true, GeneralUtils.getDefaultConsoleEncoding());
+            this.sqlInput.setText(getSQLText());
             sqlViewer.init(subSite, sqlInput);
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(getShell(), getShell().getText(), null, e);

@@ -27,10 +27,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class OCIUtils
 {
@@ -259,39 +256,54 @@ public class OCIUtils
         return null;
     }
 
-    /**
-     * Reads TNS names from a specified Oracle home or system variable TNS_ADMIN.
-     */
-    public static List<String> readTnsNames(@Nullable File oraHome, boolean checkTnsAdmin)
+    @Nullable
+    public static File findTnsNamesFile(@Nullable File oraHome, boolean checkTnsAdmin)
     {
         File tnsNamesFile = null;
         if (checkTnsAdmin) {
             String tnsAdmin = System.getenv(VAR_TNS_ADMIN);
             if (tnsAdmin != null) {
-                tnsNamesFile = new File (CommonUtils.removeTrailingSlash(tnsAdmin) + "/" + TNSNAMES_FILE_NAME);
+                tnsNamesFile = new File (tnsAdmin, TNSNAMES_FILE_NAME);
             }
         }
         if ((tnsNamesFile == null || !tnsNamesFile.exists()) && oraHome != null) {
             tnsNamesFile = new File (oraHome, TNSNAMES_FILE_PATH + TNSNAMES_FILE_NAME);
+            if (!tnsNamesFile.exists()) {
+                tnsNamesFile = new File (oraHome, TNSNAMES_FILE_NAME);
+            }
         }
         if (tnsNamesFile != null && tnsNamesFile.exists()) {
-            return parseTnsNames(tnsNamesFile.getAbsolutePath());
+            return tnsNamesFile;
         } else {
-            return Collections.emptyList();
+            return null;
+        }
+    }
+
+    /**
+     * Reads TNS names from a specified Oracle home or system variable TNS_ADMIN.
+     */
+    public static Map<String, String> readTnsNames(@Nullable File oraHome, boolean checkTnsAdmin)
+    {
+        File tnsNamesFile = findTnsNamesFile(oraHome, checkTnsAdmin);
+        if (tnsNamesFile != null) {
+            return parseTnsNames(tnsNamesFile);
+        } else {
+            return Collections.emptyMap();
         }
     }
 
     /**
      * Reads TNS names from a specified file.
      */
-    public static List<String> parseTnsNames(String tnsnamesPath)
+    private static Map<String, String> parseTnsNames(File tnsnamesOra)
     {
-        ArrayList<String> aliases = new ArrayList<>();
+        Map<String, String> aliases = new TreeMap<>();
 
-        File tnsnamesOra = new File (tnsnamesPath);
         if (tnsnamesOra.exists()) {
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
+                StringBuilder tnsDescription = new StringBuilder();
+                String curAlias = null;
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("\t") && !line.startsWith("(") && !line.startsWith("#") && line.contains("=")) {
@@ -306,23 +318,37 @@ public class OCIUtils
                             if (!extFile.exists()) {
                                 extFile = new File(tnsnamesOra.getParent(), filePath);
                             }
-                            aliases.addAll(parseTnsNames(extFile.getAbsolutePath()));
+                            aliases.putAll(parseTnsNames(extFile));
                         } else {
-                            aliases.add(alias.trim());
+                            if (curAlias != null) {
+                                aliases.put(curAlias, getPlainTnsDescription(tnsDescription.toString()));
+                            }
+                            curAlias = alias.trim();
+                            tnsDescription.setLength(0);
+                            tnsDescription.append(line.substring(divPos + 1));
+                        }
+                    } else {
+                        if (curAlias != null) {
+                            tnsDescription.append(line);
                         }
                     }
                 }
+                if (curAlias != null) {
+                    aliases.put(curAlias, getPlainTnsDescription(tnsDescription.toString()));
+                }
+
             } catch (IOException e) {
                 // do nothing
                 log.debug(e);
             }
-        }
-        else {
-            // do nothing
+        } else {
             log.debug("TNS names file '" + tnsnamesOra + "' doesn't exist");
         }
-        Collections.sort(aliases);
         return aliases;
+    }
+
+    private static String getPlainTnsDescription(String line) {
+        return line.trim().replaceAll("\\s+", " ");
     }
 
     public static boolean isInstantClient(String oraHome)

@@ -458,7 +458,7 @@
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
-                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
         </page>

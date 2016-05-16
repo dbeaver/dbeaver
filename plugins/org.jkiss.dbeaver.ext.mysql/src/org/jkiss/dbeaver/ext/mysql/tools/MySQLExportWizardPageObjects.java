@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
 import java.util.List;
@@ -224,7 +223,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                         }
                     });
                 } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
+                    UIUtils.showErrorDialog(null, "Table list", "Can't read table list", e);
                 }
                 return Status.OK_STATUS;
             }

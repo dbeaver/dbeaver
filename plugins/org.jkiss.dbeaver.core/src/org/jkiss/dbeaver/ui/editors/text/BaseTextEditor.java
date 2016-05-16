@@ -17,12 +17,10 @@
  */
 package org.jkiss.dbeaver.ui.editors.text;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IFolder;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -36,6 +34,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
@@ -48,8 +47,6 @@ import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
-import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -67,6 +64,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     public static final String GROUP_SQL_PREFERENCES = "sql.preferences";
     public static final String GROUP_SQL_ADDITIONS = "sql.additions";
+    public static final String GROUP_SQL_EXTRAS = "sql.extras";
 
     private static Map<String, Integer> ACTION_TRANSLATE_MAP;
 
@@ -139,9 +137,11 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         menu.add(new Separator(ITextEditorActionConstants.GROUP_FIND));
         menu.add(new Separator(IWorkbenchActionConstants.GROUP_ADD));
         menu.add(new Separator(ITextEditorActionConstants.GROUP_REST));
-        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         menu.add(new Separator());
         menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
+        menu.add(new GroupMarker(GROUP_SQL_EXTRAS));
+        menu.add(new Separator());
+        menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
         menu.add(new Separator());
         menu.add(new GroupMarker(GROUP_SQL_PREFERENCES));
 
@@ -239,7 +239,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     public void saveToExternalFile()
     {
         IEditorInput editorInput = getEditorInput();
-        IFile curFile = EditorUtils.getFileFromEditorInput(editorInput);
+        IFile curFile = EditorUtils.getFileFromInput(editorInput);
         String fileName = curFile == null ? null : curFile.getName();
 
         final Document document = getDocument();
@@ -267,21 +267,18 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
             UIUtils.showErrorDialog(getSite().getShell(), "Save failed", null, e.getTargetException());
         }
 
-        if (curFile != null) {
-            try {
-                // TODO: change to EFS
-                IPath location = new Path(saveFile.getAbsolutePath());
-                IFolder scriptsFolder = ResourceUtils.getScriptsFolder(curFile.getProject(), true);
-                IFile newFile = scriptsFolder.getFile(location.lastSegment());
-                newFile.createLink(location, IResource.NONE, null);
-                newFile.setPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID, curFile.getPersistentProperty(SQLEditorInput.PROP_DATA_SOURCE_ID));
-
-                SQLEditorInput newInput = new SQLEditorInput(newFile);
-                init(getEditorSite(), newInput);
-            } catch (CoreException e) {
-                UIUtils.showErrorDialog(getSite().getShell(), "File link", "Can't link SQL editor with external file", e);
-            }
+        try {
+            IFileStore fileStore = EFS.getStore(saveFile.toURI());
+            IEditorInput input = new FileStoreEditorInput(fileStore);
+            setExternalFileProperties(input);
+            init(getEditorSite(), input);
+        } catch (CoreException e) {
+            UIUtils.showErrorDialog(getSite().getShell(), "File save", "Can't open SQL editor from external file", e);
         }
+    }
+
+    protected void setExternalFileProperties(IEditorInput input) {
+
     }
 
     @Nullable

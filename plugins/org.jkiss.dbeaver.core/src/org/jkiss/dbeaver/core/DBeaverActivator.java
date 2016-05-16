@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -129,7 +130,7 @@ public class DBeaverActivator extends AbstractUIPlugin
     public synchronized PrintStream getDebugWriter()
     {
         if (debugWriter == null) {
-            File logPath = Platform.getLogFileLocation().toFile().getParentFile();
+            File logPath = GeneralUtils.getMetadataFolder();
             File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
             if (debugLogFile.exists()) {
                 if (!debugLogFile.delete()) {

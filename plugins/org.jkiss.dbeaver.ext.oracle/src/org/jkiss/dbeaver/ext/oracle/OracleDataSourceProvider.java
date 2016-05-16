@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
 import java.util.*;
 
 public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
@@ -92,7 +93,24 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
         url.append(":@"); //$NON-NLS-1$
         if (connectionType == OracleConstants.ConnectionType.TNS) {
             // TNS name specified
-            url.append(connectionInfo.getDatabaseName());
+            // 1. Try to get description from TNSNAMES
+            final String clientHomeId = connectionInfo.getClientHomeId();
+            if (!CommonUtils.isEmpty(clientHomeId)) {
+                final OracleHomeDescriptor oraHome = OCIUtils.getOraHome(clientHomeId);
+
+                final File oraHomePath = oraHome == null ? null : oraHome.getHomePath();
+                final Map<String, String> tnsNames = OCIUtils.readTnsNames(oraHomePath, true);
+                final String tnsDescription = tnsNames.get(connectionInfo.getDatabaseName());
+                if (!CommonUtils.isEmpty(tnsDescription)) {
+                    url.append(tnsDescription);
+                } else {
+                    final File tnsNamesFile = OCIUtils.findTnsNamesFile(oraHomePath, true);
+                    if (tnsNamesFile != null && tnsNamesFile.exists()) {
+                        System.setProperty("oracle.net.tns_admin", tnsNamesFile.getAbsolutePath());
+                    }
+                    url.append(connectionInfo.getDatabaseName());
+                }
+            }
         } else {
             // Basic connection info specified
             boolean isSID = OracleConnectionType.SID.name().equals(connectionInfo.getProperty(OracleConstants.PROP_SID_SERVICE));

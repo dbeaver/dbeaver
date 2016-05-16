@@ -32,7 +32,6 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.texteditor.*;
@@ -54,7 +53,6 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
@@ -108,7 +106,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         };
         PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeListener);
 
-        setDocumentProvider(new SQLDocumentProvider());
+        //setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this, getPreferenceStore()));
         setKeyBindingScopes(new String[]{"org.eclipse.ui.textEditorScope", "org.jkiss.dbeaver.ui.editors.sql"});  //$NON-NLS-1$
     }
@@ -225,17 +223,12 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     }
 
     @Override
-    protected ISourceViewer createSourceViewer(Composite parent,
-                                               IVerticalRuler ruler, int styles)
+    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles)
     {
-        OverviewRuler overviewRuler = null;
-        if (hasAnnotations()) {
-            overviewRuler = new OverviewRuler(
-                getAnnotationAccess(),
-                VERTICAL_RULER_WIDTH,
-                getSharedColors());
-        }
-        SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, overviewRuler);
+        fAnnotationAccess= getAnnotationAccess();
+        fOverviewRuler= createOverviewRuler(getSharedColors());
+
+        SQLEditorSourceViewer sourceViewer = createSourceViewer(parent, ruler, styles, fOverviewRuler);
 
         getSourceViewerDecorationSupport(sourceViewer);
 
@@ -259,7 +252,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
     }
 
     @NotNull
-    protected SQLEditorSourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles, OverviewRuler overviewRuler) {
+    protected SQLEditorSourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles, IOverviewRuler overviewRuler) {
         return new SQLEditorSourceViewer(
                 parent,
                 ruler,
@@ -371,8 +364,8 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         super.editorContextMenuAboutToShow(menu);
 
         menu.add(new Separator("content"));//$NON-NLS-1$
-        addAction(menu, IWorkbenchActionConstants.MB_ADDITIONS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
-        addAction(menu, IWorkbenchActionConstants.MB_ADDITIONS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
+        addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
+        addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         {
             MenuManager formatMenu = new MenuManager("Format", "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
@@ -385,7 +378,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.word.wrap"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.single"));
             formatMenu.add(ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.comment.multi"));
-            menu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, formatMenu);
+            menu.insertAfter(GROUP_SQL_ADDITIONS, formatMenu);
         }
     }
 
@@ -406,7 +399,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
             document.setDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING, partitioner);
 
             ProjectionViewer projectionViewer = (ProjectionViewer) getSourceViewer();
-            if (projectionViewer != null && document.getLength() > 0) {
+            if (projectionViewer != null && projectionViewer.getAnnotationModel() != null && document.getLength() > 0) {
                 // Refresh viewer
                 //projectionViewer.getTextWidget().redraw();
                 try {

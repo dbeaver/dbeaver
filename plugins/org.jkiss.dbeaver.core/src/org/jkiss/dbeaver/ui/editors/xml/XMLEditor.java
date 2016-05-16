@@ -17,21 +17,48 @@
  */
 package org.jkiss.dbeaver.ui.editors.xml;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IDocumentExtension3;
+import org.eclipse.jface.text.IDocumentPartitioner;
+import org.eclipse.jface.text.rules.FastPartitioner;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.texteditor.ITextEditorExtension3;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 
 
 public class XMLEditor extends BaseTextEditor {
 
-    public XMLEditor()
-    {
-		configureInsertMode(ITextEditorExtension3.SMART_INSERT, false);
-		setSourceViewerConfiguration(new XMLConfiguration());
-		setDocumentProvider(new XMLDocumentProvider());
-	}
-	
-	@Override
+    public XMLEditor() {
+        configureInsertMode(ITextEditorExtension3.SMART_INSERT, false);
+        setSourceViewerConfiguration(new XMLConfiguration());
+        setDocumentProvider(new FileRefDocumentProvider());
+    }
+
+    @Override
     public void dispose() {
-		super.dispose();
-	}
+        super.dispose();
+    }
+
+    @Override
+    protected void doSetInput(IEditorInput input) throws CoreException {
+        super.doSetInput(input);
+        setupDocument();
+    }
+
+    protected void setupDocument() {
+        IDocument document = getDocument();
+        if (document != null) {
+            IDocumentPartitioner partitioner =
+                new FastPartitioner(
+                    new XMLPartitionScanner(),
+                    new String[]{
+                        XMLPartitionScanner.XML_TAG,
+                        XMLPartitionScanner.XML_COMMENT});
+            partitioner.connect(document);
+            ((IDocumentExtension3) document).setDocumentPartitioner(XMLPartitionScanner.XML_PARTITIONING, partitioner);
+        }
+    }
+
 }

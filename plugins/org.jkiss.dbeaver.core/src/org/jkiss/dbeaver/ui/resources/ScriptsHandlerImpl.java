@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -30,8 +31,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -86,7 +87,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public void openResource(IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
-            SQLEditorInput sqlInput = new SQLEditorInput((IFile)resource);
+            FileEditorInput sqlInput = new FileEditorInput((IFile)resource);
             DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName());
@@ -100,7 +101,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     public Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource)
     {
         if (resource instanceof IFile) {
-            DBPDataSourceContainer dataSource = SQLEditorInput.getScriptDataSource((IFile) resource);
+            DBPDataSourceContainer dataSource = EditorUtils.getFileDataSource((IFile) resource);
             return dataSource == null ? null : Collections.singleton(dataSource);
         }
         return null;

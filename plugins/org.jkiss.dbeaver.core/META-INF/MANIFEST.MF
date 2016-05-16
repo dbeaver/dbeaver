@@ -105,6 +105,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.views.session
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.filesystem,
  org.eclipse.core.resources,
  org.eclipse.core.expressions,
  org.eclipse.ui,

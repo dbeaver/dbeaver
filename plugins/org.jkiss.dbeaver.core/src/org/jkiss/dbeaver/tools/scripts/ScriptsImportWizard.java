@@ -32,12 +32,12 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -166,7 +166,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
             }
             // Set datasource
             if (importData.getDataSourceContainer() != null) {
-                SQLEditorInput.setScriptDataSource(targetFile, importData.getDataSourceContainer());
+                EditorUtils.setFileDataSource(targetFile, importData.getDataSourceContainer());
             }
             // Done
             monitor.worked(1);

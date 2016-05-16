@@ -41,7 +41,7 @@ import org.jkiss.utils.CommonUtils;
 /**
  * PrefPageDatabaseGeneral
  */
-public class PrefPageDatabaseGeneral extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
+public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 

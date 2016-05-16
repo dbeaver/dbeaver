@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * PrefPageQueryManager
  */
-public class PrefPageQueryManager extends PreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
+public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.qm"; //$NON-NLS-1$
     private Button checkObjectTypeSessions;

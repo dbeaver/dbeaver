@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.editors.IPersistentStorage;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -63,32 +64,25 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         return new ProjectFileEditorInput(newFile);
     }
 
-    public static IStorage getStorageFromInput(Object element)
-    {
-        if (element instanceof IAdaptable) {
-            IStorage storage = ((IAdaptable) element).getAdapter(IStorage.class);
-            if (storage != null) {
-                return storage;
-            }
-        }
-        if (element instanceof IEditorInput) {
-            IFile file = EditorUtils.getFileFromEditorInput((IEditorInput) element);
-            if (file != null) {
-                return file;
-            }
-        }
-        return null;
-    }
-
     @Override
     protected Document createDocument(Object element) throws CoreException
     {
-        IStorage object = getStorageFromInput(element);
-        if (object != null) {
-            Document document = createEmptyDocument();
-            if (setDocumentContent(document, object)) {
+        Document document = createEmptyDocument();
+        IStorage storage = EditorUtils.getStorageFromInput(element);
+        if (storage != null) {
+            if (setDocumentContent(document, storage)) {
                 setupDocument(document);
                 return document;
+            }
+        }
+        File file = EditorUtils.getLocalFileFromInput(element);
+        if (file != null) {
+            try (InputStream stream = new FileInputStream(file)) {
+                setDocumentContent(document, stream, null);
+                setupDocument(document);
+                return document;
+            } catch (IOException e) {
+                throw new CoreException(GeneralUtils.makeExceptionStatus(e));
             }
         }
 
@@ -103,9 +97,13 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     @Override
     public boolean isReadOnly(Object element)
     {
-        IStorage storage = getStorageFromInput(element);
+        IStorage storage = EditorUtils.getStorageFromInput(element);
         if (storage  != null) {
             return storage.isReadOnly();
+        }
+        File file = EditorUtils.getLocalFileFromInput(element);
+        if (file != null) {
+            return !file.isFile();
         }
         return super.isReadOnly(element);
     }
@@ -119,9 +117,13 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     @Override
     public boolean isDeleted(Object element)
     {
-        IStorage storage = getStorageFromInput(element);
+        IStorage storage = EditorUtils.getStorageFromInput(element);
         if (storage instanceof IResource) {
             return !((IResource)storage).exists();
+        }
+        File file = EditorUtils.getLocalFileFromInput(element);
+        if (file != null) {
+            return !file.exists();
         }
         return super.isDeleted(element);
     }
@@ -130,11 +132,15 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
     protected void doSaveDocument(IProgressMonitor monitor, Object element, IDocument document, boolean overwrite) throws CoreException
     {
         try {
-            IStorage storage = getStorageFromInput(element);
+            IStorage storage = EditorUtils.getStorageFromInput(element);
+            File localFile = null;
             if (storage == null) {
-                throw new DBException("Can't obtain file from editor input");
+                localFile = EditorUtils.getLocalFileFromInput(element);
+                if (localFile == null) {
+                    throw new DBException("Can't obtain file from editor input");
+                }
             }
-            String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.getDefaultFileEncoding());
+            String encoding = (storage instanceof IEncodedStorage ? ((IEncodedStorage)storage).getCharset() : GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
 
             Charset charset = Charset.forName(encoding);
 
@@ -185,6 +191,10 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             } else if (storage instanceof IPersistentStorage) {
                 monitor.beginTask("Save document", 1);
                 ((IPersistentStorage) storage).setContents(monitor, stream);
+            } else if (localFile != null) {
+                try (OutputStream os = new FileOutputStream(localFile)) {
+                    IOUtils.copyStream(stream, os);
+                }
             } else {
                 throw new DBException("Storage [" + storage + "] doesn't support save");
             }
@@ -265,7 +275,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
         if (element instanceof IEditorInput) {
 
             IEditorInput input = (IEditorInput) element;
-            IStorage storage = getStorageFromInput(input);
+            IStorage storage = EditorUtils.getStorageFromInput(input);
             if (storage instanceof IFile) {
                 IFile file = (IFile)storage;
                 try {
@@ -286,11 +296,9 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
                 }
 
                 // Set the initial line delimiter
-                if (d instanceof IDocumentExtension4) {
-                    String initialLineDelimiter = GeneralUtils.getDefaultLineSeparator();
-                    if (initialLineDelimiter != null) {
-                        ((IDocumentExtension4) d).setInitialLineDelimiter(initialLineDelimiter);
-                    }
+                String initialLineDelimiter = GeneralUtils.getDefaultLineSeparator();
+                if (initialLineDelimiter != null) {
+                    ((IDocumentExtension4) d).setInitialLineDelimiter(initialLineDelimiter);
                 }
 
                 IAnnotationModel m = createAnnotationModel(element);
@@ -344,7 +352,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
             return;
         }
 
-        IStorage storage = getStorageFromInput(fileEditorInput);
+        IStorage storage = EditorUtils.getStorageFromInput(fileEditorInput);
         if (storage instanceof IFile) {
             IFile file = (IFile)storage;
             IDocument document = createEmptyDocument();
@@ -473,7 +481,7 @@ public class FileRefDocumentProvider extends BaseTextDocumentProvider {
          */
         protected IFile getFile()
         {
-            IStorage storage = getStorageFromInput(fileEditorInput);
+            IStorage storage = EditorUtils.getStorageFromInput(fileEditorInput);
             return storage instanceof IFile ? (IFile)storage : null;
         }
 

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.core.runtime.content.IContentDescription;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,6 +39,6 @@ public class SQLContentTypeDescriber implements IContentDescriber {
     @Override
     public QualifiedName[] getSupportedOptions()
     {
-        return new QualifiedName[] { SQLEditorInput.PROP_DATA_SOURCE_ID };
+        return new QualifiedName[] { EditorUtils.QN_DATA_SOURCE_ID};
     }
 }

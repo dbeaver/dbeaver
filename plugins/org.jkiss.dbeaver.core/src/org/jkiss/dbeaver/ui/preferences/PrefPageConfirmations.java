@@ -43,7 +43,7 @@ import java.util.ResourceBundle;
 /**
  * PrefPageConfirmations
  */
-public class PrefPageConfirmations extends PreferencePage implements IWorkbenchPreferencePage
+public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenchPreferencePage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.confirmations"; //$NON-NLS-1$
 

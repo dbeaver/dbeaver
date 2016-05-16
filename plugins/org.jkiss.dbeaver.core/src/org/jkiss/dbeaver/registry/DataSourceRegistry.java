@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.registry;
 
-import org.eclipse.core.resources.IContainer;
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.*;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -28,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -51,6 +49,7 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -205,23 +204,25 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
     public void addDataSource(DBPDataSourceContainer dataSource)
     {
+        final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         synchronized (dataSources) {
-            this.dataSources.add((DataSourceDescriptor) dataSource);
+            this.dataSources.add(descriptor);
         }
         this.saveDataSources();
-        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, dataSource);
+        this.fireDataSourceEvent(DBPEvent.Action.OBJECT_ADD, descriptor);
     }
 
     public void removeDataSource(DBPDataSourceContainer dataSource)
     {
+        final DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
         synchronized (dataSources) {
-            this.dataSources.remove(dataSource);
+            this.dataSources.remove(descriptor);
         }
         this.saveDataSources();
         try {
             this.fireDataSourceEvent(DBPEvent.Action.OBJECT_REMOVE, dataSource);
         } finally {
-            ((DataSourceDescriptor)dataSource).dispose();
+            descriptor.dispose();
         }
     }
 
@@ -367,6 +368,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         catch (XMLException ex) {
             throw new DBException("Datasource config parse error", ex);
         }
+        updateProjectNature();
     }
 
     void saveDataSources()
@@ -375,6 +377,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             localDataSources = CommonUtils.copyList(dataSources);
         }
+        updateProjectNature();
         final IProgressMonitor progressMonitor = new NullProgressMonitor();
         PasswordEncrypter encrypter = new SimpleStringEncrypter();
         IFile configFile = getProject().getFile(CONFIG_FILE_NAME);
@@ -412,6 +415,31 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
             log.error("Error saving datasources configuration", ex);
         } finally {
             saveInProgress = false;
+        }
+    }
+
+    private void updateProjectNature() {
+        try {
+            final IProjectDescription description = project.getDescription();
+            if (description != null) {
+                String[] natureIds = description.getNatureIds();
+                if (dataSources.isEmpty()) {
+                    // Remove nature
+                    if (ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                        description.setNatureIds(ArrayUtils.remove(String.class, natureIds, DBeaverNature.NATURE_ID));
+                        project.setDescription(description, new NullProgressMonitor());
+                    }
+
+                } else {
+                    // Add nature
+                    if (!ArrayUtils.contains(natureIds, DBeaverNature.NATURE_ID)) {
+                        description.setNatureIds(ArrayUtils.add(String.class, natureIds, DBeaverNature.NATURE_ID));
+                        project.setDescription(description, new NullProgressMonitor());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug(e);
         }
     }
 
