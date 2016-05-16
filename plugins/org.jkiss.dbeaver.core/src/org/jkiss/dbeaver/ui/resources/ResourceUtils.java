@@ -119,11 +119,7 @@ public class ResourceUtils {
     		IStatus status = new Status(IStatus.ERROR, DBeaverCore.getCorePluginID(), "No active project to locate Script Folder");
 			throw new CoreException(status);
 		}
-        final IFolder scriptsFolder = DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, ScriptsHandlerImpl.class);
-        if (!scriptsFolder.exists() && forceCreate) {
-            scriptsFolder.create(true, true, new NullProgressMonitor());
-        }
-        return scriptsFolder;
+        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, ScriptsHandlerImpl.class, forceCreate);
     }
 
     @Nullable
