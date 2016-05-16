@@ -234,7 +234,9 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
-                return project.getFolder(rhd.getDefaultRoot());
+                final IFolder linkFolder = project.getFolder(rhd.getFolderLinkName());
+                final IFolder realFolder = project.getFolder(rhd.getDefaultRoot());
+                return realFolder;
             }
         }
         return project.getFolder(DefaultResourceHandlerImpl.DEFAULT_ROOT);

@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -77,8 +78,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         }
     }
 
+    @NotNull
     @Override
-    public String getTypeName(IResource resource)
+    public String getTypeName(@NotNull IResource resource)
     {
         if (resource instanceof IFolder) {
             return "diagram folder";
@@ -87,8 +89,19 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         }
     }
 
+    @NotNull
     @Override
-    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public String getResourceNodeName(@NotNull IResource resource) {
+        if (resource.getParent() instanceof IProject) {
+            return "ER Diagrams";
+        } else {
+            return super.getResourceNodeName(resource);
+        }
+    }
+
+    @NotNull
+    @Override
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
             return new DBNDiagram(parentNode, resource, this);
@@ -98,7 +111,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(final IResource resource) throws CoreException, DBException
+    public void openResource(@NotNull final IResource resource) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
             return;

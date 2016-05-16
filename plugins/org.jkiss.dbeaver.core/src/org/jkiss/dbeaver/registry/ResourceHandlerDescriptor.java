@@ -45,6 +45,8 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
+    private static final String FOLDER_LINK_PREFIX = ".dbeaver-resource-link";
+
     private String name;
     private boolean managable;
     private DBPImage icon;
@@ -173,6 +175,11 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     public Collection<ObjectType> getResourceTypes()
     {
         return resourceTypes;
+    }
+
+    public String getFolderLinkName()
+    {
+        return FOLDER_LINK_PREFIX + handlerType.getImplName();
     }
 
     public String getDefaultRoot()

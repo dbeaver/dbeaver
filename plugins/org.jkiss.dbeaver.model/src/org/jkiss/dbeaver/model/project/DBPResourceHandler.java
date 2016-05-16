@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.project;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -39,13 +40,18 @@ public interface DBPResourceHandler {
 
     int getFeatures(IResource resource);
 
-    DBNNode makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException;
+    @NotNull
+    DBNNode makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException;
 
-    void openResource(IResource resource) throws CoreException, DBException;
+    void openResource(@NotNull IResource resource) throws CoreException, DBException;
 
-    String getTypeName(IResource resource);
+    @NotNull
+    String getTypeName(@NotNull IResource resource);
 
-    String getResourceDescription(IResource resource);
+    String getResourceDescription(@NotNull IResource resource);
 
     Collection<DBPDataSourceContainer> getAssociatedDataSources(IResource resource);
+
+    @NotNull
+    String getResourceNodeName(@NotNull IResource resource);
 }

@@ -37,7 +37,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
 {
     static final Log log = Log.getLog(DBNNode.class);
 
-    private final DBNNode parentNode;
+    protected final DBNNode parentNode;
 
     protected DBNNode()
     {

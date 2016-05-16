@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.resources;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -30,10 +31,21 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
  */
 public class ProjectHandlerImpl extends AbstractResourceHandler {
 
+    @NotNull
     @Override
-    public String getTypeName(IResource resource)
+    public String getTypeName(@NotNull IResource resource)
     {
         return "project";
+    }
+
+    @NotNull
+    @Override
+    public String getResourceNodeName(@NotNull IResource resource) {
+        if (resource.getParent() instanceof IProject) {
+            return "Projects";
+        } else {
+            return super.getResourceNodeName(resource);
+        }
     }
 
     @Override
@@ -45,14 +57,15 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
         return FEATURE_RENAME;
     }
 
+    @NotNull
     @Override
-    public DBNProject makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public DBNProject makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         return new DBNProject(parentNode, (IProject)resource, this);
     }
 
     @Override
-    public void openResource(IResource resource) throws CoreException, DBException
+    public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
         // do nothing
     }

@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -73,8 +74,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         return super.getFeatures(resource);
     }
 
+    @NotNull
     @Override
-    public String getTypeName(IResource resource)
+    public String getTypeName(@NotNull IResource resource)
     {
         if (resource instanceof IFolder) {
             return "bookmark folder"; //$NON-NLS-1$
@@ -83,8 +85,19 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    @NotNull
     @Override
-    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public String getResourceNodeName(@NotNull IResource resource) {
+        if (resource.getParent() instanceof IProject) {
+            return "Bookmarks";
+        } else {
+            return super.getResourceNodeName(resource);
+        }
+    }
+
+    @NotNull
+    @Override
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
             return new DBNBookmark(parentNode, resource, this);
@@ -94,7 +107,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(final IResource resource) throws CoreException, DBException
+    public void openResource(@NotNull final IResource resource) throws CoreException, DBException
     {
         if (!(resource instanceof IFile)) {
             return;

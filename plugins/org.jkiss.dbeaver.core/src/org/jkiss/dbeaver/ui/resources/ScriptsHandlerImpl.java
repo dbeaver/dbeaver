@@ -23,6 +23,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.part.FileEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -53,8 +54,9 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
         return super.getFeatures(resource);
     }
 
+    @NotNull
     @Override
-    public String getTypeName(IResource resource)
+    public String getTypeName(@NotNull IResource resource)
     {
         if (resource instanceof IFolder) {
             return "script folder"; //$NON-NLS-1$
@@ -64,13 +66,14 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public String getResourceDescription(IResource resource)
+    public String getResourceDescription(@NotNull IResource resource)
     {
         return ResourceUtils.getResourceDescription(resource);
     }
 
+    @NotNull
     @Override
-    public DBNResource makeNavigatorNode(DBNNode parentNode, IResource resource) throws CoreException, DBException
+    public DBNResource makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException
     {
         DBNResource node = super.makeNavigatorNode(parentNode, resource);
         if (resource instanceof IFolder) {
@@ -84,7 +87,7 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
     }
 
     @Override
-    public void openResource(IResource resource) throws CoreException, DBException
+    public void openResource(@NotNull IResource resource) throws CoreException, DBException
     {
         if (resource instanceof IFile) {
             FileEditorInput sqlInput = new FileEditorInput((IFile)resource);
@@ -105,6 +108,16 @@ public class ScriptsHandlerImpl extends AbstractResourceHandler {
             return dataSource == null ? null : Collections.singleton(dataSource);
         }
         return null;
+    }
+
+    @NotNull
+    @Override
+    public String getResourceNodeName(@NotNull IResource resource) {
+        if (resource.getParent() instanceof IProject) {
+            return "SQL Scripts";
+        } else {
+            return super.getResourceNodeName(resource);
+        }
     }
 
 
