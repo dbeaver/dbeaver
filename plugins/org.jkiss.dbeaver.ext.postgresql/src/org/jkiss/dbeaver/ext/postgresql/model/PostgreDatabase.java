@@ -379,11 +379,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             }
 
             for (JDBCExecutionContext context : dataSource.getAllContexts()) {
-                try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
-                    JDBCUtils.executeSQL(session, "SET search_path = \"$user\"," + DBUtils.getQuotedIdentifier(object));
-                } catch (SQLException e) {
-                    throw new DBCException("Error setting search path", e, dataSource);
-                }
+                setSearchPath(monitor, (PostgreSchema)object, context);
             }
             dataSource.setActiveSchemaName(object.getName());
             dataSource.setSearchPath(object.getName());
@@ -392,6 +388,14 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 DBUtils.fireObjectSelect(oldActive, false);
             }
             DBUtils.fireObjectSelect(object, true);
+        }
+    }
+
+    void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema, JDBCExecutionContext context) throws DBCException {
+        try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
+            JDBCUtils.executeSQL(session, "SET search_path = \"$user\"," + DBUtils.getQuotedIdentifier(schema));
+        } catch (SQLException e) {
+            throw new DBCException("Error setting search path", e, dataSource);
         }
     }
 
