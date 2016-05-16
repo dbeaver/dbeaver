@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -68,17 +67,17 @@ import java.util.Map;
  * ObjectPropertiesEditor
  */
 public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObject>
-    implements IRefreshablePart, IProgressControlProvider, IFolderContainer, ISearchContextProvider, INavigatorModelView
+    implements IRefreshablePart, IProgressControlProvider, ITabbedFolderContainer, ISearchContextProvider, INavigatorModelView
 {
     private static final Log log = Log.getLog(ObjectPropertiesEditor.class);
 
-    private FolderComposite folderComposite;
+    private TabbedFolderComposite folderComposite;
     private ObjectEditorPageControl pageControl;
-    private final List<IFolderListener> folderListeners = new ArrayList<>();
+    private final List<ITabbedFolderListener> folderListeners = new ArrayList<>();
     private String curFolderId;
 
     private final List<ISaveablePart> nestedSaveable = new ArrayList<>();
-    private final Map<IFolder, IEditorActionBarContributor> pageContributors = new HashMap<>();
+    private final Map<ITabbedFolder, IEditorActionBarContributor> pageContributors = new HashMap<>();
 
     public ObjectPropertiesEditor()
     {
@@ -127,17 +126,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         gl.marginWidth = 0;
         propsPlaceholder.setLayout(gl);
 
-        FolderInfo[] folders = collectFolders(this);
+        TabbedFolderInfo[] folders = collectFolders(this);
         boolean single = folders.length < 4;
         if (single) {
-            for (FolderInfo fi : folders) {
+            for (TabbedFolderInfo fi : folders) {
                 if (!fi.isEmbeddable()) {
                     single = false;
                 }
             }
         }
 
-        folderComposite = new FolderComposite(propsPlaceholder, SWT.LEFT | (single ? SWT.SINGLE : SWT.MULTI));
+        folderComposite = new TabbedFolderComposite(propsPlaceholder, SWT.LEFT | (single ? SWT.SINGLE : SWT.MULTI));
         folderComposite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         // Load properties
@@ -145,8 +144,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         // Collect section contributors
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
-        for (FolderInfo folder : folders) {
-            IFolder page = folder.getContents();
+        for (TabbedFolderInfo folder : folders) {
+            ITabbedFolder page = folder.getContents();
             if (page instanceof IDatabaseEditorContributorUser) {
                 IEditorActionBarContributor contributor = ((IDatabaseEditorContributorUser) page).getContributor(contributorManager);
                 if (contributor != null) {
@@ -164,7 +163,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             folderComposite.switchFolder(folderId);
         }
 
-        folderComposite.addFolderListener(new IFolderListener() {
+        folderComposite.addFolderListener(new ITabbedFolderListener() {
             @Override
             public void folderSelected(String folderId) {
                 if (CommonUtils.equalObjects(curFolderId, folderId)) {
@@ -172,7 +171,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 }
                 synchronized (folderListeners) {
                     curFolderId = folderId;
-                    for (IFolderListener listener : folderListeners) {
+                    for (ITabbedFolderListener listener : folderListeners) {
                         listener.folderSelected(folderId);
                     }
                 }
@@ -207,7 +206,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         // do not force focus in active editor. We can't do it properly because folderComposite detects
         // active folder by focus (which it doesn't have)
         //folderComposite.setFocus();
-        IFolder selectedPage = folderComposite.getActiveFolder();
+        ITabbedFolder selectedPage = folderComposite.getActiveFolder();
         if (selectedPage != null) {
             selectedPage.setFocus();
 //            IEditorActionBarContributor contributor = pageContributors.get(selectedPage);
@@ -266,7 +265,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Nullable
     @Override
-    public IFolder getActiveFolder()
+    public ITabbedFolder getActiveFolder()
     {
         return folderComposite.getActiveFolder();
     }
@@ -278,7 +277,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void addFolderListener(IFolderListener listener)
+    public void addFolderListener(ITabbedFolderListener listener)
     {
         synchronized (folderListeners) {
             folderListeners.add(listener);
@@ -286,7 +285,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void removeFolderListener(IFolderListener listener)
+    public void removeFolderListener(ITabbedFolderListener listener)
     {
         synchronized (folderListeners) {
             folderListeners.remove(listener);
@@ -325,7 +324,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Override
     public void refreshPart(Object source, boolean force) {
         if (folderComposite != null && folderComposite.getFolders() != null) {
-            for (FolderInfo folder : folderComposite.getFolders()) {
+            for (TabbedFolderInfo folder : folderComposite.getFolders()) {
                 if (folder.getContents() instanceof IRefreshablePart) {
                     ((IRefreshablePart) folder.getContents()).refreshPart(source, force);
                 }
@@ -348,29 +347,29 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         return result == null ? super.getAdapter(adapter) : result;
     }
 
-    public FolderInfo[] collectFolders(IWorkbenchPart part)
+    public TabbedFolderInfo[] collectFolders(IWorkbenchPart part)
     {
-        List<FolderInfo> tabList = new ArrayList<>();
+        List<TabbedFolderInfo> tabList = new ArrayList<>();
         makeStandardPropertiesTabs(tabList);
         if (part instanceof IDatabaseEditor) {
             makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
         }
-        return tabList.toArray(new FolderInfo[tabList.size()]);
+        return tabList.toArray(new TabbedFolderInfo[tabList.size()]);
     }
 
-    private void makeStandardPropertiesTabs(List<FolderInfo> tabList)
+    private void makeStandardPropertiesTabs(List<TabbedFolderInfo> tabList)
     {
-        tabList.add(new FolderInfo(
+        tabList.add(new TabbedFolderInfo(
             //PropertiesContributor.CATEGORY_INFO,
             PropertiesContributor.TAB_STANDARD,
             CoreMessages.ui_properties_category_information,
             DBIcon.TREE_INFO,
             "General information",
             false,
-            new FolderPageProperties(getEditorInput())));
+            new TabbedFolderPageProperties(getEditorInput())));
     }
 
-    private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<FolderInfo> tabList)
+    private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<TabbedFolderInfo> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getNavigatorNode();
         final DBSObject object = node.getObject();
@@ -401,19 +400,19 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         if (!CommonUtils.isEmpty(editors)) {
             for (EntityEditorDescriptor descriptor : editors) {
                 if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
-                    tabList.add(new FolderInfo(
+                    tabList.add(new TabbedFolderInfo(
                         descriptor.getId(),
                         descriptor.getName(),
                         descriptor.getIcon(),
                         descriptor.getDescription(),
                         descriptor.isEmbeddable(),
-                        new FolderPageEditor(this, descriptor)));
+                        new TabbedFolderPageEditor(this, descriptor)));
                 }
             }
         }
     }
 
-    private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<FolderInfo> tabList)
+    private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<TabbedFolderInfo> tabList)
     {
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource && !((DBNDataSource)node).getDataSourceContainer().isConnected()) {
@@ -427,13 +426,13 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                             DBNDatabaseFolder folder = (DBNDatabaseFolder)child;
                             monitor.subTask(CoreMessages.ui_properties_task_add_folder + child.getNodeName() + "'"); //$NON-NLS-2$
                             tabList.add(
-                                new FolderInfo(
+                                new TabbedFolderInfo(
                                     folder.getNodeName(),
                                     folder.getNodeName(),
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
-                                    new FolderPageNode(part, folder, null)
+                                    new TabbedFolderPageNode(part, folder, null)
                                 ));
                         }
                     }
@@ -453,13 +452,13 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     monitor.subTask(CoreMessages.ui_properties_task_add_node + node.getNodeName() + "'"); //$NON-NLS-2$
                                     String nodeName = child.getChildrenType(databaseNode.getObject().getDataSource());
                                     tabList.add(
-                                        new FolderInfo(
+                                        new TabbedFolderInfo(
                                             nodeName,
                                             nodeName,
                                             node.getNodeIconDefault(),
                                             node.getNodeDescription(),
                                             false,
-                                            new FolderPageNode(part, node, child)));
+                                            new TabbedFolderPageNode(part, node, child)));
                                 }
                             } catch (DBException e) {
                                 log.debug("Can't add child items tab", e); //$NON-NLS-1$
@@ -473,7 +472,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public DBNNode getRootNode() {
-        IFolder activeFolder = folderComposite.getActiveFolder();
+        ITabbedFolder activeFolder = folderComposite.getActiveFolder();
         if (activeFolder instanceof INavigatorModelView) {
             return ((INavigatorModelView) activeFolder).getRootNode();
         }
@@ -483,7 +482,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Nullable
     @Override
     public Viewer getNavigatorViewer() {
-        IFolder activeFolder = folderComposite.getActiveFolder();
+        ITabbedFolder activeFolder = folderComposite.getActiveFolder();
         if (activeFolder instanceof INavigatorModelView) {
             return ((INavigatorModelView) activeFolder).getNavigatorViewer();
         }

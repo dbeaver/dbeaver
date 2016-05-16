@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -154,9 +154,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                     }
                     if (editorInput instanceof EntityEditorInput && ((EntityEditorInput) editorInput).getNavigatorNode() == selectedNode) {
                         final IEditorPart editor = ref.getEditor(true);
-                        if (editor instanceof IFolderContainer && defaultFolderId != null) {
+                        if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                             // Activate default folder
-                            ((IFolderContainer)editor).switchFolder(defaultFolderId);
+                            ((ITabbedFolderContainer)editor).switchFolder(defaultFolderId);
                         }
                         workbenchWindow.getActivePage().activate(editor);
                         return editor;

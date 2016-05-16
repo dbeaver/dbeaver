@@ -46,7 +46,7 @@ import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderEditorSite;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderEditorSite;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
@@ -118,8 +118,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
         // Create new or substitute progress control
         ProgressPageControl progressControl = null;
         IWorkbenchPartSite site = getSite();
-        if (site instanceof IFolderEditorSite && ((IFolderEditorSite) site).getFolderEditor() instanceof IProgressControlProvider) {
-            progressControl = ((IProgressControlProvider)((IFolderEditorSite) site).getFolderEditor()).getProgressControl();
+        if (site instanceof ITabbedFolderEditorSite && ((ITabbedFolderEditorSite) site).getFolderEditor() instanceof IProgressControlProvider) {
+            progressControl = ((IProgressControlProvider)((ITabbedFolderEditorSite) site).getFolderEditor()).getProgressControl();
         } else if (site instanceof MultiPageEditorSite && ((MultiPageEditorSite) site).getMultiPageEditor() instanceof IProgressControlProvider) {
             progressControl = ((IProgressControlProvider)((MultiPageEditorSite) site).getMultiPageEditor()).getProgressControl();
         }

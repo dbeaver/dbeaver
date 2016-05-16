@@ -42,30 +42,30 @@ import java.util.Map;
  * Styles:
  * SWT.LEFT, SWT.RIGHT - tabs orientation
  */
-public class FolderComposite extends Composite implements IFolderContainer {
+public class TabbedFolderComposite extends Composite implements ITabbedFolderContainer {
 
     public static final int MIN_PANE_HEIGHT = 60;
     @NotNull
     private final Composite compositePane;
     @Nullable
-    private FolderInfo[] folders;
+    private TabbedFolderInfo[] folders;
 
-    private final Map<FolderInfo, Composite> contentsMap = new HashMap<>();
-    private List<IFolderListener> listeners = new ArrayList<>();
+    private final Map<TabbedFolderInfo, Composite> contentsMap = new HashMap<>();
+    private List<ITabbedFolderListener> listeners = new ArrayList<>();
     private FolderPane[] folderPanes;
     private FolderPane lastActiveFolder = null;
 
     private class FolderPane {
-        FolderInfo[] folders;
-        FolderList folderList;
+        TabbedFolderInfo[] folders;
+        TabbedFolderList folderList;
         Composite editorPane;
         @Nullable
         private Control curContent;
         @Nullable
-        private IFolder curFolder;
+        private ITabbedFolder curFolder;
 
         public FolderPane(Composite parent, boolean last) {
-            this.folderList = new FolderList(parent, !last);
+            this.folderList = new TabbedFolderList(parent, !last);
             GridData gd = new GridData(GridData.FILL_VERTICAL);
             if (!last) {
                 gd.verticalSpan = 2;
@@ -81,7 +81,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
             if (!last) {
                 final Sash sash = new Sash(parent, SWT.NONE);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
-                gd.heightHint = FolderList.SECTION_DIV_HEIGHT;
+                gd.heightHint = TabbedFolderList.SECTION_DIV_HEIGHT;
                 sash.setLayoutData(gd);
                 sash.addPaintListener(new PaintListener() {
                     @Override
@@ -110,11 +110,11 @@ public class FolderComposite extends Composite implements IFolderContainer {
                             return;
                         }
                         if (Math.abs(shift) > 0) {
-                            FolderComposite.this.setRedraw(false);
+                            TabbedFolderComposite.this.setRedraw(false);
                             try {
                                 shiftPane(FolderPane.this, shift);
                             } finally {
-                                FolderComposite.this.setRedraw(true);
+                                TabbedFolderComposite.this.setRedraw(true);
                             }
                         }
                     }
@@ -129,15 +129,15 @@ public class FolderComposite extends Composite implements IFolderContainer {
             });
         }
 
-        public void setFolders(FolderInfo[] folders) {
+        public void setFolders(TabbedFolderInfo[] folders) {
             this.folders = folders;
             this.folderList.setFolders(this.folders);
             this.folderList.select(0);
         }
 
-        private void onFolderSwitch(FolderInfo folder) {
+        private void onFolderSwitch(TabbedFolderInfo folder) {
             Composite newContent = contentsMap.get(folder);
-            IFolder newFolder = folder.getContents();
+            ITabbedFolder newFolder = folder.getContents();
             if (newContent == null) {
                 newContent = new Composite(editorPane, SWT.NONE);
                 newContent.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -166,7 +166,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
             editorPane.layout();
 
-            for (IFolderListener listener : listeners) {
+            for (ITabbedFolderListener listener : listeners) {
                 listener.folderSelected(folder.getId());
             }
         }
@@ -205,7 +205,7 @@ public class FolderComposite extends Composite implements IFolderContainer {
         return null;
     }
 
-    public FolderComposite(Composite parent, int style) {
+    public TabbedFolderComposite(Composite parent, int style) {
         super(parent, style);
         GridLayout gl = new GridLayout(2, false);
         gl.horizontalSpacing = 0;
@@ -226,19 +226,19 @@ public class FolderComposite extends Composite implements IFolderContainer {
         addDisposeListener(new DisposeListener() {
             @Override
             public void widgetDisposed(DisposeEvent e) {
-                for (FolderInfo folderDescription : contentsMap.keySet()) {
+                for (TabbedFolderInfo folderDescription : contentsMap.keySet()) {
                     folderDescription.getContents().dispose();
                 }
             }
         });
     }
 
-    public void setFolders(@NotNull final FolderInfo[] folders) {
+    public void setFolders(@NotNull final TabbedFolderInfo[] folders) {
         this.folders = folders;
 
-        List<List<FolderInfo>> groups = new ArrayList<>();
-        List<FolderInfo> curGroup = null;
-        for (FolderInfo folder : folders) {
+        List<List<TabbedFolderInfo>> groups = new ArrayList<>();
+        List<TabbedFolderInfo> curGroup = null;
+        for (TabbedFolderInfo folder : folders) {
             if (folder.isEmbeddable()) {
                 groups.add(curGroup = new ArrayList<>());
                 curGroup.add(folder);
@@ -253,9 +253,9 @@ public class FolderComposite extends Composite implements IFolderContainer {
 
         folderPanes = new FolderPane[groups.size()];
         for (int i = 0; i < groups.size(); i++) {
-            List<FolderInfo> group = groups.get(i);
+            List<TabbedFolderInfo> group = groups.get(i);
             FolderPane folderPane = new FolderPane(compositePane, i >= groups.size() - 1);
-            folderPane.setFolders(group.toArray(new FolderInfo[group.size()]));
+            folderPane.setFolders(group.toArray(new TabbedFolderInfo[group.size()]));
             folderPanes[i] = folderPane;
         }
 
@@ -276,12 +276,12 @@ public class FolderComposite extends Composite implements IFolderContainer {
     }
 
     @Nullable
-    public FolderInfo[] getFolders() {
+    public TabbedFolderInfo[] getFolders() {
         return folders;
     }
 
     @Override
-    public IFolder getActiveFolder() {
+    public ITabbedFolder getActiveFolder() {
         if (folderPanes.length == 1) {
             return getActiveFolder(folderPanes[0]);
         }
@@ -298,8 +298,8 @@ public class FolderComposite extends Composite implements IFolderContainer {
         return null;
     }
 
-    private IFolder getActiveFolder(FolderPane folderPane) {
-        FolderList folderList = folderPane.folderList;
+    private ITabbedFolder getActiveFolder(FolderPane folderPane) {
+        TabbedFolderList folderList = folderPane.folderList;
         return folderList.getElementAt(folderList.getSelectionIndex()).getInfo().getContents();
     }
 
@@ -317,12 +317,12 @@ public class FolderComposite extends Composite implements IFolderContainer {
     }
 
     @Override
-    public void addFolderListener(IFolderListener listener) {
+    public void addFolderListener(ITabbedFolderListener listener) {
         listeners.add(listener);
     }
 
     @Override
-    public void removeFolderListener(IFolderListener listener) {
+    public void removeFolderListener(ITabbedFolderListener listener) {
         listeners.remove(listener);
     }
 

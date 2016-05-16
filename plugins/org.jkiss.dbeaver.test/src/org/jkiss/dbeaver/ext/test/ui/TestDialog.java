@@ -22,34 +22,34 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.ui.controls.folders.FolderComposite;
-import org.jkiss.dbeaver.ui.controls.folders.FolderInfo;
-import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
+import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderComposite;
+import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
+import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 
 public class TestDialog extends TrayDialog {
 
-    private FolderComposite folderComposite;
-    private final FolderInfo[] tabs;
+    private TabbedFolderComposite folderComposite;
+    private final TabbedFolderInfo[] tabs;
 
     public TestDialog(Shell shell)
     {
         super(shell);
 
-        tabs = new FolderInfo[3];
-        tabs[0] = new FolderInfo("tab1", "Tab 1", DBIcon.TREE_TABLE, "Tooltip 1", false, new FolderPage() {
+        tabs = new TabbedFolderInfo[3];
+        tabs[0] = new TabbedFolderInfo("tab1", "Tab 1", DBIcon.TREE_TABLE, "Tooltip 1", false, new TabbedFolderPage() {
             @Override
             public void createControl(Composite parent) {
                 new Text(parent, SWT.NONE);
             }
         });
-        tabs[1] = new FolderInfo("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS, "Tooltip 2", false, new FolderPage() {
+        tabs[1] = new TabbedFolderInfo("tab2", "Tab with long-long name", DBIcon.TREE_COLUMNS, "Tooltip 2", false, new TabbedFolderPage() {
 
             @Override
             public void createControl(Composite parent) {
                 new Label(parent, SWT.NONE);
             }
         });
-        tabs[2] = new FolderInfo("tab3", "Example", DBIcon.PROJECT, "123123", false, new FolderPage() {
+        tabs[2] = new TabbedFolderInfo("tab3", "Example", DBIcon.PROJECT, "123123", false, new TabbedFolderPage() {
 
             @Override
             public void createControl(Composite parent) {
@@ -71,7 +71,7 @@ public class TestDialog extends TrayDialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        folderComposite = new FolderComposite(group, SWT.LEFT | SWT.MULTI);
+        folderComposite = new TabbedFolderComposite(group, SWT.LEFT | SWT.MULTI);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 300;
         gd.heightHint = 300;

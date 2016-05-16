@@ -44,7 +44,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.SimpleCommandContext;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.folders.IFolderContainer;
+import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -140,8 +140,8 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     private static void switchEditorFolder(DBNContainer container, IEditorPart editor)
     {
-        if (editor instanceof IFolderContainer && container instanceof DBNDatabaseFolder) {
-            ((IFolderContainer) editor).switchFolder(container.getChildrenType());
+        if (editor instanceof ITabbedFolderContainer && container instanceof DBNDatabaseFolder) {
+            ((ITabbedFolderContainer) editor).switchFolder(container.getChildrenType());
         }
     }
 

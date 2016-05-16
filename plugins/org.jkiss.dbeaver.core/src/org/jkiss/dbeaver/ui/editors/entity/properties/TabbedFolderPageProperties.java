@@ -30,15 +30,15 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.folders.FolderPage;
+import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 
 /**
- * FolderPageProperties
+ * TabbedFolderPageProperties
  */
-public class FolderPageProperties extends FolderPage implements ILazyPropertyLoadListener, DBPEventListener {
+public class TabbedFolderPageProperties extends TabbedFolderPage implements ILazyPropertyLoadListener, DBPEventListener {
 
     protected IDatabaseEditorInput input;
 	protected PropertyTreeViewer propertyTree;
@@ -46,7 +46,7 @@ public class FolderPageProperties extends FolderPage implements ILazyPropertyLoa
     private UIJob refreshJob = null;
     private DBPPropertySource curPropertySource;
 
-    public FolderPageProperties(IDatabaseEditorInput input) {
+    public TabbedFolderPageProperties(IDatabaseEditorInput input) {
         this.input = input;
     }
 
@@ -134,7 +134,7 @@ public class FolderPageProperties extends FolderPage implements ILazyPropertyLoa
                 propertyTree.getControl().redraw();
             }
 
-            synchronized (FolderPageProperties.this) {
+            synchronized (TabbedFolderPageProperties.this) {
                 refreshJob = null;
             }
             return Status.OK_STATUS;
