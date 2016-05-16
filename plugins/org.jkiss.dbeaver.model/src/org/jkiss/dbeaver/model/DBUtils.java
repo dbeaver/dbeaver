@@ -1603,4 +1603,28 @@ public final class DBUtils {
         }
         return string + "..." + " [" + data.length + "]";
     }
+
+    @NotNull
+    public static DBSObject getDefaultOrSelectedObject(@NotNull DBSInstance object)
+    {
+        DBSObject selectedObject = getSelectedObject(object);
+        return selectedObject == null ? object : selectedObject;
+    }
+
+    @Nullable
+    public static DBSObject getSelectedObject(@NotNull DBSInstance object)
+    {
+        DBSObjectSelector objectSelector = getAdapter(DBSObjectSelector.class, object);
+        if (objectSelector != null) {
+            DBSObject selectedObject1 = objectSelector.getSelectedObject();
+            if (selectedObject1 != null) {
+                DBSObjectSelector objectSelector2 = getAdapter(DBSObjectSelector.class, selectedObject1);
+                if (objectSelector2 != null) {
+                    return objectSelector2.getSelectedObject();
+                }
+            }
+            return selectedObject1;
+        }
+        return null;
+    }
 }

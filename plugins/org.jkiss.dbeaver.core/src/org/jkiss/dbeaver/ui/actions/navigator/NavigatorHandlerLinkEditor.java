@@ -21,14 +21,25 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
@@ -36,12 +47,14 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 
+import java.lang.reflect.InvocationTargetException;
+
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
-        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
+        final IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+        final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
         if (activePart instanceof NavigatorViewBase) {
             if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
@@ -54,6 +67,34 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
             } else if (activeEditor.getEditorInput() instanceof ProjectFileEditorInput) {
                 IFile editorFile = ((ProjectFileEditorInput)activeEditor.getEditorInput()).getFile();
                 showResourceInNavigator((NavigatorViewBase) activePart, editorFile);
+            } else if (activeEditor instanceof IDataSourceContainerProvider) {
+                DBPDataSourceContainer dsContainer = ((IDataSourceContainerProvider) activeEditor).getDataSourceContainer();
+                @NotNull
+                final DBSObject activeObject;
+                if (dsContainer != null) {
+                    DBPDataSource dataSource = dsContainer.getDataSource();
+                    if (dataSource != null) {
+                        activeObject = DBUtils.getDefaultOrSelectedObject(dataSource);
+                    } else {
+                        activeObject = dsContainer;
+                    }
+
+                    DBeaverUI.runInUI(activePage.getWorkbenchWindow(), new DBRRunnableWithProgress() {
+                        @Override
+                        public void run(DBRProgressMonitor monitor)
+                            throws InvocationTargetException, InterruptedException {
+                            DBNDatabaseNode objectNode = ((NavigatorViewBase) activePart).getModel().getNodeByObject(
+                                monitor,
+                                activeObject,
+                                true
+                            );
+                            if (objectNode != null) {
+                                NavigatorViewBase view = (NavigatorViewBase)activePart;
+                                view.showNode(objectNode);
+                            }
+                        }
+                    });
+                }
             }
         } else if (activePart instanceof EntityEditor) {
             DBNDatabaseNode curNode = ((EntityEditor) activePart).getEditorInput().getNavigatorNode();

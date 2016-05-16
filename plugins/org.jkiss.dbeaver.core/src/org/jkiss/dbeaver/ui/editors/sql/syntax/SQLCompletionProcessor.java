@@ -162,7 +162,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
-        DBSObject selectedObject = getDefaultObject(editor.getDataSource());
+        DBSObject selectedObject = DBUtils.getSelectedObject(editor.getDataSource());
         boolean hideDups = getPreferences().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < proposals.size(); i++) {
@@ -239,7 +239,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObject selectedObject = getDefaultObject(dataSource);
+                    DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
                     if (selectedObject != null) {
                         makeProposalsFromChildren(monitor, selectedObject, null, proposals);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -256,7 +256,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     // Part of column name
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                    DBSObject selectedObject = getDefaultObject(dataSource);
+                    DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
@@ -288,7 +288,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         DBSObjectContainer selectedContainer = null;
         {
-            DBSObject selectedObject = getDefaultObject(dataSource);
+            DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
             if (selectedObject != null) {
                 selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
             }
@@ -605,7 +605,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (wordDetector.getFullWord().indexOf(editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = getDefaultObject(dataSource);
+                        DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = DBUtils.getFullQualifiedName(
                                 dataSource,
@@ -769,23 +769,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     public IContextInformationValidator getContextInformationValidator()
     {
         return validator;
-    }
-
-    @Nullable
-    private static DBSObject getDefaultObject(DBSInstance dataSource)
-    {
-        DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-        if (objectSelector != null) {
-            DBSObject selectedObject1 = objectSelector.getSelectedObject();
-            if (selectedObject1 != null) {
-                DBSObjectSelector objectSelector2 = DBUtils.getAdapter(DBSObjectSelector.class, selectedObject1);
-                if (objectSelector2 != null) {
-                    return objectSelector2.getSelectedObject();
-                }
-            }
-            return selectedObject1;
-        }
-        return null;
     }
 
     /**
