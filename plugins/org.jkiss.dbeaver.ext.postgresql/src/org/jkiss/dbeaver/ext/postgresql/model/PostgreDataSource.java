@@ -123,9 +123,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            PostgreDatabase object = getSelectedObject();
-            if (object != null) {
-//                useDatabase(monitor, context, object);
+            PostgreDatabase activeDatabase = getSelectedObject();
+            if (activeDatabase != null) {
+                final PostgreSchema activeSchema = activeDatabase.getSelectedObject();
+                if (activeSchema != null) {
+                    activeDatabase.setSearchPath(monitor, activeSchema, context);
+                }
             }
         }
     }
