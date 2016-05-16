@@ -226,7 +226,7 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         return handlerDescriptors;
     }
 
-    public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType)
+    public IFolder getResourceDefaultRoot(IProject project, Class<? extends DBPResourceHandler> handlerType, boolean forceCreate)
     {
     	if (project == null) {
 			return null;
@@ -234,8 +234,28 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             DBPResourceHandler handler = rhd.getHandler();
             if (handler != null && handler.getClass() == handlerType) {
-                final IFolder linkFolder = project.getFolder(rhd.getFolderLinkName());
                 final IFolder realFolder = project.getFolder(rhd.getDefaultRoot());
+
+                if (!realFolder.exists() && forceCreate) {
+                    try {
+                        realFolder.create(true, true, new NullProgressMonitor());
+                    } catch (CoreException e) {
+                        log.error("Can't create '" + rhd.getName() + "' root folder '" + realFolder.getName() + "'", e);
+                        return realFolder;
+                    }
+                }
+/*
+                final IFolder linkFolder = project.getFolder(rhd.getFolderLinkName());
+                if (!linkFolder.exists()) {
+                    try {
+                        linkFolder.createLink(realFolder.getRawLocation(), IResource.HIDDEN, null);
+                    } catch (CoreException e) {
+                        log.error("Can't create '" + rhd.getName() + "' root folder link", e);
+                        return realFolder;
+                    }
+                }
+*/
+
                 return realFolder;
             }
         }

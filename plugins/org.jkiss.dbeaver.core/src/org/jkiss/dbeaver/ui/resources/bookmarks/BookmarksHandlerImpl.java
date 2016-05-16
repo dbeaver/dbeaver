@@ -58,11 +58,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     public static IFolder getBookmarksFolder(IProject project, boolean forceCreate) throws CoreException
     {
-        final IFolder bookmarksFolder = DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, BookmarksHandlerImpl.class);
-        if (!bookmarksFolder.exists() && forceCreate) {
-            bookmarksFolder.create(true, true, new NullProgressMonitor());
-        }
-        return bookmarksFolder;
+        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
     }
 
     @Override
