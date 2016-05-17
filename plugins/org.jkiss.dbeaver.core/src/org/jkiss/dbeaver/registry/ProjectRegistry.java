@@ -244,17 +244,18 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
                         return realFolder;
                     }
                 }
-/*
+
                 final IFolder linkFolder = project.getFolder(rhd.getFolderLinkName());
                 if (!linkFolder.exists()) {
+/*
                     try {
                         linkFolder.createLink(realFolder.getRawLocation(), IResource.HIDDEN, null);
                     } catch (CoreException e) {
                         log.error("Can't create '" + rhd.getName() + "' root folder link", e);
                         return realFolder;
                     }
-                }
 */
+                }
 
                 return realFolder;
             }

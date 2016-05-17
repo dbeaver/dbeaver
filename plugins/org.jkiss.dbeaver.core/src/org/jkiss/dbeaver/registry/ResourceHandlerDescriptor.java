@@ -47,6 +47,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     private static final String FOLDER_LINK_PREFIX = ".dbeaver-resource-link-";
 
+    private String id;
     private String name;
     private boolean managable;
     private DBPImage icon;
@@ -61,6 +62,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     {
         super(config);
 
+        this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.managable = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_MANAGABLE));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
@@ -100,6 +102,10 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
     {
         this.handler = null;
         this.handlerType = null;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public String getName() {
@@ -179,7 +185,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor
 
     public String getFolderLinkName()
     {
-        return FOLDER_LINK_PREFIX + handlerType.getImplName();
+        return FOLDER_LINK_PREFIX + id;
     }
 
     public String getDefaultRoot()

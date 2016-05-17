@@ -38,16 +38,6 @@ public class ProjectHandlerImpl extends AbstractResourceHandler {
         return "project";
     }
 
-    @NotNull
-    @Override
-    public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject) {
-            return "Projects";
-        } else {
-            return super.getResourceNodeName(resource);
-        }
-    }
-
     @Override
     public int getFeatures(IResource resource)
     {
