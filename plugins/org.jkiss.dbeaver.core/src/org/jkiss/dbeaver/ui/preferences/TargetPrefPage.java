@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.preference.PreferenceDialog;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -109,19 +108,24 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         }
         containerNode = element.getAdapter(DBNDataSource.class);
         if (containerNode == null) {
-            IDatabaseEditorInput dbInput = element.getAdapter(IDatabaseEditorInput.class);
-            if (dbInput != null) {
-                DBNNode dbNode = dbInput.getNavigatorNode();
-                if (dbNode instanceof DBNDataSource) {
-                    containerNode = (DBNDataSource)dbNode;
+            final DBPDataSourceContainer dsContainer = element.getAdapter(DBPDataSourceContainer.class);
+            if (dsContainer != null) {
+                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(dsContainer);
+            } else {
+                IDatabaseEditorInput dbInput = element.getAdapter(IDatabaseEditorInput.class);
+                if (dbInput != null) {
+                    DBNNode dbNode = dbInput.getNavigatorNode();
+                    if (dbNode instanceof DBNDataSource) {
+                        containerNode = (DBNDataSource) dbNode;
+                    }
+                } else if (element instanceof DBPContextProvider) {
+                    DBCExecutionContext context = ((DBPContextProvider) element).getExecutionContext();
+                    if (context != null) {
+                        containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(context.getDataSource().getContainer());
+                    }
+                } else if (element instanceof DBPDataSourceContainer) {
+                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
                 }
-            } else if (element instanceof DBPContextProvider) {
-                DBCExecutionContext context = ((DBPContextProvider) element).getExecutionContext();
-                if (context != null) {
-                    containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode(context.getDataSource().getContainer());
-                }
-            } else if (element instanceof DBPDataSourceContainer) {
-                containerNode = (DBNDataSource) DBeaverCore.getInstance().getNavigatorModel().findNode((DBPDataSourceContainer) element);
             }
         }
     }
