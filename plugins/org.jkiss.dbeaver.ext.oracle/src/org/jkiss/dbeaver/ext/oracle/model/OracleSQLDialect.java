@@ -262,6 +262,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
+    @Override
     public boolean supportsAliasInUpdate() {
         return true;
     }

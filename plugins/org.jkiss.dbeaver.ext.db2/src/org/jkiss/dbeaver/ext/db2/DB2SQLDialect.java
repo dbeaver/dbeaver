@@ -48,6 +48,11 @@ public class DB2SQLDialect extends JDBCSQLDialect {
         return MultiValueInsertMode.GROUP_ROWS;
     }
 
+    @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
     @NotNull
     @Override
     public Collection<String> getExecuteKeywords()
