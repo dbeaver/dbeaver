@@ -489,6 +489,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                     IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
                     boolean showDialog = true;
+/*
                     if (activeEditor instanceof AbstractTextEditor) {
                         AbstractTextEditor textEditor = (AbstractTextEditor)activeEditor;
                         ITextSelection selection = (ITextSelection) textEditor.getSelectionProvider().getSelection();
@@ -505,6 +506,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         activeEditor.setFocus();
                         showDialog = false;
                     }
+*/
                     if (showDialog) {
                         DBPDataSource dataSource = null;
                         if (runnable.getObject() instanceof DBSObject) {
