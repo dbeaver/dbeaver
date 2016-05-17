@@ -306,7 +306,8 @@ public class OCIUtils
                 String curAlias = null;
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (line.isEmpty() || line.trim().startsWith("#") ) {
+                    final String trimmedLine = line.trim();
+                    if (trimmedLine.isEmpty() || trimmedLine.startsWith("#") ) {
                         continue;
                     }
                     if (!line.startsWith(" ") && !line.startsWith("\t") && !line.startsWith("(") && line.contains("=")) {
