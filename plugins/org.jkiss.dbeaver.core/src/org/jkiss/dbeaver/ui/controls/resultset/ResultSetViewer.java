@@ -880,7 +880,7 @@ public class ResultSetViewer extends Viewer
         this.model.setData(rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
 
-        if (metaChanged) {
+        {
 
             if (getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE)) {
                 boolean newRecordMode = (rows.size() == 1);
@@ -890,6 +890,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+
         this.activePresentation.refreshData(metaChanged, false);
         if (recordMode) {
             this.updateRecordMode();
