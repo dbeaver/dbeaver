@@ -125,8 +125,8 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 "Rename table",
-                "RENAME TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
-                    " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+                "ALTER TABLE " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
+                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
         };
     }
 
