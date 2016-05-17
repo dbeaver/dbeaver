@@ -303,7 +303,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Override
     public boolean supportsAliasInSelect() {
-        return true;
+        return false;
     }
 
     @Override

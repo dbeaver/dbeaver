@@ -53,6 +53,11 @@ class PostgreDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean supportsAliasInSelect() {
+        return true;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return true;
     }
