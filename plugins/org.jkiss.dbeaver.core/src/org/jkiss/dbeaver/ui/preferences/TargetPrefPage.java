@@ -270,7 +270,8 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         }
 
         if (isDataSourcePreferencePage()) {
-            changeSettingsTargetLink.setEnabled(!useDataSourceSettings());
+            //changeSettingsTargetLink.setEnabled(!useDataSourceSettings());
+            changeSettingsTargetLink.setEnabled(true);
         }
     }
 
