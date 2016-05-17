@@ -306,7 +306,10 @@ public class OCIUtils
                 String curAlias = null;
                 String line;
                 while ((line = reader.readLine()) != null) {
-                    if (!line.isEmpty() && !line.startsWith(" ") && !line.startsWith("\t") && !line.startsWith("(") && !line.startsWith("#") && line.contains("=")) {
+                    if (line.isEmpty() || line.trim().startsWith("#") ) {
+                        continue;
+                    }
+                    if (!line.startsWith(" ") && !line.startsWith("\t") && !line.startsWith("(") && line.contains("=")) {
                         final int divPos = line.indexOf("=");
                         if (divPos < 0) {
                             continue;
