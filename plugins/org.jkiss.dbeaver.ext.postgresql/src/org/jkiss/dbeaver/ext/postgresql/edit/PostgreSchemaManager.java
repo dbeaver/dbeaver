@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreAuthId;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 /**
@@ -75,11 +77,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         } catch (DBException e) {
             log.error(e);
         }
-/*
-        if (catalog.getDefaultCollation() != null) {
-            script.append("\nDEFAULT COLLATE ").append(catalog.getDefaultCollation().getName());
-        }
-*/
+
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
         };
@@ -94,11 +92,20 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, PostgreSchema catalog, String newName) throws DBException
+    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
     {
-        throw new DBException("Direct database rename is not yet implemented in Postgre. You should use export/import functions for that.");
-        //super.addCommand(new CommandRenameCatalog(newName), null);
-        //saveChanges(monitor);
+        return new DBEPersistAction[] {
+            new SQLDatabasePersistAction(
+                "Rename schema",
+                "ALTER SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+        };
+    }
+
+    @Override
+    public void renameObject(DBECommandContext commandContext, PostgreSchema schema, String newName) throws DBException
+    {
+        processObjectRename(commandContext, schema, newName);
     }
 
 }
