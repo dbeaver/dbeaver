@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -250,6 +251,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         if (entity != null) {
             final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
             if (!CommonUtils.isEmpty(selectedRows)) {
+                SQLDialect sqlDialect = SQLUtils.getDialectFromObject(rsv.getDataContainer().getDataSource());
+
                 menu.add(makeAction("SELECT by Unique Key", new TableAnalysisRunner(entity) {
                     @Override
                     public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
@@ -284,8 +287,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 }));
                 menu.add(makeAction("INSERT", new TableAnalysisRunner(entity) {
                     @Override
-                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException
-                    {
+                    public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql) throws DBException {
                         for (ResultSetRow firstRow : selectedRows) {
 
                             Collection<? extends DBSEntityAttribute> allAttributes = getAllAttributes(monitor);
