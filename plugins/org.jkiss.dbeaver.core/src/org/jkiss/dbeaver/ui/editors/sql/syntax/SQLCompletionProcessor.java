@@ -417,7 +417,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             String catalogSeparator = sqlDialect.getCatalogSeparator();
             while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
 
-            String tableNamePattern = "((?:" + quote + "(?:[.[^" + quote + "]]+)" + quote + ")|(?:[\\w" + Pattern.quote(catalogSeparator) + "]+))";
+            String tableNamePattern = "((?:" + quote + "(?:[.[^" + quote + "]]+)" + quote + ")|(?:[\\w_$" + Pattern.quote(catalogSeparator) + "]+))";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
