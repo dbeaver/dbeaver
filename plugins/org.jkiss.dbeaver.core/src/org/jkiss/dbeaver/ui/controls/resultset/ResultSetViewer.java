@@ -1812,7 +1812,7 @@ public class ResultSetViewer extends Viewer
     public boolean applyChanges(@Nullable DBRProgressMonitor monitor, @Nullable ResultSetPersister.DataUpdateListener listener)
     {
         try {
-            ResultSetPersister persister = createDataPersister();
+            ResultSetPersister persister = createDataPersister(false);
             return persister.applyChanges(monitor, false, listener);
         } catch (DBException e) {
             UIUtils.showErrorDialog(null, "Apply changes error", "Error saving changes in database", e);
@@ -1823,8 +1823,11 @@ public class ResultSetViewer extends Viewer
     @Override
     public void rejectChanges()
     {
+        if (!isDirty()) {
+            return;
+        }
         try {
-            createDataPersister().rejectChanges();
+            createDataPersister(true).rejectChanges();
         } catch (DBException e) {
             log.debug(e);
         }
@@ -1834,7 +1837,7 @@ public class ResultSetViewer extends Viewer
     public List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor)
     {
         try {
-            ResultSetPersister persister = createDataPersister();
+            ResultSetPersister persister = createDataPersister(false);
             persister.applyChanges(monitor, true, null);
             return persister.getScript();
         } catch (DBException e) {
@@ -1844,17 +1847,19 @@ public class ResultSetViewer extends Viewer
     }
 
     @NotNull
-    private ResultSetPersister createDataPersister()
+    private ResultSetPersister createDataPersister(boolean skipKeySearch)
         throws DBException
     {
         if (!model.isSingleSource()) {
             throw new DBException("Can't save data for result set from multiple sources");
         }
         boolean needPK = false;
-        for (ResultSetRow row : model.getAllRows()) {
-            if (row.getState() == ResultSetRow.STATE_REMOVED || (row.getState() == ResultSetRow.STATE_NORMAL && row.isChanged())) {
-                needPK = true;
-                break;
+        if (!skipKeySearch) {
+            for (ResultSetRow row : model.getAllRows()) {
+                if (row.getState() == ResultSetRow.STATE_REMOVED || (row.getState() == ResultSetRow.STATE_NORMAL && row.isChanged())) {
+                    needPK = true;
+                    break;
+                }
             }
         }
         if (needPK) {

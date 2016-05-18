@@ -707,7 +707,7 @@ public final class DBUtils {
             return false;
         }
         for (DBSTableIndexColumn col : attrs) {
-            if (col.getTableColumn() != null && !col.getTableColumn().isRequired()) {
+            if (col.getTableColumn() == null || !col.getTableColumn().isRequired()) {
                 // Do not use indexes with NULL columns (because they are not actually unique: #424)
                 return false;
             }
@@ -722,7 +722,7 @@ public final class DBUtils {
                 return false;
             }
             for (DBSEntityAttributeRef col : attrs) {
-                if (col.getAttribute() != null && !col.getAttribute().isRequired()) {
+                if (col.getAttribute() == null || !col.getAttribute().isRequired()) {
                     // Do not use constraints with NULL columns (because they are not actually unique: #424)
                     return false;
                 }
