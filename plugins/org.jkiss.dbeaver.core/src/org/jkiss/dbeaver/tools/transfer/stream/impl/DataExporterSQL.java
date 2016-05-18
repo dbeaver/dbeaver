@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -148,7 +149,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
             DBDAttributeBinding column = columns.get(i);
             if (DBUtils.isNullValue(value)) {
                 // just skip it
-                out.write("NULL");
+                out.write(SQLConstants.NULL_VALUE);
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
