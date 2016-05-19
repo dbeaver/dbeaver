@@ -500,14 +500,8 @@ public class JDBCUtils {
         if (!forceFetch) {
             try {
                 scrolled = dbResult.absolute((int) offset);
-            } catch (SQLException e) {
+            } catch (SQLException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                 // Seems to be not supported
-                log.debug(e.getMessage());
-            } catch (UnsupportedOperationException e) {
-                // Seems to be legacy JDBC
-                log.debug(e.getMessage());
-            } catch (IncompatibleClassChangeError e) {
-                // Seems to be legacy JDBC
                 log.debug(e.getMessage());
             }
         }
