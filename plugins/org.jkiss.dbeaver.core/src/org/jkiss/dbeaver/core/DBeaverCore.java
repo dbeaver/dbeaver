@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
+import org.jkiss.dbeaver.runtime.rmi.InstanceServer;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
@@ -177,6 +178,9 @@ public class DBeaverCore implements DBPApplication {
     {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
+
+        // Start instance server
+        InstanceServer.startInstanceServer();
 
         // Register properties adapter
         this.workspace = ResourcesPlugin.getWorkspace();
