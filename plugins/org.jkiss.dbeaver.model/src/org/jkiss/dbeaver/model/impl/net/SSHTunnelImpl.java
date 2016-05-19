@@ -28,11 +28,10 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.SecurityUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.Map;
 
 /**
@@ -160,21 +159,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         DBPPreferenceStore store = application.getPreferenceStore();
         int minPort = store.getInt(ModelPreferences.NET_TUNNEL_PORT_MIN);
         int maxPort = store.getInt(ModelPreferences.NET_TUNNEL_PORT_MAX);
-        int portRange = Math.abs(maxPort - minPort);
-        while (true) {
-            int portNum = minPort + SecurityUtils.getRandom().nextInt(portRange);
-            try {
-                ServerSocket socket = new ServerSocket(portNum);
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    // just skip
-                }
-                return portNum;
-            } catch (IOException e) {
-                // Port is busy
-            }
-        }
+        return IOUtils.findFreePort(minPort, maxPort);
     }
 
     @Override

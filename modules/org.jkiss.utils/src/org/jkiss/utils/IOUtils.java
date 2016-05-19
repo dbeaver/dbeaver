@@ -19,6 +19,7 @@
 package org.jkiss.utils;
 
 import java.io.*;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -214,4 +215,21 @@ public final class IOUtils {
 		return linebuf.toString();
 	}
 
+	public static int findFreePort(int minPort, int maxPort) {
+        int portRange = Math.abs(maxPort - minPort);
+        while (true) {
+            int portNum = minPort + SecurityUtils.getRandom().nextInt(portRange);
+            try {
+                ServerSocket socket = new ServerSocket(portNum);
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    // just skip
+                }
+                return portNum;
+            } catch (IOException e) {
+                // Port is busy
+            }
+        }
+    }
 }
