@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -166,11 +167,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             maxRows))
         {
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
-                try {
-                    ((JDBCStatement) dbStat).setFetchSize(
-                        firstRow < 0 || maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int) (firstRow + maxRows));
-                } catch (Exception e) {
-                    log.warn(e);
+                boolean useFetchSize = getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
+                if (useFetchSize) {
+                    try {
+                        ((JDBCStatement) dbStat).setFetchSize(
+                            firstRow < 0 || maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int) (firstRow + maxRows));
+                    } catch (Exception e) {
+                        log.warn(e);
+                    }
                 }
             }
 

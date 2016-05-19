@@ -41,6 +41,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Spinner resultSetSize;
     private Button resultSetUseSQLCheck;
     private Button serverSideOrderingCheck;
+    private Button useFetchSize;
     private Spinner queryCancelTimeout;
 
     private Button keepStatementOpenCheck;
@@ -61,6 +62,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) ||
             store.contains(DBeaverPreferences.RESULT_SET_MAX_ROWS) ||
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
+            store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
@@ -87,6 +90,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             autoFetchNextSegmentCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_auto_fetch_segment, true);
             resultSetUseSQLCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_use_sql, false);
             serverSideOrderingCheck = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_server_side_order, false);
+            useFetchSize = UIUtils.createLabelCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, false);
             queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
         }
 
@@ -114,6 +118,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             resultSetSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_MAX_ROWS));
             resultSetUseSQLCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL));
             serverSideOrderingCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE));
+            useFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
             queryCancelTimeout.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
@@ -132,6 +137,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_MAX_ROWS, resultSetSize.getSelection());
             store.setValue(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL, resultSetUseSQLCheck.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, serverSideOrderingCheck.getSelection());
+            store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, useFetchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getSelection());
 
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
@@ -150,6 +156,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_MAX_ROWS);
         store.setToDefault(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL);
         store.setToDefault(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE);
+        store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT);
 
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
