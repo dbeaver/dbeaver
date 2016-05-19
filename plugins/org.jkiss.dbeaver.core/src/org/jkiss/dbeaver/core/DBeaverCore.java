@@ -179,13 +179,15 @@ public class DBeaverCore implements DBPApplication {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
-        // Start instance server
-        InstanceServer.startInstanceServer();
-
         // Register properties adapter
         this.workspace = ResourcesPlugin.getWorkspace();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
+
+        if (standalone) {
+            // Start instance server
+            InstanceServer.startInstanceServer();
+        }
 
         QMUtils.initApplication(this);
         this.queryManager = new QMControllerImpl();
@@ -285,6 +287,8 @@ public class DBeaverCore implements DBPApplication {
             } catch (CoreException ex) {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }
+
+            InstanceServer.stopInstanceServer();
         }
 
         // Remove temp folder

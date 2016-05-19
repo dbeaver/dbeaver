@@ -20,11 +20,16 @@ package org.jkiss.dbeaver.runtime.rmi;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Properties;
 
 /**
  * DBeaver instance controller.
@@ -32,6 +37,9 @@ import java.rmi.server.UnicastRemoteObject;
 public class InstanceServer implements IInstanceController {
 
     private static final Log log = Log.getLog(InstanceServer.class);
+    private static final String RMI_PROP_FILE = ".dbeaver-server.properties";
+    private static int portNumber;
+    private static Registry registry;
 
     @Override
     public String getVersion() {
@@ -58,16 +66,41 @@ public class InstanceServer implements IInstanceController {
         InstanceServer server = new InstanceServer();
 
         try {
-            final int portNumber = IOUtils.findFreePort(20000, 65000);
+            portNumber = IOUtils.findFreePort(20000, 65000);
 
-            log.info("Starting RMI server at " + portNumber);
+            log.debug("Starting RMI server at " + portNumber);
             IInstanceController stub = (IInstanceController) UnicastRemoteObject.exportObject(server, 0);
 
-            Registry registry = LocateRegistry.createRegistry(portNumber);
+            registry = LocateRegistry.createRegistry(portNumber);
             registry.bind(CONTROLLER_ID, stub);
+
+            File rmiFile = new File(GeneralUtils.getMetadataFolder(), RMI_PROP_FILE);
+            Properties props = new Properties();
+            props.setProperty("port", String.valueOf(portNumber));
+            try (OutputStream os = new FileOutputStream(rmiFile)) {
+                props.store(os, "DBeaver instance server properties");
+            }
         } catch (Exception e) {
             log.error("Can't start RMI server", e);
         }
+    }
+
+    public static void stopInstanceServer() {
+        try {
+            log.debug("Stop RMI server");
+            registry.unbind(CONTROLLER_ID);
+
+            File rmiFile = new File(GeneralUtils.getMetadataFolder(), RMI_PROP_FILE);
+            if (rmiFile.exists()) {
+                if (!rmiFile.delete()) {
+                    log.debug("Can't delete props file");
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Can't stop RMI server", e);
+        }
+
     }
 
 }
