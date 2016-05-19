@@ -43,7 +43,7 @@ public abstract class AbstractJob extends Job
 
     // Attached job may be used to "overwrite" current job.
     // It happens if some other AbstractJob runs in sync mode
-    protected final static ThreadLocal<AbstractJob> CURRENT_JOB = new ThreadLocal<AbstractJob>();
+    protected final static ThreadLocal<AbstractJob> CURRENT_JOB = new ThreadLocal<>();
 
     protected AbstractJob(String name)
     {
