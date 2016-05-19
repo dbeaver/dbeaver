@@ -176,6 +176,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         this.id = id;
         this.custom = true;
         this.iconPlain = providerDescriptor.getIcon();
+        if (this.iconPlain == null) {
+            this.iconPlain = DBIcon.TREE_DATABASE;
+        }
         makeIconExtensions();
         this.origName = null;
         this.origDescription = null;
@@ -421,6 +424,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
      * Plain icon (without any overlays).
      * @return plain icon
      */
+    @NotNull
     public DBPImage getPlainIcon()
     {
         return iconPlain;

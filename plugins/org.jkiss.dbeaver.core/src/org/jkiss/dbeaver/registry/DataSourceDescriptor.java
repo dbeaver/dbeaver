@@ -913,6 +913,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
+    @NotNull
     public DBPImage getObjectImage()
     {
         return driver.getPlainIcon();

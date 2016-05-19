@@ -39,16 +39,17 @@ import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.utils.CommonUtils;
@@ -74,6 +75,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
     private DBCStatistics statistics;
     private long pumpStartTime;
     private String progressMessage;
+    private final int forceCancelTimeout;
 
     protected ResultSetDataPumpJob(DBSDataContainer dataContainer, DBDDataFilter dataFilter, IResultSetController controller, DBCExecutionContext executionContext, Composite progressControl) {
         super(CoreMessages.controls_rs_pump_job_name + " [" + dataContainer + "]", DBeaverIcons.getImageDescriptor(UIIcon.SQL_EXECUTE), executionContext);
@@ -82,6 +84,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
         this.dataFilter = dataFilter;
         this.controller = controller;
         this.progressControl = progressControl;
+        this.forceCancelTimeout = dataContainer.getDataSource().getContainer().getPreferenceStore().getInt(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT);
         setUser(false);
     }
 
@@ -224,6 +227,7 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
                         progressOverlay.minimumHeight = buttonSize.y;
                         progressOverlay.layout();
                         ResultSetDataPumpJob.this.cancel();
+                        new ForceCancelJob().schedule(forceCancelTimeout);
                     }
                 });
 
@@ -276,13 +280,29 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
             if (progressOverlay != null) {
                 if (!progressControl.isDisposed()) {
                     progressControl.removePaintListener(painListener);
+                    progressOverlay.dispose();
                 }
-                progressOverlay.dispose();
                 progressOverlay = null;
                 if (!cancelButton.isDisposed()) {
                     cancelButton.dispose();
                 }
                 progressControl.redraw();
+            }
+        }
+
+        private class ForceCancelJob extends AbstractUIJob {
+            protected ForceCancelJob() {
+                super("Force RSV cancel");
+            }
+
+            @Override
+            protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+                if (!finished) {
+                    error = new DBException("Query cancellation timeout. Query processing was terminated in UI.");
+                    finished = true;
+                    finishProgress();
+                }
+                return Status.OK_STATUS;
             }
         }
 

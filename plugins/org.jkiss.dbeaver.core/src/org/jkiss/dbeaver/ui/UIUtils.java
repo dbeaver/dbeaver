@@ -498,7 +498,7 @@ public class UIUtils {
         return textLabel;
     }
 
-    public static Label createLabel(Composite parent, DBPImage image)
+    public static Label createLabel(Composite parent, @NotNull DBPImage image)
     {
         Label imageLabel = new Label(parent, SWT.NONE);
         imageLabel.setImage(DBeaverIcons.getImage(image));

@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ui.controls.lightgrid;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -116,9 +117,12 @@ class GridCellRenderer extends AbstractRenderer
             image = LINK_IMAGE;
             imageBounds = LINK_IMAGE_BOUNDS;
         } else {
-            image = DBeaverIcons.getImage(grid.getCellImage(col, row));
-            if (image != null) {
+            DBPImage cellImage = grid.getCellImage(col, row);
+            if (cellImage != null) {
+                image = DBeaverIcons.getImage(cellImage);
                 imageBounds = image.getBounds();
+            } else {
+                image = null;
             }
         }
         if (image != null) {

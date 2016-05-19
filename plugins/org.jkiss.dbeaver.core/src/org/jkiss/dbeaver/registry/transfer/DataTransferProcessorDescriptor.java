@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.registry.transfer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.DBPRegistryDescriptor;
@@ -42,6 +44,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     private final List<ObjectType> sourceTypes = new ArrayList<>();
     private final String name;
     private final String description;
+    @NotNull
     private final DBPImage icon;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
@@ -53,7 +56,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.processorType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON), DBIcon.TYPE_UNKNOWN);
 
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
@@ -79,6 +82,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return description;
     }
 
+    @NotNull
     public DBPImage getIcon()
     {
         return icon;

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -55,16 +56,18 @@ public class DBeaverIcons
     private static Map<String, IconDescriptor> imageMap = new HashMap<>();
     private static Map<String, IconDescriptor> compositeMap = new HashMap<>();
 
-    public static Image getImage(DBPImage image)
+    @NotNull
+    public static Image getImage(@NotNull DBPImage image)
     {
         if (image == null) {
             return null;
-        } else if (image instanceof DBIconBinary) {
+        }
+        if (image instanceof DBIconBinary) {
             return ((DBIconBinary) image).getImage();
         } else {
             IconDescriptor icon = getIconByLocation(image.getLocation());
             if (icon == null) {
-                return null;
+                throw new IllegalArgumentException("Image '" + image.getLocation() + "' not found");
             } else if (image instanceof DBIconComposite) {
                 return getCompositeIcon(icon, (DBIconComposite) image).image;
             } else {
@@ -73,16 +76,18 @@ public class DBeaverIcons
         }
     }
 
-    public static ImageDescriptor getImageDescriptor(DBPImage image)
+    @NotNull
+    public static ImageDescriptor getImageDescriptor(@NotNull DBPImage image)
     {
         if (image == null) {
             return null;
-        } else if (image instanceof DBIconBinary) {
+        }
+        if (image instanceof DBIconBinary) {
             return ((DBIconBinary) image).getImageDescriptor();
         } else {
             IconDescriptor icon = getIconByLocation(image.getLocation());
             if (icon == null) {
-                return null;
+                throw new IllegalArgumentException("Image '" + image.getLocation() + "' not found");
             } else if (image instanceof DBIconComposite) {
                 return getCompositeIcon(icon, (DBIconComposite) image).imageDescriptor;
             } else {

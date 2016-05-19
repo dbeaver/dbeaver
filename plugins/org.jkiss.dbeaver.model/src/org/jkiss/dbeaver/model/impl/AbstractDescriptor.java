@@ -24,6 +24,7 @@ import org.apache.commons.jexl2.JexlException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -216,6 +217,18 @@ public abstract class AbstractDescriptor {
         return originBundle;
     }
 
+    @NotNull
+    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon)
+    {
+        DBPImage result = iconToImage(icon);
+        if (result == null) {
+            return defIcon;
+        } else {
+            return result;
+        }
+    }
+
+    @Nullable
     protected DBPImage iconToImage(String icon)
     {
         if (CommonUtils.isEmpty(icon)) {

@@ -294,7 +294,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             {
                 DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
                 cell.setText(DBUtils.getObjectFullName(mapping.getSource()));
-                cell.setImage(DBeaverIcons.getImage(mapping.getIcon()));
+                if (mapping.getIcon() != null) {
+                    cell.setImage(DBeaverIcons.getImage(mapping.getIcon()));
+                }
                 super.update(cell);
             }
         });

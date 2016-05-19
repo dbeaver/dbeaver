@@ -20,8 +20,10 @@ package org.jkiss.dbeaver.registry.transfer;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -46,9 +48,12 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         CONSUMER
     }
 
+    @NotNull
     private final String id;
+    @NotNull
     private final String name;
     private final String description;
+    @NotNull
     private final DBPImage icon;
     private final NodeType nodeType;
     private final ObjectType implType;
@@ -64,7 +69,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
-        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
+        this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON), DBIcon.TYPE_UNKNOWN);
         this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
@@ -94,6 +99,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return description;
     }
 
+    @NotNull
     public DBPImage getIcon()
     {
         return icon;
