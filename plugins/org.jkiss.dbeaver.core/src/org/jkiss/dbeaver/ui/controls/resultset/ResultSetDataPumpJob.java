@@ -227,7 +227,9 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
                         progressOverlay.minimumHeight = buttonSize.y;
                         progressOverlay.layout();
                         ResultSetDataPumpJob.this.cancel();
-                        new ForceCancelJob().schedule(forceCancelTimeout);
+                        if (forceCancelTimeout > 0) {
+                            new ForceCancelJob().schedule(forceCancelTimeout);
+                        }
                     }
                 });
 
