@@ -82,7 +82,6 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
 
     public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
-        //IWorkbenchPart activePart = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (activePart instanceof IResultSetContainer) {
             return ((IResultSetContainer) activePart).getResultSetViewer();
         } else if (activePart instanceof MultiPageAbstractEditor) {
