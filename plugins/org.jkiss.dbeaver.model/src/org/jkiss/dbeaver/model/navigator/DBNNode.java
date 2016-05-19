@@ -98,6 +98,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
 
     public abstract DBPImage getNodeIcon();
 
+    @NotNull
     public DBPImage getNodeIconDefault()
     {
         DBPImage image = getNodeIcon();

@@ -135,7 +135,9 @@ public class ColumnsMappingDialog extends StatusDialog {
                 {
                     DatabaseMappingAttribute attrMapping = (DatabaseMappingAttribute) cell.getElement();
                     cell.setText(DBUtils.getObjectFullName(attrMapping.getSource()));
-                    cell.setImage(DBeaverIcons.getImage(attrMapping.getIcon()));
+                    if (attrMapping.getIcon() != null) {
+                        cell.setImage(DBeaverIcons.getImage(attrMapping.getIcon()));
+                    }
                 }
             });
             columnSource.getColumn().setText("Source Column");

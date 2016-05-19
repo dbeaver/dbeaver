@@ -877,7 +877,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         public Image getImage(Object element)
         {
             if (columnIndex == 0) {
-                return DBeaverIcons.getImage(getObjectImage((OBJECT_TYPE) element));
+                DBPImage objectImage = getObjectImage((OBJECT_TYPE) element);
+                return objectImage == null ? null : DBeaverIcons.getImage(objectImage);
             }
             return null;
         }

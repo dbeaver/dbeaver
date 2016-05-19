@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -422,7 +423,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             DBDAttributeBinding binding = (DBDAttributeBinding) element;
             if (columnIndex == 0) {
                 if (binding.getMetaAttribute() instanceof DBPImageProvider) {
-                    return DBeaverIcons.getImage(((DBPImageProvider) binding.getMetaAttribute()).getObjectImage());
+                    DBPImage objectImage = ((DBPImageProvider) binding.getMetaAttribute()).getObjectImage();
+                    return objectImage == null ? null : DBeaverIcons.getImage(objectImage);
                 } else {
                     return null;
                 }

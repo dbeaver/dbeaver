@@ -639,9 +639,7 @@ public class TabbedFolderList extends Composite {
 		 */
         if (folderInfo.getImage() != null) {
             Image image = DBeaverIcons.getImage(folderInfo.getImage());
-            if (image != null) {
-                width = width + image.getBounds().width + 4;
-            }
+            width = width + image.getBounds().width + 4;
         }
         if (folderInfo.isIndented()) {
             width = width + INDENT_LEFT;
