@@ -145,7 +145,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         StringBuilder query = new StringBuilder(100);
         query.append("SELECT ");
-        appendSelectSource(session.getProgressMonitor(), query, tableAlias, rowIdAttribute);
+        appendSelectSource(monitor, query, tableAlias, rowIdAttribute);
         query.append(" FROM ").append(getFullQualifiedName());
         if (tableAlias != null) {
             query.append(" ").append(tableAlias); //$NON-NLS-1$
@@ -166,6 +166,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             firstRow,
             maxRows))
         {
+            if (monitor.isCanceled()) {
+                return statistics;
+            }
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
                 boolean useFetchSize = getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
                 if (useFetchSize) {
@@ -183,7 +186,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             statistics.setExecuteTime(System.currentTimeMillis() - startTime);
             if (executeResult) {
                 DBCResultSet dbResult = dbStat.openResultSet();
-                if (dbResult != null) {
+                if (dbResult != null && !monitor.isCanceled()) {
                     try {
                         if (rowIdAttribute != null) {
                             String attrId = rowIdAttribute.getAlias();

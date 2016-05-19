@@ -299,11 +299,14 @@ class ResultSetDataPumpJob extends DataSourceJob implements DBCExecutionSource {
 
             @Override
             protected IStatus runInUIThread(DBRProgressMonitor monitor) {
+                // TODO: to something
+/*
                 if (!finished) {
                     error = new DBException("Query cancellation timeout. Query processing was terminated in UI.");
                     finished = true;
                     finishProgress();
                 }
+*/
                 return Status.OK_STATUS;
             }
         }
