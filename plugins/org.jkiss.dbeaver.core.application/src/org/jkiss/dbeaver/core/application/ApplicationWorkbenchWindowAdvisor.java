@@ -17,20 +17,22 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchWindowAdvisor;
-import org.eclipse.ui.internal.ide.EditorAreaDropAdapter;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
@@ -47,25 +49,26 @@ import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
     private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
 
-    public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
-    {
+    public ApplicationWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         super(configurer);
 
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
     }
 
     @Override
-    public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer)
-    {
+    public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer) {
         return new ApplicationActionBarAdvisor(configurer);
     }
 
     @Override
-    public void preWindowOpen()
-    {
+    public void preWindowOpen() {
         // Set timeout for short jobs (like SQL queries)
         // Jobs longer than this will show progress dialog
         ProgressManagerUtil.SHORT_OPERATION_TIME = 100;
@@ -94,8 +97,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     }
 
     @Override
-    public void postWindowCreate()
-    {
+    public void postWindowCreate() {
         final IWorkbenchWindow window = getWindowConfigurer().getWindow();
         UIUtils.updateMainWindowTitle(window);
 /*
@@ -105,6 +107,29 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
             log.warn(e);
         }
 */
+        List<String> filesToOpen = new ArrayList<>();
+        String[] cliParameters = Platform.getCommandLineArgs();
+        boolean prevParam = false, prevFile = false;
+        for (String param : cliParameters) {
+            if (!param.startsWith("-") && (!prevParam || prevFile)) {
+                filesToOpen.add(param);
+            }
+            prevParam = param.startsWith("-");
+            prevFile = param.equals("-file");
+        }
+        for (String filePath : filesToOpen) {
+            File file = new File(filePath);
+            if (file.exists()) {
+                try {
+                    IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+                    IFileStore fileStore = EFS.getStore(file.toURI());
+                    IEditorInput input = new FileStoreEditorInput(fileStore);
+                    IDE.openEditor(window.getActivePage(), input, desc.getId());
+                } catch (CoreException e) {
+                    log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
+                }
+            }
+        }
     }
 
     @Override
@@ -126,8 +151,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     }
 
     @Override
-    public boolean preWindowShellClose()
-    {
+    public boolean preWindowShellClose() {
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
 
         try {
@@ -160,13 +184,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     }
 
     @Override
-    public void handleActiveProjectChange(IProject oldValue, IProject newValue)
-    {
+    public void handleActiveProjectChange(IProject oldValue, IProject newValue) {
         UIUtils.updateMainWindowTitle(getWindowConfigurer().getWindow());
     }
 
-    public class EditorAreaDropAdapter extends DropTargetAdapter
-    {
+    public class EditorAreaDropAdapter extends DropTargetAdapter {
     }
 
 }
