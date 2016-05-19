@@ -45,7 +45,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     private long offset;
     private long maxRows;
 
-    private Map<DBCAttributeMetaData, List<Exception>> errors = new HashMap<>();
+    private Map<DBCAttributeMetaData, List<String>> errors = new HashMap<>();
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -106,14 +106,18 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
-                List<Exception> errorList = errors.get(metaColumns[i].getMetaAttribute());
+                List<String> errorList = errors.get(metaColumns[i].getMetaAttribute());
                 if (errorList == null) {
                     errorList = new ArrayList<>();
                     errors.put(metaColumns[i].getMetaAttribute(), errorList);
                 }
-                if (!errorList.contains(e)) {
+                String errMessage = e.getClass().getName();
+                if (!errMessage.startsWith("java.lang.")) {
+                    errMessage += ":" + e.getMessage();
+                }
+                if (!errorList.contains(errMessage)) {
                     log.warn("Can't read column '" + metaColumns[i].getName() + "' value", e);
-                    errorList.add(e);
+                    errorList.add(errMessage);
                 }
             }
         }
