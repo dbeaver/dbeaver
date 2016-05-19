@@ -168,7 +168,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             if (dbStat instanceof JDBCStatement && maxRows > 0) {
                 try {
                     ((JDBCStatement) dbStat).setFetchSize(
-                        maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int) maxRows);
+                        firstRow < 0 || maxRows <= 0 ? DEFAULT_READ_FETCH_SIZE : (int) (firstRow + maxRows));
                 } catch (Exception e) {
                     log.warn(e);
                 }
