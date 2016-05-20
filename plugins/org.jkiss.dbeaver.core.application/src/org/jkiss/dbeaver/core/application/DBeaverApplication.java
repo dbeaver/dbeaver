@@ -17,7 +17,10 @@
  */
 package org.jkiss.dbeaver.core.application;
 
-import org.apache.commons.cli.*;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Option;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -30,9 +33,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.utils.ArrayUtils;
 
 import java.io.File;
@@ -154,14 +157,17 @@ public class DBeaverApplication implements IApplication
                 return false;
             }
 
-            return callRemoteServer(commandLine, controller);
-        } catch (Throwable e) {
+            return executeCommandLineCommands(commandLine, controller);
+        } catch (RemoteException e) {
             log.error("Error calling remote server", e);
+            return true;
+        } catch (Throwable e) {
+            log.error("Internal error while calling remote server", e);
             return false;
         }
     }
 
-    private boolean callRemoteServer(CommandLine commandLine, IInstanceController controller) throws RemoteException {
+    public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
         String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
         String[] fileArgs = commandLine.getArgs();
         if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {

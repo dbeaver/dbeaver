@@ -18,8 +18,17 @@
 
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.IEditorDescriptor;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.IInstanceController;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -47,8 +56,26 @@ public class DBeaverInstanceServer implements IInstanceController {
     }
 
     @Override
-    public void openExternalFiles(String[] fileNames) {
-
+    public void openExternalFiles(final String[] fileNames) {
+        final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+        UIUtils.runInUI(window.getShell(), new Runnable() {
+            @Override
+            public void run() {
+                for (String filePath : fileNames) {
+                    File file = new File(filePath);
+                    if (file.exists()) {
+                        try {
+                            IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+                            IFileStore fileStore = EFS.getStore(file.toURI());
+                            IEditorInput input = new FileStoreEditorInput(fileStore);
+                            IDE.openEditor(window.getActivePage(), input, desc.getId());
+                        } catch (CoreException e) {
+                            log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -62,7 +89,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         System.exit(-1);
     }
 
-    public static void startInstanceServer() {
+    public static IInstanceController startInstanceServer() {
         DBeaverInstanceServer server = new DBeaverInstanceServer();
 
         try {
@@ -80,8 +107,10 @@ public class DBeaverInstanceServer implements IInstanceController {
             try (OutputStream os = new FileOutputStream(rmiFile)) {
                 props.store(os, "DBeaver instance server properties");
             }
+            return server;
         } catch (Exception e) {
             log.error("Can't start RMI server", e);
+            return null;
         }
     }
 
