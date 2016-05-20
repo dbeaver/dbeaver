@@ -32,10 +32,14 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.runtime.rmi.IInstanceController;
+import org.jkiss.dbeaver.runtime.rmi.InstanceClient;
+import org.jkiss.dbeaver.runtime.rmi.InstanceServer;
 import org.jkiss.utils.ArrayUtils;
 
 import java.io.File;
 import java.net.URL;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -57,15 +61,12 @@ public class DBeaverApplication implements IApplication
         Location instanceLoc = Platform.getInstanceLocation();
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
-            URL defaultHomeURL = new URL(
-                "file",  //$NON-NLS-1$
-                null,
-                defaultHomePath);
+            URL defaultHomeURL = new File(defaultHomePath).toURI().toURL();
             boolean keepTrying = true;
             Shell shell = null;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
-                    if (handleCommandLine(instanceLoc)) {
+                    if (handleCommandLine(defaultHomePath)) {
                         return IApplication.EXIT_OK;
                     }
                     // Can't lock specified path
@@ -131,28 +132,10 @@ public class DBeaverApplication implements IApplication
         }
     }
 
-    private boolean handleCommandLine(Location instanceLoc) {
+    private boolean handleCommandLine(String instanceLoc) {
         CommandLine commandLine = getCommandLine();
         if (commandLine == null) {
             return false;
-        }
-        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
-        String[] fileArgs = commandLine.getArgs();
-        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
-            List<String> fileNames = new ArrayList<>();
-            if (!ArrayUtils.isEmpty(files)) {
-                Collections.addAll(fileNames, files);
-            }
-            if (!ArrayUtils.isEmpty(fileArgs)) {
-                Collections.addAll(fileNames, fileArgs);
-            }
-            return true;
-        }
-        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
-            return true;
-        }
-        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
-            return true;
         }
         if (commandLine.hasOption(DBeaverCommandLine.PARAM_HELP)) {
             HelpFormatter helpFormatter = new HelpFormatter();
@@ -163,7 +146,44 @@ public class DBeaverApplication implements IApplication
                     return 0;
                 }
             });
-            helpFormatter.printHelp("dbeaver", "Universal Database Manager", DBeaverCommandLine.ALL_OPTIONS, "(C) 2016 Serge Rider", true);
+            helpFormatter.printHelp("dbeaver", DBeaverCore.getProductTitle(), DBeaverCommandLine.ALL_OPTIONS, "(C) 2016 JKISS", true);
+            return true;
+        }
+
+        try {
+            IInstanceController controller = InstanceClient.createClient(instanceLoc);
+            if (controller == null) {
+                return false;
+            }
+
+            return callRemoteServer(commandLine, controller);
+        } catch (Throwable e) {
+            log.error("Error calling remote server", e);
+            return false;
+        }
+    }
+
+    private boolean callRemoteServer(CommandLine commandLine, IInstanceController controller) throws RemoteException {
+        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
+        String[] fileArgs = commandLine.getArgs();
+        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
+            List<String> fileNames = new ArrayList<>();
+            if (!ArrayUtils.isEmpty(files)) {
+                Collections.addAll(fileNames, files);
+            }
+            if (!ArrayUtils.isEmpty(fileArgs)) {
+                Collections.addAll(fileNames, fileArgs);
+            }
+            controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
+            controller.quit();
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
+            String threadDump = controller.getThreadDump();
+            System.out.println(threadDump);
             return true;
         }
         return false;

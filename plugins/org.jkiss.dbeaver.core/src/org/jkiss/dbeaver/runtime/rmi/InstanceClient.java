@@ -18,12 +18,32 @@
 
 package org.jkiss.dbeaver.runtime.rmi;
 
+import org.jkiss.dbeaver.Log;
+
+import java.io.*;
+import java.net.URL;
+import java.rmi.registry.LocateRegistry;
+import java.util.Properties;
+
 /**
- * DBeaver instance controller.
+ * InstanceClient
  */
 public class InstanceClient {
 
-    public static IInstanceController createClient() {
+    private static final Log log = Log.getLog(InstanceClient.class);
+
+    public static IInstanceController createClient(String location) {
+        try {
+            File rmiFile = new File(location, ".metadata/" + IInstanceController.RMI_PROP_FILE);
+            Properties props = new Properties();
+            try (InputStream is = new FileInputStream(rmiFile)) {
+                props.load(is);
+            }
+            String rmiPort = props.getProperty("port");
+            return (IInstanceController) LocateRegistry.getRegistry(Integer.parseInt(rmiPort)).lookup(IInstanceController.CONTROLLER_ID);
+        } catch (Exception e) {
+            log.error("Error reading RMI config", e);
+        }
         return null;
     }
 
