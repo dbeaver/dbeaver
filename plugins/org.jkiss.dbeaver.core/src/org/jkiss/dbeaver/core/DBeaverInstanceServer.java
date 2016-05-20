@@ -76,12 +76,12 @@ public class DBeaverInstanceServer implements IInstanceController {
                         }
                     }
                 }
-                if (!shell.getMinimized())
-                {
-                    shell.setMinimized(true);
-                }
+//                if (!shell.getMinimized())
+//                {
+//                    shell.setMinimized(true);
+//                }
                 shell.setMinimized(false);
-                shell.setActive();
+                shell.forceActive();
             }
         });
     }
