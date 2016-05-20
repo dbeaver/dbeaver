@@ -27,6 +27,8 @@ import org.eclipse.jface.dialogs.IInputValidator;
 import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
@@ -100,6 +102,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
         if (rsv == null) {
             return null;
         }
+        boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event)event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
         switch (actionId) {
@@ -145,10 +148,10 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 }
                 break;
             case CMD_ROW_ADD:
-                rsv.addNewRow(false);
+                rsv.addNewRow(false, shiftPressed);
                 break;
             case CMD_ROW_COPY:
-                rsv.addNewRow(true);
+                rsv.addNewRow(true, shiftPressed);
                 break;
             case CMD_ROW_DELETE:
             case IWorkbenchCommandConstants.EDIT_DELETE:
