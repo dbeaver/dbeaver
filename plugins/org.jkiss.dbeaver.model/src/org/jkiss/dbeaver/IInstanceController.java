@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.rmi;
+package org.jkiss.dbeaver;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;

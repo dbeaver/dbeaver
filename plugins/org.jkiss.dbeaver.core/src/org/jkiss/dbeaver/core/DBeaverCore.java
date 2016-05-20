@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
-import org.jkiss.dbeaver.runtime.rmi.InstanceServer;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Version;
@@ -186,7 +185,7 @@ public class DBeaverCore implements DBPApplication {
 
         if (standalone) {
             // Start instance server
-            InstanceServer.startInstanceServer();
+            DBeaverInstanceServer.startInstanceServer();
         }
 
         QMUtils.initApplication(this);
@@ -288,7 +287,7 @@ public class DBeaverCore implements DBPApplication {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }
 
-            InstanceServer.stopInstanceServer();
+            DBeaverInstanceServer.stopInstanceServer();
         }
 
         // Remove temp folder

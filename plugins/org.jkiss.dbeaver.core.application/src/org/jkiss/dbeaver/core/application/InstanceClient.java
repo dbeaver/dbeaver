@@ -16,12 +16,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.rmi;
+package org.jkiss.dbeaver.core.application;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.IInstanceController;
 
 import java.io.*;
-import java.net.URL;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 
