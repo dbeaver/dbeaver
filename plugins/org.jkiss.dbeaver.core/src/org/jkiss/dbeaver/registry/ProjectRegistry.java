@@ -415,6 +415,11 @@ public class ProjectRegistry implements DBPProjectManager, DBPExternalFileManage
         saveExternalFileProperties();
     }
 
+    @Override
+    public Map<String, Map<String, Object>> getAllFiles() {
+        return externalFileProperties;
+    }
+
     private void loadExternalFileProperties() {
         externalFileProperties.clear();
         File propsFile = new File(

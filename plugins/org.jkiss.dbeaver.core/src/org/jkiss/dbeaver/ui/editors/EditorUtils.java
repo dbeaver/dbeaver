@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.core.filesystem.EFS;
+import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IStorage;
@@ -24,14 +26,14 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.QualifiedName;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IFileEditorInput;
-import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.IURIEditorInput;
+import org.eclipse.ui.*;
+import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -226,4 +228,16 @@ public class EditorUtils {
             log.error("Internal error while writing file property", e);
         }
     }
+
+    public static void openExternalFileEditor(File file, IWorkbenchWindow window) {
+        try {
+            IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
+            IFileStore fileStore = EFS.getStore(file.toURI());
+            IEditorInput input = new FileStoreEditorInput(fileStore);
+            IDE.openEditor(window.getActivePage(), input, desc.getId());
+        } catch (CoreException e) {
+            log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
+        }
+    }
+
 }

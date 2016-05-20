@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 
 public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
@@ -80,18 +81,25 @@ public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
 
     public static void openRecentScript(@NotNull IWorkbenchWindow workbenchWindow, @Nullable DBPDataSourceContainer dataSourceContainer, @Nullable IFolder scriptFolder) {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
-        IFile scriptFile;
         try {
             ResourceUtils.ResourceInfo res = ResourceUtils.findRecentScript(project, dataSourceContainer);
             if (res != null) {
-                scriptFile = (IFile) res.getResource();
+                openResourceEditor(workbenchWindow, res);
             } else {
-                scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
+                IFile scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
+                NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
             }
-            NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
         }
         catch (CoreException e) {
             log.error(e);
+        }
+    }
+
+    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, ResourceUtils.ResourceInfo resourceInfo) {
+        if (resourceInfo.getResource() != null) {
+            NavigatorHandlerObjectOpen.openResource(resourceInfo.getResource(), workbenchWindow);
+        } else if (resourceInfo.getLocalFile() != null) {
+            EditorUtils.openExternalFileEditor(resourceInfo.getLocalFile(), workbenchWindow);
         }
     }
 

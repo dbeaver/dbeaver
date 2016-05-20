@@ -37,6 +37,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * ResourceUtils
@@ -65,6 +66,12 @@ public class ResourceUtils {
             this.localFile = folder.getLocation().toFile();
             this.dataSource = null;
             this.children = new ArrayList<>();
+        }
+        public ResourceInfo(File localFile, DBPDataSourceContainer dataSource) {
+            this.resource = null;
+            this.localFile = localFile;
+            this.dataSource = dataSource;
+            this.children = null;
         }
 
         public IResource getResource() {
@@ -141,6 +148,7 @@ public class ResourceUtils {
     private static void findScriptList(IFolder folder, @Nullable DBPDataSourceContainer container, List<ResourceInfo> result)
     {
         try {
+            // Search in project scripts
             for (IResource resource : folder.members()) {
                 if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
                     final DBPDataSourceContainer scriptDataSource = EditorUtils.getFileDataSource((IFile) resource);
@@ -150,7 +158,17 @@ public class ResourceUtils {
                 } else if (resource instanceof IFolder) {
                     findScriptList((IFolder) resource, container, result);
                 }
-
+            }
+            if (container != null) {
+                // Search in external files
+                for (Map.Entry<String, Map<String, Object>> fileEntry : DBeaverCore.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
+                    if (container.getId().equals(fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE))) {
+                        File extFile = new File(fileEntry.getKey());
+                        if (extFile.exists()) {
+                            result.add(new ResourceInfo(extFile, container));
+                        }
+                    }
+                }
             }
         } catch (CoreException e) {
             log.debug(e);
@@ -232,4 +250,5 @@ public class ResourceUtils {
 
         return tempFile;
     }
+
 }
