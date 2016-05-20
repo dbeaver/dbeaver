@@ -1871,7 +1871,7 @@ public class ResultSetViewer extends Viewer
         return new ResultSetPersister(this);
     }
 
-    void addNewRow(final boolean copyCurrent)
+    void addNewRow(final boolean copyCurrent, boolean afterCurrent)
     {
         int rowNum = curRow == null ? 0 : curRow.getVisualNumber();
         if (rowNum >= model.getRowCount()) {
@@ -1946,7 +1946,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
-        curRow = model.addNewRow(rowNum, cells);
+        curRow = model.addNewRow(afterCurrent ? rowNum + 1 : rowNum, cells);
         redrawData(true);
         updateEditControls();
         fireResultSetChange();
