@@ -24,7 +24,10 @@ import org.apache.commons.cli.Option;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
+import org.eclipse.osgi.internal.framework.EquinoxBundle;
+import org.eclipse.osgi.internal.framework.EquinoxConfiguration;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.service.environment.EnvironmentInfo;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
@@ -37,6 +40,8 @@ import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.utils.ArrayUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.ServiceReference;
 
 import java.io.File;
 import java.net.URL;
@@ -222,10 +227,18 @@ public class DBeaverApplication implements IApplication
         });
     }
 
-    @Nullable
     public static CommandLine getCommandLine() {
         try {
-            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
+            String[] args = Platform.getApplicationArgs();
+            Bundle bundle = Activator.getInstance().getBundle();
+            ServiceReference<EnvironmentInfo> configRef = bundle.getBundleContext().getServiceReference(EnvironmentInfo.class);
+            if (configRef != null) {
+                EnvironmentInfo environmentInfo = bundle.getBundleContext().getService(configRef);
+                if (environmentInfo != null) {
+                    args = environmentInfo.getNonFrameworkArgs();
+                }
+            }
+            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, args, false);
         } catch (Exception e) {
             log.error("Error parsing command line", e);
             return null;
