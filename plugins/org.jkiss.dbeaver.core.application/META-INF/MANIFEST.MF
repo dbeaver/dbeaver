@@ -24,4 +24,5 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
  org.eclipse.e4.ui.workbench.renderers.swt,
- org.w3c.css.sac
+ org.w3c.css.sac,
+ org.apache.commons.cli

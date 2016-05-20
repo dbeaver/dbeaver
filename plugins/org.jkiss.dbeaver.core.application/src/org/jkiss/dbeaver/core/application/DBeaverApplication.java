@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.apache.commons.cli.*;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -28,11 +29,17 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.utils.ArrayUtils;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * This class controls all aspects of the application's execution
@@ -42,9 +49,6 @@ public class DBeaverApplication implements IApplication
     private static final Log log = Log.getLog(DBeaverApplication.class);
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
 
-    /* (non-Javadoc)
-    * @see org.eclipse.equinox.app.IApplication#start(org.eclipse.equinox.app.IApplicationContext)
-    */
     @Override
     public Object start(IApplicationContext context)
     {
@@ -53,7 +57,6 @@ public class DBeaverApplication implements IApplication
         Location instanceLoc = Platform.getInstanceLocation();
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
-
             URL defaultHomeURL = new URL(
                 "file",  //$NON-NLS-1$
                 null,
@@ -62,6 +65,9 @@ public class DBeaverApplication implements IApplication
             Shell shell = null;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
+                    if (handleCommandLine(instanceLoc)) {
+                        return IApplication.EXIT_OK;
+                    }
                     // Can't lock specified path
                     if (shell == null) {
                         shell = new Shell(display, SWT.ON_TOP);
@@ -125,6 +131,44 @@ public class DBeaverApplication implements IApplication
         }
     }
 
+    private boolean handleCommandLine(Location instanceLoc) {
+        CommandLine commandLine = getCommandLine();
+        if (commandLine == null) {
+            return false;
+        }
+        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
+        String[] fileArgs = commandLine.getArgs();
+        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
+            List<String> fileNames = new ArrayList<>();
+            if (!ArrayUtils.isEmpty(files)) {
+                Collections.addAll(fileNames, files);
+            }
+            if (!ArrayUtils.isEmpty(fileArgs)) {
+                Collections.addAll(fileNames, fileArgs);
+            }
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_HELP)) {
+            HelpFormatter helpFormatter = new HelpFormatter();
+            helpFormatter.setWidth(120);
+            helpFormatter.setOptionComparator(new Comparator<Option>() {
+                @Override
+                public int compare(Option o1, Option o2) {
+                    return 0;
+                }
+            });
+            helpFormatter.printHelp("dbeaver", "Universal Database Manager", DBeaverCommandLine.ALL_OPTIONS, "(C) 2016 Serge Rider", true);
+            return true;
+        }
+        return false;
+    }
+
     private static File getDefaultWorkspaceLocation() {
         return new File(
             System.getProperty("user.home"),
@@ -153,5 +197,14 @@ public class DBeaverApplication implements IApplication
         });
     }
 
+    @Nullable
+    public static CommandLine getCommandLine() {
+        try {
+            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
+        } catch (Exception e) {
+            log.error("Error parsing command line", e);
+            return null;
+        }
+    }
 
 }
