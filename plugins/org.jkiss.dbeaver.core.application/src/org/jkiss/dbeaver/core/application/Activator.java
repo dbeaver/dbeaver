@@ -8,20 +8,20 @@ public class Activator extends AbstractUIPlugin {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core.application";
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#start(org.osgi.framework.BundleContext)
-	 */
+	private static Activator instance;
+
+	public static Activator getInstance() {
+		return instance;
+	}
+
 	public void start(BundleContext bundleContext) throws Exception {
+		instance = this;
 		super.start(bundleContext);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * @see org.osgi.framework.BundleActivator#stop(org.osgi.framework.BundleContext)
-	 */
 	public void stop(BundleContext bundleContext) throws Exception {
 		super.stop(bundleContext);
+		instance = null;
 	}
 
     public static ImageDescriptor getImageDescriptor(String path) {
