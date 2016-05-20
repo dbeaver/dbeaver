@@ -120,7 +120,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                     try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + getProcedureType().name() + " " + getFullQualifiedName())) {
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.next()) {
-                                clientBody = JDBCUtils.safeGetString(dbResult, "Create Procedure");
+                                clientBody = JDBCUtils.safeGetString(dbResult, (getProcedureType() == DBSProcedureType.PROCEDURE ? "Create Procedure" : "Create Function"));
                             } else {
                                 clientBody = "";
                             }
