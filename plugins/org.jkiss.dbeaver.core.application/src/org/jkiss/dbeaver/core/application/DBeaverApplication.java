@@ -57,29 +57,33 @@ public class DBeaverApplication implements IApplication
     @Override
     public Object start(IApplicationContext context)
     {
-        Display display = PlatformUI.createDisplay();
+        Display display = null;
 
         Location instanceLoc = Platform.getInstanceLocation();
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
             URL defaultHomeURL = new File(defaultHomePath).toURI().toURL();
             boolean keepTrying = true;
-            Shell shell = null;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
                     if (handleCommandLine(defaultHomePath)) {
                         return IApplication.EXIT_OK;
                     }
                     // Can't lock specified path
-                    if (shell == null) {
-                        shell = new Shell(display, SWT.ON_TOP);
+                    if (display == null) {
+                        display = PlatformUI.createDisplay();
                     }
+
+                    Shell shell = new Shell(display, SWT.ON_TOP);
                     MessageBox messageBox = new MessageBox(shell, SWT.ICON_WARNING | SWT.IGNORE | SWT.RETRY | SWT.ABORT);
                     messageBox.setText("DBeaver - Can't lock workspace");
                     messageBox.setMessage("Can't lock workspace at " + defaultHomePath + ".\n" +
                         "It seems that you have another DBeaver instance running.\n" +
                         "You may ignore it and work without lock but it is recommended to shutdown previous instance otherwise you may corrupt workspace data.");
-                    switch (messageBox.open()) {
+                    int msgResult = messageBox.open();
+                    shell.dispose();
+
+                    switch (msgResult) {
                         case SWT.ABORT:
                             return IApplication.EXIT_OK;
                         case SWT.IGNORE:
@@ -93,9 +97,6 @@ public class DBeaverApplication implements IApplication
                     break;
                 }
             }
-            if (shell != null) {
-                shell.dispose();
-            }
 
         } catch (Throwable e) {
             // Just skip it
@@ -103,6 +104,9 @@ public class DBeaverApplication implements IApplication
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
+        if (display == null) {
+            display = PlatformUI.createDisplay();
+        }
         final Runtime runtime = Runtime.getRuntime();
 
         DBeaverCore.setStandalone(true);

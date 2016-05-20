@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -58,7 +59,8 @@ public class DBeaverInstanceServer implements IInstanceController {
     @Override
     public void openExternalFiles(final String[] fileNames) {
         final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
-        UIUtils.runInUI(window.getShell(), new Runnable() {
+        final Shell shell = window.getShell();
+        UIUtils.runInUI(shell, new Runnable() {
             @Override
             public void run() {
                 for (String filePath : fileNames) {
@@ -74,6 +76,12 @@ public class DBeaverInstanceServer implements IInstanceController {
                         }
                     }
                 }
+                if (!shell.getMinimized())
+                {
+                    shell.setMinimized(true);
+                }
+                shell.setMinimized(false);
+                shell.setActive();
             }
         });
     }
