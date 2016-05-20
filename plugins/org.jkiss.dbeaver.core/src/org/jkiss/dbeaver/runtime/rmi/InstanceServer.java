@@ -37,7 +37,7 @@ import java.util.Properties;
 public class InstanceServer implements IInstanceController {
 
     private static final Log log = Log.getLog(InstanceServer.class);
-    private static final String RMI_PROP_FILE = ".dbeaver-server.properties";
+
     private static int portNumber;
     private static Registry registry;
 
