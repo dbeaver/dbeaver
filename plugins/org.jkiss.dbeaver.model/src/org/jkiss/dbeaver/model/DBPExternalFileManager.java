@@ -32,4 +32,5 @@ public interface DBPExternalFileManager
 
     void setFileProperty(File file, String property, Object value);
 
+    Map<String, Map<String, Object>> getAllFiles();
 }
