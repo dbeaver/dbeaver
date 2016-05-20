@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -204,6 +206,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         } catch (Exception ex) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
+        }
+    }
+
+    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, ResourceUtils.ResourceInfo resourceInfo) {
+        if (resourceInfo.getResource() != null) {
+            openResource(resourceInfo.getResource(), workbenchWindow);
+        } else if (resourceInfo.getLocalFile() != null) {
+            EditorUtils.openExternalFileEditor(resourceInfo.getLocalFile(), workbenchWindow);
         }
     }
 

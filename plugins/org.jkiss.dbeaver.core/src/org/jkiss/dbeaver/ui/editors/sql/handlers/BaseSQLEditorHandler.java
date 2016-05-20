@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 
 public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
@@ -84,7 +83,7 @@ public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
         try {
             ResourceUtils.ResourceInfo res = ResourceUtils.findRecentScript(project, dataSourceContainer);
             if (res != null) {
-                openResourceEditor(workbenchWindow, res);
+                NavigatorHandlerObjectOpen.openResourceEditor(workbenchWindow, res);
             } else {
                 IFile scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
                 NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
@@ -92,14 +91,6 @@ public abstract class BaseSQLEditorHandler extends AbstractDataSourceHandler {
         }
         catch (CoreException e) {
             log.error(e);
-        }
-    }
-
-    public static void openResourceEditor(IWorkbenchWindow workbenchWindow, ResourceUtils.ResourceInfo resourceInfo) {
-        if (resourceInfo.getResource() != null) {
-            NavigatorHandlerObjectOpen.openResource(resourceInfo.getResource(), workbenchWindow);
-        } else if (resourceInfo.getLocalFile() != null) {
-            EditorUtils.openExternalFileEditor(resourceInfo.getLocalFile(), workbenchWindow);
         }
     }
 
