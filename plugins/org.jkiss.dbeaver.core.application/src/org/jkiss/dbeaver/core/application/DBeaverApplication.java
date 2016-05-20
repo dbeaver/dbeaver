@@ -32,9 +32,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.runtime.rmi.IInstanceController;
-import org.jkiss.dbeaver.runtime.rmi.InstanceClient;
-import org.jkiss.dbeaver.runtime.rmi.InstanceServer;
+import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.utils.ArrayUtils;
 
 import java.io.File;
@@ -195,9 +193,6 @@ public class DBeaverApplication implements IApplication
             DBEAVER_DEFAULT_DIR);
     }
 
-    /* (non-Javadoc)
-      * @see org.eclipse.equinox.app.IApplication#stop()
-      */
     @Override
     public void stop()
     {

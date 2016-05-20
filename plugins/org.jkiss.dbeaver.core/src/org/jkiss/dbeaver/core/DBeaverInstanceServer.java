@@ -16,10 +16,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.runtime.rmi;
+package org.jkiss.dbeaver.core;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -34,9 +34,9 @@ import java.util.Properties;
 /**
  * DBeaver instance controller.
  */
-public class InstanceServer implements IInstanceController {
+public class DBeaverInstanceServer implements IInstanceController {
 
-    private static final Log log = Log.getLog(InstanceServer.class);
+    private static final Log log = Log.getLog(DBeaverInstanceServer.class);
 
     private static int portNumber;
     private static Registry registry;
@@ -63,7 +63,7 @@ public class InstanceServer implements IInstanceController {
     }
 
     public static void startInstanceServer() {
-        InstanceServer server = new InstanceServer();
+        DBeaverInstanceServer server = new DBeaverInstanceServer();
 
         try {
             portNumber = IOUtils.findFreePort(20000, 65000);
