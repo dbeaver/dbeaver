@@ -66,7 +66,8 @@ public class EditorUtils {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
             return ContentUtils.convertPathToWorkspaceFile(path);
         } else if (editorInput instanceof IURIEditorInput) {
-            //((IURIEditorInput) editorInput).getURI()
+            // Most likely it is an external file
+            return null;
         }
         // Try to get path input adapter (works for external files)
         final IPathEditorInput pathInput = editorInput.getAdapter(IPathEditorInput.class);
