@@ -107,28 +107,11 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
             log.warn(e);
         }
 */
-        List<String> filesToOpen = new ArrayList<>();
-        String[] cliParameters = Platform.getCommandLineArgs();
-        boolean prevParam = false, prevFile = false;
-        for (String param : cliParameters) {
-            if (!param.startsWith("-") && (!prevParam || prevFile)) {
-                filesToOpen.add(param);
-            }
-            prevParam = param.startsWith("-");
-            prevFile = param.equals("-file");
-        }
-        for (String filePath : filesToOpen) {
-            File file = new File(filePath);
-            if (file.exists()) {
-                try {
-                    IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
-                    IFileStore fileStore = EFS.getStore(file.toURI());
-                    IEditorInput input = new FileStoreEditorInput(fileStore);
-                    IDE.openEditor(window.getActivePage(), input, desc.getId());
-                } catch (CoreException e) {
-                    log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
-                }
-            }
+
+        try {
+            DBeaverApplication.executeCommandLineCommands(DBeaverApplication.getCommandLine(), DBeaverCore.getInstance().getInstanceServer());
+        } catch (Exception e) {
+            log.error("Error processing command line", e);
         }
     }
 

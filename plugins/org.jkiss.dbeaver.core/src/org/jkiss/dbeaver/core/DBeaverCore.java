@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -90,6 +91,7 @@ public class DBeaverCore implements DBPApplication {
     private final List<IPluginService> activatedServices = new ArrayList<>();
 
     private static boolean disposed = false;
+    private IInstanceController instanceServer;
 
     public static DBeaverCore getInstance()
     {
@@ -185,7 +187,7 @@ public class DBeaverCore implements DBPApplication {
 
         if (standalone) {
             // Start instance server
-            DBeaverInstanceServer.startInstanceServer();
+            instanceServer = DBeaverInstanceServer.startInstanceServer();
         }
 
         QMUtils.initApplication(this);
@@ -288,6 +290,7 @@ public class DBeaverCore implements DBPApplication {
             }
 
             DBeaverInstanceServer.stopInstanceServer();
+            instanceServer = null;
         }
 
         // Remove temp folder
@@ -315,6 +318,10 @@ public class DBeaverCore implements DBPApplication {
     @Override
     public DBPProjectManager getProjectManager() {
         return getProjectRegistry();
+    }
+
+    public IInstanceController getInstanceServer() {
+        return instanceServer;
     }
 
     /**
