@@ -191,7 +191,7 @@ public class ScriptSelectorPanel {
 
             @Override
             public String getText(Object element) {
-                return ((ResourceInfo) element).getResource().getName();
+                return ((ResourceInfo) element).getName();
             }
 
             @Override
@@ -236,20 +236,18 @@ public class ScriptSelectorPanel {
         scriptTree.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetDefaultSelected(SelectionEvent e) {
-                List<IFile> files = new ArrayList<>();
+                List<ResourceInfo> files = new ArrayList<>();
                 for (Object item : ((IStructuredSelection)scriptViewer.getSelection()).toArray()) {
-                    if (((ResourceInfo)item).getResource() instanceof IFile) {
-                        files.add((IFile) ((ResourceInfo)item).getResource());
+                    if (!((ResourceInfo)item).isDirectory()) {
+                        files.add((ResourceInfo) item);
                     }
                 }
                 if (files.isEmpty()) {
                     return;
                 }
                 popup.dispose();
-                for (IFile file : files) {
-                    NavigatorHandlerObjectOpen.openResource(
-                        file,
-                        ScriptSelectorPanel.this.workbenchWindow);
+                for (ResourceInfo ri : files) {
+                    NavigatorHandlerObjectOpen.openResourceEditor(ScriptSelectorPanel.this.workbenchWindow, ri);
                 }
             }
         });
@@ -343,7 +341,7 @@ public class ScriptSelectorPanel {
             if (resource instanceof IFolder) {
                 return isAnyChildMatches((ResourceInfo) element);
             } else {
-                return resource.getName().toLowerCase(Locale.ENGLISH).contains(pattern);
+                return ((ResourceInfo) element).getName().toLowerCase(Locale.ENGLISH).contains(pattern);
             }
         }
 
@@ -354,7 +352,7 @@ public class ScriptSelectorPanel {
                         return true;
                     }
                 } else {
-                    if (child.getResource().getName().toLowerCase(Locale.ENGLISH).contains(pattern)) {
+                    if (child.getName().toLowerCase(Locale.ENGLISH).contains(pattern)) {
                         return true;
                     }
                 }

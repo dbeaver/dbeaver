@@ -82,6 +82,10 @@ public class ResourceUtils {
             return localFile;
         }
 
+        public String getName() {
+            return resource != null ? resource.getName() : localFile.getName();
+        }
+
         public DBPDataSourceContainer getDataSource() {
             return dataSource;
         }
@@ -102,14 +106,14 @@ public class ResourceUtils {
 
         @Override
         public String toString() {
-            return resource.getName();
+            return getName();
         }
     }
 
     public static String getResourceDescription(IResource resource) {
         if (resource instanceof IFolder) {
             return "";
-        } else if (SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
+        } else if (resource instanceof IFile && SCRIPT_FILE_EXTENSION.equals(resource.getFileExtension())) {
             String description = SQLUtils.getScriptDescription((IFile) resource);
             if (CommonUtils.isEmptyTrimmed(description)) {
                 description = "<empty>";
@@ -191,7 +195,23 @@ public class ResourceUtils {
                         result.add(folderInfo);
                     }
                 }
-
+            }
+            if (!ArrayUtils.isEmpty(containers)) {
+                // Search in external files
+                for (Map.Entry<String, Map<String, Object>> fileEntry : DBeaverCore.getInstance().getExternalFileManager().getAllFiles().entrySet()) {
+                    final Object fileContainerId = fileEntry.getValue().get(EditorUtils.PROP_SQL_DATA_SOURCE);
+                    if (fileContainerId != null) {
+                        File extFile = new File(fileEntry.getKey());
+                        if (extFile.exists()) {
+                            for (DBPDataSourceContainer container : containers) {
+                                if (container.getId().equals(fileContainerId)) {
+                                    result.add(new ResourceInfo(extFile, container));
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         } catch (CoreException e) {
             log.debug(e);
