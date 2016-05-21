@@ -18,16 +18,17 @@
  */
 package org.jkiss.dbeaver.ext.db2.model.plan;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DB2 EXPLAIN_OPERATOR table
@@ -141,13 +142,13 @@ public class DB2PlanOperator extends DB2PlanNode {
         return ""; // Looks better without a name...
     }
 
-    @Property(viewable = true, order = 4)
+    @Property(viewable = true, order = 4, format = DB2Constants.PLAN_COST_FORMAT)
     public Double getTotalCost()
     {
         return totalCost;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 5, format = DB2Constants.PLAN_COST_FORMAT)
     public Double getEstimatedCardinality()
     {
         return estimatedCardinality;
