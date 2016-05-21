@@ -52,6 +52,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         WORKBENCH_PREF_PAGE_ID + "/" + APPEARANCE_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Decorators",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
+        WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup"
 
     };
 
