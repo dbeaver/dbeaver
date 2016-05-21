@@ -56,6 +56,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button autoFoldersCheck;
     private Text scriptTitlePattern;
 
+    private Button csMatchAnyWhereProposal;
+
     public PrefPageSQLEditor()
     {
         super();
@@ -107,6 +109,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             ((GridData)assistGroup.getLayoutData()).verticalSpan = 2;
 
             csAutoActivationCheck = UIUtils.createLabelCheckbox(assistGroup, "Enable auto activation", "Enables the content assistant's auto activation", false);
+            csMatchAnyWhereProposal = UIUtils.createLabelCheckbox(assistGroup, "Enable match anywhere propostal", "Enables match anywhere propostal", false);
             UIUtils.createControlLabel(assistGroup, "Auto activation delay");
             csAutoActivationDelaySpinner = new Spinner(assistGroup, SWT.BORDER);
             csAutoActivationDelaySpinner.setSelection(0);
@@ -179,6 +182,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             editorSeparateConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION));
 
             csAutoActivationCheck.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+            csMatchAnyWhereProposal.setSelection(store.getBoolean(SQLPreferenceConstants.ENABLE_MATCH_ANYWHERE_PROPOSAL));
             csAutoActivationDelaySpinner.setSelection(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
             csAutoInsertCheck.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO));
             csInsertCase.select(store.getInt(SQLPreferenceConstants.PROPOSAL_INSERT_CASE));
@@ -205,6 +209,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
 
             store.setValue(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, csAutoActivationCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.ENABLE_MATCH_ANYWHERE_PROPOSAL, csMatchAnyWhereProposal.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, csAutoActivationDelaySpinner.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, csAutoInsertCheck.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());

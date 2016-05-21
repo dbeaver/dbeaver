@@ -22,6 +22,7 @@ public class SQLPreferenceConstants
 
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "insert.single.proposals.auto";
     public static final String ENABLE_AUTO_ACTIVATION                  = "enable.auto.activation";
+    public static final String ENABLE_MATCH_ANYWHERE_PROPOSAL          = "enable.match.anywhere.proposal";
     public static final String AUTO_ACTIVATION_DELAY                   = "auto.activation.delay";
     public static final String PROPOSAL_INSERT_CASE                    = "proposal.insert.case";
     public static final String HIDE_DUPLICATE_PROPOSALS                = "hide.duplicate.proposals";
