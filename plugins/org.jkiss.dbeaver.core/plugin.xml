@@ -1716,6 +1716,7 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"/>
             </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="File">
