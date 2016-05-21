@@ -94,6 +94,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
       {
           // SQL prefs
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION, true);
+          PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.ENABLE_MATCH_ANYWHERE_PROPOSAL, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.AUTO_ACTIVATION_DELAY, 500);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SINGLE_PROPOSALS_AUTO, true);
           PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLPreferenceConstants.PROPOSAL_CASE_DEFAULT);
