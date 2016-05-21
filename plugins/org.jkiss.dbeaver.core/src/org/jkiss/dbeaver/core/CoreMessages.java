@@ -781,18 +781,6 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_new_connection_wizard_title;
 
-	public static String dialog_project_create_settings_description;
-
-	public static String dialog_project_create_settings_group_general;
-
-	public static String dialog_project_create_settings_label_description;
-
-	public static String dialog_project_create_settings_label_name;
-
-	public static String dialog_project_create_settings_name;
-
-	public static String dialog_project_create_settings_title;
-
 	public static String dialog_project_create_wizard_error_already_exists;
 
 	public static String dialog_project_create_wizard_error_cannot_create;
