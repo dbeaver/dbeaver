@@ -24,10 +24,13 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.dialogs.WizardNewProjectCreationPage;
+import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -43,15 +46,17 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
-public class ProjectCreateWizard extends Wizard implements INewWizard {
+public class ProjectCreateWizard extends BasicNewProjectResourceWizard implements INewWizard {
 
     private ProjectCreateData data = new ProjectCreateData();
+    private WizardPrefPage projectSettingsPage;
 
     public ProjectCreateWizard() {
 	}
 
 	@Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
+        super.init(workbench, selection);
         setWindowTitle(CoreMessages.dialog_project_create_wizard_title);
         setNeedsProgressMonitor(true);
     }
@@ -59,60 +64,62 @@ public class ProjectCreateWizard extends Wizard implements INewWizard {
     @Override
     public void addPages() {
         super.addPages();
-        addPage(new ProjectCreateWizardPageSettings(data));
         final PrefPageProjectSettings projectSettingsPref = new PrefPageProjectSettings();
-        WizardPrefPage projectSettingsPage = new WizardPrefPage(projectSettingsPref, "Resources", "Project resources");
+        projectSettingsPage = new WizardPrefPage(projectSettingsPref, "Resources", "Project resources");
         addPage(projectSettingsPage);
     }
 
-	@Override
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        if (page instanceof WizardNewProjectCreationPage) {
+            return projectSettingsPage;
+        }
+        return super.getNextPage(page);
+    }
+
+    @Override
 	public boolean performFinish() {
-        try {
-            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        createProject(monitor);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
+        if (super.performFinish()) {
+            try {
+                DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                    @Override
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                        try {
+                            createProject(monitor);
+                        } catch (Exception e) {
+                            throw new InvocationTargetException(e);
+                        }
                     }
-                }
-            });
-        }
-        catch (InterruptedException ex) {
+                });
+            } catch (InterruptedException ex) {
+                return false;
+            } catch (InvocationTargetException ex) {
+                UIUtils.showErrorDialog(
+                    getShell(),
+                    CoreMessages.dialog_project_create_wizard_error_cannot_create,
+                    CoreMessages.dialog_project_create_wizard_error_cannot_create_message,
+                    ex.getTargetException());
+                return false;
+            }
+            return true;
+        } else {
             return false;
         }
-        catch (InvocationTargetException ex) {
-            UIUtils.showErrorDialog(
-                getShell(),
-                CoreMessages.dialog_project_create_wizard_error_cannot_create,
-                CoreMessages.dialog_project_create_wizard_error_cannot_create_message,
-                ex.getTargetException());
-            return false;
-        }
-        return true;
 	}
 
     private void createProject(DBRProgressMonitor monitor) throws DBException, CoreException
     {
-        IWorkspace workspace = DBeaverCore.getInstance().getWorkspace();
-        IProject project = workspace.getRoot().getProject(data.getName());
-        if (project.exists()) {
-            throw new DBException(NLS.bind(CoreMessages.dialog_project_create_wizard_error_already_exists, data.getName()));
-        }
+        final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
+        final IProject project = getNewProject();
 
-        final IProjectDescription description = workspace.newProjectDescription(project.getName());
+        final IProjectDescription description = project.getDescription();
         if (!CommonUtils.isEmpty(data.getDescription())) {
             description.setComment(data.getDescription());
         }
-        description.setLocation(new Path(data.getPath().getAbsolutePath()));
         description.setNatureIds(new String[] {DBeaverNature.NATURE_ID});
+        project.setDescription(description, nestedMonitor);
 
-        final IProgressMonitor nestedMonitor = RuntimeUtils.getNestedMonitor(monitor);
-        if (!project.exists()) {
-            project.create(description, nestedMonitor);
-            project.open(nestedMonitor);
-        } else {
+        if (!project.isOpen()) {
             project.open(nestedMonitor);
         }
     }

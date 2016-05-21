@@ -2257,7 +2257,7 @@
              class="org.jkiss.dbeaver.tools.project.ProjectCreateWizard"
              icon="icons/project.png"
              id="org.jkiss.dbeaver.core.wizard.new.project"
-             name="Project">
+             name="Database Project">
            <description>
                DBeaver Project
            </description>
@@ -2267,7 +2267,7 @@
              class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
              icon="icons/database.png"
              id="org.jkiss.dbeaver.core.wizard.new.connection"
-             name="Connection">
+             name="Database Connection">
            <description>
                Database connection
            </description>
