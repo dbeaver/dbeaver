@@ -34,6 +34,7 @@ public class AboutBoxAction extends ActionDelegate
     @Override
     public void run(IAction action)
     {
+//        new AboutDialog(window.getShell()).open();
         AboutBoxDialog dialog = new AboutBoxDialog(window.getShell());
         dialog.open();
     }
