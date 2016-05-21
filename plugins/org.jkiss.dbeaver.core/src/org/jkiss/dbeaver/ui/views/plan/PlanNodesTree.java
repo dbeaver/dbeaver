@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -154,7 +154,7 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
             final TreeViewer itemsViewer = (TreeViewer) PlanNodesTree.this.getItemsViewer();
             itemsViewer.getControl().setRedraw(false);
             try {
-                itemsViewer.expandAll();
+                itemsViewer.expandToLevel(10);
             } finally {
                 itemsViewer.getControl().setRedraw(true);
             }

@@ -35,16 +35,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -369,7 +369,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                             classList.add(object.getClass());
                         }
                         if (renderer.isTree()) {
-                            collectItemClasses(item, classList);
+                            Map<OBJECT_TYPE, Boolean> collectedSet = new IdentityHashMap<>();
+                            collectItemClasses(item, classList, collectedSet);
                         }
                     }
                 }
@@ -411,7 +412,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                         itemsViewer.setInput(sampleList);
 
                         if (renderer.isTree()) {
-                            ((TreeViewer)itemsViewer).expandAll();
+                            ((TreeViewer)itemsViewer).expandToLevel(4);
                             UIUtils.packColumns(getTree(), isFitWidth, null);
                         } else {
                             UIUtils.packColumns(getTable(), isFitWidth);
@@ -486,8 +487,13 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         clearLazyCache();
     }
 
-    private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList)
+    private void collectItemClasses(OBJECT_TYPE item, List<Class<?>> classList, Map<OBJECT_TYPE, Boolean> collectedSet)
     {
+        if (collectedSet.containsKey(item)) {
+            log.warn("Cycled object tree: " + item);
+            return;
+        }
+        collectedSet.put(item, Boolean.TRUE);
         ITreeContentProvider contentProvider = (ITreeContentProvider) itemsViewer.getContentProvider();
         if (!contentProvider.hasChildren(item)) {
             return;
@@ -500,7 +506,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 if (!classList.contains(objectValue.getClass())) {
                     classList.add(objectValue.getClass());
                 }
-                collectItemClasses(childItem, classList);
+                collectItemClasses(childItem, classList, collectedSet);
             }
         }
     }
