@@ -93,8 +93,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     }
 
     @Override
-    protected void fillMenuBar(IMenuManager menuBar)
-    {
+    protected void fillMenuBar(IMenuManager menuBar) {
         MenuManager fileMenu = new MenuManager(CoreMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
         MenuManager editMenu = new MenuManager(CoreMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
         MenuManager navigateMenu = new MenuManager(CoreMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
@@ -111,87 +110,73 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         menuBar.add(windowMenu);
         menuBar.add(helpMenu);
 
-        // File
-        //MenuManager recentMenu = new MenuManager("Recent editors");
-        //recentMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
-
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
-        fileMenu.add(new Separator());
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
-        fileMenu.add(new Separator());
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.PRINT_EXT));
-        fileMenu.add(new Separator());
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.OPEN_EXT));
-        fileMenu.add(new Separator());
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
-        fileMenu.add(new Separator());
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
-        fileMenu.add(new Separator());
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MRU));
-        fileMenu.add(new Separator());
-
-        fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
-        fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
-
-        // Edit
-/*
-        editMenu.add(new Separator("undoredo"));
-        editMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        editMenu.add(new Separator(IWorkbenchActionConstants.FIND_EXT));
-        editMenu.add(findAction);
-*/
-
-        // Navigate
-        navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_START));
-        navigateMenu.add(new Separator(IWorkbenchActionConstants.OPEN_EXT));
-        navigateMenu.add(new Separator(IWorkbenchActionConstants.SHOW_EXT));
-        navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-        navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_END));
-        navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.GROUP_APP));
-//        navigateMenu.add(historyBackAction);
-//        navigateMenu.add(historyForwardAction);
-
-        //editMenu.add(ActionFactory.PROPERTIES);
-        //editMenu.add(viewPropertiesAction);
-
-        // Window
-        windowMenu.add(newWindowAction);
-        windowMenu.add(new Separator());
-        windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
-        windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
-        windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
-/*
-        windowMenu.add(new Separator());
-        windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROP_SHEET));
-        windowMenu.add(new ToggleViewAction(QueryManagerView.VIEW_ID));
-        windowMenu.add(new ToggleViewAction(TemplatesView.ID));
-        windowMenu.add(new ToggleViewAction(IPageLayout.ID_OUTLINE));
-        windowMenu.add(new ToggleViewAction(IPageLayout.ID_PROGRESS_VIEW));
-        windowMenu.add(new ToggleViewAction(IActionConstants.LOG_VIEW_ID));
-*/
         {
-            MenuManager showViewMenuMgr = new MenuManager("Show View", "showView"); //$NON-NLS-1$
-            IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
-            showViewMenuMgr.add(showViewMenu);
-            windowMenu.add(showViewMenuMgr);
+            // File
+            //MenuManager recentMenu = new MenuManager("Recent editors");
+            //recentMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_START));
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.NEW_EXT));
+            fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.CLOSE_EXT));
+            fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.PRINT_EXT));
+            fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.OPEN_EXT));
+            fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
+            fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
+            fileMenu.add(new Separator());
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MRU));
+            fileMenu.add(new Separator());
+
+            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
+            fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
         }
 
-        windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-        windowMenu.add(new Separator());
+        {
+            // Navigate
+            navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_START));
+            navigateMenu.add(new Separator(IWorkbenchActionConstants.OPEN_EXT));
+            navigateMenu.add(new Separator(IWorkbenchActionConstants.SHOW_EXT));
+            navigateMenu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_END));
+            navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.GROUP_APP));
+        }
 
-        // Help
-        helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
-        helpMenu.add(showHelpAction);
-        //helpMenu.add(searchHelpAction);
-        //helpMenu.add(dynamicHelpAction);
-        helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST));
+        {
+            // Window
+            windowMenu.add(newWindowAction);
+            windowMenu.add(new Separator());
+            windowMenu.add(new ToggleViewAction(DatabaseNavigatorView.VIEW_ID));
+            windowMenu.add(new ToggleViewAction(ProjectNavigatorView.VIEW_ID));
+            windowMenu.add(new ToggleViewAction(ProjectExplorerView.VIEW_ID));
+            {
+                MenuManager showViewMenuMgr = new MenuManager("Show View", "showView"); //$NON-NLS-1$
+                IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                showViewMenuMgr.add(showViewMenu);
+                windowMenu.add(showViewMenuMgr);
+            }
 
-        helpMenu.add(new Separator());
-        helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
-        helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
+            windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            windowMenu.add(new Separator());
+        }
+
+        {
+            // Help
+            helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
+            helpMenu.add(showHelpAction);
+            //helpMenu.add(searchHelpAction);
+            //helpMenu.add(dynamicHelpAction);
+            helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST));
+
+            helpMenu.add(new Separator());
+            helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
+            helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
+        }
     }
 
     @Override
