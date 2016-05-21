@@ -41,8 +41,7 @@ import java.util.ResourceBundle;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class DBeaverActivator extends AbstractUIPlugin
-{
+public class DBeaverActivator extends AbstractUIPlugin {
     private static final Log log = Log.getLog(DBeaverActivator.class);
 
     // The shared instance
@@ -54,40 +53,37 @@ public class DBeaverActivator extends AbstractUIPlugin
     /**
      * The constructor
      */
-    public DBeaverActivator()
-    {
+    public DBeaverActivator() {
     }
 
-    public static DBeaverActivator getInstance()
-    {
+    public static DBeaverActivator getInstance() {
         return instance;
     }
 
     @Override
     public void start(BundleContext context)
-        throws Exception
-    {
-        context.addBundleListener(new BundleListener() {
-            @Override
-            public void bundleChanged(BundleEvent event) {
-                if (DBeaverCore.isStandalone()) {
+        throws Exception {
+        if (DBeaverCore.isStandalone()) {
+            context.addBundleListener(new BundleListener() {
+                @Override
+                public void bundleChanged(BundleEvent event) {
                     if (event.getType() == BundleEvent.STARTED) {
                         log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
                     } else if (event.getType() == BundleEvent.STOPPED) {
                         log.debug("< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
                     }
                 }
-            }
-        });
+            });
+        }
 
         super.start(context);
 
-        instance=this;
+        instance = this;
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
-        preferences=new
+        preferences = new
 
-        BundlePreferenceStore(bundle);
+            BundlePreferenceStore(bundle);
 
         DBeaverUI.getInstance();
 
@@ -96,11 +92,9 @@ public class DBeaverActivator extends AbstractUIPlugin
         {
             coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
             pluginResourceBundle = Platform.getResourceBundle(bundle);
-        }
-
-        catch(
-        MissingResourceException x
-        )
+        } catch (
+            MissingResourceException x
+            )
 
         {
             coreResourceBundle = null;
@@ -109,8 +103,7 @@ public class DBeaverActivator extends AbstractUIPlugin
 
     @Override
     public void stop(BundleContext context)
-        throws Exception
-    {
+        throws Exception {
         this.shutdownUI();
         this.shutdownCore();
 
@@ -127,8 +120,7 @@ public class DBeaverActivator extends AbstractUIPlugin
         DBeaverUI.disposeUI();
     }
 
-    public synchronized PrintStream getDebugWriter()
-    {
+    public synchronized PrintStream getDebugWriter() {
         if (debugWriter == null) {
             File logPath = GeneralUtils.getMetadataFolder();
             File debugLogFile = new File(logPath, "dbeaver-debug.log"); //$NON-NLS-1$
@@ -153,17 +145,16 @@ public class DBeaverActivator extends AbstractUIPlugin
      * @param path the path
      * @return the image descriptor
      */
-    public static ImageDescriptor getImageDescriptor(String path)
-    {
+    public static ImageDescriptor getImageDescriptor(String path) {
         return imageDescriptorFromPlugin(DBeaverCore.PLUGIN_ID, path);
     }
 
     /**
      * Returns the plugin's resource bundle,
+     *
      * @return core resource bundle
      */
-    public static ResourceBundle getCoreResourceBundle()
-    {
+    public static ResourceBundle getCoreResourceBundle() {
         return getInstance().coreResourceBundle;
     }
 
@@ -182,8 +173,7 @@ public class DBeaverActivator extends AbstractUIPlugin
         return ResourcesPlugin.getWorkspace();
     }
 
-    private void shutdownCore()
-    {
+    private void shutdownCore() {
         try {
             // Dispose core
             if (DBeaverCore.instance != null) {
@@ -195,8 +185,7 @@ public class DBeaverActivator extends AbstractUIPlugin
         }
     }
 
-    private void logMessage(String message)
-    {
+    private void logMessage(String message) {
         getDebugWriter().print(message);
     }
 
