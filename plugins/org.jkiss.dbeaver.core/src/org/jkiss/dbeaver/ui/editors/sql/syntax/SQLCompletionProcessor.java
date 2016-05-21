@@ -226,12 +226,12 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
     }
 
     private boolean compare(boolean matchAnyWhere, String template, String wordPart) {
-        if (!matchAnyWhere || true) {
+        if (!matchAnyWhere) {
             return template.startsWith(wordPart);
         }
 
-        char wordPartsChars[] = wordPart.toCharArray();
-        char templateChars[] = template.toCharArray();
+        char []wordPartsChars = wordPart.toCharArray();
+        char []templateChars = template.toCharArray();
 
         int i = 0;
         int j = 0;
@@ -250,14 +250,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
 
     @NotNull
     private ICompletionProposal[] makeTemplateProposals(ITextViewer viewer, int documentOffset, String wordPart) {
-        //final boolean matchAnyWhere = getPreferences().getBoolean(SQLPreferenceConstants.ENABLE_MATCH_ANYWHERE_PROPOSAL);
+        final boolean matchAnyWhere = getPreferences().getBoolean(SQLPreferenceConstants.ENABLE_MATCH_ANYWHERE_PROPOSAL);
 
         wordPart = wordPart.toLowerCase();
         final List<SQLTemplateCompletionProposal> templateProposals = new ArrayList<>();
         // Templates
         for (Template template : editor.getTemplatesPage().getTemplateStore().getTemplates()) {
-            if (template.getName().toLowerCase().startsWith(wordPart)) {
-            //if (compare(matchAnyWhere, template.getName().toLowerCase(), wordPart)) {
+            if (compare(matchAnyWhere, template.getName().toLowerCase(), wordPart)) {
                 templateProposals.add(new SQLTemplateCompletionProposal(
                     template,
                     new SQLContext(
