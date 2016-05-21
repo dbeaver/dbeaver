@@ -27,7 +27,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -91,7 +90,6 @@ public class DBeaverCore implements DBPApplication {
     private final List<IPluginService> activatedServices = new ArrayList<>();
 
     private static boolean disposed = false;
-    private IInstanceController instanceServer;
 
     public static DBeaverCore getInstance()
     {
@@ -184,11 +182,6 @@ public class DBeaverCore implements DBPApplication {
         this.workspace = ResourcesPlugin.getWorkspace();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
-
-        if (standalone) {
-            // Start instance server
-            instanceServer = DBeaverInstanceServer.startInstanceServer();
-        }
 
         QMUtils.initApplication(this);
         this.queryManager = new QMControllerImpl();
@@ -288,9 +281,6 @@ public class DBeaverCore implements DBPApplication {
             } catch (CoreException ex) {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }
-
-            DBeaverInstanceServer.stopInstanceServer();
-            instanceServer = null;
         }
 
         // Remove temp folder
@@ -318,10 +308,6 @@ public class DBeaverCore implements DBPApplication {
     @Override
     public DBPProjectManager getProjectManager() {
         return getProjectRegistry();
-    }
-
-    public IInstanceController getInstanceServer() {
-        return instanceServer;
     }
 
     /**

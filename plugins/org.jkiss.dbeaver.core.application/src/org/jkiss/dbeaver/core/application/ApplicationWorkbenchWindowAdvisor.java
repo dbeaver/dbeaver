@@ -104,7 +104,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         try {
             DBeaverApplication.executeCommandLineCommands(
                 DBeaverApplication.getCommandLine(),
-                DBeaverCore.getInstance().getInstanceServer());
+                DBeaverApplication.getInstanceServer());
         } catch (Exception e) {
             log.error("Error processing command line", e);
         }
@@ -114,7 +114,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
     public void postWindowOpen() {
         super.postWindowOpen();
 
-        if (DBeaverCore.isStandalone() && DataSourceDescriptor.getActiveDataSources().isEmpty()) {
+        if (DataSourceDescriptor.getActiveDataSources().isEmpty()) {
             // Open New Connection wizard
             Display.getCurrent().asyncExec(new Runnable() {
                 @Override

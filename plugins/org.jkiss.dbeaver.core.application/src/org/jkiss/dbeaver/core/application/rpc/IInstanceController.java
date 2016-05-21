@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver;
+package org.jkiss.dbeaver.core.application.rpc;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
@@ -26,8 +26,8 @@ import java.rmi.RemoteException;
  */
 public interface IInstanceController extends Remote {
 
-    public static final String CONTROLLER_ID = "DBeaver.InstanceController";
-    public static final String RMI_PROP_FILE = ".dbeaver-server.properties";
+    String CONTROLLER_ID = "DBeaver.InstanceController";
+    String RMI_PROP_FILE = ".dbeaver-server.properties";
 
     String getVersion() throws RemoteException;
 
