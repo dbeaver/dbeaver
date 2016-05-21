@@ -92,6 +92,8 @@ public class DB2Constants {
     public static final String CAT_STATS = "Statistics";
     public static final String CAT_TABLESPACE = "Tablespace";
 
+    public static final String PLAN_COST_FORMAT = "###,###,###,##0.000";
+
     // Schema for system datatypes
     public static final String SYSTEM_DATATYPE_SCHEMA = "SYSIBM";
 

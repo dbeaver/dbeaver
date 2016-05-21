@@ -209,7 +209,7 @@ public class DB2PlanObject extends DB2PlanNode {
         return displayName;
     }
 
-    @Property(editable = false, viewable = true, order = 2, category = DB2Constants.CAT_PERFORMANCE)
+    @Property(editable = false, viewable = true, order = 2, category = DB2Constants.CAT_PERFORMANCE, format = DB2Constants.PLAN_COST_FORMAT)
     public Double getEstimatedCardinality()
     {
         return Double.valueOf(rowCount);

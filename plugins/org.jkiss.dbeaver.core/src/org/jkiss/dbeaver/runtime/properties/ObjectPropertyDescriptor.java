@@ -34,6 +34,10 @@ import org.osgi.framework.FrameworkUtil;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.ResourceBundle;
 
 /**
@@ -48,6 +52,7 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
     private IPropertyValueTransformer valueTransformer;
     private IPropertyValueTransformer valueRenderer;
     private final Class<?> declaringClass;
+    private Format displayFormat = null;
 
     public ObjectPropertyDescriptor(
         DBPPropertySource source,
@@ -123,6 +128,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propType != null && BeanUtils.isNumericType(propType);
     }
 
+    public boolean isDateTime()
+    {
+        Class<?> propType = getGetter().getReturnType();
+        return propType != null && Date.class.isAssignableFrom(propType);
+    }
+
     public boolean supportsPreview()
     {
         return propInfo.supportsPreview();
@@ -177,6 +188,24 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propName;
     }
 
+    public Format getDisplayFormat() {
+        if (displayFormat == null) {
+            final String format = propInfo.format();
+            if (format == null || format.isEmpty()) {
+                return null;
+            }
+            if (isNumeric()) {
+                displayFormat = new DecimalFormat(format);
+            } else if (isDateTime()) {
+                displayFormat = new SimpleDateFormat(format);
+            } else {
+                log.debug("Don't know how to apply format to property " + getId());
+                displayFormat = null;
+            }
+        }
+        return displayFormat;
+    }
+
     public Object readValue(Object object, DBRProgressMonitor progressMonitor)
         throws IllegalAccessException, IllegalArgumentException, InvocationTargetException
     {
@@ -201,6 +230,12 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         }
         if (valueRenderer != null) {
             value = valueRenderer.transform(object, value);
+        }
+        if (value instanceof Number) {
+            final Format displayFormat = getDisplayFormat();
+            if (displayFormat != null) {
+                return displayFormat.format(value);
+            }
         }
         return value;
     }
