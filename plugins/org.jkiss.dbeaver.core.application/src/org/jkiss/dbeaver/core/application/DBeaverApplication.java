@@ -32,9 +32,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.IInstanceController;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
+import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
+import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.utils.ArrayUtils;
 
 import java.io.File;
@@ -52,6 +54,8 @@ public class DBeaverApplication implements IApplication
 {
     private static final Log log = Log.getLog(DBeaverApplication.class);
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
+
+    private static IInstanceController instanceServer;
 
     @Override
     public Object start(IApplicationContext context)
@@ -114,6 +118,10 @@ public class DBeaverApplication implements IApplication
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Memory available " + (runtime.totalMemory() / (1024*1024)) + "Mb/" + (runtime.maxMemory() / (1024*1024)) + "Mb");
 
+        // Run instance server
+        instanceServer = DBeaverInstanceServer.startInstanceServer();
+
+        // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,
             ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);
@@ -209,6 +217,10 @@ public class DBeaverApplication implements IApplication
         final IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench == null)
             return;
+
+        instanceServer = null;
+        DBeaverInstanceServer.stopInstanceServer();
+
         final Display display = workbench.getDisplay();
         display.syncExec(new Runnable()
         {
@@ -219,6 +231,10 @@ public class DBeaverApplication implements IApplication
                     workbench.close();
             }
         });
+    }
+
+    public static IInstanceController getInstanceServer() {
+        return instanceServer;
     }
 
     public static CommandLine getCommandLine() {
