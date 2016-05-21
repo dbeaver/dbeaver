@@ -99,6 +99,7 @@ class DiagramCreateWizardPage extends WizardPage {
         contentTree = new DatabaseNavigatorTree(configGroup, rootNode.getDatabases(), SWT.SINGLE | SWT.CHECK);
         gd = new GridData(GridData.FILL_BOTH);
         gd.horizontalSpan = 2;
+        gd.heightHint = 400;
         contentTree.setLayoutData(gd);
 
         CheckboxTreeViewer viewer = (CheckboxTreeViewer) contentTree.getViewer();
