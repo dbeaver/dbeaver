@@ -18,10 +18,17 @@ Installing DBeaver
 Command line parameters
 ========================
 
+  -f <sql-file1 [sql-file2..]>
+    Open specified SQL file(s) in SQL editor.
+    This command can be used to associate SQL files with DBeaver in shell.
+
+  -nosplash
+    Do not show splash screen
+
   -data <path>
     Store all projects/configuration in folder <path>. By default DBeaver
 	stores all its data in user's home ".dbeaver" folder.
-	<path> could be an absolute or relative directory name.
+	<path> can be an absolute or relative directory name.
 	If you want to use DBeaver as redistributable program start it
 	with arguments like "dbeaver -data workspace".
 
