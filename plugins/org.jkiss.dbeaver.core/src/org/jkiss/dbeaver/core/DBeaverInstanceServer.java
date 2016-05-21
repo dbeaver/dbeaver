@@ -18,18 +18,12 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.filesystem.EFS;
-import org.eclipse.core.filesystem.IFileStore;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorDescriptor;
-import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.ide.FileStoreEditorInput;
-import org.eclipse.ui.ide.IDE;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.IInstanceController;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -66,20 +60,9 @@ public class DBeaverInstanceServer implements IInstanceController {
                 for (String filePath : fileNames) {
                     File file = new File(filePath);
                     if (file.exists()) {
-                        try {
-                            IEditorDescriptor desc = window.getWorkbench().getEditorRegistry().getDefaultEditor(file.getName());
-                            IFileStore fileStore = EFS.getStore(file.toURI());
-                            IEditorInput input = new FileStoreEditorInput(fileStore);
-                            IDE.openEditor(window.getActivePage(), input, desc.getId());
-                        } catch (CoreException e) {
-                            log.error("Can't open editor from file '" + file.getAbsolutePath(), e);
-                        }
+                        EditorUtils.openExternalFileEditor(file, window);
                     }
                 }
-//                if (!shell.getMinimized())
-//                {
-//                    shell.setMinimized(true);
-//                }
                 shell.setMinimized(false);
                 shell.forceActive();
             }

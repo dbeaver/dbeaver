@@ -89,6 +89,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -636,7 +637,12 @@ public class SQLEditor extends SQLEditorBase implements
         } else if (editorInput instanceof IPathEditorInput) {
             scriptPath = ((IPathEditorInput) editorInput).getPath().toString();
         } else if (editorInput instanceof IURIEditorInput) {
-            scriptPath = ((IURIEditorInput) editorInput).getURI().toString();
+            final URI uri = ((IURIEditorInput) editorInput).getURI();
+            if ("file".equals(uri.getScheme())) {
+                scriptPath = new File(uri).getAbsolutePath();
+            } else {
+                scriptPath = uri.toString();
+            }
         } else {
             scriptPath = "<not a file>";
         }
@@ -649,14 +655,16 @@ public class SQLEditor extends SQLEditorBase implements
 
     private String getEditorName() {
         final IFile file = EditorUtils.getFileFromInput(getEditorInput());
-        File localFile = file == null ? EditorUtils.getLocalFileFromInput(getEditorInput()) : null;
         String scriptName;
         if (file != null) {
             scriptName = file.getFullPath().removeFileExtension().lastSegment();
-        } else if (localFile != null) {
-            scriptName = localFile.getName();
         } else {
-            scriptName = "<object>";
+            File localFile = EditorUtils.getLocalFileFromInput(getEditorInput());
+            if (localFile != null) {
+                return localFile.getName();
+            } else {
+                scriptName = "<object>";
+            }
         }
 
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
