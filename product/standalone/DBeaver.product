@@ -75,7 +75,7 @@
    </plugins>
 
    <features>
-      <feature id="org.jkiss.dbeaver.standalone.feature"/>
+      <feature id="org.jkiss.dbeaver.ce.feature"/>
    </features>
 
    <configurations>
