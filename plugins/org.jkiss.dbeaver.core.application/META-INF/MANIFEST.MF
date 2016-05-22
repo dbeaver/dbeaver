@@ -27,3 +27,4 @@ Require-Bundle: org.jkiss.dbeaver.core,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.w3c.css.sac,
  org.apache.commons.cli
+Export-Package: org.jkiss.dbeaver.core.application
