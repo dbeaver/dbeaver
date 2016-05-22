@@ -163,7 +163,7 @@
 
         <!-- Window menu -->
 
-        <menuContribution allPopups="false" locationURI="menu:window?before=additions">
+        <menuContribution allPopups="false" locationURI="menu:window?before=perspective">
             <separator name="perspective" visible="true"/>
             <command commandId="org.eclipse.ui.window.customizePerspective"/>
             <command commandId="org.eclipse.ui.window.resetPerspective"/>
