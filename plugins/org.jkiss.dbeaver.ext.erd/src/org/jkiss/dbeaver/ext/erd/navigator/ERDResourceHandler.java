@@ -83,7 +83,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     @NotNull
     @Override
     public String getResourceNodeName(@NotNull IResource resource) {
-        if (resource.getParent() instanceof IProject) {
+        if (resource.getParent() instanceof IProject && resource.equals(getDefaultRoot(resource.getProject()))) {
             return "ER Diagrams";
         } else {
             return super.getResourceNodeName(resource);

@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.perspective;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
@@ -237,6 +238,17 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private List<? extends DBPDataSourceContainer> getAvailableDataSources()
     {
+        //Get project from active editor
+        final IEditorPart activeEditor = workbenchWindow.getActivePage().getActiveEditor();
+        if (activeEditor != null && activeEditor.getEditorInput() instanceof IFileEditorInput) {
+            final IFile curFile = ((IFileEditorInput) activeEditor.getEditorInput()).getFile();
+            if (curFile != null) {
+                final DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(curFile.getProject());
+                if (dsRegistry != null) {
+                    return dsRegistry.getDataSources();
+                }
+            }
+        }
         final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         if (dataSourceContainer != null) {
             return dataSourceContainer.getRegistry().getDataSources();
