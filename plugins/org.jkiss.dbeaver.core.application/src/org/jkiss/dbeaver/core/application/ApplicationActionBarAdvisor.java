@@ -160,6 +160,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 showViewMenuMgr.add(showViewMenu);
                 windowMenu.add(showViewMenuMgr);
             }
+            windowMenu.add(new Separator());
+            windowMenu.add(new GroupMarker("perspective"));
 
             windowMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
             windowMenu.add(new Separator());
