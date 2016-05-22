@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
@@ -126,7 +127,7 @@ public class DBeaverApplication implements IApplication
             IWorkbenchPreferenceConstants.KEY_CONFIGURATION_ID,
             ApplicationWorkbenchAdvisor.DBEAVER_SCHEME_NAME);
         try {
-            int returnCode = PlatformUI.createAndRunWorkbench(display, new ApplicationWorkbenchAdvisor());
+            int returnCode = PlatformUI.createAndRunWorkbench(display, createWorkbenchAdvisor());
             if (returnCode == PlatformUI.RETURN_RESTART) {
                 return IApplication.EXIT_RESTART;
             }
@@ -142,6 +143,11 @@ public class DBeaverApplication implements IApplication
 */
             display.dispose();
         }
+    }
+
+    @NotNull
+    protected ApplicationWorkbenchAdvisor createWorkbenchAdvisor() {
+        return new ApplicationWorkbenchAdvisor();
     }
 
     private boolean handleCommandLine(String instanceLoc) {
