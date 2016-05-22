@@ -18,15 +18,18 @@
 package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
+import org.jkiss.dbeaver.registry.ResourceHandlerDescriptor;
 
 import java.util.Collection;
 
@@ -86,4 +89,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
         return resource.getName();
     }
 
+    protected IFolder getDefaultRoot(IProject project) {
+        return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, getClass(), false);
+    }
 }
