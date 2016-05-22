@@ -53,6 +53,7 @@ public class EditorUtils {
 
     public static final String PROP_SQL_DATA_SOURCE = "sql-editor-data-source-id";
     public static final String PROP_SQL_PROJECT = "sql-editor-project-id";
+    public static final QualifiedName QN_PROJECT_ID = new QualifiedName("org.jkiss.dbeaver", PROP_SQL_PROJECT);
     public static final QualifiedName QN_DATA_SOURCE_ID = new QualifiedName("org.jkiss.dbeaver", PROP_SQL_DATA_SOURCE);
 
     private static final Log log = Log.getLog(EditorUtils.class);
@@ -170,9 +171,17 @@ public class EditorUtils {
             if (!file.exists()) {
                 return null;
             }
+            String projectId = file.getPersistentProperty(QN_PROJECT_ID);
             String dataSourceId = file.getPersistentProperty(QN_DATA_SOURCE_ID);
             if (dataSourceId != null) {
-                DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(file.getProject());
+                IProject project = file.getProject();
+                if (projectId != null) {
+                    final IProject fileProject = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectId);
+                    if (fileProject != null && fileProject.exists()) {
+                        project = fileProject;
+                    }
+                }
+                DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
                 return dataSourceRegistry == null ? null : dataSourceRegistry.getDataSource(dataSourceId);
             } else {
                 return null;
@@ -215,6 +224,7 @@ public class EditorUtils {
     {
         try {
             file.setPersistentProperty(QN_DATA_SOURCE_ID, dataSourceContainer == null ? null : dataSourceContainer.getId());
+            file.setPersistentProperty(QN_PROJECT_ID, dataSourceContainer == null ? null : dataSourceContainer.getRegistry().getProject().getName());
             if (notify) {
                 final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(file.getProject());
                 if (projectNode != null) {
