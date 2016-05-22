@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+        id="org.jkiss.dbeaver.ce.feature"
+        label="%featureName"
+        version="3.6.8"
+        provider-name="%providerName"
+        plugin="org.jkiss.dbeaver.core">
+
+    <description>
+        %description
+    </description>
+
+    <copyright>
+        %copyright
+    </copyright>
+
+    <license url="%licenseURL">
+        %license
+    </license>
+
+    <url>
+        <update label="DBeaver Universal Database Manager" url="http://dbeaver.jkiss.org/"/>
+    </url>
+
+    <includes
+            id="org.jkiss.dbeaver.standalone.feature"
+            version="0.0.0"/>
+
+</feature>
