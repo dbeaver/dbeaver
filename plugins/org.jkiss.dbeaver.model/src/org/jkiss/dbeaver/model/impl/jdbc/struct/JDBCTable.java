@@ -101,7 +101,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @Nullable DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -130,7 +130,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         // Some criteria doesn't work without alias
         // (e.g. structured attributes in Oracle requires table alias)
         String tableAlias = null;
-        if (dataFilter.hasConditions() || rowIdAttribute != null) {
+        if ((dataFilter != null && dataFilter.hasConditions()) || rowIdAttribute != null) {
             if (dataSource instanceof SQLDataSource) {
                 if (((SQLDataSource) dataSource).getSQLDialect().supportsAliasInSelect()) {
                     tableAlias = DEFAULT_TABLE_ALIAS;
