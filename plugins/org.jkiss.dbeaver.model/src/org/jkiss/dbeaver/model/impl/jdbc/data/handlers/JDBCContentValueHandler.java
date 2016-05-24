@@ -33,7 +33,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.utils.MimeTypes;
+import org.jkiss.utils.IOUtils;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
 import java.sql.*;
 
 /**
@@ -183,6 +186,18 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             return clob;
         } else if (object instanceof SQLXML) {
             return new JDBCContentXML(session.getDataSource(), (SQLXML) object);
+        } else if (object instanceof InputStream) {
+            // Some weird drivers returns InputStream instead of Xlob.
+            // Copy stream to byte array
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            final InputStream stream = (InputStream) object;
+            try {
+                IOUtils.copyStream(stream, buffer);
+            } catch (Exception e) {
+                throw new DBCException("Error reading content stream", e);
+            }
+            IOUtils.close(stream);
+            return new JDBCContentBytes(session.getDataSource(), buffer.toByteArray());
         } else if (object instanceof DBDContent) {
             if (copy && object instanceof DBDValueCloneable) {
                 return (DBDContent) ((DBDValueCloneable)object).cloneValue(session.getProgressMonitor());
