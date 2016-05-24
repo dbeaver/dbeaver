@@ -544,6 +544,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                                 int score1 = scoredMatches.get(o1.getName());
                                 int score2 = scoredMatches.get(o2.getName());
                                 if (score1 == score2) {
+                                    if (o1 instanceof DBSAttributeBase) {
+                                        return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
+                                    }
                                     return o1.getName().compareTo(o2.getName());
                                 }
                                 return score2 - score1;

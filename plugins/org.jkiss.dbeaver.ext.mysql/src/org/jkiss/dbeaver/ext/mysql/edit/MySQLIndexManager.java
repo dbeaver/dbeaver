@@ -65,7 +65,8 @@ public class MySQLIndexManager extends SQLIndexManager<MySQLTableIndex, MySQLTab
             !editDialog.isUnique(),
             null,
             editDialog.getIndexType(),
-            null);
+            null,
+            false);
         StringBuilder idxName = new StringBuilder(64);
         idxName.append(CommonUtils.escapeIdentifier(parent.getName()));
         int colIndex = 1;
