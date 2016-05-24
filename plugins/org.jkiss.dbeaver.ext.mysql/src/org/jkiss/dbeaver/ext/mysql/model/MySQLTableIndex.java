@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
@@ -34,7 +35,7 @@ import java.util.List;
 /**
  * MySQLTableIndex
  */
-public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
+public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable> implements DBPNamedObject2
 {
     private boolean nonUnique;
     private String additionalInfo;
@@ -44,19 +45,13 @@ public class MySQLTableIndex extends JDBCTableIndex<MySQLCatalog, MySQLTable>
 
     public MySQLTableIndex(
         MySQLTable table,
-        DBSIndexType indexType)
-    {
-        super(table.getContainer(), table, null, indexType, false);
-    }
-
-    public MySQLTableIndex(
-        MySQLTable table,
         boolean nonUnique,
         String indexName,
         DBSIndexType indexType,
-        String comment)
+        String comment,
+        boolean persisted)
     {
-        super(table.getContainer(), table, indexName, indexType, true);
+        super(table.getContainer(), table, indexName, indexType, persisted);
         this.nonUnique = nonUnique;
         this.indexComment = comment;
     }
