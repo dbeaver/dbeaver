@@ -37,6 +37,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.io.Reader;
+import java.io.StringWriter;
 import java.sql.*;
 
 /**
@@ -198,6 +200,17 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
             }
             IOUtils.close(stream);
             return new JDBCContentBytes(session.getDataSource(), buffer.toByteArray());
+        } else if (object instanceof Reader) {
+            // Copy reader to string
+            StringWriter buffer = new StringWriter();
+            final Reader reader = (Reader) object;
+            try {
+                IOUtils.copyText(reader, buffer);
+            } catch (Exception e) {
+                throw new DBCException("Error reading content reader", e);
+            }
+            IOUtils.close(reader);
+            return new JDBCContentChars(session.getDataSource(), buffer.toString());
         } else if (object instanceof DBDContent) {
             if (copy && object instanceof DBDValueCloneable) {
                 return (DBDContent) ((DBDValueCloneable)object).cloneValue(session.getProgressMonitor());
