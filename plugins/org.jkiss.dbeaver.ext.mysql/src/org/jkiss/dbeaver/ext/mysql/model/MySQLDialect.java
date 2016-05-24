@@ -21,6 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+
+import java.util.Collections;
 
 /**
 * MySQL dialect
@@ -30,6 +33,7 @@ class MySQLDialect extends JDBCSQLDialect {
     public MySQLDialect(JDBCDatabaseMetaData metaData) {
         super("MySQL", metaData);
         //addSQLKeyword("STATISTICS");
+        Collections.addAll(tableQueryWords, "EXPLAIN", "DESCRIBE", "DESC");
     }
 
     @Nullable
