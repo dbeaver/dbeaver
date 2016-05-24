@@ -154,7 +154,7 @@ class ResultSetFilterPanel extends Composite
                         e.gc.setForeground(shadowColor);
                         e.gc.setFont(hintFont);
                         e.gc.drawText(supportsDataFilter ?
-                            "Enter an SQL expression to filter results" :
+                            "Enter a SQL expression to filter results" :
                             "Data filter is not supported",
                             2, 0);
                         e.gc.setFont(null);
