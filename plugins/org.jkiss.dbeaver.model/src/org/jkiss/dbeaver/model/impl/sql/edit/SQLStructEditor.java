@@ -117,6 +117,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveabl
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addStructObjectCreateActions(actions, this);
+            addObjectExtraActions(actions, this);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
     }

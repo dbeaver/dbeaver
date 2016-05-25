@@ -103,7 +103,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         appendTableModifiers(table, tableProps, createQuery);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
-        addObjectExtraActions(actions, command);
     }
 
     @Override

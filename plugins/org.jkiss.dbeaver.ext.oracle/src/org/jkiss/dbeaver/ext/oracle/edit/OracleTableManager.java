@@ -73,7 +73,6 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
             appendTableModifiers(command.getObject(), command, query);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
-        addObjectExtraActions(actionList, command);
     }
 
     @Override
