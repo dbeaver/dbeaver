@@ -1614,17 +1614,24 @@ public final class DBUtils {
     @Nullable
     public static DBSObject getSelectedObject(@NotNull DBSInstance object)
     {
+        return getSelectedObject(object, true);
+    }
+
+    @Nullable
+    public static DBSObject getSelectedObject(@NotNull DBSObject object, boolean searchNested)
+    {
         DBSObjectSelector objectSelector = getAdapter(DBSObjectSelector.class, object);
         if (objectSelector != null) {
             DBSObject selectedObject1 = objectSelector.getSelectedObject();
-            if (selectedObject1 != null) {
-                DBSObjectSelector objectSelector2 = getAdapter(DBSObjectSelector.class, selectedObject1);
-                if (objectSelector2 != null) {
-                    return objectSelector2.getSelectedObject();
+            if (searchNested && selectedObject1 != null) {
+                DBSObject nestedObject = getSelectedObject(selectedObject1, true);
+                if (nestedObject != null) {
+                    return nestedObject;
                 }
             }
             return selectedObject1;
         }
         return null;
     }
+
 }
