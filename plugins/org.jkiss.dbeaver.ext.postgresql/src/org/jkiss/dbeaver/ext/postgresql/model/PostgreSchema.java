@@ -705,9 +705,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT p.oid,p.* FROM pg_catalog.pg_proc p " +
-                    "\nWHERE p.pronamespace=?" +
-                    "\nORDER BY p.proname"
+                "SELECT p.oid,p.*,d.description\n" +
+                "FROM pg_catalog.pg_proc p\n" +
+                "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p.oid\n" +
+                "WHERE p.pronamespace=?\n" +
+                "ORDER BY p.proname"
             );
             dbStat.setLong(1, getObjectId());
             return dbStat;

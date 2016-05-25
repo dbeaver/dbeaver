@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
@@ -194,6 +195,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
         }
         this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");
+        this.description = JDBCUtils.safeGetString(dbResult, "description");
     }
 
     @NotNull
@@ -364,6 +366,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, order = 200)
+    public String getDescription()
+    {
+        return super.getDescription();
+    }
+
     public String getFullQualifiedSignature() {
         return DBUtils.getQuotedIdentifier(getContainer()) + "." + makeOverloadedName(true);
     }
@@ -372,4 +382,5 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public String toString() {
         return overloadedName;
     }
+
 }
