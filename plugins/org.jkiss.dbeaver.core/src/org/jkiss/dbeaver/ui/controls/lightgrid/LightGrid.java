@@ -1873,13 +1873,15 @@ public abstract class LightGrid extends Canvas {
                             columnBeingSorted = column;
                             break;
                         }
+                        x2 += column.getWidth();
                         if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
                             overResizer = true;
                             columnBeingResized = column;
                             break;
                         }
+                    } else {
+                        x2 += column.getWidth();
                     }
-                    x2 += column.getWidth();
                 }
             }
             // Redraw header
