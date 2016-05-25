@@ -239,7 +239,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     rootObject = getTableFromAlias(monitor, (DBSObjectContainer)dataSource, null);
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
+                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
                     if (selectedObject != null) {
                         makeProposalsFromChildren(monitor, selectedObject, null, proposals);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -256,7 +256,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     // Part of column name
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                    DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
+                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
@@ -608,7 +608,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (wordDetector.getFullWord().indexOf(editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
+                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = DBUtils.getFullQualifiedName(
                                 dataSource,

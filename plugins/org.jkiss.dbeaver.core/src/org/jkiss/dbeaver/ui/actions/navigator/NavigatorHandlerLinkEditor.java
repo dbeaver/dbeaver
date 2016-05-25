@@ -41,9 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 
@@ -83,7 +81,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                 if (dsContainer != null) {
                     DBPDataSource dataSource = dsContainer.getDataSource();
                     if (dataSource != null) {
-                        activeObject = DBUtils.getDefaultOrSelectedObject(dataSource);
+                        activeObject = DBUtils.getDefaultOrActiveObject(dataSource);
                     } else {
                         activeObject = dsContainer;
                     }
