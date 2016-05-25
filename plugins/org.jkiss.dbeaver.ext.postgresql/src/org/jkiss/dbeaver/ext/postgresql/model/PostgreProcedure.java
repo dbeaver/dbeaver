@@ -378,6 +378,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return DBUtils.getQuotedIdentifier(getContainer()) + "." + makeOverloadedName(true);
     }
 
+    public String getProcedureTypeName() {
+        return isAggregate ? "AGGREGATE" : "FUNCTION";
+    }
+
     @Override
     public String toString() {
         return overloadedName;
