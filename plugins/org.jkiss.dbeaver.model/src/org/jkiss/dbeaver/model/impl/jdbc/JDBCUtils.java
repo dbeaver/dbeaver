@@ -609,6 +609,25 @@ public class JDBCUtils {
         }
     }
 
+    @Nullable
+    public static <T> T queryObject(JDBCSession session, String sql, Object... args) throws SQLException
+    {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (args != null) {
+                for (int i = 0; i < args.length; i++) {
+                    dbStat.setObject(i + 1, args[i]);
+                }
+            }
+            try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                if (resultSet.next()) {
+                    return (T) resultSet.getObject(1);
+                } else {
+                    return null;
+                }
+            }
+        }
+    }
+
     private static void debugColumnRead(String columnName, SQLException error)
     {
         log.debug("Can't get column '" + columnName + "': " + error.getMessage());
