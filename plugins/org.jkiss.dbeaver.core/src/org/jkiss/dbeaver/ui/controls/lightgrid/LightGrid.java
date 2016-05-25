@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.lightgrid;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -25,6 +24,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1876,6 +1876,7 @@ public abstract class LightGrid extends Canvas {
                         x2 += column.getWidth();
                         if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
                             overResizer = true;
+
                             columnBeingResized = column;
                             break;
                         }
