@@ -68,23 +68,26 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     @Override
     protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        final OracleTable table = command.getObject();
-        boolean hasComment = command.getProperty("comment") != null;
         List<DBEPersistAction> actions = new ArrayList<>(2);
-        if (!hasComment || command.getProperties().size() > 1) {
+        if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
             appendTableModifiers(command.getObject(), command, query);
             actions.add(new SQLDatabasePersistAction(query.toString()));
         }
-        if (hasComment) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment table",
-                "COMMENT ON TABLE " + table.getFullQualifiedName() +
-                    " IS '" + SQLUtils.escapeString(table.getComment()) + "'"));
-        }
+        addExtraTableActions(actions, command);
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+    @Override
+    protected void addExtraTableActions(List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command) {
+        if (command.getProperty("comment") != null) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment table",
+                "COMMENT ON TABLE " + command.getObject().getFullQualifiedName() +
+                    " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+        }
     }
 
     @Override

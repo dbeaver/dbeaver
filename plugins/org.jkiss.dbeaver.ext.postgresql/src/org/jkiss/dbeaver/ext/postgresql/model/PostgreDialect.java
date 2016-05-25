@@ -33,6 +33,7 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("SHOW");
         addSQLKeyword("TYPE");
         addSQLKeyword("USER");
+        addSQLKeyword("COMMENT");
         removeSQLKeyword("PUBLIC");
         removeSQLKeyword("LENGTH");
         removeSQLKeyword("LANGUAGE");
