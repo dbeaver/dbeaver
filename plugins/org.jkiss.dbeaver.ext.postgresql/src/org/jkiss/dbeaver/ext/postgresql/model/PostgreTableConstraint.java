@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 
@@ -30,10 +32,12 @@ import java.util.List;
  */
 public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
+    private String source;
     private List<PostgreTableConstraintColumn> columns = new ArrayList<>();
 
     public PostgreTableConstraint(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, constraintType, resultSet);
+        this.source = JDBCUtils.safeGetString(resultSet, "consrc");
     }
 
     public PostgreTableConstraint(PostgreTableBase table, DBSEntityConstraintType constraintType) {
@@ -57,5 +61,10 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
 
     public void addColumn(PostgreTableConstraintColumn column) {
         this.columns.add(column);
+    }
+
+    @Property(viewable = true, order = 10)
+    public String getSource() {
+        return source;
     }
 }

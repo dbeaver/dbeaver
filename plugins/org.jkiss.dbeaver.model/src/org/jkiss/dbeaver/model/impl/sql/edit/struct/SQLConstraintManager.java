@@ -86,8 +86,18 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
         if (!legacySyntax) {
             decl.append(constraintName).append(" ");
         }
-        decl.append(getAddConstraintTypeClause(constraint))
-            .append(" ("); //$NON-NLS-1$
+        decl.append(getAddConstraintTypeClause(constraint));
+
+        appendConstraintDefinition(decl, command);
+
+        if (legacySyntax) {
+            decl.append(" CONSTRAINT ").append(constraintName); //$NON-NLS-1$
+        }
+        return decl;
+    }
+
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OBJECT_TYPE> command) {
+        decl.append(" ("); //$NON-NLS-1$
         // Get columns using void monitor
         try {
             List<? extends DBSEntityAttributeRef> attrs = command.getObject().getAttributeReferences(VoidProgressMonitor.INSTANCE);
@@ -107,11 +117,6 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
             log.warn("Can't obtain attribute references", e);
         }
         decl.append(")"); //$NON-NLS-1$
-
-        if (legacySyntax) {
-            decl.append(" CONSTRAINT ").append(constraintName); //$NON-NLS-1$
-        }
-        return decl;
     }
 
     @NotNull
