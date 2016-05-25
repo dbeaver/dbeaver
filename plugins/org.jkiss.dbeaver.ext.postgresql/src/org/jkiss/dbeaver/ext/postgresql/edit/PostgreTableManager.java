@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,20 +68,17 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         final PostgreTableBase table = command.getObject();
-        List<DBEPersistAction> actions = new ArrayList<>(2);
         if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(table.getFullQualifiedName()).append(" "); //$NON-NLS-1$
             appendTableModifiers(table, command, query);
 
-            actions.add(new SQLDatabasePersistAction(query.toString()));
+            actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
-        addObjectExtraActions(actions, command);
-
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        addObjectExtraActions(actionList, command);
     }
 
     @Override

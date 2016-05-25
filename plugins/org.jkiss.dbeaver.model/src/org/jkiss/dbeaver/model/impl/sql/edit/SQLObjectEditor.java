@@ -119,9 +119,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     //////////////////////////////////////////////////
     // Actions
 
-    protected abstract DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command);
+    protected abstract void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command);
 
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
@@ -238,7 +238,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions()
         {
-            return makeObjectModifyActions(this);
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addObjectModifyActions(actions, this);
+            return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
         @Override
@@ -268,7 +270,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions()
         {
-            return makeObjectCreateActions(this);
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addObjectCreateActions(actions, this);
+            return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
         @Override

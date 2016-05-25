@@ -76,15 +76,15 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceProcedureQuery(command.getObject());
+        createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceProcedureQuery(command.getObject());
+        createOrReplaceProcedureQuery(actionList, command.getObject());
     }
 
     @Override
@@ -96,13 +96,13 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         );
     }
 
-    private DBEPersistAction[] createOrReplaceProcedureQuery(PostgreProcedure procedure)
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure)
     {
         String objectType = procedure.isAggregate() ? "AGGREGATE" : "FUNCTION";
-        return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " IF EXISTS " + procedure.getFullQualifiedSignature()), //$NON-NLS-2$ //$NON-NLS-3$
-            new SQLDatabasePersistAction("Create procedure", procedure.getBody()) //$NON-NLS-2$
-        };
+        actions.add(
+            new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " IF EXISTS " + procedure.getFullQualifiedSignature()));
+        actions.add(
+            new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
     }
 
 }

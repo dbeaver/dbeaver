@@ -73,15 +73,15 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery(command);
+        createOrReplaceViewQuery(actions, command);
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery(command);
+        createOrReplaceViewQuery(actionList, command);
     }
 
     @Override
@@ -92,11 +92,10 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         );
     }
 
-    private DBEPersistAction[] createOrReplaceViewQuery(DBECommandComposite<OracleView, PropertyHandler> command)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, DBECommandComposite<OracleView, PropertyHandler> command)
     {
         final OracleView view = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
-        List<DBEPersistAction> actions = new ArrayList<>(2);
         if (!hasComment || command.getProperties().size() > 1) {
             StringBuilder decl = new StringBuilder(200);
             final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
@@ -110,7 +109,6 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
                 "COMMENT ON TABLE " + view.getFullQualifiedName() +
                     " IS '" + view.getComment() + "'"));
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

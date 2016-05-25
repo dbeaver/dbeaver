@@ -20,16 +20,10 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.ext.db2.model.DB2Index;
-import org.jkiss.dbeaver.ext.db2.model.DB2Schema;
-import org.jkiss.dbeaver.ext.db2.model.DB2Table;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableForeignKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2TableUniqueKey;
-import org.jkiss.dbeaver.ext.db2.model.DB2Tablespace;
+import org.jkiss.dbeaver.ext.db2.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
@@ -37,8 +31,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -142,17 +134,13 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     }
 
     @Override
-    public DBEPersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
+    public void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command)
     {
+        super.addStructObjectCreateActions(actions, command);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
-        if (commentAction == null) {
-            return super.makeStructObjectCreateActions(command);
-        } else {
-            List<DBEPersistAction> actionList = new ArrayList<>(Arrays.asList(super
-                .makeStructObjectCreateActions(command)));
-            actionList.add(commentAction);
-            return actionList.toArray(new DBEPersistAction[actionList.size()]);
+        if (commentAction != null) {
+            actions.add(commentAction);
         }
     }
 
@@ -161,11 +149,9 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // ------
 
     @Override
-    public DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    public void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         DB2Table db2Table = command.getObject();
-
-        List<DBEPersistAction> actions = new ArrayList<>(2);
 
         if (command.getProperties().size() > 1) {
             StringBuilder sb = new StringBuilder(128);
@@ -175,15 +161,13 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
             appendTableModifiers(command.getObject(), command, sb);
 
-            actions.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
+            actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }
 
         DBEPersistAction commentAction = buildCommentAction(db2Table);
         if (commentAction != null) {
-            actions.add(commentAction);
+            actionList.add(commentAction);
         }
-
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     // ------

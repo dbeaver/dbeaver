@@ -77,13 +77,13 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         OracleUser user = command.getObject().getUser();
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Create schema",
                 "CREATE USER " + DBUtils.getQuotedIdentifier(user) + " IDENTIFIED BY \"" + user.getPassword() + "\"")
-        };
+        );
     }
 
     @Override

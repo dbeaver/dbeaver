@@ -65,7 +65,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final PostgreSchema schema = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA " + DBUtils.getQuotedIdentifier(schema));
@@ -78,9 +78,9 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
             log.error(e);
         }
 
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
-        };
+        );
     }
 
     @Override

@@ -22,12 +22,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTrigger;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,15 +79,15 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        createOrReplaceViewQuery(actions, command.getObject());
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        createOrReplaceViewQuery(actionList, command.getObject());
     }
 
     @Override
@@ -99,16 +98,14 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
         );
     }
 
-    private DBEPersistAction[] createOrReplaceViewQuery(OracleTrigger trigger)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, OracleTrigger trigger)
     {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {
-            return null;
+            return;
         }
-        List<DBEPersistAction> actions = new ArrayList<>();
         actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE " + source)); //$NON-NLS-2$
         OracleUtils.addSchemaChangeActions(actions, trigger);
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
 }

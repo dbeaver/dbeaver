@@ -37,7 +37,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveabl
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    protected abstract DBEPersistAction[] makeStructObjectCreateActions(StructCreateCommand command);
+    protected abstract void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command);
 
     @Override
     public StructCreateCommand makeCreateCommand(OBJECT_TYPE object)
@@ -115,7 +115,9 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveabl
         @Override
         public DBEPersistAction[] getPersistActions()
         {
-            return makeStructObjectCreateActions(this);
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addStructObjectCreateActions(actions, this);
+            return actions.toArray(new DBEPersistAction[actions.size()]);
         }
     }
 

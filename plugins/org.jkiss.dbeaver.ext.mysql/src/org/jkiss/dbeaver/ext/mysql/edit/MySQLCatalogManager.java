@@ -68,7 +68,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE SCHEMA `" + catalog.getName() + "`");
@@ -78,9 +78,9 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
         if (catalog.getDefaultCollation() != null) {
             script.append("\nDEFAULT COLLATE ").append(catalog.getDefaultCollation().getName());
         }
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Create schema", script.toString()) //$NON-NLS-2$
-        };
+        );
     }
 
     @Override

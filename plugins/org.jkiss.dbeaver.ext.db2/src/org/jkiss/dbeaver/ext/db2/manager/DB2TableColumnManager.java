@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.ext.db2.manager;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2Table;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableBase;
 import org.jkiss.dbeaver.ext.db2.model.DB2TableColumn;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -98,11 +97,9 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     // Alter
     // -----
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         DB2TableColumn db2Column = command.getObject();
-
-        List<DBEPersistAction> actions = new ArrayList<>(3);
 
         boolean hasColumnChanges = false;
         if (!command.getProperties().isEmpty()) {
@@ -110,22 +107,20 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
             if (!deltaSQL.isEmpty()) {
                 hasColumnChanges = true;
                 String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), deltaSQL);
-                actions.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
+                actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
             }
         }
 
         // Comment
         DBEPersistAction commentAction = buildCommentAction(db2Column);
         if (commentAction != null) {
-            actions.add(commentAction);
+            actionList.add(commentAction);
         }
 
         if (hasColumnChanges) {
             // Be Safe, Add a reorg action
-            actions.add(buildReorgAction(db2Column));
+            actionList.add(buildReorgAction(db2Column));
         }
-
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     // -------
