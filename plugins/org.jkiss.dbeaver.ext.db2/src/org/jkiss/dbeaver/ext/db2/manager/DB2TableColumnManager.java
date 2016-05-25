@@ -104,8 +104,15 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
 
         List<DBEPersistAction> actions = new ArrayList<>(3);
 
-        String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), computeDeltaSQL(command));
-        actions.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
+        boolean hasColumnChanges = false;
+        if (!command.getProperties().isEmpty()) {
+            final String deltaSQL = computeDeltaSQL(command);
+            if (!deltaSQL.isEmpty()) {
+                hasColumnChanges = true;
+                String sqlAlterColumn = String.format(SQL_ALTER, db2Column.getTable().getFullQualifiedName(), deltaSQL);
+                actions.add(new SQLDatabasePersistAction(CMD_ALTER, sqlAlterColumn));
+            }
+        }
 
         // Comment
         DBEPersistAction commentAction = buildCommentAction(db2Column);
@@ -113,8 +120,10 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
             actions.add(commentAction);
         }
 
-        // Be Safe, Add a reorg action
-        actions.add(buildReorgAction(db2Column));
+        if (hasColumnChanges) {
+            // Be Safe, Add a reorg action
+            actions.add(buildReorgAction(db2Column));
+        }
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }
@@ -125,7 +134,9 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
     private String computeDeltaSQL(ObjectChangeCommand command)
     {
 
-        if (command.getProperties().isEmpty()) {
+        if (command.getProperties().isEmpty() ||
+            (command.getProperties().size() == 1 && command.getProperty("description") != null))
+        {
             return "";
         }
 
