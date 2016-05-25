@@ -115,7 +115,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
             attrs[i] = attr;
         }
         final DBSDataType dataType = getDataType();
-        try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataType.getDataSource(), "Create struct")) {
+        try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataType.getDataSource(), "Create JDBC struct")) {
             if (session instanceof Connection) {
                 return ((Connection) session).createStruct(dataType.getTypeName(), attrs);
             } else {
