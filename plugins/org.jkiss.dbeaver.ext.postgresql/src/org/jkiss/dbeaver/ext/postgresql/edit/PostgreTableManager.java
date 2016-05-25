@@ -29,8 +29,10 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,13 +71,25 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     @Override
     protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
     {
-        StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-        query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
-        appendTableModifiers(command.getObject(), command, query);
+        final PostgreTableBase table = command.getObject();
+        List<DBEPersistAction> actions = new ArrayList<>(2);
+        boolean hasComment = command.getProperty("description") != null;
+        if (!hasComment || command.getProperties().size() > 1) {
+            StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
+            query.append(table.getFullQualifiedName()).append(" "); //$NON-NLS-1$
+            appendTableModifiers(table, command, query);
 
-        return new DBEPersistAction[] {
-            new SQLDatabasePersistAction(query.toString())
-        };
+            actions.add(new SQLDatabasePersistAction(query.toString()));
+        }
+
+        if (hasComment) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment table",
+                "COMMENT ON TABLE " + table.getFullQualifiedName() +
+                    " IS '" + SQLUtils.escapeString(table.getDescription()) + "'"));
+        }
+
+        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override
@@ -95,24 +109,6 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                     ddl.append(")");
                 }
                 ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE").append("\n)");
-/*
-                final PostgreTableRegular.AdditionalInfo additionalInfo = table.getAdditionalInfo(monitor);
-                if ((!table.isPersisted() || tableProps.getProperty("engine") != null) && additionalInfo.getEngine() != null) { //$NON-NLS-1$
-                    ddl.append("\nENGINE=").append(additionalInfo.getEngine().getName()); //$NON-NLS-1$
-                }
-                if ((!table.isPersisted() || tableProps.getProperty("charset") != null) && additionalInfo.getCharset() != null) { //$NON-NLS-1$
-                    ddl.append("\nDEFAULT CHARSET=").append(additionalInfo.getCharset().getName()); //$NON-NLS-1$
-                }
-                if ((!table.isPersisted() || tableProps.getProperty("collation") != null) && additionalInfo.getCollation() != null) { //$NON-NLS-1$
-                    ddl.append("\nCOLLATE=").append(additionalInfo.getCollation().getName()); //$NON-NLS-1$
-                }
-                if ((!table.isPersisted() || tableProps.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
-                    ddl.append("\nCOMMENT='").append(table.getDescription().replace('\'', '"')).append("'"); //$NON-NLS-1$ //$NON-NLS-2$
-                }
-                if ((!table.isPersisted() || tableProps.getProperty("autoIncrement") != null) && additionalInfo.getAutoIncrement() > 0) { //$NON-NLS-1$
-                    ddl.append("\nAUTO_INCREMENT=").append(additionalInfo.getAutoIncrement()); //$NON-NLS-1$
-                }
-*/
             } catch (DBException e) {
                 log.error(e);
             }

@@ -103,28 +103,5 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         };
     }
 
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final MySQLProcedure object)
-    {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "procedure.body", //$NON-NLS-1$
-                MySQLMessages.edit_procedure_manager_body,
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", MySQLMessages.edit_procedure_manager_body) {
-                    public ISection getSectionClass()
-                    {
-                        return new MySQLProcedureBodySection(activeEditor);
-                    }
-                })
-        };
-    }
-
-*/
-
 }
 

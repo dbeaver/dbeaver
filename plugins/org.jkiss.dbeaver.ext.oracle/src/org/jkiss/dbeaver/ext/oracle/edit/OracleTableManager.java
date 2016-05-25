@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + table.getFullQualifiedName() +
-                    " IS '" + table.getComment() + "'"));
+                    " IS '" + SQLUtils.escapeString(table.getComment()) + "'"));
         }
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
