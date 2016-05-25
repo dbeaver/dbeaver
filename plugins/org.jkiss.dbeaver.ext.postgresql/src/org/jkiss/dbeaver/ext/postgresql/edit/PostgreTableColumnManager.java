@@ -155,16 +155,16 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
         final PostgreAttribute column = command.getObject();
 
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " RENAME COLUMN " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " TO " +
-                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName()))}; //$NON-NLS-1$ //$NON-NLS-2$
+                    DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
 
 }

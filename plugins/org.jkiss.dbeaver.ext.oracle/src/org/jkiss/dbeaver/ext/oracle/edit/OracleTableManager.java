@@ -96,14 +96,14 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
                 "RENAME " + command.getObject().getFullQualifiedName() + //$NON-NLS-1$
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
-        };
+        );
     }
 
     @Override
