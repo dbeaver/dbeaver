@@ -80,13 +80,13 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
 
             actions.add(new SQLDatabasePersistAction(query.toString()));
         }
-        addExtraTableActions(actions, command);
+        addObjectExtraActions(actions, command);
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override
-    protected void addExtraTableActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command) {
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command) {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",

@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -117,6 +118,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object modification is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
+    }
+
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command)
+    {
+
     }
 
     protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
