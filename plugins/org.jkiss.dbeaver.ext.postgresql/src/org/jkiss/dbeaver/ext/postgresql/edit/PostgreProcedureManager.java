@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * PostgreProcedureManager
  */
@@ -86,12 +88,12 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         String objectType = command.getObject().isAggregate() ? "AGGREGATE" : "FUNCTION";
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-2$
-        };
+        );
     }
 
     private DBEPersistAction[] createOrReplaceProcedureQuery(PostgreProcedure procedure)
@@ -102,29 +104,6 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
             new SQLDatabasePersistAction("Create procedure", procedure.getBody()) //$NON-NLS-2$
         };
     }
-
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final PostgreProcedure object)
-    {
-        if (object.getContainer().isSystem()) {
-            return null;
-        }
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "procedure.body", //$NON-NLS-1$
-                PostgreMessages.edit_procedure_manager_body,
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", PostgreMessages.edit_procedure_manager_body) {
-                    public ISection getSectionClass()
-                    {
-                        return new PostgreProcedureBodySection(activeEditor);
-                    }
-                })
-        };
-    }
-
-*/
 
 }
 

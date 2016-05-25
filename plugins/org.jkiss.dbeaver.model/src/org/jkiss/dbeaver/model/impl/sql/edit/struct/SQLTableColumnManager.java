@@ -34,6 +34,8 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * JDBC table column manager
  */
@@ -173,13 +175,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table_column, "ALTER TABLE " + command.getObject().getTable().getFullQualifiedName() + //$NON-NLS-2$
                     " DROP " + (hasDDLFeature(command.getObject(), DDL_FEATURE_OMIT_COLUMN_CLAUSE_IN_DROP) ? "" : "COLUMN ") + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        };
+        );
     }
 
     protected String getNewColumnName(DBECommandContext context, TABLE_TYPE table)

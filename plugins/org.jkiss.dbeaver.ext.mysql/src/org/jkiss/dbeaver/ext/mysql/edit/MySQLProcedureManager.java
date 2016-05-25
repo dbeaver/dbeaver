@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * MySQLProcedureManager
  */
@@ -88,11 +90,11 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop procedure", "DROP " + command.getObject().getProcedureType() + " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-        };
+        );
     }
 
     private DBEPersistAction[] createOrReplaceProcedureQuery(MySQLProcedure procedure)

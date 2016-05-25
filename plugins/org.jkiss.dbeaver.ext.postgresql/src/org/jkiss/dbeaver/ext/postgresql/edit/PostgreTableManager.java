@@ -142,14 +142,14 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
                 "DROP " + (command.getObject() instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +
                     " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-        };
+        );
     }
 
 }

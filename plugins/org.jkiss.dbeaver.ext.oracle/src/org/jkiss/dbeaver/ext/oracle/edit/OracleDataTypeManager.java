@@ -73,13 +73,13 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand)
     {
         final OracleDataType object = objectDeleteCommand.getObject();
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop type",
                 "DROP TYPE " + object.getFullQualifiedName()) //$NON-NLS-1$
-        };
+        );
     }
 
     @Override

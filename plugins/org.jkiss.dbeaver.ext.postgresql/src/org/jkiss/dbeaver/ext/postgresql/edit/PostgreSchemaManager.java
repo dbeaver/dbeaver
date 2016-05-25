@@ -84,11 +84,11 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop schema", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject()) + " CASCADE") //$NON-NLS-2$
-        };
+        );
     }
 
     @Override

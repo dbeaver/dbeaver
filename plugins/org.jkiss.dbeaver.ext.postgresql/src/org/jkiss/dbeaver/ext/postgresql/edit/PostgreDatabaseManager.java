@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 
+import java.util.List;
+
 /**
  * PostgreDatabaseManager
  */
@@ -71,11 +73,11 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop database", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
-        };
+        );
     }
 
     @Override

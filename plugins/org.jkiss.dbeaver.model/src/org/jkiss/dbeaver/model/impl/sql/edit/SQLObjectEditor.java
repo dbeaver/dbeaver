@@ -138,7 +138,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
-    protected abstract DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
+    protected abstract void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command);
 
     //////////////////////////////////////////////////
     // Properties
@@ -304,7 +304,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions()
         {
-            return makeObjectDeleteActions(this);
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addObjectDeleteActions(actions, this);
+            return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
         @Override

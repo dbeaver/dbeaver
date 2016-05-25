@@ -92,11 +92,11 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-        };
+        );
     }
 
     private DBEPersistAction[] createOrReplaceViewQuery(OracleTrigger trigger)

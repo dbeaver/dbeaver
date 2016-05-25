@@ -111,14 +111,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
                 "DROP " + (command.getObject().isView() ? "VIEW" : "TABLE") +
                 " " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-        };
+        );
     }
 
     protected void appendTableModifiers(OBJECT_TYPE table, NestedObjectCommand tableProps, StringBuilder ddl)

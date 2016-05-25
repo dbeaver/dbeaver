@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * PostgreViewManager
  */
@@ -82,11 +84,11 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP VIEW " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-        };
+        );
     }
 
     private DBEPersistAction[] createOrReplaceViewQuery(PostgreView view)

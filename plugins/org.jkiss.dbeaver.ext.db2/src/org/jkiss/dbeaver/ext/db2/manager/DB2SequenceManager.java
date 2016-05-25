@@ -120,11 +120,11 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         String sql = String.format(SQL_DROP, command.getObject().getFullQualifiedName());
         DBEPersistAction action = new SQLDatabasePersistAction("Drop Sequence", sql);
-        return new DBEPersistAction[]{action};
+        actions.add(action);
     }
 
     // -------
