@@ -73,6 +73,8 @@ public abstract class DatabaseObjectListControl<OBJECT_TYPE extends DBPObject> e
                 };
                 copyAction.setEnabled(!getSelectionProvider().getSelection().isEmpty());
                 manager.add(copyAction);
+                manager.add(new Separator());
+                fillCustomActions(manager);
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
