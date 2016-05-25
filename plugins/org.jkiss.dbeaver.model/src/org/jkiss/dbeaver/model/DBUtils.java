@@ -1605,14 +1605,14 @@ public final class DBUtils {
     }
 
     @NotNull
-    public static DBSObject getDefaultOrSelectedObject(@NotNull DBSInstance object)
+    public static DBSObject getDefaultOrActiveObject(@NotNull DBSInstance object)
     {
-        DBSObject selectedObject = getSelectedObject(object);
+        DBSObject selectedObject = getActiveInstanceObject(object);
         return selectedObject == null ? object : selectedObject;
     }
 
     @Nullable
-    public static DBSObject getSelectedObject(@NotNull DBSInstance object)
+    public static DBSObject getActiveInstanceObject(@NotNull DBSInstance object)
     {
         return getSelectedObject(object, true);
     }
