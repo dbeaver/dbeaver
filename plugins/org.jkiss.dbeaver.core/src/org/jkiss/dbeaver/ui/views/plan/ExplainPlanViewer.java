@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.views.plan;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.*;
@@ -82,9 +82,9 @@ public class ExplainPlanViewer implements IPropertyChangeListener
 
             this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET) {
                 @Override
-                protected void fillCustomToolbar(ToolBarManager toolbarManager) {
-                    toolbarManager.add(toggleViewAction);
-                    toolbarManager.add(refreshPlanAction);
+                protected void fillCustomActions(IContributionManager contributionManager) {
+                    contributionManager.add(toggleViewAction);
+                    contributionManager.add(refreshPlanAction);
                 }
             };
             this.planTree.setShowDivider(true);

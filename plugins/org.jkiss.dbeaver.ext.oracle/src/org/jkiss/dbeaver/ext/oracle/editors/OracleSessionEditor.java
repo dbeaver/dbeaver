@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
@@ -58,11 +58,11 @@ public class OracleSessionEditor extends AbstractSessionEditor
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer(this, parent, new OracleServerSessionManager(getExecutionContext())) {
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
-                toolBar.add(killSessionAction);
-                toolBar.add(disconnectSessionAction);
-                toolBar.add(new Separator());
+                contributionManager.add(killSessionAction);
+                contributionManager.add(disconnectSessionAction);
+                contributionManager.add(new Separator());
             }
 
             @Override

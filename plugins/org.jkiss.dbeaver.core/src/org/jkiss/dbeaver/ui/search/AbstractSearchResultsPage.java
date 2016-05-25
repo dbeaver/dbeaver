@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.search;
 
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
@@ -132,7 +132,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
 
         @Override
-        protected void fillCustomToolbar(ToolBarManager toolbarManager)
+        protected void fillCustomActions(IContributionManager contributionManager)
         {
         }
 

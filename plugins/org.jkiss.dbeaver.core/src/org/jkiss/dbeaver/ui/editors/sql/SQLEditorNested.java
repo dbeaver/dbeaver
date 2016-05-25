@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ui.editors.sql;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.text.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -314,7 +314,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     protected abstract void setSourceText(DBRProgressMonitor monitor, String sourceText);
 
-    protected void contributeEditorCommands(ToolBarManager toolBarManager)
+    protected void contributeEditorCommands(IContributionManager toolBarManager)
     {
         toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
         toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
@@ -334,8 +334,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
 
         @Override
-        protected void fillCustomToolbar(ToolBarManager toolBarManager) {
-            contributeEditorCommands(toolBarManager);
+        protected void fillCustomActions(IContributionManager contributionManager) {
+            contributeEditorCommands(contributionManager);
         }
     }
 

@@ -107,11 +107,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
                     }
                 }
             } catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException)ex;
-                } else {
-                    throw new InvocationTargetException(ex);
-                }
+                throw new InvocationTargetException(ex);
             }
         }
     }
@@ -139,11 +135,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
                     }
                 }
             } catch (Throwable ex) {
-                if (ex instanceof InvocationTargetException) {
-                    throw (InvocationTargetException)ex;
-                } else {
-                    throw new InvocationTargetException(ex);
-                }
+                throw new InvocationTargetException(ex);
             }
         }
 

@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -71,10 +70,10 @@ public class ItemListControl extends NodeListControl
     }
 
     @Override
-    protected void fillCustomToolbar(ToolBarManager toolbarManager)
+    protected void fillCustomActions(IContributionManager contributionManager)
     {
         if (getRootNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder)getRootNode()).getItemsMeta() != null) {
-            toolbarManager.add(new Action(
+            contributionManager.add(new Action(
                 "Filter",
                 DBeaverIcons.getImageDescriptor(UIIcon.FILTER))
             {

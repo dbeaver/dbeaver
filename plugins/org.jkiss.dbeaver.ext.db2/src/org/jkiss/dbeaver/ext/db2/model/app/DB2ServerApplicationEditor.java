@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.db2.model.app;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -61,10 +61,10 @@ public class DB2ServerApplicationEditor extends SinglePageDatabaseEditor<IDataba
 
             @Override
             @SuppressWarnings("rawtypes")
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
-                toolBar.add(forceApplicationAction);
-                toolBar.add(new Separator());
+                contributionManager.add(forceApplicationAction);
+                contributionManager.add(new Separator());
             }
 
             @Override

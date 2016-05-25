@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
@@ -51,10 +51,10 @@ public class PostgreSessionEditor extends AbstractSessionEditor
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer(this, parent, new PostgreSessionManager((PostgreDataSource) executionContext.getDataSource())) {
             @Override
-            protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
+            protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
-                toolBar.add(terminateQueryAction);
-                toolBar.add(new Separator());
+                contributionManager.add(terminateQueryAction);
+                contributionManager.add(new Separator());
             }
 
             @Override

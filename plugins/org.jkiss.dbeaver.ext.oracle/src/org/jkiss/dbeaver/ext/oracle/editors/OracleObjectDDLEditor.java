@@ -19,8 +19,8 @@
 package org.jkiss.dbeaver.ext.oracle.editors;
 
 import org.eclipse.jface.action.ControlContribution;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -42,15 +42,14 @@ public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> {
     }
 
     @Override
-    protected void contributeEditorCommands(ToolBarManager toolBarManager)
+    protected void contributeEditorCommands(IContributionManager contributionManager)
     {
-        super.contributeEditorCommands(toolBarManager);
+        super.contributeEditorCommands(contributionManager);
 
-        toolBarManager.add(new Separator());
-        toolBarManager.add(new ControlContribution("DDLFormat") {
+        contributionManager.add(new Separator());
+        contributionManager.add(new ControlContribution("DDLFormat") {
             @Override
-            protected Control createControl(Composite parent)
-            {
+            protected Control createControl(Composite parent) {
                 OracleDDLFormat ddlFormat = OracleDDLFormat.getCurrentFormat(getSourceObject().getDataSource());
                 final Combo ddlFormatCombo = new Combo(parent, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN);
                 ddlFormatCombo.setToolTipText("DDL Format");
@@ -62,8 +61,7 @@ public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> {
                 }
                 ddlFormatCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void widgetSelected(SelectionEvent e) {
                         for (OracleDDLFormat format : OracleDDLFormat.values()) {
                             if (format.ordinal() == ddlFormatCombo.getSelectionIndex()) {
                                 getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore().setValue(

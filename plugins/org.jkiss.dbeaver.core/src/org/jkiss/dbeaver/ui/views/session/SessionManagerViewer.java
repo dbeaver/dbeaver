@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ui.views.session;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -144,7 +144,7 @@ public class SessionManagerViewer
         }
     }
 
-    protected void contributeToToolbar(DBAServerSessionManager sessionManager, ToolBarManager toolBar)
+    protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
     {
 
     }
@@ -192,9 +192,9 @@ public class SessionManagerViewer
         }
 
         @Override
-        protected void fillCustomToolbar(ToolBarManager toolbarManager) {
-            contributeToToolbar(sessionManager, toolbarManager);
-            toolbarManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
+        protected void fillCustomActions(IContributionManager contributionManager) {
+            contributeToToolbar(sessionManager, contributionManager);
+            contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run()
                 {
