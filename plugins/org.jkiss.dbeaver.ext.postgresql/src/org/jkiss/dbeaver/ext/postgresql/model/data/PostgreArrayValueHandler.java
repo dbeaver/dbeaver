@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCArray;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -56,13 +56,13 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 return convertStringToArray(session, itemType, (String)value);
             } else if (itemType != null) {
                 // Can't parse
-                return new JDBCArray(itemType, DBUtils.findValueHandler(session, itemType), new Object[] { value } );
+                return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), new Object[] { value } );
             }
         }
         return super.getValueFromObject(session, type, object, copy);
     }
 
-    private JDBCArray convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) {
+    private JDBCCollection convertStringToArray(@NotNull DBCSession session, @NotNull PostgreDataType itemType, @NotNull String value) {
         List<String> strings = new ArrayList<>(10);
         StringTokenizer st = new StringTokenizer(value, " ");
         while (st.hasMoreTokens()) {
@@ -72,7 +72,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         for (int i = 0; i < strings.size(); i++) {
             contents[i] = PostgreUtils.convertStringToValue(itemType, strings.get(i), false);
         }
-        return new JDBCArray(itemType, DBUtils.findValueHandler(session, itemType), contents);
+        return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }
 
 }

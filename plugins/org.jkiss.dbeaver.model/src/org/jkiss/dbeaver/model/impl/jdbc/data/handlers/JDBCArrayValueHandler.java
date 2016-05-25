@@ -18,15 +18,19 @@
 package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCArray;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
+import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * JDBC Array value handler.
@@ -40,20 +44,20 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
 
     @NotNull
     @Override
-    public Class<JDBCArray> getValueObjectType(@NotNull DBSTypedObject attribute)
+    public Class<JDBCCollection> getValueObjectType(@NotNull DBSTypedObject attribute)
     {
-        return JDBCArray.class;
+        return JDBCCollection.class;
     }
 
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object == null) {
-            return JDBCArray.makeArray((JDBCSession) session, null);
-        } else if (object instanceof JDBCArray) {
-            return copy ? ((JDBCArray) object).cloneValue(session.getProgressMonitor()) : object;
+            return JDBCCollection.makeArray((JDBCSession) session, null);
+        } else if (object instanceof JDBCCollection) {
+            return copy ? ((JDBCCollection) object).cloneValue(session.getProgressMonitor()) : object;
         } else if (object instanceof Array) {
-            return JDBCArray.makeArray((JDBCSession) session, (Array)object);
+            return JDBCCollection.makeArray((JDBCSession) session, (Array) object);
         } else {
             throw new DBCException(ModelMessages.model_jdbc_exception_unsupported_array_type_ + object.getClass().getName());
         }
@@ -63,11 +67,35 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof JDBCArray) {
-            return ((JDBCArray) value).makeArrayString();
+        if (value instanceof JDBCCollection) {
+            return ((JDBCCollection) value).makeArrayString();
         }
         return super.getValueDisplayString(column, value, format);
     }
 
+    @Override
+    protected void bindParameter(
+        JDBCSession session,
+        JDBCPreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
+        throws DBCException, SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex, Types.ARRAY);
+        } else if (value instanceof DBDCollection) {
+            DBDCollection collection = (DBDCollection) value;
+            if (collection.isNull()) {
+                statement.setNull(paramIndex, Types.ARRAY);
+            } else if (collection instanceof JDBCCollection) {
+                statement.setObject(paramIndex, ((JDBCCollection) collection).getArrayValue(), Types.ARRAY);
+            } else {
+                statement.setObject(paramIndex, collection.getRawValue());
+            }
+        } else {
+            throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
+        }
+    }
 
 }
