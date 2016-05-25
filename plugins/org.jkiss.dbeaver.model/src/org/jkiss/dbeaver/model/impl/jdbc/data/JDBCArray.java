@@ -23,25 +23,24 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.data.DBDCollection;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.model.data.DBDValueCloneable;
-import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCArrayImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
-import java.sql.Array;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -226,4 +225,26 @@ public class JDBCArray implements DBDCollection, DBDValueCloneable {
     public void setItem(int index, Object value) {
         contents[index] = value;
     }
+
+    public Array getArrayValue() throws DBCException {
+        Object[] attrs = new Object[contents.length];
+        for (int i = 0; i < contents.length; i++) {
+            Object attr = contents[i];
+            if (attr instanceof DBDValue) {
+                attr = ((DBDValue) attr).getRawValue();
+            }
+            attrs[i] = attr;
+        }
+        final DBSDataType dataType = getComponentType();
+        try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataType.getDataSource(), "Create JDBC array")) {
+            if (session instanceof Connection) {
+                return ((Connection) session).createArrayOf(dataType.getTypeName(), attrs);
+            } else {
+                return new JDBCArrayImpl(dataType.getTypeName(), dataType.getTypeID(), attrs);
+            }
+        } catch (Throwable e) {
+            throw new DBCException("Error creating struct", e);
+        }
+    }
+
 }
