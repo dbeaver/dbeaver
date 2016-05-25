@@ -849,7 +849,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
 
         @Override
-        protected void fillCustomToolbar(ToolBarManager toolBarManager) {
+        protected void fillCustomActions(IContributionManager toolBarManager) {
             ZoomManager zoomManager = rootPart.getZoomManager();
 
             String[] zoomStrings = new String[]{

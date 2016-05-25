@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -214,10 +215,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return customControlsComposite;
     }
 
-    protected void fillCustomToolbar(ToolBarManager toolbarManager)
+    protected void fillCustomActions(IContributionManager contributionManager)
     {
         if (childPageControl != null) {
-            childPageControl.fillCustomToolbar(toolbarManager);
+            childPageControl.fillCustomActions(contributionManager);
         }
     }
 
@@ -260,7 +261,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
 
                 customToolbarManager.removeAll();
-                fillCustomToolbar(customToolbarManager);
+                fillCustomActions(customToolbarManager);
                 if (!customToolbarManager.isEmpty()) {
                     ToolBar toolbar = customToolbarManager.createControl(customControlsComposite);
                     toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_END));
