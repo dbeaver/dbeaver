@@ -75,13 +75,13 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
             appendTableModifiers(command.getObject(), command, query);
             actions.add(new SQLDatabasePersistAction(query.toString()));
         }
-        addExtraTableActions(actions, command);
+        addObjectExtraActions(actions, command);
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override
-    protected void addExtraTableActions(List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command) {
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command) {
         if (command.getProperty("comment") != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
