@@ -73,23 +73,26 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     {
         final PostgreTableBase table = command.getObject();
         List<DBEPersistAction> actions = new ArrayList<>(2);
-        boolean hasComment = command.getProperty("description") != null;
-        if (!hasComment || command.getProperties().size() > 1) {
+        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(table.getFullQualifiedName()).append(" "); //$NON-NLS-1$
             appendTableModifiers(table, command, query);
 
             actions.add(new SQLDatabasePersistAction(query.toString()));
         }
-
-        if (hasComment) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment table",
-                "COMMENT ON TABLE " + table.getFullQualifiedName() +
-                    " IS '" + SQLUtils.escapeString(table.getDescription()) + "'"));
-        }
+        addExtraTableActions(actions, command);
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+    @Override
+    protected void addExtraTableActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command) {
+        if (command.getProperty("description") != null) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment table",
+                "COMMENT ON TABLE " + command.getObject().getFullQualifiedName() +
+                    " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+        }
     }
 
     @Override

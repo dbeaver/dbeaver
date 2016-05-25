@@ -105,8 +105,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         appendTableModifiers(table, tableProps, createQuery);
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
+        addExtraTableActions(actions, command);
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+
+    protected void addExtraTableActions(List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command)
+    {
     }
 
     @Override
