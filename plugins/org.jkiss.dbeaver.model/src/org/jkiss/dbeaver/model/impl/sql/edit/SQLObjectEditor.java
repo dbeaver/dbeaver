@@ -240,6 +240,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(actions, this);
+            addObjectExtraActions(actions, this);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -272,6 +273,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(actions, this);
+            addObjectExtraActions(actions, this);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 

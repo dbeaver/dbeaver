@@ -78,7 +78,6 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
 
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
-        addObjectExtraActions(actionList, command);
     }
 
     @Override
