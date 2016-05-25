@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * JDBC constraint manager
  */
@@ -83,16 +85,16 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_index,
                 getDropIndexPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullQualifiedName())
                     .replace(PATTERN_ITEM_INDEX, command.getObject().getFullQualifiedName())
                     .replace(PATTERN_ITEM_INDEX_SHORT, command.getObject().getName()))
-        };
+        );
     }
 
     protected String getDropIndexPattern(OBJECT_TYPE index)

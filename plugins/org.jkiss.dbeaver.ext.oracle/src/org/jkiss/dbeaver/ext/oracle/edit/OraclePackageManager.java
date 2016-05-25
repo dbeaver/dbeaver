@@ -70,13 +70,13 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand)
     {
         final OraclePackage object = objectDeleteCommand.getObject();
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop package",
                 "DROP PACKAGE " + object.getFullQualifiedName()) //$NON-NLS-1$
-        };
+        );
     }
 
     @Override

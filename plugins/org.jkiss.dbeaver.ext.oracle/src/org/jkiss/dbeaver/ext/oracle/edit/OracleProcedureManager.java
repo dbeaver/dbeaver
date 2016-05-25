@@ -67,13 +67,13 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand objectDeleteCommand)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand objectDeleteCommand)
     {
         final OracleProcedureStandalone object = objectDeleteCommand.getObject();
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction("Drop procedure",
                 "DROP " + object.getProcedureType().name() + " " + object.getFullQualifiedName()) //$NON-NLS-1$ //$NON-NLS-2$
-        };
+        );
     }
 
     @Override

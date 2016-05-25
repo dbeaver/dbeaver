@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
+import java.util.List;
+
 /**
  * DB2 Base class for Managers that only handle DROP statements
  * 
@@ -54,10 +56,10 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     protected abstract String buildDropStatement(OBJECT_TYPE object);
 
     @Override
-    protected DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command)
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         DBEPersistAction action = new SQLDatabasePersistAction("Drop", buildDropStatement(command.getObject()));
-        return new DBEPersistAction[] { action };
+        actions.add(action);
     }
 
     @Override
