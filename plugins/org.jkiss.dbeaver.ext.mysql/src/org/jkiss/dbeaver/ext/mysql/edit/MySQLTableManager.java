@@ -73,15 +73,15 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
         query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
         appendTableModifiers(command.getObject(), command, query);
 
-        return new DBEPersistAction[] {
+        actionList.add(
             new SQLDatabasePersistAction(query.toString())
-        };
+        );
     }
 
     @Override

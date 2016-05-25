@@ -46,7 +46,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
         final OBJECT_TYPE index = command.getObject();
@@ -79,9 +79,9 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
         }
         decl.append(")"); //$NON-NLS-1$
 
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, decl.toString())
-        };
+        );
     }
 
     @Override

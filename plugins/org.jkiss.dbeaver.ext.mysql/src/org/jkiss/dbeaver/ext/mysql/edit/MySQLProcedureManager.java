@@ -78,15 +78,15 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceProcedureQuery(command.getObject());
+        createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceProcedureQuery(command.getObject());
+        createOrReplaceProcedureQuery(actionList, command.getObject());
     }
 
     @Override
@@ -97,12 +97,12 @@ public class MySQLProcedureManager extends SQLObjectEditor<MySQLProcedure, MySQL
         );
     }
 
-    private DBEPersistAction[] createOrReplaceProcedureQuery(MySQLProcedure procedure)
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, MySQLProcedure procedure)
     {
-        return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName()), //$NON-NLS-2$ //$NON-NLS-3$
-            new SQLDatabasePersistAction("Create procedure", procedure.getDeclaration()) //$NON-NLS-2$
-        };
+        actions.add(
+            new SQLDatabasePersistAction("Drop procedure", "DROP " + procedure.getProcedureType() + " IF EXISTS " + procedure.getFullQualifiedName())); //$NON-NLS-2$ //$NON-NLS-3$
+        actions.add(
+            new SQLDatabasePersistAction("Create procedure", procedure.getDeclaration()));
     }
 
 }

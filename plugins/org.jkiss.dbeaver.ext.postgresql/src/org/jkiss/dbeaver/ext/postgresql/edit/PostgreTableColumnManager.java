@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -125,7 +124,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         final PostgreAttribute column = command.getObject();
         // PostgreSQL can't perform all changes by one query
@@ -138,15 +137,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
-        List<SQLDatabasePersistAction> actions = new ArrayList<>();
-        actions.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + column.getFullQualifiedTypeName()));
-        actions.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
+        actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + column.getFullQualifiedTypeName()));
+        actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
         if (CommonUtils.isEmpty(column.getDefaultValue())) {
-            actions.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
+            actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
         } else {
-            actions.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
+            actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override

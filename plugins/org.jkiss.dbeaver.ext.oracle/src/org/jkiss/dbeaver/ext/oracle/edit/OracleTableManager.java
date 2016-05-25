@@ -20,18 +20,17 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.*;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -66,18 +65,15 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        List<DBEPersistAction> actions = new ArrayList<>(2);
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullQualifiedName()).append(" "); //$NON-NLS-1$
             appendTableModifiers(command.getObject(), command, query);
-            actions.add(new SQLDatabasePersistAction(query.toString()));
+            actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
-        addObjectExtraActions(actions, command);
-
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        addObjectExtraActions(actionList, command);
     }
 
     @Override

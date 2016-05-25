@@ -21,12 +21,12 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,9 +66,9 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand)
     {
-        return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
+        createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
     }
 
     @Override
@@ -83,9 +82,9 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand)
     {
-        return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -94,25 +93,23 @@ public class OracleDataTypeManager extends SQLObjectEditor<OracleDataType, Oracl
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private DBEPersistAction[] createOrReplaceProcedureQuery(OracleDataType dataType)
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OracleDataType dataType)
     {
-        List<DBEPersistAction> actions = new ArrayList<>();
         String header = OracleUtils.normalizeSourceName(dataType, false);
         if (!CommonUtils.isEmpty(header)) {
-            actions.add(
+            actionList.add(
                 new SQLDatabasePersistAction(
                     "Create type header",
                     "CREATE OR REPLACE " + header)); //$NON-NLS-1$
         }
         String body = OracleUtils.normalizeSourceName(dataType, true);
         if (!CommonUtils.isEmpty(body)) {
-            actions.add(
+            actionList.add(
                 new SQLDatabasePersistAction(
                     "Create type body",
                     "CREATE OR REPLACE " + body)); //$NON-NLS-1$
         }
-        OracleUtils.addSchemaChangeActions(actions, dataType);
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        OracleUtils.addSchemaChangeActions(actionList, dataType);
     }
 
 }

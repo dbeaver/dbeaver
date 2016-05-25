@@ -125,7 +125,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // ------
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         // DF: Throw exception for now
         // Will have to implement it for alter FK query optimisation + TRUST

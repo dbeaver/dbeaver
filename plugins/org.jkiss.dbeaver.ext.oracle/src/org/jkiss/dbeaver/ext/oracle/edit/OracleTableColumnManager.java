@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.Types;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,24 +71,22 @@ public class OracleTableColumnManager extends SQLTableColumnManager<OracleTableC
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
         final OracleTableColumn column = command.getObject();
-        List<DBEPersistAction> actions = new ArrayList<>(2);
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
-            actions.add(new SQLDatabasePersistAction(
+            actionList.add(new SQLDatabasePersistAction(
                 "Modify column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + //$NON-NLS-1$
                 " MODIFY " + getNestedDeclaration(column.getTable(), command))); //$NON-NLS-1$
         }
         if (hasComment) {
-            actions.add(new SQLDatabasePersistAction(
+            actionList.add(new SQLDatabasePersistAction(
                 "Comment column",
                 "COMMENT ON COLUMN " + column.getTable().getFullQualifiedName() + "." + DBUtils.getQuotedIdentifier(column) +
                     " IS '" + column.getComment(VoidProgressMonitor.INSTANCE) + "'"));
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override

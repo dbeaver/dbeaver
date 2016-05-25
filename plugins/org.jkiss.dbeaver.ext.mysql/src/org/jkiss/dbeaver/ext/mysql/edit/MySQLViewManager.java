@@ -73,15 +73,15 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery((MySQLView) command.getObject());
+        createOrReplaceViewQuery(actions, (MySQLView) command.getObject());
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery((MySQLView) command.getObject());
+        createOrReplaceViewQuery(actionList, (MySQLView) command.getObject());
     }
 
     @Override
@@ -92,7 +92,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
         );
     }
 
-    private DBEPersistAction[] createOrReplaceViewQuery(MySQLView view)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, MySQLView view)
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
@@ -102,9 +102,7 @@ public class MySQLViewManager extends SQLObjectEditor<MySQLTableBase, MySQLCatal
         if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {
             decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Create view", decl.toString())
-        };
+        actions.add(new SQLDatabasePersistAction("Create view", decl.toString()));
     }
 
 /*

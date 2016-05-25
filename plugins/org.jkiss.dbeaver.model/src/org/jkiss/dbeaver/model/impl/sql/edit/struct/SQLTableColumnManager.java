@@ -165,13 +165,13 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_table_column,
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) }; //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD "  + getNestedDeclaration(table, command)) );
     }
 
     @Override

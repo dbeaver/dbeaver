@@ -48,14 +48,14 @@ public abstract class SQLConstraintManager<OBJECT_TYPE extends JDBCTableConstrai
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final TABLE_TYPE table = command.getObject().getTable();
 
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_create_new_constraint,
-                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command))}; //$NON-NLS-1$ //$NON-NLS-2$
+                "ALTER TABLE " + table.getFullQualifiedName() + " ADD " + getNestedDeclaration(table, command)));
     }
 
     @Override

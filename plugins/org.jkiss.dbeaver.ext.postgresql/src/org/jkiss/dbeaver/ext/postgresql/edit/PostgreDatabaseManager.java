@@ -63,20 +63,19 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         final PostgreDatabase database = command.getObject();
-        final StringBuilder script = new StringBuilder("CREATE DATABASE " + DBUtils.getQuotedIdentifier(database));
-        return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Create database", script.toString()) //$NON-NLS-2$
-        };
+        actions.add(
+            new SQLDatabasePersistAction("Create database", "CREATE DATABASE " + DBUtils.getQuotedIdentifier(database)) //$NON-NLS-2$
+        );
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         actions.add(
-            new SQLDatabasePersistAction("Drop database", "DROP SCHEMA " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop database", "DROP DATABASE " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
         );
     }
 

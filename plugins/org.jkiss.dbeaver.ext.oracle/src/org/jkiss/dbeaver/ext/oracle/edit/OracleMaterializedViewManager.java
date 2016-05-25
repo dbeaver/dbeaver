@@ -71,15 +71,15 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        createOrReplaceViewQuery(actions, command.getObject());
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery(command.getObject());
+        createOrReplaceViewQuery(actionList, command.getObject());
     }
 
     @Override
@@ -90,16 +90,16 @@ public class OracleMaterializedViewManager extends SQLObjectEditor<OracleMateria
         );
     }
 
-    private DBEPersistAction[] createOrReplaceViewQuery(OracleMaterializedView view)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, OracleMaterializedView view)
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE MATERIALIZED VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getObjectDefinitionText(null)); //$NON-NLS-1$
-        return new DBEPersistAction[] {
-            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName()), //$NON-NLS-2$
-            new SQLDatabasePersistAction("Create view", decl.toString())
-        };
+        actions.add(
+            new SQLDatabasePersistAction("Drop view", "DROP MATERIALIZED VIEW " + view.getFullQualifiedName())); //$NON-NLS-2$
+        actions.add(
+            new SQLDatabasePersistAction("Create view", decl.toString()));
     }
 
 }

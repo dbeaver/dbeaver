@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -59,21 +58,20 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected final DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectChangeCommand)
+    protected final void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectChangeCommand)
     {
-        throw new IllegalStateException("makeObjectCreateActions should never be called in struct editor");
+        throw new IllegalStateException("addObjectCreateActions should never be called in struct editor");
     }
 
     @Override
-    protected DBEPersistAction[] makeStructObjectCreateActions(StructCreateCommand command)
+    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command)
     {
         final OBJECT_TYPE table = command.getObject();
         final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
         if (tableProps == null) {
             log.warn("Object change command not found"); //$NON-NLS-1$
-            return null;
+            return;
         }
-        List<DBEPersistAction> actions = new ArrayList<>();
         final String tableName = table.getFullQualifiedName();
 
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
@@ -106,8 +104,6 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
 
         actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, createQuery.toString()) );
         addObjectExtraActions(actions, command);
-
-        return actions.toArray(new DBEPersistAction[actions.size()]);
     }
 
     @Override

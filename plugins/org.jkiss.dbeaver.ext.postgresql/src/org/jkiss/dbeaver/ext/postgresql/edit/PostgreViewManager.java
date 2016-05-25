@@ -72,15 +72,15 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        return createOrReplaceViewQuery((PostgreView) command.getObject());
+        createOrReplaceViewQuery(actions, (PostgreView) command.getObject());
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        return createOrReplaceViewQuery((PostgreView) command.getObject());
+        createOrReplaceViewQuery(actionList, (PostgreView) command.getObject());
     }
 
     @Override
@@ -91,21 +91,16 @@ public class PostgreViewManager extends SQLObjectEditor<PostgreTableBase, Postgr
         );
     }
 
-    private DBEPersistAction[] createOrReplaceViewQuery(PostgreView view)
+    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreView view)
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         decl.append("CREATE OR REPLACE VIEW ").append(view.getFullQualifiedName()).append(lineSeparator) //$NON-NLS-1$
             .append("AS ").append(view.getSource()); //$NON-NLS-1$
-/*
-        final PostgreView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
-        if (checkOption != null && checkOption != PostgreView.CheckOption.NONE) {
-            decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
-        }
-*/
-        return new DBEPersistAction[] {
+
+        actions.add(
             new SQLDatabasePersistAction("Create view", decl.toString())
-        };
+        );
     }
 
 }

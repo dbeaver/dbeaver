@@ -22,12 +22,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
 import org.jkiss.dbeaver.ext.oracle.model.OracleUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -64,9 +63,9 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand objectCreateCommand)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand objectCreateCommand)
     {
-        return createOrReplaceProcedureQuery(objectCreateCommand.getObject());
+        createOrReplaceProcedureQuery(actions, objectCreateCommand.getObject());
     }
 
     @Override
@@ -80,9 +79,9 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand objectChangeCommand)
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand objectChangeCommand)
     {
-        return createOrReplaceProcedureQuery(objectChangeCommand.getObject());
+        createOrReplaceProcedureQuery(actionList, objectChangeCommand.getObject());
     }
 
     @Override
@@ -91,25 +90,24 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         return FEATURE_EDITOR_ON_CREATE;
     }
 
-    private DBEPersistAction[] createOrReplaceProcedureQuery(OraclePackage pack)
+    private void createOrReplaceProcedureQuery(List<DBEPersistAction> actionList, OraclePackage pack)
     {
-        List<DBEPersistAction> actions = new ArrayList<>();
         try {
             String header = pack.getObjectDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(header)) {
-                actions.add(
+                actionList.add(
                     new SQLDatabasePersistAction(
                         "Create package header",
                         header)); //$NON-NLS-1$
             }
             String body = pack.getObjectBodyDefinitionText(VoidProgressMonitor.INSTANCE);
             if (!CommonUtils.isEmpty(body)) {
-                actions.add(
+                actionList.add(
                     new SQLDatabasePersistAction(
                         "Create package body",
                         body)); //$NON-NLS-1$
             } else {
-                actions.add(
+                actionList.add(
                     new SQLDatabasePersistAction(
                         "Drop package header",
                         "DROP PACKAGE BODY " + pack.getFullQualifiedName(), DBEPersistAction.ActionType.OPTIONAL) //$NON-NLS-1$
@@ -118,8 +116,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
         } catch (DBException e) {
             log.warn(e);
         }
-        OracleUtils.addSchemaChangeActions(actions, pack);
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        OracleUtils.addSchemaChangeActions(actionList, pack);
     }
 
 }

@@ -81,11 +81,11 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command)
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
         SQLDatabasePersistAction action = new SQLDatabasePersistAction("Create schema", String.format(SQL_CREATE_SCHEMA,
             DBUtils.getQuotedIdentifier(command.getObject())));
-        return new DBEPersistAction[] { action };
+        actions.add(action);
     }
 
     @Override
