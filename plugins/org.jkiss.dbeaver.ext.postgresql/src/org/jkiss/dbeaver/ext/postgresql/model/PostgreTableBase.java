@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 import java.util.List;
 
@@ -151,6 +153,19 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     {
         getContainer().tableCache.clearChildrenCache(this);
         getContainer().constraintCache.clearObjectCache(this);
+        if (oid == 0) {
+            // New table - read OID
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                final Number newOid = JDBCUtils.queryObject(session,
+                    "SELECT oid FROM pg_catalog.pg_class c WHERE c.relnamespace=? AND c.relname=?", getSchema().getObjectId(), getName());
+                if (newOid != null) {
+                    this.oid = newOid.intValue();
+                }
+            } catch (SQLException e) {
+                throw new DBException("Error reading procedure body", e);
+            }
+
+        }
 
         return true;
     }
