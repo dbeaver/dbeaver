@@ -162,7 +162,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 }
             }
         }
-        DBSObject selectedObject = DBUtils.getSelectedObject(editor.getDataSource());
+        DBSObject selectedObject = DBUtils.getSelectedObject(editor.getDataSource(), true);
         boolean hideDups = getPreferences().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < proposals.size(); i++) {
@@ -288,7 +288,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         }
         DBSObjectContainer selectedContainer = null;
         {
-            DBSObject selectedObject = DBUtils.getSelectedObject(dataSource);
+            DBSObject selectedObject = DBUtils.getSelectedObject(dataSource, false);
             if (selectedObject != null) {
                 selectedContainer = DBUtils.getAdapter(DBSObjectContainer.class, selectedObject);
             }
