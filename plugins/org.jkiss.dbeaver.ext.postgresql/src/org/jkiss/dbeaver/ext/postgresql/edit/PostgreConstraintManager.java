@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
@@ -80,6 +81,15 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
             return "UNIQUE"; //$NON-NLS-1$
         }
         return super.getAddConstraintTypeClause(constraint);
+    }
+
+    @Override
+    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<PostgreTableConstraintBase> command) {
+        if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
+            decl.append(((PostgreTableConstraint) command.getObject()).getSource());
+        } else {
+            super.appendConstraintDefinition(decl, command);
+        }
     }
 
     @Override
