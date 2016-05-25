@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.impl.ProxyPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -73,6 +74,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         return true;
     }
 
+    //////////////////////////////////////////////////
+    // Commands
+
     @Override
     public final OBJECT_TYPE createNewObject(DBECommandContext commandContext, CONTAINER_TYPE parent, Object copyFrom)
     {
@@ -112,6 +116,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         CONTAINER_TYPE parent,
         Object copyFrom);
 
+    //////////////////////////////////////////////////
+    // Actions
+
     protected abstract DBEPersistAction[] makeObjectCreateActions(ObjectCreateCommand command);
 
     protected DBEPersistAction[] makeObjectModifyActions(ObjectChangeCommand command)
@@ -125,13 +132,16 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     }
 
-    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
         // Base SQL syntax do not support object properties change
         throw new IllegalStateException("Object rename is not supported in " + getClass().getSimpleName()); //$NON-NLS-1$
     }
 
     protected abstract DBEPersistAction[] makeObjectDeleteActions(ObjectDeleteCommand command);
+
+    //////////////////////////////////////////////////
+    // Properties
 
     protected StringBuilder getNestedDeclaration(CONTAINER_TYPE owner, DBECommandAbstract<OBJECT_TYPE> command)
     {
@@ -203,6 +213,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
     }
+
+    //////////////////////////////////////////////////
+    // Command objects
 
     protected static abstract class NestedObjectCommand<OBJECT_TYPE extends DBSObject, HANDLER_TYPE extends DBEPropertyHandler<OBJECT_TYPE>> extends DBECommandComposite<OBJECT_TYPE, HANDLER_TYPE> {
 
@@ -329,7 +342,9 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         @Override
         public DBEPersistAction[] getPersistActions()
         {
-            return makeObjectRenameActions(this);
+            List<DBEPersistAction> actions = new ArrayList<>();
+            addObjectRenameActions(actions, this);
+            return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
         @Override

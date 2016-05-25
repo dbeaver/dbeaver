@@ -190,12 +190,12 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     // Rename
     // ------
     @Override
-    public DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
         String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullQualifiedName(), command.getNewName());
-        return new DBEPersistAction[]{
+        actions.add(
             new SQLDatabasePersistAction(CMD_RENAME, sql)
-        };
+        );
     }
 
     @Override

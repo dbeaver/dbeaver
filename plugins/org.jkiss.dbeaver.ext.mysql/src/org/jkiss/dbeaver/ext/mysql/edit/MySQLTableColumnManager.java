@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -120,16 +121,16 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     }
 
     @Override
-    protected DBEPersistAction[] makeObjectRenameActions(ObjectRenameCommand command)
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command)
     {
         final MySQLTableColumn column = command.getObject();
 
-        return new DBEPersistAction[] {
+        actions.add(
             new SQLDatabasePersistAction(
                 "Rename column",
                 "ALTER TABLE " + column.getTable().getFullQualifiedName() + " CHANGE " +
                     DBUtils.getQuotedIdentifier(column.getDataSource(), command.getOldName()) + " " +
-                    getNestedDeclaration(column.getTable(), command))}; //$NON-NLS-1$ //$NON-NLS-2$
+                    getNestedDeclaration(column.getTable(), command)));
     }
 
 }
