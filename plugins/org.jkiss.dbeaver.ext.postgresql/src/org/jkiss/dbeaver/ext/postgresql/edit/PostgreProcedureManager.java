@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateProcedureDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,9 +59,6 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("Procedure name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getBody())) {
-            throw new DBException("Procedure body cannot be empty");
-        }
     }
 
     @Override
@@ -78,19 +76,23 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
     {
-        createOrReplaceProcedureQuery(actions, command.getObject());
+        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+            createOrReplaceProcedureQuery(actions, command.getObject());
+        }
     }
 
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
     {
-        createOrReplaceProcedureQuery(actionList, command.getObject());
+        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
+            createOrReplaceProcedureQuery(actionList, command.getObject());
+        }
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
-        String objectType = command.getObject().isAggregate() ? "AGGREGATE" : "FUNCTION";
+        String objectType = command.getObject().getProcedureTypeName();
         actions.add(
             new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-2$
         );
@@ -98,11 +100,21 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure)
     {
-        String objectType = procedure.isAggregate() ? "AGGREGATE" : "FUNCTION";
+        String objectType = procedure.getProcedureTypeName();
         actions.add(
             new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " IF EXISTS " + procedure.getFullQualifiedSignature()));
         actions.add(
             new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
+    }
+
+    @Override
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreProcedure, PropertyHandler> command) {
+        if (command.getProperty("description") != null) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment procedure",
+                "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature() +
+                    " IS '" + SQLUtils.escapeString(command.getObject().getDescription()) + "'"));
+        }
     }
 
 }
