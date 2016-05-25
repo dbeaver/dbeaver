@@ -252,7 +252,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public String getObjectDefinitionText(DBRProgressMonitor monitor) throws DBException
     {
         if (body == null) {
-            if (oid == 0) {
+            if (oid == 0 || isAggregate) {
                 // No OID so let's use old (bad) way
                 body = this.procSrc;
             } else {
@@ -347,9 +347,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         if (!CommonUtils.isEmpty(params)) {
             StringBuilder paramsSignature = new StringBuilder(64);
             paramsSignature.append("(");
-            for (int i = 0; i < params.size(); i++) {
-                if (i > 0) paramsSignature.append(',');
-                final PostgreDataType dataType = params.get(i).getParameterType();
+            boolean hasParam = false;
+            for (PostgreProcedureParameter param : params) {
+                if (param.getParameterKind() == DBSProcedureParameterKind.OUT) {
+                    continue;
+                }
+                if (hasParam) paramsSignature.append(',');
+                hasParam = true;
+                final PostgreDataType dataType = param.getParameterType();
                 paramsSignature.append(dataType.getName());
             }
             paramsSignature.append(")");
