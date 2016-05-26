@@ -642,7 +642,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             object);
     }
 
-    public static String makeObjectDescription(DBRProgressMonitor monitor, DBPNamedObject object) {
+    public static String makeObjectDescription(DBRProgressMonitor monitor, DBPNamedObject object, boolean html) {
         StringBuilder info = new StringBuilder();
         PropertyCollector collector = new PropertyCollector(object, false);
         collector.collectProperties();
@@ -661,9 +661,13 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             } else {
                 propString = DBUtils.getDefaultValueDisplayString(propValue, DBDDisplayFormat.UI);
             }
-            info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
-            info.append(propString);
-            info.append("<br>");
+            if (html) {
+                info.append("<b>").append(descriptor.getDisplayName()).append(":  </b>");
+                info.append(propString);
+                info.append("<br>");
+            } else {
+                info.append(descriptor.getDisplayName()).append(": ").append(propString).append("\n");
+            }
         }
         return info.toString();
     }

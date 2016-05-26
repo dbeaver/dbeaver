@@ -147,7 +147,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     public String getAdditionalProposalInfo()
     {
         if (additionalProposalInfo == null && object != null) {
-            additionalProposalInfo = SQLCompletionProcessor.makeObjectDescription(VoidProgressMonitor.INSTANCE, object);
+            additionalProposalInfo = SQLCompletionProcessor.makeObjectDescription(VoidProgressMonitor.INSTANCE, object, true);
         }
         return additionalProposalInfo;
     }
