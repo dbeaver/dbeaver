@@ -266,7 +266,7 @@ public class TextUtils {
                     // subsequent character matches further improve
                     // the score.
                     if (previousMatchingCharacterIndex + 1 == termIndex) {
-                        score += 2;
+                        score += 4;
                     }
 
                     previousMatchingCharacterIndex = termIndex;
