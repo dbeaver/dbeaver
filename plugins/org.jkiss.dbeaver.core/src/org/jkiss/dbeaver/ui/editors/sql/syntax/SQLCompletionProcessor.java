@@ -109,7 +109,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             final String prevKeyWord = wordDetector.getPrevKeyWord();
             if (!CommonUtils.isEmpty(prevKeyWord)) {
                 if (editor.getSyntaxManager().getDialect().isEntityQueryWord(prevKeyWord)) {
-                    queryType = QueryType.TABLE;
+                    // TODO: its an ugly hack. Need a better way
+                    if (SQLConstants.KEYWORD_INTO.equals(prevKeyWord) &&
+                        !CommonUtils.isEmpty(wordDetector.getPrevWords()) &&
+                        ("(".equals(wordDetector.getPrevDelimiter()) || ",".equals(wordDetector.getPrevDelimiter())))
+                    {
+                        queryType = QueryType.COLUMN;
+                    } else {
+                        queryType = QueryType.TABLE;
+                    }
                 } else if (editor.getSyntaxManager().getDialect().isAttributeQueryWord(prevKeyWord)) {
                     queryType = QueryType.COLUMN;
                 }

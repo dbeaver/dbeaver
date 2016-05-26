@@ -48,13 +48,17 @@ public class SQLConstants {
     public static final String ML_COMMENT_END = "*/";
     public static final String SL_COMMENT = "--";
 
+    public static final String KEYWORD_UPDATE = "UPDATE";
+    public static final String KEYWORD_INTO = "INTO";
+
     public static final String[] TABLE_KEYWORDS = {
         "FROM",
-        "UPDATE",
-        "INTO",
+        KEYWORD_UPDATE,
+        KEYWORD_INTO,
         "TABLE",
         "JOIN"
-    }; //$NON-NLS$
+    };
+
     public static final String[] COLUMN_KEYWORDS = {
         "SELECT",
         "WHERE",
