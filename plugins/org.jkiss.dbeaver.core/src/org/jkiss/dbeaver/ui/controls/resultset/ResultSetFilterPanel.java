@@ -18,7 +18,11 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.bindings.keys.KeyStroke;
+import org.eclipse.jface.bindings.keys.ParseException;
 import org.eclipse.jface.dialogs.ControlEnableState;
+import org.eclipse.jface.fieldassist.*;
+import org.eclipse.jface.text.Document;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -38,10 +42,12 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -52,19 +58,21 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * ResultSetFilterPanel
  */
-class ResultSetFilterPanel extends Composite
+class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 {
     private static final Log log = Log.getLog(ResultSetFilterPanel.class);
 
@@ -180,6 +188,19 @@ class ResultSetFilterPanel extends Composite
                     }
                 }
             });
+
+
+            try {
+                KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space");
+                new ContentProposalAdapter(
+                    filtersText,
+                    new FilterContentAdapter(),
+                    this,
+                    keyStroke,
+                    new char[] { '.', '(' });
+            } catch (ParseException e) {
+                log.error("Error installing filters content assistant");
+            }
 /*
             this.filtersText.addFocusListener(new FocusListener() {
                 @Override
@@ -496,6 +517,30 @@ class ResultSetFilterPanel extends Composite
         });
 
         return textWidget;
+    }
+
+    @Override
+    public IContentProposal[] getProposals(String contents, int position) {
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        if (viewer.getDataContainer() != null) {
+            syntaxManager.init(viewer.getDataContainer().getDataSource());
+        }
+        SQLWordPartDetector wordDetector = new SQLWordPartDetector(new Document(contents), syntaxManager, position);
+        final String word = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
+        List<IContentProposal> proposals = new ArrayList<>();
+        for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
+            final String name = attribute.getName();
+            if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
+                final String content = name.substring(word.length()) + " ";
+                proposals.add(
+                    new ContentProposal(
+                        content,
+                        attribute.getName(),
+                        attribute.getDescription(),
+                        content.length()));
+            }
+        }
+        return proposals.toArray(new IContentProposal[proposals.size()]);
     }
 
     private class FilterPanel extends Canvas {
@@ -872,6 +917,61 @@ class ResultSetFilterPanel extends Composite
                 int newPosition = back ? historyPosition - 1 : historyPosition + 1;
                 viewer.navigateHistory(newPosition);
             }
+        }
+    }
+
+    class FilterContentAdapter implements IControlContentAdapter, IControlContentAdapter2 {
+
+        @Override
+        public String getControlContents(Control control) {
+            return filtersText.getText();
+        }
+
+        @Override
+        public void setControlContents(Control control, String text, int cursorPosition) {
+            filtersText.setText(text);
+            filtersText.setSelection(cursorPosition, cursorPosition);
+        }
+
+        @Override
+        public void insertControlContents(Control control, String text, int cursorPosition) {
+            Point selection = filtersText.getSelection();
+            filtersText.insert(text);
+            // Insert will leave the cursor at the end of the inserted text. If this
+            // is not what we wanted, reset the selection.
+            if (cursorPosition <= text.length()) {
+                filtersText.setSelection(selection.x + cursorPosition, selection.x + cursorPosition);
+            }
+        }
+
+        @Override
+        public int getCursorPosition(Control control) {
+            return filtersText.getCaretOffset();
+        }
+
+        @Override
+        public Rectangle getInsertionBounds(Control control) {
+            Point caretOrigin = filtersText.getLocationAtOffset(filtersText.getCaretOffset());
+            // We fudge the y pixels due to problems with getCaretLocation
+            // See https://bugs.eclipse.org/bugs/show_bug.cgi?id=52520
+            return new Rectangle(
+                caretOrigin.x + filtersText.getClientArea().x,
+                caretOrigin.y + filtersText.getClientArea().y + 3, 1, filtersText.getLineHeight());
+        }
+
+        @Override
+        public void setCursorPosition(Control control, int position) {
+            filtersText.setSelection(new Point(position, position));
+        }
+
+        @Override
+        public Point getSelection(Control control) {
+            return filtersText.getSelection();
+        }
+
+        @Override
+        public void setSelection(Control control, Point range) {
+            filtersText.setSelection(range);
         }
     }
 

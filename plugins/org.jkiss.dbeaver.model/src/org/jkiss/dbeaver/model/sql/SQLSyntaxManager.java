@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -115,6 +116,10 @@ public class SQLSyntaxManager {
 
     public char getNamedParameterPrefix() {
         return namedParameterPrefix;
+    }
+
+    public void init(@NotNull DBPDataSource dataSource) {
+        init(SQLUtils.getDialectFromObject(dataSource), dataSource.getContainer().getPreferenceStore());
     }
 
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
