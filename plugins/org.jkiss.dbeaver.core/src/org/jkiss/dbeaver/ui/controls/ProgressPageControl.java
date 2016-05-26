@@ -212,6 +212,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         defaultToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
         customToolbarManager = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL);
 
+        hideControls(true);
+
         return customControlsComposite;
     }
 
