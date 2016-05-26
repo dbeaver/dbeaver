@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -58,6 +59,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -192,12 +194,13 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             try {
                 KeyStroke keyStroke = KeyStroke.getInstance("Ctrl+Space");
-                new ContentProposalAdapter(
+                final ContentProposalAdapter proposalAdapter = new ContentProposalAdapter(
                     filtersText,
                     new FilterContentAdapter(),
                     this,
                     keyStroke,
-                    new char[] { '.', '(' });
+                    new char[]{'.', '('});
+                proposalAdapter.setPopupSize(new Point(300, 200));
             } catch (ParseException e) {
                 log.error("Error installing filters content assistant");
             }
@@ -536,7 +539,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     new ContentProposal(
                         content,
                         attribute.getName(),
-                        attribute.getDescription(),
+                        SQLCompletionProcessor.makeObjectDescription(VoidProgressMonitor.INSTANCE, attribute.getAttribute(), false),
                         content.length()));
             }
         }
