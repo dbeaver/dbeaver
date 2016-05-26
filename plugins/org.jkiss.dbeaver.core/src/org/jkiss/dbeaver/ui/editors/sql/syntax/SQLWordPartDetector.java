@@ -81,7 +81,7 @@ public class SQLWordPartDetector extends SQLIdentifierDetector
                     prevOffset--;
                 }
                 if (prevDelimiter == null) {
-                    prevDelimiter = prevPiece.toString();
+                    prevDelimiter = prevPiece.toString().trim();
                 }
                 for (String delim : syntaxManager.getStatementDelimiters()) {
                     if (prevPiece.indexOf(delim) != -1) {
