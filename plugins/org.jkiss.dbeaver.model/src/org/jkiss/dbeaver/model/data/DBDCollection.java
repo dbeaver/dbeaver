@@ -40,4 +40,6 @@ public interface DBDCollection extends DBDComplexValue {
     Object getItem(int index);
 
     void setItem(int index, Object value);
+
+    void setContents(Object[] contents);
 }

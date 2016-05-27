@@ -162,8 +162,7 @@ public abstract class JDBCComposite implements DBDComposite, DBDValueCloneable {
     }
 
     @Override
-    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException
-    {
+    public void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) {
         values[attribute.getOrdinalPosition()] = value;
     }
 

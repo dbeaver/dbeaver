@@ -105,7 +105,6 @@ public interface IValueController
      * In case of separated editor it is null.
      * @return placeholder control or null
      */
-    @Nullable
     Composite getEditPlaceholder();
 
     /**
