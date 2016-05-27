@@ -56,16 +56,15 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private static final Log log = Log.getLog(ComplexObjectEditor.class);
 
-    private IWorkbenchPartSite partSite;
+    private IValueController parentController;
     private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
     private IValueEditor curCellEditor;
 
-    public ComplexObjectEditor(IWorkbenchPartSite partSite, Composite parent, int style)
+    public ComplexObjectEditor(IValueController parentController, int style)
     {
-        super(parent, style | SWT.SINGLE | SWT.FULL_SELECTION);
-
-        this.partSite = partSite;
+        super(parentController.getEditPlaceholder(), style | SWT.SINGLE | SWT.FULL_SELECTION);
+        this.parentController = parentController;
         final Tree treeControl = super.getTree();
         treeControl.setHeaderVisible(true);
         treeControl.setLinesVisible(true);
@@ -147,7 +146,7 @@ public class ComplexObjectEditor extends TreeViewer {
                         e.doit = true;
                         return;
                     }
-                    showEditor(selection[0], false);
+                    showEditor(selection[0], (e.stateMask & SWT.SHIFT) == SWT.SHIFT);
                     e.doit = false;
                     e.detail = SWT.TRAVERSE_NONE;
                 }
@@ -329,13 +328,13 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public boolean isReadOnly()
         {
-            return true;
+            return parentController.isReadOnly();
         }
 
         @Override
         public IWorkbenchPartSite getValueSite()
         {
-            return partSite;
+            return parentController.getValueSite();
         }
 
         @Override
