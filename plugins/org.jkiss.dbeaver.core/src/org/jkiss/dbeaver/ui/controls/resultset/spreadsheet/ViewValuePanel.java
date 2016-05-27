@@ -274,7 +274,7 @@ abstract class ViewValuePanel extends Composite {
 //                    CMD_SAVE_VALUE,
 //                    CommandContributionItem.STYLE_PUSH));
 
-                Action applyAction = new Action("Save cell value", DBeaverIcons.getImageDescriptor(UIIcon.CONFIRM)) {
+                Action applyAction = new Action("Save cell value", DBeaverIcons.getImageDescriptor(UIIcon.ACCEPT)) {
                     @Override
                     public void run() {
                         saveValue();
@@ -290,7 +290,7 @@ abstract class ViewValuePanel extends Composite {
                 resultSet.getSite(),
                 SpreadsheetCommandHandler.CMD_TOGGLE_PREVIEW,
                 CommandContributionItem.STYLE_PUSH,
-                UIIcon.CLOSE));
+                UIIcon.REJECT));
     }
 
     public ToolBarManager getToolBar()

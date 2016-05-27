@@ -83,11 +83,18 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
+    private static class ArrayInfo {
+        private DBDValueHandler valueHandler;
+        private DBSDataType componentType;
+    }
+
     private static class ArrayItem extends ComplexElement {
+        final ArrayInfo array;
         final int index;
 
-        private ArrayItem(int index, Object value)
+        private ArrayItem(ArrayInfo array, int index, Object value)
         {
+            this.array = array;
             this.index = index;
             this.value = value;
         }
@@ -97,8 +104,6 @@ public class ComplexObjectEditor extends TreeViewer {
     private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
     private IValueEditor curCellEditor;
-    private DBDValueHandler arrayValueHandler;
-    private DBSDataType arrayComponentType;
 
     private Color backgroundAdded;
     private Color backgroundDeleted;
@@ -217,10 +222,6 @@ public class ComplexObjectEditor extends TreeViewer {
         getTree().setRedraw(false);
         try {
             this.executionContext = executionContext;
-            if (value instanceof DBDCollection) {
-                arrayComponentType = ((DBDCollection) value).getComponentType();
-                arrayValueHandler = DBUtils.findValueHandler(arrayComponentType.getDataSource(), arrayComponentType);
-            }
             this.childrenMap.clear();
             setInput(value);
             expandToLevel(2);
@@ -301,8 +302,8 @@ public class ComplexObjectEditor extends TreeViewer {
                 value = field.value;
             } else if (this.item instanceof ArrayItem) {
                 ArrayItem arrayItem = (ArrayItem) this.item;
-                valueHandler = arrayValueHandler;
-                type = arrayComponentType;
+                valueHandler = arrayItem.array.valueHandler;
+                type = arrayItem.array.componentType;
                 name = type.getTypeName() + "["  + arrayItem.index + "]";
                 value = arrayItem.value;
             } else {
@@ -463,9 +464,13 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             } else if (parent instanceof DBDCollection) {
                 DBDCollection array = (DBDCollection)parent;
+                ArrayInfo arrayInfo = new ArrayInfo();
+                arrayInfo.componentType = array.getComponentType();
+                arrayInfo.valueHandler = DBUtils.findValueHandler(arrayInfo.componentType.getDataSource(), arrayInfo.componentType);
+
                 children = new ArrayItem[array.getItemCount()];
                 for (int i = 0; i < children.length; i++) {
-                    children[i] = new ArrayItem(i, array.getItem(i));
+                    children[i] = new ArrayItem(arrayInfo, i, array.getItem(i));
                 }
             } else if (parent instanceof DBDReference) {
                 final DBDReference reference = (DBDReference)parent;
@@ -536,7 +541,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (isName) {
                     return String.valueOf(item.index);
                 }
-                return getValueText(arrayValueHandler, arrayComponentType, item.value);
+                return getValueText(item.array.valueHandler, item.array.componentType, item.value);
             }
             return String.valueOf(columnIndex);
         }
