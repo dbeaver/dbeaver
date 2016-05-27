@@ -17,10 +17,33 @@
  */
 package org.jkiss.dbeaver.ui.data.managers;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.data.IValueController;
+
 /**
  * Array value manager.
  */
 public class ArrayValueManager extends ComplexValueManager {
 
+    @Override
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
+        manager.add(new Action("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD)) {
+            @Override
+            public void run() {
+                super.run();
+            }
+        });
+        manager.add(new Action("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE)) {
+            @Override
+            public void run() {
+                super.run();
+            }
+        });
+    }
 
 }
