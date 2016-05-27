@@ -204,6 +204,10 @@ public class ComplexObjectEditor extends TreeViewer {
         if (oldEditor != null) oldEditor.dispose();
     }
 
+    public Object extractValue() {
+        return getInput();
+    }
+
     private static class FieldInfo {
         final DBSAttributeBase attribute;
         Object value;
@@ -295,6 +299,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 ((ArrayItem) this.item).value = value;
             }
             refresh(this.item);
+            //parentController.updateValue(getInput());
         }
 
         @Override

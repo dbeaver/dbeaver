@@ -56,6 +56,6 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     public Object extractEditorValue()
     {
-        return editor.getInput();
+        return editor.extractValue();
     }
 }
