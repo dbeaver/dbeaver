@@ -44,10 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
-import org.jkiss.dbeaver.ui.data.IValueManager;
+import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
 
 import java.lang.reflect.InvocationTargetException;
@@ -118,7 +115,7 @@ public class ComplexObjectEditor extends TreeViewer {
             {
                 TreeItem item = treeControl.getItem(new Point(e.x, e.y));
                 if (item != null && UIUtils.getColumnAtPos(item, e.x, e.y) == 1) {
-                    showEditor(item, true);
+                    showEditor(item, false);
                 }
             }
 
@@ -143,6 +140,11 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (e.detail == SWT.TRAVERSE_RETURN) {
                     final TreeItem[] selection = treeControl.getSelection();
                     if (selection.length == 0) {
+                        return;
+                    }
+                    if (treeEditor.getEditor() != null && !treeEditor.getEditor().isDisposed()) {
+                        // Give a chance to catch it in editor handler
+                        e.doit = true;
                         return;
                     }
                     showEditor(selection[0], false);
@@ -192,7 +194,7 @@ public class ComplexObjectEditor extends TreeViewer {
             name = type.getTypeName() + "["  + arrayItem.index + "]";
             value = arrayItem.value;
         } else {
-            //
+            log.warn("Unsupported complex object element: " + obj);
         }
         if (valueHandler == null) {
             return;
@@ -256,7 +258,7 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
-    private class ComplexValueController implements IValueController {
+    private class ComplexValueController implements IValueController, IMultiController {
         private final DBDValueHandler valueHandler;
         private final DBSTypedObject type;
         private final String name;
@@ -352,6 +354,16 @@ public class ComplexObjectEditor extends TreeViewer {
         public void showMessage(String message, boolean error)
         {
 
+        }
+
+        @Override
+        public void closeInlineEditor() {
+            disposeOldEditor();
+        }
+
+        @Override
+        public void nextInlineEditor(boolean next) {
+            disposeOldEditor();
         }
     }
 
@@ -507,7 +519,7 @@ public class ComplexObjectEditor extends TreeViewer {
             if (obj instanceof FieldInfo) {
                 return ((FieldInfo) obj).attribute.getName() + " " + ((FieldInfo) obj).attribute.getTypeName();
             }
-            return "";
+            return null;
         }
 
         @Override
