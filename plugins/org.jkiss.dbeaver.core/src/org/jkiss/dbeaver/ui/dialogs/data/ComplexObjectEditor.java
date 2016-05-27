@@ -175,36 +175,11 @@ public class ComplexObjectEditor extends TreeViewer {
             return;
         }
 
-        DBDValueHandler valueHandler = null;
-        DBSTypedObject type = null;
-        String name = "Unknown";
-        Object value = null;
-        Object obj = item.getData();
-        if (obj instanceof FieldInfo) {
-            FieldInfo field = (FieldInfo) obj;
-            valueHandler = field.valueHandler;
-            type = field.attribute;
-            name = field.attribute.getName();
-            value = field.value;
-        } else if (obj instanceof ArrayItem) {
-            ArrayItem arrayItem = (ArrayItem) obj;
-            valueHandler = arrayItem.valueHandler;
-            type = arrayItem.array.getComponentType();
-            name = type.getTypeName() + "["  + arrayItem.index + "]";
-            value = arrayItem.value;
-        } else {
-            log.warn("Unsupported complex object element: " + obj);
-        }
-        if (valueHandler == null) {
-            return;
-        }
-        IValueController valueController = new ComplexValueController(
-            valueHandler,
-            type,
-            name,
-            value,
-            advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
         try {
+            IValueController valueController = new ComplexValueController(
+                item.getData(),
+                advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
+
             curCellEditor = valueController.getValueManager().createEditor(valueController);
             if (curCellEditor != null) {
                 curCellEditor.createControl();
@@ -231,7 +206,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private static class FieldInfo {
         final DBSAttributeBase attribute;
-        final Object value;
+        Object value;
         DBDValueHandler valueHandler;
 
         private FieldInfo(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value)
@@ -245,7 +220,7 @@ public class ComplexObjectEditor extends TreeViewer {
     private static class ArrayItem {
         final DBDCollection array;
         final int index;
-        final Object value;
+        Object value;
         DBDValueHandler valueHandler;
 
         private ArrayItem(DBDCollection array, int index, Object value)
@@ -258,17 +233,30 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     private class ComplexValueController implements IValueController, IMultiController {
+        private final Object item;
         private final DBDValueHandler valueHandler;
         private final DBSTypedObject type;
         private final String name;
         private final Object value;
         private final EditType editType;
-        public ComplexValueController(DBDValueHandler valueHandler, DBSTypedObject type, String name, @Nullable Object value, EditType editType)
-        {
-            this.valueHandler = valueHandler;
-            this.type = type;
-            this.name = name;
-            this.value = value;
+
+        public ComplexValueController(Object obj, EditType editType) throws DBCException {
+            this.item = obj;
+            if (this.item instanceof FieldInfo) {
+                FieldInfo field = (FieldInfo) this.item;
+                valueHandler = field.valueHandler;
+                type = field.attribute;
+                name = field.attribute.getName();
+                value = field.value;
+            } else if (this.item instanceof ArrayItem) {
+                ArrayItem arrayItem = (ArrayItem) this.item;
+                valueHandler = arrayItem.valueHandler;
+                type = arrayItem.array.getComponentType();
+                name = type.getTypeName() + "["  + arrayItem.index + "]";
+                value = arrayItem.value;
+            } else {
+                throw new DBCException("Unsupported complex object element: " + this.item);
+            }
             this.editType = editType;
         }
 
@@ -301,7 +289,12 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void updateValue(Object value)
         {
-            // Do nothing
+            if (this.item instanceof FieldInfo) {
+                ((FieldInfo) this.item).value = value;
+            } else if (this.item instanceof ArrayItem) {
+                ((ArrayItem) this.item).value = value;
+            }
+            refresh(this.item);
         }
 
         @Override
