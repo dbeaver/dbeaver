@@ -18,18 +18,23 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.action.IContributionManager;
-import org.jkiss.dbeaver.Log;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -42,12 +47,17 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * Structure object editor
@@ -56,15 +66,56 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private static final Log log = Log.getLog(ComplexObjectEditor.class);
 
+    private static class ComplexElement {
+        boolean created, modified;
+        Object value;
+    }
+
+    private static class CompositeField extends ComplexElement {
+        final DBSAttributeBase attribute;
+        DBDValueHandler valueHandler;
+
+        private CompositeField(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value)
+        {
+            this.attribute = attribute;
+            this.value = value;
+            this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+        }
+    }
+
+    private static class ArrayItem extends ComplexElement {
+        final int index;
+
+        private ArrayItem(int index, Object value)
+        {
+            this.index = index;
+            this.value = value;
+        }
+    }
+
     private IValueController parentController;
     private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
     private IValueEditor curCellEditor;
+    private DBDValueHandler arrayValueHandler;
+    private DBSDataType arrayComponentType;
+
+    private Color backgroundAdded;
+    private Color backgroundDeleted;
+    private Color backgroundModified;
+
+    private Map<Object, ComplexElement[]> childrenMap = new IdentityHashMap<>();
 
     public ComplexObjectEditor(IValueController parentController, int style)
     {
         super(parentController.getEditPlaceholder(), style | SWT.SINGLE | SWT.FULL_SELECTION);
         this.parentController = parentController;
+
+        ITheme currentTheme = parentController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
+        this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
+        this.backgroundDeleted = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
+        this.backgroundModified = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
+
         final Tree treeControl = super.getTree();
         treeControl.setHeaderVisible(true);
         treeControl.setLinesVisible(true);
@@ -156,11 +207,21 @@ public class ComplexObjectEditor extends TreeViewer {
         super.setContentProvider(new StructContentProvider());
     }
 
+    @Override
+    public StructContentProvider getContentProvider() {
+        return (StructContentProvider)super.getContentProvider();
+    }
+
     public void setModel(DBCExecutionContext executionContext, final DBDComplexValue value)
     {
         getTree().setRedraw(false);
         try {
             this.executionContext = executionContext;
+            if (value instanceof DBDCollection) {
+                arrayComponentType = ((DBDCollection) value).getComponentType();
+                arrayValueHandler = DBUtils.findValueHandler(arrayComponentType.getDataSource(), arrayComponentType);
+            }
+            this.childrenMap.clear();
             setInput(value);
             expandToLevel(2);
         } finally {
@@ -177,7 +238,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
         try {
             IValueController valueController = new ComplexValueController(
-                item.getData(),
+                (ComplexElement)item.getData(),
                 advanced ? IValueController.EditType.EDITOR : IValueController.EditType.INLINE);
 
             curCellEditor = valueController.getValueManager().createEditor(valueController);
@@ -205,57 +266,43 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     public Object extractValue() {
-        return getInput();
-    }
-
-    private static class FieldInfo {
-        final DBSAttributeBase attribute;
-        Object value;
-        DBDValueHandler valueHandler;
-
-        private FieldInfo(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value)
-        {
-            this.attribute = attribute;
-            this.value = value;
-            this.valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+        final DBDComplexValue complexValue = (DBDComplexValue)getInput();
+        if (complexValue instanceof DBDComposite) {
+            final ComplexElement[] items = childrenMap.get(complexValue);
+            for (int i = 0; i < items.length; i++) {
+                ((DBDComposite) complexValue).setAttributeValue(((CompositeField)items[i]).attribute, items[i].value);
+            }
+        } else if (complexValue instanceof DBDCollection) {
+            final ComplexElement[] items = childrenMap.get(complexValue);
+            final Object[] newValues = new Object[items.length];
+            for (int i = 0; i < items.length; i++) {
+                newValues[i] = items[i].value;
+            }
+            ((DBDCollection) complexValue).setContents(newValues);
         }
-    }
-
-    private static class ArrayItem {
-        final DBDCollection array;
-        final int index;
-        Object value;
-        DBDValueHandler valueHandler;
-
-        private ArrayItem(DBDCollection array, int index, Object value)
-        {
-            this.array = array;
-            this.index = index;
-            this.value = value;
-            this.valueHandler = DBUtils.findValueHandler(array.getComponentType().getDataSource(), array.getComponentType());
-        }
+        return complexValue;
     }
 
     private class ComplexValueController implements IValueController, IMultiController {
-        private final Object item;
+        private final ComplexElement item;
         private final DBDValueHandler valueHandler;
         private final DBSTypedObject type;
         private final String name;
         private final Object value;
         private final EditType editType;
 
-        public ComplexValueController(Object obj, EditType editType) throws DBCException {
+        public ComplexValueController(ComplexElement obj, EditType editType) throws DBCException {
             this.item = obj;
-            if (this.item instanceof FieldInfo) {
-                FieldInfo field = (FieldInfo) this.item;
+            if (this.item instanceof CompositeField) {
+                CompositeField field = (CompositeField) this.item;
                 valueHandler = field.valueHandler;
                 type = field.attribute;
                 name = field.attribute.getName();
                 value = field.value;
             } else if (this.item instanceof ArrayItem) {
                 ArrayItem arrayItem = (ArrayItem) this.item;
-                valueHandler = arrayItem.valueHandler;
-                type = arrayItem.array.getComponentType();
+                valueHandler = arrayValueHandler;
+                type = arrayComponentType;
                 name = type.getTypeName() + "["  + arrayItem.index + "]";
                 value = arrayItem.value;
             } else {
@@ -293,11 +340,11 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void updateValue(Object value)
         {
-            if (this.item instanceof FieldInfo) {
-                ((FieldInfo) this.item).value = value;
-            } else if (this.item instanceof ArrayItem) {
-                ((ArrayItem) this.item).value = value;
+            if (CommonUtils.equalObjects(this.item.value, value)) {
+                return;
             }
+            this.item.value = value;
+            this.item.modified = true;
             refresh(this.item);
             //parentController.updateValue(getInput());
         }
@@ -394,29 +441,32 @@ public class ComplexObjectEditor extends TreeViewer {
         }
 
         @Override
-        public Object[] getChildren(Object parent)
+        public ComplexElement[] getChildren(Object parent)
         {
+            ComplexElement[] children = childrenMap.get(parent);
+            if (children != null) {
+                return children;
+            }
+
             if (parent instanceof DBDComposite) {
                 DBDComposite structure = (DBDComposite)parent;
                 try {
                     DBSAttributeBase[] attributes = structure.getAttributes();
-                    Object[] children = new Object[attributes.length];
+                    children = new CompositeField[attributes.length];
                     for (int i = 0; i < attributes.length; i++) {
                         DBSAttributeBase attr = attributes[i];
                         Object value = structure.getAttributeValue(attr);
-                        children[i] = new FieldInfo(structure.getDataType().getDataSource(), attr, value);
+                        children[i] = new CompositeField(structure.getDataType().getDataSource(), attr, value);
                     }
-                    return children;
                 } catch (DBException e) {
                     log.error("Error getting structure meta data", e);
                 }
             } else if (parent instanceof DBDCollection) {
                 DBDCollection array = (DBDCollection)parent;
-                ArrayItem[] items = new ArrayItem[array.getItemCount()];
-                for (int i = 0; i < items.length; i++) {
-                    items[i] = new ArrayItem(array, i, array.getItem(i));
+                children = new ArrayItem[array.getItemCount()];
+                for (int i = 0; i < children.length; i++) {
+                    children[i] = new ArrayItem(i, array.getItem(i));
                 }
-                return items;
             } else if (parent instanceof DBDReference) {
                 final DBDReference reference = (DBDReference)parent;
                 DBRRunnableWithResult<Object> runnable = new DBRRunnableWithResult<Object>() {
@@ -431,28 +481,22 @@ public class ComplexObjectEditor extends TreeViewer {
                     }
                 };
                 DBeaverUI.runInUI(DBeaverUI.getActiveWorkbenchWindow(), runnable);
-/*
-                try {
-                    DBeaverUI.runInProgressService(runnable);
-                } catch (InvocationTargetException e) {
-                    UIUtils.showErrorDialog(getControl().getShell(), "Value read", "Error read reference", e.getTargetException());
-                } catch (InterruptedException e) {
-                    // ok
-                }
-*/
-                return getChildren(runnable.getResult());
-            } else if (parent instanceof FieldInfo) {
-                Object value = ((FieldInfo) parent).value;
+                children = getChildren(runnable.getResult());
+            } else if (parent instanceof CompositeField) {
+                Object value = ((CompositeField) parent).value;
                 if (isComplexType(value)) {
-                    return getChildren(value);
+                    children = getChildren(value);
                 }
             } else if (parent instanceof ArrayItem) {
                 Object value = ((ArrayItem) parent).value;
                 if (isComplexType(value)) {
-                    return getChildren(value);
+                    children = getChildren(value);
                 }
             }
-            return new Object[0];
+            if (children != null) {
+                childrenMap.put(parent, children);
+            }
+            return children;
         }
 
         private boolean isComplexType(Object value) {
@@ -466,7 +510,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 parent instanceof DBDComposite ||
                 parent instanceof DBDCollection ||
                 parent instanceof DBDReference ||
-                (parent instanceof FieldInfo && hasChildren(((FieldInfo) parent).value)) ||
+                (parent instanceof CompositeField && hasChildren(((CompositeField) parent).value)) ||
                 (parent instanceof ArrayItem && hasChildren(((ArrayItem) parent).value));
         }
     }
@@ -479,10 +523,10 @@ public class ComplexObjectEditor extends TreeViewer {
             this.isName = isName;
         }
 
-        public String getText(Object obj, int columnIndex)
+        public String getText(ComplexElement obj, int columnIndex)
         {
-            if (obj instanceof FieldInfo) {
-                FieldInfo field = (FieldInfo) obj;
+            if (obj instanceof CompositeField) {
+                CompositeField field = (CompositeField) obj;
                 if (isName) {
                     return field.attribute.getName();
                 }
@@ -492,7 +536,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (isName) {
                     return String.valueOf(item.index);
                 }
-                return getValueText(item.valueHandler, item.array.getComponentType(), item.value);
+                return getValueText(arrayValueHandler, arrayComponentType, item.value);
             }
             return String.valueOf(columnIndex);
         }
@@ -513,8 +557,8 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public String getToolTipText(Object obj)
         {
-            if (obj instanceof FieldInfo) {
-                return ((FieldInfo) obj).attribute.getName() + " " + ((FieldInfo) obj).attribute.getTypeName();
+            if (obj instanceof CompositeField) {
+                return ((CompositeField) obj).attribute.getName() + " " + ((CompositeField) obj).attribute.getTypeName();
             }
             return null;
         }
@@ -522,8 +566,15 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void update(ViewerCell cell)
         {
-            Object element = cell.getElement();
+            ComplexElement element = (ComplexElement) cell.getElement();
             cell.setText(getText(element, cell.getColumnIndex()));
+            if (element.created) {
+                cell.setBackground(backgroundAdded);
+            } else if (element.modified) {
+                cell.setBackground(backgroundModified);
+            } else {
+                cell.setBackground(null);
+            }
         }
 
     }

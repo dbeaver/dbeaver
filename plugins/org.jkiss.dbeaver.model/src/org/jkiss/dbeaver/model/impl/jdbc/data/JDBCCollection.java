@@ -225,6 +225,11 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         contents[index] = value;
     }
 
+    @Override
+    public void setContents(Object[] contents) {
+        this.contents = contents;
+    }
+
     public Array getArrayValue() throws DBCException {
         Object[] attrs = new Object[contents.length];
         for (int i = 0; i < contents.length; i++) {

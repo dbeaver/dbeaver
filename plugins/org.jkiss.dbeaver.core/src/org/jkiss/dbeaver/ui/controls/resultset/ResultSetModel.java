@@ -411,11 +411,7 @@ public class ResultSetModel {
             }
             if (ownerValue != null) {
                 if (ownerValue instanceof DBDComposite) {
-                    try {
-                        ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
-                    } catch (DBCException e) {
-                        log.error("Error setting [" + attr.getName() + "] value", e);
-                    }
+                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
                 } else {
                     log.warn("Value [" + ownerValue + "] edit is not supported");
                 }
