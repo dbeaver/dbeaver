@@ -17,18 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.data;
 
-import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.ToolTip;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TreeEditor;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.swt.widgets.TreeItem;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
@@ -144,18 +142,21 @@ public class ComplexObjectEditor extends TreeViewer {
 
         ColumnViewerToolTipSupport.enableFor(this, ToolTip.NO_RECREATE);
 
-        TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
-        column.getColumn().setWidth(200);
-        column.getColumn().setMoveable(true);
-        column.getColumn().setText(CoreMessages.ui_properties_name);
-        column.setLabelProvider(new PropsLabelProvider(true));
+        {
+            TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
+            column.getColumn().setWidth(200);
+            column.getColumn().setMoveable(true);
+            column.getColumn().setText(CoreMessages.ui_properties_name);
+            column.setLabelProvider(new PropsLabelProvider(true));
+        }
 
-
-        column = new TreeViewerColumn(this, SWT.NONE);
-        column.getColumn().setWidth(120);
-        column.getColumn().setMoveable(true);
-        column.getColumn().setText(CoreMessages.ui_properties_value);
-        column.setLabelProvider(new PropsLabelProvider(false));
+        {
+            TreeViewerColumn column = new TreeViewerColumn(this, SWT.NONE);
+            column.getColumn().setWidth(120);
+            column.getColumn().setMoveable(true);
+            column.getColumn().setText(CoreMessages.ui_properties_value);
+            column.setLabelProvider(new PropsLabelProvider(false));
+        }
 
         treeEditor = new TreeEditor(treeControl);
         treeEditor.horizontalAlignment = SWT.RIGHT;
@@ -210,11 +211,32 @@ public class ComplexObjectEditor extends TreeViewer {
         });
 
         super.setContentProvider(new StructContentProvider());
+        createContextMenu();
     }
 
-    @Override
-    public StructContentProvider getContentProvider() {
-        return (StructContentProvider)super.getContentProvider();
+    private void createContextMenu()
+    {
+        Control control = getControl();
+        MenuManager menuMgr = new MenuManager();
+        Menu menu = menuMgr.createContextMenu(control);
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                if (!getSelection().isEmpty()) {
+                    manager.add(new CopyAction(true));
+                    manager.add(new CopyAction(false));
+                }
+                manager.add(new Separator());
+                try {
+                    parentController.getValueManager().contributeActions(manager, parentController);
+                } catch (DBCException e) {
+                    log.error(e);
+                }
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        control.setMenu(menu);
     }
 
     public void setModel(DBCExecutionContext executionContext, final DBDComplexValue value)
@@ -282,6 +304,36 @@ public class ComplexObjectEditor extends TreeViewer {
             ((DBDCollection) complexValue).setContents(newValues);
         }
         return complexValue;
+    }
+
+    private String getColumnText(ComplexElement obj, int columnIndex, DBDDisplayFormat format) {
+        if (obj instanceof CompositeField) {
+            CompositeField field = (CompositeField) obj;
+            if (columnIndex == 0) {
+                return field.attribute.getName();
+            }
+            return getValueText(field.valueHandler, field.attribute, field.value, format);
+        } else if (obj instanceof ArrayItem) {
+            ArrayItem item = (ArrayItem) obj;
+            if (columnIndex == 0) {
+                return String.valueOf(item.index);
+            }
+            return getValueText(item.array.valueHandler, item.array.componentType, item.value, format);
+        }
+        return String.valueOf(columnIndex);
+    }
+
+    private String getValueText(@NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type, @Nullable Object value, @NotNull DBDDisplayFormat format)
+    {
+        if (value instanceof DBDCollection) {
+            return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
+        } else if (value instanceof DBDComposite) {
+            return "[" + ((DBDComposite) value).getDataType().getName() + "]";
+        } else if (value instanceof DBDReference) {
+            return "--> [" + ((DBDReference) value).getReferencedType().getName() + "]";
+        } else {
+            return valueHandler.getValueDisplayString(type, value, format);
+        }
     }
 
     private class ComplexValueController implements IValueController, IMultiController {
@@ -530,33 +582,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
         public String getText(ComplexElement obj, int columnIndex)
         {
-            if (obj instanceof CompositeField) {
-                CompositeField field = (CompositeField) obj;
-                if (isName) {
-                    return field.attribute.getName();
-                }
-                return getValueText(field.valueHandler, field.attribute, field.value);
-            } else if (obj instanceof ArrayItem) {
-                ArrayItem item = (ArrayItem) obj;
-                if (isName) {
-                    return String.valueOf(item.index);
-                }
-                return getValueText(item.array.valueHandler, item.array.componentType, item.value);
-            }
-            return String.valueOf(columnIndex);
-        }
-
-        private String getValueText(@NotNull DBDValueHandler valueHandler, @NotNull DBSTypedObject type, @Nullable Object value)
-        {
-            if (value instanceof DBDCollection) {
-                return "[" + ((DBDCollection) value).getComponentType().getName() + " - " + ((DBDCollection) value).getItemCount() + "]";
-            } else if (value instanceof DBDComposite) {
-                return "[" + ((DBDComposite) value).getDataType().getName() + "]";
-            } else if (value instanceof DBDReference) {
-                return "--> [" + ((DBDReference) value).getReferencedType().getName() + "]";
-            } else {
-                return valueHandler.getValueDisplayString(type, value, DBDDisplayFormat.UI);
-            }
+            return getColumnText(obj, columnIndex, DBDDisplayFormat.UI);
         }
 
         @Override
@@ -584,4 +610,26 @@ public class ComplexObjectEditor extends TreeViewer {
 
     }
 
+    private class CopyAction extends Action {
+        private final boolean isName;
+        public CopyAction(boolean isName) {
+            super(CoreMessages.controls_itemlist_action_copy + " " + getTree().getColumn(isName ? 0 : 1).getText());
+            this.isName = isName;
+        }
+
+        @Override
+        public void run()
+        {
+            final IStructuredSelection selection = (IStructuredSelection) getSelection();
+            if (!selection.isEmpty()) {
+                String text = getColumnText(
+                    (ComplexElement) selection.getFirstElement(),
+                    isName ? 0 : 1,
+                    DBDDisplayFormat.NATIVE);
+                if (text != null) {
+                    UIUtils.setClipboardContents(getTree().getDisplay(), TextTransfer.getInstance(), text);
+                }
+            }
+        }
+    }
 }
