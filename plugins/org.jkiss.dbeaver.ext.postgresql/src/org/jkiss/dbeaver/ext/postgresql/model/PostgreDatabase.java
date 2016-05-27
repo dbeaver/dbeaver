@@ -465,6 +465,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return null;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     class AuthIdCache extends JDBCObjectCache<PostgreDatabase, PostgreAuthId> {
 
         @Override
