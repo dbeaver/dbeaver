@@ -1559,6 +1559,16 @@ public abstract class LightGrid extends Canvas {
         showColumn(col);
     }
 
+    public void showColumn(Object element)
+    {
+        for (GridColumn column : columns) {
+            if (column.getElement() == element) {
+                showColumn(column);
+                break;
+            }
+        }
+    }
+
     private void showColumn(@NotNull GridColumn col)
     {
         checkWidget();
@@ -2161,7 +2171,7 @@ public abstract class LightGrid extends Canvas {
      * Manages the state of the scrollbars when new items are added or the
      * bounds are changed.
      */
-    private void updateScrollbars()
+    public void updateScrollbars()
     {
         Point preferredSize = getTableSize();
 

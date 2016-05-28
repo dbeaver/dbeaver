@@ -637,6 +637,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         } else {
             resultsSash.setMaximizedControl(null);
             previewValue();
+            spreadsheet.updateScrollbars();
+
+            if (curAttribute != null) {
+                spreadsheet.showColumn(curAttribute);
+            }
         }
         DBeaverCore.getGlobalPreferenceStore().setValue(VIEW_PANEL_VISIBLE, isPreviewVisible());
 
