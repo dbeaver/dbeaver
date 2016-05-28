@@ -41,7 +41,10 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
-import java.sql.*;
+import java.sql.Array;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -200,26 +203,26 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         if (isNull()) {
             return DBConstants.NULL_VALUE_LABEL;
         } else {
-            return makeArrayString();
+            return makeArrayString(DBDDisplayFormat.UI);
         }
     }
 
     @NotNull
-    public String makeArrayString() {
+    public String makeArrayString(DBDDisplayFormat format) {
         if (isNull()) {
             return SQLConstants.NULL_VALUE;
         }
         if (contents.length == 0) {
             return "";
         } else if (contents.length == 1) {
-            return valueHandler.getValueDisplayString(type, contents[0], DBDDisplayFormat.UI);
+            return valueHandler.getValueDisplayString(type, contents[0], format);
         } else {
             StringBuilder str = new StringBuilder(contents.length * 32);
             for (Object item : contents) {
                 if (str.length() > 0) {
                     str.append(' '); //$NON-NLS-1$
                 }
-                String itemString = valueHandler.getValueDisplayString(type, item, DBDDisplayFormat.UI);
+                String itemString = valueHandler.getValueDisplayString(type, item, format);
                 SQLUtils.appendValue(str, type, itemString);
             }
             return str.toString();
