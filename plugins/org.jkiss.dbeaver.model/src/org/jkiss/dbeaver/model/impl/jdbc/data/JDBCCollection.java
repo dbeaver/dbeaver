@@ -64,13 +64,16 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         }
         if (type == null) {
             try {
-                String baseTypeName;
                 if (array == null) {
-                    baseTypeName = column.getTypeName();
+                    String arrayTypeName = column.getTypeName();
+                    final DBSDataType arrayType = session.getDataSource().resolveDataType(session.getProgressMonitor(), arrayTypeName);
+                    if (arrayType != null) {
+                        type = arrayType.getComponentType(session.getProgressMonitor());
+                    }
                 } else {
-                    baseTypeName = array.getBaseTypeName();
+                    String baseTypeName = array.getBaseTypeName();
+                    type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
                 }
-                type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
             } catch (Exception e) {
                 throw new DBCException("Error resolving data type", e);
             }
