@@ -23,6 +23,9 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
@@ -75,4 +78,26 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
         return new JDBCCollection(itemType, DBUtils.findValueHandler(session, itemType), contents);
     }
 
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+        DBDCollection collection = (DBDCollection) value;
+        if (!DBUtils.isNullValue(value)) {
+            DBDValueHandler valueHandler = collection.getComponentValueHandler();
+            StringBuilder str = new StringBuilder();
+            str.append("{");
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                if (i > 0) {
+                    str.append(','); //$NON-NLS-1$
+                }
+                final Object item = collection.getItem(i);
+                String itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
+                str.append(itemString);
+            }
+            str.append("}");
+
+            return str.toString();
+        }
+        return super.getValueDisplayString(column, value, format);
+    }
 }

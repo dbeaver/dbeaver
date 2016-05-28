@@ -68,7 +68,7 @@ public class JDBCArrayValueHandler extends JDBCComplexValueHandler {
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
         if (value instanceof JDBCCollection) {
-            return ((JDBCCollection) value).makeArrayString();
+            return ((JDBCCollection) value).makeArrayString(format);
         }
         return super.getValueDisplayString(column, value, format);
     }
