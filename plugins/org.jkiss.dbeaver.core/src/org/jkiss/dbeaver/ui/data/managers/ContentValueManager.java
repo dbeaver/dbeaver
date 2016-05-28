@@ -114,6 +114,7 @@ public class ContentValueManager extends BaseValueManager {
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor)
         throws DBCException
     {
+        super.contributeActions(manager, controller, activeEditor);
         contributeContentActions(manager, controller);
     }
 

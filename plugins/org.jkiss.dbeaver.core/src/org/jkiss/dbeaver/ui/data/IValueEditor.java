@@ -18,9 +18,12 @@
 
 package org.jkiss.dbeaver.ui.data;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 
 /**
  * DBD Value Editor.
@@ -55,5 +58,15 @@ public interface IValueEditor
      */
     void primeEditorValue(@Nullable Object value)
         throws DBException;
+
+    /**
+     * Fills menu/toolbar with extra actions
+     *
+     * @param manager context menu manager
+     * @param controller value controller
+     * @throws DBCException on error
+     */
+    void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
+        throws DBCException;
 
 }

@@ -149,12 +149,6 @@ abstract class ViewValuePanel extends Composite {
                 UIUtils.showErrorDialog(getShell(), "Value preview", "Can't create value viewer", e);
                 return;
             }
-            toolBarManager.removeAll();
-            try {
-                valueManager.contributeActions(toolBarManager, valueController, valueViewer);
-            } catch (DBCException e) {
-                log.error("Error filling toolbar actions", e);
-            }
             if (valueViewer != null) {
                 try {
                     valueViewer.createControl();
@@ -183,6 +177,13 @@ abstract class ViewValuePanel extends Composite {
                     referenceValueEditor.createEditorSelector(viewPlaceholder);
                 } else {
                     viewPlaceholder.setLayout(new FillLayout());
+                }
+
+                toolBarManager.removeAll();
+                try {
+                    valueManager.contributeActions(toolBarManager, valueController, valueViewer);
+                } catch (DBCException e) {
+                    log.error("Error filling toolbar actions", e);
                 }
 
             } else {
