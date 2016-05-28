@@ -91,7 +91,7 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private static class ArrayItem extends ComplexElement {
         final ArrayInfo array;
-        final int index;
+        int index;
 
         private ArrayItem(ArrayInfo array, int index, Object value)
         {
@@ -608,6 +608,12 @@ public class ComplexObjectEditor extends TreeViewer {
         return arrayInfo;
     }
 
+    private void shiftArrayItems(ComplexElement[] arrayItems, int startIndex, int inc) {
+        for (int i = startIndex; i < arrayItems.length; i++) {
+            ((ArrayItem)arrayItems[i]).index += inc;
+        }
+    }
+
     private class PropsLabelProvider extends CellLabelProvider
     {
         private final boolean isName;
@@ -678,17 +684,27 @@ public class ComplexObjectEditor extends TreeViewer {
         public void run() {
             DBDCollection collection = (DBDCollection) getInput();
             ComplexElement[] arrayItems = childrenMap.get(collection);
+            if (arrayItems == null) {
+                log.error("Can't find children items for add");
+                return;
+            }
             final IStructuredSelection selection = getStructuredSelection();
             ArrayItem newItem;
             if (selection.isEmpty()) {
                 newItem = new ArrayItem(makeArrayInfo(collection), 0, null);
             } else {
                 ArrayItem curItem = (ArrayItem) selection.getFirstElement();
-                newItem = new ArrayItem(curItem.array, arrayItems.length, null);
+                newItem = new ArrayItem(curItem.array, curItem.index + 1, null);
             }
-            arrayItems = ArrayUtils.add(ComplexElement.class, arrayItems, newItem);
+            shiftArrayItems(arrayItems, newItem.index, 1);
+            arrayItems = ArrayUtils.insertArea(ComplexElement.class, arrayItems, newItem.index, new ComplexElement[] {newItem} );
             childrenMap.put(collection, arrayItems);
             refresh();
+
+            final Widget treeItem = findItem(newItem);
+            if (treeItem != null) {
+                showEditor((TreeItem) treeItem, false);
+            }
         }
     }
 
@@ -699,7 +715,22 @@ public class ComplexObjectEditor extends TreeViewer {
 
         @Override
         public void run() {
+            final IStructuredSelection selection = getStructuredSelection();
+            if (selection.isEmpty()) {
+                return;
+            }
 
+            DBDCollection collection = (DBDCollection) getInput();
+            ComplexElement[] arrayItems = childrenMap.get(collection);
+            if (arrayItems == null) {
+                log.error("Can't find children items for delete");
+                return;
+            }
+            ArrayItem item = (ArrayItem)selection.getFirstElement();
+            shiftArrayItems(arrayItems, item.index, -1);
+            arrayItems = ArrayUtils.remove(ComplexElement.class, arrayItems, item);
+            childrenMap.put(collection, arrayItems);
+            refresh();
         }
     }
 
