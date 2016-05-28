@@ -234,10 +234,16 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                 if (event.getObject() instanceof DBPDataSourceContainer) {
                     addDataSource((DBPDataSourceContainer) event.getObject(), true);
                 } else if (model.getNodeByObject(event.getObject()) == null) {
-                    final DBNDatabaseNode parentNode = model.getParentNode(event.getObject());
-
+                    DBNDatabaseNode parentNode = model.getParentNode(event.getObject());
+                    boolean parentFound = (parentNode != null);
+                    if (parentNode == null) {
+                        // Not yet loaded. Parent node might be a folder (like Tables)
+                        parentNode = model.getParentNode(event.getObject());
+                        parentFound = false;
+                    }
                     if (parentNode != null) {
                         if (parentNode.getChildNodes() == null && parentNode.allowsChildren()) {
+                            final DBNDatabaseNode nodeToLoad = parentNode;
                             // We have to load children here
                             try {
                                 model.getApplication().getRunnableContext().run(true, true, new DBRRunnableWithProgress() {
@@ -245,7 +251,7 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                                     {
                                         try {
-                                            parentNode.getChildren(monitor);
+                                            nodeToLoad.getChildren(monitor);
                                         } catch (Exception e) {
                                             throw new InvocationTargetException(e);
                                         }
@@ -257,7 +263,11 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 // do nothing
                             }
                         }
-                        if (parentNode.getChildNodes() != null && !parentNode.hasChildItem(event.getObject())) {
+                        if (!parentFound) {
+                            // Second try
+                            parentNode = model.getParentNode(event.getObject());
+                        }
+                        if (parentNode != null && parentNode.getChildNodes() != null && !parentNode.hasChildItem(event.getObject())) {
                             // Add only if object wasn't yet added (e.g. by create new object command)
                             parentNode.addChildItem(event.getObject());
                         }
