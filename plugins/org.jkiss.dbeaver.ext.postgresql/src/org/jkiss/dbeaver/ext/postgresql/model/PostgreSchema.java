@@ -316,6 +316,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return types;
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     class CollationCache extends JDBCObjectCache<PostgreSchema, PostgreCollation> {
 
         @Override
