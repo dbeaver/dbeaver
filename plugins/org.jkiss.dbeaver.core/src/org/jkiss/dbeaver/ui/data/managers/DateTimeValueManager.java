@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.data.managers;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -41,7 +42,7 @@ public class DateTimeValueManager extends BaseValueManager {
     protected static final Log log = Log.getLog(DateTimeValueManager.class);
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor)
         throws DBCException
     {
         manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {

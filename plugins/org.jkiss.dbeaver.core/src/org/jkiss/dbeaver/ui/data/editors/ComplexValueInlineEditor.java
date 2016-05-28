@@ -48,7 +48,7 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     @Override
     protected Tree createControl(Composite editPlaceholder)
     {
-        editor = new ComplexObjectEditor(controller, SWT.BORDER);
+        editor = new ComplexObjectEditor(controller, this, SWT.BORDER);
         editor.setModel(controller.getExecutionContext(), (DBDComplexValue) controller.getValue());
         return editor.getTree();
     }

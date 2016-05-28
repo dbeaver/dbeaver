@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.data.managers;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -110,7 +111,7 @@ public class ContentValueManager extends BaseValueManager {
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller)
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor)
         throws DBCException
     {
         contributeContentActions(manager, controller);

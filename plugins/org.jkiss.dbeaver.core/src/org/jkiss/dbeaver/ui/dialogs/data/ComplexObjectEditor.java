@@ -98,7 +98,8 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
-    private IValueController parentController;
+    private final IValueController parentController;
+    private final IValueEditor editor;
     private DBCExecutionContext executionContext;
     private final TreeEditor treeEditor;
     private IValueEditor curCellEditor;
@@ -109,10 +110,11 @@ public class ComplexObjectEditor extends TreeViewer {
 
     private Map<Object, ComplexElement[]> childrenMap = new IdentityHashMap<>();
 
-    public ComplexObjectEditor(IValueController parentController, int style)
+    public ComplexObjectEditor(IValueController parentController, IValueEditor editor, int style)
     {
         super(parentController.getEditPlaceholder(), style | SWT.SINGLE | SWT.FULL_SELECTION);
         this.parentController = parentController;
+        this.editor = editor;
 
         ITheme currentTheme = parentController.getValueSite().getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme();
         this.backgroundAdded = currentTheme.getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
@@ -229,7 +231,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
                 manager.add(new Separator());
                 try {
-                    parentController.getValueManager().contributeActions(manager, parentController);
+                    parentController.getValueManager().contributeActions(manager, parentController, editor);
                 } catch (DBCException e) {
                     log.error(e);
                 }
