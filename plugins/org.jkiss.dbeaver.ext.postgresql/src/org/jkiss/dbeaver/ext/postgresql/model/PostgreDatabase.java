@@ -429,6 +429,10 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     public PostgreDataType getDataType(String typeName) {
+        if (typeName.endsWith("[]")) {
+            // In some cases ResultSetMetadata returns it as []
+            typeName = "_" + typeName.substring(0, typeName.length() - 2);
+        }
         {
             // First check system catalog
             final PostgreSchema schema = schemaCache.getCachedObject(PostgreConstants.CATALOG_SCHEMA_NAME);
