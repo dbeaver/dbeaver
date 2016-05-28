@@ -17,14 +17,16 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Tree;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDComplexValue;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.ComplexObjectEditor;
 
 /**
@@ -57,5 +59,10 @@ public class ComplexValueInlineEditor extends BaseValueEditor<Tree> {
     public Object extractEditorValue()
     {
         return editor.extractValue();
+    }
+
+    @Override
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
+        editor.contributeActions(manager);
     }
 }

@@ -45,6 +45,7 @@ public class DateTimeValueManager extends BaseValueManager {
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor)
         throws DBCException
     {
+        super.contributeActions(manager, controller, activeEditor);
         manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
             @Override
             public void run() {

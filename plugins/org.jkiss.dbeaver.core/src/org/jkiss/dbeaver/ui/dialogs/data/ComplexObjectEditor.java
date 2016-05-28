@@ -47,6 +47,8 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
@@ -225,11 +227,6 @@ public class ComplexObjectEditor extends TreeViewer {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
-                if (!getSelection().isEmpty()) {
-                    manager.add(new CopyAction(true));
-                    manager.add(new CopyAction(false));
-                }
-                manager.add(new Separator());
                 try {
                     parentController.getValueManager().contributeActions(manager, parentController, editor);
                 } catch (DBCException e) {
@@ -634,4 +631,36 @@ public class ComplexObjectEditor extends TreeViewer {
             }
         }
     }
+
+    public void contributeActions(IContributionManager manager) {
+        if (!getSelection().isEmpty()) {
+            manager.add(new CopyAction(true));
+            manager.add(new CopyAction(false));
+        }
+        manager.add(new Separator());
+
+        manager.add(new Action("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD)) {
+            @Override
+            public boolean isEnabled() {
+                return true;
+            }
+
+            @Override
+            public void run() {
+
+            }
+        });
+        manager.add(new Action("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE)) {
+            @Override
+            public boolean isEnabled() {
+                return false;
+            }
+
+            @Override
+            public void run() {
+
+            }
+        });
+    }
+
 }

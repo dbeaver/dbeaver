@@ -63,7 +63,9 @@ public abstract class BaseValueManager implements IValueManager {
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller, @Nullable IValueEditor activeEditor) throws DBCException {
-        // nothing
+        if (activeEditor != null) {
+            activeEditor.contributeActions(manager, controller);
+        }
     }
 
     @Override

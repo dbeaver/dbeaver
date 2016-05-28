@@ -34,28 +34,7 @@ public class ArrayValueManager extends ComplexValueManager {
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor) throws DBCException {
-        manager.add(new Action("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD)) {
-            @Override
-            public boolean isEnabled() {
-                return true;
-            }
-
-            @Override
-            public void run() {
-
-            }
-        });
-        manager.add(new Action("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE)) {
-            @Override
-            public boolean isEnabled() {
-                return false;
-            }
-
-            @Override
-            public void run() {
-
-            }
-        });
+        super.contributeActions(manager, controller, activeEditor);
     }
 
 }
