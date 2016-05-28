@@ -743,11 +743,6 @@ public class EntityEditor extends MultiPageDatabaseEditor
         breadcrumbsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         breadcrumbsPanel.setLayout(new RowLayout());
 
-        // Cleanup previous
-        for (Control child : breadcrumbsPanel.getChildren()) {
-            child.dispose();
-        }
-
         // Make base node path
         DBNDatabaseNode node = getEditorInput().getNavigatorNode();
 
