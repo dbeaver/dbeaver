@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -54,21 +56,31 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
     private final DBSDataType type;
     private final DBDValueHandler valueHandler;
 
-    @Nullable
-    public static Object makeArray(JDBCSession session, Array array) {
-        if (array == null) {
-            return null;
-        }
+    @NotNull
+    public static Object makeArray(JDBCSession session, DBSTypedObject column, Array array) throws DBCException {
         DBSDataType type = null;
-        try {
-            String baseTypeName = array.getBaseTypeName();
-            type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
-        } catch (Exception e) {
-            log.warn("Error resolving data type", e);
+        if (column instanceof DBSTypedObjectEx) {
+            type = ((DBSTypedObjectEx) column).getDataType();
+        }
+        if (type == null) {
+            try {
+                String baseTypeName;
+                if (array == null) {
+                    baseTypeName = column.getTypeName();
+                } else {
+                    baseTypeName = array.getBaseTypeName();
+                }
+                type = session.getDataSource().resolveDataType(session.getProgressMonitor(), baseTypeName);
+            } catch (Exception e) {
+                throw new DBCException("Error resolving data type", e);
+            }
         }
 
         try {
             if (type == null) {
+                if (array == null) {
+                    throw new DBCException("Can't resolve NULL array data type");
+                }
                 try {
                     return extractDataFromResultSet(session, array, null, null);
                 } catch (SQLException e) {
@@ -79,6 +91,9 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             try {
                 return extractDataFromArray(session, array, type, valueHandler);
             } catch (SQLException e) {
+                if (array == null) {
+                    throw new DBCException(e, session.getDataSource()); //$NON-NLS-1$
+                }
                 try {
                     return extractDataFromResultSet(session, array, type, valueHandler);
                 } catch (SQLException e1) {
@@ -86,17 +101,15 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
                 }
             }
         } catch (DBException e) {
-            log.warn("Can't extract array data from JDBC array", e); //$NON-NLS-1$
-            return null;
+            throw new DBCException("Can't extract array data from JDBC array", e); //$NON-NLS-1$
         }
     }
 
-    @Nullable
-    private static JDBCCollection extractDataFromResultSet(JDBCSession session, Array array, @Nullable DBSDataType type, @Nullable DBDValueHandler valueHandler) throws SQLException, DBException {
+    @NotNull
+    private static JDBCCollection extractDataFromResultSet(@NotNull JDBCSession session, @NotNull Array array, @Nullable DBSDataType type, @Nullable DBDValueHandler valueHandler) throws SQLException, DBException {
         ResultSet dbResult = array.getResultSet();
         if (dbResult == null) {
-            log.debug("JDBC array type was not resolved and result set was not provided by driver. Return NULL.");
-            return null;
+            throw new DBCException("JDBC array type was not resolved and result set was not provided by driver. Return NULL.");
         }
         if (type == null || valueHandler == null) {
             JDBCColumnMetaData itemMeta = new JDBCColumnMetaData(session.getDataSource(), dbResult.getMetaData(), 1);
@@ -126,13 +139,13 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         }
     }
 
-    @Nullable
-    private static JDBCCollection extractDataFromArray(JDBCSession session, Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException {
-        Object arrObject = array.getArray();
-        if (arrObject == null) {
-            return null;
+    @NotNull
+    private static JDBCCollection extractDataFromArray(@NotNull JDBCSession session, @Nullable Array array, DBSDataType type, DBDValueHandler valueHandler) throws SQLException, DBCException {
+        if (array == null) {
+            return new JDBCCollection(type, valueHandler, null);
         }
-        int arrLength = java.lang.reflect.Array.getLength(arrObject);
+        Object arrObject = array.getArray();
+        int arrLength = arrObject == null ? 0 : java.lang.reflect.Array.getLength(arrObject);
         Object[] contents = new Object[arrLength];
         for (int i = 0; i < arrLength; i++) {
             Object item = java.lang.reflect.Array.get(arrObject, i);

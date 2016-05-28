@@ -20,14 +20,12 @@ package org.jkiss.dbeaver.ext.phoenix.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
-import java.sql.SQLException;
 
 
 /**
@@ -42,7 +40,7 @@ public class PhoenixArrayValueHandler extends JDBCArrayValueHandler {
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, Object object, boolean copy) throws DBCException
     {
         if (object != null && object.getClass().getSimpleName().contains(PHOENIX_ARRAY_TYPE)) {
-            return JDBCCollection.makeArray((JDBCSession) session, (Array) object);
+            return JDBCCollection.makeArray((JDBCSession) session, type, (Array) object);
         }
         return super.getValueFromObject(session, type, object, copy);
     }
