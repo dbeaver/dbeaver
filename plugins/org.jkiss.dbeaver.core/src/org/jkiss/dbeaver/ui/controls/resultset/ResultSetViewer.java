@@ -1053,7 +1053,7 @@ public class ResultSetViewer extends Viewer
             // Menus from value handler
             try {
                 manager.add(new Separator());
-                valueController.getValueManager().contributeActions(manager, valueController);
+                valueController.getValueManager().contributeActions(manager, valueController, null);
             }
             catch (Exception e) {
                 log.error(e);

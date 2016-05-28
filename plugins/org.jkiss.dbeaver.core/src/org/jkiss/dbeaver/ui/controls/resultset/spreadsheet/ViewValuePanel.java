@@ -151,7 +151,7 @@ abstract class ViewValuePanel extends Composite {
             }
             toolBarManager.removeAll();
             try {
-                valueManager.contributeActions(toolBarManager, valueController);
+                valueManager.contributeActions(toolBarManager, valueController, valueViewer);
             } catch (DBCException e) {
                 log.error("Error filling toolbar actions", e);
             }

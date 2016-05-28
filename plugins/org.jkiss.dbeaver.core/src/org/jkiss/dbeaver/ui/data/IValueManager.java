@@ -35,9 +35,10 @@ public interface IValueManager
      *
      * @param manager context menu manager
      * @param controller value controller
+     * @param activeEditor    active editor
      * @throws DBCException on error
      */
-    void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller)
+    void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller, @Nullable IValueEditor activeEditor)
         throws DBCException;
 
     /**

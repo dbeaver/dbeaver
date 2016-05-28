@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 
 /**
@@ -61,7 +62,7 @@ public abstract class BaseValueManager implements IValueManager {
     }
 
     @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller) throws DBCException {
+    public void contributeActions(@NotNull IContributionManager manager, @NotNull IValueController controller, @Nullable IValueEditor activeEditor) throws DBCException {
         // nothing
     }
 
