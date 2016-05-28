@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.ThemeConstants;
 import org.jkiss.dbeaver.ui.data.*;
 import org.jkiss.dbeaver.ui.data.registry.DataManagerRegistry;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -109,6 +110,11 @@ public class ComplexObjectEditor extends TreeViewer {
     private Color backgroundAdded;
     private Color backgroundDeleted;
     private Color backgroundModified;
+
+    private CopyAction copyNameAction;
+    private CopyAction copyValueAction;
+    private Action addElementAction;
+    private Action removeElementAction;
 
     private Map<Object, ComplexElement[]> childrenMap = new IdentityHashMap<>();
 
@@ -169,7 +175,6 @@ public class ComplexObjectEditor extends TreeViewer {
         treeEditor.minimumWidth = 50;
 
         treeControl.addMouseListener(new MouseAdapter() {
-
             @Override
             public void mouseDoubleClick(MouseEvent e)
             {
@@ -177,19 +182,6 @@ public class ComplexObjectEditor extends TreeViewer {
                 if (item != null && UIUtils.getColumnAtPos(item, e.x, e.y) == 1) {
                     showEditor(item, false);
                 }
-            }
-
-            @Override
-            public void mouseUp(MouseEvent e)
-            {
-/*
-                TreeItem item = treeControl.getItem(new Point(e.x, e.y));
-                if (item != null) {
-                    if (UIUtils.getColumnAtPos(item, e.x, e.y) == 1) {
-                        showEditor(item, false);
-                    }
-                }
-*/
             }
         });
 
@@ -215,6 +207,36 @@ public class ComplexObjectEditor extends TreeViewer {
         });
 
         super.setContentProvider(new StructContentProvider());
+
+        this.copyNameAction = new CopyAction(true);
+        this.copyValueAction = new CopyAction(false);
+        this.addElementAction = new AddElementAction();
+        this.removeElementAction = new RemoveElementAction();
+
+        addElementAction.setEnabled(true);
+        removeElementAction.setEnabled(false);
+
+        addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                final IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+                if (selection == null || selection.isEmpty()) {
+                    copyNameAction.setEnabled(false);
+                    copyValueAction.setEnabled(false);
+                    removeElementAction.setEnabled(false);
+                    addElementAction.setEnabled(getInput() instanceof DBDCollection);
+                } else {
+                    copyNameAction.setEnabled(true);
+                    copyValueAction.setEnabled(true);
+                    final Object element = selection.getFirstElement();
+                    if (element instanceof ArrayItem) {
+                        removeElementAction.setEnabled(true);
+                        addElementAction.setEnabled(true);
+                    }
+                }
+            }
+        });
+
         createContextMenu();
     }
 
@@ -227,6 +249,11 @@ public class ComplexObjectEditor extends TreeViewer {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
+                if (!getSelection().isEmpty()) {
+                    manager.add(copyNameAction);
+                    manager.add(copyValueAction);
+                    manager.add(new Separator());
+                }
                 try {
                     parentController.getValueManager().contributeActions(manager, parentController, editor);
                 } catch (DBCException e) {
@@ -236,6 +263,11 @@ public class ComplexObjectEditor extends TreeViewer {
         });
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
+    }
+
+    @Override
+    public DBDComplexValue getInput() {
+        return (DBDComplexValue)super.getInput();
     }
 
     public void setModel(DBCExecutionContext executionContext, final DBDComplexValue value)
@@ -288,7 +320,7 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     public Object extractValue() {
-        final DBDComplexValue complexValue = (DBDComplexValue)getInput();
+        final DBDComplexValue complexValue = getInput();
         if (complexValue instanceof DBDComposite) {
             final ComplexElement[] items = childrenMap.get(complexValue);
             for (int i = 0; i < items.length; i++) {
@@ -398,7 +430,6 @@ public class ComplexObjectEditor extends TreeViewer {
             this.item.value = value;
             this.item.modified = true;
             refresh(this.item);
-            //parentController.updateValue(getInput());
         }
 
         @Override
@@ -515,9 +546,7 @@ public class ComplexObjectEditor extends TreeViewer {
                 }
             } else if (parent instanceof DBDCollection) {
                 DBDCollection array = (DBDCollection)parent;
-                ArrayInfo arrayInfo = new ArrayInfo();
-                arrayInfo.componentType = array.getComponentType();
-                arrayInfo.valueHandler = DBUtils.findValueHandler(arrayInfo.componentType.getDataSource(), arrayInfo.componentType);
+                ArrayInfo arrayInfo = makeArrayInfo(array);
 
                 children = new ArrayItem[array.getItemCount()];
                 for (int i = 0; i < children.length; i++) {
@@ -571,6 +600,14 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
+    @NotNull
+    private ArrayInfo makeArrayInfo(DBDCollection array) {
+        ArrayInfo arrayInfo = new ArrayInfo();
+        arrayInfo.componentType = array.getComponentType();
+        arrayInfo.valueHandler = DBUtils.findValueHandler(arrayInfo.componentType.getDataSource(), arrayInfo.componentType);
+        return arrayInfo;
+    }
+
     private class PropsLabelProvider extends CellLabelProvider
     {
         private final boolean isName;
@@ -619,7 +656,7 @@ public class ComplexObjectEditor extends TreeViewer {
         @Override
         public void run()
         {
-            final IStructuredSelection selection = (IStructuredSelection) getSelection();
+            final IStructuredSelection selection = getStructuredSelection();
             if (!selection.isEmpty()) {
                 String text = getColumnText(
                     (ComplexElement) selection.getFirstElement(),
@@ -632,35 +669,43 @@ public class ComplexObjectEditor extends TreeViewer {
         }
     }
 
-    public void contributeActions(IContributionManager manager) {
-        if (!getSelection().isEmpty()) {
-            manager.add(new CopyAction(true));
-            manager.add(new CopyAction(false));
+    private class AddElementAction extends Action {
+        public AddElementAction() {
+            super("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD));
         }
-        manager.add(new Separator());
 
-        manager.add(new Action("Add element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_ADD)) {
-            @Override
-            public boolean isEnabled() {
-                return true;
+        @Override
+        public void run() {
+            DBDCollection collection = (DBDCollection) getInput();
+            ComplexElement[] arrayItems = childrenMap.get(collection);
+            final IStructuredSelection selection = getStructuredSelection();
+            ArrayItem newItem;
+            if (selection.isEmpty()) {
+                newItem = new ArrayItem(makeArrayInfo(collection), 0, null);
+            } else {
+                ArrayItem curItem = (ArrayItem) selection.getFirstElement();
+                newItem = new ArrayItem(curItem.array, arrayItems.length, null);
             }
+            arrayItems = ArrayUtils.add(ComplexElement.class, arrayItems, newItem);
+            childrenMap.put(collection, arrayItems);
+            refresh();
+        }
+    }
 
-            @Override
-            public void run() {
+    private class RemoveElementAction extends Action {
+        public RemoveElementAction() {
+            super("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE));
+        }
 
-            }
-        });
-        manager.add(new Action("Remove element", DBeaverIcons.getImageDescriptor(UIIcon.ROW_DELETE)) {
-            @Override
-            public boolean isEnabled() {
-                return false;
-            }
+        @Override
+        public void run() {
 
-            @Override
-            public void run() {
+        }
+    }
 
-            }
-        });
+    public void contributeActions(IContributionManager manager) {
+        manager.add(addElementAction);
+        manager.add(removeElementAction);
     }
 
 }

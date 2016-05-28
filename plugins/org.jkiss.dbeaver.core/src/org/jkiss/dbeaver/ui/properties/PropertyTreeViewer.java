@@ -460,7 +460,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 @Override
                 public void menuAboutToShow(final IMenuManager manager)
                 {
-                    final IStructuredSelection selection = (IStructuredSelection) PropertyTreeViewer.this.getSelection();
+                    final IStructuredSelection selection = PropertyTreeViewer.this.getStructuredSelection();
 
                     if (selection.isEmpty()) {
                         return;

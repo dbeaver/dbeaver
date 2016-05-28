@@ -386,9 +386,9 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         if (site instanceof IDoubleClickListener) {
             ((IDoubleClickListener)site).doubleClick(event);
         }
-        ISelection selection = event.getSelection();
+        IStructuredSelection selection = (IStructuredSelection) event.getSelection();
         if (!selection.isEmpty()) {
-            Object element = ((IStructuredSelection) selection).getFirstElement();
+            Object element = selection.getFirstElement();
             if (element instanceof DriverCategory || element instanceof DataSourceProviderDescriptor) {
                 if (Boolean.TRUE.equals(getExpandedState(element))) {
                     super.collapseToLevel(element, 1);
