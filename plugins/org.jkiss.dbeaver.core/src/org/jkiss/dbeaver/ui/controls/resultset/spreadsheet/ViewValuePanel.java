@@ -62,6 +62,8 @@ abstract class ViewValuePanel extends Composite {
     private ToolBarManager toolBarManager;
     private ReferenceValueEditor referenceValueEditor;
 
+    private volatile boolean valueSaving;
+
     ViewValuePanel(IResultSetController resultSet, Composite parent)
     {
         super(parent, SWT.NONE);
@@ -136,6 +138,9 @@ abstract class ViewValuePanel extends Composite {
 
     public void viewValue(final IValueController valueController)
     {
+        if (valueSaving) {
+            return;
+        }
         if (previewController == null || valueController.getValueType() != previewController.getValueType()) {
             cleanupPanel();
             // Rest column info
@@ -158,15 +163,6 @@ abstract class ViewValuePanel extends Composite {
                 Control control = valueViewer.getControl();
                 if (control != null) {
                     resultSet.lockActionsByFocus(control);
-                    control.addKeyListener(new KeyAdapter() {
-                        @Override
-                        public void keyPressed(KeyEvent e) {
-                            if (e.keyCode == SWT.CR && e.stateMask == SWT.CTRL) {
-                                saveValue();
-                                e.doit = false;
-                            }
-                        }
-                    });
                 }
 
                 referenceValueEditor = new ReferenceValueEditor(valueController, valueViewer);
@@ -233,13 +229,19 @@ abstract class ViewValuePanel extends Composite {
         }
     }
 
-    private void saveValue()
+    public void saveValue()
     {
+        if (valueViewer == null) {
+            return;
+        }
         try {
+            valueSaving = true;
             Object newValue = valueViewer.extractEditorValue();
             previewController.updateValue(newValue);
         } catch (DBException e) {
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
+        } finally {
+            valueSaving = false;
         }
     }
 
