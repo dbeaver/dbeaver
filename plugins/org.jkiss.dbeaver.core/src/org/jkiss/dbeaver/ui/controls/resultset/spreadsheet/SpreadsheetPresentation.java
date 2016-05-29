@@ -390,7 +390,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (changed) {
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_CAN_MOVE);
             ResultSetPropertyTester.firePropertyChange(ResultSetPropertyTester.PROP_EDITABLE);
-            updateValueView();
+            spreadsheet.redrawGrid();
+            previewValue(true);
         }
     }
 
@@ -538,7 +539,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void updateValueView() {
         spreadsheet.redrawGrid();
-        previewValue();
+        previewValue(false);
     }
 
     @Override
@@ -583,7 +584,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
         spreadsheet.layout(true, true);
-        previewValue();
+        previewValue(false);
         //controller.setCurrentRow(oldRow);
     }
 
@@ -636,7 +637,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             resultsSash.setMaximizedControl(spreadsheet);
         } else {
             resultsSash.setMaximizedControl(null);
-            previewValue();
+            previewValue(true);
             spreadsheet.updateScrollbars();
 
             if (curAttribute != null) {
@@ -652,7 +653,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
     }
 
-    void previewValue()
+    void previewValue(boolean savePrevious)
     {
         DBDAttributeBinding attr = getFocusAttribute();
         ResultSetRow row = getFocusRow();
@@ -662,6 +663,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (attr == null || row == null) {
             previewPane.clearValue();
             return;
+        }
+        if (savePrevious) {
+            // TODO: do smart save + dirty flag
+//            previewPane.saveValue();
         }
         if (panelValueController == null || panelValueController.getBinding() != attr) {
             panelValueController = new SpreadsheetValueController(
