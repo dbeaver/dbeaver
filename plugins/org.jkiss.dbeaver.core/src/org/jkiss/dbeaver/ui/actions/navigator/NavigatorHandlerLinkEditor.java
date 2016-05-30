@@ -90,9 +90,14 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                         @Override
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException {
+                            DBSObject showObject = activeObject;
+                            if (showObject instanceof DBPDataSource) {
+                                showObject = ((DBPDataSource) showObject).getContainer();
+                            }
+
                             DBNDatabaseNode objectNode = ((NavigatorViewBase) activePart).getModel().getNodeByObject(
                                 monitor,
-                                activeObject,
+                                showObject,
                                 true
                             );
                             if (objectNode != null) {
