@@ -96,6 +96,11 @@ public class BasicSQLDialect implements SQLDialect {
         addKeywords(allFunctions, DBPKeywordType.FUNCTION);
     }
 
+    /**
+     * Add keywords.
+     * @param set     keywords. Must be in upper case.
+     * @param type    keyword type
+     */
     public void addKeywords(Collection<String> set, DBPKeywordType type)
     {
         if (set != null) {
@@ -142,7 +147,7 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public List<String> getMatchedKeywords(@NotNull String word)
     {
-        word = word.toUpperCase();
+        word = word.toUpperCase(Locale.ENGLISH);
         List<String> result = new ArrayList<>();
         for (String keyword : allKeywords.tailMap(word).keySet()) {
             if (keyword.startsWith(word)) {
@@ -157,20 +162,20 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public boolean isKeywordStart(@NotNull String word)
     {
-        SortedMap<String, DBPKeywordType> map = allKeywords.tailMap(word);
+        SortedMap<String, DBPKeywordType> map = allKeywords.tailMap(word.toUpperCase(Locale.ENGLISH));
         return !map.isEmpty() && map.firstKey().startsWith(word);
     }
 
     @Override
     public boolean isEntityQueryWord(@NotNull String word)
     {
-        return tableQueryWords.contains(word.toUpperCase());
+        return tableQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
     }
 
     @Override
     public boolean isAttributeQueryWord(@NotNull String word)
     {
-        return columnQueryWords.contains(word.toUpperCase());
+        return columnQueryWords.contains(word.toUpperCase(Locale.ENGLISH));
     }
 
     @NotNull
@@ -338,26 +343,34 @@ public class BasicSQLDialect implements SQLDialect {
         return BinaryFormatterHexNative.INSTANCE;
     }
 
+    protected boolean isStandardSQL() {
+        return true;
+    }
+
     protected void loadStandardKeywords()
     {
         // Add default set of keywords
         Set<String> all = new HashSet<>();
-        Collections.addAll(all, SQLConstants.SQL2003_RESERVED_KEYWORDS);
-        //Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
-        Collections.addAll(all, SQLConstants.SQL_EX_KEYWORDS);
-        Collections.addAll(functions, SQLConstants.SQL2003_FUNCTIONS);
-        Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
-        Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
+        if (isStandardSQL()) {
+            Collections.addAll(all, SQLConstants.SQL2003_RESERVED_KEYWORDS);
+            //Collections.addAll(reservedWords, SQLConstants.SQL2003_NON_RESERVED_KEYWORDS);
+            Collections.addAll(all, SQLConstants.SQL_EX_KEYWORDS);
+            Collections.addAll(functions, SQLConstants.SQL2003_FUNCTIONS);
+            Collections.addAll(tableQueryWords, SQLConstants.TABLE_KEYWORDS);
+            Collections.addAll(columnQueryWords, SQLConstants.COLUMN_KEYWORDS);
+        }
 
         final Collection<String> executeKeywords = getExecuteKeywords();
         addKeywords(executeKeywords, DBPKeywordType.KEYWORD);
 
-        // Add default types
-        Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
+        if (isStandardSQL()) {
+            // Add default types
+            Collections.addAll(types, SQLConstants.DEFAULT_TYPES);
 
-        addKeywords(all, DBPKeywordType.KEYWORD);
-        addKeywords(types, DBPKeywordType.TYPE);
-        addKeywords(functions, DBPKeywordType.FUNCTION);
+            addKeywords(all, DBPKeywordType.KEYWORD);
+            addKeywords(types, DBPKeywordType.TYPE);
+            addKeywords(functions, DBPKeywordType.FUNCTION);
+        }
     }
 
 }
