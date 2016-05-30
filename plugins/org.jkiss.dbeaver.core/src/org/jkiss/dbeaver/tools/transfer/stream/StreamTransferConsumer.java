@@ -304,16 +304,18 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         if (settings.isOutputClipboard()) {
-            UIUtils.runInUI(null, new Runnable() {
-                @Override
-                public void run() {
-                    TextTransfer textTransfer = TextTransfer.getInstance();
-                    new Clipboard(DBeaverUI.getDisplay()).setContents(
-                        new Object[]{outputBuffer.toString()},
-                        new Transfer[]{textTransfer});
-                }
-            });
-            outputBuffer = null;
+            if (outputBuffer != null) {
+                UIUtils.runInUI(null, new Runnable() {
+                    @Override
+                    public void run() {
+                        TextTransfer textTransfer = TextTransfer.getInstance();
+                        new Clipboard(DBeaverUI.getDisplay()).setContents(
+                            new Object[]{outputBuffer.toString()},
+                            new Transfer[]{textTransfer});
+                    }
+                });
+                outputBuffer = null;
+            }
         } else if (settings.isOpenFolderOnFinish()) {
             // Last one
             DBeaverUI.getDisplay().asyncExec(new Runnable() {
