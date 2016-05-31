@@ -174,7 +174,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, activeSchemaName, this);
 
         } catch (SQLException e) {
-            LOG.warn(e);
+            LOG.warn("Error reading active schema", e);
         }
 
         try {
