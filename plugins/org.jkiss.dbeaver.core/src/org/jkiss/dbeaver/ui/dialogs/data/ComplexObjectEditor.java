@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -320,19 +321,27 @@ public class ComplexObjectEditor extends TreeViewer {
     }
 
     public Object extractValue() {
-        final DBDComplexValue complexValue = getInput();
+        DBDComplexValue complexValue = getInput();
+        final ComplexElement[] items = childrenMap.get(complexValue);
+        if (complexValue instanceof DBDValueCloneable) {
+            try {
+                complexValue = (DBDComplexValue) ((DBDValueCloneable) complexValue).cloneValue(VoidProgressMonitor.INSTANCE);
+            } catch (DBCException e) {
+                log.error("Error cloning complex value", e);
+            }
+        }
         if (complexValue instanceof DBDComposite) {
-            final ComplexElement[] items = childrenMap.get(complexValue);
             for (int i = 0; i < items.length; i++) {
                 ((DBDComposite) complexValue).setAttributeValue(((CompositeField)items[i]).attribute, items[i].value);
             }
         } else if (complexValue instanceof DBDCollection) {
-            final ComplexElement[] items = childrenMap.get(complexValue);
-            final Object[] newValues = new Object[items.length];
-            for (int i = 0; i < items.length; i++) {
-                newValues[i] = items[i].value;
+            if (items != null) {
+                final Object[] newValues = new Object[items.length];
+                for (int i = 0; i < items.length; i++) {
+                    newValues[i] = items[i].value;
+                }
+                ((DBDCollection) complexValue).setContents(newValues);
             }
-            ((DBDCollection) complexValue).setContents(newValues);
         }
         return complexValue;
     }
