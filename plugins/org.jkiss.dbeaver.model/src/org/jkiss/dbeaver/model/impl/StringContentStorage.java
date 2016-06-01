@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.*;
-import java.util.Arrays;
 
 /**
  * String content storage
@@ -45,7 +44,7 @@ public class StringContentStorage implements DBDContentStorage, DBDContentCached
     public InputStream getContentStream()
         throws IOException
     {
-        return new ByteArrayInputStream(data.getBytes());
+        return new ByteArrayInputStream(data.getBytes(GeneralUtils.getDefaultFileEncoding()));
     }
 
     @Override

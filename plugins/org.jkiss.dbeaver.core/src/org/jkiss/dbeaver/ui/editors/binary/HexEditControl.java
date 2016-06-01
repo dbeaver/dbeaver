@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.binary;
 
-import org.jkiss.dbeaver.Log;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -27,6 +26,7 @@ import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -1643,7 +1643,7 @@ public class HexEditControl extends Composite {
     public void replace(String replaceString, boolean isHexString)
     {
         handleSelectedPreModify();
-        byte[] replaceData = replaceString.getBytes();
+        byte[] replaceData = replaceString.getBytes(Charset.defaultCharset());
         if (isHexString) {
             replaceData = hexStringToByte(replaceString);
         }

@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 /**
  * TextViewDialog
@@ -237,7 +238,7 @@ public class TextViewDialog extends ValueViewDialog {
                 DBUtils.getDefaultBinaryFileEncoding(getValueController().getExecutionContext().getDataSource()));
         } catch (UnsupportedEncodingException e) {
             log.error(e);
-            bytes = stringValue.getBytes();
+            bytes = stringValue.getBytes(Charset.defaultCharset());
         }
         hexEditControl.setContent(bytes);
     }

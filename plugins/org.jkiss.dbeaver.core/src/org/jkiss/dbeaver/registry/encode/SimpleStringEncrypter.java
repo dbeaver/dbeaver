@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.registry.encode;
 import org.jkiss.utils.Base64;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 
 /**
@@ -28,7 +29,7 @@ import java.util.Arrays;
 public class SimpleStringEncrypter implements PasswordEncrypter {
 
     //public static final String SCHEME_DES = "DES";
-    private static final byte[] PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg".getBytes();
+    private static final byte[] PASSWORD_ENCRYPTION_KEY = "sdf@!#$verf^wv%6Fwe%$$#FFGwfsdefwfe135s$^H)dg".getBytes(Charset.defaultCharset());
 
     private static final String CHARSET = "UTF8";
 

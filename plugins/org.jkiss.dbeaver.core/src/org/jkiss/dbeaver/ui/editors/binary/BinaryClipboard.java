@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class BinaryClipboard {
                     // write data to a byte array and then ask super to convert to pMedium
                     ByteArrayOutputStream out = new ByteArrayOutputStream();
                     DataOutputStream writeOut = new DataOutputStream(out);
-                    byte[] buffer = myType.getAbsolutePath().getBytes();
+                    byte[] buffer = myType.getAbsolutePath().getBytes(Charset.defaultCharset());
                     writeOut.writeInt(buffer.length);
                     writeOut.write(buffer);
                     buffer = out.toByteArray();
@@ -434,8 +435,9 @@ public class BinaryClipboard {
         byte[] byteArray = (byte[]) clipboard.getContents(MemoryByteArrayTransfer.getInstance());
         if (byteArray == null) {
             String text = (String) clipboard.getContents(TextTransfer.getInstance());
-            if (text != null)
-                byteArray = text.getBytes();
+            if (text != null) {
+                byteArray = text.getBytes(Charset.defaultCharset());
+            }
         }
         if (byteArray == null)
             return -1L;
