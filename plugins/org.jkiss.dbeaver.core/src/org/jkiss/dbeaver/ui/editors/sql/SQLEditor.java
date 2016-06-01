@@ -673,12 +673,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        DBPPreferenceStore preferenceStore;
-        if (dataSourceContainer != null) {
-            preferenceStore = dataSourceContainer.getPreferenceStore();
-        } else {
-            preferenceStore = DBeaverCore.getGlobalPreferenceStore();
-        }
+        DBPPreferenceStore preferenceStore = getActivePreferenceStore();
         String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
         Map<String, Object> vars = new HashMap<>();
         vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "none" : dataSourceContainer.getName());
@@ -807,6 +802,11 @@ public class SQLEditor extends SQLEditorBase implements
 
         if (sashForm.getMaximizedControl() != null) {
             sashForm.setMaximizedControl(null);
+        }
+
+        // Save editor
+        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
+            doSave(new NullProgressMonitor());
         }
 
         final boolean isSingleQuery = (queries.size() == 1);
@@ -1107,6 +1107,9 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
+            return ISaveablePart2.YES;
+        }
         return ISaveablePart2.DEFAULT;
     }
 
@@ -1652,7 +1655,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (error != null) {
                 setStatus(GeneralUtils.getFirstMessage(error), true);
                 scrollCursorToError(result, error);
-            } else if (!scriptMode && dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
+            } else if (!scriptMode && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE)) {
                 getSelectionProvider().setSelection(originalSelection);
             }
             // Get results window (it is possible that it was closed till that moment
