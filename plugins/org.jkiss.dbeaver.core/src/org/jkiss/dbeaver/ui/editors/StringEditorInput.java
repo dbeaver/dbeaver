@@ -42,7 +42,7 @@ import java.io.InputStream;
  */
 public class StringEditorInput implements IEditorInput, IStorageEditorInput {
 
-    public static final IEditorInput EMPTY_INPUT = new StringEditorInput("<empty>", "", true, ContentUtils.DEFAULT_CHARSET);
+    public static final IEditorInput EMPTY_INPUT = new StringEditorInput("<empty>", "", true, GeneralUtils.getDefaultFileEncoding());
     private String name;
     private StringBuilder buffer;
     private boolean readOnly;
@@ -124,9 +124,9 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
 	}
 
 	@Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == IStorage.class) {
-            return getStorage();
+            return adapter.cast(getStorage());
         }
 		return null;
 	}
@@ -157,7 +157,7 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
         }
 
         @Override
-        public Object getAdapter(Class adapter)
+        public <T> T getAdapter(Class<T> adapter)
         {
             return null;
         }

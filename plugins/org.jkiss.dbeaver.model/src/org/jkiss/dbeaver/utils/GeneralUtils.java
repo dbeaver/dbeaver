@@ -71,7 +71,9 @@ public class GeneralUtils {
 
     public static Pattern VAR_PATTERN = Pattern.compile("(\\$\\{([\\w\\.\\-]+)\\})", Pattern.CASE_INSENSITIVE);
 
-
+    /**
+     * Default encoding (UTF-8)
+     */
     public static String getDefaultFileEncoding()
     {
         return DEFAULT_FILE_CHARSET_NAME;
