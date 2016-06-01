@@ -195,7 +195,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
-            if (CommonUtils.isEmpty(databaseName)) {
+            if (CommonUtils.isEmpty(databaseName) && getSite().isNew()) {
                 databaseName = PostgreConstants.DEFAULT_DATABASE;
             }
             dbText.setText(databaseName);
@@ -219,16 +219,16 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
-            connectionInfo.setHostName(hostText.getText());
+            connectionInfo.setHostName(hostText.getText().trim());
         }
         if (portText != null) {
-            connectionInfo.setHostPort(portText.getText());
+            connectionInfo.setHostPort(portText.getText().trim());
         }
         if (dbText != null) {
-            connectionInfo.setDatabaseName(dbText.getText());
+            connectionInfo.setDatabaseName(dbText.getText().trim());
         }
         if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText());
+            connectionInfo.setUserName(usernameText.getText().trim());
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
