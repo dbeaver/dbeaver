@@ -505,7 +505,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             }
         };
         editor.setHasVerticalRuler(false);
-        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, GeneralUtils.getDefaultConsoleEncoding()));
+        editor.init(new SubEditorSite(viewer.getSite()), new StringEditorInput("SQL", getActiveQueryText(), true, GeneralUtils.getDefaultFileEncoding()));
         editor.createPartControl(editorPH);
         editor.reloadSyntaxRules();
         StyledText textWidget = editor.getTextViewer().getTextWidget();

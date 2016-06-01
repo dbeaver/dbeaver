@@ -53,7 +53,7 @@ public abstract class BaseSQLDialog extends BaseDialog {
     {
         super(parentSite.getShell(), title, image);
         this.subSite = new SubEditorSite(parentSite);
-        this.sqlInput = new StringEditorInput(title, "", true, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
+        this.sqlInput = new StringEditorInput(title, "", true, GeneralUtils.getDefaultFileEncoding());
     }
 
     protected boolean isWordWrap() {
