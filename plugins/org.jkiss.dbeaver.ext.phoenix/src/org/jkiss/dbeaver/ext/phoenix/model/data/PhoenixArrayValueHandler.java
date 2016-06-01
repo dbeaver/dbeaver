@@ -18,14 +18,18 @@
 package org.jkiss.dbeaver.ext.phoenix.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Array;
+import java.sql.SQLException;
+import java.sql.Types;
 
 
 /**
@@ -43,6 +47,31 @@ public class PhoenixArrayValueHandler extends JDBCArrayValueHandler {
             return JDBCCollection.makeArray((JDBCSession) session, type, (Array) object);
         }
         return super.getValueFromObject(session, type, object, copy);
+    }
+    
+    @Override
+    protected void bindParameter(
+        JDBCSession session,
+        JDBCPreparedStatement statement,
+        DBSTypedObject paramType,
+        int paramIndex,
+        Object value)
+        throws DBCException, SQLException
+    {
+        if (value == null) {
+            statement.setNull(paramIndex, Types.ARRAY);
+        } else if (value instanceof DBDCollection) {
+            DBDCollection collection = (DBDCollection) value;
+            if (collection.isNull()) {
+                statement.setNull(paramIndex, Types.ARRAY);
+            } else if (collection instanceof JDBCCollection) {
+                statement.setArray(paramIndex, ((JDBCCollection) collection).getArrayValue());
+            } else {
+                statement.setArray(paramIndex, (Array)collection.getRawValue());
+            }
+        } else {
+            throw new DBCException("Array parameter type '" + value.getClass().getName() + "' not supported");
+        }
     }
     
 }
