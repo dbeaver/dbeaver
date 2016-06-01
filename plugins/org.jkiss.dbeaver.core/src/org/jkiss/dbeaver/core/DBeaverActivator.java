@@ -62,20 +62,8 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     @Override
     public void start(BundleContext context)
-        throws Exception {
-        if (DBeaverCore.isStandalone()) {
-            context.addBundleListener(new BundleListener() {
-                @Override
-                public void bundleChanged(BundleEvent event) {
-                    if (event.getType() == BundleEvent.STARTED) {
-                        log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
-                    } else if (event.getType() == BundleEvent.STOPPED) {
-                        log.debug("< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
-                    }
-                }
-            });
-        }
-
+        throws Exception
+    {
         super.start(context);
 
         instance = this;

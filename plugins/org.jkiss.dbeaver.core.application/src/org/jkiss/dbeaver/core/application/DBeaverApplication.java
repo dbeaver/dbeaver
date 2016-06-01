@@ -39,6 +39,8 @@ import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.utils.ArrayUtils;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.BundleListener;
 
 import java.io.File;
 import java.net.URL;
@@ -51,22 +53,77 @@ import java.util.List;
 /**
  * This class controls all aspects of the application's execution
  */
-public class DBeaverApplication implements IApplication
-{
-    private static final Log log = Log.getLog(DBeaverApplication.class);
+public class DBeaverApplication implements IApplication {
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
-
+    private static final Log log = Log.getLog(DBeaverApplication.class);
     private static IInstanceController instanceServer;
 
+    public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
+        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
+        String[] fileArgs = commandLine.getArgs();
+        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
+            List<String> fileNames = new ArrayList<>();
+            if (!ArrayUtils.isEmpty(files)) {
+                Collections.addAll(fileNames, files);
+            }
+            if (!ArrayUtils.isEmpty(fileArgs)) {
+                Collections.addAll(fileNames, fileArgs);
+            }
+            controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
+            controller.quit();
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
+            String threadDump = controller.getThreadDump();
+            System.out.println(threadDump);
+            return true;
+        }
+        return false;
+    }
+
+    private static File getDefaultWorkspaceLocation() {
+        return new File(
+            System.getProperty("user.home"),
+            DBEAVER_DEFAULT_DIR);
+    }
+
+    public static IInstanceController getInstanceServer() {
+        return instanceServer;
+    }
+
+    public static CommandLine getCommandLine() {
+        try {
+            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
+        } catch (Exception e) {
+            log.error("Error parsing command line", e);
+            return null;
+        }
+    }
+
     @Override
-    public Object start(IApplicationContext context)
-    {
+    public Object start(IApplicationContext context) {
         Display display = null;
 
+        context.getBrandingBundle().getBundleContext().addBundleListener(new BundleListener() {
+            @Override
+            public void bundleChanged(BundleEvent event) {
+                if (event.getType() == BundleEvent.STARTED) {
+                    log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                } else if (event.getType() == BundleEvent.STOPPED) {
+                    log.debug("< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                }
+            }
+        });
+
         Location instanceLoc = Platform.getInstanceLocation();
+        log.debug("Default instance location: " + instanceLoc.getDefault());
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
             URL defaultHomeURL = new File(defaultHomePath).toURI().toURL();
+            log.debug("Setting instance location to " + defaultHomeURL);
             boolean keepTrying = true;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
@@ -108,19 +165,22 @@ public class DBeaverApplication implements IApplication
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
 
-        if (display == null) {
-            display = PlatformUI.createDisplay();
-        }
         final Runtime runtime = Runtime.getRuntime();
 
         DBeaverCore.setStandalone(true);
         log.debug(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         log.debug("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         log.debug("Instance path: '" + instanceLoc.getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-        log.debug("Memory available " + (runtime.totalMemory() / (1024*1024)) + "Mb/" + (runtime.maxMemory() / (1024*1024)) + "Mb");
+        log.debug("Memory available " + (runtime.totalMemory() / (1024 * 1024)) + "Mb/" + (runtime.maxMemory() / (1024 * 1024)) + "Mb");
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer();
+
+        // Create display
+        if (display == null) {
+            log.debug("Initialize display");
+            display = PlatformUI.createDisplay();
+        }
 
         // Prefs default
         PlatformUI.getPreferenceStore().setDefault(
@@ -184,41 +244,8 @@ public class DBeaverApplication implements IApplication
         }
     }
 
-    public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
-        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
-        String[] fileArgs = commandLine.getArgs();
-        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
-            List<String> fileNames = new ArrayList<>();
-            if (!ArrayUtils.isEmpty(files)) {
-                Collections.addAll(fileNames, files);
-            }
-            if (!ArrayUtils.isEmpty(fileArgs)) {
-                Collections.addAll(fileNames, fileArgs);
-            }
-            controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
-            return true;
-        }
-        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
-            controller.quit();
-            return true;
-        }
-        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
-            String threadDump = controller.getThreadDump();
-            System.out.println(threadDump);
-            return true;
-        }
-        return false;
-    }
-
-    private static File getDefaultWorkspaceLocation() {
-        return new File(
-            System.getProperty("user.home"),
-            DBEAVER_DEFAULT_DIR);
-    }
-
     @Override
-    public void stop()
-    {
+    public void stop() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
         final IWorkbench workbench = PlatformUI.getWorkbench();
         if (workbench == null)
@@ -228,28 +255,13 @@ public class DBeaverApplication implements IApplication
         DBeaverInstanceServer.stopInstanceServer();
 
         final Display display = workbench.getDisplay();
-        display.syncExec(new Runnable()
-        {
+        display.syncExec(new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 if (!display.isDisposed())
                     workbench.close();
             }
         });
-    }
-
-    public static IInstanceController getInstanceServer() {
-        return instanceServer;
-    }
-
-    public static CommandLine getCommandLine() {
-        try {
-            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
-        } catch (Exception e) {
-            log.error("Error parsing command line", e);
-            return null;
-        }
     }
 
 }
