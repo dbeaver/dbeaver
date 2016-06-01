@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -262,6 +263,7 @@ public class ResourceUtils {
         // Make new script file
         IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
+        tempFile.setCharset(GeneralUtils.getDefaultFileEncoding(), progressMonitor);
 
         // Save ds container reference
         if (dataSourceContainer != null) {
