@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.dnd;
 import org.eclipse.swt.dnd.ByteArrayTransfer;
 import org.eclipse.swt.dnd.TransferData;
 
+import java.nio.charset.Charset;
+
 /**
  * This Transfer will only work when dragging within the same instance of Eclipse.
  * Subclasses should maintain a
@@ -52,7 +54,7 @@ public abstract class LocalObjectTransfer<OBJECT_TYPE> extends ByteArrayTransfer
 		setObject((OBJECT_TYPE)object);
 		startTime = System.currentTimeMillis();
 		if (transferData != null)
-			super.javaToNative(String.valueOf(startTime).getBytes(),
+			super.javaToNative(String.valueOf(startTime).getBytes(Charset.defaultCharset()),
 					transferData);
 	}
 

@@ -28,14 +28,11 @@ import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.Charset;
 
 /**
  * StringEditorInput
@@ -47,13 +44,13 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
     private StringBuilder buffer;
     private boolean readOnly;
     private IStorage storage;
-    private String encoding;
+    private Charset encoding;
 
     public StringEditorInput(String name, CharSequence value, boolean readOnly, String encoding) {
         this.name = name;
         this.buffer = new StringBuilder(value);
         this.readOnly = readOnly;
-        this.encoding = encoding;
+        this.encoding = Charset.forName(encoding);
 	}
 
 /*
@@ -135,7 +132,7 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
         @Override
         public InputStream getContents() throws CoreException
         {
-            return new ByteArrayInputStream(buffer.toString().getBytes());
+            return new ByteArrayInputStream(buffer.toString().getBytes(encoding));
         }
 
         @Override
@@ -176,7 +173,7 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
 
         @Override
         public String getCharset() throws CoreException {
-            return encoding;
+            return encoding.name();
         }
     }
 }
