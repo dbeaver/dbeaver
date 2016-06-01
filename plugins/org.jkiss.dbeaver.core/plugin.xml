@@ -1854,6 +1854,7 @@
                 icon="icons/sql/sql_script.png"
                 contributorClass="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributor"
                 class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor"
+                matchingStrategy="org.jkiss.dbeaver.ui.editors.sql.SQLEditorMatchingStrategy"
                 id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor">
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </editor>
