@@ -74,8 +74,15 @@ public class GeneralUtils {
 
     public static String getDefaultFileEncoding()
     {
-        return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
+        return DEFAULT_FILE_CHARSET_NAME;
+        //return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
+
+    public static String getDefaultLocalFileEncoding()
+    {
+        return System.getProperty("file.encoding", getDefaultFileEncoding());
+    }
+
 
     public static String getDefaultConsoleEncoding()
     {
