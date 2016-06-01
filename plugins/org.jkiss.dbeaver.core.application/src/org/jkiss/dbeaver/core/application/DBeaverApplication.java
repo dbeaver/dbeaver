@@ -110,10 +110,15 @@ public class DBeaverApplication implements IApplication {
         context.getBrandingBundle().getBundleContext().addBundleListener(new BundleListener() {
             @Override
             public void bundleChanged(BundleEvent event) {
+                String message = null;
                 if (event.getType() == BundleEvent.STARTED) {
-                    log.debug("> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                    message = "> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
                 } else if (event.getType() == BundleEvent.STOPPED) {
-                    log.debug("< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]");
+                    message = "< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                }
+                if (message != null) {
+                    log.debug(message);
+                    DBeaverSplashHandler.showMessage(message);
                 }
             }
         });

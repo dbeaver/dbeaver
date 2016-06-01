@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.events.PaintEvent;
@@ -42,15 +41,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
     private static DBeaverSplashHandler instance;
 
-    public static IProgressMonitor getProgressMonitor()
-    {
-        if (instance == null) {
-            return new NullProgressMonitor();
-        } else {
-            return instance.getBundleProgressMonitor();
-        }
-    }
-
     public static IProgressMonitor getActiveMonitor()
     {
         if (instance == null) {
@@ -63,7 +53,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
     private Font boldFont;
 
-
     public DBeaverSplashHandler()
     {
         instance = this;
@@ -72,19 +61,16 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     @Override
     public void init(Shell splash) {
         super.init(splash);
-        //getBundleProgressMonitor();
+        getBundleProgressMonitor();
 
         String progressRectString = null;
         String messageRectString = null;
         String foregroundColorString = null;
         final IProduct product = Platform.getProduct();
         if (product != null) {
-            progressRectString = product
-                    .getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
-            messageRectString = product
-                    .getProperty(IProductConstants.STARTUP_MESSAGE_RECT);
-            foregroundColorString = product
-                    .getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
+            progressRectString = product.getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
+            messageRectString = product.getProperty(IProductConstants.STARTUP_MESSAGE_RECT);
+            foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
         }
 
         Rectangle progressRect = StringConverter.asRectangle(
@@ -95,15 +81,18 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 new Rectangle(10, 35, 300, 15));
         setMessageRect(messageRect);
 
-        int foregroundColorInteger;
+        int foregroundColorInteger = 0xD2D7FF;
         try {
-            foregroundColorInteger = Integer
-                    .parseInt(foregroundColorString, 16);
+			if (foregroundColorString != null) {
+				foregroundColorInteger = Integer.parseInt(foregroundColorString, 16);
+			}
         } catch (Exception ex) {
-            foregroundColorInteger = 0xD2D7FF; // off white
+            // ignore
         }
 
-        setForeground(new RGB((foregroundColorInteger & 0xFF0000) >> 16,
+        setForeground(
+			new RGB(
+				(foregroundColorInteger & 0xFF0000) >> 16,
                 (foregroundColorInteger & 0xFF00) >> 8,
                 foregroundColorInteger & 0xFF));
 
@@ -140,6 +129,13 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         }
         instance = null;
     }
+
+	public static void showMessage(String message) {
+		IProgressMonitor activeMonitor = getActiveMonitor();
+		if (activeMonitor != null) {
+			activeMonitor.subTask(message);
+		}
+	}
 
     /*
      private final static int F_LABEL_HORIZONTAL_INDENT = 175;
