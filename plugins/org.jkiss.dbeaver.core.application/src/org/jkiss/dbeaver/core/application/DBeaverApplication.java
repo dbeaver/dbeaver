@@ -122,7 +122,10 @@ public class DBeaverApplication implements IApplication {
         log.debug("Default instance location: " + instanceLoc.getDefault());
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
-            URL defaultHomeURL = new File(defaultHomePath).toURI().toURL();
+            URL defaultHomeURL = new URL(
+                "file",  //$NON-NLS-1$
+                null,
+                defaultHomePath);
             log.debug("Setting instance location to " + defaultHomeURL);
             boolean keepTrying = true;
             while (keepTrying) {
