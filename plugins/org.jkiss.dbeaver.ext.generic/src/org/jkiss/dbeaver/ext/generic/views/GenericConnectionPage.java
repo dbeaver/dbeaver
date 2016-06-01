@@ -420,22 +420,22 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
 
         if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {
-            connectionInfo.setHostName(hostText.getText());
+            connectionInfo.setHostName(hostText.getText().trim());
         }
         if (portText != null && properties.contains(DriverDescriptor.PROP_PORT)) {
-            connectionInfo.setHostPort(portText.getText());
+            connectionInfo.setHostPort(portText.getText().trim());
         }
         if (serverText != null && properties.contains(DriverDescriptor.PROP_SERVER)) {
-            connectionInfo.setServerName(serverText.getText());
+            connectionInfo.setServerName(serverText.getText().trim());
         }
         if (dbText != null && properties.contains(DriverDescriptor.PROP_DATABASE)) {
-            connectionInfo.setDatabaseName(dbText.getText());
+            connectionInfo.setDatabaseName(dbText.getText().trim());
         }
         if (pathText != null && (properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE))) {
-            connectionInfo.setDatabaseName(pathText.getText());
+            connectionInfo.setDatabaseName(pathText.getText().trim());
         }
         if (userNameText != null) {
-            connectionInfo.setUserName(userNameText.getText());
+            connectionInfo.setUserName(userNameText.getText().trim());
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
@@ -443,7 +443,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         super.saveSettings(dataSource);
         if (isCustom) {
             if (urlText != null) {
-                connectionInfo.setUrl(urlText.getText());
+                connectionInfo.setUrl(urlText.getText().trim());
             }
         } else {
             if (urlText != null && connectionInfo.getUrl() != null) {

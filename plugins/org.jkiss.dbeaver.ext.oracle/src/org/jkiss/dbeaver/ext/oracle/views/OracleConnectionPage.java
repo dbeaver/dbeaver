@@ -402,12 +402,12 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 //                ociDriverCheck.getSelection() ? OracleConstants.DRIVER_TYPE_OCI : OracleConstants.DRIVER_TYPE_THIN);
         switch (connectionType) {
             case BASIC:
-                connectionInfo.setHostName(hostText.getText());
-                connectionInfo.setHostPort(portText.getText());
-                connectionInfo.setDatabaseName(serviceNameCombo.getText());
+                connectionInfo.setHostName(hostText.getText().trim());
+                connectionInfo.setHostPort(portText.getText().trim());
+                connectionInfo.setDatabaseName(serviceNameCombo.getText().trim());
                 break;
             case TNS:
-                connectionInfo.setDatabaseName(tnsNameCombo.getText());
+                connectionInfo.setDatabaseName(tnsNameCombo.getText().trim());
                 break;
             case CUSTOM:
                 connectionInfo.setUrl(connectionUrlText.getText());
