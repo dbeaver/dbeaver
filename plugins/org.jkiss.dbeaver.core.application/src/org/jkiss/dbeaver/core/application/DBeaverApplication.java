@@ -58,49 +58,10 @@ public class DBeaverApplication implements IApplication {
     private static final Log log = Log.getLog(DBeaverApplication.class);
     private static IInstanceController instanceServer;
 
-    public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
-        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
-        String[] fileArgs = commandLine.getArgs();
-        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
-            List<String> fileNames = new ArrayList<>();
-            if (!ArrayUtils.isEmpty(files)) {
-                Collections.addAll(fileNames, files);
-            }
-            if (!ArrayUtils.isEmpty(fileArgs)) {
-                Collections.addAll(fileNames, fileArgs);
-            }
-            controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
-            return true;
-        }
-        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
-            controller.quit();
-            return true;
-        }
-        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
-            String threadDump = controller.getThreadDump();
-            System.out.println(threadDump);
-            return true;
-        }
-        return false;
-    }
-
-    private static File getDefaultWorkspaceLocation() {
-        return new File(
-            System.getProperty("user.home"),
-            DBEAVER_DEFAULT_DIR);
-    }
-
-    public static IInstanceController getInstanceServer() {
-        return instanceServer;
-    }
-
-    public static CommandLine getCommandLine() {
-        try {
-            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
-        } catch (Exception e) {
-            log.error("Error parsing command line", e);
-            return null;
-        }
+    static {
+        // Explicitly set UTF-8 as default file encoding
+        // In some places Eclipse reads this property directly.
+        System.setProperty("file.encoding", "utf-8");
     }
 
     @Override
@@ -175,6 +136,7 @@ public class DBeaverApplication implements IApplication {
 
         final Runtime runtime = Runtime.getRuntime();
 
+        // Init Core plugin and mark it as standalone version
         DBeaverCore.setStandalone(true);
         log.debug(DBeaverCore.getProductTitle() + " is starting"); //$NON-NLS-1$
         log.debug("Install path: '" + Platform.getInstallLocation().getURL() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -270,6 +232,51 @@ public class DBeaverApplication implements IApplication {
                     workbench.close();
             }
         });
+    }
+
+    public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
+        String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
+        String[] fileArgs = commandLine.getArgs();
+        if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
+            List<String> fileNames = new ArrayList<>();
+            if (!ArrayUtils.isEmpty(files)) {
+                Collections.addAll(fileNames, files);
+            }
+            if (!ArrayUtils.isEmpty(fileArgs)) {
+                Collections.addAll(fileNames, fileArgs);
+            }
+            controller.openExternalFiles(fileNames.toArray(new String[fileNames.size()]));
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_STOP)) {
+            controller.quit();
+            return true;
+        }
+        if (commandLine.hasOption(DBeaverCommandLine.PARAM_THREAD_DUMP)) {
+            String threadDump = controller.getThreadDump();
+            System.out.println(threadDump);
+            return true;
+        }
+        return false;
+    }
+
+    private static File getDefaultWorkspaceLocation() {
+        return new File(
+            System.getProperty("user.home"),
+            DBEAVER_DEFAULT_DIR);
+    }
+
+    public static IInstanceController getInstanceServer() {
+        return instanceServer;
+    }
+
+    public static CommandLine getCommandLine() {
+        try {
+            return new DefaultParser().parse(DBeaverCommandLine.ALL_OPTIONS, Platform.getApplicationArgs(), false);
+        } catch (Exception e) {
+            log.error("Error parsing command line", e);
+            return null;
+        }
     }
 
 }
