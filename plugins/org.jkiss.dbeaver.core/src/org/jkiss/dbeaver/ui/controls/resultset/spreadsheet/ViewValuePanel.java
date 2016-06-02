@@ -63,6 +63,7 @@ abstract class ViewValuePanel extends Composite {
     private ReferenceValueEditor referenceValueEditor;
 
     private volatile boolean valueSaving;
+    private Action saveCellAction;
 
     ViewValuePanel(IResultSetController resultSet, Composite parent)
     {
@@ -127,6 +128,11 @@ abstract class ViewValuePanel extends Composite {
                 }
             }
         });
+
+        saveCellAction = new SaveCellAction();
+        saveCellAction.setActionDefinitionId(CMD_SAVE_VALUE);
+        saveCellAction.setId(CMD_SAVE_VALUE);
+        saveCellAction.setAccelerator(SWT.CTRL | SWT.CR);
     }
 
     protected abstract void hidePanel();
@@ -226,6 +232,7 @@ abstract class ViewValuePanel extends Composite {
                     referenceValueEditor.setHandleEditorChange(true);
                 }
             }
+            valueViewer.setDirty(false);
         }
     }
 
@@ -276,17 +283,7 @@ abstract class ViewValuePanel extends Composite {
 //                    resultSet.getSite(),
 //                    CMD_SAVE_VALUE,
 //                    CommandContributionItem.STYLE_PUSH));
-
-                Action applyAction = new Action("Save cell value", DBeaverIcons.getImageDescriptor(UIIcon.ACCEPT)) {
-                    @Override
-                    public void run() {
-                        saveValue();
-                    }
-                };
-                applyAction.setActionDefinitionId(CMD_SAVE_VALUE);
-                applyAction.setId(CMD_SAVE_VALUE);
-                applyAction.setAccelerator(SWT.CTRL | SWT.CR);
-            toolBarManager.add(applyAction);
+            toolBarManager.add(saveCellAction);
         }
         toolBarManager.add(
             ActionUtils.makeCommandContribution(
@@ -300,4 +297,16 @@ abstract class ViewValuePanel extends Composite {
     {
         return toolBarManager;
     }
+
+    private class SaveCellAction extends Action {
+        public SaveCellAction() {
+            super("Save cell value", DBeaverIcons.getImageDescriptor(UIIcon.ACCEPT));
+        }
+
+        @Override
+        public void run() {
+            saveValue();
+        }
+    }
+
 }

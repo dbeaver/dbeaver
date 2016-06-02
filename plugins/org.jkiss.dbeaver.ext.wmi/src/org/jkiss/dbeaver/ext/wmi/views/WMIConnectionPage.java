@@ -185,16 +185,16 @@ public class WMIConnectionPage extends ConnectionPageAbstract
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         if (hostText != null) {
-            connectionInfo.setHostName(hostText.getText());
+            connectionInfo.setHostName(hostText.getText().trim());
         }
         if (domainText != null) {
-            connectionInfo.setServerName(domainText.getText());
+            connectionInfo.setServerName(domainText.getText().trim());
         }
         if (namespaceCombo != null) {
-            connectionInfo.setDatabaseName(namespaceCombo.getText());
+            connectionInfo.setDatabaseName(namespaceCombo.getText().trim());
         }
         if (usernameText != null) {
-            connectionInfo.setUserName(usernameText.getText());
+            connectionInfo.setUserName(usernameText.getText().trim());
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());

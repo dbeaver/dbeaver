@@ -35,7 +35,11 @@ public class CustomTimeEditor {
 
     public void setValue(@Nullable String value)
     {
-        timeEditor.setText(value);
+        if (value == null) {
+            timeEditor.setText("");
+        } else {
+            timeEditor.setText(value);
+        }
     }
 
     public String getValue()
@@ -53,7 +57,7 @@ public class CustomTimeEditor {
         timeEditor.setEnabled(enabled);
     }
 
-    public Control getControl() {
+    public Text getControl() {
         return timeEditor;
     }
 }

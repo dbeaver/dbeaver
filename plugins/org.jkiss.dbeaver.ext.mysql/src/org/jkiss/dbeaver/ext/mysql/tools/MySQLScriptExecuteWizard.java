@@ -111,7 +111,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     protected List<String> getCommandLine(MySQLCatalog arg) throws IOException
     {
         List<String> cmd = MySQLToolScript.getMySQLToolCommandLine(this, arg);
-        cmd.add(DBUtils.getQuotedIdentifier(arg));
+        cmd.add(arg.getName());
         return cmd;
     }
 }

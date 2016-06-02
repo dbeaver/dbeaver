@@ -27,9 +27,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -71,6 +69,7 @@ public class TextViewDialog extends ValueViewDialog {
     private Label lengthLabel;
     private HexEditControl hexEditControl;
     private CTabFolder editorContainer;
+    private boolean dirty;
 
     public TextViewDialog(IValueController valueController) {
         super(valueController);
@@ -136,6 +135,7 @@ public class TextViewDialog extends ValueViewDialog {
                 @Override
                 public void modifyText(ModifyEvent e)
                 {
+                    dirty = true;
                     updateValueLength();
                 }
             });
@@ -172,17 +172,12 @@ public class TextViewDialog extends ValueViewDialog {
                 public void widgetSelected(SelectionEvent event)
                 {
                     getDialogSettings().put(VALUE_TYPE_SELECTOR, editorContainer.getSelectionIndex());
-/*
-                switch (editorContainer.getSelectionIndex()) {
-                    case 0: {
-                        textEdit.setText(getBinaryString());
-                        break;
-                    }
-                    case 1:
-                        setBinaryContent(textEdit.getText());
-                        break;
                 }
-*/
+            });
+            hexEditControl.addListener(SWT.Modify, new Listener() {
+                @Override
+                public void handleEvent(Event event) {
+                    dirty = true;
                 }
             });
             updateValueLength();
@@ -320,6 +315,16 @@ public class TextViewDialog extends ValueViewDialog {
                 setBinaryContent(strValue);
             }
         }
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
 }

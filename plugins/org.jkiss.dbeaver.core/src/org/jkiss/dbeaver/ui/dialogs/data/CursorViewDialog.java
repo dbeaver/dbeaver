@@ -124,6 +124,16 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     }
 
     @Override
+    public boolean isDirty() {
+        return resultSetViewer.isDirty();
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+
+    }
+
+    @Override
     public DBCExecutionContext getExecutionContext() {
         return resultSetViewer.getContainer().getExecutionContext();
     }

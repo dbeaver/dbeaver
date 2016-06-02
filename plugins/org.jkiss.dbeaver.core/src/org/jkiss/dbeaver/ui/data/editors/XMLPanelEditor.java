@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
@@ -32,12 +29,12 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.ui.editors.StringEditorInput;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -122,22 +119,7 @@ public class XMLPanelEditor extends ContentPanelEditor {
             return null;
         }
         editor.createPartControl(editPlaceholder);
-        StyledText control = editor.getTextViewer().getTextWidget();
-        // Do not dispose here - text editor has its own dispose listener
-/*
-        control.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                editor.dispose();
-            }
-        });
-*/
-        return control;
-
-//        Text text = new Text(editPlaceholder, SWT.MULTI | SWT.WRAP | SWT.V_SCROLL | SWT.BORDER);
-//        text.setEditable(!valueController.isReadOnly());
-//        text.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-//        return text;
+        return editor.getTextViewer().getTextWidget();
     }
 
 }
