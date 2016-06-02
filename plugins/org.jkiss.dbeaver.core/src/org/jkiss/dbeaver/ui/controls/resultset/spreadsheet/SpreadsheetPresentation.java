@@ -808,6 +808,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 } catch (DBException e) {
                     log.error(e);
                 }
+                editor.setDirty(false);
             }
         }
         if (inline) {

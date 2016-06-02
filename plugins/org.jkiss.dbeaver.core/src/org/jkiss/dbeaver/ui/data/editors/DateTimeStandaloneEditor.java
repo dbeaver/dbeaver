@@ -19,6 +19,8 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -41,6 +43,7 @@ import java.util.Date;
 public class DateTimeStandaloneEditor extends ValueViewDialog {
 
     private CustomTimeEditor timeEditor;
+    private boolean dirty;
 
     public DateTimeStandaloneEditor(IValueController valueController) {
         super(valueController);
@@ -63,6 +66,12 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
         UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         timeEditor = new CustomTimeEditor(panel, style);
+        timeEditor.getControl().addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                dirty = true;
+            }
+        });
 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
@@ -98,6 +107,16 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
             "" :
             getValueController().getValueHandler().getValueDisplayString(getValueController().getValueType(), value, DBDDisplayFormat.EDIT);
         timeEditor.setValue(strValue);
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
     }
 
     @Override
