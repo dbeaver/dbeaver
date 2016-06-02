@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.ILog;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
@@ -35,8 +36,13 @@ public class Log
 
     private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private static final ILog eclipseLog = ModelActivator.getInstance().getLog();
+    private static Listener[] listeners = new Listener[0];
 
     private final String name;
+
+    public static ILog getEclipseLog() {
+        return eclipseLog;
+    }
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
@@ -116,13 +122,16 @@ public class Log
                 t.printStackTrace(debugWriter);
             }
             debugWriter.flush();
+            for (Listener listener : listeners) {
+                listener.loggedMessage(message, t);
+            }
         }
     }
 
     public void info(Object message)
     {
         if (message instanceof Throwable) {
-            info(message.toString(), (Throwable)message);
+            info(message.toString(), (Throwable) message);
             return;
         }
         debugMessage(message, null, System.err);
@@ -207,4 +216,19 @@ public class Log
         }
     }
 
+    public static void addListener(Listener listener) {
+        synchronized (Log.class) {
+            listeners = ArrayUtils.add(Listener.class, listeners, listener);
+        }
+    }
+
+    public static void removeListener(Listener listener) {
+        synchronized (Log.class) {
+            listeners = ArrayUtils.remove(Listener.class, listeners, listener);
+        }
+    }
+
+    public static interface Listener {
+        void loggedMessage(Object message, Throwable t);
+    }
 }

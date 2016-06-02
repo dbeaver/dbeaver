@@ -57,11 +57,13 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     @Override
     public ActionBarAdvisor createActionBarAdvisor(IActionBarConfigurer configurer) {
+        log.debug("Create actions");
         return new ApplicationActionBarAdvisor(configurer);
     }
 
     @Override
     public void preWindowOpen() {
+        log.debug("Configure workbench window");
         // Set timeout for short jobs (like SQL queries)
         // Jobs longer than this will show progress dialog
         ProgressManagerUtil.SHORT_OPERATION_TIME = 100;
@@ -91,6 +93,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     @Override
     public void postWindowCreate() {
+        log.debug("Initialize workbench window");
         final IWorkbenchWindow window = getWindowConfigurer().getWindow();
         UIUtils.updateMainWindowTitle(window);
 /*
@@ -112,6 +115,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
     @Override
     public void postWindowOpen() {
+        log.debug("Finish initialization");
         super.postWindowOpen();
 
         if (DataSourceDescriptor.getActiveDataSources().isEmpty()) {

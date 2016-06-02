@@ -21,6 +21,8 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.eclipse.core.runtime.ILogListener;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
@@ -72,15 +75,21 @@ public class DBeaverApplication implements IApplication {
             @Override
             public void bundleChanged(BundleEvent event) {
                 String message = null;
+
                 if (event.getType() == BundleEvent.STARTED) {
-                    message = "> Start bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                    message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
                 } else if (event.getType() == BundleEvent.STOPPED) {
-                    message = "< Stop bundle " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                    message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
                 }
                 if (message != null) {
                     log.debug(message);
-                    DBeaverSplashHandler.showMessage(message);
                 }
+            }
+        });
+        Log.addListener(new Log.Listener() {
+            @Override
+            public void loggedMessage(Object message, Throwable t) {
+                DBeaverSplashHandler.showMessage(CommonUtils.toString(message));
             }
         });
 
