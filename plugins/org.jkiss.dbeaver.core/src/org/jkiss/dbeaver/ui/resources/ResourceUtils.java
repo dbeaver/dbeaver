@@ -263,7 +263,7 @@ public class ResourceUtils {
         // Make new script file
         IFile tempFile = ContentUtils.getUniqueFile(scriptsFolder, "Script", SCRIPT_FILE_EXTENSION);
         tempFile.create(new ByteArrayInputStream(new byte[]{}), true, progressMonitor);
-        tempFile.setCharset(GeneralUtils.getDefaultFileEncoding(), progressMonitor);
+        //tempFile.setCharset(GeneralUtils.getDefaultFileEncoding(), progressMonitor);
 
         // Save ds container reference
         if (dataSourceContainer != null) {
