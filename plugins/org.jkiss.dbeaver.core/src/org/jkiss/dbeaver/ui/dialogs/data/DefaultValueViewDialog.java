@@ -93,6 +93,16 @@ public class DefaultValueViewDialog extends ValueViewDialog {
     }
 
     @Override
+    public boolean isDirty() {
+        return panelEditor.isDirty();
+    }
+
+    @Override
+    public void setDirty(boolean dirty) {
+        panelEditor.setDirty(dirty);
+    }
+
+    @Override
     public Control getControl()
     {
         return panelEditor.getControl();

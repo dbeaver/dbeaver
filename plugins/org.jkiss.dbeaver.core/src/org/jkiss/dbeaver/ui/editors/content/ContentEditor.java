@@ -283,6 +283,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Override
+    public void setDirty(boolean dirty) {
+        this.dirty = false;
+    }
+
+    @Override
     public boolean isSaveAsAllowed()
     {
         return false;

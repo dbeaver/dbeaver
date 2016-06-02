@@ -25,6 +25,8 @@ import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -40,7 +42,8 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 
     protected final IValueController valueController;
     protected T control;
-    private boolean activated;
+    protected boolean dirty;
+
     protected BaseValueEditor(final IValueController valueController)
     {
         this.valueController = valueController;
@@ -142,6 +145,8 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 });
             }
         }
+
+        control.addListener(SWT.Modify, new ControlModifyListener());
     }
 
     private void saveValue()
@@ -149,10 +154,28 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         try {
             Object newValue = extractEditorValue();
             ((IMultiController) valueController).closeInlineEditor();
-            valueController.updateValue(newValue);
+            if (dirty) {
+                valueController.updateValue(newValue);
+            }
         } catch (DBException e) {
             ((IMultiController) valueController).closeInlineEditor();
             UIUtils.showErrorDialog(null, "Value save", "Can't save edited value", e);
+        }
+    }
+
+    @Override
+    public boolean isDirty() {
+        return dirty;
+    }
+
+    public void setDirty(boolean dirty) {
+        this.dirty = dirty;
+    }
+
+    private class ControlModifyListener implements Listener {
+        @Override
+        public void handleEvent(Event event) {
+            setDirty(true);
         }
     }
 }

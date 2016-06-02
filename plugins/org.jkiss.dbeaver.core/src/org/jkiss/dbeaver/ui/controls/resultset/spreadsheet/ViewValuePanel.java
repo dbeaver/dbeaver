@@ -226,6 +226,7 @@ abstract class ViewValuePanel extends Composite {
                     referenceValueEditor.setHandleEditorChange(true);
                 }
             }
+            valueViewer.setDirty(false);
         }
     }
 

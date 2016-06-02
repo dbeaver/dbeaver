@@ -60,6 +60,13 @@ public interface IValueEditor
         throws DBException;
 
     /**
+     * Checks whether editor content was modified (after #primeEditorValue invocation).
+     */
+    boolean isDirty();
+
+    void setDirty(boolean dirty);
+
+    /**
      * Fills menu/toolbar with extra actions
      *
      * @param manager context menu manager
