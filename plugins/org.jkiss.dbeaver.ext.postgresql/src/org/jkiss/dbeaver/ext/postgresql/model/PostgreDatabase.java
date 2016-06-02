@@ -497,11 +497,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         protected boolean handleCacheReadError(DBException error) {
             // #271: in some databases (AWS?) pg_authid is not accessible
             // FIXME: maybe some better workaround?
-//            if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
-//                log.warn(error);
+            if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
+                log.warn(error);
                 setCache(Collections.<PostgreAuthId>emptyList());
-//                return true;
-//            }
+                return true;
+            }
             return false;
         }
     }
