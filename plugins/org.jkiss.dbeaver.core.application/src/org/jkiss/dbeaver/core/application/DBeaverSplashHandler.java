@@ -40,7 +40,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class DBeaverSplashHandler extends BasicSplashHandler {
 
-    private static DBeaverSplashHandler instance;
+	public static final int TOTAL_LOADING_TASKS = 20;
+	private static DBeaverSplashHandler instance;
 
     public static IProgressMonitor getActiveMonitor()
     {
@@ -62,7 +63,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     @Override
     public void init(Shell splash) {
         super.init(splash);
-        getBundleProgressMonitor();
 
         String progressRectString = null;
         String messageRectString = null;
@@ -74,12 +74,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
         }
 
-        Rectangle progressRect = StringConverter.asRectangle(
-                progressRectString, new Rectangle(10, 10, 300, 15));
+        Rectangle progressRect = StringConverter.asRectangle(progressRectString, new Rectangle(10, 10, 300, 15));
         setProgressRect(progressRect);
 
-        Rectangle messageRect = StringConverter.asRectangle(messageRectString,
-                new Rectangle(10, 35, 300, 15));
+        Rectangle messageRect = StringConverter.asRectangle(messageRectString, new Rectangle(10, 35, 300, 15));
         setMessageRect(messageRect);
 
         int foregroundColorInteger = 0xD2D7FF;
@@ -106,9 +104,9 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             public void paintControl(PaintEvent e) {
                 String productVersion = "";
                 if (product != null) {
-                    productVersion = "v" + DBeaverCore.getVersion().toString();
+                    productVersion = DBeaverCore.getProductTitle();
                 }
-                String osVersion = Platform.getOS() + "\n" + Platform.getOSArch();
+                String osVersion = Platform.getOS() + " " + Platform.getOSArch();
                 if (boldFont != null) {
                     e.gc.setFont(boldFont);
                 }
@@ -116,11 +114,13 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 				if (fg != null) {
 					e.gc.setForeground(fg);
 				}
-                e.gc.drawText(productVersion, 115, 200, true);
-                e.gc.drawText(osVersion, 30, 70, true);
+                e.gc.drawText(productVersion, 20, 180, true);
+                e.gc.drawText(osVersion, 115, 200, true);
                 e.gc.setFont(normalFont);
             }
         });
+
+		getBundleProgressMonitor().beginTask("Loading", TOTAL_LOADING_TASKS);
     }
 
     @Override
@@ -135,9 +135,13 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     }
 
 	public static void showMessage(String message) {
+		if (message == null || message.isEmpty() || message.startsWith(">")) {
+			return;
+		}
 		IProgressMonitor activeMonitor = getActiveMonitor();
 		if (activeMonitor != null) {
-			activeMonitor.subTask(message);
+			activeMonitor.setTaskName(message);
+			activeMonitor.worked(1);
 		}
 	}
 
