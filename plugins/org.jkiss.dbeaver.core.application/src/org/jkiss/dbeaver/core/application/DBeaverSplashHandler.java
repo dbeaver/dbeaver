@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
@@ -111,7 +112,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 if (boldFont != null) {
                     e.gc.setFont(boldFont);
                 }
-                e.gc.setForeground(getForeground());
+				Color fg = getForeground();
+				if (fg != null) {
+					e.gc.setForeground(fg);
+				}
                 e.gc.drawText(productVersion, 115, 200, true);
                 e.gc.drawText(osVersion, 30, 70, true);
                 e.gc.setFont(normalFont);
