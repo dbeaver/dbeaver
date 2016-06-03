@@ -60,7 +60,11 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
     @Override
     public Object getAttributeValue(int index) throws DBCException
     {
-        return rows.get(curPosition)[index];
+        Object[] row = rows.get(curPosition);
+        if (index >= row.length) {
+            throw new DBCException("Attribute index out of range (" + index + "/" + row.length + ")");
+        }
+        return row[index];
     }
 
     @Nullable
@@ -71,7 +75,7 @@ public class LocalResultSet<SOURCE_STMT extends DBCStatement> implements DBCResu
                 return getAttributeValue(i);
             }
         }
-        return null;
+        throw new DBCException("Bad attribute name: " + name);
     }
 
     @Override
