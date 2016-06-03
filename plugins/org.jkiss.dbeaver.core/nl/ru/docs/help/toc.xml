@@ -21,7 +21,6 @@
 
 <toc label="Универсальный менеджер баз данных">
 	<topic label="О DBeaver" href="docs/help/html/about.html">
-        <topic href="docs/help/html/techdoc.html" label="Техническое описание"/>
 	</topic>
     <topic label="Управление соединениями с БД">
         <topic href="docs/help/html/dialogs/driver-manager.html" label="Управление драйверами"/>
