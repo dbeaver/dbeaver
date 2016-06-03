@@ -430,7 +430,7 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
         return true;
     }
 
-    private void showExecutionResult(DBCSession session) throws DBCException {
+    private void showExecutionResult(DBCSession session) {
         if (statistics.getStatementsCount() > 1 || resultSetNumber == 0) {
             SQLQuery query = new SQLQuery("", -1, -1);
             if (queries.size() == 1) {
@@ -439,7 +439,11 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
             query.setData(STATS_RESULTS); // It will set tab name to "Stats"
             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(query, resultSetNumber);
             if (dataReceiver != null) {
-                fetchExecutionResult(session, dataReceiver, query);
+                try {
+                    fetchExecutionResult(session, dataReceiver, query);
+                } catch (DBCException e) {
+                    log.error("Error generating execution result stats", e);
+                }
             }
         }
     }
@@ -447,7 +451,6 @@ public class SQLQueryJob extends DataSourceJob implements Closeable
     private void fetchExecutionResult(@NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @NotNull SQLQuery query) throws DBCException
     {
         // Fetch fake result set
-        //DBCStatement statsStatement;
         StatResultSet fakeResultSet = new StatResultSet(session, curStatement);
         SQLQueryResult resultInfo = new SQLQueryResult(query);
         if (statistics.getStatementsCount() > 1) {
