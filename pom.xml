@@ -32,6 +32,7 @@
 		<module>plugins/org.jkiss.dbeaver.ext.informix</module>
 		<module>plugins/org.jkiss.dbeaver.ext.mssql</module>
 		<module>plugins/org.jkiss.dbeaver.ext.mysql</module>
+		<module>plugins/org.jkiss.dbeaver.ext.netezza</module>
 		<module>plugins/org.jkiss.dbeaver.ext.oracle</module>
 		<module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
 		<module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
