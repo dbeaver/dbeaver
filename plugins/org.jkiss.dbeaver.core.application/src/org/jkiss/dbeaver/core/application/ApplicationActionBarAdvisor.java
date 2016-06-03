@@ -25,7 +25,6 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
-import org.eclipse.ui.texteditor.templates.TemplatesView;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -36,7 +35,6 @@ import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
-import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
 
 /**
  * An action bar advisor is responsible for creating, adding, and disposing of the
@@ -45,24 +43,21 @@ import org.jkiss.dbeaver.ui.views.qm.QueryManagerView;
  */
 public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 {
+    public static final String M_ALT_HELP = "dbhelp";
 
-    // Actions - important to allocate these only in makeActions, and then use them
-    // in the fill methods.  This ensures that the actions aren't recreated
-    // when fillActionBars is called with FILL_PROXY.
-    //private IWorkbenchAction findAction;
-    private IActionDelegate emergentExitAction;
-    private IActionDelegate aboutAction;
-    private IActionDelegate checkUpdatesAction;
-    private IWorkbenchAction showHelpAction;
-//    private IWorkbenchAction searchHelpAction;
-//    private IWorkbenchAction dynamicHelpAction;
-    private IWorkbenchAction newWindowAction;
-//    private IWorkbenchAction historyBackAction;
-//    private IWorkbenchAction historyForwardAction;
+    protected IActionDelegate emergentExitAction;
+    protected IActionDelegate aboutAction;
+    protected CheckForUpdateAction checkUpdatesAction;
+    protected IWorkbenchAction showHelpAction;
+    protected IWorkbenchAction newWindowAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
         super(configurer);
+    }
+
+    protected boolean isShowAltHelp() {
+        return true;
     }
 
     @Override
@@ -94,12 +89,14 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
     @Override
     protected void fillMenuBar(IMenuManager menuBar) {
+        // do not use standard help menu to avoid junk provided by platform (like cheat sheets)
+        final boolean showAltHelp = isShowAltHelp();
+
         MenuManager fileMenu = new MenuManager(CoreMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
         MenuManager editMenu = new MenuManager(CoreMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
         MenuManager navigateMenu = new MenuManager(CoreMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
         MenuManager windowMenu = new MenuManager(CoreMessages.actions_menu_window, IWorkbenchActionConstants.M_WINDOW);
-        // do not use standard help menu to avoid junk provided by platform (like cheat sheets)
-        MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, "dbhelp"); //IWorkbenchActionConstants.M_HELP
+        MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, showAltHelp ? M_ALT_HELP : IWorkbenchActionConstants.M_HELP); //IWorkbenchActionConstants.M_HELP
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -171,13 +168,18 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             // Help
             helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
             helpMenu.add(showHelpAction);
-            //helpMenu.add(searchHelpAction);
-            //helpMenu.add(dynamicHelpAction);
-            helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST));
-
             helpMenu.add(new Separator());
-            helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
-            helpMenu.add(ActionUtils.makeAction(checkUpdatesAction, null, null, CoreMessages.actions_menu_check_update, null, null));
+            if (showAltHelp) {
+                //helpMenu.add(searchHelpAction);
+                //helpMenu.add(dynamicHelpAction);
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST));
+
+                helpMenu.add(new Separator());
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
+                helpMenu.add(checkUpdatesAction);
+            } else {
+                helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            }
         }
     }
 

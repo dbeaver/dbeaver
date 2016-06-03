@@ -17,16 +17,20 @@
  */
 package org.jkiss.dbeaver.ui.actions.common;
 
-import org.eclipse.jface.action.IAction;
-import org.eclipse.ui.actions.ActionDelegate;
+import org.eclipse.jface.action.Action;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.actions.DBeaverVersionChecker;
 
 
-public class CheckForUpdateAction extends ActionDelegate {
+public class CheckForUpdateAction extends Action {
+
+    public CheckForUpdateAction() {
+        super(CoreMessages.actions_menu_check_update);
+        setId("org.jkiss.dbeaver.action.checkForUpdate");
+    }
 
     @Override
-    public void run(IAction action)
-    {
+    public void run() {
         new DBeaverVersionChecker(true).schedule();
     }
 
