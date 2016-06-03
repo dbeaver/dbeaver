@@ -47,10 +47,11 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     private Combo territoryCombo;
     private Button hideEmptySchemasCheckbox;
     private Button showDBAAlwaysCheckbox;
+    private Button useRuleHint;
 
     public OracleConnectionExtraPage()
     {
-        setTitle("Extra properties");
+        setTitle("Oracle properties");
         setDescription("Regional settings and performance");
     }
 
@@ -104,6 +105,15 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 "Always shows DBA-related metadata objects in tree even if user do not has DBA role.");
         }
 
+        {
+            final Group contentGroup = UIUtils.createControlGroup(cfgGroup, "Performance", 1, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+
+            useRuleHint = UIUtils.createCheckbox(contentGroup, "Use RULE hint for system catalog queries", true);
+            useRuleHint.setToolTipText(
+                "Adds RULE hint for some system catalog queries (like columns and constraints reading)." + GeneralUtils.getDefaultLineSeparator() +
+                "It significantly increases performance on some Oracle databases (and decreases on others).");
+        }
+
         setControl(cfgGroup);
     }
 
@@ -138,10 +148,8 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             hideEmptySchemasCheckbox.setSelection(CommonUtils.getBoolean(checkSchemaContent, false));
         }
 
-        final Object showDBAObjects = connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA);
-        if (showDBAObjects != null) {
-            showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(showDBAObjects, false));
-        }
+        showDBAAlwaysCheckbox.setSelection(CommonUtils.getBoolean(connectionProperties.get(OracleConstants.PROP_ALWAYS_SHOW_DBA), false));
+        useRuleHint.setSelection(CommonUtils.getBoolean(connectionProperties.get(OracleConstants.PROP_USE_RULE_HINT), false));
     }
 
     @Override
@@ -167,10 +175,12 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
             connectionProperties.put(
                 OracleConstants.PROP_CHECK_SCHEMA_CONTENT,
                 String.valueOf(hideEmptySchemasCheckbox.getSelection()));
-
             connectionProperties.put(
                 OracleConstants.PROP_ALWAYS_SHOW_DBA,
                 String.valueOf(showDBAAlwaysCheckbox.getSelection()));
+            connectionProperties.put(
+                OracleConstants.PROP_USE_RULE_HINT,
+                String.valueOf(useRuleHint.getSelection()));
         }
         saveConnectionURL(dataSource.getConnectionConfiguration());
     }

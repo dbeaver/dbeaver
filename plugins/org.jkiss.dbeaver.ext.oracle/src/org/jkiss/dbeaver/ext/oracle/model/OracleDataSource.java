@@ -74,6 +74,7 @@ public class OracleDataSource extends JDBCDataSource
     private boolean isAdmin;
     private boolean isAdminVisible;
     private String planTableName;
+    private boolean useRuleHint;
 
     private final Map<String,Boolean> availableViews = new HashMap<>();
 
@@ -174,6 +175,10 @@ public class OracleDataSource extends JDBCDataSource
         return isAdmin || isAdminVisible;
     }
 
+    public boolean isUseRuleHint() {
+        return useRuleHint;
+    }
+
     @Association
     public Collection<OracleSchema> getSchemas(DBRProgressMonitor monitor) throws DBException
     {
@@ -246,11 +251,20 @@ public class OracleDataSource extends JDBCDataSource
     {
         super.initialize(monitor);
 
+        DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
+
+        {
+            Object useRuleHintProp = connectionInfo.getProperty(OracleConstants.PROP_USE_RULE_HINT);
+            if (useRuleHintProp != null) {
+                useRuleHint = CommonUtils.getBoolean(useRuleHintProp, false);
+            }
+        }
+
+
         this.publicSchema = new OracleSchema(this, 1, OracleConstants.USER_PUBLIC);
         {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
                 // Set session settings
-                DBPConnectionConfiguration connectionInfo = getContainer().getConnectionConfiguration();
                 Object sessionLanguage = connectionInfo.getProperty(OracleConstants.PROP_SESSION_LANGUAGE);
                 if (sessionLanguage != null) {
                     try {

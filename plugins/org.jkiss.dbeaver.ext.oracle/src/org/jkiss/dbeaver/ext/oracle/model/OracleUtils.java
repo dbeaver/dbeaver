@@ -249,6 +249,11 @@ public class OracleUtils {
         return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.ALL_";
     }
 
+    public static String getSysCatalogHint(OracleDataSource dataSource)
+    {
+        return dataSource.isUseRuleHint() ? "/*+RULE*/" : "";
+    }
+
     static <PARENT extends DBSObject> Object resolveLazyReference(
         DBRProgressMonitor monitor,
         PARENT parent,
