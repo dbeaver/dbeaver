@@ -189,10 +189,18 @@ public class DB2Utils {
                     Long ddlStart = 1L;
                     while (dbResult.next()) {
                         ddlStmt = dbResult.getClob(1);
-                        ddlLength = ddlStmt.length() + 1L;
-                        sb.append(ddlStmt.getSubString(ddlStart, ddlLength.intValue()));
-                        sb.append(LINE_SEP);
-                        ddlStmt.free();
+                        try {
+                            ddlLength = ddlStmt.length() + 1L;
+                            sb.append(ddlStmt.getSubString(ddlStart, ddlLength.intValue()));
+                            sb.append(LINE_SEP);
+                        }
+                        finally {
+                            try {
+                                ddlStmt.free();
+                            } catch (Throwable e) {
+                                LOG.debug("Error freeing CLOB: " + e.getMessage());
+                            }
+                        }
                     }
                 }
             }
