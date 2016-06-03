@@ -124,13 +124,13 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                             scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                             updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                     }
-                    catch (UnsupportedOperationException | LinkageError e) {
+                    catch (UnsupportedOperationException | LinkageError | SQLFeatureNotSupportedException e) {
                         statement = createStatement();
                     }
                     if (statement instanceof JDBCStatementImpl) {
                         ((JDBCStatementImpl)statement).setQueryString(sqlQuery);
                     }
-                } catch (IllegalArgumentException e) {
+                } catch (IllegalArgumentException | SQLFeatureNotSupportedException e) {
                     log.warn(e);
                     try {
                         statement = prepareStatement(
