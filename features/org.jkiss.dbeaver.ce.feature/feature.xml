@@ -4,7 +4,7 @@
         label="%featureName"
         version="3.6.9"
         provider-name="%providerName"
-        plugin="org.jkiss.dbeaver.core">
+        plugin="org.jkiss.dbeaver.core.application">
 
     <description>
         %description
@@ -19,11 +19,9 @@
     </license>
 
     <url>
-        <update label="DBeaver Universal Database Manager" url="http://dbeaver.jkiss.org/"/>
+
     </url>
 
-    <includes
-            id="org.jkiss.dbeaver.standalone.feature"
-            version="0.0.0"/>
+    <includes id="org.jkiss.dbeaver.standalone.feature" version="0.0.0"/>
 
 </feature>
