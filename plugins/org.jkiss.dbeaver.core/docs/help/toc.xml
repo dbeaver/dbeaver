@@ -21,7 +21,6 @@
 
 <toc label="DBeaver Help">
 	<topic label="About DBeaver" href="docs/help/html/about.html">
-        <topic href="docs/help/html/techdoc.html" label="Technical description"/>
 	</topic>
     <topic label="Manage connections">
         <topic href="docs/help/html/dialogs/driver-manager.html" label="Manage drivers"/>
