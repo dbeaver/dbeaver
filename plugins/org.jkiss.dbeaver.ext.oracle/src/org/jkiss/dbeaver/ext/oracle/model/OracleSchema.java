@@ -18,15 +18,15 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.ArrayUtils;
@@ -351,7 +350,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return tableColumn;
     }
 
-    public static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> implements JDBCObjectLookup {
+    public static class TableCache extends JDBCStructCache<OracleSchema, OracleTableBase, OracleTableColumn> implements JDBCObjectLookup<OracleSchema> {
 
         private static final Comparator<? super OracleTableColumn> ORDER_COMPARATOR = new Comparator<OracleTableColumn>() {
             @Override
@@ -374,13 +373,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         }
 
         @Override
-        public JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull DBSObject owner, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable String objectName) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "\tSELECT /*+RULE*/ t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
+                    "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " t.OWNER,t.TABLE_NAME as TABLE_NAME,'TABLE' as OBJECT_TYPE,'VALID' as STATUS,t.TABLE_TYPE_OWNER,t.TABLE_TYPE,t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS \n" +
                     "\tFROM SYS.ALL_ALL_TABLES t\n" +
                     "\tWHERE t.OWNER=? AND NESTED='NO'" + (objectName == null ? "": " AND t.TABLE_NAME=?") + "\n" +
                 "UNION ALL\n" +
-                    "\tSELECT /*+RULE*/ o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
+                    "\tSELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " o.OWNER,o.OBJECT_NAME as TABLE_NAME,'VIEW' as OBJECT_TYPE,o.STATUS,NULL,NULL,NULL,NULL,NULL,NULL,o.TEMPORARY,o.SECONDARY,NULL,NULL \n" +
                     "\tFROM SYS.ALL_OBJECTS o \n" +
                     "\tWHERE o.OWNER=? AND o.OBJECT_TYPE='VIEW'" + (objectName == null ? "": " AND o.OBJECT_NAME=?") + "\n"
                 );
@@ -463,7 +462,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql
-                .append("SELECT /*+RULE*/\n" +
+                .append("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + "\n" +
                     "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.SEARCH_CONDITION," +
                     "col.COLUMN_NAME,col.POSITION\n" +
                     "FROM SYS.ALL_CONSTRAINTS c\n" +
@@ -535,7 +534,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder(500);
             sql.append(
-                "SELECT /*+RULE*/ \r\n" +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " \r\n" +
                 "c.TABLE_NAME, c.CONSTRAINT_NAME,c.CONSTRAINT_TYPE,c.STATUS,c.R_OWNER,c.R_CONSTRAINT_NAME,ref.TABLE_NAME as R_TABLE_NAME,c.DELETE_RULE, \n" +
                 "col.COLUMN_NAME,col.POSITION\r\n" +
                 "FROM SYS.ALL_CONSTRAINTS c\n" +
@@ -602,7 +601,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT /*+RULE*/ " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " " +
                     "i.OWNER,i.INDEX_NAME,i.INDEX_TYPE,i.TABLE_OWNER,i.TABLE_NAME,i.UNIQUENESS,i.TABLESPACE_NAME,i.STATUS,i.NUM_ROWS,i.SAMPLE_SIZE,\n" +
                     "ic.COLUMN_NAME,ic.COLUMN_POSITION,ic.COLUMN_LENGTH,ic.DESCEND\n" +
                     "FROM SYS.ALL_INDEXES i \n" +
@@ -672,7 +671,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+RULE*/ * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_TYPES WHERE OWNER=? ORDER BY TYPE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -692,7 +691,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+RULE*/ * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_SEQUENCES WHERE SEQUENCE_OWNER=? ORDER BY SEQUENCE_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
@@ -714,7 +713,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+RULE*/ * FROM SYS.ALL_OBJECTS " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_OBJECTS " +
                 "WHERE OBJECT_TYPE IN ('PROCEDURE','FUNCTION') " +
                 "AND OWNER=? " +
                 "ORDER BY OBJECT_NAME");
@@ -737,7 +736,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+RULE*/ * FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
                 " ORDER BY OBJECT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
@@ -760,7 +759,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT /*+RULE*/ s.*,O.OBJECT_TYPE \n" +
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " s.*,O.OBJECT_TYPE \n" +
                 "FROM ALL_SYNONYMS S\n" +
                 "JOIN ALL_OBJECTS O ON  O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
                 "WHERE S.OWNER=? AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n" +
