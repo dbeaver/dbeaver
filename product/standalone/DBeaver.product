@@ -83,6 +83,9 @@
       <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.ds" autoStart="true" startLevel="2" />
       <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+      <!-- This is important because simpleconfigurator conflicts with update.configurator -->
+      <plugin id="org.eclipse.update.configurator" />
+       <!--property name="org.eclipse.update.reconcile" value="false" /-->
    </configurations>
 
 </product>
