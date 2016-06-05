@@ -33,67 +33,16 @@
         <import plugin="org.eclipse.gef"/>
     </requires>
 
-    <plugin
-            id="org.jkiss.dbeaver.model"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
+    <!-- 3rd party -->
+    <plugin id="com.github.jsqlparser" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.apache.commons.jexl" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="net.sf.opencsv" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
-    <plugin
-            id="org.jkiss.dbeaver.core"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.jkiss.dbeaver.ext.erd"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.jkiss.dbeaver.ext.import_config"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.jkiss.utils"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="com.github.jsqlparser"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.apache.commons.jexl"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="org.apache.commons.cli"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-
-    <plugin
-            id="net.sf.opencsv"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
+    <!-- DBeaver -->
+    <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.erd" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
