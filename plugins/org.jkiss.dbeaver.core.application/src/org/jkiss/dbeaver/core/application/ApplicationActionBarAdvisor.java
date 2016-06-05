@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.actions.common.CheckForUpdateAction;
+import org.jkiss.dbeaver.core.application.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.actions.common.EmergentExitAction;
 import org.jkiss.dbeaver.ui.actions.common.ToggleViewAction;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -179,6 +179,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 helpMenu.add(checkUpdatesAction);
             } else {
                 helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                helpMenu.add(checkUpdatesAction);
             }
         }
     }

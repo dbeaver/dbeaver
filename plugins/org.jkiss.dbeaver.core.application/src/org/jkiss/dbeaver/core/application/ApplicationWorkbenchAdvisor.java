@@ -28,7 +28,7 @@ import org.eclipse.ui.ide.IDE;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.ui.actions.DBeaverVersionChecker;
+import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 
 import java.util.Calendar;

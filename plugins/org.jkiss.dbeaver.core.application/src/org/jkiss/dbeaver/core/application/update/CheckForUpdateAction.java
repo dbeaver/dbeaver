@@ -15,11 +15,10 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui.actions.common;
+package org.jkiss.dbeaver.core.application.update;
 
 import org.eclipse.jface.action.Action;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.actions.DBeaverVersionChecker;
 
 
 public class CheckForUpdateAction extends Action {
