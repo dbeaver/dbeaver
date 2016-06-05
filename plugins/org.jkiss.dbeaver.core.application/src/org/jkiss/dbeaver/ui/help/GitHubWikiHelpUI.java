@@ -17,23 +17,17 @@
  */
 package org.jkiss.dbeaver.ui.help;
 
-import org.jkiss.dbeaver.Log;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.help.IContext;
 import org.eclipse.help.IHelpResource;
-import org.eclipse.help.internal.toc.HrefUtil;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.eclipse.ui.help.AbstractHelpUI;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.osgi.framework.Bundle;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Enumeration;
 
 /**
  * Lightweight help UI
@@ -42,8 +36,6 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
 
     private static final Log log = Log.getLog(GitHubWikiHelpUI.class);
     public static final String GITHUB_HELP_ROOT = "https://github.com/serge-rider/dbeaver/wiki/";
-
-    private boolean useHelpView = true;
 
     @Override
     public void displayHelp()
@@ -76,29 +68,6 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
         }
     }
 
-/*
-    private void showHelpPage(String pluginID, String topicRef) throws IOException, PartInitException
-    {
-        String topicPath = HrefUtil.getResourcePathFromHref(topicRef);
-        Bundle plugin = Platform.getBundle(pluginID);
-
-        // Cache all html content
-        {
-            int divPos = topicPath.indexOf("/html/");
-            if (divPos != -1) {
-                String rootPath = topicPath.substring(0, divPos + 5);
-                cacheContent(plugin, rootPath);
-            }
-        }
-
-        URL bundleURL = plugin.getEntry(topicPath);
-        if (bundleURL != null) {
-            URL fileURL = FileLocator.toFileURL(bundleURL);
-            showHelpPage(fileURL);
-        }
-    }
-*/
-
     private void showHelpPage(String fileURL)
     {
         try {
@@ -111,12 +80,6 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
     private void showHelpPage(URL fileURL)
     {
         IWorkbenchBrowserSupport support = PlatformUI.getWorkbench().getBrowserSupport();
-//        useHelpView = support.isInternalWebBrowserAvailable();
-//
-//        if (useHelpView) {
-//            LightweightHelpView helpView = (LightweightHelpView)PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IActionConstants.HELP_VIEW_ID);
-//            helpView.getBrowser().setUrl(fileURL.toString());
-//        } else {
         try {
             support.getExternalBrowser().openURL(fileURL);
         } catch (PartInitException e) {
@@ -125,25 +88,10 @@ public class GitHubWikiHelpUI extends AbstractHelpUI {
 //        }
     }
 
-    private void cacheContent(Bundle plugin, String filePath) throws IOException
-    {
-        Enumeration<String> entryPaths = plugin.getEntryPaths(filePath);
-        if (entryPaths == null) {
-            // It is a file
-            URL bundleURL = plugin.getEntry(filePath);
-            if (bundleURL != null) {
-                FileLocator.toFileURL(bundleURL);
-            }
-            return;
-        }
-        while (entryPaths.hasMoreElements()) {
-            cacheContent(plugin, entryPaths.nextElement());
-        }
-    }
-
     @Override
     public void displayHelpResource(String href)
     {
+        showHelpPage(href);
     }
 
     @Override
