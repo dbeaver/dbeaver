@@ -38,8 +38,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
-import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.BundleEvent;
@@ -304,10 +302,6 @@ public class DBeaverApplication implements IApplication {
             log.error("Error parsing command line", e);
             return null;
         }
-    }
-
-    public void updateToVersion(VersionDescriptor newVersion) {
-        UIUtils.launchProgram(newVersion.getBaseURL());
     }
 
 }

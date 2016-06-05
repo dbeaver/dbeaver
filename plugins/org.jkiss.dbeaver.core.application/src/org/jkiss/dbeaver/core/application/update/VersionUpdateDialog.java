@@ -27,14 +27,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 class VersionUpdateDialog extends Dialog {
 
+    public static final String P2_UPDATE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.update";
     private VersionDescriptor newVersion;
     private static final int INFO_ID = 1000;
     private Font boldFont;
@@ -85,7 +87,7 @@ class VersionUpdateDialog extends Dialog {
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
-            hintLabel.setText("Press \"" + IDialogConstants.PROCEED_LABEL + "\" to update to the most recent version");
+            hintLabel.setText(CoreMessages.dialog_version_update_press_more_info_);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);
@@ -106,11 +108,19 @@ class VersionUpdateDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent)
     {
         if (newVersion != null) {
+            boolean hasUpdate = ActionUtils.findCommandName(P2_UPDATE_COMMAND) != null;
+            if (hasUpdate) {
+                createButton(
+                    parent,
+                    IDialogConstants.PROCEED_ID,
+                    "Update",
+                    true);
+            }
             createButton(
                 parent,
                 INFO_ID,
-                IDialogConstants.PROCEED_LABEL,
-                true);
+                CoreMessages.dialog_version_update_button_more_info,
+                !hasUpdate);
         }
 
         createButton(
@@ -125,8 +135,10 @@ class VersionUpdateDialog extends Dialog {
     {
         if (buttonId == INFO_ID) {
             if (newVersion != null) {
-                DBeaverApplication.getInstance().updateToVersion(newVersion);
+                UIUtils.launchProgram(newVersion.getBaseURL());
             }
+        } else if (buttonId == IDialogConstants.PROCEED_ID) {
+            ActionUtils.runCommand(P2_UPDATE_COMMAND, PlatformUI.getWorkbench());
         }
         close();
     }
