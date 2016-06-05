@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.rpc.DBeaverInstanceServer;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
+import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.BundleEvent;
@@ -57,7 +59,9 @@ import java.util.List;
 public class DBeaverApplication implements IApplication {
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
     private static final Log log = Log.getLog(DBeaverApplication.class);
-    private static IInstanceController instanceServer;
+
+    private static DBeaverApplication instance;
+    private IInstanceController instanceServer;
 
     static {
         // Explicitly set UTF-8 as default file encoding
@@ -65,8 +69,17 @@ public class DBeaverApplication implements IApplication {
         System.setProperty("file.encoding", "utf-8");
     }
 
+    /**
+     * Gets singleton instance of DBeaver application
+     * @return application or null if application wasn't started or was stopped.
+     */
+    public static DBeaverApplication getInstance() {
+        return instance;
+    }
+
     @Override
     public Object start(IApplicationContext context) {
+        instance = this;
         Display display = null;
 
         context.getBrandingBundle().getBundleContext().addBundleListener(new BundleListener() {
@@ -224,21 +237,25 @@ public class DBeaverApplication implements IApplication {
     @Override
     public void stop() {
         log.debug("DBeaver is stopping"); //$NON-NLS-1$
-        final IWorkbench workbench = PlatformUI.getWorkbench();
-        if (workbench == null)
-            return;
+        try {
+            final IWorkbench workbench = PlatformUI.getWorkbench();
+            if (workbench == null)
+                return;
 
-        instanceServer = null;
-        DBeaverInstanceServer.stopInstanceServer();
+            instanceServer = null;
+            DBeaverInstanceServer.stopInstanceServer();
 
-        final Display display = workbench.getDisplay();
-        display.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!display.isDisposed())
-                    workbench.close();
-            }
-        });
+            final Display display = workbench.getDisplay();
+            display.syncExec(new Runnable() {
+                @Override
+                public void run() {
+                    if (!display.isDisposed())
+                        workbench.close();
+                }
+            });
+        } finally {
+            instance = null;
+        }
     }
 
     public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
@@ -267,14 +284,14 @@ public class DBeaverApplication implements IApplication {
         return false;
     }
 
+    public IInstanceController getInstanceServer() {
+        return instanceServer;
+    }
+
     private static File getDefaultWorkspaceLocation() {
         return new File(
             System.getProperty("user.home"),
             DBEAVER_DEFAULT_DIR);
-    }
-
-    public static IInstanceController getInstanceServer() {
-        return instanceServer;
     }
 
     public static CommandLine getCommandLine() {
@@ -284,6 +301,10 @@ public class DBeaverApplication implements IApplication {
             log.error("Error parsing command line", e);
             return null;
         }
+    }
+
+    public void updateToVersion(VersionDescriptor newVersion) {
+        UIUtils.launchProgram(newVersion.getBaseURL());
     }
 
 }
