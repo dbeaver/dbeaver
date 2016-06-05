@@ -22,65 +22,15 @@
         <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
     </requires>
 
-    <plugin
-            id="org.jkiss.dbeaver.ext.derby"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.firebird"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.generic"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.informix"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.mssql"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.netezza"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.phoenix"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.postgresql"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.teradata"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
-    <plugin
-            id="org.jkiss.dbeaver.ext.vertica"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.derby" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.firebird" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.generic" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.informix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.mssql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.netezza" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.phoenix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.postgresql" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.teradata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.vertica" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

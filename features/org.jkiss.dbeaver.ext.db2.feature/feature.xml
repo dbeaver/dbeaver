@@ -22,11 +22,6 @@
       <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
    </requires>
 
-   <plugin
-         id="org.jkiss.dbeaver.ext.db2"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="true"/>
+   <plugin id="org.jkiss.dbeaver.ext.db2" download-size="0" install-size="0" version="0.0.0" unpack="true"/>
 
 </feature>

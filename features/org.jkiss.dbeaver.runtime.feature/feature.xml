@@ -35,11 +35,6 @@
         <import plugin="org.eclipse.ui.views"/>
     </requires>
 
-    <plugin
-            id="org.jkiss.dbeaver.core.eclipse"
-            download-size="0"
-            install-size="0"
-            version="0.0.0"
-            unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.core.eclipse" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>
