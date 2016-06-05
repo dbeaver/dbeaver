@@ -85,6 +85,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 //        register(historyBackAction);
 //        historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
 //        register(historyForwardAction);
+
+        CheckForUpdateAction.deactivateStandardHandler(window);
     }
 
     @Override
@@ -179,7 +181,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 helpMenu.add(checkUpdatesAction);
             } else {
                 helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-                helpMenu.add(checkUpdatesAction);
             }
         }
     }
