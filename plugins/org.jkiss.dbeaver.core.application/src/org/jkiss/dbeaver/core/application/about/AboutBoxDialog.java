@@ -37,9 +37,10 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.application.Activator;
+import org.jkiss.dbeaver.core.application.DBeaverApplication;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -53,7 +54,7 @@ public class AboutBoxDialog extends Dialog
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
     private final Font TITLE_FONT;
 
-    private Image ABOUT_IMAGE = Activator.getImageDescriptor("icons/about_circle.png").createImage();
+    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/about_circle.png").createImage();
 
     public AboutBoxDialog(Shell shell)
     {
