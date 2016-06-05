@@ -57,7 +57,10 @@ import java.util.List;
  * This class controls all aspects of the application's execution
  */
 public class DBeaverApplication implements IApplication {
+
+    public static final String APPLICATION_PLUGIN_ID = "org.jkiss.dbeaver.core.application";
     public static final String DBEAVER_DEFAULT_DIR = ".dbeaver"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(DBeaverApplication.class);
 
     private static DBeaverApplication instance;
