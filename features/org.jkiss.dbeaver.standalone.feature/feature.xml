@@ -65,7 +65,6 @@
         <import plugin="org.apache.commons.logging"/>
         <import plugin="com.jcraft.jsch"/>
         <import plugin="org.objectweb.asm"/>
-        <import plugin="org.apache.commons.cli"/>
     </requires>
 
     <!-- Include org.eclipse.ui.themes because it was added only in 4.4 -->
