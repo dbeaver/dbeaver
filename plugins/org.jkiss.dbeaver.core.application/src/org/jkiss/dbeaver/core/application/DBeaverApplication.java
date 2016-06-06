@@ -40,6 +40,8 @@ import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 
@@ -83,21 +85,27 @@ public class DBeaverApplication implements IApplication {
         instance = this;
         Display display = null;
 
-        context.getBrandingBundle().getBundleContext().addBundleListener(new BundleListener() {
-            @Override
-            public void bundleChanged(BundleEvent event) {
-                String message = null;
+        Bundle brandingBundle = context.getBrandingBundle();
+        if (brandingBundle != null) {
+            BundleContext bundleContext = brandingBundle.getBundleContext();
+            if (bundleContext != null) {
+                bundleContext.addBundleListener(new BundleListener() {
+                    @Override
+                    public void bundleChanged(BundleEvent event) {
+                        String message = null;
 
-                if (event.getType() == BundleEvent.STARTED) {
-                    message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-                } else if (event.getType() == BundleEvent.STOPPED) {
-                    message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-                }
-                if (message != null) {
-                    log.debug(message);
-                }
+                        if (event.getType() == BundleEvent.STARTED) {
+                            message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                        } else if (event.getType() == BundleEvent.STOPPED) {
+                            message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                        }
+                        if (message != null) {
+                            log.debug(message);
+                        }
+                    }
+                });
             }
-        });
+        }
         Log.addListener(new Log.Listener() {
             @Override
             public void loggedMessage(Object message, Throwable t) {
