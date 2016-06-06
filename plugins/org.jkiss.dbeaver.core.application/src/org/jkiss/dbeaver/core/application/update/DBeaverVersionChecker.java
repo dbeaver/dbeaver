@@ -52,7 +52,7 @@ public class DBeaverVersionChecker extends AbstractJob {
             if (versionDescriptor.getProgramVersion().compareTo(DBeaverCore.getVersion()) > 0) {
                 showUpdaterDialog(versionDescriptor);
             } else if (showAlways) {
-                showUpdaterDialog(versionDescriptor);
+                showUpdaterDialog(null);
             }
         } catch (IOException e) {
             log.debug(e);
