@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 
 public class CheckForUpdateAction extends Action {
 
+    public static final String P2_PLUGIN_ID = "org.eclipse.equinox.p2.ui.sdk";
     public static final String P2_UPDATE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.update";
 
     private static IHandlerActivation p2UpdateHandlerActivation;

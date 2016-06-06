@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.core.application.update;
 
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
@@ -109,7 +110,7 @@ class VersionUpdateDialog extends Dialog {
     protected void createButtonsForButtonBar(Composite parent)
     {
         if (newVersion != null) {
-            boolean hasUpdate = ActionUtils.findCommandName(CheckForUpdateAction.P2_UPDATE_COMMAND) != null;
+            boolean hasUpdate = Platform.getBundle(CheckForUpdateAction.P2_PLUGIN_ID) != null;
             if (hasUpdate) {
                 createButton(
                     parent,
