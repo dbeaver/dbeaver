@@ -611,12 +611,9 @@ public class SQLEditor extends SQLEditorBase implements
     {
         super.init(site, editorInput);
 
-        IProject project = getProject();
-        if (project != null) {
-            final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-            if (dataSourceRegistry != null) {
-                dataSourceRegistry.addDataSourceListener(this);
-            }
+        final DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(editorInput);
+        if (dsContainer != null) {
+            dsContainer.getRegistry().addDataSourceListener(this);
         }
     }
 
@@ -959,18 +956,16 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void dispose()
     {
-        IFile sqlFile = EditorUtils.getFileFromInput(getEditorInput());
-
         // Release ds container
         releaseContainer();
         closeAllJobs();
 
-        IProject project = getProject();
-        if (project != null) {
-            final DataSourceRegistry dataSourceRegistry = DBeaverCore.getInstance().getProjectRegistry().getDataSourceRegistry(project);
-            if (dataSourceRegistry != null) {
-                dataSourceRegistry.removeDataSourceListener(this);
-            }
+        final IEditorInput editorInput = getEditorInput();
+        IFile sqlFile = EditorUtils.getFileFromInput(editorInput);
+
+        final DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(editorInput);
+        if (dsContainer != null) {
+            dsContainer.getRegistry().removeDataSourceListener(this);
         }
 
         planView = null;
