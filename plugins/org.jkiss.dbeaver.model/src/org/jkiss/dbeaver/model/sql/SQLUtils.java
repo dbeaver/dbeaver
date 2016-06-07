@@ -42,6 +42,7 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -346,7 +347,7 @@ public final class SQLUtils {
     }
 
     @Nullable
-    public static String getConstraintCondition(DBPDataSource dataSource, DBDAttributeConstraint constraint, boolean inlineCriteria) {
+    public static String getConstraintCondition(@NotNull DBPDataSource dataSource, @NotNull DBDAttributeConstraint constraint, boolean inlineCriteria) {
         String criteria = constraint.getCriteria();
         if (!CommonUtils.isEmpty(criteria)) {
             final char firstChar = criteria.trim().charAt(0);
@@ -373,6 +374,28 @@ public final class SQLUtils {
                         conString.append(" ?");
                     }
                 }
+            } else if (operator.getArgumentCount() < 0) {
+                // Multiple arguments
+                conString.append(" (");
+                Object arrayValue = constraint.getValue();
+                if (!DBUtils.isNullValue(arrayValue)) {
+                    if (!arrayValue.getClass().isArray()) {
+                        arrayValue = new Object[] {arrayValue};
+                    }
+                    int valueCount = Array.getLength(arrayValue);
+                    for (int i = 0; i < valueCount; i++) {
+                        if (i > 0) {
+                            conString.append(",");
+                        }
+                        Object itemValue = Array.get(arrayValue, i);
+                        if (inlineCriteria) {
+                            conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
+                        } else {
+                            conString.append("?");
+                        }
+                    }
+                }
+                conString.append(")");
             }
             return conString.toString();
         } else {
@@ -380,7 +403,7 @@ public final class SQLUtils {
         }
     }
 
-    public static String convertValueToSQL(DBPDataSource dataSource, DBSAttributeBase attribute, @Nullable Object value) {
+    public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
@@ -417,7 +440,7 @@ public final class SQLUtils {
         }
     }
 
-    public static String getColumnTypeModifiers(DBSAttributeBase column, String typeName, DBPDataKind dataKind) {
+    public static String getColumnTypeModifiers(@NotNull DBSAttributeBase column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
                 final long maxLength = column.getMaxLength();

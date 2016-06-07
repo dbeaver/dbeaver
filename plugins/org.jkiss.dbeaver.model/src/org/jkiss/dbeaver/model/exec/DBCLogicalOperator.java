@@ -84,7 +84,7 @@ public enum DBCLogicalOperator {
     IN("IN", -1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {
-            return false;
+            return ArrayUtils.contains(arguments, srcValue);
         }
     },
     LIKE("LIKE", 1) {
@@ -115,10 +115,20 @@ public enum DBCLogicalOperator {
         this.argumentCount = argumentCount;
     }
 
+    /**
+     * Operator string representation
+     */
     public String getStringValue() {
         return stringValue;
     }
 
+    /**
+     * Argument count.
+     * Zero means no arguments.
+     * Positive number means exact this number of arguments.
+     * Negative number means variable number of arguments
+     * @return argument count
+     */
     public int getArgumentCount() {
         return argumentCount;
     }
