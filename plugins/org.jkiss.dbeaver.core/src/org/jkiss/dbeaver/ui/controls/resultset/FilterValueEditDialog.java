@@ -151,7 +151,7 @@ class FilterValueEditDialog extends BaseDialog {
                 Object value = ResultSetUtils.getAttributeValueFromClipboard(attr);
                 editor.primeEditorValue(value);
             } catch (DBException e) {
-                UIUtils.showErrorDialog(getShell(), "Copt from clipboard", "Can't copy value", e);
+                UIUtils.showErrorDialog(getShell(), "Copy from clipboard", "Can't copy value", e);
             }
         } else {
             super.buttonPressed(buttonId);
