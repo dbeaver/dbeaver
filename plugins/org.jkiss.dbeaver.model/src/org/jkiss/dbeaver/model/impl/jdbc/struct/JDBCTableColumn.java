@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
@@ -153,11 +154,12 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         this.persisted = persisted;
     }
 
+    @NotNull
     @Override
-    public Collection<DBDLabelValuePair> getValueEnumeration(DBCSession session, Object valuePattern, int maxResults) throws DBException {
+    public Collection<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults) throws DBException {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
-        query.append("SELECT UNIQUE ").append(DBUtils.getQuotedIdentifier(this));
+        query.append("SELECT DISTINCT ").append(DBUtils.getQuotedIdentifier(this));
         String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
         if (descColumns != null) {
             query.append(", ").append(descColumns);

@@ -366,12 +366,12 @@ public class ReferenceValueEditor {
                     }
                 }
                 final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
-                if (fkAttribute != null) {
+                final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+                if (fkAttribute != null && refConstraint != null) {
                     try (DBCSession session = getExecutionContext().openSession(
                         monitor,
                         DBCExecutionPurpose.UTIL,
                         NLS.bind(CoreMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
-                        final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
                         DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
                         Collection<DBDLabelValuePair> enumValues = enumConstraint.getKeyEnumeration(
                             session,
