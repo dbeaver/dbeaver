@@ -2161,11 +2161,13 @@ public class ResultSetViewer extends Viewer
     }
 
     private class EmptySelection extends StructuredSelection implements IResultSetSelection {
+        @NotNull
         @Override
         public IResultSetController getController() {
             return ResultSetViewer.this;
         }
 
+        @NotNull
         @Override
         public Collection<ResultSetRow> getSelectedRows() {
             return Collections.emptyList();
@@ -2327,11 +2329,20 @@ public class ResultSetViewer extends Viewer
                 if (useDefault) {
                     return "..";
                 } else {
-                    ResultSetRow focusRow = viewer.getCurrentRow();
-                    if (focusRow == null) {
+                    ResultSetRow[] rows = null;
+                    if (operator.getArgumentCount() < 0) {
+                        Collection<ResultSetRow> selectedRows = viewer.getSelection().getSelectedRows();
+                        rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
+                    } else {
+                        ResultSetRow focusRow = viewer.getCurrentRow();
+                        if (focusRow != null) {
+                            rows = new ResultSetRow[] { focusRow };
+                        }
+                    }
+                    if (rows == null || rows.length == 0) {
                         return null;
                     }
-                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, attribute, focusRow, operator);
+                    FilterValueEditDialog dialog = new FilterValueEditDialog(viewer, attribute, rows, operator);
                     if (dialog.open() == IDialogConstants.OK_ID) {
                         return dialog.getValue();
                     } else {

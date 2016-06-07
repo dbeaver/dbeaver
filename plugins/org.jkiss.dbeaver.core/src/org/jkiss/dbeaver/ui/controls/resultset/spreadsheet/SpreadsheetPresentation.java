@@ -1098,12 +1098,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             return spreadsheet.getSelection().isEmpty();
         }
 
+        @NotNull
         @Override
         public IResultSetController getController()
         {
             return SpreadsheetPresentation.this.getController();
         }
 
+        @NotNull
         @Override
         public Collection<ResultSetRow> getSelectedRows()
         {
