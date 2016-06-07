@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -29,6 +30,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -108,8 +111,25 @@ class FilterValueEditDialog extends BaseDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-		createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
+        Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Clipboard", false);
+        copyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CLIPBOARD));
+
+        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+    }
+
+    @Override
+    protected void buttonPressed(int buttonId) {
+        if (buttonId == IDialogConstants.DETAILS_ID) {
+            try {
+                Object value = ResultSetUtils.getAttributeValueFromClipboard(attr);
+                editor.primeEditorValue(value);
+            } catch (DBException e) {
+                UIUtils.showErrorDialog(getShell(), "Copt from clipboard", "Can't copy value", e);
+            }
+        } else {
+            super.buttonPressed(buttonId);
+        }
     }
 
     @Override
