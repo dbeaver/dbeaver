@@ -19,14 +19,20 @@ package org.jkiss.dbeaver.model.virtual;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformer;
-import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -129,6 +135,55 @@ public abstract class DBVUtils {
             result[i] = tdList.get(i).getInstance();
         }
         return result;
+    }
+
+    public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
+        DBVEntity dictionary = DBVUtils.findVirtualEntity(attribute.getParentObject(), false);
+        if (dictionary != null) {
+            return dictionary.getDescriptionColumnNames();
+        } else {
+            return DBVEntity.getDefaultDescriptionColumn(monitor, attribute);
+        }
+    }
+
+    @NotNull
+    public static List<DBDLabelValuePair> readDictionaryRows(
+        DBCSession session,
+        DBSEntityAttribute valueAttribute,
+        DBDValueHandler valueHandler,
+        DBCResultSet dbResult) throws DBCException
+    {
+        List<DBDLabelValuePair> values = new ArrayList<>();
+        List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
+        List<DBDValueHandler> colHandlers = new ArrayList<>(metaColumns.size());
+        for (DBCAttributeMetaData col : metaColumns) {
+            colHandlers.add(DBUtils.findValueHandler(session, col));
+        }
+        // Extract enumeration values and (optionally) their descriptions
+        while (dbResult.nextRow()) {
+            // Check monitor
+            if (session.getProgressMonitor().isCanceled()) {
+                break;
+            }
+            // Get value and description
+            Object keyValue = valueHandler.fetchValueObject(session, dbResult, valueAttribute, 0);
+            if (keyValue == null) {
+                continue;
+            }
+            String keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
+            if (metaColumns.size() > 1) {
+                keyLabel = "";
+                for (int i = 1; i < colHandlers.size(); i++) {
+                    Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
+                    if (!keyLabel.isEmpty()) {
+                        keyLabel += " ";
+                    }
+                    keyLabel += colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE);
+                }
+            }
+            values.add(new DBDLabelValuePair(keyLabel, keyValue));
+        }
+        return values;
     }
 
 }

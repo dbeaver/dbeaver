@@ -19,19 +19,21 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataTypeProvider;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.virtual.DBVUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -153,7 +155,25 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 
     @Override
     public Collection<DBDLabelValuePair> getValueEnumeration(DBCSession session, Object valuePattern, int maxResults) throws DBException {
-        return Collections.emptyList();
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT UNIQUE ").append(DBUtils.getQuotedIdentifier(this));
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
+        if (descColumns != null) {
+            query.append(", ").append(descColumns);
+        }
+        query.append(" FROM ").append(DBUtils.getObjectFullName(getTable()));
+
+        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
+            dbStat.setLimit(0, maxResults);
+            if (dbStat.executeStatement()) {
+                try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                    return DBVUtils.readDictionaryRows(session, this, valueHandler, dbResult);
+                }
+            } else {
+                return Collections.emptyList();
+            }
+        }
     }
 
     public static class ColumnTypeNameListProvider implements IPropertyValueListProvider<JDBCTableColumn> {
