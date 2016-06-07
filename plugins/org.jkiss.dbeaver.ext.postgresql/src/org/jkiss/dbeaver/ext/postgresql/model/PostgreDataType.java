@@ -396,6 +396,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     DBCLogicalOperator.GREATER,
                     DBCLogicalOperator.LESS,
                     DBCLogicalOperator.LIKE,
+                    DBCLogicalOperator.IN,
                 };
             } else {
                 return new DBCLogicalOperator[] {

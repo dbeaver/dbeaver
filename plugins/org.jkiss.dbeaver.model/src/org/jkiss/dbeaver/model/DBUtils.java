@@ -1374,6 +1374,7 @@ public final class DBUtils {
             //operators.add(DBCLogicalOperator.GREATER_EQUALS);
             operators.add(DBCLogicalOperator.LESS);
             //operators.add(DBCLogicalOperator.LESS_EQUALS);
+            operators.add(DBCLogicalOperator.IN);
         }
         if (dataKind == DBPDataKind.STRING) {
             operators.add(DBCLogicalOperator.LIKE);

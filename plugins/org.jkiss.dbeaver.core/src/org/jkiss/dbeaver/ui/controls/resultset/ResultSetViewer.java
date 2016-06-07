@@ -1314,7 +1314,16 @@ public class ResultSetViewer extends Viewer
     private void fillFiltersMenu(@NotNull DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
     {
         if (supportsDataFilter()) {
+            //filtersMenu.add(new FilterByListAction(operator, type, attribute));
             DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
+            // Operators with multiple inputs
+            for (DBCLogicalOperator operator : operators) {
+                if (operator.getArgumentCount() < 0) {
+                    filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
+                }
+            }
+            filtersMenu.add(new Separator());
+            // Operators with no inputs
             for (DBCLogicalOperator operator : operators) {
                 if (operator.getArgumentCount() == 0) {
                     filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
@@ -2298,7 +2307,7 @@ public class ResultSetViewer extends Viewer
     private enum FilterByAttributeType {
         VALUE(UIIcon.FILTER_VALUE) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
                 final DBDAttributeBinding attr = attribute;
                 final ResultSetRow row = viewer.getCurrentRow();
@@ -2314,7 +2323,7 @@ public class ResultSetViewer extends Viewer
         },
         INPUT(UIIcon.FILTER_INPUT) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
                 if (useDefault) {
                     return "..";
@@ -2332,6 +2341,7 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
+/*
         CLIPBOARD(UIIcon.FILTER_CLIPBOARD) {
             @Override
             Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
@@ -2344,9 +2354,10 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
+*/
         NONE(UIIcon.FILTER_VALUE) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
                 return null;
             }
@@ -2359,7 +2370,7 @@ public class ResultSetViewer extends Viewer
             this.icon = DBeaverIcons.getImageDescriptor(icon);
         }
         @Nullable
-        abstract Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault);
+        abstract Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault);
     }
 
     private String translateFilterPattern(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute)
@@ -2390,7 +2401,7 @@ public class ResultSetViewer extends Viewer
         public void run()
         {
             Object value = type.getValue(ResultSetViewer.this, attribute, operator, false);
-            if (operator.getArgumentCount() > 0 && value == null) {
+            if (operator.getArgumentCount() != 0 && value == null) {
                 return;
             }
             DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());

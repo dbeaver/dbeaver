@@ -24,6 +24,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -46,7 +47,7 @@ class FilterValueEditDialog extends BaseDialog {
     private IValueEditor editor;
     private Text textControl;
 
-    public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow row, DBCLogicalOperator operator) {
+    public FilterValueEditDialog(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @NotNull DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
         this.viewer = viewer;
         this.attr = attr;
