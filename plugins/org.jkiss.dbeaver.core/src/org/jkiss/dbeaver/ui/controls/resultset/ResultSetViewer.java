@@ -2309,12 +2309,11 @@ public class ResultSetViewer extends Viewer
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
-                final DBDAttributeBinding attr = attribute;
                 final ResultSetRow row = viewer.getCurrentRow();
-                if (attr == null || row == null) {
+                if (attribute == null || row == null) {
                     return null;
                 }
-                Object cellValue = viewer.model.getCellValue(attr, row);
+                Object cellValue = viewer.model.getCellValue(attribute, row);
                 if (operator == DBCLogicalOperator.LIKE && cellValue != null) {
                     cellValue = "%" + cellValue + "%";
                 }
