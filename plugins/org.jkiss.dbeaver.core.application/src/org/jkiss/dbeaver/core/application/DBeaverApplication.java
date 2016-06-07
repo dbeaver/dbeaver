@@ -21,6 +21,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplication;
 import org.eclipse.equinox.app.IApplicationContext;
@@ -69,7 +70,7 @@ public class DBeaverApplication implements IApplication {
     static {
         // Explicitly set UTF-8 as default file encoding
         // In some places Eclipse reads this property directly.
-        System.setProperty("file.encoding", "utf-8");
+        //System.setProperty("file.encoding", "utf-8");
     }
 
     /**
@@ -174,6 +175,9 @@ public class DBeaverApplication implements IApplication {
 
         // Run instance server
         instanceServer = DBeaverInstanceServer.startInstanceServer();
+
+        // Set default resource encoding to UTF-8
+        ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, "utf-8");
 
         // Create display
         if (display == null) {
