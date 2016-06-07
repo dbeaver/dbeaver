@@ -42,9 +42,13 @@ class FilterValueEditDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
 
+    @NotNull
     private final ResultSetViewer viewer;
+    @NotNull
     private final DBDAttributeBinding attr;
+    @NotNull
     private final ResultSetRow[] rows;
+    @NotNull
     private final DBCLogicalOperator operator;
 
     private Object value;
@@ -135,7 +139,7 @@ class FilterValueEditDialog extends BaseDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        if (rows.length == 1) {
+        if (operator.getArgumentCount() == 1) {
             Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Clipboard", false);
             copyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CLIPBOARD));
         }
