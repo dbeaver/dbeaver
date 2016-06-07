@@ -36,6 +36,8 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.ArrayList;
+
 class FilterValueEditDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
@@ -48,6 +50,7 @@ class FilterValueEditDialog extends BaseDialog {
     private Object value;
     private IValueEditor editor;
     private Text textControl;
+    private Table table;
 
     public FilterValueEditDialog(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
@@ -107,7 +110,7 @@ class FilterValueEditDialog extends BaseDialog {
                 textControl.setLayoutData(gd);
             }
         } else if (argumentCount < 0) {
-            Table table = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
+            table = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 400;
             gd.heightHint = 300;
@@ -118,7 +121,7 @@ class FilterValueEditDialog extends BaseDialog {
                 String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
 
                 TableItem item = new TableItem(table, SWT.LEFT);
-                item.setData(row);
+                item.setData(cellValue);
                 item.setText(itemString);
                 if (ArrayUtils.contains(rows, row)) {
                     item.setChecked(true);
@@ -158,7 +161,15 @@ class FilterValueEditDialog extends BaseDialog {
     @Override
     protected void okPressed()
     {
-        if (editor != null) {
+        if (table != null) {
+            java.util.List<Object> values = new ArrayList<>();
+            for (TableItem item : table.getItems()) {
+                if (item.getChecked()) {
+                    values.add(item.getData());
+                }
+            }
+            value = values.toArray();
+        } else if (editor != null) {
             try {
                 value = editor.extractEditorValue();
             } catch (DBException e) {
