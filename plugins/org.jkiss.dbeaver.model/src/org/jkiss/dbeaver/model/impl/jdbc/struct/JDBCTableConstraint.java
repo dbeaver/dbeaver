@@ -24,22 +24,23 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -108,22 +109,12 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         if (keyColumn.getParentObject() != this.getTable()) {
             throw new IllegalArgumentException("Bad key column argument");
         }
-        DBVEntity dictionary = DBVUtils.findVirtualEntity(getTable(), false);
-        if (dictionary != null && !CommonUtils.isEmpty(dictionary.getDescriptionColumnNames())) {
-            // Try to use dictionary description
-            try {
-                return readKeyEnumeration(session, keyColumn, keyPattern, preceedingKeys, dictionary, maxResults);
-            } catch (DBException e) {
-                log.warn("Can't query with redefined dictionary columns (" + dictionary.getDescriptionColumnNames() + ")", e);
-            }
-        }
         // Use default one
         return readKeyEnumeration(
             session,
             keyColumn,
             keyPattern,
             preceedingKeys,
-            null,
             maxResults);
     }
 
@@ -132,19 +123,14 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBSEntityAttribute keyColumn,
         Object keyPattern,
         List<DBDAttributeValue> preceedingKeys,
-        DBVEntity dictionary,
         int maxResults)
         throws DBException
     {
         DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
         StringBuilder query = new StringBuilder();
         query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
-        String descColumns;
-        if (dictionary != null) {
-            descColumns = dictionary.getDescriptionColumnNames();
-        } else {
-            descColumns = DBVEntity.getDefaultDescriptionColumn(session.getProgressMonitor(), keyColumn);
-        }
+
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), keyColumn);
         if (descColumns != null) {
             query.append(", ").append(descColumns);
         }
@@ -196,40 +182,10 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
-                    List<DBDLabelValuePair> values = new ArrayList<>();
-                    List<DBCAttributeMetaData> metaColumns = dbResult.getMeta().getAttributes();
-                    List<DBDValueHandler> colHandlers = new ArrayList<>(metaColumns.size());
-                    for (DBCAttributeMetaData col : metaColumns) {
-                        colHandlers.add(DBUtils.findValueHandler(session, col));
-                    }
-                    // Extract enumeration values and (optionally) their descriptions
-                    while (dbResult.nextRow()) {
-                        // Check monitor
-                        if (session.getProgressMonitor().isCanceled()) {
-                            break;
-                        }
-                        // Get value and description
-                        Object keyValue = keyValueHandler.fetchValueObject(session, dbResult, keyColumn, 0);
-                        if (keyValue == null) {
-                            continue;
-                        }
-                        String keyLabel = keyValueHandler.getValueDisplayString(keyColumn, keyValue, DBDDisplayFormat.NATIVE);
-                        if (descColumns != null) {
-                            keyLabel = "";
-                            for (int i = 1; i < colHandlers.size(); i++) {
-                                Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
-                                if (!keyLabel.isEmpty()) {
-                                    keyLabel += " ";
-                                }
-                                keyLabel += colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE);
-                            }
-                        }
-                        values.add(new DBDLabelValuePair(keyLabel, keyValue));
-                    }
-                    return values;
+                    return DBVUtils.readDictionaryRows(session, keyColumn, keyValueHandler, dbResult);
                 }
             } else {
-                return null;
+                return Collections.emptyList();
             }
         }
     }
