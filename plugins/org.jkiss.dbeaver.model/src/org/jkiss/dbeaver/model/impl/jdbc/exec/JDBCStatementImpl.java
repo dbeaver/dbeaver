@@ -268,7 +268,7 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
             JDBCUtils.scrollResultSet(resultSet, rsOffset, !getConnection().getDataSource().getInfo().supportsResultSetScroll());
         }
 
-        if (rsMaxRows > 0) {
+        if (rsMaxRows > 0 && connection.getDataSource().getInfo().supportsResultSetLimit()) {
             dbResult.setMaxRows(rsMaxRows);
         }
         return dbResult;
