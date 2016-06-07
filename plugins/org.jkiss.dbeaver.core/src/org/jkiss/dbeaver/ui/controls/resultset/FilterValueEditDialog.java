@@ -21,14 +21,12 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -36,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.utils.ArrayUtils;
 
 class FilterValueEditDialog extends BaseDialog {
 
@@ -43,18 +42,18 @@ class FilterValueEditDialog extends BaseDialog {
 
     private final ResultSetViewer viewer;
     private final DBDAttributeBinding attr;
-    private final ResultSetRow row;
+    private final ResultSetRow[] rows;
     private final DBCLogicalOperator operator;
 
     private Object value;
     private IValueEditor editor;
     private Text textControl;
 
-    public FilterValueEditDialog(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @NotNull DBCLogicalOperator operator) {
+    public FilterValueEditDialog(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
         this.viewer = viewer;
         this.attr = attr;
-        this.row = row;
+        this.rows = rows;
         this.operator = operator;
     }
 
@@ -64,45 +63,67 @@ class FilterValueEditDialog extends BaseDialog {
         Composite composite = super.createDialogArea(parent);
 
         Label label = new Label(composite, SWT.NONE);
+        label.setText(attr.getName() + " " + operator.getStringValue() + " :");
         label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Composite editorPlaceholder = UIUtils.createPlaceholder(composite, 1);
 
-        editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
-        editorPlaceholder.setLayout(new FillLayout());
+        int argumentCount = operator.getArgumentCount();
+        if (argumentCount == 1) {
+            Composite editorPlaceholder = UIUtils.createPlaceholder(composite, 1);
 
-        final ResultSetValueController valueController = new ResultSetValueController(
-            viewer,
-            attr,
-            row,
-            IValueController.EditType.INLINE,
-            editorPlaceholder)
-        {
-            @Override
-            public boolean isReadOnly() {
-                // Filter value is never read-only
-                return false;
+            editorPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            editorPlaceholder.setLayout(new FillLayout());
+
+            ResultSetRow singleRow = rows[0];
+            final ResultSetValueController valueController = new ResultSetValueController(
+                viewer,
+                attr,
+                singleRow,
+                IValueController.EditType.INLINE,
+                editorPlaceholder) {
+                @Override
+                public boolean isReadOnly() {
+                    // Filter value is never read-only
+                    return false;
+                }
+            };
+
+            try {
+                editor = valueController.getValueManager().createEditor(valueController);
+                if (editor != null) {
+                    editor.createControl();
+                    editor.primeEditorValue(valueController.getValue());
+                }
+            } catch (DBException e) {
+                log.error("Can't create inline value editor", e);
             }
-        };
-
-        label.setText(valueController.getBinding().getName() + " " + operator.getStringValue() + " :");
-        try {
-            editor = valueController.getValueManager().createEditor(valueController);
-            if (editor != null) {
-                editor.createControl();
-                editor.primeEditorValue(valueController.getValue());
+            if (editor == null) {
+                textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+                textControl.setText("");
+                GridData gd = new GridData(GridData.FILL_BOTH);
+                gd.widthHint = 300;
+                gd.heightHint = 300;
+                gd.minimumHeight = 100;
+                gd.minimumWidth = 100;
+                textControl.setLayoutData(gd);
             }
-        } catch (DBException e) {
-            log.error("Can't create inline value editor", e);
-        }
-        if (editor == null) {
-            textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-            textControl.setText("");
+        } else if (argumentCount < 0) {
+            Table table = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
             GridData gd = new GridData(GridData.FILL_BOTH);
-            gd.widthHint = 300;
+            gd.widthHint = 400;
             gd.heightHint = 300;
-            gd.minimumHeight = 100;
-            gd.minimumWidth = 100;
-            textControl.setLayoutData(gd);
+            table.setLayoutData(gd);
+
+            for (ResultSetRow row : viewer.getModel().getAllRows()) {
+                Object cellValue = viewer.getModel().getCellValue(attr, row);
+                String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+
+                TableItem item = new TableItem(table, SWT.LEFT);
+                item.setData(row);
+                item.setText(itemString);
+                if (ArrayUtils.contains(rows, row)) {
+                    item.setChecked(true);
+                }
+            }
         }
 
         return parent;
@@ -111,8 +132,10 @@ class FilterValueEditDialog extends BaseDialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
-        Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Clipboard", false);
-        copyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CLIPBOARD));
+        if (rows.length == 1) {
+            Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Clipboard", false);
+            copyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CLIPBOARD));
+        }
 
         createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
