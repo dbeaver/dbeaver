@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumn;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCAttribute;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 /**
  * MySQLProcedureParameter
  */
-public class MySQLProcedureParameter extends JDBCColumn implements DBSProcedureParameter, DBSTypedObject
+public class MySQLProcedureParameter extends JDBCAttribute implements DBSProcedureParameter, DBSTypedObject
 {
     private MySQLProcedure procedure;
     private DBSProcedureParameterKind parameterKind;
