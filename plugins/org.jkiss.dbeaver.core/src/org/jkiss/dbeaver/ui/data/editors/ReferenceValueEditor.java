@@ -218,7 +218,7 @@ public class ReferenceValueEditor {
                     }
                     loaderJob.setPattern(curEditorValue);
                     if (loaderJob.getState() != Job.WAITING) {
-                        loaderJob.schedule(500);
+                        loaderJob.schedule(100);
                     }
                 } else {
                     // Just select current value in the table
@@ -245,6 +245,10 @@ public class ReferenceValueEditor {
         handleEditorChange = true;
 
         loaderJob = new SelectorLoaderJob();
+        final Object curValue = valueController.getValue();
+        if (curValue instanceof Number) {
+            loaderJob.setPattern(curValue);
+        }
         loaderJob.schedule(500);
 
         return true;
