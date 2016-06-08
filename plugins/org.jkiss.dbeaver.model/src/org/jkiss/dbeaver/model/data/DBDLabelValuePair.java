@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.model.data;
 /**
  * Label value pair
  */
-public class DBDLabelValuePair {
+public class DBDLabelValuePair implements Comparable {
 
     private final String label;
     private final Object value;
@@ -37,5 +37,30 @@ public class DBDLabelValuePair {
 
     public Object getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return value + " (" + label + ")";
+    }
+
+    @Override
+    public int compareTo(Object o) {
+        if (o instanceof DBDLabelValuePair) {
+            final DBDLabelValuePair lvp = (DBDLabelValuePair) o;
+            if (value == lvp.value) {
+                return 0;
+            }
+            if (value == null) {
+                return -1;
+            }
+            if (lvp.value == null) {
+                return 1;
+            }
+            if (value instanceof Comparable && lvp.value instanceof Comparable) {
+                return ((Comparable) value).compareTo(lvp.value);
+            }
+        }
+        return 0;
     }
 }

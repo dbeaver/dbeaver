@@ -139,11 +139,14 @@ public abstract class DBVUtils {
 
     public static String getDictionaryDescriptionColumns(DBRProgressMonitor monitor, DBSEntityAttribute attribute) throws DBException {
         DBVEntity dictionary = DBVUtils.findVirtualEntity(attribute.getParentObject(), false);
+        String descColumns = null;
         if (dictionary != null) {
-            return dictionary.getDescriptionColumnNames();
-        } else {
-            return DBVEntity.getDefaultDescriptionColumn(monitor, attribute);
+            descColumns = dictionary.getDescriptionColumnNames();
         }
+        if (descColumns == null) {
+            descColumns = DBVEntity.getDefaultDescriptionColumn(monitor, attribute);
+        }
+        return descColumns;
     }
 
     @NotNull
