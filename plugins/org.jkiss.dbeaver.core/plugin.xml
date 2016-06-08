@@ -70,7 +70,7 @@
                 class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
                 namespace="org.jkiss.dbeaver.core.object"
-                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter"
+                properties="canOpen,canCreate,canPaste,canDelete,canRename,canFilter,canFilterObject"
                 type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         <propertyTester
                 class="org.jkiss.dbeaver.ui.actions.ResourcePropertyTester"
@@ -206,6 +206,7 @@
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="%command.org.jkiss.dbeaver.core.object.delete.name" description="%command.org.jkiss.dbeaver.core.object.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter" name="%command.org.jkiss.dbeaver.core.object.filter.name" description="%command.org.jkiss.dbeaver.core.object.filter.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.filter.add" name="%command.org.jkiss.dbeaver.core.object.filter.add.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -295,6 +296,7 @@
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter" icon="icons/misc/filter.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.filter.add" icon="icons/misc/filter_add.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="icons/sql/sql_exec_new.png"/>
@@ -700,6 +702,18 @@
                         <and>
                             <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
                             <test property="org.jkiss.dbeaver.core.object.canFilter"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.add" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterObjects">
+            <enabledWhen>
+                <with variable="selection">
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canFilterObject"/>
                         </and>
                     </iterate>
                 </with>
@@ -1559,6 +1573,9 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
             <command commandId="org.eclipse.ui.edit.rename">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.object.filter.add">
                 <visibleWhen checkEnabled="true"/>
             </command>
 

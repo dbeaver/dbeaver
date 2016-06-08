@@ -44,6 +44,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_DELETE = "canDelete";
     public static final String PROP_CAN_RENAME = "canRename";
     public static final String PROP_CAN_FILTER = "canFilter";
+    public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
 
     public ObjectPropertyTester() {
         super();
@@ -158,6 +159,12 @@ public class ObjectPropertyTester extends PropertyTester
             }
             case PROP_CAN_FILTER: {
                 if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
+                    return true;
+                }
+                break;
+            }
+            case PROP_CAN_FILTER_OBJECT: {
+                if (node.getParentNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node.getParentNode()).getItemsMeta() != null) {
                     return true;
                 }
                 break;
