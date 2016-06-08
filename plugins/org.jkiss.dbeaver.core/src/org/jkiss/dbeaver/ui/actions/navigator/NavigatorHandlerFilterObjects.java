@@ -19,41 +19,43 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.connection.EditObjectFilterDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class NavigatorHandlerFilterObjects extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        DBNNode node = NavigatorUtils.getSelectedNode(selection);
-        if (node instanceof DBNDatabaseFolder) {
-            configureFilters(HandlerUtil.getActiveShell(event), node);
+        if (selection instanceof IStructuredSelection) {
+            Set<DBNDatabaseFolder> folders = new HashSet<>();
+            for (Object item : ((IStructuredSelection)selection).toArray()) {
+                if (item instanceof DBNNode) {
+                    final DBNNode node = (DBNNode) item;
+                    DBNDatabaseFolder folder = (DBNDatabaseFolder) node.getParentNode();
+                    final DBSObjectFilter nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
+                    nodeFilter.addExclude(node.getNodeName());
+                    nodeFilter.setEnabled(true);
+                    folders.add(folder);
+                }
+            }
+            // Refresh all folders
+            NavigatorHandlerRefresh.refreshNavigator(folders);
         }
         return null;
-    }
-
-    public static void configureFilters(Shell shell, DBNNode node)
-    {
     }
 
     @Override
