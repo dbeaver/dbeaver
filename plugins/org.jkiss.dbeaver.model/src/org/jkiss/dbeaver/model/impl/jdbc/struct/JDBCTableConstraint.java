@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -51,6 +52,7 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     implements DBSConstraintEnumerable, DBPSaveableObject
 {
     private static final Log log = Log.getLog(JDBCTableConstraint.class);
+    private static final int NUMERIC_BEFORE_GAP = 20;
 
     private boolean persisted;
 
@@ -170,6 +172,20 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 keyPattern = keyPattern.toString() + "%";
             }
             if (keyPattern != null) {
+                // Subtract gap value to see some values before specified
+                if (keyPattern instanceof Integer) {
+                    keyPattern = (Integer) keyPattern - NUMERIC_BEFORE_GAP;
+                } else if (keyPattern instanceof Short) {
+                    keyPattern = (Short) keyPattern - NUMERIC_BEFORE_GAP;
+                } else if (keyPattern instanceof Long) {
+                    keyPattern = (Long) keyPattern - NUMERIC_BEFORE_GAP;
+                } else if (keyPattern instanceof Float) {
+                    keyPattern = (Float) keyPattern - NUMERIC_BEFORE_GAP;
+                } else if (keyPattern instanceof Double) {
+                    keyPattern = (Double) keyPattern - NUMERIC_BEFORE_GAP;
+                } else if (keyPattern instanceof BigInteger) {
+                    keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(NUMERIC_BEFORE_GAP));
+                }
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
             }
 
