@@ -165,6 +165,18 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         });
         removeButton.setEnabled(false);
 
+        final Button clearButton = new Button(buttonsGroup, SWT.PUSH);
+        clearButton.setText(CoreMessages.dialog_filter_button_clear);
+        clearButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        clearButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                tableEditor.closeEditor();
+                valueTable.removeAll();
+                removeButton.setEnabled(false);
+            }
+        });
+
         valueTable.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
