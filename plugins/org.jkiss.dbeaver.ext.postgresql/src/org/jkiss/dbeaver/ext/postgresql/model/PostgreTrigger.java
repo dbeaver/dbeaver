@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -32,12 +31,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 /**
- * GenericProcedure
+ * PostgreTrigger
  */
 public class PostgreTrigger extends AbstractTrigger implements PostgreObject, PostgreScriptObject
 {
-    private static final Log log = Log.getLog(PostgreTrigger.class);
-
     private PostgreTableBase table;
     private long objectId;
     private String whenExpression;
@@ -47,9 +44,8 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
         PostgreTableBase table,
         ResultSet dbResult)
     {
+        super(JDBCUtils.safeGetString(dbResult, "tgname"), null, true);
         this.table = table;
-
-        setName(JDBCUtils.safeGetString(dbResult, "tgname"));
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
         this.whenExpression = JDBCUtils.safeGetString(dbResult, "tgqual");
     }
@@ -112,4 +108,12 @@ public class PostgreTrigger extends AbstractTrigger implements PostgreObject, Po
     {
         body = sourceText;
     }
+
+    @Override
+    public String getFullQualifiedName() {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            getParentObject(),
+            this);
+    }
+
 }

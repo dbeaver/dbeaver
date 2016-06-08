@@ -18,12 +18,11 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -42,8 +41,6 @@ import java.util.List;
  */
 public class OracleTrigger extends OracleSchemaObject implements DBSTrigger, OracleSourceObject
 {
-    private static final Log log = Log.getLog(OracleTrigger.class);
-
     public enum BaseObjectType {
         TABLE,
         VIEW,

@@ -17,14 +17,12 @@
  */
 package org.jkiss.dbeaver.model.impl.sql.edit;
 
-import org.jkiss.dbeaver.model.messages.ModelMessages;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandAggregator;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.*;
@@ -32,7 +30,7 @@ import java.util.*;
 /**
  * JDBC struct editor
  */
-public abstract class SQLStructEditor<OBJECT_TYPE extends DBSEntity & DBPSaveableObject, CONTAINER_TYPE extends DBSObject>
+public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE extends DBSObject>
     extends SQLObjectEditor<OBJECT_TYPE, CONTAINER_TYPE>
     implements DBEStructEditor<OBJECT_TYPE>
 {

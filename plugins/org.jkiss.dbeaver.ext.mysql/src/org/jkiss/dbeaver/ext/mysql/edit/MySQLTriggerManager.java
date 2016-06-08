@@ -19,40 +19,60 @@
 
 package org.jkiss.dbeaver.ext.mysql.edit;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLTable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
+import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
+
+import java.util.List;
 
 /**
  * MySQLTriggerManager
  */
-public class MySQLTriggerManager extends AbstractObjectManager<MySQLTrigger> {
+public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTable> {
 
-/*
+    @Nullable
     @Override
-    protected JDBCAbstractCache<MySQLCatalog, MySQLTrigger> getObjectsCache(MySQLTrigger object)
+    public DBSObjectCache<? extends DBSObject, MySQLTrigger> getObjectsCache(MySQLTrigger object)
     {
-        return object.getContainer().getProceduresCache();
+        return object.getParentObject().getTriggerCache();
     }
-*/
 
-/*
-    public ITabDescriptor[] getTabDescriptors(IWorkbenchWindow workbenchWindow, final IDatabaseEditor activeEditor, final MySQLTrigger object)
+    @Override
+    protected MySQLTrigger createDatabaseObject(DBECommandContext context, MySQLTable parent, Object copyFrom)
     {
-        return new ITabDescriptor[] {
-            new PropertyTabDescriptor(
-                PropertiesContributor.CATEGORY_INFO,
-                "trigger.body",
-                MySQLMessages.edit_procedure_manager_body,
-                DBIcon.SOURCES.getImage(),
-                new SectionDescriptor("default", MySQLMessages.edit_procedure_manager_body) {
-                    public ISection getSectionClass()
-                    {
-                        return new MySQLTriggerBodySection(activeEditor);
-                    }
-                })
-        };
+        CreateEntityDialog dialog = new CreateEntityDialog(DBeaverUI.getActiveWorkbenchShell(), parent.getDataSource(), "Create trigger");
+        if (dialog.open() != IDialogConstants.OK_ID) {
+            return null;
+        }
+        MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, dialog.getEntityName());
+        newTrigger.setObjectDefinitionText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
+            "BEGIN\n" + //$NON-NLS-1$
+            "END;"); //$NON-NLS-1$
+        return newTrigger;
     }
-*/
+
+    @Override
+    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
+    {
+        actions.add(
+            new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
+        );
+    }
+
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger)
+    {
+        actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE TRIGGER " + trigger.getName())); //$NON-NLS-2$
+    }
 
 }
 
