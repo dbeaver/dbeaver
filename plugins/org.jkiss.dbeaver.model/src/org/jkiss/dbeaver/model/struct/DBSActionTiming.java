@@ -18,12 +18,14 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 import java.util.Locale;
 
 /**
  * DBSEntityConstraintType
  */
-public class DBSActionTiming
+public class DBSActionTiming implements DBPNamedObject
 {
     public static final DBSActionTiming BEFORE = new DBSActionTiming("BEFORE");
     public static final DBSActionTiming AFTER = new DBSActionTiming("AFTER");

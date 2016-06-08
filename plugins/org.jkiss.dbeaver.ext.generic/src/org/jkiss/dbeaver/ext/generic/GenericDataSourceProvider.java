@@ -88,7 +88,11 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         try {
-            DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(driver.getSampleURL());
+            String urlTemplate = driver.getSampleURL();
+            if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
+                return connectionInfo.getUrl();
+            }
+            DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(urlTemplate);
             StringBuilder url = new StringBuilder();
             for (String component : metaURL.getUrlComponents()) {
                 String newComponent = component;
