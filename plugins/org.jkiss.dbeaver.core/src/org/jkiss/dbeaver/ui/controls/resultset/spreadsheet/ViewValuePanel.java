@@ -21,7 +21,10 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.PaintEvent;
+import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -36,7 +39,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -212,9 +218,6 @@ abstract class ViewValuePanel extends Composite {
         }
         if (valueViewer != null) {
             try {
-                if (referenceValueEditor != null) {
-                    referenceValueEditor.setHandleEditorChange(false);
-                }
                 Object newValue = previewController.getValue();
                 if (newValue instanceof DBDValue) {
                     // Do not check for difference
@@ -227,10 +230,6 @@ abstract class ViewValuePanel extends Composite {
                 }
             } catch (DBException e) {
                 log.error(e);
-            } finally {
-                if (referenceValueEditor != null) {
-                    referenceValueEditor.setHandleEditorChange(true);
-                }
             }
             valueViewer.setDirty(false);
         }
