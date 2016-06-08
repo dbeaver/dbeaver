@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
 import org.jkiss.dbeaver.ext.oracle.model.OracleTableBase;
@@ -30,32 +29,16 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.dialogs.struct.CreateEntityDialog;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
 /**
  * OracleTriggerManager
  */
-public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleTableBase> {
-
-    @Override
-    public long getMakerOptions()
-    {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    @Override
-    protected void validateObjectProperties(ObjectChangeCommand command)
-        throws DBException
-    {
-        if (CommonUtils.isEmpty(command.getObject().getName())) {
-            throw new DBException("Trigger name cannot be empty");
-        }
-    }
+public class OracleTriggerManager extends SQLTriggerManager<OracleTrigger, OracleTableBase> {
 
     @Nullable
     @Override
@@ -79,18 +62,6 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
     }
 
     @Override
-    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command)
-    {
-        createOrReplaceViewQuery(actions, command.getObject());
-    }
-
-    @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command)
-    {
-        createOrReplaceViewQuery(actionList, command.getObject());
-    }
-
-    @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
     {
         actions.add(
@@ -98,7 +69,7 @@ public class OracleTriggerManager extends SQLObjectEditor<OracleTrigger, OracleT
         );
     }
 
-    private void createOrReplaceViewQuery(List<DBEPersistAction> actions, OracleTrigger trigger)
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, OracleTrigger trigger)
     {
         String source = OracleUtils.normalizeSourceName(trigger, false);
         if (source == null) {
