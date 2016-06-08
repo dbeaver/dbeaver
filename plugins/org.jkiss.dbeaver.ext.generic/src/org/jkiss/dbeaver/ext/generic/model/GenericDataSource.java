@@ -101,7 +101,11 @@ public class GenericDataSource extends JDBCDataSource
         // Recreate URL from parameters
         // Driver settings and URL template may have change since connection creation
         String connectionURL = getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), connectionInfo);
-        connectionInfo.setUrl(connectionURL);
+        if (!CommonUtils.equalObjects(connectionURL, connectionInfo.getUrl())) {
+            log.warn("Actual connection URL (" + connectionURL + ") differs from previously saved (" + connectionInfo.getUrl() + "). " +
+                "Probably driver properties were changed. Please go to the connection '" + getContainer().getName() + "' editor.");
+            connectionInfo.setUrl(connectionURL);
+        }
         return connectionURL;
     }
 
