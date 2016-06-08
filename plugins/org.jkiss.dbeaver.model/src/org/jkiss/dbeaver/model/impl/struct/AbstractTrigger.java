@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
@@ -62,7 +63,7 @@ public abstract class AbstractTrigger implements DBSTrigger, DBPQualifiedObject,
         this.name = tableName;
     }
 
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, editable = true, order = 2, listProvider = TriggerTimingListProvider.class)
     public DBSActionTiming getActionTiming()
     {
         return actionTiming;
@@ -73,7 +74,7 @@ public abstract class AbstractTrigger implements DBSTrigger, DBPQualifiedObject,
         this.actionTiming = actionTiming;
     }
 
-    @Property(viewable = true, order = 3)
+    @Property(viewable = true, editable = true, order = 3, listProvider = TriggerTypeListProvider.class)
     public DBSManipulationType getManipulationType()
     {
         return manipulationType;
@@ -106,6 +107,39 @@ public abstract class AbstractTrigger implements DBSTrigger, DBPQualifiedObject,
     protected void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public static class TriggerTimingListProvider implements IPropertyValueListProvider {
+
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(Object object) {
+            return new Object[] {
+                DBSActionTiming.BEFORE,
+                DBSActionTiming.AFTER
+            };
+        }
+    }
+
+    public static class TriggerTypeListProvider implements IPropertyValueListProvider {
+
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @Override
+        public Object[] getPossibleValues(Object object) {
+            return new Object[] {
+                DBSManipulationType.INSERT,
+                DBSManipulationType.UPDATE,
+                DBSManipulationType.DELETE
+            };
+        }
     }
 
 }

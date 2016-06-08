@@ -18,12 +18,14 @@
 
 package org.jkiss.dbeaver.model.struct.rdb;
 
+import org.jkiss.dbeaver.model.DBPNamedObject;
+
 import java.util.Locale;
 
 /**
  * DBSManipulationType
  */
-public class DBSManipulationType
+public class DBSManipulationType implements DBPNamedObject
 {
     public static final DBSManipulationType INSERT = new DBSManipulationType("INSERT");
     public static final DBSManipulationType DELETE = new DBSManipulationType("DELETE");

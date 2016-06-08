@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLTrigger;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
-import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTriggerManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -55,23 +54,20 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
             return null;
         }
         MySQLTrigger newTrigger = new MySQLTrigger(parent.getContainer(), parent, dialog.getEntityName());
-        newTrigger.setObjectDefinitionText("TRIGGER " + dialog.getEntityName() + "\n" + //$NON-NLS-1$ //$NON-NLS-2$
-            "BEGIN\n" + //$NON-NLS-1$
-            "END;"); //$NON-NLS-1$
+        newTrigger.setObjectDefinitionText(""); //$NON-NLS-1$
         return newTrigger;
     }
 
-    @Override
-    protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command)
-    {
-        actions.add(
-            new SQLDatabasePersistAction("Drop trigger", "DROP TRIGGER " + command.getObject().getFullQualifiedName()) //$NON-NLS-2$
-        );
-    }
+    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger) {
+        String ddl =
+            "CREATE TRIGGER " + trigger.getFullQualifiedName() + "\n" +
+                trigger.getActionTiming() + " " + trigger.getManipulationType() + "\n" +
+            "ON " + trigger.getTable().getFullQualifiedName() + " FOR EACH ROW\n" +
+            "BEGIN\n" +
+            trigger.getBody() + "\n" +
+            "END";
 
-    protected void createOrReplaceTriggerQuery(List<DBEPersistAction> actions, MySQLTrigger trigger)
-    {
-        actions.add(new SQLDatabasePersistAction("Create trigger", "CREATE OR REPLACE TRIGGER " + trigger.getName())); //$NON-NLS-2$
+        actions.add(new SQLDatabasePersistAction("Create trigger", ddl)); //$NON-NLS-2$
     }
 
 }

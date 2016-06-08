@@ -71,7 +71,7 @@ public abstract class SQLTriggerManager<OBJECT_TYPE extends DBSTrigger, CONTAINE
     {
         actions.add(
             new SQLDatabasePersistAction("Drop trigger",
-                "DROP TRIGGER " + DBUtils.getQuotedIdentifier(command.getObject()))
+                "DROP TRIGGER " + DBUtils.getObjectFullName(command.getObject()))
         );
     }
 
