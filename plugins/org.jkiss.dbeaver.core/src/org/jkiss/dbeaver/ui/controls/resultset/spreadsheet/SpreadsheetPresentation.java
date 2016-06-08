@@ -52,16 +52,15 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
@@ -79,8 +78,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -104,6 +105,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.List;
 
 /**
  * Spreadsheet presentation.
@@ -478,26 +480,78 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public void pasteFromClipboard(boolean extended)
     {
-        DBDAttributeBinding attr = getFocusAttribute();
-        ResultSetRow row = controller.getCurrentRow();
-        if (attr == null || row == null) {
-            return;
-        }
-        if (controller.isAttributeReadOnly(attr)) {
-            // No inline editors for readonly columns
-            return;
-        }
         try {
-            Object newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
-            if (newValue == null) {
-                return;
+            if (extended) {
+                DBPDataSource dataSource = getDataSource();
+                String strValue;
+                Clipboard clipboard = new Clipboard(Display.getCurrent());
+                try {
+                    strValue = (String) clipboard.getContents(TextTransfer.getInstance());
+                } finally {
+                    clipboard.dispose();
+                }
+                if (CommonUtils.isEmpty(strValue)) {
+                    return;
+                }
+                GridPos focusPos = spreadsheet.getFocusPos();
+                int rowNum = focusPos.row;
+                if (rowNum < 0 || rowNum >= spreadsheet.getItemCount()) {
+                    return;
+                }
+                try (DBCSession session = DBUtils.openUtilSession(VoidProgressMonitor.INSTANCE, dataSource, "Advanced paste")) {
+                    for (String line : strValue.split("\n")) {
+                        int colNum = focusPos.col;
+                        Object rowElement = spreadsheet.getRowElement(rowNum);
+                        for (String value : line.split("\t")) {
+                            if (colNum >= spreadsheet.getColumnCount()) {
+                                break;
+                            }
+                            Object colElement = spreadsheet.getColumnElement(colNum);
+                            final DBDAttributeBinding attr = (DBDAttributeBinding)(controller.isRecordMode() ? rowElement : colElement);
+                            final ResultSetRow row = (ResultSetRow)(controller.isRecordMode() ? colElement : rowElement);
+                            if (controller.isAttributeReadOnly(attr)) {
+                                continue;
+                            }
+                            Object newValue = attr.getValueHandler().getValueFromObject(
+                                session, attr.getAttribute(), value, true);
+                            new SpreadsheetValueController(
+                                controller,
+                                attr,
+                                row,
+                                IValueController.EditType.NONE,
+                                null).updateValue(newValue);
+
+                            colNum++;
+                        }
+                        rowNum++;
+                        if (rowNum >= spreadsheet.getItemCount()) {
+                            break;
+                        }
+                    }
+                }
+
+            } else {
+                DBDAttributeBinding attr = getFocusAttribute();
+                ResultSetRow row = controller.getCurrentRow();
+                if (attr == null || row == null) {
+                    return;
+                }
+                if (controller.isAttributeReadOnly(attr)) {
+                    // No inline editors for readonly columns
+                    return;
+                }
+
+                Object newValue = ResultSetUtils.getAttributeValueFromClipboard(attr);
+                if (newValue == null) {
+                    return;
+                }
+                new SpreadsheetValueController(
+                    controller,
+                    attr,
+                    row,
+                    IValueController.EditType.NONE,
+                    null).updateValue(newValue);
             }
-            new SpreadsheetValueController(
-                controller,
-                attr,
-                row,
-                IValueController.EditType.NONE,
-                null).updateValue(newValue);
         }
         catch (Exception e) {
             UIUtils.showErrorDialog(spreadsheet.getShell(), "Cannot replace cell value", null, e);
@@ -980,13 +1034,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             page.setPropertySourceProvider(new IPropertySourceProvider() {
                 @Nullable
                 @Override
-                public IPropertySource getPropertySource(Object object)
-                {
+                public IPropertySource getPropertySource(Object object) {
                     if (object instanceof GridCell) {
                         GridCell cell = (GridCell) object;
                         boolean recordMode = controller.isRecordMode();
-                        final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
-                        final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
+                        final DBDAttributeBinding attr = (DBDAttributeBinding) (recordMode ? cell.row : cell.col);
+                        final ResultSetRow row = (ResultSetRow) (recordMode ? cell.col : cell.row);
                         final SpreadsheetValueController valueController = new SpreadsheetValueController(
                             controller,
                             attr,

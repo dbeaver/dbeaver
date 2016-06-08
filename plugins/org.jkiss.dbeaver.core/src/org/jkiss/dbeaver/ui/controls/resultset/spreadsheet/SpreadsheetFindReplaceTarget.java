@@ -162,7 +162,7 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
         }
         Spreadsheet spreadsheet = owner.getSpreadsheet();
         int rowCount = spreadsheet.getItemCount();
-        int columnCount = spreadsheet.getColumnsCount();
+        int columnCount = spreadsheet.getColumnCount();
         Collection<GridPos> selection = spreadsheet.getSelection();
         GridPos startPosition = selection.isEmpty() ? null : selection.iterator().next();
         if (startPosition == null) {

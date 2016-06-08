@@ -22,7 +22,6 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.Accessible;
-import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.dnd.Clipboard;
@@ -182,8 +181,8 @@ public class Spreadsheet extends LightGrid implements Listener {
             if (newCol < 0) {
                 newCol = 0;
             }
-            if (newCol >= getColumnsCount()) {
-                newCol = getColumnsCount() - 1;
+            if (newCol >= getColumnCount()) {
+                newCol = getColumnCount() - 1;
             }
             newPos.col = newCol;
         }
@@ -361,11 +360,6 @@ public class Spreadsheet extends LightGrid implements Listener {
     public IGridLabelProvider getLabelProvider()
     {
         return labelProvider;
-    }
-
-    public int getColumnsCount()
-    {
-        return super.getColumnCount();
     }
 
     public void redrawGrid()
