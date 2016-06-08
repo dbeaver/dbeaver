@@ -731,6 +731,18 @@
                     <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/RedshiftJDBC41-1.1.10.1010.jar"/>
                 </driver>
 
+                <!-- Virtuoso  -->
+                <driver
+                    id="virtuoso_opensource"
+                    label="OpenLink Virtuoso"
+                    class="virtuoso.jdbc4.Driver"
+                    sampleURL="jdbc:virtuoso://{host}:{port}/DATABASE={database}/CHARSET=UTF-8"
+                    defaultPort="1111"
+                    description="OpenLink Virtuoso open source driver"
+                    webURL="https://github.com/openlink/virtuoso-opensource">
+                    <file type="jar" path="https://github.com/openlink/virtuoso-opensource/raw/develop/7/libsrc/JDBCDriverType4/virtjdbc4.jar"/>
+                </driver>
+
             </drivers>
 
             <views>

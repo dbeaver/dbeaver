@@ -141,7 +141,7 @@ public abstract class JDBCDataSource
         }
         // Obtain connection
         try {
-            final String url = connectionInfo.getUrl();
+            final String url = getConnectionURL(connectionInfo);
             if (driverInstance != null) {
                 try {
                     if (!driverInstance.acceptsURL(url)) {
@@ -178,6 +178,10 @@ public abstract class JDBCDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to database", e);
         }
+    }
+
+    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        return connectionInfo.getUrl();
     }
 
     protected void closeConnection(Connection connection)

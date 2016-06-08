@@ -17,27 +17,24 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSActionTiming;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 
 import java.sql.ResultSet;
 
 /**
- * GenericProcedure
+ * MySQLTrigger
  */
 public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 {
-    private static final Log log = Log.getLog(MySQLTrigger.class);
-
     private MySQLCatalog catalog;
     private MySQLTable table;
     private String body;
@@ -49,10 +46,10 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         MySQLTable table,
         ResultSet dbResult)
     {
+        super(JDBCUtils.safeGetString(dbResult, "Trigger"), null, true);
         this.catalog = catalog;
         this.table = table;
 
-        setName(JDBCUtils.safeGetString(dbResult, "Trigger"));
         setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, "Event")));
         setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, "Timing")));
         this.body = JDBCUtils.safeGetString(dbResult, "Statement");
@@ -60,9 +57,27 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         this.sqlMode = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_SQL_MODE);
     }
 
+    public MySQLTrigger(
+        MySQLCatalog catalog,
+        MySQLTable table,
+        String name)
+    {
+        super(name, null, false);
+        this.catalog = catalog;
+        this.table = table;
+
+        setActionTiming(DBSActionTiming.AFTER);
+        setManipulationType(DBSManipulationType.INSERT);
+        this.body = "";
+    }
+
     public String getBody()
     {
         return body;
+    }
+
+    public MySQLCatalog getCatalog() {
+        return catalog;
     }
 
     @Override
@@ -85,9 +100,9 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     }
 
     @Override
-    public DBSCatalog getParentObject()
+    public MySQLTable getParentObject()
     {
-        return catalog;
+        return table;
     }
 
     @NotNull
@@ -105,8 +120,15 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException
+    public void setObjectDefinitionText(String sourceText)
     {
         body = sourceText;
+    }
+
+    @Override
+    public String getFullQualifiedName() {
+        return DBUtils.getFullQualifiedName(getDataSource(),
+            catalog,
+            this);
     }
 }
