@@ -476,7 +476,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
-    public void pasteFromClipboard()
+    public void pasteFromClipboard(boolean extended)
     {
         DBDAttributeBinding attr = getFocusAttribute();
         ResultSetRow row = controller.getCurrentRow();

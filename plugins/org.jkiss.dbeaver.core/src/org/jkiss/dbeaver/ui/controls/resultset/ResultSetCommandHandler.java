@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
@@ -206,8 +207,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         false, false, false, null, DBDDisplayFormat.EDIT));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
+            case ICommandIds.CMD_PASTE_SPECIAL:
                 if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).pasteFromClipboard();
+                    ((IResultSetEditor) presentation).pasteFromClipboard(actionId.equals(ICommandIds.CMD_PASTE_SPECIAL));
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_CUT:

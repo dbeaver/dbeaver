@@ -29,6 +29,6 @@ public interface IResultSetEditor {
     @Nullable
     Control openValueEditor(final boolean inline);
 
-    void pasteFromClipboard();
+    void pasteFromClipboard(boolean extended);
 
 }

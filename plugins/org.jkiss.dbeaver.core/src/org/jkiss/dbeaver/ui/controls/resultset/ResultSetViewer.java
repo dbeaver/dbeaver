@@ -1032,6 +1032,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
                 manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_COPY_SPECIAL));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
+                manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_PASTE_SPECIAL));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
                 // Edit items
                 manager.add(new Separator());
