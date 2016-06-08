@@ -66,8 +66,8 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         this.catalog = catalog;
         this.table = table;
 
-        setManipulationType(DBSManipulationType.UNKNOWN);
-        setActionTiming(DBSActionTiming.UNKNOWN);
+        setActionTiming(DBSActionTiming.AFTER);
+        setManipulationType(DBSManipulationType.INSERT);
         this.body = "";
     }
 
