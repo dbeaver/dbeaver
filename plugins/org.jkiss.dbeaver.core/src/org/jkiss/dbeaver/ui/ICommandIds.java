@@ -27,6 +27,7 @@ package org.jkiss.dbeaver.ui;
 public interface ICommandIds
 {
     String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
+    String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$
 
     String CMD_OBJECT_OPEN = "org.jkiss.dbeaver.core.object.open"; //$NON-NLS-1$
     String CMD_OBJECT_CREATE = "org.jkiss.dbeaver.core.object.create"; //$NON-NLS-1$
