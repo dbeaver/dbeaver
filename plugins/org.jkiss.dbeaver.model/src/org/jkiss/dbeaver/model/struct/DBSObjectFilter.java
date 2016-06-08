@@ -205,7 +205,7 @@ public class DBSObjectFilter
 
     @NotNull
     private static Object makePattern(String str) {
-        if (str.contains("%")) {
+        if (SQLUtils.isLikePattern(str)) {
             return Pattern.compile(
                 SQLUtils.makeLikePattern(str), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
         } else {
