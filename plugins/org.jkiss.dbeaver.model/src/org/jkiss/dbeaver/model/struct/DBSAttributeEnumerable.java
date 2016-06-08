@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -35,9 +37,10 @@ public interface DBSAttributeEnumerable extends DBSEntityAttribute
      * @param maxResults     maximum enumeration values in result set
      * @return statement with result set which contains valid enumeration values.
      **/
+    @NotNull
     Collection<DBDLabelValuePair> getValueEnumeration(
-        DBCSession session,
-        Object valuePattern,
+        @NotNull DBCSession session,
+        @Nullable Object valuePattern,
         int maxResults)
         throws DBException;
 
