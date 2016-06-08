@@ -43,7 +43,7 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
     @Override
     public DBSObjectCache<? extends DBSObject, MySQLTrigger> getObjectsCache(MySQLTrigger object)
     {
-        return object.getParentObject().getTriggerCache();
+        return object.getCatalog().getTriggerCache();
     }
 
     @Override

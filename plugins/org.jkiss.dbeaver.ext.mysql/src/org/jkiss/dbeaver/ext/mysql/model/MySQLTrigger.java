@@ -76,6 +76,10 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
         return body;
     }
 
+    public MySQLCatalog getCatalog() {
+        return catalog;
+    }
+
     @Override
     @Property(viewable = true, order = 4)
     public MySQLTable getTable()
@@ -96,9 +100,9 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     }
 
     @Override
-    public MySQLCatalog getParentObject()
+    public MySQLTable getParentObject()
     {
-        return catalog;
+        return table;
     }
 
     @NotNull
@@ -124,7 +128,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     @Override
     public String getFullQualifiedName() {
         return DBUtils.getFullQualifiedName(getDataSource(),
-            getParentObject(),
+            catalog,
             this);
     }
 }
