@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -93,6 +94,15 @@ public class GenericDataSource extends JDBCDataSource
         } else if ("null".equalsIgnoreCase(this.allObjectsPattern)) {
             this.allObjectsPattern = null;
         }
+    }
+
+    @Override
+    protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {
+        // Recreate URL from parameters
+        // Driver settings and URL template may have change since connection creation
+        String connectionURL = getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), connectionInfo);
+        connectionInfo.setUrl(connectionURL);
+        return connectionURL;
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
