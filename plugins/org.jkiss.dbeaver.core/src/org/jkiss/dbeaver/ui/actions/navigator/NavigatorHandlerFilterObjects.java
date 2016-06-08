@@ -31,9 +31,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class NavigatorHandlerFilterObjects extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
 
@@ -41,19 +40,29 @@ public class NavigatorHandlerFilterObjects extends NavigatorHandlerObjectCreateB
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (selection instanceof IStructuredSelection) {
-            Set<DBNDatabaseFolder> folders = new HashSet<>();
+            Map<DBNDatabaseFolder, DBSObjectFilter> folders = new HashMap<>();
             for (Object item : ((IStructuredSelection)selection).toArray()) {
                 if (item instanceof DBNNode) {
                     final DBNNode node = (DBNNode) item;
                     DBNDatabaseFolder folder = (DBNDatabaseFolder) node.getParentNode();
-                    final DBSObjectFilter nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
+                    DBSObjectFilter nodeFilter = folders.get(folder);
+                    if (nodeFilter == null) {
+                        nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
+                        if (nodeFilter == null) {
+                            nodeFilter = new DBSObjectFilter();
+                        }
+                        folders.put(folder, nodeFilter);
+                    }
                     nodeFilter.addExclude(node.getNodeName());
                     nodeFilter.setEnabled(true);
-                    folders.add(folder);
                 }
             }
+            // Save folders
+            for (Map.Entry<DBNDatabaseFolder, DBSObjectFilter> entry : folders.entrySet()) {
+                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue());
+            }
             // Refresh all folders
-            NavigatorHandlerRefresh.refreshNavigator(folders);
+            NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
         }
         return null;
     }
