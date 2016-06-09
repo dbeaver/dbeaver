@@ -137,21 +137,8 @@ public class UIUtils {
         };
     }
 
-    public static ToolItem createToolItem(ToolBar toolBar, String text, Image icon, final IAction action)
-    {
-        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
-        item.setToolTipText(text);
-        if (icon != null) {
-            item.setImage(icon);
-        }
-        item.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                action.run();
-            }
-        });
-        return item;
+    public static void createToolBarSeparator(ToolBar toolBar, int style) {
+        new ToolItem(toolBar, SWT.SEPARATOR).setControl(new Label(toolBar, SWT.SEPARATOR | style));
     }
 
     public static TableColumn createTableColumn(Table table, int style, String text)
