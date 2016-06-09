@@ -160,10 +160,11 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
         query.append("SELECT DISTINCT ").append(DBUtils.getQuotedIdentifier(this));
-        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
-        if (descColumns != null) {
-            query.append(", ").append(descColumns);
-        }
+        // Do not use description columns because they duplicate distinct value
+//        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
+//        if (descColumns != null) {
+//            query.append(", ").append(descColumns);
+//        }
         query.append(" FROM ").append(DBUtils.getObjectFullName(getTable()));
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {

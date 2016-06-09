@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,8 +50,6 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
     extends AbstractTableConstraint<TABLE>
     implements DBSConstraintEnumerable, DBPSaveableObject
 {
-    private static final Log log = Log.getLog(JDBCTableConstraint.class);
-
     private boolean persisted;
 
     protected JDBCTableConstraint(TABLE table, String name, @Nullable String description, DBSEntityConstraintType constraintType, boolean persisted) {
@@ -170,6 +168,23 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 keyPattern = keyPattern.toString() + "%";
             }
             if (keyPattern != null) {
+                if (keyPattern instanceof Number) {
+                    // Subtract gap value to see some values before specified
+                    int gapSize =  maxResults / 2;
+                    if (keyPattern instanceof Integer) {
+                        keyPattern = (Integer) keyPattern - gapSize;
+                    } else if (keyPattern instanceof Short) {
+                        keyPattern = (Short) keyPattern - gapSize;
+                    } else if (keyPattern instanceof Long) {
+                        keyPattern = (Long) keyPattern - gapSize;
+                    } else if (keyPattern instanceof Float) {
+                        keyPattern = (Float) keyPattern - gapSize;
+                    } else if (keyPattern instanceof Double) {
+                        keyPattern = (Double) keyPattern - gapSize;
+                    } else if (keyPattern instanceof BigInteger) {
+                        keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
+                    }
+                }
                 keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
             }
 
