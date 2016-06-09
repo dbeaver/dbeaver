@@ -110,6 +110,9 @@ public class PropertySourceCustom implements DBPPropertySource {
     @Override
     public Object getPropertyValue(@Nullable DBRProgressMonitor monitor, Object id)
     {
+        if (id == null) {
+            return null;
+        }
         Object value = propValues.get(id);
         if (value == null) {
             value = originalValues.get(id);
