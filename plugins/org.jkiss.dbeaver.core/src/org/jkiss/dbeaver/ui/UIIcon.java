@@ -86,6 +86,7 @@ public class UIIcon {
     public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FRAME_QUERY = new DBIcon("frame_query", "misc/frame_query.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon FILTER = new DBIcon("filter", "misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_VALUE = new DBIcon("filter_value", "misc/filter_value.png"); //$NON-NLS-1$ //$NON-NLS-2$

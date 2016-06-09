@@ -66,6 +66,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             return c1.getVisualPosition() - c2.getVisualPosition();
         }
     };
+    public final Comparator<DBDAttributeBinding> ALPHA_SORTER = new Comparator<DBDAttributeBinding>() {
+        @Override
+        public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
+            return o1.getName().compareTo(o2.getName());
+        }
+    };
 
     private final ResultSetViewer resultSetViewer;
     private final List<DBDAttributeBinding> attributes;
@@ -80,6 +86,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private ToolItem moveUpButton;
     private ToolItem moveDownButton;
     private ToolItem moveBottomButton;
+    private Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
 
     public FilterSettingsDialog(ResultSetViewer resultSetViewer)
     {
@@ -120,7 +127,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                         return null;
                     }
                     final DBDAttributeBinding[] res = nestedBindings.toArray(new DBDAttributeBinding[nestedBindings.size()]);
-                    Arrays.sort(res, POSITION_SORTER);
+                    Arrays.sort(res, activeSorter);
                     return res;
                 }
 
@@ -241,10 +248,22 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumn(selectionIndex, attributes.size() - 1);
+                        moveColumn(selectionIndex, getItemsCount() - 1);
                     }
                 });
                 moveBottomButton.setEnabled(false);
+                UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
+                createToolItem(toolbar, "Sort", UIIcon.SORT, new Runnable() {
+                    @Override
+                    public void run() {
+                        Collections.sort(attributes, ALPHA_SORTER);
+                        for (int i = 0; i < attributes.size(); i++) {
+                            final DBDAttributeConstraint constraint = getBindingConstraint(attributes.get(i));
+                            constraint.setVisualPosition(i);
+                        }
+                        columnsViewer.refresh();
+                    }
+                });
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
                 ToolItem showAllButton = createToolItem(toolbar, "Show All", null, new Runnable() {
                     @Override
@@ -284,8 +303,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                         moveTopButton.setEnabled(selectionIndex > 0);
                         moveUpButton.setEnabled(selectionIndex > 0);
-                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < attributes.size() - 1);
-                        moveBottomButton.setEnabled(selectionIndex >= 0 && selectionIndex < attributes.size() - 1);
+                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
+                        moveBottomButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
                     }
 
                 });
@@ -321,8 +340,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         return parent;
     }
 
+    private int getItemsCount() {
+        return columnsViewer.getTree().getItemCount();
+    }
+
     private void refreshData() {
-        Collections.sort(attributes, POSITION_SORTER);
+        Collections.sort(attributes, activeSorter);
         columnsViewer.refresh();
         columnsViewer.expandAll();
     }
@@ -345,13 +368,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         refreshData();
         moveTopButton.setEnabled(newIndex > 0);
         moveUpButton.setEnabled(newIndex > 0);
-        moveDownButton.setEnabled(newIndex < attributes.size() - 1);
-        moveBottomButton.setEnabled(newIndex < attributes.size() - 1);
-        //columnsViewer.sh
-//        DBDAttributeConstraint constraint = constraints.remove(curIndex);
-//        constraints.add(newIndex, constraint);
-//        columnsViewer.refresh();
-//        columnsViewer.setSelection(columnsViewer.getSelection());
+        moveDownButton.setEnabled(newIndex < getItemsCount() - 1);
+        moveBottomButton.setEnabled(newIndex < getItemsCount() - 1);
     }
 
     private void createCustomFilters(TabFolder tabFolder)
