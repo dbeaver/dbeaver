@@ -29,9 +29,12 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISharedImages;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -73,6 +76,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private Text orderText;
     // Keep constraints in a copy because we use this list as table viewer model
     private java.util.List<DBDAttributeConstraint> constraints;
+    private ToolItem moveTopButton;
+    private ToolItem moveUpButton;
+    private ToolItem moveDownButton;
+    private ToolItem moveBottomButton;
 
     public FilterSettingsDialog(ResultSetViewer resultSetViewer)
     {
@@ -201,58 +208,67 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             });
 
             {
-                Composite controlGroup = new Composite(columnsGroup, SWT.NONE);
+                ToolBar toolbar = new ToolBar(columnsGroup, SWT.HORIZONTAL | SWT.RIGHT);
                 gd = new GridData(GridData.FILL_HORIZONTAL);
                 gd.verticalIndent = 3;
-                controlGroup.setLayoutData(gd);
-                controlGroup.setLayout(new FillLayout());
-                final Button moveUpButton = UIUtils.createPushButton(controlGroup, "Move Up", null);
-                moveUpButton.addSelectionListener(new SelectionAdapter() {
+                toolbar.setLayoutData(gd);
+                toolbar.setLayout(new FillLayout());
+                moveTopButton = createToolItem(toolbar, "Move to top", UIIcon.ARROW_TOP, new Runnable() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void run() {
+                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                        moveColumn(selectionIndex, 0);
+                    }
+                });
+                moveTopButton.setEnabled(false);
+                moveUpButton = createToolItem(toolbar, "Move up", UIIcon.ARROW_UP, new Runnable() {
+                    @Override
+                    public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                         moveColumn(selectionIndex, selectionIndex - 1);
                     }
                 });
                 moveUpButton.setEnabled(false);
-                final Button moveDownButton = UIUtils.createPushButton(controlGroup, "Move Down", null);
-                moveDownButton.addSelectionListener(new SelectionAdapter() {
+                moveDownButton = createToolItem(toolbar, "Move down", UIIcon.ARROW_DOWN, new Runnable() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void run() {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
                         moveColumn(selectionIndex, selectionIndex + 1);
                     }
                 });
                 moveDownButton.setEnabled(false);
-                Button showAllButton = UIUtils.createPushButton(controlGroup, "Show All", null);
-                showAllButton.addSelectionListener(new SelectionAdapter() {
+                moveBottomButton = createToolItem(toolbar, "Move to bottom", UIIcon.ARROW_BOTTOM, new Runnable() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void run() {
+                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                        moveColumn(selectionIndex, attributes.size() - 1);
+                    }
+                });
+                moveBottomButton.setEnabled(false);
+                UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
+                ToolItem showAllButton = createToolItem(toolbar, "Show All", null, new Runnable() {
+                    @Override
+                    public void run() {
                         for (DBDAttributeConstraint constraint : constraints) {
                             constraint.setVisible(true);
                         }
                         columnsViewer.refresh();
                     }
                 });
-                Button showNoneButton = UIUtils.createPushButton(controlGroup, "Show None", null);
-                showNoneButton.addSelectionListener(new SelectionAdapter() {
+                showAllButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_DEF_PERSPECTIVE));
+                ToolItem showNoneButton = createToolItem(toolbar, "Show None", null, new Runnable() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void run() {
                         for (DBDAttributeConstraint constraint : constraints) {
                             constraint.setVisible(false);
                         }
                         columnsViewer.refresh();
                     }
                 });
-                Button resetButton = UIUtils.createPushButton(controlGroup, CoreMessages.controls_resultset_filter_button_reset, null);
-                resetButton.addSelectionListener(new SelectionAdapter() {
+                showNoneButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_REMOVEALL));
+                createToolItem(toolbar, "Reset", UIIcon.REFRESH, new Runnable() {
                     @Override
-                    public void widgetSelected(SelectionEvent e)
-                    {
+                    public void run() {
                         dataFilter.reset();
                         constraints = new ArrayList<>(dataFilter.getConstraints());
                         refreshData();
@@ -266,8 +282,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     @Override
                     public void selectionChanged(SelectionChangedEvent event) {
                         int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                        moveTopButton.setEnabled(selectionIndex > 0);
                         moveUpButton.setEnabled(selectionIndex > 0);
-                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < columnsViewer.getTree().getItemCount() - 1);
+                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < attributes.size() - 1);
+                        moveBottomButton.setEnabled(selectionIndex >= 0 && selectionIndex < attributes.size() - 1);
                     }
 
                 });
@@ -325,6 +343,10 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         c2.setVisualPosition(c1.getVisualPosition());
         c1.setVisualPosition(vp2);
         refreshData();
+        moveTopButton.setEnabled(newIndex > 0);
+        moveUpButton.setEnabled(newIndex > 0);
+        moveDownButton.setEnabled(newIndex < attributes.size() - 1);
+        moveBottomButton.setEnabled(newIndex < attributes.size() - 1);
         //columnsViewer.sh
 //        DBDAttributeConstraint constraint = constraints.remove(curIndex);
 //        constraints.add(newIndex, constraint);
@@ -493,6 +515,26 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             return false;
         }
 
+    }
+
+    public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, final Runnable action)
+    {
+        ToolItem item = new ToolItem(toolBar, SWT.PUSH);
+        if (icon != null) {
+            item.setImage(DBeaverIcons.getImage(icon));
+        }
+        if (text != null) {
+            //item.setText(text);
+            item.setToolTipText(text);
+        }
+        item.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e)
+            {
+                action.run();
+            }
+        });
+        return item;
     }
 
 }

@@ -259,7 +259,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             });
             filtersCustomButton.setEnabled(true);
 
-            new ToolItem(filterToolbar, SWT.SEPARATOR).setControl(new Label(filterToolbar, SWT.SEPARATOR | SWT.VERTICAL));
+            UIUtils.createToolBarSeparator(filterToolbar, SWT.VERTICAL);
 
             historyBackButton = new ToolItem(filterToolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
             historyBackButton.setImage(DBeaverIcons.getImage(UIIcon.RS_BACK));

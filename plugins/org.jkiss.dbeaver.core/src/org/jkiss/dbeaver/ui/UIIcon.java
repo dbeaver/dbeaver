@@ -73,8 +73,10 @@ public class UIIcon {
     public static final DBIcon BULLET_RED = new DBIcon("bullet_red", "misc/bullet_red.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon BULLET_STAR = new DBIcon("bullet_star", "misc/bullet_star.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon ARROW_TOP = new DBIcon("arrow_top", "misc/arrow_top.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_UP = new DBIcon("arrow_up", "misc/arrow_up.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_DOWN = new DBIcon("arrow_down", "misc/arrow_down.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon ARROW_BOTTOM = new DBIcon("arrow_bottom", "misc/arrow_bottom.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT = new DBIcon("arrow_left", "misc/arrow_left.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT_ALL = new DBIcon("arrow_left_all", "misc/arrow_left_all.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_RIGHT = new DBIcon("arrow_right", "misc/arrow_right.png"); //$NON-NLS-1$ //$NON-NLS-2$
