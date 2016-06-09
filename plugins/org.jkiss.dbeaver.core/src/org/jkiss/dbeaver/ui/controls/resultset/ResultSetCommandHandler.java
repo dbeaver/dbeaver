@@ -28,6 +28,8 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -83,6 +85,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_REJECT_CHANGES = "org.jkiss.dbeaver.core.resultset.rejectChanges";
     public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
+    public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
 
     public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart instanceof IResultSetContainer) {
@@ -293,8 +296,10 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     rsv.setCurrentRow(rsv.getModel().getRow(line - 1));
                     rsv.getActivePresentation().scrollToRow(IResultSetPresentation.RowPosition.CURRENT);
                 }
-
-                System.out.println(1);
+                break;
+            }
+            case CMD_FILTER_MENU: {
+                rsv.showFiltersMenu();
                 break;
             }
         }
