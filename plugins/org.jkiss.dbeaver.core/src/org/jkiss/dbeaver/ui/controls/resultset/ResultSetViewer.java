@@ -1031,7 +1031,6 @@ public class ResultSetViewer extends Viewer
     {
         final DBPDataSource dataSource = getDataContainer() == null ? null : getDataContainer().getDataSource();
 
-        manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         // Custom oldValue items
         final ResultSetValueController valueController;
         if (attr != null && row != null) {
@@ -1047,7 +1046,37 @@ public class ResultSetViewer extends Viewer
                 // Standard items
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
-                manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_COPY_SPECIAL));
+
+                MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ICommandIds.CMD_COPY_SPECIAL));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_COPY_SPECIAL));
+                extCopyMenu.add(new Action("Copy column name(s)") {
+                    @Override
+                    public void run() {
+                        StringBuilder buffer = new StringBuilder();
+                        for (DBDAttributeBinding attr : getSelection().getSelectedAttributes()) {
+                            if (buffer.length() > 0) {
+                                buffer.append("\t");
+                            }
+                            buffer.append(attr.getName());
+                        }
+                        ResultSetUtils.copyToClipboard(buffer.toString());
+                    }
+                });
+                extCopyMenu.add(new Action("Copy row number(s)") {
+                    @Override
+                    public void run() {
+                        StringBuilder buffer = new StringBuilder();
+                        for (ResultSetRow row : getSelection().getSelectedRows()) {
+                            if (buffer.length() > 0) {
+                                buffer.append("\n");
+                            }
+                            buffer.append(row.getVisualNumber());
+                        }
+                        ResultSetUtils.copyToClipboard(buffer.toString());
+                    }
+                });
+                manager.add(extCopyMenu);
+
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
                 manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_PASTE_SPECIAL));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
@@ -1202,6 +1231,9 @@ public class ResultSetViewer extends Viewer
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
+
+        manager.add(new Separator());
+        manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
     }
 
     private class TransformerAction extends Action {
@@ -1524,7 +1556,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    @Nullable
+    @NotNull
     public IResultSetSelection getSelection()
     {
         if (activePresentation instanceof ISelectionProvider) {
@@ -1986,7 +2018,7 @@ public class ResultSetViewer extends Viewer
             rowsToDelete.add(curRow);
         } else {
             IResultSetSelection selection = getSelection();
-            if (selection != null && !selection.isEmpty()) {
+            if (!selection.isEmpty()) {
                 rowsToDelete.addAll(selection.getSelectedRows());
             }
         }
@@ -2183,6 +2215,12 @@ public class ResultSetViewer extends Viewer
         @Override
         public IResultSetController getController() {
             return ResultSetViewer.this;
+        }
+
+        @NotNull
+        @Override
+        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+            return Collections.emptyList();
         }
 
         @NotNull

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
 import java.util.Collection;
 
@@ -30,6 +31,9 @@ public interface IResultSetSelection extends IStructuredSelection {
 
     @NotNull
     IResultSetController getController();
+
+    @NotNull
+    Collection<DBDAttributeBinding> getSelectedAttributes();
 
     @NotNull
     Collection<ResultSetRow> getSelectedRows();
