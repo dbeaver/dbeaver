@@ -1009,6 +1009,25 @@ public class ResultSetViewer extends Viewer
     ///////////////////////////////////////////////////////
     // Context menu & filters
 
+    public void showFiltersMenu() {
+        DBDAttributeBinding curAttribute = getActivePresentation().getCurrentAttribute();
+        if (curAttribute == null) {
+            return;
+        }
+        Composite control = getControl();
+        Point controlSize = control.getSize();
+        controlSize.x /= 2;
+        controlSize.y /= 2;
+        Point location = control.getDisplay().map(control, null, controlSize);
+
+        MenuManager menuManager = new MenuManager();
+        fillFiltersMenu(curAttribute, menuManager);
+
+        final Menu contextMenu = menuManager.createContextMenu(control);
+        contextMenu.setLocation(location);
+        contextMenu.setVisible(true);
+    }
+
     @Override
     public void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row)
     {
