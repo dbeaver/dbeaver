@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
@@ -36,8 +37,8 @@ public class DBSObjectFilter
     private List<String> include;
     private List<String> exclude;
 
-    private transient List<Pattern> includePatterns = null;
-    private transient List<Pattern> excludePatterns = null;
+    private transient List<Object> includePatterns = null;
+    private transient List<Object> excludePatterns = null;
 
     public DBSObjectFilter()
     {
@@ -156,16 +157,15 @@ public class DBSObjectFilter
             includePatterns = new ArrayList<>(include.size());
             for (String inc : include) {
                 if (!inc.isEmpty()) {
-                    includePatterns.add(Pattern.compile(
-                        SQLUtils.makeLikePattern(inc), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+                    includePatterns.add(makePattern(inc));
                 }
             }
         }
         if (includePatterns != null) {
             // Match includes (at least one should match)
             boolean matched = false;
-            for (Pattern pattern : includePatterns) {
-                if (pattern.matcher(name).matches()) {
+            for (Object pattern : includePatterns) {
+                if (matchesPattern(pattern, name)) {
                     matched = true;
                     break;
                 }
@@ -179,21 +179,38 @@ public class DBSObjectFilter
             excludePatterns = new ArrayList<>(exclude.size());
             for (String exc : exclude) {
                 if (!exc.isEmpty()) {
-                    excludePatterns.add(Pattern.compile(
-                        SQLUtils.makeLikePattern(exc), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE));
+                    excludePatterns.add(makePattern(exc));
                 }
             }
         }
         if (excludePatterns != null) {
             // Match excludes
-            for (Pattern pattern : excludePatterns) {
-                if (pattern.matcher(name).matches()) {
+            for (Object pattern : excludePatterns) {
+                if (matchesPattern(pattern, name)) {
                     return false;
                 }
             }
         }
         // Done
         return true;
+    }
+
+    private static boolean matchesPattern(Object pattern, String name) {
+        if (pattern instanceof Pattern) {
+            return ((Pattern)pattern).matcher(name).matches();
+        } else {
+            return ((String)pattern).equalsIgnoreCase(name);
+        }
+    }
+
+    @NotNull
+    private static Object makePattern(String str) {
+        if (SQLUtils.isLikePattern(str)) {
+            return Pattern.compile(
+                SQLUtils.makeLikePattern(str), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+        } else {
+            return str;
+        }
     }
 
 }

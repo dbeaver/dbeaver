@@ -75,7 +75,6 @@ public class ReferenceValueEditor {
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
-    private boolean handleEditorChange;
     private SelectorLoaderJob loaderJob = null;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
@@ -92,21 +91,28 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer getEnumerableConstraint()
     {
         if (valueController instanceof IAttributeController) {
-            try {
-                DBSEntityAttribute entityAttribute = ((IAttributeController) valueController).getBinding().getEntityAttribute();
-                if (entityAttribute != null) {
-                    List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(VoidProgressMonitor.INSTANCE, entityAttribute);
-                    DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
-                    if (constraint instanceof DBSEntityAssociation &&
-                        ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable &&
-                        ((DBSConstraintEnumerable)((DBSEntityAssociation)constraint).getReferencedConstraint()).supportsEnumeration())
-                    {
+            return getEnumerableConstraint(((IAttributeController) valueController).getBinding());
+        }
+        return null;
+    }
+
+    public static DBSEntityReferrer getEnumerableConstraint(DBDAttributeBinding binding) {
+        try {
+            DBSEntityAttribute entityAttribute = binding.getEntityAttribute();
+            if (entityAttribute != null) {
+                List<DBSEntityReferrer> refs = DBUtils.getAttributeReferrers(VoidProgressMonitor.INSTANCE, entityAttribute);
+                DBSEntityReferrer constraint = refs.isEmpty() ? null : refs.get(0);
+                if (constraint instanceof DBSEntityAssociation &&
+                    ((DBSEntityAssociation)constraint).getReferencedConstraint() instanceof DBSConstraintEnumerable)
+                {
+                    final DBSConstraintEnumerable refConstraint = (DBSConstraintEnumerable) ((DBSEntityAssociation) constraint).getReferencedConstraint();
+                    if (refConstraint != null && refConstraint.supportsEnumeration()) {
                         return constraint;
                     }
                 }
-            } catch (DBException e) {
-                log.error(e);
             }
+        } catch (DBException e) {
+            log.error(e);
         }
         return null;
     }
@@ -185,7 +191,6 @@ public class ReferenceValueEditor {
             {
                 TableItem[] selection = editorSelector.getSelection();
                 if (selection != null && selection.length > 0) {
-                    handleEditorChange = false;
                     Object value = selection[0].getData();
                     //editorControl.setText(selection[0].getText());
                     try {
@@ -193,7 +198,6 @@ public class ReferenceValueEditor {
                     } catch (DBException e1) {
                         log.error(e1);
                     }
-                    handleEditorChange = true;
                 }
             }
         });
@@ -210,7 +214,23 @@ public class ReferenceValueEditor {
                     log.error(e1);
                     return;
                 }
-                if (handleEditorChange) {
+                // Try to select current value in the table
+                final String curTextValue = valueController.getValueHandler().getValueDisplayString(
+                    ((IAttributeController) valueController).getBinding(),
+                    curEditorValue,
+                    DBDDisplayFormat.UI);
+                boolean valueFound = false;
+                for (TableItem item : editorSelector.getItems()) {
+                    if (item.getText(0).equals(curTextValue)) {
+                        editorSelector.select(editorSelector.indexOf(item));
+                        editorSelector.showItem(item);
+                        valueFound = true;
+                        break;
+                    }
+                }
+
+                if (!valueFound) {
+                    // Read dictionary
                     if (loaderJob.getState() == Job.RUNNING) {
                         // Cancel it and create new one
                         loaderJob.cancel();
@@ -218,21 +238,7 @@ public class ReferenceValueEditor {
                     }
                     loaderJob.setPattern(curEditorValue);
                     if (loaderJob.getState() != Job.WAITING) {
-                        loaderJob.schedule(500);
-                    }
-                } else {
-                    // Just select current value in the table
-                    final String curTextValue = valueController.getValueHandler().getValueDisplayString(
-                        ((IAttributeController) valueController).getBinding(),
-                        curEditorValue,
-                        DBDDisplayFormat.UI);
-
-                    for (TableItem item : editorSelector.getItems()) {
-                        if (item.getText(0).equals(curTextValue)) {
-                            editorSelector.select(editorSelector.indexOf(item));
-                            editorSelector.showItem(item);
-                            break;
-                        }
+                        loaderJob.schedule(100);
                     }
                 }
             }
@@ -242,16 +248,15 @@ public class ReferenceValueEditor {
         } else if (control instanceof StyledText) {
             ((StyledText)control).addModifyListener(modifyListener);
         }
-        handleEditorChange = true;
 
         loaderJob = new SelectorLoaderJob();
+        final Object curValue = valueController.getValue();
+        if (curValue instanceof Number) {
+            loaderJob.setPattern(curValue);
+        }
         loaderJob.schedule(500);
 
         return true;
-    }
-
-    public void setHandleEditorChange(boolean handleEditorChange) {
-        this.handleEditorChange = handleEditorChange;
     }
 
     private void updateDictionarySelector(Map<Object, String> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {

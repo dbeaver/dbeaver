@@ -37,18 +37,19 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.TreeMap;
+import java.util.*;
 
 class FilterValueEditDialog extends BaseDialog {
 
@@ -138,14 +139,19 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void createMultiValueSelector(Composite composite) {
-        table = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.CHECK);
+        table = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.FULL_SELECTION);
         table.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 300;
         table.setLayoutData(gd);
+        UIUtils.createTableColumn(table, SWT.LEFT, "Value");
+        UIUtils.createTableColumn(table, SWT.LEFT, "Description");
 
-        if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
+        final DBSEntityReferrer enumerableConstraint = ReferenceValueEditor.getEnumerableConstraint(attr);
+        if (enumerableConstraint != null) {
+
+        } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
             loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute());
         } else {
             java.util.Map<String, DBDLabelValuePair> enumList = new TreeMap<>();
@@ -184,18 +190,23 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadMultiValueList(Collection<DBDLabelValuePair> values) {
-        for (DBDLabelValuePair row : values) {
+        java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(values);
+        Collections.sort(sortedList);
+        for (DBDLabelValuePair row : sortedList) {
             Object cellValue = row.getValue();
             String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
 
             TableItem item = new TableItem(table, SWT.LEFT);
             item.setData(cellValue);
-            item.setText(itemString);
+            item.setText(0, itemString);
+            if (!CommonUtils.isEmpty(row.getLabel())) {
+                item.setText(1, row.getLabel());
+            }
             if (ArrayUtils.contains(rows, row)) {
                 item.setChecked(true);
             }
         }
-        UIUtils.packColumns(table);
+        UIUtils.packColumns(table, false);
     }
 
     @Override

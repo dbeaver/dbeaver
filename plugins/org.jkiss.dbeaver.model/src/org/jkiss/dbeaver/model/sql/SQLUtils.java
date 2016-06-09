@@ -46,7 +46,6 @@ import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -146,6 +145,11 @@ public final class SQLUtils {
             }
         }
         return false;
+    }
+
+    public static boolean isLikePattern(String like)
+    {
+        return like.indexOf('%') != -1;// || like.indexOf('_') != -1;
     }
 
     public static String makeLikePattern(String like)

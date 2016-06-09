@@ -687,7 +687,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_filter_button_enable;
 
 	public static String dialog_filter_button_remove;
-
+	public static String dialog_filter_button_clear;
 	public static String dialog_filter_global_link;
 
 	public static String dialog_filter_list_exclude;
