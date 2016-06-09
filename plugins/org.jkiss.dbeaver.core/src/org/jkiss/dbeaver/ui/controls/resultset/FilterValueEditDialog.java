@@ -19,12 +19,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -32,6 +33,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -41,6 +43,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -50,10 +53,10 @@ import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.regex.Pattern;
 
 class FilterValueEditDialog extends BaseDialog {
 
@@ -73,6 +76,8 @@ class FilterValueEditDialog extends BaseDialog {
     private IValueEditor editor;
     private Text textControl;
     private Table table;
+    private String filterPattern;
+    private KeyLoadLob loadJob;
 
     public FilterValueEditDialog(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
         super(viewer.getControl().getShell(), "Edit value", null);
@@ -157,23 +162,39 @@ class FilterValueEditDialog extends BaseDialog {
                 }
             }
         });
-/*
-            new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem item = (TableItem) e.item;
-                item.setChecked(!item.getChecked());
-            }
 
-            @Override
-            public void widgetDefaultSelected(SelectionEvent e) {
-                widgetSelected(e);
-            }
-        });
-*/
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
         UIUtils.createTableColumn(table, SWT.LEFT, "Description");
 
+        if (attr.getDataKind() == DBPDataKind.STRING) {
+            // Create filter text
+            final Text valueFilterText = new Text(composite, SWT.BORDER);
+            valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            valueFilterText.addModifyListener(new ModifyListener() {
+                @Override
+                public void modifyText(ModifyEvent e) {
+                    filterPattern = valueFilterText.getText();
+                    if (filterPattern.isEmpty()) {
+                        filterPattern = null;
+                    }
+                    loadValues();
+                }
+            });
+        }
+
+        filterPattern = null;
+        loadValues();
+    }
+
+    private void loadValues() {
+        if (loadJob != null) {
+            if (loadJob.getState() == Job.RUNNING) {
+                loadJob.cancel();
+            }
+            loadJob.schedule(100);
+            return;
+        }
+        // Load values
         final DBSEntityReferrer enumerableConstraint = ReferenceValueEditor.getEnumerableConstraint(attr);
         if (enumerableConstraint != null) {
             loadConstraintEnum(enumerableConstraint);
@@ -185,7 +206,7 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
-        final KeyLoadLob loadJob = new KeyLoadLob("Load constraint '" + refConstraint.getName() + "' values") {
+        loadJob = new KeyLoadLob("Load constraint '" + refConstraint.getName() + "' values") {
             @Override
             protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
                 final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
@@ -213,7 +234,7 @@ class FilterValueEditDialog extends BaseDialog {
                     return enumConstraint.getKeyEnumeration(
                         session,
                         refColumn,
-                        null,
+                        filterPattern,
                         null,
                         MAX_MULTI_VALUES);
                 }
@@ -224,16 +245,22 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
-        final KeyLoadLob loadJob = new KeyLoadLob("Load '" + attr.getName() + "' values") {
+        loadJob = new KeyLoadLob("Load '" + attr.getName() + "' values") {
             @Override
             protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
-                return attributeEnumerable.getValueEnumeration(session, null, MAX_MULTI_VALUES);
+                return attributeEnumerable.getValueEnumeration(session, filterPattern, MAX_MULTI_VALUES);
             }
         };
         loadJob.schedule();
     }
 
     private void loadMultiValueList(Collection<DBDLabelValuePair> values) {
+        table.removeAll();
+
+        Pattern pattern = null;
+        if (!CommonUtils.isEmpty(filterPattern)) {
+            pattern = Pattern.compile(SQLUtils.makeLikePattern("%" + filterPattern + "%"), Pattern.CASE_INSENSITIVE);
+        }
 
         // Get all values from actual RSV data
         java.util.Map<Object, DBDLabelValuePair> rowData = new TreeMap<>();
@@ -246,7 +273,14 @@ class FilterValueEditDialog extends BaseDialog {
             rowData.put(pair.getValue(), pair);
         }
         java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
-
+        if (pattern != null) {
+            for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
+                String itemString = attr.getValueHandler().getValueDisplayString(attr, iter.next().getValue(), DBDDisplayFormat.UI);
+                if (!pattern.matcher(itemString).matches()) {
+                    iter.remove();
+                }
+            }
+        }
         Collections.sort(sortedList);
 
         Set<Object> checkedValues = new HashSet<>();
@@ -369,6 +403,6 @@ class FilterValueEditDialog extends BaseDialog {
                 }
             });
         }
-    };
+    }
 
 }

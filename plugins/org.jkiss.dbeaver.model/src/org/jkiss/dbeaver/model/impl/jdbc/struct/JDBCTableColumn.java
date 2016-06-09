@@ -166,8 +166,14 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
 //            query.append(", ").append(descColumns);
 //        }
         query.append(" FROM ").append(DBUtils.getObjectFullName(getTable()));
+        if (valuePattern instanceof String) {
+            query.append(" WHERE ").append(DBUtils.getQuotedIdentifier(this)).append(" LIKE ?");
+        }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
+            if (valuePattern instanceof String) {
+                valueHandler.bindValueObject(session, dbStat, this, 0, "%" + valuePattern + "%");
+            }
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {
