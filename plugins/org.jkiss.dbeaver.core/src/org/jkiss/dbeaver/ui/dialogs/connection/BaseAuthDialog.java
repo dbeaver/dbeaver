@@ -118,7 +118,7 @@ public class BaseAuthDialog extends BaseDialog
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
-            if (authInfo.getUserPassword() != null) {
+            if (authInfo.getUserPassword() != null && authInfo.isSavePassword()) {
                 passwordText.setText(authInfo.getUserPassword());
             }
         }
