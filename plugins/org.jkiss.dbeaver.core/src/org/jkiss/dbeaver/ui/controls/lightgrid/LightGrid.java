@@ -577,6 +577,10 @@ public abstract class LightGrid extends Canvas {
         return columnElements[col];
     }
 
+    public Rectangle getColumnBounds(int col) {
+        return getColumn(col).getBounds();
+    }
+
     public Object getRowElement(int row) {
         return rowElements[row];
     }

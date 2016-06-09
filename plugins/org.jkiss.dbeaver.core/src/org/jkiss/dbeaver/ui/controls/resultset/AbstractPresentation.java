@@ -25,6 +25,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
@@ -107,6 +108,11 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         }
         controller.updateStatusMessage();
         controller.updateEditControls();
+    }
+
+    @Override
+    public Point getCursorLocation() {
+        return null;
     }
 
     protected void registerContextMenu() {

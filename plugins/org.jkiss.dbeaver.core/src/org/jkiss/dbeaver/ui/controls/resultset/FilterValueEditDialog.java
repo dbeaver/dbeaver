@@ -21,6 +21,8 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
@@ -147,7 +149,16 @@ class FilterValueEditDialog extends BaseDialog {
         gd.widthHint = 400;
         gd.heightHint = 300;
         table.setLayoutData(gd);
-        table.addSelectionListener(new SelectionAdapter() {
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                for (TableItem item : table.getSelection()) {
+                    item.setChecked(!item.getChecked());
+                }
+            }
+        });
+/*
+            new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 TableItem item = (TableItem) e.item;
@@ -159,6 +170,7 @@ class FilterValueEditDialog extends BaseDialog {
                 widgetSelected(e);
             }
         });
+*/
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
         UIUtils.createTableColumn(table, SWT.LEFT, "Description");
 

@@ -55,9 +55,7 @@ import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -350,6 +348,17 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     @Override
     public DBDAttributeBinding getCurrentAttribute() {
         return curAttribute;
+    }
+
+    @Override
+    public Point getCursorLocation() {
+        GridPos focusPos = spreadsheet.getFocusPos();
+        Rectangle columnBounds = spreadsheet.getColumnBounds(focusPos.col);
+        if (columnBounds != null) {
+            columnBounds.y += spreadsheet.getHeaderHeight();
+            return new Point(columnBounds.x, columnBounds.y);
+        }
+        return super.getCursorLocation();
     }
 
     @Override
