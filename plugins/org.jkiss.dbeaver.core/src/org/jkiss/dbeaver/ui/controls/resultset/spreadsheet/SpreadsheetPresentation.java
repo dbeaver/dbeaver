@@ -1169,6 +1169,24 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
+        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+            if (controller.isRecordMode()) {
+                List<DBDAttributeBinding> attrs = new ArrayList<>();
+                for (Integer row : spreadsheet.getRowSelection()) {
+                    attrs.add(controller.getModel().getVisibleAttribute(row));
+                }
+                return attrs;
+            } else {
+                List<DBDAttributeBinding> attrs = new ArrayList<>();
+                for (Object row : spreadsheet.getColumnSelection()) {
+                    attrs.add((DBDAttributeBinding) row);
+                }
+                return attrs;
+            }
+        }
+
+        @NotNull
+        @Override
         public Collection<ResultSetRow> getSelectedRows()
         {
             if (controller.isRecordMode()) {
@@ -1179,8 +1197,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return Collections.singletonList(currentRow);
             } else {
                 List<ResultSetRow> rows = new ArrayList<>();
-                Collection<Integer> rowSelection = spreadsheet.getRowSelection();
-                for (Integer row : rowSelection) {
+                for (Integer row : spreadsheet.getRowSelection()) {
                     rows.add(controller.getModel().getRow(row));
                 }
                 return rows;
