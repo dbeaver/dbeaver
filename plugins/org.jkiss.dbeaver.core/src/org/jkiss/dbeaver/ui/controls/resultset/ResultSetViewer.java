@@ -1014,11 +1014,9 @@ public class ResultSetViewer extends Viewer
         if (curAttribute == null) {
             return;
         }
-        Composite control = getControl();
-        Point controlSize = control.getSize();
-        controlSize.x /= 2;
-        controlSize.y /= 2;
-        Point location = control.getDisplay().map(control, null, controlSize);
+        Control control = getActivePresentation().getControl();
+        Point cursorLocation = getActivePresentation().getCursorLocation();
+        Point location = control.getDisplay().map(control, null, cursorLocation);
 
         MenuManager menuManager = new MenuManager();
         fillFiltersMenu(curAttribute, menuManager);
