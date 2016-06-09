@@ -21,10 +21,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,8 +39,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -145,53 +147,105 @@ class FilterValueEditDialog extends BaseDialog {
         gd.widthHint = 400;
         gd.heightHint = 300;
         table.setLayoutData(gd);
+        table.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TableItem item = (TableItem) e.item;
+                item.setChecked(!item.getChecked());
+            }
+
+            @Override
+            public void widgetDefaultSelected(SelectionEvent e) {
+                widgetSelected(e);
+            }
+        });
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
         UIUtils.createTableColumn(table, SWT.LEFT, "Description");
 
         final DBSEntityReferrer enumerableConstraint = ReferenceValueEditor.getEnumerableConstraint(attr);
         if (enumerableConstraint != null) {
-
+            loadConstraintEnum(enumerableConstraint);
         } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
             loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute());
         } else {
-            java.util.Map<String, DBDLabelValuePair> enumList = new TreeMap<>();
-            for (ResultSetRow row : viewer.getModel().getAllRows()) {
-                Object cellValue = viewer.getModel().getCellValue(attr, row);
-                String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
-                enumList.put(itemString, new DBDLabelValuePair(itemString, cellValue));
-            }
-            loadMultiValueList(enumList.values());
+            loadMultiValueList(Collections.<DBDLabelValuePair>emptyList());
         }
     }
 
-    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
-        final AbstractJob loadJob = new AbstractJob("Load '" + attr.getName() + "' values") {
+    private void loadConstraintEnum(final DBSEntityReferrer refConstraint) {
+        final KeyLoadLob loadJob = new KeyLoadLob("Load constraint '" + refConstraint.getName() + "' values") {
             @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                final DBCExecutionContext executionContext = viewer.getExecutionContext();
-                if (executionContext == null) {
-                    return Status.OK_STATUS;
+            protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+                final DBSEntityAttribute tableColumn = attr.getEntityAttribute();
+                if (tableColumn == null) {
+                    return null;
                 }
-                try (DBCSession session = DBUtils.openUtilSession(monitor, executionContext.getDataSource(), "Read value enumeration")) {
-                    final Collection<DBDLabelValuePair> valueEnumeration = attributeEnumerable.getValueEnumeration(session, null, MAX_MULTI_VALUES);
-                    UIUtils.runInDetachedUI(null, new Runnable() {
-                        @Override
-                        public void run() {
-                            loadMultiValueList(valueEnumeration);
-                        }
-                    });
-                } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
+                final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(session.getProgressMonitor(), refConstraint, tableColumn);
+                if (fkColumn == null) {
+                    return null;
                 }
-                return Status.OK_STATUS;
+                DBSEntityAssociation association;
+                if (refConstraint instanceof DBSEntityAssociation) {
+                    association = (DBSEntityAssociation)refConstraint;
+                } else {
+                    return null;
+                }
+                final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(session.getProgressMonitor(), association, tableColumn);
+                if (refColumn == null) {
+                    return null;
+                }
+                final DBSEntityAttribute fkAttribute = fkColumn.getAttribute();
+                final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
+                final DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
+                if (fkAttribute != null && enumConstraint != null) {
+                    return enumConstraint.getKeyEnumeration(
+                        session,
+                        refColumn,
+                        null,
+                        null,
+                        MAX_MULTI_VALUES);
+                }
+                return null;
+            }
+        };
+        loadJob.schedule();
+    }
+
+    private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
+        final KeyLoadLob loadJob = new KeyLoadLob("Load '" + attr.getName() + "' values") {
+            @Override
+            protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
+                return attributeEnumerable.getValueEnumeration(session, null, MAX_MULTI_VALUES);
             }
         };
         loadJob.schedule();
     }
 
     private void loadMultiValueList(Collection<DBDLabelValuePair> values) {
-        java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(values);
+
+        // Get all values from actual RSV data
+        java.util.Map<Object, DBDLabelValuePair> rowData = new TreeMap<>();
+        for (ResultSetRow row : viewer.getModel().getAllRows()) {
+            Object cellValue = viewer.getModel().getCellValue(attr, row);
+            String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+            rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
+        }
+        for (DBDLabelValuePair pair : values) {
+            rowData.put(pair.getValue(), pair);
+        }
+        java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
+
         Collections.sort(sortedList);
+
+        Set<Object> checkedValues = new HashSet<>();
+        for (ResultSetRow row : rows) {
+            Object value = viewer.getModel().getCellValue(attr, row);
+            if (value != null) {
+                checkedValues.add(value);
+            }
+        }
+
+        TableItem firstVisibleItem = null;
         for (DBDLabelValuePair row : sortedList) {
             Object cellValue = row.getValue();
             String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
@@ -199,14 +253,20 @@ class FilterValueEditDialog extends BaseDialog {
             TableItem item = new TableItem(table, SWT.LEFT);
             item.setData(cellValue);
             item.setText(0, itemString);
-            if (!CommonUtils.isEmpty(row.getLabel())) {
+            if (!CommonUtils.isEmpty(row.getLabel()) && !itemString.equals(row.getLabel())) {
                 item.setText(1, row.getLabel());
             }
-            if (ArrayUtils.contains(rows, row)) {
+            if (checkedValues.contains(cellValue)) {
                 item.setChecked(true);
+                if (firstVisibleItem == null) {
+                    firstVisibleItem = item;
+                }
             }
         }
         UIUtils.packColumns(table, false);
+        if (firstVisibleItem != null) {
+            table.showItem(firstVisibleItem);
+        }
     }
 
     @Override
@@ -261,4 +321,42 @@ class FilterValueEditDialog extends BaseDialog {
     public Object getValue() {
         return value;
     }
+
+    private abstract class KeyLoadLob extends AbstractJob {
+        protected KeyLoadLob(String name) {
+            super(name);
+        }
+
+        @Override
+        protected IStatus run(DBRProgressMonitor monitor) {
+            final DBCExecutionContext executionContext = viewer.getExecutionContext();
+            if (executionContext == null) {
+                return Status.OK_STATUS;
+            }
+            try (DBCSession session = DBUtils.openUtilSession(monitor, executionContext.getDataSource(), "Read value enumeration")) {
+                final Collection<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
+                if (valueEnumeration == null) {
+                    return Status.OK_STATUS;
+                } else {
+                    populateValues(valueEnumeration);
+                }
+            } catch (DBException e) {
+                return GeneralUtils.makeExceptionStatus(e);
+            }
+            return Status.OK_STATUS;
+        }
+
+        @Nullable
+        protected abstract Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
+
+        protected void populateValues(final Collection<DBDLabelValuePair> values) {
+            UIUtils.runInDetachedUI(null, new Runnable() {
+                @Override
+                public void run() {
+                    loadMultiValueList(values);
+                }
+            });
+        }
+    };
+
 }
