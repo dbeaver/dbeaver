@@ -29,12 +29,10 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * OracleStructureAssistant
@@ -106,6 +104,23 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 // Search constraints
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
             }
+            // Sort objects. Put ones in the current schema first
+            final OracleSchema activeSchema = dataSource.getSelectedObject();
+            objects.sort(new Comparator<DBSObjectReference>() {
+                @Override
+                public int compare(DBSObjectReference o1, DBSObjectReference o2) {
+                    if (CommonUtils.equalObjects(o1.getContainer(), o2.getContainer())) {
+                        return o1.getName().compareTo(o2.getName());
+                    }
+                    if (o1.getContainer() == null || o1.getContainer() == activeSchema) {
+                        return -1;
+                    }
+                    if (o2.getContainer() == null || o2.getContainer() == activeSchema) {
+                        return 1;
+                    }
+                    return o1.getContainer().getName().compareTo(o2.getContainer().getName());
+                }
+            });
 
             return objects;
         }

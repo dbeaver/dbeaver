@@ -79,4 +79,9 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
         return DBUtils.getFullQualifiedName(dataSource, container, this);
 
     }
+
+    @Override
+    public String toString() {
+        return getFullQualifiedName();
+    }
 }
