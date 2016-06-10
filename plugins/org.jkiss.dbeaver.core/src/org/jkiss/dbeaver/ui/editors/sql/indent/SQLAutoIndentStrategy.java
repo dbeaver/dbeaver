@@ -53,9 +53,10 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     @Override
     public void customizeDocumentCommand(IDocument document, DocumentCommand command)
     {
-        if (!command.doit) {
-            return;
-        }
+        // Do not check for doit because it is disabled in LinkedModeUI (e.g. when braket triggers position group)
+//        if (!command.doit) {
+//            return;
+//        }
         if (command.offset < 0) {
             return;
         }
@@ -164,6 +165,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
         startPos = pos + 1;
         final String keyword = document.get(startPos, endPos - startPos);
+
         if (syntaxManager.getDialect().getKeywordType(keyword) == DBPKeywordType.KEYWORD) {
             final String fixedKeyword = syntaxManager.getKeywordCase().transform(keyword);
             if (!fixedKeyword.equals(keyword)) {
