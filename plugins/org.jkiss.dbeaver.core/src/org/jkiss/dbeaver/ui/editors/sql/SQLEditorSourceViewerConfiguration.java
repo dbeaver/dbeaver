@@ -126,7 +126,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         } else if (SQLPartitionScanner.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
             return new IAutoEditStrategy[] { new SQLStringAutoIndentStrategy(SQLPartitionScanner.CONTENT_TYPE_SQL_STRING) };
         }
-        return null;
+        return new IAutoEditStrategy[0];
     }
 
     /**
