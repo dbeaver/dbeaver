@@ -100,9 +100,6 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure)
     {
-        String objectType = procedure.getProcedureTypeName();
-        actions.add(
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " IF EXISTS " + procedure.getFullQualifiedSignature()));
         actions.add(
             new SQLDatabasePersistAction("Create procedure", procedure.getBody()));
     }
