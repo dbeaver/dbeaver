@@ -36,6 +36,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * GenericProcedure
@@ -121,6 +123,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.next()) {
                                 clientBody = JDBCUtils.safeGetString(dbResult, (getProcedureType() == DBSProcedureType.PROCEDURE ? "Create Procedure" : "Create Function"));
+                                clientBody = normalizeCreateStatement(clientBody);
                             } else {
                                 clientBody = "";
                             }
@@ -166,6 +169,17 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
 */
         }
         return clientBody;
+    }
+
+    private String normalizeCreateStatement(String createDDL) {
+        String procType = getProcedureType().name();
+        int divPos = createDDL.indexOf(procType + " `");
+        if (divPos != -1) {
+            return createDDL.substring(0, divPos) + procType +
+                " `" + getContainer().getName() + "`." +
+                createDDL.substring(divPos + procType.length() + 1);
+        }
+        return createDDL;
     }
 
     @Property(editable = true, updatable = true, order = 3)
