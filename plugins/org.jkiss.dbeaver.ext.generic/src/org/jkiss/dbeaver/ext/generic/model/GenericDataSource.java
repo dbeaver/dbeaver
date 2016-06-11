@@ -385,15 +385,12 @@ public class GenericDataSource extends JDBCDataSource
                             catalogNames.clear();
                         }
                     }
-                } catch (UnsupportedOperationException e) {
-                    // Just skip it
-                    log.debug(e);
-                } catch (SQLFeatureNotSupportedException e) {
+                } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
                     // Just skip it
                     log.debug(e);
                 } catch (SQLException e) {
                     // Error reading catalogs - just warn about it
-                    log.warn(e);
+                    log.warn("Can't read catalog list", e);
                 }
                 if (!catalogNames.isEmpty() || catalogsFiltered) {
                     this.catalogs = new ArrayList<>();
