@@ -270,7 +270,7 @@ class FilterValueEditDialog extends BaseDialog {
         loadJob.schedule();
     }
 
-    private void loadMultiValueList(Collection<DBDLabelValuePair> values) {
+    private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values) {
         table.removeAll();
 
         Pattern pattern = null;
@@ -409,6 +409,7 @@ class FilterValueEditDialog extends BaseDialog {
                     populateValues(valueEnumeration);
                 }
             } catch (DBException e) {
+                populateValues(Collections.<DBDLabelValuePair>emptyList());
                 return GeneralUtils.makeExceptionStatus(e);
             }
             return Status.OK_STATUS;
@@ -417,7 +418,7 @@ class FilterValueEditDialog extends BaseDialog {
         @Nullable
         protected abstract Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException;
 
-        protected void populateValues(final Collection<DBDLabelValuePair> values) {
+        protected void populateValues(@NotNull final Collection<DBDLabelValuePair> values) {
             UIUtils.runInDetachedUI(null, new Runnable() {
                 @Override
                 public void run() {
