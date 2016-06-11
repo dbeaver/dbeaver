@@ -151,6 +151,7 @@ class FilterValueEditDialog extends BaseDialog {
     private void createMultiValueSelector(Composite composite) {
         table = new Table(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION);
         table.setLinesVisible(true);
+        table.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 300;
@@ -259,6 +260,7 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
+        table.getColumn(1).setText("Count");
         loadJob = new KeyLoadLob("Load '" + attr.getName() + "' values") {
             @Override
             protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
