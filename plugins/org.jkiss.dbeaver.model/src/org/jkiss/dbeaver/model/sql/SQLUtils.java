@@ -363,40 +363,69 @@ public final class SQLUtils {
         } else if (constraint.getOperator() != null) {
             DBCLogicalOperator operator = constraint.getOperator();
             StringBuilder conString = new StringBuilder();
+            Object value = constraint.getValue();
+            if (DBUtils.isNullValue(value)) {
+                conString.append("IS ");
+                if (constraint.isReverseOperator()) {
+                    conString.append("NOT ");
+                }
+                conString.append("NULL");
+                return conString.toString();
+            }
             if (constraint.isReverseOperator()) {
                 conString.append("NOT ");
             }
-            conString.append(operator.getStringValue());
             if (operator.getArgumentCount() > 0) {
+                conString.append(operator.getStringValue());
                 for (int i = 0; i < operator.getArgumentCount(); i++) {
                     if (i > 0) {
                         conString.append(" AND");
                     }
                     if (inlineCriteria) {
-                        conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), constraint.getValue()));
+                        conString.append(' ').append(convertValueToSQL(dataSource, constraint.getAttribute(), value));
                     } else {
                         conString.append(" ?");
                     }
                 }
             } else if (operator.getArgumentCount() < 0) {
                 // Multiple arguments
-                conString.append(" (");
-                Object arrayValue = constraint.getValue();
-                if (!DBUtils.isNullValue(arrayValue)) {
-                    if (!arrayValue.getClass().isArray()) {
-                        arrayValue = new Object[] {arrayValue};
+                int valueCount = Array.getLength(value);
+                boolean hasNull = false, hasNotNull = false;
+                for (int i = 0; i < valueCount; i++) {
+                    final boolean isNull = DBUtils.isNullValue(Array.get(value, i));
+                    if (isNull && !hasNull) {
+                        hasNull = true;
                     }
-                    int valueCount = Array.getLength(arrayValue);
-                    for (int i = 0; i < valueCount; i++) {
-                        if (i > 0) {
-                            conString.append(",");
-                        }
-                        Object itemValue = Array.get(arrayValue, i);
-                        if (inlineCriteria) {
-                            conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
-                        } else {
-                            conString.append("?");
-                        }
+                    if (!isNull && !hasNotNull) {
+                        hasNotNull = true;
+                    }
+                }
+                if (!hasNotNull) {
+                    return "IS NULL";
+                }
+                if (hasNull) {
+                    conString.append("IS NULL OR ").append(DBUtils.getObjectFullName(dataSource, constraint.getAttribute())).append(" ");
+                }
+
+                conString.append(operator.getStringValue());
+                conString.append(" (");
+                if (!value.getClass().isArray()) {
+                    value = new Object[] {value};
+                }
+                boolean hasValue = false;
+                for (int i = 0; i < valueCount; i++) {
+                    Object itemValue = Array.get(value, i);
+                    if (DBUtils.isNullValue(itemValue)) {
+                        continue;
+                    }
+                    if (hasValue) {
+                        conString.append(",");
+                    }
+                    hasValue = true;
+                    if (inlineCriteria) {
+                        conString.append(convertValueToSQL(dataSource, constraint.getAttribute(), itemValue));
+                    } else {
+                        conString.append("?");
                     }
                 }
                 conString.append(")");
