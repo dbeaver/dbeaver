@@ -20,12 +20,13 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.action.IMenuListener;
+import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -148,12 +149,13 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void createMultiValueSelector(Composite composite) {
-        table = new Table(composite, SWT.BORDER | SWT.SINGLE | SWT.CHECK | SWT.FULL_SELECTION);
+        table = new Table(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION);
         table.setLinesVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 300;
         table.setLayoutData(gd);
+/*
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
@@ -162,9 +164,21 @@ class FilterValueEditDialog extends BaseDialog {
                 }
             }
         });
+*/
 
         UIUtils.createTableColumn(table, SWT.LEFT, "Value");
         UIUtils.createTableColumn(table, SWT.LEFT, "Description");
+
+        MenuManager menuMgr = new MenuManager();
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager)
+            {
+                UIUtils.fillDefaultTableContextMenu(manager, table);
+            }
+        });
+        menuMgr.setRemoveAllWhenShown(true);
+        table.setMenu(menuMgr.createContextMenu(table));
 
         if (attr.getDataKind() == DBPDataKind.STRING) {
             // Create filter text

@@ -35,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.custom.*;
 import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
@@ -55,6 +56,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -1318,6 +1320,20 @@ public class UIUtils {
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_CUT, selectionRange.y > 0, text, ST.CUT));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, true, text, ST.SELECT_ALL));
         menu.add(new GroupMarker("styled_text_additions"));
+    }
+
+    public static void fillDefaultTableContextMenu(IMenuManager menu, final Table table) {
+        menu.add(new Action(CoreMessages.controls_itemlist_action_copy) {
+            @Override
+            public void run() {
+                StringBuilder text = new StringBuilder();
+                for (TableItem item : table.getSelection()) {
+                    if (text.length() > 0) text.append("\n");
+                    text.append(item.getText());
+                }
+                UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
+            }
+        });
     }
 
     public static void addFileOpenOverlay(Text text, SelectionListener listener) {
