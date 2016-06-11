@@ -106,7 +106,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             }
             // Sort objects. Put ones in the current schema first
             final OracleSchema activeSchema = dataSource.getSelectedObject();
-            objects.sort(new Comparator<DBSObjectReference>() {
+            Collections.sort(objects, new Comparator<DBSObjectReference>() {
                 @Override
                 public int compare(DBSObjectReference o1, DBSObjectReference o2) {
                     if (CommonUtils.equalObjects(o1.getContainer(), o2.getContainer())) {
