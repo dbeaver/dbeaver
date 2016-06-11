@@ -176,7 +176,7 @@ public class ResourceUtils {
                 }
             }
         } catch (CoreException e) {
-            log.debug(e);
+            log.debug(e.getMessage());
         }
     }
 
