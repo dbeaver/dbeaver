@@ -159,16 +159,17 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
     public Collection<DBDLabelValuePair> getValueEnumeration(@NotNull DBCSession session, @Nullable Object valuePattern, int maxResults) throws DBException {
         DBDValueHandler valueHandler = DBUtils.findValueHandler(session, this);
         StringBuilder query = new StringBuilder();
-        query.append("SELECT DISTINCT ").append(DBUtils.getQuotedIdentifier(this));
+        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(this)).append(", count(*)");
         // Do not use description columns because they duplicate distinct value
 //        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), this);
 //        if (descColumns != null) {
 //            query.append(", ").append(descColumns);
 //        }
-        query.append(" FROM ").append(DBUtils.getObjectFullName(getTable()));
+        query.append("\nFROM ").append(DBUtils.getObjectFullName(getTable()));
         if (valuePattern instanceof String) {
-            query.append(" WHERE ").append(DBUtils.getQuotedIdentifier(this)).append(" LIKE ?");
+            query.append("\nWHERE ").append(DBUtils.getQuotedIdentifier(this)).append(" LIKE ?");
         }
+        query.append("\nGROUP BY ").append(DBUtils.getQuotedIdentifier(this));
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
             if (valuePattern instanceof String) {
