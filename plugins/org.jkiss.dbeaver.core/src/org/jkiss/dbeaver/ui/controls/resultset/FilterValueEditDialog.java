@@ -294,9 +294,7 @@ class FilterValueEditDialog extends BaseDialog {
         Set<Object> checkedValues = new HashSet<>();
         for (ResultSetRow row : rows) {
             Object value = viewer.getModel().getCellValue(attr, row);
-            if (value != null) {
-                checkedValues.add(value);
-            }
+            checkedValues.add(value);
         }
 
         TableItem firstVisibleItem = null;
