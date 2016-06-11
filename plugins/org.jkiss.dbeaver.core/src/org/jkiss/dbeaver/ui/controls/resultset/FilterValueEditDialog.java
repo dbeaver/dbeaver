@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -176,6 +174,23 @@ class FilterValueEditDialog extends BaseDialog {
             public void menuAboutToShow(IMenuManager manager)
             {
                 UIUtils.fillDefaultTableContextMenu(manager, table);
+                manager.add(new Separator());
+                manager.add(new Action("Select &All") {
+                    @Override
+                    public void run() {
+                        for (TableItem item : table.getItems()) {
+                            item.setChecked(true);
+                        }
+                    }
+                });
+                manager.add(new Action("Select &None") {
+                    @Override
+                    public void run() {
+                        for (TableItem item : table.getItems()) {
+                            item.setChecked(false);
+                        }
+                    }
+                });
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
