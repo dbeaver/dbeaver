@@ -263,9 +263,14 @@ class FilterValueEditDialog extends BaseDialog {
         }
 
         // Get all values from actual RSV data
+        boolean hasNulls = false;
         java.util.Map<Object, DBDLabelValuePair> rowData = new TreeMap<>();
         for (ResultSetRow row : viewer.getModel().getAllRows()) {
             Object cellValue = viewer.getModel().getCellValue(attr, row);
+            if (DBUtils.isNullValue(cellValue)) {
+                hasNulls = true;
+                continue;
+            }
             String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
             rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
         }
@@ -282,6 +287,9 @@ class FilterValueEditDialog extends BaseDialog {
             }
         }
         Collections.sort(sortedList);
+        if (hasNulls) {
+            sortedList.add(0, new DBDLabelValuePair(DBUtils.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
+        }
 
         Set<Object> checkedValues = new HashSet<>();
         for (ResultSetRow row : rows) {
