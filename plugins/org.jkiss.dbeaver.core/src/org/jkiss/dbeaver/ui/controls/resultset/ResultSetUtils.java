@@ -93,11 +93,17 @@ public class ResultSetUtils
                 monitor.subTask("Discover attribute '" + binding.getName() + "'");
                 DBCAttributeMetaData attrMeta = binding.getMetaAttribute();
                 // We got table name and column name
-                // To be editable we need this result   set contain set of columns from the same table
+                // To be editable we need this resultset contain set of columns from the same table
                 // which construct any unique key
                 DBSEntity attrEntity = null;
                 if (attrMeta.getEntityMetaData() != null) {
-                    attrEntity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
+                    if (entity != null && entity instanceof DBSTable && ((DBSTable) entity).isView()) {
+                        // If this is a view then don't try to detect entity for each attribute
+                        // MySQL returns rouce table name instead of view name. That's crazy.
+                        attrEntity = entity;
+                    } else {
+                        attrEntity = getEntityFromMetaData(session, attrMeta.getEntityMetaData());
+                    }
                 }
                 if (attrEntity == null) {
                     attrEntity = entity;
