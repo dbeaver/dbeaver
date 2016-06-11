@@ -69,7 +69,7 @@ public class ObjectPropertyTester extends PropertyTester
             case PROP_CAN_PASTE: {
 
                 if (node instanceof DBNResource) {
-                    return true;
+                    return property.equals(PROP_CAN_PASTE);
                 }
 
                 Class objectType;
