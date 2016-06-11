@@ -1909,7 +1909,7 @@ public class ResultSetViewer extends Viewer
     private ResultSetPersister createDataPersister(boolean skipKeySearch)
         throws DBException
     {
-        if (!model.isSingleSource()) {
+        if (!skipKeySearch && !model.isSingleSource()) {
             throw new DBException("Can't save data for result set from multiple sources");
         }
         boolean needPK = false;
