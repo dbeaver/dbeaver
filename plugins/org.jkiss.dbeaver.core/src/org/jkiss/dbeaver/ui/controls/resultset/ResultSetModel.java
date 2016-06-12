@@ -437,17 +437,6 @@ public class ResultSetModel {
         if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata() || transformInProgress) {
             update = true;
         } else {
-/*
-            if (dataFilter != null && dataFilter.hasFilters()) {
-                // This is a filtered result set so keep old metadata.
-                // Filtering modifies original query (adds sub-query)
-                // and it may change metadata (depends on driver)
-                // but actually it doesn't change any attribute or table names/types
-                // so let's keep old info
-                return false;
-            }
-*/
-
             for (int i = 0; i < this.attributes.length; i++) {
                 if (!ResultSetUtils.equalAttributes(this.attributes[i].getMetaAttribute(), newAttributes[i].getMetaAttribute())) {
                     update = true;
@@ -455,6 +444,7 @@ public class ResultSetModel {
                 }
             }
         }
+        update = true;
 
         if (update) {
             if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
