@@ -336,7 +336,7 @@ class FilterValueEditDialog extends BaseDialog {
             TableItem item = new TableItem(table, SWT.LEFT);
             item.setData(cellValue);
             item.setText(0, itemString);
-            if (!CommonUtils.isEmpty(row.getLabel()) && !itemString.equals(row.getLabel())) {
+            if (!CommonUtils.isEmpty(row.getLabel())) {
                 item.setText(1, row.getLabel());
             }
             if (checkedValues.contains(cellValue)) {
