@@ -98,8 +98,8 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "COLNO"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "NULLS", DB2YesNo.N.name()));
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "DEFAULT"));
-        setMaxLength(JDBCUtils.safeGetInteger(dbResult, "LENGTH"));
-        setScale(JDBCUtils.safeGetInteger(dbResult, "SCALE"));
+        setMaxLength(JDBCUtils.safeGetInt(dbResult, "LENGTH"));
+        setScale(JDBCUtils.safeGetInt(dbResult, "SCALE"));
 
         this.hidden = CommonUtils.valueOf(DB2ColumnHiddenState.class, JDBCUtils.safeGetString(dbResult, "HIDDEN"));
         this.identity = JDBCUtils.safeGetBoolean(dbResult, "IDENTITY", DB2YesNo.Y.name());
