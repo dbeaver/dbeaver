@@ -27,6 +27,7 @@ import org.eclipse.jface.text.templates.Template;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -125,6 +126,11 @@ public class SQLTemplatesPage extends AbstractTemplatesPage {
         SQLTemplateCompletionProposal proposal = new SQLTemplateCompletionProposal(template, context, region, null);
         sqlEditor.getSite().getPage().activate(sqlEditor);
         proposal.apply(sqlEditor.getViewer(), ' ', 0, region.getOffset());
+        final Point selection = proposal.getSelection(document);
+        if (selection != null) {
+            sqlEditor.getViewer().setSelectedRange(selection.x, selection.y);
+            sqlEditor.getViewer().revealRange(selection.x, selection.y);
+        }
         endCompoundChange(contextViewer);
     }
 
