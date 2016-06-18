@@ -864,9 +864,7 @@ public class ResultSetViewer extends Viewer
     void setMetaData(DBDAttributeBinding[] attributes)
     {
         model.setMetaData(attributes);
-        if (model.isMetadataChanged()) {
-            activePresentation.clearMetaData();
-        }
+        activePresentation.clearMetaData();
     }
 
     void setData(List<Object[]> rows)
@@ -874,8 +872,6 @@ public class ResultSetViewer extends Viewer
         if (viewerPanel.isDisposed()) {
             return;
         }
-        boolean metaChanged = model.isMetadataChanged();
-
         this.curRow = null;
         this.model.setData(rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
@@ -891,7 +887,7 @@ public class ResultSetViewer extends Viewer
             }
         }
 
-        this.activePresentation.refreshData(metaChanged, false);
+        this.activePresentation.refreshData(true, false);
         if (recordMode) {
             this.updateRecordMode();
         }
@@ -1253,16 +1249,7 @@ public class ResultSetViewer extends Viewer
         }
         protected void saveTransformerSettings() {
             attrribute.getDataSource().getContainer().persistConfiguration();
-            getModel().setTransformInProgress(true);
-            final Runnable finalizer = new Runnable() {
-                @Override
-                public void run() {
-                    getModel().setTransformInProgress(false);
-                }
-            };
-            if (!refreshData(finalizer)) {
-                finalizer.run();
-            }
+            refreshData(null);
         }
     }
 

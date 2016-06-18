@@ -65,10 +65,8 @@ public class ResultSetModel {
 
     // Edited rows and cells
     private DBCStatistics statistics;
-    private transient boolean metadataChanged;
     private transient boolean sourceChanged;
     private transient boolean metadataDynamic;
-    private boolean transformInProgress;
 
     public static class AttributeColorSettings {
         private DBCLogicalOperator operator;
@@ -146,10 +144,6 @@ public class ResultSetModel {
                 addConstraints(constraints, nested);
             }
         }
-    }
-
-    public boolean isMetadataChanged() {
-        return metadataChanged;
     }
 
     public boolean isSingleSource() {
@@ -261,7 +255,7 @@ public class ResultSetModel {
     }
 
     @Nullable
-    public DBDAttributeBinding getAttributeBinding(@NotNull DBSAttributeBase attribute) {
+    public DBDAttributeBinding getAttributeBinding(@Nullable DBSAttributeBase attribute) {
         return DBUtils.findBinding(attributes, attribute);
     }
 
@@ -433,39 +427,23 @@ public class ResultSetModel {
      * @param newAttributes attributes metadata
      */
     public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes) {
-        boolean update = false;
-        if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata() || transformInProgress) {
-            update = true;
+        if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
+            this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
+            // the same source
+            sourceChanged = false;
         } else {
-            for (int i = 0; i < this.attributes.length; i++) {
-                if (!ResultSetUtils.equalAttributes(this.attributes[i].getMetaAttribute(), newAttributes[i].getMetaAttribute())) {
-                    update = true;
-                    break;
-                }
-            }
+            sourceChanged = true;
         }
-        update = true;
+        this.clearData();
+        this.attributes = newAttributes;
+        this.documentAttribute = null;
 
-        if (update) {
-            if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
-                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
-                // the same source
-                sourceChanged = false;
-            } else {
-                sourceChanged = true;
-            }
-            this.clearData();
-            this.attributes = newAttributes;
-            this.documentAttribute = null;
-        }
-
-        metadataChanged = update;
-        metadataDynamic = this.attributes != null &&
+        metadataDynamic =
             this.attributes.length > 0 &&
             this.attributes[0].getTopParent().getDataSource().getInfo().isDynamicMetadata();
 
 
-        if (metadataChanged) {
+        {
             // Detect document attribute
             // It has to be only one attribute in list (excluding pseudo attributes).
             DBDAttributeBinding realAttr = null;
@@ -496,7 +474,7 @@ public class ResultSetModel {
         // Clear previous data
         this.clearData();
 
-        if (metadataChanged) {
+        {
             // Extract nested attributes from single top-level attribute
             if (attributes.length == 1) {
                 DBDAttributeBinding topAttr = attributes[0];
@@ -522,7 +500,7 @@ public class ResultSetModel {
         }
         Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
-        if (metadataChanged) {
+        {
             // Check single source flag
             this.singleSourceCells = true;
             DBSEntity sourceTable = null;
@@ -549,7 +527,6 @@ public class ResultSetModel {
         }
 
         hasData = true;
-        metadataChanged = false;
         sourceChanged = false;
     }
 
@@ -645,10 +622,6 @@ public class ResultSetModel {
 
     void setUpdateInProgress(boolean updateInProgress) {
         this.updateInProgress = updateInProgress;
-    }
-
-    public void setTransformInProgress(boolean transformInProgress) {
-        this.transformInProgress = transformInProgress;
     }
 
     ResultSetRow addNewRow(int rowNum, @NotNull Object[] data) {
@@ -788,34 +761,13 @@ public class ResultSetModel {
         for (Iterator<DBDAttributeBinding> attrIter = visibleAttributes.iterator(); attrIter.hasNext(); ) {
             final DBDAttributeBinding attr = attrIter.next();
             if (attr.isPseudoAttribute()) {
-                DBDAttributeConstraint filterConstraint = filter.getConstraint(attr, true);
-                if (filterConstraint == null) {
+                if (filter.getConstraint(attr, true) == null) {
+                    // There is no explicit filter constraint - just hide it
                     attrIter.remove();
                 }
             }
         }
-        /*
-        final Collection<? extends DBSEntityAttribute> targetAttrs = targetEntity.getAttributes(monitor);
-        if (targetAttrs != null) {
-            for (DBSEntityAttribute targetAttr : targetAttrs) {
-                if (targetAttr.isPseudoAttribute()) {
-                    DBDAttributeConstraint paConstraint = null;
-                    for (DBDAttributeConstraint constraint : constraints) {
-                        if (constraint.getAttribute() == targetAttr) {
-                            paConstraint = constraint;
-                        }
-                    }
-                    if (paConstraint == null) {
-                        paConstraint = new DBDAttributeConstraint(targetAttr, visualPosition++);
-                        paConstraint.setVisible(true);
-                        constraints.add(paConstraint);
-                    } else {
-                        paConstraint.setVisible(false);
-                    }
-                }
-            }
-        }
-         */
+
         Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
         this.dataFilter.setWhere(filter.getWhere());
