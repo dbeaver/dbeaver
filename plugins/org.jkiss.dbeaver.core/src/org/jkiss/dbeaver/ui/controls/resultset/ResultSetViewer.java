@@ -1453,6 +1453,7 @@ public class ResultSetViewer extends Viewer
                 "Entity [" + DBUtils.getObjectFullName(targetEntity) + "] association [" + association.getName() +
                     "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
         }
+        // Add association constraints
         for (int i = 0; i < ownAttrs.size(); i++) {
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
@@ -1466,7 +1467,6 @@ public class ResultSetViewer extends Viewer
             Object keyValue = model.getCellValue(ownBinding, row);
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
-            //constraint.setCriteria("='" + ownBinding.getValueHandler().getValueDisplayString(ownBinding.getAttribute(), keyValue, DBDDisplayFormat.NATIVE) + "'");
         }
         DBDDataFilter newFilter = new DBDDataFilter(constraints);
 
