@@ -22,6 +22,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.viewers.CheckboxTableViewer;
+import org.eclipse.jface.viewers.ColumnLabelProvider;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -47,6 +50,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
@@ -55,6 +60,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
+import java.util.List;
 import java.util.regex.Pattern;
 
 class FilterValueEditDialog extends BaseDialog {
@@ -74,7 +80,7 @@ class FilterValueEditDialog extends BaseDialog {
     private Object value;
     private IValueEditor editor;
     private Text textControl;
-    private Table table;
+    private CheckboxTableViewer table;
     private String filterPattern;
     private KeyLoadLob loadJob;
 
@@ -147,54 +153,57 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void createMultiValueSelector(Composite composite) {
-        table = new Table(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION);
-        table.setLinesVisible(true);
-        table.setHeaderVisible(true);
+        table = CheckboxTableViewer.newCheckList(composite, SWT.BORDER | SWT.MULTI | SWT.CHECK | SWT.FULL_SELECTION);
+        table.getTable().setLinesVisible(true);
+        table.getTable().setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 300;
-        table.setLayoutData(gd);
-/*
-        table.addMouseListener(new MouseAdapter() {
+        table.getTable().setLayoutData(gd);
+        table.setContentProvider(new ListContentProvider());
+
+        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), table);
+        columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
-            public void mouseDown(MouseEvent e) {
-                for (TableItem item : table.getSelection()) {
-                    item.setChecked(!item.getChecked());
-                }
+            public String getText(Object element) {
+                return attr.getValueHandler().getValueDisplayString(attr, ((DBDLabelValuePair)element).getValue(), DBDDisplayFormat.UI);
             }
         });
-*/
-
-        UIUtils.createTableColumn(table, SWT.LEFT, "Value");
-        UIUtils.createTableColumn(table, SWT.LEFT, "Description");
+        columnController.addColumn("Description", "Row description (composed from dictionary columns)", SWT.LEFT, true, true, new ColumnLabelProvider() {
+            @Override
+            public String getText(Object element) {
+                return ((DBDLabelValuePair)element).getLabel();
+            }
+        });
+        columnController.createColumns();
 
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(new IMenuListener() {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
-                UIUtils.fillDefaultTableContextMenu(manager, table);
+                UIUtils.fillDefaultTableContextMenu(manager, table.getTable());
                 manager.add(new Separator());
                 manager.add(new Action("Select &All") {
                     @Override
                     public void run() {
-                        for (TableItem item : table.getItems()) {
-                            item.setChecked(true);
+                        for (DBDLabelValuePair row : getMultiValues()) {
+                            table.setChecked(row, true);
                         }
                     }
                 });
                 manager.add(new Action("Select &None") {
                     @Override
                     public void run() {
-                        for (TableItem item : table.getItems()) {
-                            item.setChecked(false);
+                        for (DBDLabelValuePair row : getMultiValues()) {
+                            table.setChecked(row, false);
                         }
                     }
                 });
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        table.setMenu(menuMgr.createContextMenu(table));
+        table.getTable().setMenu(menuMgr.createContextMenu(table.getTable()));
 
         if (attr.getDataKind() == DBPDataKind.STRING) {
             // Create filter text
@@ -275,7 +284,7 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
-        table.getColumn(1).setText("Count");
+        table.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadLob("Load '" + attr.getName() + "' values") {
             @Override
             protected Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
@@ -286,8 +295,6 @@ class FilterValueEditDialog extends BaseDialog {
     }
 
     private void loadMultiValueList(@NotNull Collection<DBDLabelValuePair> values) {
-        table.removeAll();
-
         Pattern pattern = null;
         if (!CommonUtils.isEmpty(filterPattern)) {
             pattern = Pattern.compile(SQLUtils.makeLikePattern("%" + filterPattern + "%"), Pattern.CASE_INSENSITIVE);
@@ -328,27 +335,25 @@ class FilterValueEditDialog extends BaseDialog {
             checkedValues.add(value);
         }
 
-        TableItem firstVisibleItem = null;
+        table.setInput(sortedList);
+        DBDLabelValuePair firstVisibleItem = null;
         for (DBDLabelValuePair row : sortedList) {
             Object cellValue = row.getValue();
-            String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
 
-            TableItem item = new TableItem(table, SWT.LEFT);
-            item.setData(cellValue);
-            item.setText(0, itemString);
-            if (!CommonUtils.isEmpty(row.getLabel())) {
-                item.setText(1, row.getLabel());
-            }
             if (checkedValues.contains(cellValue)) {
-                item.setChecked(true);
+                table.setChecked(row, true);
                 if (firstVisibleItem == null) {
-                    firstVisibleItem = item;
+                    firstVisibleItem = row;
                 }
             }
         }
-        UIUtils.packColumns(table, false);
+        ViewerColumnController.getFromControl(table.getTable()).repackColumns();
         if (firstVisibleItem != null) {
-            table.showItem(firstVisibleItem);
+            final Widget item = table.testFindItem(firstVisibleItem);
+            if (item != null) {
+                table.getTable().setSelection((TableItem) item);
+                table.getTable().showItem((TableItem) item);
+            }
         }
     }
 
@@ -383,9 +388,9 @@ class FilterValueEditDialog extends BaseDialog {
     {
         if (table != null) {
             java.util.List<Object> values = new ArrayList<>();
-            for (TableItem item : table.getItems()) {
-                if (item.getChecked()) {
-                    values.add(item.getData());
+            for (DBDLabelValuePair item : getMultiValues()) {
+                if (table.getChecked(item)) {
+                    values.add(item.getValue());
                 }
             }
             value = values.toArray();
@@ -399,6 +404,10 @@ class FilterValueEditDialog extends BaseDialog {
             value = textControl.getText();
         }
         super.okPressed();
+    }
+
+    private Collection<DBDLabelValuePair> getMultiValues() {
+        return (Collection<DBDLabelValuePair>)table.getInput();
     }
 
     public Object getValue() {
