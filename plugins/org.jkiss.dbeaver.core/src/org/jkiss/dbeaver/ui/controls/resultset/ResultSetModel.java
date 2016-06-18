@@ -780,10 +780,42 @@ public class ResultSetModel {
             filterConstraint.setOrderDescending(constraint.isOrderDescending());
             filterConstraint.setVisible(constraint.isVisible());
             filterConstraint.setVisualPosition(constraint.getVisualPosition());
-            if (!constraint.isVisible() && constraint.getAttribute() instanceof DBDAttributeBinding) {
-                visibleAttributes.remove((DBDAttributeBinding) constraint.getAttribute());
+            if (!constraint.isVisible() && filterConstraint.getAttribute() instanceof DBDAttributeBinding) {
+                visibleAttributes.remove(filterConstraint.getAttribute());
             }
         }
+        // Hide pseudo attributes
+        for (Iterator<DBDAttributeBinding> attrIter = visibleAttributes.iterator(); attrIter.hasNext(); ) {
+            final DBDAttributeBinding attr = attrIter.next();
+            if (attr.isPseudoAttribute()) {
+                DBDAttributeConstraint filterConstraint = filter.getConstraint(attr, true);
+                if (filterConstraint == null) {
+                    attrIter.remove();
+                }
+            }
+        }
+        /*
+        final Collection<? extends DBSEntityAttribute> targetAttrs = targetEntity.getAttributes(monitor);
+        if (targetAttrs != null) {
+            for (DBSEntityAttribute targetAttr : targetAttrs) {
+                if (targetAttr.isPseudoAttribute()) {
+                    DBDAttributeConstraint paConstraint = null;
+                    for (DBDAttributeConstraint constraint : constraints) {
+                        if (constraint.getAttribute() == targetAttr) {
+                            paConstraint = constraint;
+                        }
+                    }
+                    if (paConstraint == null) {
+                        paConstraint = new DBDAttributeConstraint(targetAttr, visualPosition++);
+                        paConstraint.setVisible(true);
+                        constraints.add(paConstraint);
+                    } else {
+                        paConstraint.setVisible(false);
+                    }
+                }
+            }
+        }
+         */
         Collections.sort(this.visibleAttributes, POSITION_SORTER);
 
         this.dataFilter.setWhere(filter.getWhere());
