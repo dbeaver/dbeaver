@@ -694,6 +694,27 @@ public class UIUtils {
         return ph;
     }
 
+    public static void setGridSpan(Control control, int horizontalSpan, int verticalSpan) {
+        GridData gd;
+        final Object layoutData = control.getLayoutData();
+        if (layoutData == null) {
+            if (control.getParent().getLayout() instanceof GridLayout) {
+                gd = new GridData();
+                control.setLayoutData(gd);
+            } else {
+                log.debug("Can't set grid span for layout: " + control.getParent().getLayout());
+                return;
+            }
+        } else if (layoutData instanceof GridData) {
+            gd = (GridData) layoutData;
+        } else {
+            log.debug("Can't set grid span for non-grid layout: " + layoutData.getClass().getName());
+            return;
+        }
+        gd.horizontalSpan = horizontalSpan;
+        gd.verticalSpan = verticalSpan;
+    }
+
     public static Label createHorizontalLine(Composite parent)
     {
         Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
