@@ -47,12 +47,14 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
+import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -166,7 +168,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         {
             // Control buttons
             Composite buttonsPanel = new Composite(composite, SWT.NONE);
-            buttonsPanel.setLayout(new GridLayout(3, false));
+            buttonsPanel.setLayout(new GridLayout(4, false));
             buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             final Button mapTableButton = new Button(buttonsPanel, SWT.PUSH);
@@ -202,6 +204,18 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 public void widgetSelected(SelectionEvent e)
                 {
                     mapColumns((DatabaseMappingContainer) getSelectedMapping());
+                }
+            });
+
+            final Button ddlButton = new Button(buttonsPanel, SWT.PUSH);
+            ddlButton.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
+            ddlButton.setText("DDL ...");
+            ddlButton.setEnabled(false);
+            ddlButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    showDDL((DatabaseMappingContainer) getSelectedMapping());
                 }
             });
 
@@ -246,7 +260,9 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     DatabaseMappingObject mapping = getSelectedMapping();
                     mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
                     createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                    columnsButton.setEnabled(mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified);
+                    final boolean hasMappings = mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified;
+                    columnsButton.setEnabled(hasMappings);
+                    ddlButton.setEnabled(hasMappings);
                 }
             });
             mappingViewer.addDoubleClickListener(new IDoubleClickListener() {
@@ -370,6 +386,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
                     mappingViewer.refresh();
+                    mappingViewer.setSelection(mappingViewer.getSelection());
                     updatePageCompletion();
                     setErrorMessage(null);
                 } catch (DBException e) {
@@ -584,6 +601,30 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         if (dialog.open() == IDialogConstants.OK_ID) {
             mappingViewer.refresh();
             updatePageCompletion();
+        }
+
+    }
+
+    private void showDDL(DatabaseMappingContainer mapping)
+    {
+        final DatabaseConsumerSettings settings = getWizard().getPageSettings(DatabaseConsumerPageMapping.this, DatabaseConsumerSettings.class);
+        final DBSObjectContainer container = settings.getContainer();
+        if (container == null) {
+            return;
+        }
+        DBPDataSource dataSource = container.getDataSource();
+        try {
+            final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(VoidProgressMonitor.INSTANCE, dataSource, container, mapping);
+            ViewSQLDialog dialog = new ViewSQLDialog(
+                DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
+                dataSource.getDefaultContext(true),
+                "Target DDL",
+                null,
+                ddl
+            );
+            dialog.open();
+        } catch (DBException e) {
+            UIUtils.showErrorDialog(getShell(), "Target DDL", "Error generatiung target DDL", e);
         }
 
     }
