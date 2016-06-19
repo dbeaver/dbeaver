@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.runtime.qm;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -80,6 +81,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         return running;
     }
 
+    @NotNull
     @Override
     public String getHandlerName()
     {
@@ -142,7 +144,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleContextOpen(DBCExecutionContext context, boolean transactional)
+    public synchronized void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
         String contextId = context.getDataSource().getContainer().getId() + ":" + context.getContextName();
         QMMSessionInfo session = new QMMSessionInfo(
@@ -160,7 +162,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleContextClose(DBCExecutionContext context)
+    public synchronized void handleContextClose(@NotNull DBCExecutionContext context)
     {
         QMMSessionInfo session = getSessionInfo(context);
         if (session != null) {
@@ -170,7 +172,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+    public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
     {
         QMMSessionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
@@ -183,7 +185,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionCommit(DBCExecutionContext context)
+    public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
     {
         QMMSessionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
@@ -195,7 +197,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+    public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
     {
         QMMSessionInfo sessionInfo = getSessionInfo(context);
         if (sessionInfo != null) {
@@ -207,7 +209,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementOpen(DBCStatement statement)
+    public synchronized void handleStatementOpen(@NotNull DBCStatement statement)
     {
         QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
@@ -217,7 +219,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementClose(DBCStatement statement, long rows)
+    public synchronized void handleStatementClose(@NotNull DBCStatement statement, long rows)
     {
         QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
@@ -231,7 +233,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementExecuteBegin(DBCStatement statement)
+    public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
     {
         QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
@@ -243,7 +245,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
+    public synchronized void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error)
     {
         QMMSessionInfo session = getSessionInfo(statement.getSession().getExecutionContext());
         if (session != null) {
@@ -255,7 +257,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleResultSetOpen(DBCResultSet resultSet)
+    public synchronized void handleResultSetOpen(@NotNull DBCResultSet resultSet)
     {
         QMMSessionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {
@@ -267,7 +269,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
     }
 
     @Override
-    public synchronized void handleResultSetClose(DBCResultSet resultSet, long rowCount)
+    public synchronized void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount)
     {
         QMMSessionInfo session = getSessionInfo(resultSet.getSession().getExecutionContext());
         if (session != null) {

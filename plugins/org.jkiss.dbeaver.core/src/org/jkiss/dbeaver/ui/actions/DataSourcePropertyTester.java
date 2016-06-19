@@ -21,6 +21,7 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
@@ -132,13 +133,14 @@ public class DataSourcePropertyTester extends PropertyTester
 
     // QM events handler
     private static class QMEventsHandler extends DefaultExecutionHandler {
+        @NotNull
         @Override
         public String getHandlerName() {
             return DataSourcePropertyTester.class.getName();
         }
 
         @Override
-        public synchronized void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+        public synchronized void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
         {
             // Fire transactional mode change
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
@@ -147,19 +149,19 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         @Override
-        public synchronized void handleTransactionCommit(DBCExecutionContext context)
+        public synchronized void handleTransactionCommit(@NotNull DBCExecutionContext context)
         {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
         }
 
         @Override
-        public synchronized void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+        public synchronized void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
         {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
         }
 
         @Override
-        public synchronized void handleStatementExecuteBegin(DBCStatement statement)
+        public synchronized void handleStatementExecuteBegin(@NotNull DBCStatement statement)
         {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
         }
