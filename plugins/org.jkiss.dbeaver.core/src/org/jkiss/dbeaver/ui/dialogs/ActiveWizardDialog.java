@@ -63,8 +63,6 @@ public class ActiveWizardDialog extends WizardDialog
 //                }
             }
         });
-
-
     }
 
     @Override

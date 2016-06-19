@@ -124,10 +124,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (column.targetIndex < 0) {
                 continue;
             }
+            final Object attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
             rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
                 session,
                 column.targetAttr.getTarget(),
-                column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i),
+                attrValue,
                 false);
         }
         executeBatch.add(rowValues);
