@@ -22,9 +22,9 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -60,13 +60,16 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.List;
 import java.util.regex.Pattern;
 
 class FilterValueEditDialog extends BaseDialog {
 
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
+
+    private static final String DIALOG_ID = "DBeaver.FilterValueEditDialog";//$NON-NLS-1$
+
     public static final int MAX_MULTI_VALUES = 1000;
+    public static final String MULTI_KEY_LABEL = "...";
 
     @NotNull
     private final ResultSetViewer viewer;
@@ -90,6 +93,12 @@ class FilterValueEditDialog extends BaseDialog {
         this.attr = attr;
         this.rows = rows;
         this.operator = operator;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings(DIALOG_ID + "." + operator.name());
     }
 
     @Override
@@ -303,23 +312,38 @@ class FilterValueEditDialog extends BaseDialog {
         // Get all values from actual RSV data
         boolean hasNulls = false;
         java.util.Map<Object, DBDLabelValuePair> rowData = new TreeMap<>();
+        for (DBDLabelValuePair pair : values) {
+            final DBDLabelValuePair oldLabel = rowData.get(pair.getValue());
+            if (oldLabel != null) {
+                // Duplicate label for single key - may happen in case of composite foreign keys
+                String multiLabel = oldLabel.getLabel() + "," + pair.getLabel();
+                if (multiLabel.length() > 200) {
+                    multiLabel = multiLabel.substring(0, 200) + MULTI_KEY_LABEL;
+                }
+                rowData.put(pair.getValue(), new DBDLabelValuePair(multiLabel, pair.getValue()));
+            } else{
+                rowData.put(pair.getValue(), pair);
+            }
+        }
+        // Add values from fetched rows
         for (ResultSetRow row : viewer.getModel().getAllRows()) {
             Object cellValue = viewer.getModel().getCellValue(attr, row);
             if (DBUtils.isNullValue(cellValue)) {
                 hasNulls = true;
                 continue;
             }
-            String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
-            rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
+            if (!rowData.containsKey(cellValue)) {
+                String itemString = attr.getValueHandler().getValueDisplayString(attr, cellValue, DBDDisplayFormat.UI);
+                rowData.put(cellValue, new DBDLabelValuePair(itemString, cellValue));
+            }
         }
-        for (DBDLabelValuePair pair : values) {
-            rowData.put(pair.getValue(), pair);
-        }
+
         java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
         if (pattern != null) {
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
-                String itemString = attr.getValueHandler().getValueDisplayString(attr, iter.next().getValue(), DBDDisplayFormat.UI);
-                if (!pattern.matcher(itemString).matches()) {
+                final DBDLabelValuePair valuePair = iter.next();
+                String itemString = attr.getValueHandler().getValueDisplayString(attr, valuePair.getValue(), DBDDisplayFormat.UI);
+                if (!pattern.matcher(itemString).matches() && (valuePair.getLabel() == null || !pattern.matcher(valuePair.getLabel()).matches())) {
                     iter.remove();
                 }
             }
