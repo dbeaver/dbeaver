@@ -17,23 +17,23 @@
  */
 package org.jkiss.dbeaver.core;
 
-import org.jkiss.dbeaver.model.runtime.DBRFeature;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 /**
  * DBeaver project nature
  */
 public interface CoreFeatures {
 
-    DBRFeature SQL_EDITOR = new DBRFeature(DBRFeature.ROOT, "SQLEditor", "SQL Editor", "SQL Editor features", null, true);
-    DBRFeature SQL_EDITOR_OPEN = new DBRFeature(SQL_EDITOR, "SQLEditor.Open", "Open SQL Editor");
-    DBRFeature SQL_EDITOR_EXECUTE_QUERY = new DBRFeature(SQL_EDITOR, "SQLEditor.Query", "Execute SQL query");
-    DBRFeature SQL_EDITOR_EXECUTE_SCRIPT = new DBRFeature(SQL_EDITOR, "SQLEditor.Script", "Execute SQL script");
-    DBRFeature SQL_EDITOR_EXPLAIN_PLAN = new DBRFeature(SQL_EDITOR, "SQLEditor.Explain", "Explain SQL query plan");
-    DBRFeature SQL_EDITOR_QUERY_PARAMS = new DBRFeature(SQL_EDITOR, "SQLEditor.QueryParams", "Use SQL query parameters");
+    DBRFeature SQL_EDITOR = new DBRFeature(DBRFeature.ROOT, "SQL Editor", "SQL Editor features", null, true, null);
+    DBRFeature SQL_EDITOR_OPEN = new DBRFeature(SQL_EDITOR, "Open SQL Editor");
+    DBRFeature SQL_EDITOR_EXECUTE_QUERY = new DBRFeature(SQL_EDITOR, "Execute SQL query");
+    DBRFeature SQL_EDITOR_EXECUTE_SCRIPT = new DBRFeature(SQL_EDITOR, "Execute SQL script");
+    DBRFeature SQL_EDITOR_EXPLAIN_PLAN = new DBRFeature(SQL_EDITOR, "Explain SQL query plan");
+    DBRFeature SQL_EDITOR_QUERY_PARAMS = new DBRFeature(SQL_EDITOR, "Use SQL query parameters");
 
-    DBRFeature ENTITY_EDITOR = new DBRFeature(DBRFeature.ROOT, "EntityEditor", "Object Editor", "Object Editor features", null, true);
-    DBRFeature ENTITY_EDITOR_MODIFY = new DBRFeature(ENTITY_EDITOR, "EntityEditor.Modify", "Change object properties");
-    DBRFeature ENTITY_EDITOR_SAVE = new DBRFeature(ENTITY_EDITOR, "EntityEditor.Save", "Save object properties");
-    DBRFeature ENTITY_EDITOR_REJECT = new DBRFeature(ENTITY_EDITOR, "EntityEditor.Reject", "Reject object properties changes");
+    DBRFeature ENTITY_EDITOR = new DBRFeature(DBRFeature.ROOT, "Object Editor", "Object Editor features", null, true, null);
+    DBRFeature ENTITY_EDITOR_MODIFY = new DBRFeature(ENTITY_EDITOR, "Change object properties");
+    DBRFeature ENTITY_EDITOR_SAVE = new DBRFeature(ENTITY_EDITOR, "Save object properties");
+    DBRFeature ENTITY_EDITOR_REJECT = new DBRFeature(ENTITY_EDITOR, "Reject object properties changes");
 
 }
