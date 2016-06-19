@@ -24,8 +24,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.runtime.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -100,7 +100,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         // General settings
         {
             Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
-            ((GridData)commonGroup.getLayoutData()).horizontalSpan = 2;
+            UIUtils.setGridSpan(commonGroup, 2, 1);
             {
                 invalidateBeforeExecuteCheck = UIUtils.createLabelCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, false);
 
@@ -119,7 +119,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         // Scripts
         {
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_scripts, 2, GridData.FILL_HORIZONTAL, 0);
-            ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
+            UIUtils.setGridSpan(scriptsGroup, 2, 1);
             {
                 UIUtils.createControlLabel(scriptsGroup, CoreMessages.pref_page_sql_editor_label_commit_type);
 
