@@ -33,7 +33,6 @@ import java.util.UUID;
  * UUID value manager
  */
 public class UUIDValueManager extends BaseValueManager {
-    private static final Log log = Log.getLog(UUIDValueManager.class);
 
     @NotNull
     @Override
@@ -46,37 +45,9 @@ public class UUIDValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new StringInlineEditor(controller) {
-                    @Override
-                    public Object extractEditorValue() throws DBCException {
-                        String strValue = (String) super.extractEditorValue();
-                        if (strValue == null || strValue.isEmpty()) {
-                            return null;
-                        }
-                        try {
-                            return UUID.fromString(CommonUtils.toString(strValue));
-                        } catch (Exception e) {
-                            log.warn(e);
-                            return null;
-                        }
-                    }
-                };
+                return new StringInlineEditor(controller);
             case EDITOR:
-                return new TextViewDialog(controller) {
-                    @Override
-                    public Object extractEditorValue() {
-                        String strValue = (String) super.extractEditorValue();
-                        if (strValue == null || strValue.isEmpty()) {
-                            return null;
-                        }
-                        try {
-                            return UUID.fromString(CommonUtils.toString(super.extractEditorValue()));
-                        } catch (Exception e) {
-                            log.warn(e);
-                            return null;
-                        }
-                    }
-                };
+                return new TextViewDialog(controller);
             default:
                 return null;
         }
