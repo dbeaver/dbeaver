@@ -18,9 +18,13 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.runtime.DBRFeature;
+
+import java.util.Map;
 
 /**
  * Query manager execution handler.
@@ -29,42 +33,44 @@ import org.jkiss.dbeaver.model.exec.*;
  */
 public interface QMExecutionHandler {
 
+    @NotNull
     String getHandlerName();
 
-    void handleContextOpen(DBCExecutionContext context, boolean transactional);
+    void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional);
 
-    void handleContextClose(DBCExecutionContext context);
+    void handleContextClose(@NotNull DBCExecutionContext context);
 
-    void handleSessionOpen(DBCSession session);
+    void handleSessionOpen(@NotNull DBCSession session);
 
-    void handleSessionClose(DBCSession session);
+    void handleSessionClose(@NotNull DBCSession session);
 
-    void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit);
+    void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit);
 
-    void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level);
+    void handleTransactionIsolation(@NotNull DBCExecutionContext context, @NotNull DBPTransactionIsolation level);
 
-    void handleTransactionCommit(DBCExecutionContext context);
+    void handleTransactionCommit(@NotNull DBCExecutionContext context);
 
-    void handleTransactionSavepoint(DBCSavepoint savepoint);
+    void handleTransactionSavepoint(@NotNull DBCSavepoint savepoint);
 
-    void handleTransactionRollback(DBCExecutionContext context, @Nullable DBCSavepoint savepoint);
+    void handleTransactionRollback(@NotNull DBCExecutionContext context, @Nullable DBCSavepoint savepoint);
 
-    void handleStatementOpen(DBCStatement statement);
+    void handleStatementOpen(@NotNull DBCStatement statement);
 
-    void handleStatementExecuteBegin(DBCStatement statement);
+    void handleStatementExecuteBegin(@NotNull DBCStatement statement);
 
-    void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error);
+    void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error);
 
-    void handleStatementBind(DBCStatement statement, Object column, @Nullable Object value);
+    void handleStatementBind(@NotNull DBCStatement statement, Object column, @Nullable Object value);
 
-    void handleStatementClose(DBCStatement statement, long rows);
+    void handleStatementClose(@NotNull DBCStatement statement, long rows);
 
-    void handleResultSetOpen(DBCResultSet resultSet);
+    void handleResultSetOpen(@NotNull DBCResultSet resultSet);
 
-    void handleResultSetClose(DBCResultSet resultSet, long rowCount);
+    void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount);
 
-    void handleScriptBegin(DBCSession session);
+    void handleScriptBegin(@NotNull DBCSession session);
     
-    void handleScriptEnd(DBCSession session);
+    void handleScriptEnd(@NotNull DBCSession session);
 
+    void handleFeatureUsage(@NotNull DBRFeature feature, @Nullable Map<String, Object> parameters);
 }

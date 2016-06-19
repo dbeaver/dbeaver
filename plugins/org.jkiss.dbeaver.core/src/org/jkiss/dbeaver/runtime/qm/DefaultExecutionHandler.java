@@ -17,9 +17,14 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
+import org.jkiss.dbeaver.model.runtime.DBRFeature;
+
+import java.util.Map;
 
 /**
  * Default execution handler.
@@ -28,110 +33,115 @@ import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 public abstract class DefaultExecutionHandler implements QMExecutionHandler {
 
     @Override
-    public void handleContextOpen(DBCExecutionContext context, boolean transactional)
+    public void handleContextOpen(@NotNull DBCExecutionContext context, boolean transactional)
     {
 
     }
 
     @Override
-    public void handleContextClose(DBCExecutionContext context)
+    public void handleContextClose(@NotNull DBCExecutionContext context)
     {
 
     }
 
     @Override
-    public void handleSessionOpen(DBCSession session)
+    public void handleSessionOpen(@NotNull DBCSession session)
     {
 
     }
 
     @Override
-    public void handleSessionClose(DBCSession session)
+    public void handleSessionClose(@NotNull DBCSession session)
     {
 
     }
 
     @Override
-    public void handleTransactionAutocommit(DBCExecutionContext context, boolean autoCommit)
+    public void handleTransactionAutocommit(@NotNull DBCExecutionContext context, boolean autoCommit)
     {
 
     }
 
     @Override
-    public void handleTransactionIsolation(DBCExecutionContext context, DBPTransactionIsolation level)
+    public void handleTransactionIsolation(@NotNull DBCExecutionContext context, @NotNull DBPTransactionIsolation level)
     {
 
     }
 
     @Override
-    public void handleTransactionCommit(DBCExecutionContext context)
+    public void handleTransactionCommit(@NotNull DBCExecutionContext context)
     {
 
     }
 
     @Override
-    public void handleTransactionSavepoint(DBCSavepoint savepoint)
+    public void handleTransactionSavepoint(@NotNull DBCSavepoint savepoint)
     {
 
     }
 
     @Override
-    public void handleTransactionRollback(DBCExecutionContext context, DBCSavepoint savepoint)
+    public void handleTransactionRollback(@NotNull DBCExecutionContext context, DBCSavepoint savepoint)
     {
 
     }
 
     @Override
-    public void handleStatementOpen(DBCStatement statement)
+    public void handleStatementOpen(@NotNull DBCStatement statement)
     {
 
     }
 
     @Override
-    public void handleStatementExecuteBegin(DBCStatement statement)
+    public void handleStatementExecuteBegin(@NotNull DBCStatement statement)
     {
 
     }
 
     @Override
-    public void handleStatementExecuteEnd(DBCStatement statement, long rows, Throwable error)
+    public void handleStatementExecuteEnd(@NotNull DBCStatement statement, long rows, Throwable error)
     {
         
     }
 
     @Override
-    public void handleStatementBind(DBCStatement statement, Object column, Object value)
+    public void handleStatementBind(@NotNull DBCStatement statement, Object column, Object value)
     {
 
     }
 
     @Override
-    public void handleStatementClose(DBCStatement statement, long rows)
+    public void handleStatementClose(@NotNull DBCStatement statement, long rows)
     {
 
     }
 
     @Override
-    public void handleResultSetOpen(DBCResultSet resultSet)
+    public void handleResultSetOpen(@NotNull DBCResultSet resultSet)
     {
 
     }
 
     @Override
-    public void handleResultSetClose(DBCResultSet resultSet, long rowCount)
+    public void handleResultSetClose(@NotNull DBCResultSet resultSet, long rowCount)
     {
 
     }
 
     @Override
-    public void handleScriptBegin(DBCSession session)
+    public void handleScriptBegin(@NotNull DBCSession session)
     {
 
     }
 
     @Override
-    public void handleScriptEnd(DBCSession session)
+    public void handleScriptEnd(@NotNull DBCSession session)
     {
+
+    }
+
+    @Override
+    public void handleFeatureUsage(@NotNull DBRFeature feature, @Nullable Map<String, Object> parameters) {
 
     }
 }
