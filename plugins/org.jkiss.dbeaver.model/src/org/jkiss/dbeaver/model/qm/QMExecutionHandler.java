@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.runtime.DBRFeature;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 import java.util.Map;
 

@@ -22,15 +22,13 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,7 +40,6 @@ import java.util.ResourceBundle;
  * The activator class controls the plug-in life cycle
  */
 public class DBeaverActivator extends AbstractUIPlugin {
-    private static final Log log = Log.getLog(DBeaverActivator.class);
 
     // The shared instance
     private static DBeaverActivator instance;
@@ -50,9 +47,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
     private PrintStream debugWriter;
     private DBPPreferenceStore preferences;
 
-    /**
-     * The constructor
-     */
     public DBeaverActivator() {
     }
 
@@ -62,29 +56,21 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     @Override
     public void start(BundleContext context)
-        throws Exception
-    {
+        throws Exception {
         super.start(context);
 
         instance = this;
         Bundle bundle = getBundle();
         ModelPreferences.setMainBundle(bundle);
-        preferences = new
+        preferences = new BundlePreferenceStore(bundle);
 
-            BundlePreferenceStore(bundle);
-
+        DBRFeatureRegistry.registerFeatures(CoreFeatures.class);
         DBeaverUI.getInstance();
 
-        try
-
-        {
+        try {
             coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
             pluginResourceBundle = Platform.getResourceBundle(bundle);
-        } catch (
-            MissingResourceException x
-            )
-
-        {
+        } catch (MissingResourceException x) {
             coreResourceBundle = null;
         }
     }

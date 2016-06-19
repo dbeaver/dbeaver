@@ -16,26 +16,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.model.runtime;
+package org.jkiss.dbeaver.model.runtime.features;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.qm.QMUtils;
 
 import java.util.Map;
 
 /**
  * DBeaver feature description
  */
-public class DBRFeature {
+public final class DBRFeature {
 
     public static final DBRFeature ROOT = new DBRFeature("Root", "Root Feature");
 
     private final DBRFeature parentFeature;
-    private final String id;
+    private String id;
     private final String name;
     private final String description;
     private final String helpURL;
     private final boolean isAbstract;
+    private final DBRNotificationDescriptor notificationDefaults;
 
     private DBRFeature(@NotNull String id, @NotNull String name) {
         this.parentFeature = null;
@@ -44,19 +44,20 @@ public class DBRFeature {
         this.description = null;
         this.helpURL = null;
         this.isAbstract = true;
+        this.notificationDefaults = null;
     }
 
-    public DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String id, @NotNull String name, String description, String helpURL, boolean isAbstract) {
+    public DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name, String description, String helpURL, boolean isAbstract, DBRNotificationDescriptor notificationDefaults) {
         this.parentFeature = parentFeature;
-        this.id = id;
         this.name = name;
         this.description = description;
         this.helpURL = helpURL;
         this.isAbstract = isAbstract;
+        this.notificationDefaults = notificationDefaults;
     }
 
-    public DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String id, @NotNull String name) {
-        this(parentFeature, id, name, null, null, false);
+    public DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
+        this(parentFeature, name, null, null, false, null);
     }
 
     public DBRFeature getParentFeature() {
@@ -65,6 +66,10 @@ public class DBRFeature {
 
     public String getId() {
         return id;
+    }
+
+    void setId(String id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -83,12 +88,21 @@ public class DBRFeature {
         return isAbstract;
     }
 
+    public DBRNotificationDescriptor getNotificationDefaults() {
+        return notificationDefaults;
+    }
+
     public void use() {
         this.use(null);
     }
 
     public void use(Map<String, Object> parameters) {
-        QMUtils.getDefaultHandler().handleFeatureUsage(this, parameters);
+        DBRFeatureRegistry.useFeature(this, parameters);
+    }
+
+    @Override
+    public String toString() {
+        return id + " (" + name + ")";
     }
 
 }
