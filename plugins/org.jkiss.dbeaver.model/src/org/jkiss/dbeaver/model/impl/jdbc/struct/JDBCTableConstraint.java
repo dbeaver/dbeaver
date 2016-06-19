@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.struct;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
@@ -35,10 +36,11 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSConstraintEnumerable;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -124,69 +126,84 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         int maxResults)
         throws DBException
     {
-        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
-        StringBuilder query = new StringBuilder();
-        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
+        final TABLE table = getParentObject();
+        assert table != null;
 
-        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), keyColumn);
-        if (descColumns != null) {
-            query.append(", ").append(descColumns);
-        }
-        query.append(" FROM ").append(DBUtils.getObjectFullName(keyColumn.getParentObject()));
-        List<String> conditions = new ArrayList<>();
+        DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
+
         if (keyPattern != null) {
             if (keyPattern instanceof CharSequence) {
                 if (((CharSequence)keyPattern).length() > 0) {
-                    conditions.add(DBUtils.getQuotedIdentifier(keyColumn) + " LIKE ?");
+                    keyPattern = "%" + keyPattern.toString() + "%";
                 } else {
                     keyPattern = null;
                 }
             } else if (keyPattern instanceof Number) {
-                conditions.add(DBUtils.getQuotedIdentifier(keyColumn) + " >= ?");
+                // Subtract gap value to see some values before specified
+                int gapSize =  maxResults / 2;
+                if (keyPattern instanceof Integer) {
+                    keyPattern = (Integer) keyPattern - gapSize;
+                } else if (keyPattern instanceof Short) {
+                    keyPattern = (Short) keyPattern - gapSize;
+                } else if (keyPattern instanceof Long) {
+                    keyPattern = (Long) keyPattern - gapSize;
+                } else if (keyPattern instanceof Float) {
+                    keyPattern = (Float) keyPattern - gapSize;
+                } else if (keyPattern instanceof Double) {
+                    keyPattern = (Double) keyPattern - gapSize;
+                } else if (keyPattern instanceof BigInteger) {
+                    keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
+                }
             } else {
                 // not supported
+                keyPattern = null;
             }
         }
+
+        StringBuilder query = new StringBuilder();
+        query.append("SELECT ").append(DBUtils.getQuotedIdentifier(keyColumn));
+
+        String descColumns = DBVUtils.getDictionaryDescriptionColumns(session.getProgressMonitor(), keyColumn);
+        Collection<DBSEntityAttribute> descAttributes = null;
+        if (descColumns != null) {
+            descAttributes = DBVEntity.getDescriptionColumns(session.getProgressMonitor(), table, descColumns);
+            query.append(", ").append(descColumns);
+        }
+        query.append(" FROM ").append(DBUtils.getObjectFullName(table));
+        if (!CommonUtils.isEmpty(preceedingKeys) || keyPattern != null) {
+            query.append(" WHERE ");
+        }
+        boolean hasCond = false;
+        // Preceeding keys
         if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
-            for (DBDAttributeValue precAttribute : preceedingKeys) {
-                conditions.add(DBUtils.getQuotedIdentifier(getDataSource(), precAttribute.getAttribute().getName()) + " = ?");
+            for (int i = 0; i < preceedingKeys.size(); i++) {
+                if (hasCond) query.append(" AND ");
+                query.append(DBUtils.getQuotedIdentifier(getDataSource(), preceedingKeys.get(i).getAttribute().getName())).append(" = ?");
+                hasCond = true;
             }
         }
-        if (!conditions.isEmpty()) {
-            query.append(" WHERE");
-            for (int i = 0; i < conditions.size(); i++) {
-                if (i > 0) {
-                    query.append(" AND");
-                }
-                query.append(" ").append(conditions.get(i));
-            }
-        }
-        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
-            int paramPos = 0;
+        if (keyPattern != null) {
+            if (hasCond) query.append(" AND (");
+            query.append(DBUtils.getQuotedIdentifier(keyColumn));
             if (keyPattern instanceof CharSequence) {
-                // Add % for LIKE operand
-                keyPattern = keyPattern.toString() + "%";
+                query.append(" LIKE ?");
+            } else {
+                query.append(" >= ?");
             }
-            if (keyPattern != null) {
-                if (keyPattern instanceof Number) {
-                    // Subtract gap value to see some values before specified
-                    int gapSize =  maxResults / 2;
-                    if (keyPattern instanceof Integer) {
-                        keyPattern = (Integer) keyPattern - gapSize;
-                    } else if (keyPattern instanceof Short) {
-                        keyPattern = (Short) keyPattern - gapSize;
-                    } else if (keyPattern instanceof Long) {
-                        keyPattern = (Long) keyPattern - gapSize;
-                    } else if (keyPattern instanceof Float) {
-                        keyPattern = (Float) keyPattern - gapSize;
-                    } else if (keyPattern instanceof Double) {
-                        keyPattern = (Double) keyPattern - gapSize;
-                    } else if (keyPattern instanceof BigInteger) {
-                        keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
+
+            // Add desc columns conditions
+            if (keyPattern instanceof CharSequence && descAttributes != null) {
+                for (DBSEntityAttribute descAttr : descAttributes) {
+                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                        query.append(" OR ").append(DBUtils.getQuotedIdentifier(descAttr)).append(" LIKE ?");
                     }
                 }
-                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
             }
+            if (hasCond) query.append(")");
+        }
+
+        try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
+            int paramPos = 0;
 
             if (preceedingKeys != null && !preceedingKeys.isEmpty()) {
                 for (DBDAttributeValue precAttribute : preceedingKeys) {
@@ -194,6 +211,20 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                     precValueHandler.bindValueObject(session, dbStat, precAttribute.getAttribute(), paramPos++, precAttribute.getValue());
                 }
             }
+
+            if (keyPattern != null) {
+                keyValueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
+            }
+
+            if (keyPattern instanceof CharSequence && descAttributes != null) {
+                for (DBSEntityAttribute descAttr : descAttributes) {
+                    if (descAttr.getDataKind() == DBPDataKind.STRING) {
+                        final DBDValueHandler valueHandler = DBUtils.findValueHandler(session, descAttr);
+                        valueHandler.bindValueObject(session, dbStat, keyColumn, paramPos++, keyPattern);
+                    }
+                }
+            }
+
             dbStat.setLimit(0, maxResults);
             if (dbStat.executeStatement()) {
                 try (DBCResultSet dbResult = dbStat.openResultSet()) {

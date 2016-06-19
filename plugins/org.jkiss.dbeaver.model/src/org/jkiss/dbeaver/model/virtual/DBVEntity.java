@@ -311,13 +311,19 @@ public class DBVEntity extends DBVObject implements DBSEntity, DBPQualifiedObjec
     public Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity)
         throws DBException
     {
-        if (CommonUtils.isEmpty(descriptionColumnNames)) {
+        return getDescriptionColumns(monitor, entity, descriptionColumnNames);
+    }
+
+    public static Collection<DBSEntityAttribute> getDescriptionColumns(DBRProgressMonitor monitor, DBSEntity entity, String descColumns)
+        throws DBException
+    {
+        if (CommonUtils.isEmpty(descColumns)) {
             return Collections.emptyList();
         }
         List<DBSEntityAttribute> result = new ArrayList<>();
         Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
         if (!CommonUtils.isEmpty(attributes)) {
-            StringTokenizer st = new StringTokenizer(descriptionColumnNames, ",");
+            StringTokenizer st = new StringTokenizer(descColumns, ",");
             while (st.hasMoreTokens()) {
                 String colName = st.nextToken();
                 for (DBSEntityAttribute attr : attributes) {
