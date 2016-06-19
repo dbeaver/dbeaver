@@ -316,17 +316,26 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private void createTargetTable(DBCSession session, DatabaseMappingContainer containerMapping) throws DBException
     {
-        DBRProgressMonitor monitor = session.getProgressMonitor();
-        monitor.subTask("Create table " + containerMapping.getTargetName());
-        StringBuilder sql = new StringBuilder(500);
         DBSObjectContainer schema = settings.getContainer();
         if (schema == null) {
             throw new DBException("No target container selected");
         }
-        if (!(session.getDataSource() instanceof SQLDataSource)) {
+        String sql = generateTargetTableDDL(session.getProgressMonitor(), session.getDataSource(), schema, containerMapping);
+        try {
+            executeDDL(session, sql);
+        } catch (DBCException e) {
+            throw new DBCException("Can't create target table:\n" + sql, e);
+        }
+    }
+
+    public static String generateTargetTableDDL(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSObjectContainer schema, DatabaseMappingContainer containerMapping) throws DBException
+    {
+        monitor.subTask("Create table " + containerMapping.getTargetName());
+        StringBuilder sql = new StringBuilder(500);
+        if (!(dataSource instanceof SQLDataSource)) {
             throw new DBException("Data source doesn't support SQL");
         }
-        SQLDataSource targetDataSource = (SQLDataSource)session.getDataSource();
+        SQLDataSource targetDataSource = (SQLDataSource)dataSource;
 
         String tableName = DBObjectNameCaseTransformer.transformName(targetDataSource, containerMapping.getTargetName());
         containerMapping.setTargetName(tableName);
@@ -342,7 +351,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 continue;
             }
             if (!mappedAttrs.isEmpty()) sql.append(",\n");
-            appendAttributeClause(session, sql, attr);
+            appendAttributeClause(dataSource, sql, attr);
             mappedAttrs.put(attr.getSource(), attr);
         }
         if (containerMapping.getSource() instanceof DBSEntity) {
@@ -370,16 +379,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
         }
         sql.append(")");
-        try {
-            executeDDL(session, sql.toString());
-        } catch (DBCException e) {
-            throw new DBCException("Can't create target table:\n" + sql, e);
-        }
+        return sql.toString();
     }
 
-    private void appendAttributeClause(DBCSession session, StringBuilder sql, DatabaseMappingAttribute attr)
+    private static void appendAttributeClause(DBPDataSource dataSource, StringBuilder sql, DatabaseMappingAttribute attr)
     {
-        DBPDataSource dataSource = session.getDataSource();
         sql.append(DBUtils.getQuotedIdentifier(dataSource, attr.getTargetName())).append(" ").append(attr.getTargetType(dataSource));
         if (attr.source.isRequired()) sql.append(" NOT NULL");
     }
@@ -390,7 +394,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         StringBuilder sql = new StringBuilder(500);
         sql.append("ALTER TABLE ").append(DBUtils.getObjectFullName(attribute.getParent().getTarget()))
             .append(" ADD ");
-        appendAttributeClause(session, sql, attribute);
+        appendAttributeClause(session.getDataSource(), sql, attribute);
         try {
             executeDDL(session, sql.toString());
         } catch (DBCException e) {
