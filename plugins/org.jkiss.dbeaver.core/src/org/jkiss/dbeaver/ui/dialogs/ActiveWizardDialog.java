@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -24,12 +25,14 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
- * NewConnectionDialog
+ * ActiveWizardDialog
  */
 public class ActiveWizardDialog extends WizardDialog
 {
+
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
         this(window, wizard, null);
@@ -62,6 +65,12 @@ public class ActiveWizardDialog extends WizardDialog
         });
 
 
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings()
+    {
+        return UIUtils.getDialogSettings("DBeaver.ActiveWizardDialog." + getWizard().getClass().getSimpleName());
     }
 
 }
