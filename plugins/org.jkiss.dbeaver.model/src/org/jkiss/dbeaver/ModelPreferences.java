@@ -93,10 +93,6 @@ public final class ModelPreferences
         initializeDefaultPreferences(ModelPreferences.preferences);
     }
 
-    public static Bundle getMainBundle() {
-        return mainBundle;
-    }
-
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Common
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
