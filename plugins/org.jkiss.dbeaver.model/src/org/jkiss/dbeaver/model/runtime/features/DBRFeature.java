@@ -36,7 +36,7 @@ public final class DBRFeature {
     private final String helpURL;
     private final boolean isAbstract;
     private final DBRNotificationDescriptor notificationDefaults;
-    private String commandId;
+    private final String commandId;
 
     private DBRFeature(@NotNull String id, @NotNull String name) {
         this.parentFeature = null;
@@ -46,19 +46,29 @@ public final class DBRFeature {
         this.helpURL = null;
         this.isAbstract = true;
         this.notificationDefaults = null;
+        this.commandId = null;
     }
 
-    private DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name, String description, String helpURL, boolean isAbstract, DBRNotificationDescriptor notificationDefaults) {
+    private DBRFeature(
+        @NotNull DBRFeature parentFeature,
+        @NotNull String name,
+        String description,
+        String helpURL,
+        boolean isAbstract,
+        DBRNotificationDescriptor notificationDefaults,
+        String commandId)
+    {
         this.parentFeature = parentFeature;
         this.name = name;
         this.description = description;
         this.helpURL = helpURL;
         this.isAbstract = isAbstract;
         this.notificationDefaults = notificationDefaults;
+        this.commandId = commandId;
     }
 
     private DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
-        this(parentFeature, name, null, null, false, null);
+        this(parentFeature, name, null, null, false, null, null);
     }
 
     public static DBRFeature createCategory(@NotNull String name, String description) {
@@ -66,11 +76,15 @@ public final class DBRFeature {
     }
 
     public static DBRFeature createCategory(@NotNull DBRFeature parentFeature, @NotNull String name, String description) {
-        return new DBRFeature(parentFeature, name, description, null, true, null);
+        return new DBRFeature(parentFeature, name, description, null, true, null, null);
     }
 
     public static DBRFeature createFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
         return new DBRFeature(parentFeature, name);
+    }
+
+    public static DBRFeature createCommandFeature(@NotNull DBRFeature parentFeature, @NotNull String commandId) {
+        return new DBRFeature(parentFeature, commandId);
     }
 
     public DBRFeature getParentFeature() {
