@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
@@ -128,7 +129,7 @@ public class DataFormatterRegistry
     {
         customProfiles = new ArrayList<>();
 
-        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, true);
+        File storeFile = DBeaverActivator.getConfigurationFile(CONFIG_FILE_NAME);
         if (!storeFile.exists()) {
             return;
         }
@@ -155,7 +156,7 @@ public class DataFormatterRegistry
         if (customProfiles == null) {
             return;
         }
-        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, false);
+        File storeFile = DBeaverActivator.getConfigurationFile(CONFIG_FILE_NAME);
         try (OutputStream os = new FileOutputStream(storeFile)) {
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
             xml.setButify(true);

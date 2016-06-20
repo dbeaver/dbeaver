@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.runtime.sql;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -81,7 +81,7 @@ public class SQLQueryParameterRegistry
 
     private void loadProfiles()
     {
-        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, true);
+        File storeFile = DBeaverActivator.getConfigurationFile(CONFIG_FILE_NAME);
         if (!storeFile.exists()) {
             return;
         }
@@ -101,7 +101,7 @@ public class SQLQueryParameterRegistry
 
     public void save()
     {
-        File storeFile = DBeaverCore.getInstance().getConfigurationFile(CONFIG_FILE_NAME, false);
+        File storeFile = DBeaverActivator.getConfigurationFile(CONFIG_FILE_NAME);
         try (OutputStream os = new FileOutputStream(storeFile)) {
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
             xml.setButify(true);

@@ -310,19 +310,6 @@ public class DBeaverCore implements DBPApplication {
         return getProjectRegistry();
     }
 
-    /**
-     * Returns configuration file
-     */
-    public File getConfigurationFile(String fileName, boolean read)
-    {
-        File configFile = new File(DBeaverActivator.getInstance().getStateLocation().toFile(), fileName);
-        if (!configFile.exists() && read) {
-            // [Compatibility with DBeaver 1.x]
-            configFile = new File(Platform.getLocation().toFile(), fileName);
-        }
-        return configFile;
-    }
-
     public OSDescriptor getLocalSystem()
     {
         return localSystem;

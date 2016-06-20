@@ -19,7 +19,9 @@
 package org.jkiss.dbeaver.model.runtime.features;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -35,10 +37,24 @@ public class DBRFeatureRegistry {
 
     private static final Log log = Log.getLog(DBRFeatureRegistry.class);
 
-    private static final Map<String, DBRFeature> allFeatures = new HashMap<>();
-    private static final Map<String, DBRNotificationDescriptor> notificationSettings = new HashMap<>();
+    private final Map<String, DBRFeature> allFeatures = new HashMap<>();
+    private final Map<String, DBRFeature> commandFeatures = new HashMap<>();
+    private final Map<String, DBRNotificationDescriptor> notificationSettings = new HashMap<>();
 
-    public static synchronized void registerFeatures(Class<?> theClass) {
+    private static DBRFeatureRegistry instance = null;
+
+    public synchronized static DBRFeatureRegistry getInstance() {
+        if (instance == null) {
+            instance = new DBRFeatureRegistry();
+        }
+        return instance;
+    }
+
+    private DBRFeatureRegistry() {
+        // Load notifications settings
+    }
+
+    public synchronized void registerFeatures(Class<?> theClass) {
         for (Field field : theClass.getDeclaredFields()) {
             if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBRFeature.class) {
                 continue;
@@ -49,6 +65,9 @@ public class DBRFeatureRegistry {
                     String id = theClass.getSimpleName() + "." + field.getName();
                     feature.setId(id);
                     allFeatures.put(id, feature);
+                    if (!CommonUtils.isEmpty(feature.getCommandId())) {
+                        commandFeatures.put(id, feature);
+                    }
                 }
             } catch (Exception e) {
                 log.error(e);
@@ -56,11 +75,15 @@ public class DBRFeatureRegistry {
         }
     }
 
-    public static List<DBRFeature> getAllFeatures() {
+    public List<DBRFeature> getAllFeatures() {
         return new ArrayList<>(allFeatures.values());
     }
 
-    public static void setNotificationSettings(DBRFeature feature, DBRNotificationDescriptor notificationDescriptor) {
+    public DBRFeature findCommandFeature(String commandId) {
+        return commandFeatures.get(commandId);
+    }
+
+    public void setNotificationSettings(DBRFeature feature, DBRNotificationDescriptor notificationDescriptor) {
         notificationSettings.put(feature.getId(), notificationDescriptor);
     }
 

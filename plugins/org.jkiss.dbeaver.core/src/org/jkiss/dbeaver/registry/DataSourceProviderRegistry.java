@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.DBPRegistryListener;
@@ -87,7 +87,7 @@ public class DataSourceProviderRegistry
         }
 
         // Load drivers
-        File driversConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME, true);
+        File driversConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
         if (driversConfig.exists()) {
             loadDrivers(driversConfig);
         }
@@ -112,7 +112,7 @@ public class DataSourceProviderRegistry
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
                 connectionTypes.put(ct.getId(), ct);
             }
-            File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, true);
+            File ctConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
             if (ctConfig.exists()) {
                 loadConnectionTypes(ctConfig);
             }
@@ -177,7 +177,7 @@ public class DataSourceProviderRegistry
 
     public void saveDrivers()
     {
-        File driversConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME, false);
+        File driversConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.DRIVERS_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(driversConfig);
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
@@ -247,7 +247,7 @@ public class DataSourceProviderRegistry
 
     public void saveConnectionTypes()
     {
-        File ctConfig = DBeaverCore.getInstance().getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME, false);
+        File ctConfig = DBeaverActivator.getConfigurationFile(RegistryConstants.CONNECTION_TYPES_FILE_NAME);
         try {
             OutputStream os = new FileOutputStream(ctConfig);
             XMLBuilder xml = new XMLBuilder(os, GeneralUtils.DEFAULT_FILE_CHARSET_NAME);
