@@ -78,7 +78,7 @@ public class DBRFeatureRegistry {
                     feature.setId(id);
                     allFeatures.put(id, feature);
                     if (!CommonUtils.isEmpty(feature.getCommandId())) {
-                        commandFeatures.put(id, feature);
+                        commandFeatures.put(feature.getCommandId(), feature);
                     }
                 }
             } catch (Exception e) {
