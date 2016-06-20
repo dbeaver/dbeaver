@@ -47,6 +47,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
 
     private Object bfile;
     private String name;
+    private boolean opened;
 
     public OracleContentBFILE(DBPDataSource dataSource, Object bfile) {
         super(dataSource);
@@ -65,7 +66,11 @@ public class OracleContentBFILE extends JDBCContentLOB {
     @Override
     public long getLOBLength() throws DBCException {
         if (bfile != null) {
+            boolean openLocally = !opened;
             try {
+                if (openLocally) {
+                    openFile();
+                }
                 final Object length = BeanUtils.invokeObjectMethod(
                     bfile,
                     "length");
@@ -73,10 +78,38 @@ public class OracleContentBFILE extends JDBCContentLOB {
                     return ((Number) length).longValue();
                 }
             } catch (Throwable e) {
-                throw new DBCException("Internal error when reading BFILE length", e, dataSource);
+                throw new DBCException("Error when reading BFILE length", e, dataSource);
+            } finally {
+                if (openLocally) {
+                    closeFile();
+                }
             }
         }
         return 0;
+    }
+
+    private void openFile() throws DBCException {
+        if (opened) {
+            return;
+        }
+        try {
+            BeanUtils.invokeObjectMethod(bfile, "openFile");
+            opened = true;
+        } catch (Throwable e) {
+            throw new DBCException(e, dataSource);
+        }
+    }
+
+    private void closeFile() throws DBCException {
+        if (!opened) {
+            return;
+        }
+        try {
+            BeanUtils.invokeObjectMethod(bfile, "closeFile");
+            opened = false;
+        } catch (Throwable e) {
+            throw new DBCException(e, dataSource);
+        }
     }
 
     private InputStream getInputStream() throws DBCException {
@@ -85,7 +118,7 @@ public class OracleContentBFILE extends JDBCContentLOB {
                 bfile,
                 "getBinaryStream");
         } catch (Throwable e) {
-            throw new DBCException("Internal error when reading BFILE length", e, dataSource);
+            throw new DBCException("Error when reading BFILE length", e, dataSource);
         }
     }
 
@@ -101,43 +134,48 @@ public class OracleContentBFILE extends JDBCContentLOB {
         throws DBCException
     {
         if (storage == null && bfile != null) {
-            long contentLength = getContentLength();
-            DBPApplication application = dataSource.getContainer().getApplication();
-            if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
-                try {
-                    try (InputStream bs = getInputStream()) {
-                        storage = BytesContentStorage.createFromStream(
-                            bs,
-                            contentLength,
-                            application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+            try {
+                openFile();
+                long contentLength = getContentLength();
+                DBPApplication application = dataSource.getContainer().getApplication();
+                if (contentLength < application.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE)) {
+                    try {
+                        try (InputStream bs = getInputStream()) {
+                            storage = BytesContentStorage.createFromStream(
+                                bs,
+                                contentLength,
+                                application.getPreferenceStore().getString(ModelPreferences.CONTENT_HEX_ENCODING));
+                        }
+                    } catch (IOException e) {
+                        throw new DBCException("IO error while reading content", e);
                     }
-                } catch (IOException e) {
-                    throw new DBCException("IO error while reading content", e);
-                }
-            } else {
-                // Create new local storage
-                File tempFile;
-                try {
-                    tempFile = ContentUtils.createTempContentFile(monitor, application, "blob" + bfile.hashCode());
-                }
-                catch (IOException e) {
-                    throw new DBCException("Can't create temporary file", e);
-                }
-                try (OutputStream os = new FileOutputStream(tempFile)) {
-                    try (InputStream bs = getInputStream()) {
-                        ContentUtils.copyStreams(bs, contentLength, os, monitor);
+                } else {
+                    // Create new local storage
+                    File tempFile;
+                    try {
+                        tempFile = ContentUtils.createTempContentFile(monitor, application, "blob" + bfile.hashCode());
+                    } catch (IOException e) {
+                        throw new DBCException("Can't create temporary file", e);
                     }
-                } catch (IOException e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException("IO error while copying stream", e);
-                } catch (Throwable e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new DBCException(e, dataSource);
+                    try (OutputStream os = new FileOutputStream(tempFile)) {
+                        try (InputStream bs = getInputStream()) {
+                            ContentUtils.copyStreams(bs, contentLength, os, monitor);
+                        }
+                    } catch (IOException e) {
+                        ContentUtils.deleteTempFile(tempFile);
+                        throw new DBCException("IO error while copying stream", e);
+                    } catch (Throwable e) {
+                        ContentUtils.deleteTempFile(tempFile);
+                        throw new DBCException(e, dataSource);
+                    }
+                    this.storage = new TemporaryContentStorage(application, tempFile);
                 }
-                this.storage = new TemporaryContentStorage(application, tempFile);
+                // Free blob - we don't need it anymore
+                releaseBlob();
             }
-            // Free blob - we don't need it anymore
-            releaseBlob();
+            finally {
+                closeFile();
+            }
         }
         return storage;
     }
@@ -151,13 +189,6 @@ public class OracleContentBFILE extends JDBCContentLOB {
 
     private void releaseBlob() {
         if (bfile != null) {
-            try {
-                BeanUtils.invokeObjectMethod(
-                    bfile,
-                    "close");
-            } catch (Throwable e) {
-                log.error(e);
-            }
             bfile = null;
         }
     }
