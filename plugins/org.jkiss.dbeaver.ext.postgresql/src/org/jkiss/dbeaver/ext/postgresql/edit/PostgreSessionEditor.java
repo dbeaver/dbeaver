@@ -23,7 +23,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
@@ -72,7 +71,7 @@ public class PostgreSessionEditor extends AbstractSessionEditor
         {
             super(
                 "Terminate",
-                PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_STOP));
+                UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP));
         }
 
         @Override

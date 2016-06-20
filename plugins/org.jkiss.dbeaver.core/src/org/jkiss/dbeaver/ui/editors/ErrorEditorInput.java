@@ -20,8 +20,8 @@ package org.jkiss.dbeaver.ui.editors;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * ErrorEditorInput
@@ -41,7 +41,7 @@ public class ErrorEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
 
     @Override
     public ImageDescriptor getImageDescriptor() {
-        return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_OBJS_ERROR_TSK);
+        return UIUtils.getShardImageDescriptor(ISharedImages.IMG_OBJS_ERROR_TSK);
     }
 
     @Override

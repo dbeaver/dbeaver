@@ -24,7 +24,6 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -86,7 +85,7 @@ public class MySQLSessionEditor extends AbstractSessionEditor
             super(
                 killQuery ? MySQLMessages.editors_session_editor_action_terminate_Query : MySQLMessages.editors_session_editor_action_kill_Session,
                 killQuery ?
-                    PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_STOP) :
+                    UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP) :
                     DBeaverIcons.getImageDescriptor(UIIcon.SQL_DISCONNECT));
             this.killQuery = killQuery;
         }

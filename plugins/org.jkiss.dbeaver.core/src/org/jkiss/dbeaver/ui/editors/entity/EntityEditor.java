@@ -406,7 +406,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             ErrorEditorInput errorInput = (ErrorEditorInput) editorInput;
             try {
                 addPage(new ErrorEditorPartEx(errorInput.getError()), errorInput);
-                setPageImage(0, PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_ERROR_TSK));
+                setPageImage(0, UIUtils.getShardImage(ISharedImages.IMG_OBJS_ERROR_TSK));
                 setPageText(0, "Error");
             } catch (PartInitException e) {
                 log.error(e);

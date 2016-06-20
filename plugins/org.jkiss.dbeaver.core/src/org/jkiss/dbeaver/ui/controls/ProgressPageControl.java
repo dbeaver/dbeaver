@@ -37,8 +37,8 @@ import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
@@ -294,7 +294,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
         ToolBar progressTools = new ToolBar(searchControlsComposite, SWT.HORIZONTAL);
         final ToolItem stopButton = new ToolItem(progressTools, SWT.PUSH);
-        stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
+        stopButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.setToolTipText(CoreMessages.controls_progress_page_progress_bar_cancel_tooltip);
         stopButton.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -304,7 +304,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 if (cancelProgress()) {
                     if (!stopButton.isDisposed()) {
                         stopButton.setEnabled(false);
-                        stopButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP_DISABLED));
+                        stopButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP_DISABLED));
                     }
                 }
             }
@@ -375,7 +375,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                     null,
                     UIIcon.ARROW_UP));
             //ToolItem closeButton = new ToolItem(searchTools, SWT.PUSH);
-            searchToolbarManager.add(new Action(CoreMessages.controls_progress_page_action_close, PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
+            searchToolbarManager.add(new Action(CoreMessages.controls_progress_page_action_close, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_REMOVE)) {
                 @Override
                 public void run()
                 {
