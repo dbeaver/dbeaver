@@ -30,7 +30,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -274,7 +273,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                         columnsViewer.refresh();
                     }
                 });
-                showAllButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ETOOL_DEF_PERSPECTIVE));
+                showAllButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ETOOL_DEF_PERSPECTIVE));
                 ToolItem showNoneButton = createToolItem(toolbar, "Show None", null, new Runnable() {
                     @Override
                     public void run() {
@@ -284,7 +283,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                         columnsViewer.refresh();
                     }
                 });
-                showNoneButton.setImage(PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_REMOVEALL));
+                showNoneButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_REMOVEALL));
                 createToolItem(toolbar, "Reset", UIIcon.REFRESH, new Runnable() {
                     @Override
                     public void run() {

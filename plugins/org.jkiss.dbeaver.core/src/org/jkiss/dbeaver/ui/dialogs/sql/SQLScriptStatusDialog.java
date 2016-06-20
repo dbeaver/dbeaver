@@ -82,7 +82,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
         final Button stopButton = UIUtils.createPushButton(
             progressPanel,
             null,
-            PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_ELCL_STOP));
+            UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {

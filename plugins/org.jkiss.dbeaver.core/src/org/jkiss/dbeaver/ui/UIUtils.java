@@ -27,6 +27,7 @@ import org.eclipse.jface.commands.ActionHandler;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -1015,8 +1016,7 @@ public class UIUtils {
 
     public static boolean isContextActive(String contextId)
     {
-        Collection<?> contextIds = PlatformUI.getWorkbench().getActiveWorkbenchWindow()
-            .getService(IContextService.class).getActiveContextIds();
+        Collection<?> contextIds = DBeaverUI.getActiveWorkbenchWindow().getService(IContextService.class).getActiveContextIds();
         for (Object id : contextIds) {
             if (contextId.equals(id)) {
                 return true;
@@ -1496,6 +1496,14 @@ public class UIUtils {
         shell.setBounds( x, y, 0, 0 );
 
         return shell;
+    }
+
+    public static Image getShardImage(String id) {
+        return PlatformUI.getWorkbench().getSharedImages().getImage(id);
+    }
+
+    public static ImageDescriptor getShardImageDescriptor(String id) {
+        return PlatformUI.getWorkbench().getSharedImages().getImageDescriptor(id);
     }
 
 }
