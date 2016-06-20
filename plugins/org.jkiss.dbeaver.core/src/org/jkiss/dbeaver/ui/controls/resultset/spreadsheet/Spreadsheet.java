@@ -53,7 +53,8 @@ public class Spreadsheet extends LightGrid implements Listener {
     public static final int MAX_DEF_COLUMN_WIDTH = 300;
     public static final int MAX_INLINE_EDIT_WITH = 300;
 
-    private SpreadsheetCellEditor tableEditor;
+    @NotNull
+    private final SpreadsheetCellEditor tableEditor;
 
     @NotNull
     private final IWorkbenchPartSite site;
@@ -239,7 +240,14 @@ public class Spreadsheet extends LightGrid implements Listener {
                     (event.keyCode >= 'a' && event.keyCode <= 'z') ||
                     (event.keyCode >= '0' && event.keyCode <= '9')))
                 {
-                    final Control editorControl = presentation.openValueEditor(true);
+                    // Open inline editor and forward key events to it
+                    // Note: if user types too fast them multiple key events may be posted
+                    // to spreadsheet before inline editor will open. So if inline editor is already open
+                    // then just reuse it
+                    Control editorControl = tableEditor.getEditor();
+                    if (editorControl == null || editorControl.isDisposed()) {
+                        editorControl = presentation.openValueEditor(true);
+                    }
                     if (editorControl != null && event.keyCode != SWT.CR) {
                         if (!editorControl.isDisposed()) {
                             // Forward the same key event to just created control
