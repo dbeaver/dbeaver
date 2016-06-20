@@ -72,7 +72,7 @@ public class SQLContainerResolver<T extends DBSObjectContainer> extends SQLObjec
             // Nothing found - maybe we should go deeper in active container
             DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, container);
             if (objectSelector != null) {
-                container = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
+                container = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getDefaultObject());
                 if (container != null) {
                     makeProposalsFromChildren(monitor, container, names);
                 }

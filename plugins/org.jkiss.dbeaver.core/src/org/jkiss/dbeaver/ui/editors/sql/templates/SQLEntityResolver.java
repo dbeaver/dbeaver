@@ -73,7 +73,7 @@ public class SQLEntityResolver extends SQLObjectResolver<DBSEntity> {
         } else {
             DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, executionContext.getDataSource());
             if (objectSelector != null) {
-                objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
+                objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getDefaultObject());
             }
         }
         if (objectContainer != null) {

@@ -18,8 +18,10 @@
 
 package org.jkiss.dbeaver.model.struct;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -28,11 +30,27 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBSObjectSelector
 {
 
-    boolean supportsObjectSelect();
+    boolean supportsDefaultChange();
 
+    /**
+     * Get active selected (default) object.
+     * Returns null if there is no default object.
+     */
     @Nullable
-    DBSObject getSelectedObject();
+    DBSObject getDefaultObject();
 
-    void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException;
+    /**
+     * Changes default object.
+     * You may call this method only if {@link #supportsDefaultChange()} returns true.
+     * Note: default object will be changed for all execution contexts of the datasource.
+     */
+    void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException;
+
+    /**
+     * Detects default object from the specified session.
+     * If it changes from the active default object then changes it and returns true.
+     * Otherwise returns false.
+     */
+    boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException;
 
 }

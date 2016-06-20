@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -154,7 +155,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            MySQLCatalog object = getSelectedObject();
+            MySQLCatalog object = getDefaultObject();
             if (object != null) {
                 useDatabase(monitor, context, object);
             }
@@ -247,20 +248,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
             // Read catalogs
             catalogCache.getAllObjects(monitor, this);
-
-            {
-                // Get active schema
-                try {
-                    try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT DATABASE()")) {
-                        try (JDBCResultSet resultSet = dbStat.executeQuery()) {
-                            resultSet.next();
-                            activeCatalogName = resultSet.getString(1);
-                        }
-                    }
-                } catch (SQLException e) {
-                    log.error(e);
-                }
-            }
+            activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
         }
     }
 
@@ -323,22 +311,22 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    public boolean supportsObjectSelect()
+    public boolean supportsDefaultChange()
     {
         return true;
     }
 
     @Override
-    public MySQLCatalog getSelectedObject()
+    public MySQLCatalog getDefaultObject()
     {
         return getCatalog(activeCatalogName);
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
         throws DBException
     {
-        final MySQLCatalog oldSelectedEntity = getSelectedObject();
+        final MySQLCatalog oldSelectedEntity = getDefaultObject();
         if (!(object instanceof MySQLCatalog)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
@@ -354,6 +342,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (this.activeCatalogName != null) {
             DBUtils.fireObjectSelect(object, true);
         }
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        final String newCatalogName = MySQLUtils.determineCurrentDatabase((JDBCSession) session);
+        if (!CommonUtils.equalObjects(newCatalogName, activeCatalogName)) {
+            final MySQLCatalog newCatalog = getCatalog(newCatalogName);
+            if (newCatalog != null) {
+                setDefaultObject(session.getProgressMonitor(), newCatalog);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void useDatabase(DBRProgressMonitor monitor, JDBCExecutionContext context, MySQLCatalog catalog) throws DBCException {

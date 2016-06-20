@@ -37,9 +37,10 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
-import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -54,14 +55,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectSimpleCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -157,21 +158,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load data source meta info")) {
 
             // First try to get active schema from special register 'CURRENT SCHEMA'
-            this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
-            if (this.activeSchemaName == null) {
-                LOG.warn(GET_CURRENT_SCHEMA
-                    + " returned null! How can it be? Trying to set active schema to special register 'SYSTEM_USER'");
-
-                // Then try to get active schema from special register 'SYSTEM_USER'
-                this.activeSchemaName = JDBCUtils.queryString(session, GET_CURRENT_USER);
-                if (this.activeSchemaName == null) {
-                    LOG.warn("Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
-                    this.activeSchemaName = getContainer().getActualConnectionConfiguration().getUserName();
-                }
-            }
-
-            this.activeSchemaName = this.activeSchemaName.trim();
-            db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, activeSchemaName, this);
+            this.activeSchemaName = determineActiveSchema(session);
+            this.db2CurrentUserPrivileges = new DB2CurrentUserPrivileges(monitor, session, activeSchemaName, this);
 
         } catch (SQLException e) {
             LOG.warn("Error reading active schema", e);
@@ -187,8 +175,26 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            setCurrentSchema(monitor, context, getSelectedObject());
+            setCurrentSchema(monitor, context, getDefaultObject());
         }
+    }
+
+    private String determineActiveSchema(JDBCSession session) throws SQLException {
+        // First try to get active schema from special register 'CURRENT SCHEMA'
+        String defSchema = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
+        if (defSchema == null) {
+            LOG.warn(GET_CURRENT_SCHEMA
+                + " returned null! How can it be? Trying to set active schema to special register 'SYSTEM_USER'");
+
+            // Then try to get active schema from special register 'SYSTEM_USER'
+            defSchema = JDBCUtils.queryString(session, GET_CURRENT_USER);
+            if (defSchema == null) {
+                LOG.warn("Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
+                defSchema = getContainer().getActualConnectionConfiguration().getUserName();
+            }
+        }
+
+        return defSchema.trim();
     }
 
     @Override
@@ -334,7 +340,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     // --------------------------
 
     @Override
-    public boolean supportsObjectSelect()
+    public boolean supportsDefaultChange()
     {
         return true;
     }
@@ -358,15 +364,15 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public DB2Schema getSelectedObject()
+    public DB2Schema getDefaultObject()
     {
         return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException
     {
-        final DB2Schema oldSelectedEntity = getSelectedObject();
+        final DB2Schema oldSelectedEntity = getDefaultObject();
 
         if (!(object instanceof DB2Schema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
@@ -384,6 +390,23 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
         if (this.activeSchemaName != null) {
             DBUtils.fireObjectSelect(object, true);
+        }
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        try {
+            final String newSchemaName = determineActiveSchema((JDBCSession) session);
+            if (!CommonUtils.equalObjects(newSchemaName, activeSchemaName)) {
+                final DB2Schema newSchema = schemaCache.getCachedObject(newSchemaName);
+                if (newSchema != null) {
+                    setDefaultObject(session.getProgressMonitor(), newSchema);
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new DBException(e, this);
         }
     }
 

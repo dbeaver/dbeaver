@@ -123,9 +123,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            PostgreDatabase activeDatabase = getSelectedObject();
+            PostgreDatabase activeDatabase = getDefaultObject();
             if (activeDatabase != null) {
-                final PostgreSchema activeSchema = activeDatabase.getSelectedObject();
+                final PostgreSchema activeSchema = activeDatabase.getDefaultObject();
                 if (activeSchema != null) {
                     activeDatabase.setSearchPath(monitor, activeSchema, context);
                 }
@@ -191,13 +191,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 log.debug(e);
             }
 
-            try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_database(), current_schema(),session_user")) {
-                try (JDBCResultSet rs = stat.executeQuery()) {
-                    rs.nextRow();
-                    activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
-                    activeSchemaName = JDBCUtils.safeGetString(rs, 2);
-                    activeUser = JDBCUtils.safeGetString(rs, 3);
-                }
+            try {
+                determineDefaultObjects(session);
             } catch (Exception e) {
                 log.debug(e);
             }
@@ -217,6 +212,18 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         // Read databases
         databaseCache.getAllObjects(monitor, this);
         getDefaultInstance().cacheDataTypes(monitor);
+    }
+
+    private void determineDefaultObjects(JDBCSession session) throws DBCException, SQLException {
+        try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_database(), current_schema(),session_user")) {
+            try (JDBCResultSet rs = stat.executeQuery()) {
+                if (rs.nextRow()) {
+                    activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+                    activeSchemaName = JDBCUtils.safeGetString(rs, 2);
+                    activeUser = JDBCUtils.safeGetString(rs, 3);
+                }
+            }
+        }
     }
 
     @Override
@@ -262,22 +269,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    public boolean supportsObjectSelect()
+    public boolean supportsDefaultChange()
     {
         return true;
     }
 
     @Override
-    public PostgreDatabase getSelectedObject()
+    public PostgreDatabase getDefaultObject()
     {
         return getDatabase(activeDatabaseName);
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
         throws DBException
     {
-        final PostgreDatabase oldDatabase = getSelectedObject();
+        final PostgreDatabase oldDatabase = getDefaultObject();
         if (!(object instanceof PostgreDatabase)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
@@ -310,6 +317,29 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
         DBUtils.fireObjectSelect(newDatabase, true);
         DBUtils.fireObjectUpdate(newDatabase, true);
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        // Check only for schema change. Database cannot be changed by any SQL query
+        final PostgreDatabase activeDatabase = getDefaultObject();
+        if (activeDatabase == null) {
+            return false;
+        }
+        try {
+            String oldDefSchema = activeSchemaName;
+            determineDefaultObjects((JDBCSession) session);
+            if (activeSchemaName != null && !CommonUtils.equalObjects(oldDefSchema, activeSchemaName)) {
+                final PostgreSchema newSchema = activeDatabase.getSchema(session.getProgressMonitor(), activeSchemaName);
+                if (newSchema != null) {
+                    activeDatabase.setDefaultObject(session.getProgressMonitor(), newSchema);
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new DBException(e, this);
+        }
     }
 
     public String getActiveUser() {

@@ -111,7 +111,7 @@ public class GenericDataSource extends JDBCDataSource
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
         if (setActiveObject) {
-            setActiveEntityName(monitor, context, getSelectedObject());
+            setActiveEntityName(monitor, context, getDefaultObject());
         }
     }
 
@@ -639,7 +639,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public boolean supportsObjectSelect()
+    public boolean supportsDefaultChange()
     {
         if (selectedEntityFromAPI) {
             return true;
@@ -658,7 +658,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSObject getSelectedObject()
+    public DBSObject getDefaultObject()
     {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             if (!CommonUtils.isEmpty(catalogs)) {
@@ -675,10 +675,10 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
         throws DBException
     {
-        final DBSObject oldSelectedEntity = getSelectedObject();
+        final DBSObject oldSelectedEntity = getDefaultObject();
         // Check removed because we can select the same object on invalidate
 //        if (object == oldSelectedEntity) {
 //            return;
@@ -695,6 +695,20 @@ public class GenericDataSource extends JDBCDataSource
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
         DBUtils.fireObjectSelect(object, true);
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        String oldDefaultObject = selectedEntityName;
+        determineSelectedEntity((JDBCSession) session);
+        if (!CommonUtils.equalObjects(oldDefaultObject, selectedEntityName)) {
+            final DBSObject newDefaultObject = getDefaultObject();
+            if (newDefaultObject != null) {
+                setDefaultObject(session.getProgressMonitor(), newDefaultObject);
+                return true;
+            }
+        }
+        return false;
     }
 
     String getSelectedEntityType()

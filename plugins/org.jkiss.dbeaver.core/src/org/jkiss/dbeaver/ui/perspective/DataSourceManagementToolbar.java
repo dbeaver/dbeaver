@@ -119,7 +119,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 } else {
                     enabled = true;
                     Collection<? extends DBSObject> children = objectContainer.getChildren(monitor);
-                    active = objectSelector.getSelectedObject();
+                    active = objectSelector.getDefaultObject();
                     // Cache navigator nodes
                     if (children != null) {
                         DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
@@ -609,10 +609,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         try {
                             DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
                             DBSObjectSelector os = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
-                            if (oc != null && os != null && os.supportsObjectSelect()) {
+                            if (oc != null && os != null && os.supportsDefaultChange()) {
                                 DBSObject newChild = oc.getChild(monitor, newName);
                                 if (newChild != null) {
-                                    os.selectObject(monitor, newChild);
+                                    os.setDefaultObject(monitor, newChild);
                                 } else {
                                     throw new DBException(MessageFormat.format(CoreMessages.toolbar_datasource_selector_error_database_not_found, newName));
                                 }

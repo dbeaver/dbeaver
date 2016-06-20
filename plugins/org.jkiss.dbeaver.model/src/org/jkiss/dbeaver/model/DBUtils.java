@@ -287,7 +287,7 @@ public final class DBUtils {
         } else {
             DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
             if (objectSelector != null) {
-                final DBSObject so = objectSelector.getSelectedObject();
+                final DBSObject so = objectSelector.getDefaultObject();
                 if (so instanceof DBSCatalog) {
                     rootSC = (DBSObjectContainer) so;
                 }
@@ -311,7 +311,7 @@ public final class DBUtils {
             // Try to use active child
             DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, rootSC);
             if (objectSelector != null) {
-                DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getSelectedObject());
+                DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, objectSelector.getDefaultObject());
                 if (objectContainer != null) {
                     return objectContainer.getChild(monitor, objectName);
                 }
@@ -335,7 +335,7 @@ public final class DBUtils {
             if (child == null) {
                 DBSObjectSelector selector = DBUtils.getAdapter(DBSObjectSelector.class, parent);
                 if (selector != null) {
-                    DBSObjectContainer container = DBUtils.getAdapter(DBSObjectContainer.class, selector.getSelectedObject());
+                    DBSObjectContainer container = DBUtils.getAdapter(DBSObjectContainer.class, selector.getDefaultObject());
                     if (container != null) {
                         parent = container;
                         child = parent.getChild(monitor, childName);
@@ -1552,24 +1552,6 @@ public final class DBUtils {
     }
 
     @Nullable
-    public static DBSObject getDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSInstance instance)
-    {
-        try {
-            DBSObjectContainer oc = DBUtils.getAdapter(DBSObjectContainer.class, instance);
-            if (oc != null) {
-                for (DBSObject child : oc.getChildren(monitor)) {
-                    if (child instanceof DBPDefaultableObject && ((DBPDefaultableObject) child).isDefaultObject()) {
-                        return child;
-                    }
-                }
-            }
-        } catch (DBException e) {
-            log.warn("Can't read child object", e);
-        }
-        return null;
-    }
-
-    @Nullable
     public static DBSObject getFromObject(Object object) {
         if (object instanceof DBSWrapper) {
             return ((DBSWrapper) object).getObject();
@@ -1624,7 +1606,7 @@ public final class DBUtils {
     {
         DBSObjectSelector objectSelector = getAdapter(DBSObjectSelector.class, object);
         if (objectSelector != null) {
-            DBSObject selectedObject1 = objectSelector.getSelectedObject();
+            DBSObject selectedObject1 = objectSelector.getDefaultObject();
             if (searchNested && selectedObject1 != null) {
                 DBSObject nestedObject = getSelectedObject(selectedObject1, true);
                 if (nestedObject != null) {

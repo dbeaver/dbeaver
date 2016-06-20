@@ -196,9 +196,9 @@ public class NavigatorUtils {
                     if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
                         final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
                             DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
-                        if (activeContainer != null && activeContainer.supportsObjectSelect()) {
+                        if (activeContainer != null && activeContainer.supportsDefaultChange()) {
                             DBSObject activeChild;
-                            activeChild = activeContainer.getSelectedObject();
+                            activeChild = activeContainer.getDefaultObject();
                             if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
                                 DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
                                 if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
@@ -409,7 +409,7 @@ public class NavigatorUtils {
             DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
                 DBSObjectSelector.class, object);
             if (activeContainer != null) {
-                return activeContainer.getSelectedObject() == object;
+                return activeContainer.getDefaultObject() == object;
             }
         } else if (element instanceof DBNProject) {
             if (((DBNProject)element).getProject() == DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) {

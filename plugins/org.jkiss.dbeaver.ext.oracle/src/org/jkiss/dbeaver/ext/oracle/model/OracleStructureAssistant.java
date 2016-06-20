@@ -105,7 +105,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                 findConstraintsByMask(session, schema, objectNameMask, objectTypes, maxResults, objects);
             }
             // Sort objects. Put ones in the current schema first
-            final OracleSchema activeSchema = dataSource.getSelectedObject();
+            final OracleSchema activeSchema = dataSource.getDefaultObject();
             Collections.sort(objects, new Comparator<DBSObjectReference>() {
                 @Override
                 public int compare(DBSObjectReference o1, DBSObjectReference o2) {
