@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.core;
 
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
+import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * DBeaver project nature
@@ -26,7 +27,7 @@ public interface CoreFeatures {
 
     DBRFeature SQL_EDITOR = DBRFeature.createCategory("SQL Editor", "SQL Editor features");
     DBRFeature SQL_EDITOR_OPEN = DBRFeature.createFeature(SQL_EDITOR, "Open SQL Editor");
-    DBRFeature SQL_EDITOR_EXECUTE_QUERY = DBRFeature.createFeature(SQL_EDITOR, "Execute SQL query");
+    DBRFeature SQL_EDITOR_EXECUTE_QUERY = DBRFeature.createCommandFeature(SQL_EDITOR, CoreCommands.CMD_EXECUTE_STATEMENT);
     DBRFeature SQL_EDITOR_EXECUTE_SCRIPT = DBRFeature.createFeature(SQL_EDITOR, "Execute SQL script");
     DBRFeature SQL_EDITOR_EXPLAIN_PLAN = DBRFeature.createFeature(SQL_EDITOR, "Explain SQL query plan");
     DBRFeature SQL_EDITOR_QUERY_PARAMS = DBRFeature.createFeature(SQL_EDITOR, "Use SQL query parameters");

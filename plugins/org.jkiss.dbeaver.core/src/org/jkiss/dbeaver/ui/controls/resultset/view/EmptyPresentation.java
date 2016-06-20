@@ -34,10 +34,10 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
@@ -80,8 +80,8 @@ public class EmptyPresentation implements IResultSetPresentation {
                 UIUtils.drawMessageOverControl(placeholder, e, "No Data", -10);
                 e.gc.setFont(normalFont);
                 if (controller.getDataContainer() instanceof SQLEditor.QueryResultsContainer) {
-                    String execQuery = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
-                    String execScript = ActionUtils.findCommandDescription(ICommandIds.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
+                    String execQuery = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
+                    String execScript = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
                     UIUtils.drawMessageOverControl(placeholder, e, "Execute query (" + execQuery + ") or script (" + execScript + ") to see results", 20);
                 }
             }

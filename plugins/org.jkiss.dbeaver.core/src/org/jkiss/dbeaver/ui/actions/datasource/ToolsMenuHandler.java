@@ -31,9 +31,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -55,13 +55,13 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
         Point location = getLocationFromControl(activeShell, focusControl);
 
         MenuManager menuManager = new MenuManager();
-        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_CONNECT));
-        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_DISCONNECT));
-        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_INVALIDATE));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_CONNECT));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_DISCONNECT));
+        menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_INVALIDATE));
         if (part instanceof IEditorPart) {
             menuManager.add(new Separator());
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_COMMIT));
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_ROLLBACK));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_COMMIT));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_ROLLBACK));
             {
                 final MenuManager txnMenu = new MenuManager(
                     DBeaverActivator.getPluginResourceBundle().getString("command.org.jkiss.dbeaver.core.transaction_mode.name"));
@@ -71,7 +71,7 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
         }
         menuManager.add(new Separator());
         {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_SQL_EDITOR_OPEN));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_SQL_EDITOR_OPEN));
 /*
             final MenuManager toolsMenu = new MenuManager(
                 DBeaverActivator.getPluginResourceBundle().getString("menu.database.tools"));
@@ -80,7 +80,7 @@ public class ToolsMenuHandler extends AbstractDataSourceHandler
 */
         }
         if (part instanceof IEditorPart) {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), ICommandIds.CMD_LINK_EDITOR, "Find in navigator", null));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_LINK_EDITOR, "Find in navigator", null));
         }
 
         final Menu contextMenu = menuManager.createContextMenu(focusControl);

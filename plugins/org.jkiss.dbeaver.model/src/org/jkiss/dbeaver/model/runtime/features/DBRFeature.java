@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.model.runtime.features;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.Map;
 
@@ -75,7 +76,7 @@ public final class DBRFeature {
         return createCategory(ROOT, name, description);
     }
 
-    public static DBRFeature createCategory(@NotNull DBRFeature parentFeature, @NotNull String name, String description) {
+    public static DBRFeature createCategory(@NotNull DBRFeature parentFeature, @NotNull String name, @Nullable String description) {
         return new DBRFeature(parentFeature, name, description, null, true, null, null);
     }
 
@@ -83,8 +84,8 @@ public final class DBRFeature {
         return new DBRFeature(parentFeature, name);
     }
 
-    public static DBRFeature createCommandFeature(@NotNull DBRFeature parentFeature, @NotNull String commandId, @NotNull String name, @NotNull String description) {
-        return new DBRFeature(parentFeature, name, description, null, false, null, commandId);
+    public static DBRFeature createCommandFeature(@NotNull DBRFeature parentFeature, @NotNull String commandId) {
+        return new DBRFeature(parentFeature, commandId, null, null, false, null, commandId);
     }
 
     public DBRFeature getParentFeature() {

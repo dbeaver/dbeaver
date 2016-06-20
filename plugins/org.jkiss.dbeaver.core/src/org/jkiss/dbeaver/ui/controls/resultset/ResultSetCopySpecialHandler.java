@@ -29,9 +29,9 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
@@ -48,7 +48,7 @@ public class ResultSetCopySpecialHandler extends ResultSetCommandHandler impleme
         if (resultSet == null) {
             return null;
         }
-        if (event.getCommand().getId().equals(ICommandIds.CMD_COPY_SPECIAL)) {
+        if (event.getCommand().getId().equals(CoreCommands.CMD_COPY_SPECIAL)) {
             ConfigDialog configDialog = new ConfigDialog(HandlerUtil.getActiveShell(event));
             if (configDialog.open() == IDialogConstants.OK_ID) {
                 ResultSetUtils.copyToClipboard(resultSet.getActivePresentation().copySelectionToString(

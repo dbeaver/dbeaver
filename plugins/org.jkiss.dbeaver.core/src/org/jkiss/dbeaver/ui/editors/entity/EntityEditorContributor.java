@@ -95,7 +95,7 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
 
 /*
         manager.add(new Separator());
-        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, ICommandIds.CMD_OBJECT_CREATE));
+        manager.add(ActionUtils.makeCommandContribution(workbenchWindow, CoreCommands.CMD_OBJECT_CREATE));
         manager.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.EDIT_DELETE));
 
         manager.add(new Separator());

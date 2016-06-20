@@ -15,16 +15,12 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ui;
+package org.jkiss.dbeaver.core;
 
 /**
- * Interface defining the application's command IDs.
- * Key bindings can be defined for specific commands.
- * To associate an action with a command, use IAction.setActionDefinitionId(commandId).
- *
- * @see org.eclipse.jface.action.IAction#setActionDefinitionId(String)
+ * Core module commands (some).
  */
-public interface ICommandIds
+public interface CoreCommands
 {
     String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
     String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$

@@ -40,6 +40,7 @@ import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -162,7 +163,7 @@ public class NavigatorUtils {
                         Object itemData = item.getData();
                         if (itemData instanceof IContributionItem) {
                             String contribId = ((IContributionItem)itemData).getId();
-                            if (contribId != null && contribId.equals(ICommandIds.CMD_OBJECT_OPEN)) {
+                            if (contribId != null && contribId.equals(CoreCommands.CMD_OBJECT_OPEN)) {
                                 m.setDefaultItem(item);
                             }
                         }
@@ -235,7 +236,7 @@ public class NavigatorUtils {
                     manager.add(ActionUtils.makeCommandContribution(serviceLocator, IWorkbenchCommandConstants.FILE_REFRESH));
                 }
 
-                manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
+                manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
             }
         });
         if (menuListener != null) {
