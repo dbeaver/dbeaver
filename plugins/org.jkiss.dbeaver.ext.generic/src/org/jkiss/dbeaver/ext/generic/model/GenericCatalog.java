@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -157,22 +158,22 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     }
 
     @Override
-    public boolean supportsObjectSelect()
+    public boolean supportsDefaultChange()
     {
         return GenericConstants.ENTITY_TYPE_SCHEMA.equals(getDataSource().getSelectedEntityType()) &&
             !CommonUtils.isEmpty(schemas);
     }
 
     @Override
-    public GenericSchema getSelectedObject()
+    public GenericSchema getDefaultObject()
     {
         return DBUtils.findObject(schemas, getDataSource().getSelectedEntityName());
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException
     {
-        final GenericSchema oldSelectedEntity = getSelectedObject();
+        final GenericSchema oldSelectedEntity = getDefaultObject();
         // Check removed because we can select the same object on invalidate
 //        if (object == oldSelectedEntity) {
 //            return;
@@ -193,5 +194,10 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
             DBUtils.fireObjectSelect(oldSelectedEntity, false);
         }
         DBUtils.fireObjectSelect(object, true);
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        return getDataSource().refreshDefaultObject(session);
     }
 }

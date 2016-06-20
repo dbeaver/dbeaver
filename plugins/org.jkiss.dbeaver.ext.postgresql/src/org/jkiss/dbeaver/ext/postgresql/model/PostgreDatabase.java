@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -360,20 +361,20 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     @Override
-    public boolean supportsObjectSelect() {
+    public boolean supportsDefaultChange() {
         return true;
     }
 
     @Nullable
     @Override
-    public PostgreSchema getSelectedObject() {
+    public PostgreSchema getDefaultObject() {
         return schemaCache.getCachedObject(dataSource.getActiveSchemaName());
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object) throws DBException {
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException {
         if (object instanceof PostgreSchema) {
-            PostgreSchema oldActive = getSelectedObject();
+            PostgreSchema oldActive = getDefaultObject();
             if (oldActive == object) {
                 return;
             }
@@ -389,6 +390,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             }
             DBUtils.fireObjectSelect(object, true);
         }
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        return dataSource.refreshDefaultObject(session);
     }
 
     void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema, JDBCExecutionContext context) throws DBCException {

@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.dbeaver.model.sql.SQLQueryTransformer;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -85,9 +86,9 @@ import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.util.*;
@@ -1791,40 +1792,70 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void runPostExecuteActions(@Nullable SQLQueryResult result) {
-        // Dump server ouput
-        DBCExecutionContext executionContext = getExecutionContext();
+        final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
-            DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, executionContext.getDataSource());
+            final DBPDataSource dataSource = executionContext.getDataSource();
+            // Dump server output
+            DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, dataSource);
             if (outputReader == null && result != null) {
                 outputReader = new DefaultServerOutputReader(result);
             }
             if (outputReader != null && outputReader.isServerOutputEnabled()) {
                 dumpServerOutput(executionContext, outputReader);
             }
+            // Refresh active object
+            if (result == null || !result.hasError()) {
+                final DBSObjectSelector objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, dataSource);
+                if (objectSelector != null) {
+                    new AbstractJob("Refresh default object") {
+                        @Override
+                        protected IStatus run(DBRProgressMonitor monitor) {
+                            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Refresh default object")) {
+                                objectSelector.refreshDefaultObject(session);
+                            } catch (Exception e) {
+                                log.error(e);
+                            }
+                            return Status.OK_STATUS;
+                        }
+                    }.schedule();
+                }
+            }
         }
     }
 
-    private void dumpServerOutput(final DBCExecutionContext executionContext, final DBCServerOutputReader outputReader) {
-        DBeaverUI.runUIJob("Dump server output", new DBRRunnableWithProgress() {
+    private void dumpServerOutput(@NotNull final DBCExecutionContext executionContext, @NotNull final DBCServerOutputReader outputReader) {
+        new AbstractJob("Refresh default object") {
             @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                if (outputViewer.isDisposed()) {
-                    return;
-                }
+            protected IStatus run(DBRProgressMonitor monitor) {
+                final StringWriter dump = new StringWriter();
                 try {
-                    outputReader.readServerOutput(monitor, executionContext, outputViewer.getOutputWriter());
-                    if (outputViewer.isHasNewOutput()) {
-                        outputViewer.scrollToEnd();
-                        CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
-                        if (outputItem != null && outputItem != resultTabs.getSelection()) {
-                            outputItem.setImage(IMG_OUTPUT_ALERT);
+                    outputReader.readServerOutput(monitor, executionContext, new PrintWriter(dump, true));
+                    UIUtils.runInDetachedUI(null, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (outputViewer.isDisposed()) {
+                                return;
+                            }
+                            try {
+                                IOUtils.copyText(new StringReader(dump.toString()), outputViewer.getOutputWriter());
+                            } catch (IOException e) {
+                                log.error(e);
+                            }
+                            if (outputViewer.isHasNewOutput()) {
+                                outputViewer.scrollToEnd();
+                                CTabItem outputItem = UIUtils.getTabItem(resultTabs, outputViewer);
+                                if (outputItem != null && outputItem != resultTabs.getSelection()) {
+                                    outputItem.setImage(IMG_OUTPUT_ALERT);
+                                }
+                            }
                         }
-                    }
-                } catch (DBCException e) {
-                    log.error("Error dumping server output", e);
+                    });
+                } catch (Exception e) {
+                    log.error(e);
                 }
+                return Status.OK_STATUS;
             }
-        });
+        }.schedule();
     }
 
     private class SaveJob extends AbstractJob {

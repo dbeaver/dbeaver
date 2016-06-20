@@ -665,7 +665,7 @@ public class DataSourceDescriptor
                 DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
                 if (child != null) {
                     try {
-                        ((DBSObjectSelector) dataSource).selectObject(monitor, child);
+                        ((DBSObjectSelector) dataSource).setDefaultObject(monitor, child);
                     } catch (DBException e) {
                         log.warn("Can't select active object", e);
                     }

@@ -52,7 +52,7 @@ public class NavigatorActionSetActiveObject implements IActionDelegate
                         public void run(DBRProgressMonitor monitor)
                             throws InvocationTargetException, InterruptedException {
                             try {
-                                activeContainer.selectObject(monitor, databaseNode.getObject());
+                                activeContainer.setDefaultObject(monitor, databaseNode.getObject());
                             } catch (DBException e) {
                                 throw new InvocationTargetException(e);
                             }

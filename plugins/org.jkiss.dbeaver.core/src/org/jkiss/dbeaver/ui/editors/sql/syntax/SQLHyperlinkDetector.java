@@ -205,7 +205,7 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                             // Check in selected object
                             DBSObjectSelector dsSelector = DBUtils.getAdapter(DBSObjectSelector.class, getExecutionContext().getDataSource());
                             if (dsSelector != null) {
-                                DBSObject curCatalog = dsSelector.getSelectedObject();
+                                DBSObject curCatalog = dsSelector.getDefaultObject();
                                 if (curCatalog instanceof DBSObjectContainer) {
                                     childContainer = ((DBSObjectContainer)curCatalog).getChild(monitor, containerName);
                                 }

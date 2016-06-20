@@ -133,7 +133,7 @@ public class OracleDataSource extends JDBCDataSource
             context,
             isServerOutputEnabled());
         if (setActiveObject) {
-            setCurrentSchema(monitor, context, getSelectedObject());
+            setCurrentSchema(monitor, context, getDefaultObject());
         }
     }
 
@@ -364,23 +364,23 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    public boolean supportsObjectSelect()
+    public boolean supportsDefaultChange()
     {
         return true;
     }
 
     @Nullable
     @Override
-    public OracleSchema getSelectedObject()
+    public OracleSchema getDefaultObject()
     {
         return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
     }
 
     @Override
-    public void selectObject(DBRProgressMonitor monitor, DBSObject object)
+    public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
         throws DBException
     {
-        final OracleSchema oldSelectedEntity = getSelectedObject();
+        final OracleSchema oldSelectedEntity = getDefaultObject();
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
@@ -395,6 +395,23 @@ public class OracleDataSource extends JDBCDataSource
         }
         if (this.activeSchemaName != null) {
             DBUtils.fireObjectSelect(object, true);
+        }
+    }
+
+    @Override
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+        try {
+            final String currentSchema = OracleUtils.getCurrentSchema((JDBCSession) session);
+            if (currentSchema != null && !CommonUtils.equalObjects(currentSchema, activeSchemaName)) {
+                final OracleSchema newSchema = schemaCache.getCachedObject(currentSchema);
+                if (newSchema != null) {
+                    setDefaultObject(session.getProgressMonitor(), newSchema);
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new DBException(e, this);
         }
     }
 
