@@ -86,6 +86,7 @@ public class OracleConstants {
 
     public static final String TYPE_NAME_XML = "XMLTYPE";
     public static final String TYPE_FQ_XML = "SYS.XMLTYPE";
+    public static final String TYPE_NAME_BFILE = "BFILE";
 
     public static final DBSIndexType INDEX_TYPE_NORMAL = new DBSIndexType("NORMAL", "Normal");
     public static final DBSIndexType INDEX_TYPE_BITMAP = new DBSIndexType("BITMAP", "Bitmap");
@@ -152,6 +153,7 @@ public class OracleConstants {
     }
 
     public static final String XMLTYPE_CLASS_NAME = "oracle.xdb.XMLType";
+    public static final String BFILE_CLASS_NAME = "oracle.sql.BFILE";
 
     public static final String PLAN_TABLE_DEFINITION =
         "create global temporary table ${TABLE_NAME} (\n" +

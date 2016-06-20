@@ -40,11 +40,14 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
-        if (OracleConstants.TYPE_NAME_XML.equals(typedObject.getTypeName()) || OracleConstants.TYPE_FQ_XML.equals(typedObject.getTypeName())) {
+        final String typeName = typedObject.getTypeName();
+        if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
             return OracleXMLValueHandler.INSTANCE;
+        } else if (OracleConstants.TYPE_NAME_BFILE.equals(typeName)) {
+            return OracleBFILEValueHandler.INSTANCE;
         } else if (typedObject.getTypeID() == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
-        } else if (typedObject.getTypeName().contains("TIMESTAMP")) {
+        } else if (typeName.contains("TIMESTAMP")) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;

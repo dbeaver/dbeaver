@@ -357,6 +357,16 @@ public class BeanUtils {
         return method.invoke(object, args);
     }
 
+	public static Object invokeObjectMethod(Object object, String name)
+		throws InvocationTargetException, IllegalAccessException, NoSuchMethodException
+	{
+		Method method = object.getClass().getMethod(name);
+		if (!method.isAccessible()) {
+			method.setAccessible(true);
+		}
+		return method.invoke(object);
+	}
+
 	public static Object invokeStaticMethod(Class<?> objectType, String name, Class<?> paramTypes[], Object args[])
 		throws InvocationTargetException, IllegalAccessException, NoSuchMethodException, ClassNotFoundException
 	{

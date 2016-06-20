@@ -1630,7 +1630,10 @@ public class SQLEditor extends SQLEditorBase implements
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     processQueryResult(result);
                     if (!result.hasError() && topOffset >= 0) {
-                        getTextViewer().revealRange(topOffset, visibleLength);
+                        final TextViewer textViewer = getTextViewer();
+                        if (textViewer != null) {
+                            textViewer.revealRange(topOffset, visibleLength);
+                        }
                     }
                 }
             });
