@@ -20,6 +20,7 @@ import org.eclipse.jface.text.templates.TemplateException;
 import org.eclipse.jface.text.templates.persistence.TemplatePersistenceData;
 import org.eclipse.jface.text.templates.persistence.TemplateReaderWriter;
 import org.eclipse.jface.text.templates.persistence.TemplateStore;
+import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -194,7 +195,7 @@ public class SQLTemplateStore extends TemplateStore {
 
         private File getConfigurationFile()
         {
-            return DBeaverCore.getInstance().getConfigurationFile("templates.xml", false);
+            return DBeaverActivator.getConfigurationFile("templates.xml");
         }
 
         @Override

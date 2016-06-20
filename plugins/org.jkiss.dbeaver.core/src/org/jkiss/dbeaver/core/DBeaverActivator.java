@@ -64,7 +64,7 @@ public class DBeaverActivator extends AbstractUIPlugin {
         ModelPreferences.setMainBundle(bundle);
         preferences = new BundlePreferenceStore(bundle);
 
-        DBRFeatureRegistry.registerFeatures(CoreFeatures.class);
+        DBRFeatureRegistry.getInstance().registerFeatures(CoreFeatures.class);
         DBeaverUI.getInstance();
 
         try {
@@ -92,6 +92,14 @@ public class DBeaverActivator extends AbstractUIPlugin {
 
     private void shutdownUI() {
         DBeaverUI.disposeUI();
+    }
+
+    /**
+     * Returns configuration file
+     */
+    public static File getConfigurationFile(String fileName)
+    {
+        return new File(getInstance().getStateLocation().toFile(), fileName);
     }
 
     public synchronized PrintStream getDebugWriter() {

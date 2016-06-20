@@ -83,8 +83,8 @@ public final class DBRFeature {
         return new DBRFeature(parentFeature, name);
     }
 
-    public static DBRFeature createCommandFeature(@NotNull DBRFeature parentFeature, @NotNull String commandId) {
-        return new DBRFeature(parentFeature, commandId);
+    public static DBRFeature createCommandFeature(@NotNull DBRFeature parentFeature, @NotNull String commandId, @NotNull String name, @NotNull String description) {
+        return new DBRFeature(parentFeature, name, description, null, false, null, commandId);
     }
 
     public DBRFeature getParentFeature() {
