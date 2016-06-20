@@ -626,8 +626,8 @@
                     <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
-                    <file type="license" path="repo:/drivers/csvjdbc/LICENSE.txt"/>
-                    <file type="jar" path="repo:/drivers/csvjdbc/csvjdbc-1.0-23.jar"/>
+                    <!--<file type="jar" path="repo:/drivers/csvjdbc/csvjdbc-1.0-23.jar"/>-->
+                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
