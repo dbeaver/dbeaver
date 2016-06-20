@@ -241,6 +241,15 @@ public class DataSourceHandler
         }
     }
 
+    public static void reconnectDataSource(final DBRProgressMonitor monitor, final DBPDataSourceContainer dataSourceContainer) {
+        disconnectDataSource(dataSourceContainer, new Runnable() {
+            @Override
+            public void run() {
+                connectToDataSource(monitor, dataSourceContainer, null);
+            }
+        });
+    }
+
     public static boolean checkAndCloseActiveTransaction(DBPDataSourceContainer container) {
         DBPDataSource dataSource = container.getDataSource();
         if (dataSource == null) {
