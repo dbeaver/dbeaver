@@ -1636,15 +1636,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void processQueryResult(SQLQueryResult result) {
-            DBCExecutionContext executionContext = getExecutionContext();
-            if (executionContext != null) {
-                DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, executionContext.getDataSource());
-                if (outputReader == null) {
-                    outputReader = new DefaultServerOutputReader(result);
-                }
-                if (outputReader.isServerOutputEnabled()) {
-                    dumpServerOutput(executionContext, outputReader);
-                }
+            if (!scriptMode) {
+                runPostExecuteActions(result);
             }
             Throwable error = result.getError();
             if (error != null) {
@@ -1685,6 +1678,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (isDisposed()) {
                 return;
             }
+            runPostExecuteActions(null);
             UIUtils.runInUI(null, new Runnable() {
                 @Override
                 public void run() {
@@ -1793,6 +1787,20 @@ public class SQLEditor extends SQLEditorBase implements
                 return rsv;
             }
             return getTextViewer().getSelectionProvider();
+        }
+    }
+
+    private void runPostExecuteActions(@Nullable SQLQueryResult result) {
+        // Dump server ouput
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext != null) {
+            DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, executionContext.getDataSource());
+            if (outputReader == null && result != null) {
+                outputReader = new DefaultServerOutputReader(result);
+            }
+            if (outputReader != null && outputReader.isServerOutputEnabled()) {
+                dumpServerOutput(executionContext, outputReader);
+            }
         }
     }
 
