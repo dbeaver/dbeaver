@@ -24,16 +24,16 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface CoreFeatures {
 
-    DBRFeature SQL_EDITOR = new DBRFeature(DBRFeature.ROOT, "SQL Editor", "SQL Editor features", null, true, null);
-    DBRFeature SQL_EDITOR_OPEN = new DBRFeature(SQL_EDITOR, "Open SQL Editor");
-    DBRFeature SQL_EDITOR_EXECUTE_QUERY = new DBRFeature(SQL_EDITOR, "Execute SQL query");
-    DBRFeature SQL_EDITOR_EXECUTE_SCRIPT = new DBRFeature(SQL_EDITOR, "Execute SQL script");
-    DBRFeature SQL_EDITOR_EXPLAIN_PLAN = new DBRFeature(SQL_EDITOR, "Explain SQL query plan");
-    DBRFeature SQL_EDITOR_QUERY_PARAMS = new DBRFeature(SQL_EDITOR, "Use SQL query parameters");
+    DBRFeature SQL_EDITOR = DBRFeature.createCategory("SQL Editor", "SQL Editor features");
+    DBRFeature SQL_EDITOR_OPEN = DBRFeature.createFeature(SQL_EDITOR, "Open SQL Editor");
+    DBRFeature SQL_EDITOR_EXECUTE_QUERY = DBRFeature.createFeature(SQL_EDITOR, "Execute SQL query");
+    DBRFeature SQL_EDITOR_EXECUTE_SCRIPT = DBRFeature.createFeature(SQL_EDITOR, "Execute SQL script");
+    DBRFeature SQL_EDITOR_EXPLAIN_PLAN = DBRFeature.createFeature(SQL_EDITOR, "Explain SQL query plan");
+    DBRFeature SQL_EDITOR_QUERY_PARAMS = DBRFeature.createFeature(SQL_EDITOR, "Use SQL query parameters");
 
-    DBRFeature ENTITY_EDITOR = new DBRFeature(DBRFeature.ROOT, "Object Editor", "Object Editor features", null, true, null);
-    DBRFeature ENTITY_EDITOR_MODIFY = new DBRFeature(ENTITY_EDITOR, "Change object properties");
-    DBRFeature ENTITY_EDITOR_SAVE = new DBRFeature(ENTITY_EDITOR, "Save object properties");
-    DBRFeature ENTITY_EDITOR_REJECT = new DBRFeature(ENTITY_EDITOR, "Reject object properties changes");
+    DBRFeature ENTITY_EDITOR = DBRFeature.createCategory("Object Editor", "Object Editor features");
+    DBRFeature ENTITY_EDITOR_MODIFY = DBRFeature.createFeature(ENTITY_EDITOR, "Change object properties");
+    DBRFeature ENTITY_EDITOR_SAVE = DBRFeature.createFeature(ENTITY_EDITOR, "Save object properties");
+    DBRFeature ENTITY_EDITOR_REJECT = DBRFeature.createFeature(ENTITY_EDITOR, "Reject object properties changes");
 
 }

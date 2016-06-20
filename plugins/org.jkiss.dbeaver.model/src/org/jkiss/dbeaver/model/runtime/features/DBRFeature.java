@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public final class DBRFeature {
 
-    public static final DBRFeature ROOT = new DBRFeature("Root", "Root Feature");
+    static final DBRFeature ROOT = new DBRFeature("Root", "Root Feature");
 
     private final DBRFeature parentFeature;
     private String id;
@@ -36,6 +36,7 @@ public final class DBRFeature {
     private final String helpURL;
     private final boolean isAbstract;
     private final DBRNotificationDescriptor notificationDefaults;
+    private String commandId;
 
     private DBRFeature(@NotNull String id, @NotNull String name) {
         this.parentFeature = null;
@@ -47,7 +48,7 @@ public final class DBRFeature {
         this.notificationDefaults = null;
     }
 
-    public DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name, String description, String helpURL, boolean isAbstract, DBRNotificationDescriptor notificationDefaults) {
+    private DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name, String description, String helpURL, boolean isAbstract, DBRNotificationDescriptor notificationDefaults) {
         this.parentFeature = parentFeature;
         this.name = name;
         this.description = description;
@@ -56,8 +57,20 @@ public final class DBRFeature {
         this.notificationDefaults = notificationDefaults;
     }
 
-    public DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
+    private DBRFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
         this(parentFeature, name, null, null, false, null);
+    }
+
+    public static DBRFeature createCategory(@NotNull String name, String description) {
+        return createCategory(ROOT, name, description);
+    }
+
+    public static DBRFeature createCategory(@NotNull DBRFeature parentFeature, @NotNull String name, String description) {
+        return new DBRFeature(parentFeature, name, description, null, true, null);
+    }
+
+    public static DBRFeature createFeature(@NotNull DBRFeature parentFeature, @NotNull String name) {
+        return new DBRFeature(parentFeature, name);
     }
 
     public DBRFeature getParentFeature() {
@@ -90,6 +103,10 @@ public final class DBRFeature {
 
     public DBRNotificationDescriptor getNotificationDefaults() {
         return notificationDefaults;
+    }
+
+    public String getCommandId() {
+        return commandId;
     }
 
     public void use() {
