@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -129,10 +131,8 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         IWorkbenchWindow workbenchWindow)
     {
         if (selectedNode instanceof DBNDataSource) {
-            EditConnectionDialog dialog = new EditConnectionDialog(
-                workbenchWindow,
-                new EditConnectionWizard((DataSourceDescriptor) selectedNode.getDataSourceContainer()));
-            dialog.open();
+            final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) selectedNode.getDataSourceContainer();
+            openConnectionEditor(workbenchWindow, dataSourceContainer);
             return null;
         }
         if (!selectedNode.isPersisted()) {
@@ -206,6 +206,23 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         } catch (Exception ex) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
+        }
+    }
+
+    private static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DataSourceDescriptor dataSourceContainer) {
+        EditConnectionDialog dialog = new EditConnectionDialog(
+            workbenchWindow,
+            new EditConnectionWizard(dataSourceContainer));
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            if (dataSourceContainer.isConnected()) {
+                if (UIUtils.confirmAction(
+                    workbenchWindow.getShell(),
+                    "Connection changed",
+                    "Connection '" + dataSourceContainer.getName() + "' has been changed.\nDo you want to reconnect?\n\n(unsaved)"))
+                {
+                    DataSourceHandler.reconnectDataSource(null, dataSourceContainer);
+                }
+            }
         }
     }
 
