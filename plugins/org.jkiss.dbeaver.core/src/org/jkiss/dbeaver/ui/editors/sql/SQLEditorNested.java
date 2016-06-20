@@ -35,6 +35,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
@@ -316,8 +317,8 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     protected void contributeEditorCommands(IContributionManager toolBarManager)
     {
-        toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_OPEN_FILE));
-        toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), ICommandIds.CMD_SAVE_FILE));
+        toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), CoreCommands.CMD_OPEN_FILE));
+        toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), CoreCommands.CMD_SAVE_FILE));
         String compileCommandId = getCompileCommandId();
         if (compileCommandId != null) {
             toolBarManager.add(new Separator());

@@ -194,8 +194,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // Use CommandAction here as a workaround. Otherwise FORCE_TEXT mode just ignored by Eclipse 4.2+
         // TODO: remove all manual mapping when it will be fixed by Eclipse - https://bugs.eclipse.org/bugs/show_bug.cgi?id=399065
         ToolBarManager txnToolbar = new ToolBarManager(SWT.FLAT | SWT.RIGHT);
-        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), ICommandIds.CMD_COMMIT), true));
-        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), ICommandIds.CMD_ROLLBACK), true));
+        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), CoreCommands.CMD_COMMIT), true));
+        txnToolbar.add(ActionUtils.makeActionContribution(new CommandAction(PlatformUI.getWorkbench(), CoreCommands.CMD_ROLLBACK), true));
         coolBar.add(new ToolBarContributionItem(txnToolbar, IActionConstants.TOOLBAR_TXN));
 */
         coolBar.add(new ToolBarContributionItem(new ToolBarManager(SWT.FLAT | SWT.RIGHT), IActionConstants.TOOLBAR_TXN));

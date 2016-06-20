@@ -25,6 +25,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -34,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.CommonUtils;
@@ -68,7 +68,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
         if (txnManager != null) {
             menuItems.add(ActionUtils.makeCommandContribution(
                 window,
-                ICommandIds.CMD_TOGGLE_AUTOCOMMIT,
+                CoreCommands.CMD_TOGGLE_AUTOCOMMIT,
                 CommandContributionItem.STYLE_CHECK));
 
             menuItems.add(new Separator());

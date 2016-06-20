@@ -23,6 +23,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
@@ -36,7 +37,6 @@ import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommandIds;
 
 /**
  * DatabaseEditorPropertyTester
@@ -145,7 +145,7 @@ public class DataSourcePropertyTester extends PropertyTester
             // Fire transactional mode change
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
-            DataSourcePropertyTester.fireCommandRefresh(ICommandIds.CMD_TOGGLE_AUTOCOMMIT);
+            DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
         }
 
         @Override

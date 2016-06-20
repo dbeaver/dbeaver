@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -31,7 +32,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -61,7 +61,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
                             // Save config
                             container.persistConfiguration();
                             // Update actions
-                            DataSourcePropertyTester.fireCommandRefresh(ICommandIds.CMD_TOGGLE_AUTOCOMMIT);
+                            DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
                         }
                     });
                 } catch (DBException e) {

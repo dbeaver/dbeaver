@@ -28,8 +28,6 @@ import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -39,6 +37,7 @@ import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -50,7 +49,6 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.ui.ICommandIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
@@ -210,9 +208,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         false, false, false, null, DBDDisplayFormat.EDIT));
                 break;
             case IWorkbenchCommandConstants.EDIT_PASTE:
-            case ICommandIds.CMD_PASTE_SPECIAL:
+            case CoreCommands.CMD_PASTE_SPECIAL:
                 if (presentation instanceof IResultSetEditor) {
-                    ((IResultSetEditor) presentation).pasteFromClipboard(actionId.equals(ICommandIds.CMD_PASTE_SPECIAL));
+                    ((IResultSetEditor) presentation).pasteFromClipboard(actionId.equals(CoreCommands.CMD_PASTE_SPECIAL));
                 }
                 break;
             case IWorkbenchCommandConstants.EDIT_CUT:

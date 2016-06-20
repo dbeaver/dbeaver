@@ -36,6 +36,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -116,7 +117,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
                 } else if (CommonUtils.isEmpty(sqlText.getText())) {
 
                     message = "Select a query and run " + ActionUtils.findCommandDescription(
-                        ICommandIds.CMD_EXPLAIN_PLAN,
+                        CoreCommands.CMD_EXPLAIN_PLAN,
                         workbenchPart.getSite(), false);
                 }
                 if (message != null) {

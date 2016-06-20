@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -705,7 +706,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     }
                 };
                 copyAllAction.setEnabled(logTable.getSelectionCount() > 0);
-                copyAllAction.setActionDefinitionId(ICommandIds.CMD_COPY_SPECIAL);
+                copyAllAction.setActionDefinitionId(CoreCommands.CMD_COPY_SPECIAL);
 
                 IAction selectAllAction = new Action(CoreMessages.controls_querylog_action_select_all) {
                     @Override

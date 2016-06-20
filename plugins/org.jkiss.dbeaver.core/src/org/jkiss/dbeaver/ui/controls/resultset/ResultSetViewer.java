@@ -50,6 +50,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -1043,8 +1044,8 @@ public class ResultSetViewer extends Viewer
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_CUT));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_COPY));
 
-                MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(ICommandIds.CMD_COPY_SPECIAL));
-                extCopyMenu.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_COPY_SPECIAL));
+                MenuManager extCopyMenu = new MenuManager(ActionUtils.findCommandName(CoreCommands.CMD_COPY_SPECIAL));
+                extCopyMenu.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_COPY_SPECIAL));
                 extCopyMenu.add(new Action("Copy column name(s)") {
                     @Override
                     public void run() {
@@ -1074,7 +1075,7 @@ public class ResultSetViewer extends Viewer
                 manager.add(extCopyMenu);
 
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
-                manager.add(ActionUtils.makeCommandContribution(site, ICommandIds.CMD_PASTE_SPECIAL));
+                manager.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_PASTE_SPECIAL));
                 manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
                 // Edit items
                 manager.add(new Separator());
@@ -1222,7 +1223,7 @@ public class ResultSetViewer extends Viewer
                 }
             });
         }
-        manager.add(new GroupMarker(ICommandIds.GROUP_TOOLS));
+        manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
         if (dataContainer != null && model.hasData()) {
             manager.add(new Separator());
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
