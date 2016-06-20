@@ -218,7 +218,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (UIUtils.confirmAction(
                     workbenchWindow.getShell(),
                     "Connection changed",
-                    "Connection '" + dataSourceContainer.getName() + "' has been changed.\nDo you want to reconnect?\n\n(unsaved)"))
+                    "Connection '" + dataSourceContainer.getName() + "' has been changed.\nDo you want to reconnect?"))
                 {
                     DataSourceHandler.reconnectDataSource(null, dataSourceContainer);
                 }
