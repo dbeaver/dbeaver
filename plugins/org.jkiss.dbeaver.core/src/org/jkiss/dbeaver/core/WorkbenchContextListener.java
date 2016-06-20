@@ -17,14 +17,21 @@
  */
 package org.jkiss.dbeaver.core;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
+import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -48,13 +55,25 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     private IContextActivation activationNavigator;
     private IContextActivation activationSQL;
     private IContextActivation activationResults;
+    private CommandExecutionListener commandExecutionListener;
 
     public WorkbenchContextListener() {
         // Register in already created windows and pages
         for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
-            window.addPageListener(this);
-            for (IWorkbenchPage page : window.getPages()) {
-                page.addPartListener(this);
+            listenWindowEvents(window);
+        }
+    }
+
+    private void listenWindowEvents(IWorkbenchWindow window) {
+        window.addPageListener(this);
+        for (IWorkbenchPage page : window.getPages()) {
+            page.addPartListener(this);
+        }
+        if (commandExecutionListener == null) {
+            final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+            if (commandService != null) {
+                commandExecutionListener = new CommandExecutionListener();
+                commandService.addExecutionListener(commandExecutionListener);
             }
         }
     }
@@ -74,10 +93,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     @Override
     public void windowOpened(IWorkbenchWindow window) {
-        window.addPageListener(this);
-        for (IWorkbenchPage page : window.getPages()) {
-            page.addPartListener(this);
-        }
+        listenWindowEvents(window);
     }
 
     @Override
@@ -182,12 +198,38 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         new Job("Workbench listener") {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
-                while (!PlatformUI.isWorkbenchRunning()) {
-                    RuntimeUtils.pause(50);
+                if (!PlatformUI.isWorkbenchRunning()) {
+                    schedule(50);
+                } else {
+                    PlatformUI.getWorkbench().addWindowListener(new WorkbenchContextListener());
                 }
-                PlatformUI.getWorkbench().addWindowListener(new WorkbenchContextListener());
                 return Status.OK_STATUS;
             }
         }.schedule();
+    }
+
+    private static class CommandExecutionListener implements IExecutionListener {
+        @Override
+        public void notHandled(String commandId, NotHandledException exception) {
+
+        }
+
+        @Override
+        public void postExecuteFailure(String commandId, ExecutionException exception) {
+
+        }
+
+        @Override
+        public void postExecuteSuccess(String commandId, Object returnValue) {
+            final DBRFeature commandFeature = DBRFeatureRegistry.getInstance().findCommandFeature(commandId);
+            if (commandFeature != null) {
+                commandFeature.use();
+            }
+        }
+
+        @Override
+        public void preExecute(String commandId, ExecutionEvent event) {
+
+        }
     }
 }
