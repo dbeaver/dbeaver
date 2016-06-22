@@ -760,6 +760,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                     curDataSource.setShowUtilityObjects(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_SHOW_UTIL_OBJECTS)));
                     curDataSource.setConnectionReadOnly(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_READ_ONLY)));
                     curDataSource.setFolderPath(atts.getValue(RegistryConstants.ATTR_FOLDER));
+                    curDataSource.setLockPasswordHash(atts.getValue(RegistryConstants.ATTR_LOCK_PASSWORD));
                     {
                         // Legacy filter settings
                         String legacyCatalogFilter = atts.getValue(RegistryConstants.ATTR_FILTER_CATALOG);
