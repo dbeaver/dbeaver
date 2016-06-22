@@ -131,6 +131,8 @@ public class DataSourceDescriptor
     private DataSourcePreferenceStore preferenceStore;
     @Nullable
     private DBPDataSource dataSource;
+    @Nullable
+    private String lockPasswordHash;
 
     private final List<DBPDataSourceUser> users = new ArrayList<>();
 
@@ -517,6 +519,19 @@ public class DataSourceDescriptor
 
     public Date getConnectTime() {
         return connectTime;
+    }
+
+    public boolean isLocked() {
+        return !CommonUtils.isEmpty(lockPasswordHash);
+    }
+
+    @Nullable
+    public String getLockPasswordHash() {
+        return lockPasswordHash;
+    }
+
+    void setLockPasswordHash(@Nullable String lockPasswordHash) {
+        this.lockPasswordHash = lockPasswordHash;
     }
 
     @Nullable
