@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/serge-rider/dbeaver.svg?branch=master)](https://travis-ci.org/serge-rider/dbeaver)
+
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
