@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/serge-rider/dbeaver.svg?branch=master)](https://travis-ci.org/serge-rider/dbeaver)
+[![Build Status](https://travis-ci.org/serge-rider/dbeaver.svg?branch=devel)](https://travis-ci.org/serge-rider/dbeaver)
 
 # DBeaver
 
