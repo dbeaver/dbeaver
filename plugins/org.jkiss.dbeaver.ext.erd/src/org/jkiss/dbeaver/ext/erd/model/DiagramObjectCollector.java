@@ -17,11 +17,11 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
@@ -116,7 +116,7 @@ public class DiagramObjectCollector {
     {
         Collection<DBSEntity> tables = collectTables(monitor, roots);
         for (DBSEntity table : tables) {
-            if (table instanceof DBPHiddenObject && ((DBPHiddenObject) table).isHidden() ||
+            if (DBUtils.isHiddenObject(table) ||
                 (table instanceof DBSTable && ((DBSTable) table).isView()))
             {
                 // Skip hidden tables

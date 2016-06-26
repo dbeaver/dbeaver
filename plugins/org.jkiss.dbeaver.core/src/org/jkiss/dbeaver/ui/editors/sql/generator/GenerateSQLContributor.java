@@ -29,7 +29,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -95,7 +98,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sql.append("SELECT ");
                     boolean hasAttr = false;
                     for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                        if (attr instanceof DBPHiddenObject && ((DBPHiddenObject) attr).isHidden()) {
+                        if (DBUtils.isHiddenObject(attr)) {
                             continue;
                         }
                         if (hasAttr) sql.append(", ");
@@ -112,7 +115,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sql.append("INSERT INTO ").append(DBUtils.getObjectFullName(object)).append("\n(");
                     boolean hasAttr = false;
                     for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                        if (attr.isPseudoAttribute() || attr instanceof DBPHiddenObject && ((DBPHiddenObject) attr).isHidden()) {
+                        if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
                             continue;
                         }
                         if (hasAttr) sql.append(", ");
@@ -122,7 +125,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sql.append(")\nVALUES(");
                     hasAttr = false;
                     for (DBSEntityAttribute attr : getAllAttributes(monitor)) {
-                        if (attr.isPseudoAttribute() || attr instanceof DBPHiddenObject && ((DBPHiddenObject) attr).isHidden()) {
+                        if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
                             continue;
                         }
                         if (hasAttr) sql.append(", ");
@@ -141,7 +144,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         .append("\nSET ");
                     boolean hasAttr = false;
                     for (DBSEntityAttribute attr : getValueAttributes(monitor, keyAttributes)) {
-                        if (attr.isPseudoAttribute() || attr instanceof DBPHiddenObject && ((DBPHiddenObject) attr).isHidden()) {
+                        if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
                             continue;
                         }
                         if (hasAttr) sql.append(", ");
@@ -295,7 +298,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             sql.append("\n(");
                             boolean hasAttr = false;
                             for (DBSEntityAttribute attr : allAttributes) {
-                                if (attr.isPseudoAttribute() || attr instanceof DBPHiddenObject && ((DBPHiddenObject) attr).isHidden()) {
+                                if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
                                     continue;
                                 }
                                 if (hasAttr) sql.append(", ");
@@ -305,7 +308,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             sql.append(")\nVALUES(");
                             hasAttr = false;
                             for (DBSEntityAttribute attr : allAttributes) {
-                                if (attr.isPseudoAttribute() || attr instanceof DBPHiddenObject && ((DBPHiddenObject) attr).isHidden()) {
+                                if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
                                     continue;
                                 }
                                 if (hasAttr) sql.append(", ");
