@@ -81,10 +81,13 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
         return foreignKey;
     }
 
+/*
+    // FIX: Oracle uses standard syntax
     @Override
     protected String getDropForeignKeyPattern(OracleTableForeignKey foreignKey)
     {
         return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP FOREIGN KEY " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$
     }
+*/
 
 }
