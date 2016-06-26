@@ -185,6 +185,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
     {
         if (source instanceof DBSEntity) {
             for (DBSEntityAttribute attr : ((DBSEntity) source).getAttributes(monitor)) {
+                if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                    continue;
+                }
                 addAttributeMapping(monitor, attr);
             }
         } else {
@@ -195,6 +198,9 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
                 MetadataReceiver receiver = new MetadataReceiver();
                 source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
                 for (DBCAttributeMetaData attr : receiver.attributes) {
+                    if (attr.isPseudoAttribute() || DBUtils.isHiddenObject(attr)) {
+                        continue;
+                    }
                     addAttributeMapping(monitor, attr);
                 }
             }

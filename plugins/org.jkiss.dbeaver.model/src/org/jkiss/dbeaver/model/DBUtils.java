@@ -1618,4 +1618,7 @@ public final class DBUtils {
         return null;
     }
 
+    public static boolean isHiddenObject(Object object) {
+        return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
+    }
 }

@@ -478,7 +478,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
                 log.warn("Bad item type: " + childItem.getClass().getName()); //$NON-NLS-1$
                 continue;
             }
-            if (childItem instanceof DBPHiddenObject && ((DBPHiddenObject) childItem).isHidden()) {
+            if (DBUtils.isHiddenObject(childItem)) {
                 // Skip hidden objects
                 continue;
             }

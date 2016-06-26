@@ -534,7 +534,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 List<DBSObject> matchedObjects = new ArrayList<>();
                 final Map<String, Integer> scoredMatches = new HashMap<>();
                 for (DBSObject child : children) {
-                    if (child instanceof DBPHiddenObject && ((DBPHiddenObject) child).isHidden()) {
+                    if (DBUtils.isHiddenObject(child)) {
                         // Skip hidden
                         continue;
                     }

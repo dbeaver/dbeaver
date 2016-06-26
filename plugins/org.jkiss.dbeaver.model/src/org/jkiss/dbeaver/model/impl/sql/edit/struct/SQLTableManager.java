@@ -18,7 +18,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -147,7 +147,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (column.isPseudoAttribute() || (column instanceof DBPHiddenObject && ((DBPHiddenObject) column).isHidden())) {
+                if (column.isPseudoAttribute() || DBUtils.isHiddenObject(column)) {
                     continue;
                 }
                 command.aggregateCommand(tcm.makeCreateCommand(column));
@@ -156,7 +156,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (pkm != null) {
             try {
                 for (DBSTableConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-                    if (constraint instanceof DBPHiddenObject && ((DBPHiddenObject) constraint).isHidden()) {
+                    if (DBUtils.isHiddenObject(constraint)) {
                         continue;
                     }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint));
@@ -169,7 +169,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (fkm != null) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                    if (!(foreignKey instanceof DBSTableForeignKey) || foreignKey instanceof DBPHiddenObject && ((DBPHiddenObject) foreignKey).isHidden()) {
+                    if (!(foreignKey instanceof DBSTableForeignKey) || DBUtils.isHiddenObject(foreignKey)) {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey));
@@ -182,7 +182,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (im != null) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                    if (index instanceof DBPHiddenObject && ((DBPHiddenObject) index).isHidden()) {
+                    if (DBUtils.isHiddenObject(index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index));
