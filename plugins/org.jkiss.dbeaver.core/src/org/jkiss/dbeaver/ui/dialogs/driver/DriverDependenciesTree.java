@@ -176,7 +176,7 @@ class DriverDependenciesTree {
         int itemHeight = filesTree.getItemHeight();
         shell.setSize(curSize.x, Math.min(
             (int)(DBeaverUI.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
-            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight);
+            shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight * 2);
         shell.layout();
     }
 
