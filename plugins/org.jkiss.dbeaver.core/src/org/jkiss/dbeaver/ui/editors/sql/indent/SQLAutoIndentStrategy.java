@@ -131,6 +131,23 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                     default:
                         if (inString) {
                             result.append(ch);
+                        } else if (ch == '\n' && result.length() > 0) {
+                            // Append linefeed even if it is outside of quotes
+                            // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
+                            boolean endsWithLF = false;
+                            for (int k = result.length(); k > 0; k--) {
+                                final char lch = result.charAt(k - 1);
+                                if (!Character.isWhitespace(lch)) {
+                                    break;
+                                }
+                                if (lch == '\n' || lch == '\r') {
+                                    endsWithLF = true;
+                                    break;
+                                }
+                            }
+                            if (!endsWithLF) {
+                                result.append(ch);
+                            }
                         }
                 }
             }
