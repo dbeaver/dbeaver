@@ -63,10 +63,7 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
             return session.getMetaData().getIndexInfo(
                     owner.getCatalog() == null ? null : owner.getCatalog().getName(),
                     owner.getSchema() == null ? null : owner.getSchema().getName(),
-                    // oracle fails if unquoted complex identifier specified
-                    // but other DBs (and logically it's correct) do not want quote chars in this query
-                    // so let's fix it in oracle plugin
-                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : DBUtils.getQuotedIdentifier(forParent),
+                    forParent == null ? owner.getDataSource().getAllObjectsPattern() : forParent.getName(),
                     false,
                     true).getSourceStatement();
         } catch (SQLException e) {
