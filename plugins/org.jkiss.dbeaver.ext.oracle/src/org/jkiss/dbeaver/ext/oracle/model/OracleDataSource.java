@@ -532,35 +532,6 @@ public class OracleDataSource extends JDBCDataSource
         return super.createQueryTransformer(type);
     }
 
-    private static String readDbmsOutput(JDBCSession session)
-        throws DBCException
-    {
-        try {
-            final Connection connection = session.getOriginal();
-            final StringBuilder buf = new StringBuilder();
-            try (CallableStatement getLineProc = connection.prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
-                getLineProc.registerOutParameter(1, java.sql.Types.VARCHAR);
-                getLineProc.registerOutParameter(2, java.sql.Types.INTEGER);
-                //Get 10 lines at a time.
-                int status = 0;
-                while (status == 0) {
-                    getLineProc.execute();
-                    status = getLineProc.getInt(2);
-                    if (status == 0) {
-                        String str = getLineProc.getString(1);
-                        if (str != null) {
-                            buf.append(str);
-                        }
-                        buf.append("\n");
-                    }
-                }
-            }
-            return buf.toString();
-        } catch (SQLException e) {
-            throw new DBCException(e, session.getDataSource());
-        }
-    }
-
     @Override
     public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
         try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
