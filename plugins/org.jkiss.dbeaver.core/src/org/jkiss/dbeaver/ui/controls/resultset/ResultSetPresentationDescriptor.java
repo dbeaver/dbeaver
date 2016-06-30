@@ -121,4 +121,8 @@ public class ResultSetPresentationDescriptor extends AbstractContextDescriptor {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }
