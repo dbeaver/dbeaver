@@ -564,7 +564,7 @@ public class OracleDataSource extends JDBCDataSource
     @Override
     public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
         try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Read DBMS output")) {
-            try (CallableStatem#568ent getLineProc = session.getOriginal().prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
+            try (CallableStatement getLineProc = session.getOriginal().prepareCall("{CALL DBMS_OUTPUT.GET_LINE(?, ?)}")) {
                 getLineProc.registerOutParameter(1, java.sql.Types.VARCHAR);
                 getLineProc.registerOutParameter(2, java.sql.Types.INTEGER);
                 int status = 0;
