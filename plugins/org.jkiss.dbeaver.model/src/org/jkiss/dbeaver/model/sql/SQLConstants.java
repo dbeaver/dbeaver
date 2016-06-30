@@ -171,6 +171,7 @@ public class SQLConstants {
         "IDENTITY",
         "IF",
         "IN",
+        "INDEX",
         "INDICATOR",
         "INNER",
         "INOUT",
