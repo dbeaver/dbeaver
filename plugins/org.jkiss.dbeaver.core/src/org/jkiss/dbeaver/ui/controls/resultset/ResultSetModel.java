@@ -427,12 +427,27 @@ public class ResultSetModel {
      * @param newAttributes attributes metadata
      */
     public void setMetaData(@NotNull DBDAttributeBinding[] newAttributes) {
-        if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
-            this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
-            // the same source
-            sourceChanged = false;
+
+        boolean update = false;
+        if (this.attributes == null || this.attributes.length == 0 || this.attributes.length != newAttributes.length || isDynamicMetadata()) {
+            update = true;
         } else {
-            sourceChanged = true;
+            for (int i = 0; i < this.attributes.length; i++) {
+                if (!ResultSetUtils.equalAttributes(this.attributes[i].getMetaAttribute(), newAttributes[i].getMetaAttribute())) {
+                    update = true;
+                    break;
+                }
+            }
+        }
+
+        if (update) {
+            if (!ArrayUtils.isEmpty(this.attributes) && !ArrayUtils.isEmpty(newAttributes) && isDynamicMetadata() &&
+                this.attributes[0].getTopParent().getMetaAttribute().getSource() == newAttributes[0].getTopParent().getMetaAttribute().getSource()) {
+                // the same source
+                sourceChanged = false;
+            } else {
+                sourceChanged = true;
+            }
         }
         this.clearData();
         this.attributes = newAttributes;
