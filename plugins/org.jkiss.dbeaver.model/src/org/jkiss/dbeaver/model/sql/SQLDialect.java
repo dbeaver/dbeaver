@@ -153,6 +153,14 @@ public interface SQLDialect {
     String getScriptDelimiterRedefiner();
 
     /**
+     * Script block header string.
+     * Begins SQL block header (most typical: DECLARE).
+     * @return block header string or null (not supported)
+     */
+    @Nullable
+    String getBlockHeaderString();
+
+    /**
      * Script block toggle string.
      * Begins and ends SQL blocks.
      * @return block toggle string or null (not supported)

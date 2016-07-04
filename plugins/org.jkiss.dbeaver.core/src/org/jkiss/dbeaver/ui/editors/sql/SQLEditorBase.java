@@ -579,6 +579,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         int bracketDepth = 0;
         boolean hasBlocks = false;
         boolean hasValuableTokens = false;
+        boolean hasBlockHeader = false;
         for (; ; ) {
             IToken token = ruleManager.nextToken();
             int tokenOffset = ruleManager.getTokenOffset();
@@ -605,7 +606,11 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                     log.warn(e);
                 }
             }
-            if (token instanceof SQLBlockToggleToken) {
+            if (token instanceof SQLBlockHeaderToken) {
+                bracketDepth++;
+                hasBlocks = true;
+                hasBlockHeader = true;
+            } else if (token instanceof SQLBlockToggleToken) {
                 if (bracketDepth == 1) {
                     bracketDepth--;
                 } else if (bracketDepth == 0) {
@@ -615,7 +620,9 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 }
                 hasBlocks = true;
             } else if (token instanceof SQLBlockBeginToken) {
-                bracketDepth++;
+                if (!hasBlockHeader) {
+                    bracketDepth++;
+                }
                 hasBlocks = true;
             } else if (bracketDepth > 0 && token instanceof SQLBlockEndToken) {
                 // Sometimes query contains END clause without BEGIN. E.g. CASE, IF, etc.
@@ -623,6 +630,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
                 if (hasBlocks) {
                     bracketDepth--;
                 }
+                hasBlockHeader = false;
             } else if (isDelimiter && bracketDepth > 0) {
                 // Delimiter in some brackets - ignore it
                 continue;

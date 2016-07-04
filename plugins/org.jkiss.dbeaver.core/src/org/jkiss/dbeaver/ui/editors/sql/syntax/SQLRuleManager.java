@@ -133,6 +133,8 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, SWT.BOLD));
         final IToken otherToken = new Token(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_TEXT), null, SWT.NORMAL));
+        final SQLBlockHeaderToken blockHeaderToken = new SQLBlockHeaderToken(
+            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
         final SQLBlockBeginToken blockBeginToken = new SQLBlockBeginToken(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_KEYWORD), null, SWT.BOLD));
         final SQLBlockEndToken blockEndToken = new SQLBlockEndToken(
@@ -202,6 +204,10 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
         for (String type : dialect.getDataTypes(dataSource)) {
             wordRule.addWord(type, typeToken);
+        }
+        final String blockHeaderString = dialect.getBlockHeaderString();
+        if (!CommonUtils.isEmpty(blockHeaderString)) {
+            wordRule.addWord(blockHeaderString, blockHeaderToken);
         }
         wordRule.addWord(SQLConstants.BLOCK_BEGIN, blockBeginToken);
         wordRule.addWord(SQLConstants.BLOCK_END, blockEndToken);
