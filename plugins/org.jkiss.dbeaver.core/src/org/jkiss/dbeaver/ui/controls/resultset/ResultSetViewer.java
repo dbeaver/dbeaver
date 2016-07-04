@@ -2395,10 +2395,9 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-/*
         CLIPBOARD(UIIcon.FILTER_CLIPBOARD) {
             @Override
-            Object getValue(ResultSetViewer viewer, DBDAttributeBinding attribute, DBCLogicalOperator operator, boolean useDefault)
+            Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
             {
                 try {
                     return ResultSetUtils.getAttributeValueFromClipboard(attribute);
@@ -2408,7 +2407,6 @@ public class ResultSetViewer extends Viewer
                 }
             }
         },
-*/
         NONE(UIIcon.FILTER_VALUE) {
             @Override
             Object getValue(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attribute, @NotNull DBCLogicalOperator operator, boolean useDefault)
