@@ -138,7 +138,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         String typeClause = column.getFullQualifiedTypeName();
-        if (column.getDataKind() == DBPDataKind.NUMERIC && column.getDataType() != null) {
+        if (column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
         }
         actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
