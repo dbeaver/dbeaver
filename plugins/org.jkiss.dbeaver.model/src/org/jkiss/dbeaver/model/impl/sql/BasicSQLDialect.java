@@ -238,6 +238,12 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Nullable
     @Override
+    public String getBlockHeaderString() {
+        return null;
+    }
+
+    @Nullable
+    @Override
     public String getBlockToggleString() {
         return null;
     }

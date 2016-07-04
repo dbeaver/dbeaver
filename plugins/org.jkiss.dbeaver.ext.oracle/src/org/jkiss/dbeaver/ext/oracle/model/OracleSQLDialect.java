@@ -249,6 +249,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
             ));
     }
 
+    @Override
+    public String getBlockHeaderString() {
+        return "DECLARE";
+    }
+
     @NotNull
     @Override
     public Collection<String> getExecuteKeywords() {
