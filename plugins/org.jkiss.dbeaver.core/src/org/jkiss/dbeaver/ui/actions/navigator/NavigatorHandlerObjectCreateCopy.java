@@ -28,6 +28,9 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.FileTransfer;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -42,9 +45,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.Map;
@@ -57,18 +58,36 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
 
         DBNNode curNode = NavigatorUtils.getSelectedNode(selection);
         if (curNode != null) {
-            Collection<DBNNode> cbNodes = TreeNodeTransfer.getFromClipboard();
-            if (cbNodes == null) {
-                UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Clipboard contains data in unsupported format");
-                return null;
-            }
-            for (DBNNode nodeObject : cbNodes) {
-                if (nodeObject instanceof DBNDatabaseNode) {
-                    createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode)nodeObject));
-                } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
-                    pasteResource((DBNResource)nodeObject, (DBNResource)curNode);
+            Clipboard clipboard = new Clipboard(Display.getDefault());
+            try {
+                @SuppressWarnings("unchecked")
+                Collection<DBNNode> cbNodes = (Collection<DBNNode>) clipboard.getContents(TreeNodeTransfer.getInstance());
+                if (cbNodes != null) {
+                    for (DBNNode nodeObject : cbNodes) {
+                        if (nodeObject instanceof DBNDatabaseNode) {
+                            createNewObject(HandlerUtil.getActiveWorkbenchWindow(event), curNode, ((DBNDatabaseNode) nodeObject));
+                        } else if (nodeObject instanceof DBNResource && curNode instanceof DBNResource) {
+                            pasteResource((DBNResource) nodeObject, (DBNResource) curNode);
+                        }
+                    }
+                } else if (curNode instanceof DBNResource) {
+                    String[] files = (String[]) clipboard.getContents(FileTransfer.getInstance());
+                    if (files != null) {
+                        for (String fileName : files) {
+                            final File file = new File(fileName);
+                            if (file.exists()) {
+                                pasteResource(file, (DBNResource) curNode);
+                            }
+                        }
+                    } else {
+                        UIUtils.showErrorDialog(HandlerUtil.getActiveShell(event), "Paste error", "Clipboard contains data in unsupported format");
+                        return null;
+                    }
                 }
+            } finally {
+                clipboard.dispose();
             }
+
         }
         return null;
     }
@@ -135,6 +154,34 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
             }
         } else if (resource instanceof IFolder) {
             // Copy folder with all files and subfolders
+        }
+    }
+
+    private void pasteResource(final File file, DBNResource toFolder) {
+        final IResource targetResource = toFolder.getResource();
+        assert targetResource != null;
+        final IContainer targetFolder = targetResource instanceof IContainer ? (IContainer) targetResource : targetResource.getParent();
+        try {
+            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        final IFile targetFile = targetFolder.getFile(new Path(file.getName()));
+                        if (targetFile.exists()) {
+                            throw new IOException("Target file '" + targetFile.getFullPath() + "' already exists");
+                        }
+                        try (InputStream is = new FileInputStream(file)) {
+                            targetFile.create(is, true, monitor.getNestedMonitor());
+                        }
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            UIUtils.showErrorDialog(null, "Copy error", "Error copying resource", e.getTargetException());
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
