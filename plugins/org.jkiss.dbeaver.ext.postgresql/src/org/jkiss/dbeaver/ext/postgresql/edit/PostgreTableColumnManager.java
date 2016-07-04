@@ -137,8 +137,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 //        ALTER [ COLUMN ] column RESET ( attribute_option [, ... ] )
 //        ALTER [ COLUMN ] column SET STORAGE { PLAIN | EXTERNAL | EXTENDED | MAIN }
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable()) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
-        actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + column.getFullQualifiedTypeName()));
+        String typeClause = column.getFullQualifiedTypeName();
+        if (column.getDataKind() == DBPDataKind.NUMERIC && column.getDataType() != null) {
+            typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
+        }
+        actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
         actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
+
         if (CommonUtils.isEmpty(column.getDefaultValue())) {
             actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
         } else {
