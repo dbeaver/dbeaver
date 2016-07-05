@@ -35,7 +35,7 @@
             <property name="subTitle" value="%productSubTitle"/>
             <property name="website" value="%productWebsite"/>
             <property name="email" value="%productEmail"/>
-            <property name="windowImages" value="/icons/dbeaver.png"/>
+            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png"/>
             <property name="appName" value="DBeaver"/>
             <property name="startupForegroundColor" value="000000"/>
             <property name="startupMessageRect" value="25,25,200,15"/>
@@ -43,10 +43,7 @@
             <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
-            <property
-                  name="preferenceCustomization"
-                  value="plugin_customization.ini">
-            </property>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
         </product>
     </extension>
 

@@ -54,7 +54,7 @@ public class AboutBoxDialog extends Dialog
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
     private final Font TITLE_FONT;
 
-    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/about_circle.png").createImage();
+    private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver_about.png").createImage();
 
     public AboutBoxDialog(Shell shell)
     {
