@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBIcon;
  */
 public class UIIcon {
 
-    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver48.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon LOADING1 = new DBIcon("loading1", "animation/loading1.gif"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon LOADING2 = new DBIcon("loading2", "animation/loading2.gif"); //$NON-NLS-1$ //$NON-NLS-2$

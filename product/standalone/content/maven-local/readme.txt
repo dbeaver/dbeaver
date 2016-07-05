@@ -1,1 +1,0 @@
-Local Maven repository with predefined JDBC drivers.
