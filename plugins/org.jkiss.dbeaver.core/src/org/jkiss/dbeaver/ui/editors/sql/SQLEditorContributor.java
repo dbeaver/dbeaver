@@ -27,6 +27,7 @@ import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.CopyUnformattedTextAction;
 
@@ -124,6 +125,7 @@ public class SQLEditorContributor extends BasicTextEditorActionContributor
 
         IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
         if (editMenu != null && !isNestedEditor()) {
+            editMenu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(DBeaverUI.getActiveWorkbenchWindow(), ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE));
             editMenu.add(contentAssistProposal);
             editMenu.add(contentAssistTip);
             MenuManager formatMenu = new MenuManager(CoreMessages.actions_menu_edit_ContentFormat);
