@@ -61,18 +61,23 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     public void init(Shell splash) {
         super.init(splash);
 
-        String progressRectString = null, messageRectString = null, foregroundColorString = null, versionCoordString = null;
+        String progressRectString = null, messageRectString = null, foregroundColorString = null,
+            versionCoordString = null, versionInfoSizeString = null, versionInfoColorString = null;
         final IProduct product = Platform.getProduct();
         if (product != null) {
             progressRectString = product.getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
             messageRectString = product.getProperty(IProductConstants.STARTUP_MESSAGE_RECT);
             foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
             versionCoordString = product.getProperty("versionInfoCoord");
+            versionInfoSizeString = product.getProperty("versionInfoSize");
+            versionInfoColorString = product.getProperty("versionInfoColor");
         }
 
         setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275,300,280,10)));
         setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
         final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
+        final int versionInfoSize = StringConverter.asInt(versionInfoSizeString, 22);
+        final RGB versionInfoRGB = StringConverter.asRGB(versionInfoColorString, new RGB(255,255,255));
 
         int foregroundColorInteger = 0xD2D7FF;
         try {
@@ -93,8 +98,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
         //boldFont = UIUtils.makeBoldFont(normalFont);
 		FontData[] fontData = normalFont.getFontData();
 		fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
-		fontData[0].setHeight(22);
+		fontData[0].setHeight(versionInfoSize);
 		boldFont = new Font(normalFont.getDevice(), fontData[0]);
+
+        final Color versionColor = new Color(getContent().getDisplay(), versionInfoRGB);
 
         getContent().addPaintListener(new PaintListener() {
 
@@ -108,10 +115,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 if (boldFont != null) {
                     e.gc.setFont(boldFont);
                 }
-				Color fg = e.gc.getDevice().getSystemColor(SWT.COLOR_WHITE);
-				if (fg != null) {
-					e.gc.setForeground(fg);
-				}
+                e.gc.setForeground(versionColor);
                 e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
                 //e.gc.drawText(osVersion, 115, 200, true);
                 e.gc.setFont(normalFont);
