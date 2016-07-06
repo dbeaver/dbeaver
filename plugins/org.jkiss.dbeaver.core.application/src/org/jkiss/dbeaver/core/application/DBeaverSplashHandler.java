@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * @since 3.3
@@ -62,21 +61,18 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     public void init(Shell splash) {
         super.init(splash);
 
-        String progressRectString = null;
-        String messageRectString = null;
-        String foregroundColorString = null;
+        String progressRectString = null, messageRectString = null, foregroundColorString = null, versionCoordString = null;
         final IProduct product = Platform.getProduct();
         if (product != null) {
             progressRectString = product.getProperty(IProductConstants.STARTUP_PROGRESS_RECT);
             messageRectString = product.getProperty(IProductConstants.STARTUP_MESSAGE_RECT);
             foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
+            versionCoordString = product.getProperty("versionInfoCoord");
         }
 
-        Rectangle progressRect = StringConverter.asRectangle(progressRectString, new Rectangle(275,300,280,10));
-        setProgressRect(progressRect);
-
-        Rectangle messageRect = StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25));
-        setMessageRect(messageRect);
+        setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275,300,280,10)));
+        setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
+        final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
 
         int foregroundColorInteger = 0xD2D7FF;
         try {
@@ -116,7 +112,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 				if (fg != null) {
 					e.gc.setForeground(fg);
 				}
-                e.gc.drawText(productVersion, 485, 215, true);
+                e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
                 //e.gc.drawText(osVersion, 115, 200, true);
                 e.gc.setFont(normalFont);
             }

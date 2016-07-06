@@ -17,6 +17,8 @@
       </vmArgsMac>
    </launcherArgs>
 
+   <splash location="org.jkiss.dbeaver.core.application"/>
+
    <launcher name="dbeaver">
       <linux icon="/icons/dbeaver.xpm"/>
       <macosx icon="/icons/dbeaver.icns"/>
