@@ -41,6 +41,8 @@
             <property name="startupMessageRect" value="275,275,280,25"/>
             <property name="startupProgressRect" value="275,300,280,10"/>
             <property name="versionInfoCoord" value="481,215"/>
+            <property name="versionInfoSize" value="22"/>
+            <property name="versionInfoColor" value="255,255,255"/>
             <property name="applicationXMI" value="org.eclipse.platform/LegacyIDE.e4xmi"/>
             <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
