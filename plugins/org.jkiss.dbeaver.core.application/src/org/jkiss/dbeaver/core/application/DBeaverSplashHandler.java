@@ -22,12 +22,10 @@ import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.resource.StringConverter;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
@@ -74,10 +72,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             foregroundColorString = product.getProperty(IProductConstants.STARTUP_FOREGROUND_COLOR);
         }
 
-        Rectangle progressRect = StringConverter.asRectangle(progressRectString, new Rectangle(10, 10, 300, 15));
+        Rectangle progressRect = StringConverter.asRectangle(progressRectString, new Rectangle(275,300,280,10));
         setProgressRect(progressRect);
 
-        Rectangle messageRect = StringConverter.asRectangle(messageRectString, new Rectangle(10, 35, 300, 15));
+        Rectangle messageRect = StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25));
         setMessageRect(messageRect);
 
         int foregroundColorInteger = 0xD2D7FF;
@@ -96,7 +94,11 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 foregroundColorInteger & 0xFF));
 
         normalFont = getContent().getFont();
-        boldFont = UIUtils.makeBoldFont(normalFont);
+        //boldFont = UIUtils.makeBoldFont(normalFont);
+		FontData[] fontData = normalFont.getFontData();
+		fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
+		fontData[0].setHeight(22);
+		boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
         getContent().addPaintListener(new PaintListener() {
 
@@ -104,18 +106,18 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             public void paintControl(PaintEvent e) {
                 String productVersion = "";
                 if (product != null) {
-                    productVersion = DBeaverCore.getProductTitle();
+                    productVersion = DBeaverCore.getVersion().toString();
                 }
-                String osVersion = Platform.getOS() + " " + Platform.getOSArch();
+                //String osVersion = Platform.getOS() + " " + Platform.getOSArch();
                 if (boldFont != null) {
                     e.gc.setFont(boldFont);
                 }
-				Color fg = getForeground();
+				Color fg = e.gc.getDevice().getSystemColor(SWT.COLOR_WHITE);
 				if (fg != null) {
 					e.gc.setForeground(fg);
 				}
-                e.gc.drawText(productVersion, 20, 180, true);
-                e.gc.drawText(osVersion, 115, 200, true);
+                e.gc.drawText(productVersion, 485, 215, true);
+                //e.gc.drawText(osVersion, 115, 200, true);
                 e.gc.setFont(normalFont);
             }
         });
