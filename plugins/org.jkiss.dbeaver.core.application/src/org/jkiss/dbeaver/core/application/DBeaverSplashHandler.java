@@ -61,6 +61,16 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
     public void init(Shell splash) {
         super.init(splash);
 
+        try {
+            initVisualization();
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+
+        getBundleProgressMonitor().beginTask("Loading", TOTAL_LOADING_TASKS);
+    }
+
+    private void initVisualization() {
         String progressRectString = null, messageRectString = null, foregroundColorString = null,
             versionCoordString = null, versionInfoSizeString = null, versionInfoColorString = null;
         final IProduct product = Platform.getProduct();
@@ -73,7 +83,7 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
             versionInfoColorString = product.getProperty("versionInfoColor");
         }
 
-        setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275,300,280,10)));
+        setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10)));
         setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275,275,280,25)));
         final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
         final int versionInfoSize = StringConverter.asInt(versionInfoSizeString, 22);
@@ -96,10 +106,10 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
         normalFont = getContent().getFont();
         //boldFont = UIUtils.makeBoldFont(normalFont);
-		FontData[] fontData = normalFont.getFontData();
-		fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
-		fontData[0].setHeight(versionInfoSize);
-		boldFont = new Font(normalFont.getDevice(), fontData[0]);
+        FontData[] fontData = normalFont.getFontData();
+        fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
+        fontData[0].setHeight(versionInfoSize);
+        boldFont = new Font(normalFont.getDevice(), fontData[0]);
 
         final Color versionColor = new Color(getContent().getDisplay(), versionInfoRGB);
 
@@ -121,8 +131,6 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
                 e.gc.setFont(normalFont);
             }
         });
-
-		getBundleProgressMonitor().beginTask("Loading", TOTAL_LOADING_TASKS);
     }
 
     @Override
