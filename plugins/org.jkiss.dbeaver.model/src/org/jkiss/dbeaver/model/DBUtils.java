@@ -1283,7 +1283,7 @@ public final class DBUtils {
             case ROWID:
                 return DBIcon.TYPE_ROWID;
             case OBJECT:
-                if (typeName.contains("UUID") || typeName.contains("uuid")) {
+                if (typeName.contains(DBConstants.TYPE_NAME_UUID) || typeName.contains(DBConstants.TYPE_NAME_UUID2)) {
                     return DBIcon.TYPE_UUID;
                 }
                 return DBIcon.TYPE_OBJECT;

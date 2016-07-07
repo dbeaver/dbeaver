@@ -62,4 +62,6 @@ public class DBConstants {
         new BinaryFormatterHex(),
         new BinaryFormatterBase64(),
     };
+    public static final String TYPE_NAME_UUID = "UUID";
+    public static final String TYPE_NAME_UUID2 = "uuid";
 }

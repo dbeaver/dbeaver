@@ -21,20 +21,20 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.search.IObjectSearchListener;
 import org.jkiss.dbeaver.ui.search.IObjectSearchQuery;
 import org.jkiss.utils.ArrayUtils;
@@ -140,10 +140,15 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         continue;
                     }
                 }
+                if (attribute.isPseudoAttribute() || DBUtils.isHiddenObject(attribute)) {
+                    continue;
+                }
                 DBCLogicalOperator[] supportedOperators = DBUtils.getAttributeOperators(attribute);
                 DBCLogicalOperator operator;
                 Object value;
                 switch (attribute.getDataKind()) {
+                    case BOOLEAN:
+                        continue;
                     case NUMERIC:
                         if (!params.searchNumbers) {
                             continue;
@@ -172,6 +177,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
                         }
                         break;
                     case CONTENT:
+                    case BINARY:
                         if (!params.searchLOBs) {
                             continue;
                         }
@@ -189,8 +195,20 @@ public class SearchDataQuery implements IObjectSearchQuery {
                             continue;
                         }
                         break;
-                    default:
-                        continue;
+                    default: {
+                        // Try to convert string to attribute type
+                        // On success search by exact match
+                        if (!ArrayUtils.contains(supportedOperators, DBCLogicalOperator.EQUALS)) {
+                            continue;
+                        }
+                        String typeName = attribute.getTypeName();
+                        if (typeName.equals(DBConstants.TYPE_NAME_UUID) || typeName.equals(DBConstants.TYPE_NAME_UUID2)) {
+                            operator = DBCLogicalOperator.EQUALS;
+                            value = "'" + params.searchString + "'";
+                        } else {
+                            continue;
+                        }
+                    }
                 }
                 DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, constraints.size());
                 constraint.setOperator(operator);
