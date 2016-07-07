@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="3.7.0" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="3.7.1" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -17,11 +17,8 @@
       </vmArgsMac>
    </launcherArgs>
 
-   <splash
-      location="org.jkiss.dbeaver.core.application"
-      startupProgressRect="25,45,150,15"
-      startupMessageRect="25,25,200,15"
-      startupForegroundColor="000000" />
+   <splash location="org.jkiss.dbeaver.core.application"/>
+
    <launcher name="dbeaver">
       <linux icon="/icons/dbeaver.xpm"/>
       <macosx icon="/icons/dbeaver.icns"/>

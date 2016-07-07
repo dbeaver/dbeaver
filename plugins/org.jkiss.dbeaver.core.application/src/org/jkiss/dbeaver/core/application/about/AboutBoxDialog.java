@@ -52,18 +52,20 @@ public class AboutBoxDialog extends Dialog
     public static final String PRODUCT_PROP_COPYRIGHT = "copyright"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_WEBSITE = "website"; //$NON-NLS-1$
     public static final String PRODUCT_PROP_EMAIL = "email"; //$NON-NLS-1$
-    private final Font TITLE_FONT;
+    private final Font NAME_FONT,TITLE_FONT;
 
     private Image ABOUT_IMAGE = AbstractUIPlugin.imageDescriptorFromPlugin(DBeaverApplication.APPLICATION_PLUGIN_ID, "icons/dbeaver_about.png").createImage();
 
     public AboutBoxDialog(Shell shell)
     {
         super(shell);
-        TITLE_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 20, SWT.NORMAL);
+        NAME_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 20, SWT.BOLD);
+        TITLE_FONT = new Font(shell.getDisplay(), CoreMessages.dialog_about_font, 10, SWT.NORMAL);
     }
 
     @Override
     public boolean close() {
+        NAME_FONT.dispose();
         TITLE_FONT.dispose();
         return super.close();
     }
@@ -98,6 +100,16 @@ public class AboutBoxDialog extends Dialog
 
         IProduct product = Platform.getProduct();
         String productVersion = DBeaverCore.getVersion().toString();
+
+        {
+            Label nameLabel = new Label(group, SWT.NONE);
+            nameLabel.setBackground(background);
+            nameLabel.setFont(NAME_FONT);
+            nameLabel.setText(product.getName());
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalAlignment = GridData.CENTER;
+            nameLabel.setLayoutData(gd);
+        }
 
         Label titleLabel = new Label(group, SWT.NONE);
         titleLabel.setBackground(background);
