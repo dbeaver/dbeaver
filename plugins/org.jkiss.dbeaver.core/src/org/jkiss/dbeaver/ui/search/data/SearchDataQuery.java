@@ -195,6 +195,7 @@ public class SearchDataQuery implements IObjectSearchQuery {
                 DBDAttributeConstraint constraint = new DBDAttributeConstraint(attribute, constraints.size());
                 constraint.setOperator(operator);
                 constraint.setValue(value);
+                constraint.setVisible(true);
                 constraints.add(constraint);
             }
             if (constraints.isEmpty()) {
