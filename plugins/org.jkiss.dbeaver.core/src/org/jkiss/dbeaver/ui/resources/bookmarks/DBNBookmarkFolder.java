@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * DBNBookmarkFolder
@@ -67,6 +68,8 @@ public class DBNBookmarkFolder extends DBNResource
         for (DBNNode node : nodes) {
             if (node instanceof DBNDatabaseNode) {
                 BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node, node.getNodeName(), (IFolder) getResource());
+            } else if (node instanceof DBNBookmark) {
+                super.dropNodes(Collections.singleton(node));
             }
         }
     }
