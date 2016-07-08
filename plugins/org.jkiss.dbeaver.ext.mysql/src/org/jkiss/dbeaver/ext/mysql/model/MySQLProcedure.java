@@ -36,16 +36,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * GenericProcedure
  */
 public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject
 {
-    //static final Log log = Log.getLog(MySQLProcedure.class);
-
     private DBSProcedureType procedureType;
     private String resultType;
     private String bodyType;
