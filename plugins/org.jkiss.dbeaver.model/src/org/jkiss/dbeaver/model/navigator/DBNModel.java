@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResourceChangeEvent;
-import org.eclipse.core.resources.IResourceChangeListener;
-import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -207,6 +204,29 @@ public class DBNModel implements IResourceChangeListener {
             return null;
         }
         return findNodeByPath(monitor, items, curNode, 1);
+    }
+
+    public DBNResource getNodeByResource(IResource resource) {
+        final IProject project = resource.getProject();
+        if (project == null) {
+            return null;
+        }
+        final DBNProject projectNode = getRoot().getProject(project);
+        if (projectNode == null) {
+            return null;
+        }
+        List<IResource> path = new ArrayList<>();
+        for (IResource parent = resource; parent != null && parent != project; parent = parent.getParent()) {
+            path.add(0, parent);
+        }
+        DBNResource curResNode = projectNode;
+        for (IResource res : path) {
+            curResNode = curResNode.getChild(res);
+            if (curResNode == null) {
+                return null;
+            }
+        }
+        return curResNode;
     }
 
     private DBNNode findNodeByPath(DBRProgressMonitor monitor, List<String> items, DBNNode curNode, int firstItem) throws DBException {

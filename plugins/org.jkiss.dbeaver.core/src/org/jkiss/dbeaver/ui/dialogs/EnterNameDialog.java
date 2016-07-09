@@ -71,7 +71,7 @@ public class EnterNameDialog extends Dialog {
             propNameText.selectAll();
         }
 
-        return parent;
+        return propGroup;
     }
 
     @Override

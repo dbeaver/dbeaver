@@ -37,7 +37,7 @@ public class SubEditorSite implements IEditorSite {
 	private final IKeyBindingService keyBindingService;
     private final ISelectionProvider selectionProvider;
 
-    public SubEditorSite(IWorkbenchPartSite parentSite)
+    public SubEditorSite(IWorkbenchPartSite parentSite, ISelectionProvider selectionProvider)
     {
         this.parentSite = parentSite;
         if (parentSite instanceof IEditorSite) {
@@ -48,7 +48,12 @@ public class SubEditorSite implements IEditorSite {
             this.actionBars = new FakeActionBars();
         }
         this.keyBindingService = new FakeKeyBindingService();
-        this.selectionProvider = new FakeSelectionProvider();
+        this.selectionProvider = selectionProvider;
+    }
+
+    public SubEditorSite(IWorkbenchPartSite parentSite)
+    {
+        this(parentSite, new FakeSelectionProvider());
     }
 
     @Override
@@ -103,6 +108,7 @@ public class SubEditorSite implements IEditorSite {
     @Override
     public void registerContextMenu(MenuManager menuManager, ISelectionProvider selectionProvider)
     {
+        registerContextMenu(getId(), menuManager, selectionProvider);
     }
 
     @Override
@@ -148,13 +154,13 @@ public class SubEditorSite implements IEditorSite {
     }
 
     @Override
-    public Object getAdapter(Class adapter)
+    public <T> T getAdapter(Class<T> adapter)
     {
         return parentSite.getAdapter(adapter);
     }
 
     @Override
-    public Object getService(Class api)
+    public <T> T getService(Class<T> api)
     {
         return parentSite.getService(api);
     }
