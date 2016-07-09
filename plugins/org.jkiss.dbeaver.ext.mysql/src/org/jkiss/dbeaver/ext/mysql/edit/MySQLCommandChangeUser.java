@@ -87,7 +87,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         StringBuilder script = new StringBuilder();
         boolean hasSet;
         final MySQLDataSource dataSource = getObject().getDataSource();
-        if (!dataSource.isMariaDB() && dataSource.isVersionAtLeast(5, 7)) {
+        if (!dataSource.isMariaDB() && dataSource.isServerVersionAtLeast(5, 7)) {
             hasSet = generateAlterScript(script);
         } else {
             hasSet = generateUpdateScript(script);

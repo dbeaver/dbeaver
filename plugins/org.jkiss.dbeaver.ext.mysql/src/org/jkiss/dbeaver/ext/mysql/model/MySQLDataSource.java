@@ -23,8 +23,8 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
@@ -55,7 +55,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -76,8 +75,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     private List<MySQLCharset> charsets;
     private Map<String, MySQLCollation> collations;
     private String activeCatalogName;
-    private int databaseMajorVersion;
-    private int databaseMinorVersion;
 
     public MySQLDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -198,10 +195,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
         dataTypeCache.getAllObjects(monitor, this);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load basic datasource metadata")) {
-            final DatabaseMetaData metaData = session.getMetaData();
-            databaseMajorVersion = metaData.getDatabaseMajorVersion();
-            databaseMinorVersion = metaData.getDatabaseMinorVersion();
-
             // Read engines
             {
                 engines = new ArrayList<>();
@@ -256,8 +249,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Read catalogs
             catalogCache.getAllObjects(monitor, this);
             activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
-        } catch (SQLException e) {
-            log.error("Error initializing data source");
         }
     }
 
@@ -620,15 +611,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     public DBSDataType getLocalDataType(String typeName)
     {
         return dataTypeCache.getCachedObject(typeName);
-    }
-
-    public boolean isVersionAtLeast(int major, int minor) {
-        if (databaseMajorVersion < major) {
-            return false;
-        } else if (databaseMajorVersion == major && databaseMinorVersion < minor) {
-            return false;
-        }
-        return true;
     }
 
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>

@@ -138,7 +138,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
             return session.prepareStatement(
                 "SELECT x.oid,x.* FROM pg_catalog.pg_trigger x" +
                 "\nWHERE x.tgrelid=" + owner.getObjectId() +
-                (getDataSource().isVersionAtLeast(9, 0) ? " AND NOT x.tgisinternal" : ""));
+                (getDataSource().isServerVersionAtLeast(9, 0) ? " AND NOT x.tgisinternal" : ""));
         }
 
         @Override
