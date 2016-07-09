@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.mysql.edit;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
@@ -84,6 +85,20 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
                 });
         }
         StringBuilder script = new StringBuilder();
+        boolean hasSet;
+        final MySQLDataSource dataSource = getObject().getDataSource();
+        if (!dataSource.isMariaDB() && dataSource.isVersionAtLeast(5, 7)) {
+            hasSet = generateAlterScript(script);
+        } else {
+            hasSet = generateUpdateScript(script);
+        }
+        if (hasSet) {
+            actions.add(new SQLDatabasePersistAction(MySQLMessages.edit_command_change_user_action_update_user_record, script.toString()));
+        }
+        return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+    private boolean generateUpdateScript(StringBuilder script) {
         script.append("UPDATE mysql.user SET "); //$NON-NLS-1$
         boolean hasSet = false;
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
@@ -101,10 +116,30 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
             }
         }
         script.append(" WHERE User='").append(getObject().getUserName()).append("' AND Host='").append(getObject().getHost()).append("'"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-        if (hasSet) {
-            actions.add(new SQLDatabasePersistAction(MySQLMessages.edit_command_change_user_action_update_user_record, script.toString()));
+        return hasSet;
+    }
+
+    private boolean generateAlterScript(StringBuilder script) {
+        boolean hasSet = false, hasResOptions = false;
+
+        script.append("ALTER USER ").append(getObject().getFullName()); //$NON-NLS-1$
+        if (getProperties().containsKey(UserPropertyHandler.PASSWORD.name())) {
+            script.append("\nIDENTIFIED BY '").append(SQLUtils.escapeString(CommonUtils.toString(getProperties().get(UserPropertyHandler.PASSWORD.name())))).append("' ");
+            hasSet = true;
         }
-        return actions.toArray(new DBEPersistAction[actions.size()]);
+        StringBuilder resOptions = new StringBuilder();
+        for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
+            switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
+                case MAX_QUERIES: resOptions.append(" MAX_QUERIES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_UPDATES: resOptions.append(" MAX_UPDATES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_CONNECTIONS: resOptions.append(" MAX_CONNECTIONS_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_USER_CONNECTIONS: resOptions.append(" MAX_USER_CONNECTIONS ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+            }
+        }
+        if (resOptions.length() > 0) {
+            script.append("\nWITH ").append(resOptions);
+        }
+        return hasSet || hasResOptions;
     }
 
 }
