@@ -56,7 +56,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
 
     private static final String BOOKMARK_EXT = "bm"; //$NON-NLS-1$
 
-    public static IFolder getBookmarksFolder(IProject project, boolean forceCreate) throws CoreException
+    public static IFolder getBookmarksFolder(IProject project, boolean forceCreate)
     {
         return DBeaverCore.getInstance().getProjectRegistry().getResourceDefaultRoot(project, BookmarksHandlerImpl.class, forceCreate);
     }
@@ -208,15 +208,9 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     public static void createBookmark(final DBNDatabaseNode node, String title, IFolder folder) throws DBException
     {
         if (folder == null) {
-            for (DBNNode parent = node.getParentNode(); parent != null; parent = parent.getParentNode()) {
-                if (parent instanceof DBNProject) {
-                    try {
-                        folder = getBookmarksFolder(((DBNProject)parent).getProject(), true);
-                    } catch (CoreException e) {
-                        throw new DBException("Can't obtain folder for bookmark", e);
-                    }
-                    break;
-                }
+            final IProject project = node.getOwnerProject();
+            if (project != null) {
+                folder = getBookmarksFolder(project, true);
             }
         }
         if (folder == null) {

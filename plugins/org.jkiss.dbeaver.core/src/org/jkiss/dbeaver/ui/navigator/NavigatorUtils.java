@@ -38,9 +38,9 @@ import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -50,7 +50,10 @@ import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
@@ -142,7 +145,7 @@ public class NavigatorUtils {
 
     public static MenuManager createContextMenu(final IWorkbenchSite workbenchSite, final ISelectionProvider selectionProvider, final Control control, IMenuListener menuListener)
     {
-        MenuManager menuMgr = new MenuManager();
+        final MenuManager menuMgr = new MenuManager();
         Menu menu = menuMgr.createContextMenu(control);
         menu.addMenuListener(new MenuListener()
         {

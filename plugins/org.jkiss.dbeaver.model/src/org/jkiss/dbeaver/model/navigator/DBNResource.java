@@ -102,7 +102,7 @@ public class DBNResource extends DBNNode// implements IContributorResourceAdapte
 //    @Property(viewable = false, order = 100)
     public String getNodeDescription()
     {
-        return handler == null ? null : handler.getResourceDescription(getResource());
+        return handler == null || resource == null ? null : handler.getResourceDescription(resource);
     }
 
     @Override

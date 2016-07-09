@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -694,6 +695,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return BeanUtils.getCollectionType(propType);
     }
 
+    public IProject getOwnerProject() {
+        for (DBNNode node = getParentNode(); node != null; node = node.getParentNode()) {
+            if (node instanceof DBNProject) {
+                return ((DBNProject) node).getProject();
+            }
+        }
+        return null;
+    }
     ////////////////////////////////////////////////////////////////////////////////////
     // Reflection utils
 
