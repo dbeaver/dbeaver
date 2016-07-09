@@ -83,6 +83,9 @@ public abstract class JDBCDataSource
     protected volatile SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
 
+    private int databaseMajorVersion;
+    private int databaseMinorVersion;
+
     public JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
         throws DBException
     {
@@ -293,6 +296,14 @@ public abstract class JDBCDataSource
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
+
+            try {
+                databaseMajorVersion = metaData.getDatabaseMajorVersion();
+                databaseMinorVersion = metaData.getDatabaseMinorVersion();
+            } catch (SQLException e) {
+                log.error("Error determining server version", e);
+            }
+
             try {
                 sqlDialect = createSQLDialect(metaData);
             } catch (Exception e) {
@@ -328,6 +339,15 @@ public abstract class JDBCDataSource
                 metaContext.close();
             }
         }
+    }
+
+    public boolean isServerVersionAtLeast(int major, int minor) {
+        if (databaseMajorVersion < major) {
+            return false;
+        } else if (databaseMajorVersion == major && databaseMinorVersion < minor) {
+            return false;
+        }
+        return true;
     }
 
     @NotNull

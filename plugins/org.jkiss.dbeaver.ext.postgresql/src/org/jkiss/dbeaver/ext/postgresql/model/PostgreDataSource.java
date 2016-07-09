@@ -49,7 +49,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.framework.Version;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -71,7 +70,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private boolean databaseSwitchInProgress;
     private final List<String> searchPath = new ArrayList<>();
     private String activeUser;
-    private Version serverVersion;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -154,22 +152,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
 
-    public Version getServerVersion() {
-        return serverVersion;
-    }
-
-    public boolean isVersionAtLeast(int major, int minor) {
-        if (serverVersion == null) {
-            return false;
-        }
-        if (serverVersion.getMajor() < major) {
-            return false;
-        } else if (serverVersion.getMajor() == major && serverVersion.getMinor() < minor) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -178,19 +160,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load meta info")) {
-            try {
-                String serverVersionStr = JDBCUtils.queryString(session, "SHOW server_version");
-                if (!CommonUtils.isEmpty(serverVersionStr)) {
-                    try {
-                        this.serverVersion = new Version(serverVersionStr);
-                    } catch (Exception e) {
-                        log.debug("Can't parse server version [" + serverVersionStr + "]");
-                    }
-                }
-            } catch (SQLException e) {
-                log.debug(e);
-            }
-
             try {
                 determineDefaultObjects(session);
             } catch (Exception e) {
