@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -185,48 +186,64 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             sampleURL = connectionInfo.getDriver().getSampleURL();
         }
         //connectionInfo.getDriver()
-        final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(sampleURL);
-        final String url = connectionInfo.getUrl();
-        int sourceOffset = 0;
-        List<String> urlComponents = metaURL.getUrlComponents();
-        for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
-            String component = urlComponents.get(i);
-            if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
-                metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1)))
-            {
-                // Property
-                int partEnd;
-                if (i < urlComponentsSize - 1) {
-                    // Find next component
-                    final String nextComponent = urlComponents.get(i + 1);
-                    partEnd = url.indexOf(nextComponent, sourceOffset);
-                    if (partEnd == -1) {
-                        if (nextComponent.equals(":")) {
-                            // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
-                            partEnd = url.indexOf("/", sourceOffset);
-                        }
+        String url = connectionInfo.getUrl();
+        if (url == null) {
+            if (connectionInfo.getDriver() == null) {
+                throw new DBCException("Can't detect target driver for '" + connectionInfo.getAlias() + "'");
+            }
+            if (connectionInfo.getHost() == null) {
+                throw new DBCException("No URL and no host name - can't import connection '" + connectionInfo.getAlias() + "'");
+            }
+            // No URL - generate from props
+            DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
+            conConfig.setHostName(connectionInfo.getHost());
+            conConfig.setHostPort(connectionInfo.getPort());
+            conConfig.setDatabaseName(connectionInfo.getDatabase());
+            url = connectionInfo.getDriver().getDataSourceProvider().getConnectionURL(connectionInfo.getDriver(), conConfig);
+            connectionInfo.setUrl(url);
+        } else {
+            // Parse url
+            final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(sampleURL);
+            int sourceOffset = 0;
+            List<String> urlComponents = metaURL.getUrlComponents();
+            for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {
+                String component = urlComponents.get(i);
+                if (component.length() > 2 && component.charAt(0) == '{' && component.charAt(component.length() - 1) == '}' &&
+                    metaURL.getAvailableProperties().contains(component.substring(1, component.length() - 1))) {
+                    // Property
+                    int partEnd;
+                    if (i < urlComponentsSize - 1) {
+                        // Find next component
+                        final String nextComponent = urlComponents.get(i + 1);
+                        partEnd = url.indexOf(nextComponent, sourceOffset);
                         if (partEnd == -1) {
-                            throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+                            if (nextComponent.equals(":")) {
+                                // Try to find another divider - dbvis sometimes contains bad sample URLs (e.g. for Oracle)
+                                partEnd = url.indexOf("/", sourceOffset);
+                            }
+                            if (partEnd == -1) {
+                                throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+                            }
                         }
+                    } else {
+                        partEnd = url.length();
                     }
-                } else {
-                    partEnd = url.length();
-                }
 
-                String propertyValue = url.substring(sourceOffset, partEnd);
-                if (component.equals("{host}")) {
-                    connectionInfo.setHost(propertyValue);
-                } else if (component.equals("{port}")) {
-                    connectionInfo.setPort(propertyValue);
-                } else if (component.equals("{database}")) {
-                    connectionInfo.setDatabase(propertyValue);
+                    String propertyValue = url.substring(sourceOffset, partEnd);
+                    if (component.equals("{host}")) {
+                        connectionInfo.setHost(propertyValue);
+                    } else if (component.equals("{port}")) {
+                        connectionInfo.setPort(propertyValue);
+                    } else if (component.equals("{database}")) {
+                        connectionInfo.setDatabase(propertyValue);
+                    } else {
+                        throw new DBException("Unsupported property " + component);
+                    }
+                    sourceOffset = partEnd;
                 } else {
-                    throw new DBException("Unsupported property " + component);
+                    // Static string
+                    sourceOffset += component.length();
                 }
-                sourceOffset = partEnd;
-            } else {
-                // Static string
-                sourceOffset += component.length();
             }
         }
     }

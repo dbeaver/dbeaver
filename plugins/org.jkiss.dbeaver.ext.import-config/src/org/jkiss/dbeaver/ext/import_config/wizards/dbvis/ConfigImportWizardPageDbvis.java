@@ -24,7 +24,10 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -32,6 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -108,7 +112,36 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                     String url = XMLUtils.getChildElementBody(dbElement, "Url");
                     String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
                     String user = XMLUtils.getChildElementBody(dbElement, "Userid");
-                    if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(url) && !CommonUtils.isEmpty(driverName)) {
+                    String password = null;
+                    String passwordEncoded = XMLUtils.getChildElementBody(dbElement, "Password");
+/*
+                    if (!CommonUtils.isEmpty(passwordEncoded)) {
+                        try {
+                            password = new String(Base64.decode(passwordEncoded), ContentUtils.DEFAULT_CHARSET);
+                        } catch (UnsupportedEncodingException e) {
+                            // Ignore
+                        }
+                    }
+*/
+                    String hostName = null, port = null, database = null;
+                    Element urlVarsElement = XMLUtils.getChildElement(dbElement, "UrlVariables");
+                    if (urlVarsElement != null) {
+                        Element driverElement = XMLUtils.getChildElement(urlVarsElement, "Driver");
+                        if (driverElement != null) {
+                            for (Element urlVarElement : XMLUtils.getChildElementList(driverElement, "UrlVariable")) {
+                                final String varName = urlVarElement.getAttribute("UrlVariableName");
+                                final String varValue = XMLUtils.getElementBody(urlVarElement);
+                                if ("Server".equals(varName)) {
+                                    hostName = varValue;
+                                } else if ("Port".equals(varName)) {
+                                    port = varValue;
+                                } else if ("Database".equals(varName)) {
+                                    database = varValue;
+                                }
+                            }
+                        }
+                    }
+                    if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(driverName) && (!CommonUtils.isEmpty(url) || !CommonUtils.isEmpty(hostName))) {
                         ImportDriverInfo driver = importData.getDriver(driverName);
                         if (driver != null) {
                             ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
@@ -116,11 +149,11 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                                 dbElement.getAttribute("id"),
                                 alias,
                                 url,
-                                null,
-                                null,
-                                null,
+                                hostName,
+                                port,
+                                database,
                                 user,
-                                null);
+                                password);
                             importData.addConnection(connectionInfo);
                         }
                     }
