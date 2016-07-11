@@ -43,7 +43,7 @@
         </wizard>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
-            class="org.jkiss.dbeaver.ext.import_config.wizards.sqldeveloper.dbvis.ConfigImportWizardSqlDeveloper"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.sqldeveloper.ConfigImportWizardSqlDeveloper"
             id="org.jkiss.dbeaver.import_config.sqldeveloper"
             name="Oracle SQL Developer"
             icon="icons/sqldeveloper.png">
