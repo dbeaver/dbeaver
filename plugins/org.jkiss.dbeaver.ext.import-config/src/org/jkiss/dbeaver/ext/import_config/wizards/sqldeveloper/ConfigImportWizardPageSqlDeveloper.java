@@ -32,6 +32,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.FilenameFilter;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,6 +45,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
     public static final String SQLD_CONFIG_FILE = "connections.xml";
 
     public static final String SQLD_SYSCONFIG_FOLDER = "system";
+    public static final String SQLD_CONNECTIONS_FOLDER = "o.jdeveloper.db.connection.";
 
     protected ConfigImportWizardPageSqlDeveloper()
     {
@@ -52,140 +56,82 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
     }
 
     @Override
-    protected void loadConnections(ImportData importData) throws DBException
-    {
+    protected void loadConnections(ImportData importData) throws DBException {
         File homeFolder = RuntimeUtils.getUserHomeDir();
-        File dbvisConfigHome = new File(homeFolder, SQLD_HOME_FOLDER);
-        if (!dbvisConfigHome.exists()) {
-            throw new DBException("DBVisualizer installation not found");
-        }
-        File configFolder = new File(dbvisConfigHome, SQLD_SYSCONFIG_FOLDER);
-        if (!configFolder.exists()) {
-            throw new DBException("Only DBVisualizer 7.x version is supported");
-        }
-        File configFile = new File(configFolder, SQLD_CONFIG_FILE);
-        if (!configFile.exists()) {
-            throw new DBException("DBVisualizer configuration file not found");
-        }
-
-        try {
-            Document configDocument = XMLUtils.parseDocument(configFile);
-
-            Element driversElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Drivers");
-            if (driversElement != null) {
-                for (Element driverElement : XMLUtils.getChildElementList(driversElement, "Driver")) {
-                    String name = XMLUtils.getChildElementBody(driverElement, "Name");
-                    String sampleURL = XMLUtils.getChildElementBody(driverElement, "URLFormat");
-                    String driverClass = XMLUtils.getChildElementBody(driverElement, "DefaultClass");
-                    String lastName = XMLUtils.getChildElementBody(driverElement, "LastName");
-                    //String lastVersion = XMLUtils.getChildElementBody(driverElement, "LastVersion");
-                    if (!CommonUtils.isEmpty(name) && !CommonUtils.isEmpty(sampleURL) && !CommonUtils.isEmpty(driverClass)) {
-                        ImportDriverInfo driver = new ImportDriverInfo(null, name, sampleURL, driverClass);
-                        if (!CommonUtils.isEmpty(lastName)) {
-                            driver.setDescription(lastName);
-                        }
-                        adaptSampleUrl(driver);
-
-                        // Parse libraries
-                        Element locationsElement = XMLUtils.getChildElement(driverElement, "Locations");
-                        if (locationsElement != null) {
-                            for (Element locationElement : XMLUtils.getChildElementList(locationsElement, "Location")) {
-                                String path = XMLUtils.getChildElementBody(locationElement, "Path");
-                                if (!CommonUtils.isEmpty(path)) {
-                                    driver.addLibrary(path);
-                                }
-                            }
-                        }
-
-                        importData.addDriver(driver);
-                    }
-                }
+        File sqlDevHome = new File(homeFolder, "AppData/Roaming/" + SQLD_HOME_FOLDER);
+        if (!sqlDevHome.exists()) {
+            sqlDevHome = new File(homeFolder, "Application Data/" + SQLD_HOME_FOLDER);
+            if (!sqlDevHome.exists()) {
+                throw new DBException("SQL Developer installation not found");
             }
-
-            Element databasesElement = XMLUtils.getChildElement(configDocument.getDocumentElement(), "Databases");
-            if (databasesElement != null) {
-                for (Element dbElement : XMLUtils.getChildElementList(databasesElement, "Database")) {
-                    String alias = XMLUtils.getChildElementBody(dbElement, "Alias");
-                    String url = XMLUtils.getChildElementBody(dbElement, "Url");
-                    String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
-                    String user = XMLUtils.getChildElementBody(dbElement, "Userid");
-                    String password = null;
-                    String passwordEncoded = XMLUtils.getChildElementBody(dbElement, "Password");
-/*
-                    if (!CommonUtils.isEmpty(passwordEncoded)) {
-                        try {
-                            password = new String(Base64.decode(passwordEncoded), ContentUtils.DEFAULT_CHARSET);
-                        } catch (UnsupportedEncodingException e) {
-                            // Ignore
-                        }
-                    }
-*/
-                    String hostName = null, port = null, database = null;
-                    Element urlVarsElement = XMLUtils.getChildElement(dbElement, "UrlVariables");
-                    if (urlVarsElement != null) {
-                        Element driverElement = XMLUtils.getChildElement(urlVarsElement, "Driver");
-                        if (driverElement != null) {
-                            for (Element urlVarElement : XMLUtils.getChildElementList(driverElement, "UrlVariable")) {
-                                final String varName = urlVarElement.getAttribute("UrlVariableName");
-                                final String varValue = XMLUtils.getElementBody(urlVarElement);
-                                if ("Server".equals(varName)) {
-                                    hostName = varValue;
-                                } else if ("Port".equals(varName)) {
-                                    port = varValue;
-                                } else if ("Database".equals(varName)) {
-                                    database = varValue;
-                                }
-                            }
-                        }
-                    }
-                    if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(driverName) && (!CommonUtils.isEmpty(url) || !CommonUtils.isEmpty(hostName))) {
-                        ImportDriverInfo driver = importData.getDriver(driverName);
-                        if (driver != null) {
-                            ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
-                                driver,
-                                dbElement.getAttribute("id"),
-                                alias,
-                                url,
-                                hostName,
-                                port,
-                                database,
-                                user,
-                                password);
-                            importData.addConnection(connectionInfo);
-                        }
-                    }
-                }
+        }
+        final File[] sysConfFolders = sqlDevHome.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.contains(SQLD_SYSCONFIG_FOLDER);
             }
-
-        } catch (XMLException e) {
-            throw new DBException("Configuration parse error: " + e.getMessage());
+        });
+        if (sysConfFolders == null || sysConfFolders.length == 0) {
+            throw new DBException("SQL Developer config not found");
+        }
+        for (File sysConfFolder : sysConfFolders) {
+            final File[] connectionFolders = sysConfFolder.listFiles(new FilenameFilter() {
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.contains(SQLD_CONNECTIONS_FOLDER);
+                }
+            });
+            if (connectionFolders == null || connectionFolders.length != 1) {
+                continue;
+            }
+            final File connectionFolder = connectionFolders[0];
+            final File connectionsFile = new File(connectionFolder, SQLD_CONFIG_FILE);
+            if (!connectionsFile.exists()) {
+                continue;
+            }
+            parseConnections(connectionsFile, importData);
         }
     }
 
-    private static Pattern PATTERN_PROTOCOL = Pattern.compile("<protocol>");
-    private static Pattern PATTERN_HOST = Pattern.compile("<server>");
-    private static Pattern PATTERN_PORT = Pattern.compile("<port([0-9]*)>");
-    private static Pattern PATTERN_DATABASE = Pattern.compile("<database>|<databaseName>|<sid>|<datasource>");
+    private void parseConnections(File connectionsFile, ImportData importData) throws DBException {
+        try {
+            Document configDocument = XMLUtils.parseDocument(connectionsFile);
 
-    private void adaptSampleUrl(ImportDriverInfo driverInfo)
-    {
-        String port = null;
-        String sampleURL = driverInfo.getSampleURL();
-        sampleURL = PATTERN_PROTOCOL.matcher(sampleURL).replaceAll("{protocol}");
-        sampleURL = PATTERN_HOST.matcher(sampleURL).replaceAll("{host}");
-        final Matcher portMatcher = PATTERN_PORT.matcher(sampleURL);
-        if (portMatcher.find()) {
-            final String portString = portMatcher.group(1);
-            if (!CommonUtils.isEmpty(portString)) {
-                port = portString;
+            for (Element refElement : XMLUtils.getChildElementList(configDocument.getDocumentElement(), "Reference")) {
+                final String conName = refElement.getAttribute("name");
+                if (CommonUtils.isEmpty(conName)) {
+                    continue;
+                }
+
+                final Map<String, String> propsMap = new LinkedHashMap<>();
+                final Element refAddressesElement = XMLUtils.getChildElement(refElement, "RefAddresses");
+                if (refAddressesElement != null) {
+                    for (Element refAddr : XMLUtils.getChildElementList(refAddressesElement, "StringRefAddr")) {
+                        String addrType = refAddr.getAttribute("addrType");
+                        String addrContent = XMLUtils.getChildElementBody(refAddr, "Contents");
+                        if (!CommonUtils.isEmpty(addrType) && !CommonUtils.isEmpty(addrContent)) {
+                            propsMap.put(addrType, addrContent);
+                        }
+                    }
+                }
+                String host = propsMap.get("hostname");
+                String port = propsMap.get("port");
+                String sid = propsMap.get("sid");
+                String serviceName = propsMap.get("serviceName");
+                String user = propsMap.get("user");
+                String role = propsMap.get("role");
+                String osAuth = propsMap.get("OS_AUTHENTICATION");
+                String url = propsMap.get("customUrl");
+
+                if (CommonUtils.isEmpty(host) && CommonUtils.isEmpty(url)) {
+                    continue;
+                }
+                //ImportConnectionInfo connectionInfo = new ImportConnectionInfo();
+                //connectionInfo.setProperty();
+                //importData.addConnection(connectionInfo);
             }
-        }
-        sampleURL = portMatcher.replaceAll("{port}");
-        sampleURL = PATTERN_DATABASE.matcher(sampleURL).replaceAll("{database}");
-
-        driverInfo.setSampleURL(sampleURL);
-        if (port != null) {
-            driverInfo.setDefaultPort(port);
+        } catch (XMLException e) {
+            throw new DBException("Configuration parse error: " + e.getMessage());
         }
     }
 
