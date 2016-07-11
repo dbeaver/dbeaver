@@ -63,7 +63,7 @@ public abstract class ConfigImportWizardPage extends WizardPage {
         connectionTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         UIUtils.createTableColumn(connectionTable, SWT.LEFT, "Name");
         UIUtils.createTableColumn(connectionTable, SWT.LEFT, "Driver");
-        UIUtils.createTableColumn(connectionTable, SWT.LEFT, "URL");
+        UIUtils.createTableColumn(connectionTable, SWT.LEFT, "URL/Host");
 
         UIUtils.packColumns(connectionTable);
 
@@ -104,7 +104,11 @@ public abstract class ConfigImportWizardPage extends WizardPage {
                         item.setImage(0, DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
                         item.setText(0, connectionInfo.getAlias());
                         item.setText(1, connectionInfo.getDriverInfo().getName());
-                        item.setText(2, connectionInfo.getUrl());
+                        String url = connectionInfo.getUrl();
+                        if (CommonUtils.isEmpty(url)) {
+                            url = connectionInfo.getHost();
+                        }
+                        item.setText(2, url);
                         item.setData(connectionInfo);
                     }
                 }

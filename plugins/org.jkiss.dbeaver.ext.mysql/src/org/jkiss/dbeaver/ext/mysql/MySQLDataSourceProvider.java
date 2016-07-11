@@ -103,7 +103,10 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }
-        url.append("/").append(connectionInfo.getDatabaseName());
+        url.append("/");
+        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+            url.append(connectionInfo.getDatabaseName());
+        }
 
         return url.toString();
     }
