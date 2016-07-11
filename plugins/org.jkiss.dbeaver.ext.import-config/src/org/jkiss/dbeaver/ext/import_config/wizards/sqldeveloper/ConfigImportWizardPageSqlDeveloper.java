@@ -16,7 +16,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.import_config.wizards.sqldeveloper.dbvis;
+package org.jkiss.dbeaver.ext.import_config.wizards.sqldeveloper;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.Activator;
