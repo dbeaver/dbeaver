@@ -230,14 +230,18 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                     }
 
                     String propertyValue = url.substring(sourceOffset, partEnd);
-                    if (component.equals("{host}")) {
-                        connectionInfo.setHost(propertyValue);
-                    } else if (component.equals("{port}")) {
-                        connectionInfo.setPort(propertyValue);
-                    } else if (component.equals("{database}")) {
-                        connectionInfo.setDatabase(propertyValue);
-                    } else {
-                        throw new DBException("Unsupported property " + component);
+                    switch (component) {
+                        case "{host}":
+                            connectionInfo.setHost(propertyValue);
+                            break;
+                        case "{port}":
+                            connectionInfo.setPort(propertyValue);
+                            break;
+                        case "{database}":
+                            connectionInfo.setDatabase(propertyValue);
+                            break;
+                        default:
+                            throw new DBException("Unsupported property " + component);
                     }
                     sourceOffset = partEnd;
                 } else {
