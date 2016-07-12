@@ -26,31 +26,11 @@ import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.import_config.Activator;
-import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
-import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeViewer;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-import java.io.File;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class ConfigImportWizardPageCustomDriver extends WizardPage implements ISelectionChangedListener {
