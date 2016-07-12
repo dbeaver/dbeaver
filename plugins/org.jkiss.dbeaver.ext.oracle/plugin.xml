@@ -469,4 +469,16 @@
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.oracle.general" class="org.jkiss.dbeaver.ext.oracle.views.PrefPageOracle" name="Oracle">
         </page>
     </extension>
+
+    <extension point="org.eclipse.ui.importWizards">
+        <wizard
+            category="org.jkiss.dbeaver.import_config.third-party"
+            class="org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper.ConfigImportWizardSqlDeveloper"
+            id="org.jkiss.dbeaver.import_config.sqldeveloper"
+            name="Oracle SQL Developer"
+            icon="icons/sqldeveloper.png">
+            <description>Oracle SQL Developer</description>
+        </wizard>
+    </extension>
+
 </plugin>

@@ -16,14 +16,13 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-package org.jkiss.dbeaver.ext.import_config.wizards.sqldeveloper;
+package org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
-import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
+import org.jkiss.dbeaver.ext.oracle.Activator;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -35,8 +34,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
