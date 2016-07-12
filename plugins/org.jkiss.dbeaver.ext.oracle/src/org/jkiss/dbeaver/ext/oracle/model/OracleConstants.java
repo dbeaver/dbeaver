@@ -138,7 +138,7 @@ public class OracleConstants {
     /**
      * Connection type
      */
-    public static enum ConnectionType {
+    public enum ConnectionType {
         BASIC,
         TNS,
         CUSTOM
@@ -147,7 +147,7 @@ public class OracleConstants {
     /**
      * Connection target
      */
-    public static enum ConnectionTarget {
+    public enum ConnectionTarget {
         SID,
         SERVICE
     }
