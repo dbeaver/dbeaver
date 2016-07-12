@@ -27,9 +27,7 @@
             id="org.jkiss.dbeaver.import_config.squirrel"
             name="SQL Squirrel"
             icon="icons/squirrel.png">
-            <description>
-                SQL Squirrel Client
-            </description>
+            <description>SQL Squirrel Client</description>
         </wizard>
         <wizard
             category="org.jkiss.dbeaver.import_config.third-party"
@@ -37,9 +35,15 @@
             id="org.jkiss.dbeaver.import_config.dbvis"
             name="DBVisualizer"
             icon="icons/dbvis.png">
-            <description>
-                DBVisualizer
-            </description>
+            <description>DBVisualizer</description>
+        </wizard>
+        <wizard
+            category="org.jkiss.dbeaver.import_config.third-party"
+            class="org.jkiss.dbeaver.ext.import_config.wizards.custom.ConfigImportWizardCustom"
+            id="org.jkiss.dbeaver.import_config.custom"
+            name="Custom"
+            icon="icons/custom.png">
+            <description>Custom connections format (CSV, XML)</description>
         </wizard>
     </extension>
 
