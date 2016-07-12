@@ -15,7 +15,7 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
-package org.jkiss.dbeaver.ext.import_config.wizards.sqldeveloper;
+package org.jkiss.dbeaver.ext.oracle.tools.sqldeveloper;
 
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizard;
 
