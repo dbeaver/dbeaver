@@ -22,7 +22,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
+import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.ext.oracle.Activator;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.ext.oracle.model.dict.OracleConnectionType;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -44,16 +47,23 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
     public static final String SQLD_SYSCONFIG_FOLDER = "system";
     public static final String SQLD_CONNECTIONS_FOLDER = "o.jdeveloper.db.connection.";
 
+    private final ImportDriverInfo oraDriver;
+
     protected ConfigImportWizardPageSqlDeveloper()
     {
         super("SQLDeveloper");
         setTitle("SQL Developer");
         setDescription("Import Oracle SQL Developer connections");
         setImageDescriptor(Activator.getImageDescriptor("icons/sqldeveloper_big.png"));
+
+        oraDriver = new ImportDriverInfo(null, "Oracle", "jdbc:oracle:thin:@{host}[:{port}]/{database}", "oracle.jdbc.OracleDriver");
     }
 
     @Override
     protected void loadConnections(ImportData importData) throws DBException {
+
+        importData.addDriver(oraDriver);
+
         File homeFolder = RuntimeUtils.getUserHomeDir();
         File sqlDevHome = new File(homeFolder, "AppData/Roaming/" + SQLD_HOME_FOLDER);
         if (!sqlDevHome.exists()) {
@@ -123,9 +133,20 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                 if (CommonUtils.isEmpty(host) && CommonUtils.isEmpty(url)) {
                     continue;
                 }
-                //ImportConnectionInfo connectionInfo = new ImportConnectionInfo();
-                //connectionInfo.setProperty();
-                //importData.addConnection(connectionInfo);
+                String dbName = CommonUtils.isEmpty(sid) ? serviceName : sid;
+                ImportConnectionInfo connectionInfo = new ImportConnectionInfo(oraDriver, null, conName, url, host, port, dbName, user, null);
+                if (!CommonUtils.isEmpty(sid)) {
+                    connectionInfo.setProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SID.name());
+                } else if (!CommonUtils.isEmpty(serviceName)) {
+                    connectionInfo.setProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
+                }
+                if (CommonUtils.toBoolean(osAuth)) {
+                    connectionInfo.setUser(OracleConstants.OS_AUTH_USER_NAME);
+                }
+                if (!CommonUtils.isEmpty(role)) {
+                    connectionInfo.setProperty(OracleConstants.PROP_INTERNAL_LOGON, role);
+                }
+                importData.addConnection(connectionInfo);
             }
         } catch (XMLException e) {
             throw new DBException("Configuration parse error: " + e.getMessage());

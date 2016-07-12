@@ -187,21 +187,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         }
         //connectionInfo.getDriver()
         String url = connectionInfo.getUrl();
-        if (url == null) {
-            if (connectionInfo.getDriver() == null) {
-                throw new DBCException("Can't detect target driver for '" + connectionInfo.getAlias() + "'");
-            }
-            if (connectionInfo.getHost() == null) {
-                throw new DBCException("No URL and no host name - can't import connection '" + connectionInfo.getAlias() + "'");
-            }
-            // No URL - generate from props
-            DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
-            conConfig.setHostName(connectionInfo.getHost());
-            conConfig.setHostPort(connectionInfo.getPort());
-            conConfig.setDatabaseName(connectionInfo.getDatabase());
-            url = connectionInfo.getDriver().getDataSourceProvider().getConnectionURL(connectionInfo.getDriver(), conConfig);
-            connectionInfo.setUrl(url);
-        } else {
+        if (url != null) {
             // Parse url
             final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(sampleURL);
             int sourceOffset = 0;
@@ -222,7 +208,13 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                                 partEnd = url.indexOf("/", sourceOffset);
                             }
                             if (partEnd == -1) {
-                                throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+                                if (connectionInfo.getHost() == null) {
+                                    throw new DBException("Can't parse URL '" + url + "' with pattern '" + sampleURL + "'. String '" + nextComponent + "' not found after '" + component);
+                                } else {
+                                    // We have connection properties anyway
+                                    url = null;
+                                    break;
+                                }
                             }
                         }
                     } else {
@@ -241,7 +233,9 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                             connectionInfo.setDatabase(propertyValue);
                             break;
                         default:
-                            throw new DBException("Unsupported property " + component);
+                            if (connectionInfo.getHost() == null) {
+                                throw new DBException("Unsupported property " + component);
+                            }
                     }
                     sourceOffset = partEnd;
                 } else {
@@ -249,6 +243,21 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                     sourceOffset += component.length();
                 }
             }
+        }
+        if (url == null) {
+            if (connectionInfo.getDriver() == null) {
+                throw new DBCException("Can't detect target driver for '" + connectionInfo.getAlias() + "'");
+            }
+            if (connectionInfo.getHost() == null) {
+                throw new DBCException("No URL and no host name - can't import connection '" + connectionInfo.getAlias() + "'");
+            }
+            // No URL - generate from props
+            DBPConnectionConfiguration conConfig = new DBPConnectionConfiguration();
+            conConfig.setHostName(connectionInfo.getHost());
+            conConfig.setHostPort(connectionInfo.getPort());
+            conConfig.setDatabaseName(connectionInfo.getDatabase());
+            url = connectionInfo.getDriver().getDataSourceProvider().getConnectionURL(connectionInfo.getDriver(), conConfig);
+            connectionInfo.setUrl(url);
         }
     }
 
