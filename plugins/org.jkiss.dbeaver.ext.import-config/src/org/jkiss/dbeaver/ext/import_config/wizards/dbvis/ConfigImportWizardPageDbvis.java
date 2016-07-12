@@ -108,7 +108,36 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                     String url = XMLUtils.getChildElementBody(dbElement, "Url");
                     String driverName = XMLUtils.getChildElementBody(dbElement, "Driver");
                     String user = XMLUtils.getChildElementBody(dbElement, "Userid");
-                    if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(url) && !CommonUtils.isEmpty(driverName)) {
+                    String password = null;
+                    String passwordEncoded = XMLUtils.getChildElementBody(dbElement, "Password");
+/*
+                    if (!CommonUtils.isEmpty(passwordEncoded)) {
+                        try {
+                            password = new String(Base64.decode(passwordEncoded), ContentUtils.DEFAULT_CHARSET);
+                        } catch (UnsupportedEncodingException e) {
+                            // Ignore
+                        }
+                    }
+*/
+                    String hostName = null, port = null, database = null;
+                    Element urlVarsElement = XMLUtils.getChildElement(dbElement, "UrlVariables");
+                    if (urlVarsElement != null) {
+                        Element driverElement = XMLUtils.getChildElement(urlVarsElement, "Driver");
+                        if (driverElement != null) {
+                            for (Element urlVarElement : XMLUtils.getChildElementList(driverElement, "UrlVariable")) {
+                                final String varName = urlVarElement.getAttribute("UrlVariableName");
+                                final String varValue = XMLUtils.getElementBody(urlVarElement);
+                                if ("Server".equals(varName)) {
+                                    hostName = varValue;
+                                } else if ("Port".equals(varName)) {
+                                    port = varValue;
+                                } else if ("Database".equals(varName)) {
+                                    database = varValue;
+                                }
+                            }
+                        }
+                    }
+                    if (!CommonUtils.isEmpty(alias) && !CommonUtils.isEmpty(driverName) && (!CommonUtils.isEmpty(url) || !CommonUtils.isEmpty(hostName))) {
                         ImportDriverInfo driver = importData.getDriver(driverName);
                         if (driver != null) {
                             ImportConnectionInfo connectionInfo = new ImportConnectionInfo(
@@ -116,11 +145,11 @@ public class ConfigImportWizardPageDbvis extends ConfigImportWizardPage {
                                 dbElement.getAttribute("id"),
                                 alias,
                                 url,
-                                null,
-                                null,
-                                null,
+                                hostName,
+                                port,
+                                database,
                                 user,
-                                null);
+                                password);
                             importData.addConnection(connectionInfo);
                         }
                     }
