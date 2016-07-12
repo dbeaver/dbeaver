@@ -41,6 +41,8 @@ import org.jkiss.dbeaver.ui.resources.bookmarks.BookmarksHandlerImpl;
 
 public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
 
+    private IFolder targetFolder;
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final Shell activeShell = HandlerUtil.getActiveShell(event);
@@ -65,9 +67,8 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
         return null;
     }
 
-    private static class AddBookmarkDialog extends EnterNameDialog {
+    private class AddBookmarkDialog extends EnterNameDialog {
         private DBNDatabaseNode node;
-        private IFolder targetFolder;
 
         public AddBookmarkDialog(Shell parentShell, DBNDatabaseNode node) {
             super(parentShell, CoreMessages.actions_navigator_bookmark_title, node.getNodeName());
@@ -91,6 +92,14 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
                         gd.heightHint = 200;
                         foldersNavigator.setLayoutData(gd);
                         final TreeViewer treeViewer = foldersNavigator.getViewer();
+
+                        if (targetFolder != null && targetFolder.exists()) {
+                            DBNResource targetNode = node.getModel().getNodeByResource(targetFolder);
+                            if (targetNode != null) {
+                                treeViewer.setSelection(new StructuredSelection(targetNode));
+                            }
+                        }
+
                         treeViewer.addFilter(new ViewerFilter() {
                             @Override
                             public boolean select(Viewer viewer, Object parentElement, Object element) {
