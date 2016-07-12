@@ -4,10 +4,10 @@
 # DBeaver
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
-Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra).
+Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
 * Has a lot of <a href="http://dbeaver.jkiss.org/docs/features/">features</a>. 
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
-* Uses plugins architecture and provides additional functionality for the most popular databases (MySQL, PostgreSQL, Oracle, DB2 in version 3.6.x).
+* Uses plugins architecture and provides additional functionality for the most popular databases (MySQL, PostgreSQL, Oracle, DB2 in version 3.7.x).
 
 <a href="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
 <a href="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="http://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
@@ -29,7 +29,7 @@ git clone https://github.com/serge-rider/dbeaver.git dbeaver
 cd dbeaver
 mvn install
 ```
-Binaries are in product/standalone/target/products
+Binaries are in `product/standalone/target/products`
 
 ## Notes
 
