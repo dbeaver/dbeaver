@@ -417,8 +417,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
         String quoteString = sqlDialect.getIdentifierQuoteString();
         {
-            Matcher matcher;
-            Pattern aliasPattern;
             String quote = quoteString == null ? SQLConstants.STR_QUOTE_DOUBLE :
                 SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ?
                     quoteString :
@@ -426,7 +424,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             String catalogSeparator = sqlDialect.getCatalogSeparator();
             while (token.endsWith(catalogSeparator)) token = token.substring(0, token.length() -1);
 
-            String tableNamePattern = "((?:" + quote + "(?:[.[^" + quote + "]]+)" + quote + ")|(?:[\\w_$" + Pattern.quote(catalogSeparator) + "]+))";
+            String tableNamePattern = "([\\w_$" + quote + Pattern.quote(catalogSeparator) + "]+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
@@ -436,6 +434,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     "\\s+(?:(?:AS)\\s)?" + token + "[\\s,]+";
             }
 
+            Pattern aliasPattern;
             try {
                 aliasPattern = Pattern.compile(structNamePattern, Pattern.CASE_INSENSITIVE);
             } catch (PatternSyntaxException e) {
@@ -443,7 +442,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 return null;
             }
             String testQuery = SQLUtils.stripComments(editor.getSyntaxManager().getDialect(), activeQuery);
-            matcher = aliasPattern.matcher(testQuery);
+            Matcher matcher = aliasPattern.matcher(testQuery);
             if (!matcher.find()) {
                 return null;
             }
