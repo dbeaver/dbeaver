@@ -318,6 +318,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             }
             // Get next structure container
             try {
+                token = DBUtils.getUnQuotedIdentifier(dataSource, token);
                 String objectName = DBObjectNameCaseTransformer.transformName(dataSource, token);
                 childObject = sc.getChild(monitor, objectName);
                 if (childObject == null && i == 0 && selectedContainer != null) {
@@ -413,11 +414,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             token = "";
         }
 
+        SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+        String quoteString = sqlDialect.getIdentifierQuoteString();
         {
             Matcher matcher;
             Pattern aliasPattern;
-            SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
-            String quoteString = sqlDialect.getIdentifierQuoteString();
             String quote = quoteString == null ? SQLConstants.STR_QUOTE_DOUBLE :
                 SQLConstants.STR_QUOTE_DOUBLE.equals(quoteString) ?
                     quoteString :
@@ -453,9 +454,6 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (!CommonUtils.isEmpty(group)) {
                     String[] allNames = group.split(Pattern.quote(catalogSeparator));
                     for (String name : allNames) {
-                        if (quoteString != null && name.startsWith(quoteString) && name.endsWith(quoteString)) {
-                            name = name.substring(1, name.length() - 1);
-                        }
                         nameList.add(name);
                     }
                 }
@@ -466,9 +464,15 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             return null;
         }
 
+        // Fix names (convert case or remove quotes)
         for (int i = 0; i < nameList.size(); i++) {
-            nameList.set(i,
-                    DBObjectNameCaseTransformer.transformName(sc.getDataSource(), nameList.get(i)));
+            String name = nameList.get(i);
+            if (quoteString != null && name.startsWith(quoteString) && name.endsWith(quoteString)) {
+                name = name.substring(1, name.length() - 1);
+            } else {
+                name = DBObjectNameCaseTransformer.transformName(sc.getDataSource(), name);
+            }
+            nameList.set(i, name);
         }
 
         try {
