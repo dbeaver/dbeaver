@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/serge-rider/dbeaver.svg?branch=devel)](https://travis-ci.org/serge-rider/dbeaver)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/93fcfdba7805406298b2e60c9d56f50e)](https://www.codacy.com/app/serge/dbeaver?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=serge-rider/dbeaver&amp;utm_campaign=Badge_Grade)
 
+<img src="https://github.com/serge-rider/dbeaver/wiki/images/dbeaver-icon-64x64.png" align="right"/>
 # DBeaver
+
 
 Free multi-platform database tool for developers, SQL programmers, database administrators and analysts. 
 Supports any database which has JDBC driver (which basically means - ANY database). Can work with non-JDBC datasources (WMI, MongoDB, Cassandra, Redis).
