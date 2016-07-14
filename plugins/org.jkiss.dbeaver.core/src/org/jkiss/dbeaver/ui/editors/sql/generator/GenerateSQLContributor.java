@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -38,7 +37,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -247,7 +245,6 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         if (dataContainer != null && !visibleAttributes.isEmpty() && entity != null) {
             final Collection<ResultSetRow> selectedRows = rss.getSelectedRows();
             if (!CommonUtils.isEmpty(selectedRows)) {
-                SQLDialect sqlDialect = SQLUtils.getDialectFromObject(dataContainer.getDataSource());
 
                 menu.add(makeAction("SELECT by Unique Key", new ResultSetAnalysisRunner(dataContainer.getDataSource(), rsv.getModel()) {
                     @Override
@@ -517,7 +514,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }
     }
 
-    private static <T extends DBPObject> ContributionItem makeAction(String text, final SQLGenerator runnable)
+    private static ContributionItem makeAction(String text, final SQLGenerator runnable)
     {
         return new ActionContributionItem(
             new Action(text, DBeaverIcons.getImageDescriptor(UIIcon.SQL_TEXT)) {
