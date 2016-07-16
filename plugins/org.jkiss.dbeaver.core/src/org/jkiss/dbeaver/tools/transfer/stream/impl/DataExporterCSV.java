@@ -54,6 +54,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     }
     private char delimiter;
     private char quoteChar = '"';
+    private boolean useQuotes = true;
     private String rowDelimiter;
     private HeaderPosition headerPosition;
     private PrintWriter out;
@@ -85,6 +86,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
         if (!CommonUtils.isEmpty(quoteStr)) {
             quoteChar = quoteStr.charAt(0);
         }
+        useQuotes = quoteChar != ' ';
         out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         try {
@@ -178,8 +180,11 @@ public class DataExporterCSV extends StreamExporterAbstract {
 
     private void writeCellValue(String value, boolean quote)
     {
+        if (!useQuotes) {
+            quote = false;
+        }
         // check for needed quote
-        final boolean hasQuotes = value.indexOf(quoteChar) != -1;
+        final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
         if (!quote && !value.isEmpty()) {
             if (hasQuotes || value.indexOf(delimiter) != -1 || value.contains(rowDelimiter)) {
                 quote = true;
@@ -205,7 +210,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private void writeCellValue(Reader reader) throws IOException
     {
         try {
-            out.write(quoteChar);
+            if (useQuotes) out.write(quoteChar);
             // Copy reader
             char buffer[] = new char[2000];
             for (;;) {
@@ -214,13 +219,13 @@ public class DataExporterCSV extends StreamExporterAbstract {
                     break;
                 }
                 for (int i = 0; i < count; i++) {
-                    if (buffer[i] == quoteChar) {
+                    if (useQuotes && buffer[i] == quoteChar) {
                         out.write(quoteChar);
                     }
                     out.write(buffer[i]);
                 }
             }
-            out.write(quoteChar);
+            if (useQuotes) out.write(quoteChar);
         } finally {
             ContentUtils.close(reader);
         }
