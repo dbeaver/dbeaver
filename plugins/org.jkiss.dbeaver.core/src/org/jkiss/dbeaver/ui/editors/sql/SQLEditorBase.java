@@ -493,7 +493,7 @@ public abstract class SQLEditorBase extends BaseTextEditor {
         IDocumentPartitioner partitioner = document.getDocumentPartitioner(SQLPartitionScanner.SQL_PARTITIONING);
         if (partitioner != null) {
             // Move to default partition. We don't want to be in the middle of multi-line comment or string
-            while (currentPos < docLength && !isDefaultPartition(partitioner, currentPos)) {
+            while (currentPos < docLength && isMultiCommentPartition(partitioner, currentPos)) {
                 currentPos++;
             }
         }
@@ -557,6 +557,10 @@ public abstract class SQLEditorBase extends BaseTextEditor {
 
     private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
         return partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos));
+    }
+
+    private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
+        return partitioner != null && SQLPartitionScanner.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
 
     protected void startScriptEvaluation() {
