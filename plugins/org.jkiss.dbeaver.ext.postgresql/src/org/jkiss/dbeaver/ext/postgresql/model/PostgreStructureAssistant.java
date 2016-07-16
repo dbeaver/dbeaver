@@ -105,6 +105,9 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 }
             }
         }
+        if (!caseSensitive) {
+            objectNameMask = objectNameMask.toLowerCase(Locale.ENGLISH);
+        }
 
         if (objectType == RelationalObjectType.TYPE_TABLE) {
             findTablesByMask(session, nsList, objectNameMask, maxResults, references);
@@ -130,7 +133,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 "WHERE x.relkind in('r','v','m') AND x.relname LIKE ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (?)") +
                 " ORDER BY x.relname LIMIT " + maxResults)) {
-            dbStat.setString(1, tableNameMask.toLowerCase(Locale.ENGLISH));
+            dbStat.setString(1, tableNameMask);
             if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }
@@ -170,7 +173,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 "WHERE x.proname LIKE ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (?)") +
                 " ORDER BY x.proname LIMIT " + maxResults)) {
-            dbStat.setString(1, procNameMask.toLowerCase(Locale.ENGLISH));
+            dbStat.setString(1, procNameMask);
             if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }
@@ -210,7 +213,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 "WHERE x.conname LIKE ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.connamespace IN (?)") +
                 " ORDER BY x.conname LIMIT " + maxResults)) {
-            dbStat.setString(1, constrNameMask.toLowerCase(Locale.ENGLISH));
+            dbStat.setString(1, constrNameMask);
             if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }
@@ -251,7 +254,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 "WHERE c.oid=x.attrelid AND x.attname LIKE ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND c.relnamespace IN (?)") +
                 " ORDER BY x.attname LIMIT " + maxResults)) {
-            dbStat.setString(1, columnNameMask.toLowerCase(Locale.ENGLISH));
+            dbStat.setString(1, columnNameMask);
             if (!CommonUtils.isEmpty(schema)) {
                 PostgreUtils.setArrayParameter(dbStat, 2, schema);
             }

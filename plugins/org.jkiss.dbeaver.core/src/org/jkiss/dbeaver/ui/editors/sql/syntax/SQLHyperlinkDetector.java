@@ -107,6 +107,14 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
                 if (wordDetector.isQuoted(tableName)) {
                     tableName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteSymbol());
                 }
+            } else {
+                // Full name could be quoted
+                if (wordDetector.isQuoted(fullName)) {
+                    String unquotedName = DBUtils.getUnQuotedIdentifier(tableName, syntaxManager.getQuoteSymbol());
+                    if (unquotedName.equals(tableName)) {
+                        caseSensitive = true;
+                    }
+                }
             }
         }
 
