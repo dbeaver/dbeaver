@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,6 +32,8 @@ public enum DB2IndexType implements DBPNamedObject {
 
     CLUS("Clustering Index", true),
 
+    CPMA("Page map index", false),
+
     DIM("Dimension Block Index", false),
 
     RCT("Key Sequence Index", false),
@@ -48,9 +50,9 @@ public enum DB2IndexType implements DBPNamedObject {
 
     XVIP("Index over XML column (physical)", false);
 
-    private String name;
+    private String       name;
     private DBSIndexType dbsIndexType;
-    private Boolean validForCreation;
+    private Boolean      validForCreation;
 
     // -----------------
     // Constructor
