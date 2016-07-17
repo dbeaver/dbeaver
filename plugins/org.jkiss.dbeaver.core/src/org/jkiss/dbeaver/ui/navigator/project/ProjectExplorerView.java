@@ -82,7 +82,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
     {
         final Color shadowColor = viewer.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
 
-        final LabelProvider mainLabelProvider = (LabelProvider)viewer.getLabelProvider();
+        final ILabelProvider mainLabelProvider = (ILabelProvider) viewer.getLabelProvider();
         columnController = new ViewerColumnController("projectExplorer", viewer);
         columnController.addColumn("Name", "Resource name", SWT.LEFT, true, true, new TreeColumnViewerLabelProvider(new LabelProvider() {
             @Override
