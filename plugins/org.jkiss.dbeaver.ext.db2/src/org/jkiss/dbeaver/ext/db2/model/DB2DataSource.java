@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.db2.*;
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
+import org.jkiss.dbeaver.ext.db2.DB2DataSourceProvider;
+import org.jkiss.dbeaver.ext.db2.DB2Messages;
+import org.jkiss.dbeaver.ext.db2.DB2SQLDialect;
+import org.jkiss.dbeaver.ext.db2.DB2Utils;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
@@ -65,7 +69,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * DB2 DataSource
@@ -74,63 +82,64 @@ import java.util.*;
  */
 public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
 
-    private static final Log LOG = Log.getLog(DB2DataSource.class);
+    private static final Log                                     LOG                = Log.getLog(DB2DataSource.class);
 
-    private static final String GET_CURRENT_USER = "VALUES(SYSTEM_USER)";
-    private static final String GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";
-    private static final String SET_CURRENT_SCHEMA = "SET CURRENT SCHEMA = %s";
-    private static final String GET_SESSION_USER = "VALUES(SESSION_USER)";
+    private static final String                                  GET_CURRENT_USER   = "VALUES(SYSTEM_USER)";
+    private static final String                                  GET_CURRENT_SCHEMA = "VALUES(CURRENT SCHEMA)";
+    private static final String                                  SET_CURRENT_SCHEMA = "SET CURRENT SCHEMA = %s";
+    private static final String                                  GET_SESSION_USER   = "VALUES(SESSION_USER)";
 
-    private static final String C_SCHEMA = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
-    private static final String C_DT = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
-    private static final String C_BP = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
-    private static final String C_TS = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
-    private static final String C_SG = "SELECT * FROM SYSCAT.STOGROUPS ORDER BY SGNAME WITH UR";
-    private static final String C_RL = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
-    private static final String C_VR = "SELECT * FROM SYSCAT.VARIABLES WHERE VARMODULENAME IS NULL ORDER BY VARNAME WITH UR";
+    private static final String                                  C_SCHEMA           = "SELECT * FROM SYSCAT.SCHEMATA ORDER BY SCHEMANAME WITH UR";
+    private static final String                                  C_DT               = "SELECT * FROM SYSCAT.DATATYPES WHERE METATYPE = 'S' ORDER BY TYPESCHEMA,TYPENAME WITH UR";
+    private static final String                                  C_BP               = "SELECT * FROM SYSCAT.BUFFERPOOLS ORDER BY BPNAME WITH UR";
+    private static final String                                  C_TS               = "SELECT * FROM SYSCAT.TABLESPACES ORDER BY TBSPACE WITH UR";
+    private static final String                                  C_SG               = "SELECT * FROM SYSCAT.STOGROUPS ORDER BY SGNAME WITH UR";
+    private static final String                                  C_RL               = "SELECT * FROM SYSCAT.ROLES ORDER BY ROLENAME WITH UR";
+    private static final String                                  C_VR               = "SELECT * FROM SYSCAT.VARIABLES WHERE VARMODULENAME IS NULL ORDER BY VARNAME WITH UR";
 
-    private static final String C_SV = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
-    private static final String C_WR = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
-    private static final String C_UM = "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
+    private static final String                                  C_SV               = "SELECT * FROM SYSCAT.SERVERS ORDER BY SERVERNAME WITH UR";
+    private static final String                                  C_WR               = "SELECT * FROM SYSCAT.WRAPPERS ORDER BY WRAPNAME WITH UR";
+    private static final String                                  C_UM               = "SELECT * FROM SYSCAT.USEROPTIONS WHERE OPTION = 'REMOTE_AUTHID' ORDER BY SERVERNAME,AUTHID WITH UR";
 
-    private final DBSObjectCache<DB2DataSource, DB2Schema> schemaCache = new JDBCObjectSimpleCache<>(
-        DB2Schema.class, C_SCHEMA);
-    private final DBSObjectCache<DB2DataSource, DB2DataType> dataTypeCache = new JDBCObjectSimpleCache<>(
-        DB2DataType.class, C_DT);
-    private final DBSObjectCache<DB2DataSource, DB2Bufferpool> bufferpoolCache = new JDBCObjectSimpleCache<>(
+    private final DBSObjectCache<DB2DataSource, DB2Schema>       schemaCache        = new JDBCObjectSimpleCache<>(DB2Schema.class,
+        C_SCHEMA);
+    private final DBSObjectCache<DB2DataSource, DB2DataType>     dataTypeCache      = new JDBCObjectSimpleCache<>(DB2DataType.class,
+        C_DT);
+    private final DBSObjectCache<DB2DataSource, DB2Bufferpool>   bufferpoolCache    = new JDBCObjectSimpleCache<>(
         DB2Bufferpool.class, C_BP);
-    private final DBSObjectCache<DB2DataSource, DB2Tablespace> tablespaceCache = new JDBCObjectSimpleCache<>(
+    private final DBSObjectCache<DB2DataSource, DB2Tablespace>   tablespaceCache    = new JDBCObjectSimpleCache<>(
         DB2Tablespace.class, C_TS);
 
-    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache = new JDBCObjectSimpleCache<>(
+    private final DBSObjectCache<DB2DataSource, DB2RemoteServer> remoteServerCache  = new JDBCObjectSimpleCache<>(
         DB2RemoteServer.class, C_SV);
-    private final DBSObjectCache<DB2DataSource, DB2Wrapper> wrapperCache = new JDBCObjectSimpleCache<>(
-        DB2Wrapper.class, C_WR);
-    private final DBSObjectCache<DB2DataSource, DB2UserMapping> userMappingCache = new JDBCObjectSimpleCache<>(
+    private final DBSObjectCache<DB2DataSource, DB2Wrapper>      wrapperCache       = new JDBCObjectSimpleCache<>(DB2Wrapper.class,
+        C_WR);
+    private final DBSObjectCache<DB2DataSource, DB2UserMapping>  userMappingCache   = new JDBCObjectSimpleCache<>(
         DB2UserMapping.class, C_UM);
 
-    private final DB2GranteeCache groupCache = new DB2GranteeCache(DB2AuthIDType.G);
-    private final DB2GranteeCache userCache = new DB2GranteeCache(DB2AuthIDType.U);
+    private final DB2GranteeCache                                groupCache         = new DB2GranteeCache(DB2AuthIDType.G);
+    private final DB2GranteeCache                                userCache          = new DB2GranteeCache(DB2AuthIDType.U);
 
     // Those are dependent of DB2 version
     // This is ok as they will never been called as the folder/menu is hidden in plugin.xml
-    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache = new JDBCObjectSimpleCache<>(
+    private final DBSObjectCache<DB2DataSource, DB2StorageGroup> storagegroupCache  = new JDBCObjectSimpleCache<>(
         DB2StorageGroup.class, C_SG);
-    private final DBSObjectCache<DB2DataSource, DB2Role> roleCache = new JDBCObjectSimpleCache<>(
-        DB2Role.class, C_RL);
-    private final DBSObjectCache<DB2DataSource, DB2Variable> variableCache = new JDBCObjectSimpleCache<>(
-        DB2Variable.class, C_VR);
+    private final DBSObjectCache<DB2DataSource, DB2Role>         roleCache          = new JDBCObjectSimpleCache<>(DB2Role.class,
+        C_RL);
+    private final DBSObjectCache<DB2DataSource, DB2Variable>     variableCache      = new JDBCObjectSimpleCache<>(DB2Variable.class,
+        C_VR);
 
-    private List<DB2Parameter> listDBParameters;
-    private List<DB2Parameter> listDBMParameters;
-    private List<DB2XMLString> listXMLStrings;
+    private List<DB2Parameter>                                   listDBParameters;
+    private List<DB2Parameter>                                   listDBMParameters;
+    private List<DB2XMLString>                                   listXMLStrings;
 
-    private String activeSchemaName;
-    private DB2CurrentUserPrivileges db2CurrentUserPrivileges;
+    private String                                               activeSchemaName;
+    private DB2CurrentUserPrivileges                             db2CurrentUserPrivileges;
 
-    private String schemaForExplainTables;
+    private String                                               schemaForExplainTables;
 
-    private Double version; // Database Version
+    private Double                                               version;                                                                                                                  // Database
+                                                                                                                                                                                           // Version
 
     // -----------------------
     // Constructors
@@ -142,7 +151,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    protected boolean isConnectionReadOnlyBroken() {
+    protected boolean isConnectionReadOnlyBroken()
+    {
         return true;
     }
 
@@ -169,17 +179,20 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             this.dataTypeCache.getAllObjects(monitor, this);
         } catch (DBException e) {
             LOG.warn("Error reading types info", e);
-            this.dataTypeCache.setCache(Collections.<DB2DataType>emptyList());
+            this.dataTypeCache.setCache(Collections.<DB2DataType> emptyList());
         }
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
+        boolean setActiveObject) throws DBCException
+    {
         if (setActiveObject) {
             setCurrentSchema(monitor, context, getDefaultObject());
         }
     }
 
-    private String determineActiveSchema(JDBCSession session) throws SQLException {
+    private String determineActiveSchema(JDBCSession session) throws SQLException
+    {
         // First try to get active schema from special register 'CURRENT SCHEMA'
         String defSchema = JDBCUtils.queryString(session, GET_CURRENT_SCHEMA);
         if (defSchema == null) {
@@ -189,7 +202,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
             // Then try to get active schema from special register 'SYSTEM_USER'
             defSchema = JDBCUtils.queryString(session, GET_CURRENT_USER);
             if (defSchema == null) {
-                LOG.warn("Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
+                LOG.warn(
+                    "Special registers 'CURRENT SCHEMA' and 'SYSTEM_USER' both returned null. Use connection username as active schema");
                 defSchema = getContainer().getActualConnectionConfiguration().getUserName();
             }
         }
@@ -198,7 +212,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object getAdapter(Class adapter)
     {
         if (adapter == DBSStructureAssistant.class) {
@@ -394,7 +408,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     }
 
     @Override
-    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
+    public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException
+    {
         try {
             final String newSchemaName = determineActiveSchema((JDBCSession) session);
             if (!CommonUtils.equalObjects(newSchemaName, activeSchemaName)) {
@@ -410,7 +425,9 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
         }
     }
 
-    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, DB2Schema object) throws DBCException {
+    private void setCurrentSchema(DBRProgressMonitor monitor, JDBCExecutionContext executionContext, DB2Schema object)
+        throws DBCException
+    {
         if (object == null) {
             LOG.debug("Null current schema");
             return;
@@ -737,6 +754,11 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public boolean isAtLeastV10_5()
     {
         return version >= DB2Constants.DB2v10_5;
+    }
+
+    public boolean isAtLeastV11_1()
+    {
+        return version >= DB2Constants.DB2v11_1;
     }
 
     public Double getVersion()

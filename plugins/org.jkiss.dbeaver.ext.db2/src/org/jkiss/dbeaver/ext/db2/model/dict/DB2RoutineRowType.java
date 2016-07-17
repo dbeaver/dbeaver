@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,9 +36,11 @@ public enum DB2RoutineRowType implements DBPNamedObject {
 
     P("Input parameter", DBSProcedureParameterKind.IN),
 
-    R("Result before casting", DBSProcedureParameterKind.RETURN);
+    R("Result before casting", DBSProcedureParameterKind.RETURN),
 
-    private String name;
+    S("Aggregation state variable", DBSProcedureParameterKind.UNKNOWN);
+
+    private String                    name;
     private DBSProcedureParameterKind parameterKind;
 
     // -----------
