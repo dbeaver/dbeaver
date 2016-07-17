@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -54,11 +54,13 @@ public enum DB2TableDepType implements DBPNamedObject {
 
     Z("XSR object", DB2ObjectType.XML_SCHEMA),
 
+    m("Module", DB2ObjectType.MODULE),
+
     u("Module alias", DB2ObjectType.ALIAS),
 
     v("Global variable", DB2ObjectType.VARIABLE);
 
-    private String name;
+    private String        name;
     private DB2ObjectType db2ObjectType;
 
     // -----------
