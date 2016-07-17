@@ -166,6 +166,10 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
+        if (dataSource.isProvided()) {
+            UIUtils.showMessageBox(getShell(), "Read-only connection", "This connection was provided by system administrator. Its settings can not be changed.", SWT.ICON_ERROR);
+            return false;
+        }
         if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
             if (!checkLockPassword()) {
                 return false;
