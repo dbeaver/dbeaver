@@ -98,6 +98,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
 
+        ColumnViewerToolTipSupport.enableFor(treeViewer);
+
         initEditor();
     }
 
