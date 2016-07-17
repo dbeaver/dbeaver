@@ -70,6 +70,8 @@ public interface DBPDataSourceContainer extends DBSObject, DBDPreferences, DBPNa
     @NotNull
     DBPConnectionConfiguration getActualConnectionConfiguration();
 
+    boolean isProvided();
+
     boolean isShowSystemObjects();
 
     boolean isShowUtilityObjects();

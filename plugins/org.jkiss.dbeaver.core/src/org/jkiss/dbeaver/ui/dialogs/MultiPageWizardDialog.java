@@ -261,7 +261,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         if (buttonId == IDialogConstants.CANCEL_ID) {
             getWizard().performCancel();
         } else if (buttonId == IDialogConstants.OK_ID) {
-            getWizard().performFinish();
+            if (!getWizard().performFinish()) {
+                return;
+            }
         }
         super.buttonPressed(buttonId);
     }

@@ -39,7 +39,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
 {
     private Font normalFont;
     private Font boldFont;
-    //private Font italicFont;
+    private Font italicFont;
     //private Font boldItalicFont;
     private Color lockedForeground;
     private Color transientForeground;
@@ -49,7 +49,7 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         //this.view = view;
         this.normalFont = viewer.getControl().getFont();
         this.boldFont = UIUtils.makeBoldFont(normalFont);
-        //this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
+        this.italicFont = UIUtils.modifyFont(normalFont, SWT.ITALIC);
         //this.boldItalicFont = UIUtils.modifyFont(normalFont, SWT.BOLD | SWT.ITALIC);
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_GRAY);
         this.transientForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_RED);
@@ -60,8 +60,8 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     {
         UIUtils.dispose(boldFont);
         boldFont = null;
-//        UIUtils.dispose(italicFont);
-//        italicFont = null;
+        UIUtils.dispose(italicFont);
+        italicFont = null;
 //        UIUtils.dispose(boldItalicFont);
 //        boldItalicFont = null;
         super.dispose();
@@ -107,10 +107,16 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
     @Override
     public Font getFont(Object element)
     {
-        if (boldFont == null || !NavigatorUtils.isDefaultElement(element)) {
-            return normalFont;
-        } else {
+        if (NavigatorUtils.isDefaultElement(element)) {
             return boldFont;
+        } else {
+            if (element instanceof DBNDataSource) {
+                final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
+                if (ds != null && ds.isProvided()) {
+                    return italicFont;
+                }
+            }
+            return normalFont;
         }
     }
 
