@@ -17,10 +17,12 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.SWT;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
@@ -32,11 +34,16 @@ import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.*;
+import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * This is a sample new wizard.
@@ -57,7 +64,7 @@ public class EditConnectionWizard extends ConnectionWizard
     /**
      * Constructor for SampleNewWizard.
      */
-    public EditConnectionWizard(DataSourceDescriptor dataSource)
+    public EditConnectionWizard(@NotNull DataSourceDescriptor dataSource)
     {
         super(dataSource.getRegistry());
         this.dataSource = dataSource;
@@ -77,6 +84,7 @@ public class EditConnectionWizard extends ConnectionWizard
         return dataSource.getDriver();
     }
 
+    @Nullable
     @Override
     public ConnectionPageSettings getPageSettings()
     {
@@ -158,10 +166,35 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public boolean performFinish()
     {
+        if (!CommonUtils.isEmpty(dataSource.getLockPasswordHash())) {
+            if (!checkLockPassword()) {
+                return false;
+            }
+        }
         dataSource.setUpdateDate(new Date());
         saveSettings(dataSource);
         dataSource.getRegistry().updateDataSource(dataSource);
         return true;
+    }
+
+    private boolean checkLockPassword() {
+        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), "Enter lock password", true);
+        if (dialog.open() == IDialogConstants.OK_ID) {
+            final String userPassword = dialog.getUserPassword();
+            if (!CommonUtils.isEmpty(userPassword)) {
+                try {
+                    final byte[] md5hash = MessageDigest.getInstance("MD5").digest(userPassword.getBytes(ContentUtils.DEFAULT_CHARSET));
+                    final String hexString = CommonUtils.toHexString(md5hash).toLowerCase(Locale.ENGLISH).trim();
+                    if (hexString.equals(dataSource.getLockPasswordHash())) {
+                        return true;
+                    }
+                    UIUtils.showMessageBox(getShell(), "Bad password", "Password doesn't match", SWT.ICON_ERROR);
+                } catch (Throwable e) {
+                    UIUtils.showErrorDialog(getShell(), "Error making MD5", "Can't generate password hash", e);
+                }
+            }
+        }
+        return false;
     }
 
     @Override

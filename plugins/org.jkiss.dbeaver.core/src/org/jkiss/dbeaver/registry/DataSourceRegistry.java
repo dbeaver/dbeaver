@@ -469,6 +469,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         if (!CommonUtils.isEmpty(dataSource.getFolderPath())) {
             xml.addAttribute(RegistryConstants.ATTR_FOLDER, dataSource.getFolderPath());
         }
+        final String lockPasswordHash = dataSource.getLockPasswordHash();
+        if (!CommonUtils.isEmpty(lockPasswordHash)) {
+            xml.addAttribute(RegistryConstants.ATTR_LOCK_PASSWORD, lockPasswordHash);
+        }
 
         {
             // Connection info
