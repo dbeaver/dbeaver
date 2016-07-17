@@ -490,6 +490,9 @@ public final class SQLUtils {
             if (typeName.equalsIgnoreCase("DECIMAL") || typeName.equalsIgnoreCase("NUMERIC") || typeName.equalsIgnoreCase("NUMBER")) {
                 int scale = column.getScale();
                 int precision = column.getPrecision();
+                if (precision == 0) {
+                    precision = (int) column.getMaxLength();
+                }
                 if (scale >= 0 && precision >= 0 && !(scale == 0 && precision == 0)) {
                     return "(" + precision + ',' + scale + ')';
                 }
