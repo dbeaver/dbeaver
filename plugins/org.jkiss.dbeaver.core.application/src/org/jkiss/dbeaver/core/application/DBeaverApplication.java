@@ -86,43 +86,14 @@ public class DBeaverApplication implements IApplication {
         instance = this;
         Display display = null;
 
-        Bundle brandingBundle = context.getBrandingBundle();
-        if (brandingBundle != null) {
-            BundleContext bundleContext = brandingBundle.getBundleContext();
-            if (bundleContext != null) {
-                bundleContext.addBundleListener(new BundleListener() {
-                    @Override
-                    public void bundleChanged(BundleEvent event) {
-                        String message = null;
-
-                        if (event.getType() == BundleEvent.STARTED) {
-                            message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-                        } else if (event.getType() == BundleEvent.STOPPED) {
-                            message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
-                        }
-                        if (message != null) {
-                            log.debug(message);
-                        }
-                    }
-                });
-            }
-        }
-        Log.addListener(new Log.Listener() {
-            @Override
-            public void loggedMessage(Object message, Throwable t) {
-                DBeaverSplashHandler.showMessage(CommonUtils.toString(message));
-            }
-        });
-
         Location instanceLoc = Platform.getInstanceLocation();
-        log.debug("Default instance location: " + instanceLoc.getDefault());
+        //log.debug("Default instance location: " + instanceLoc.getDefault());
         String defaultHomePath = getDefaultWorkspaceLocation().getAbsolutePath();
         try {
             URL defaultHomeURL = new URL(
                 "file",  //$NON-NLS-1$
                 null,
                 defaultHomePath);
-            log.debug("Setting instance location to " + defaultHomeURL);
             boolean keepTrying = true;
             while (keepTrying) {
                 if (!instanceLoc.set(defaultHomeURL, true)) {
@@ -163,6 +134,34 @@ public class DBeaverApplication implements IApplication {
             // Error may occur if -data parameter was specified at startup
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
+
+        Bundle brandingBundle = context.getBrandingBundle();
+        if (brandingBundle != null) {
+            BundleContext bundleContext = brandingBundle.getBundleContext();
+            if (bundleContext != null) {
+                bundleContext.addBundleListener(new BundleListener() {
+                    @Override
+                    public void bundleChanged(BundleEvent event) {
+                        String message = null;
+
+                        if (event.getType() == BundleEvent.STARTED) {
+                            message = "> Start " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                        } else if (event.getType() == BundleEvent.STOPPED) {
+                            message = "< Stop " + event.getBundle().getSymbolicName() + " [" + event.getBundle().getVersion() + "]";
+                        }
+                        if (message != null) {
+                            log.debug(message);
+                        }
+                    }
+                });
+            }
+        }
+        Log.addListener(new Log.Listener() {
+            @Override
+            public void loggedMessage(Object message, Throwable t) {
+                DBeaverSplashHandler.showMessage(CommonUtils.toString(message));
+            }
+        });
 
         final Runtime runtime = Runtime.getRuntime();
 
