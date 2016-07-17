@@ -23,6 +23,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -31,11 +32,12 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * DatabaseNavigatorLabelProvider
 */
-class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvider, IColorProvider
+class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFontProvider, IColorProvider, IToolTipProvider
 {
     private Font normalFont;
     private Font boldFont;
@@ -152,4 +154,53 @@ class DatabaseNavigatorLabelProvider extends LabelProvider implements IFontProvi
         return element instanceof DBNNode && ((DBNNode) element).isFiltered();
     }
 
+    @Override
+    public String getToolTipText(Object element) {
+        if (element instanceof DBNDataSource) {
+            final DBPDataSourceContainer ds = ((DBNDataSource) element).getDataSourceContainer();
+            if (ds != null) {
+                StringBuilder info = new StringBuilder();
+                info.append("Name: ").append(ds.getName()).append("\n");
+                final DBPConnectionConfiguration cfg = ds.getConnectionConfiguration();
+                if (!CommonUtils.isEmpty(cfg.getUrl())) {
+                    info.append("URL: ").append(cfg.getUrl()).append("\n");
+                } else if (!CommonUtils.isEmpty(cfg.getDatabaseName())) {
+                    info.append("Database: ").append(cfg.getDatabaseName()).append("\n");
+                }
+                if (!CommonUtils.isEmpty(cfg.getUserName())) {
+                    info.append("User: ").append(cfg.getUserName()).append("\n");
+                }
+/*
+                if (cfg.getConnectionType() != null) {
+                    info.append("Type: ").append(cfg.getConnectionType().getName()).append("\n");
+                }
+*/
+                if (ds.isConnectionReadOnly()) {
+                    info.append("Read-only connection\n");
+                }
+                if (ds.isProvided()) {
+                    info.append("Provided connection\n");
+                }
+
+                return info.toString().trim();
+
+            }
+        } else if (element instanceof DBNDatabaseNode) {
+            final String description = ((DBNDatabaseNode) element).getNodeDescription();
+            if (!CommonUtils.isEmptyTrimmed(description)) {
+                return description;
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public int getToolTipDisplayDelayTime(Object object) {
+        return 500;
+    }
+
+    @Override
+    public int getToolTipStyle(Object object) {
+        return super.getToolTipStyle(object);
+    }
 }
