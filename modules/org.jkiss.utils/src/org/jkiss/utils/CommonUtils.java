@@ -35,8 +35,7 @@ import java.util.StringTokenizer;
  */
 public class CommonUtils {
 
-    public static boolean isJavaIdentifier(@NotNull CharSequence str)
-    {
+    public static boolean isJavaIdentifier(@NotNull CharSequence str) {
         for (int i = 0; i < str.length(); i++) {
             if (!Character.isJavaIdentifierPart(str.charAt(i))) {
                 return false;
@@ -46,8 +45,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String escapeJavaString(@NotNull String str)
-    {
+    public static String escapeJavaString(@NotNull String str) {
         if (str.indexOf('"') == -1 && str.indexOf('\n') == -1) {
             return str;
         }
@@ -55,25 +53,24 @@ public class CommonUtils {
         for (int i = 0; i < str.length(); i++) {
             char c = str.charAt(i);
             switch (c) {
-            case '"':
-                res.append("\\\"");
-                break;
-            case '\n':
-                res.append("\\n");
-                break;
-            case '\r':
-                break;
-            default:
-                res.append(c);
-                break;
+                case '"':
+                    res.append("\\\"");
+                    break;
+                case '\n':
+                    res.append("\\n");
+                    break;
+                case '\r':
+                    break;
+                default:
+                    res.append(c);
+                    break;
             }
         }
         return res.toString();
     }
 
     @Nullable
-    public static String escapeIdentifier(@Nullable String str)
-    {
+    public static String escapeIdentifier(@Nullable String str) {
         if (str == null) {
             return null;
         }
@@ -92,8 +89,7 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static String escapeFileName(@Nullable String str)
-    {
+    public static String escapeFileName(@Nullable String str) {
         if (str == null) {
             return null;
         }
@@ -110,8 +106,7 @@ public class CommonUtils {
         return res.toString();
     }
 
-    public static String makeDirectoryName(@NotNull String str)
-    {
+    public static String makeDirectoryName(@NotNull String str) {
         if (!str.endsWith("/")) {
             str += "/";
         }
@@ -119,16 +114,14 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String removeTrailingSlash(@NotNull String str)
-    {
+    public static String removeTrailingSlash(@NotNull String str) {
         while (str.endsWith("/") || str.endsWith("\\")) {
             str = str.substring(0, str.length() - 1);
         }
         return str;
     }
 
-    public static String capitalizeWord(String str)
-    {
+    public static String capitalizeWord(String str) {
         if (isEmpty(str) || Character.isUpperCase(str.charAt(0))) {
             return str;
         }
@@ -136,39 +129,32 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T> T notNull(@Nullable T value, @NotNull T defaultValue)
-    {
+    public static <T> T notNull(@Nullable T value, @NotNull T defaultValue) {
         return value != null ? value : defaultValue;
     }
 
-    public static boolean isEmpty(@Nullable CharSequence value)
-    {
+    public static boolean isEmpty(@Nullable CharSequence value) {
         return value == null || value.length() == 0;
     }
 
-    public static boolean isEmpty(@Nullable String value)
-    {
+    public static boolean isEmpty(@Nullable String value) {
         return value == null || value.length() == 0;
     }
 
-    public static boolean isNotEmpty(@Nullable String value)
-    {
+    public static boolean isNotEmpty(@Nullable String value) {
         return !isEmpty(value);
     }
 
-    public static boolean isEmpty(@Nullable Collection<?> value)
-    {
+    public static boolean isEmpty(@Nullable Collection<?> value) {
         return value == null || value.isEmpty();
     }
 
-    public static boolean isEmpty(@Nullable Map<?, ?> value)
-    {
+    public static boolean isEmpty(@Nullable Map<?, ?> value) {
         return value == null || value.isEmpty();
     }
 
     @NotNull
-    public static <T> Collection<T> safeCollection(@Nullable Collection<T> theList)
-    {
+    public static <T> Collection<T> safeCollection(@Nullable Collection<T> theList) {
         if (theList == null) {
             theList = Collections.emptyList();
         }
@@ -176,8 +162,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T> List<T> safeList(@Nullable List<T> theList)
-    {
+    public static <T> List<T> safeList(@Nullable List<T> theList) {
         if (theList == null) {
             theList = Collections.emptyList();
         }
@@ -185,8 +170,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T> List<T> copyList(@Nullable Collection<T> theList)
-    {
+    public static <T> List<T> copyList(@Nullable Collection<T> theList) {
         if (theList == null) {
             return new ArrayList<>();
         } else {
@@ -195,23 +179,19 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String notEmpty(@Nullable String value)
-    {
+    public static String notEmpty(@Nullable String value) {
         return value == null ? "" : value;
     }
 
-    public static boolean getBoolean(String value)
-    {
+    public static boolean getBoolean(String value) {
         return Boolean.parseBoolean(value);
     }
 
-    public static boolean getBoolean(@Nullable String value, boolean defaultValue)
-    {
+    public static boolean getBoolean(@Nullable String value, boolean defaultValue) {
         return isEmpty(value) ? defaultValue : Boolean.parseBoolean(value);
     }
 
-    public static boolean getBoolean(@Nullable Object value, boolean defaultValue)
-    {
+    public static boolean getBoolean(@Nullable Object value, boolean defaultValue) {
         if (value == null) {
             return defaultValue;
         } else if (value instanceof Boolean) {
@@ -222,17 +202,15 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String getLineSeparator()
-    {
+    public static String getLineSeparator() {
         String lineSeparator = System.getProperty("line.separator");
         return lineSeparator == null ? "\n" : lineSeparator;
     }
 
     @NotNull
-    public static Throwable getRootCause(@NotNull Throwable ex)
-    {
+    public static Throwable getRootCause(@NotNull Throwable ex) {
         Throwable rootCause = ex;
-        for (;;) {
+        for (; ; ) {
             if (rootCause.getCause() != null) {
                 rootCause = rootCause.getCause();
             } else if (rootCause instanceof InvocationTargetException
@@ -245,8 +223,7 @@ public class CommonUtils {
         return rootCause;
     }
 
-    public static boolean equalObjects(@Nullable Object o1, @Nullable Object o2)
-    {
+    public static boolean equalObjects(@Nullable Object o1, @Nullable Object o2) {
         if (o1 == o2) {
             return true;
         }
@@ -260,8 +237,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String toString(@Nullable Object object)
-    {
+    public static String toString(@Nullable Object object) {
         if (object == null) {
             return "";
         } else if (object instanceof String) {
@@ -271,13 +247,11 @@ public class CommonUtils {
         }
     }
 
-    public static boolean toBoolean(@Nullable Object object)
-    {
+    public static boolean toBoolean(@Nullable Object object) {
         return object != null && getBoolean(object.toString());
     }
 
-    public static int toInt(@Nullable Object object, int def)
-    {
+    public static int toInt(@Nullable Object object, int def) {
         if (object == null) {
             return def;
         } else if (object instanceof Number) {
@@ -291,13 +265,11 @@ public class CommonUtils {
         }
     }
 
-    public static int toInt(@Nullable Object object)
-    {
+    public static int toInt(@Nullable Object object) {
         return toInt(object, 0);
     }
 
-    public static boolean isInt(@Nullable Object object)
-    {
+    public static boolean isInt(@Nullable Object object) {
         if (object == null) {
             return false;
         } else if (object instanceof Number) {
@@ -312,8 +284,7 @@ public class CommonUtils {
         }
     }
 
-    public static long toLong(@Nullable Object object)
-    {
+    public static long toLong(@Nullable Object object) {
         if (object == null) {
             return 0;
         } else if (object instanceof Number) {
@@ -327,8 +298,7 @@ public class CommonUtils {
         }
     }
 
-    public static boolean isLong(@Nullable Object object)
-    {
+    public static boolean isLong(@Nullable Object object) {
         if (object == null) {
             return false;
         } else if (object instanceof Number) {
@@ -344,30 +314,28 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String toHexString(@Nullable byte[] bytes)
-    {
+    public static String toHexString(@Nullable byte[] bytes) {
         return bytes == null ? "" : toHexString(bytes, 0, bytes.length);
     }
 
+    final protected static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
     @NotNull
-    public static String toHexString(@Nullable byte[] bytes, int offset, int length)
-    {
+    public static String toHexString(@Nullable byte[] bytes, int offset, int length) {
         if (bytes == null || bytes.length == 0) {
             return "";
         }
-        StringBuilder buffer = new StringBuilder(length * 2 + 2);
-        buffer.append("0x");
-        for (int i = offset; i < offset + length && i < bytes.length; i++) {
-            if (bytes[i] < 16)
-                buffer.append('0');
-            buffer.append(Integer.toHexString(bytes[i]));
+        char[] hexChars = new char[length * 2];
+        for (int i = 0; i < length; i++) {
+            int v = bytes[offset + i] & 0xFF;
+            hexChars[i * 2] = hexArray[v >>> 4];
+            hexChars[i * 2 + 1] = hexArray[v & 0x0F];
         }
-        return buffer.toString().toUpperCase();
+        return new String(hexChars);
     }
 
     @NotNull
-    public static List<String> splitString(@Nullable String str, char delimiter)
-    {
+    public static List<String> splitString(@Nullable String str, char delimiter) {
         if (CommonUtils.isEmpty(str)) {
             return Collections.emptyList();
         } else {
@@ -381,8 +349,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static String makeString(@Nullable List<String> tokens, char delimiter)
-    {
+    public static String makeString(@Nullable List<String> tokens, char delimiter) {
         if (tokens == null) {
             return "";
         } else if (tokens.size() == 1) {
@@ -400,28 +367,24 @@ public class CommonUtils {
     }
 
     @Nullable
-    public static String truncateString(@Nullable String str, int maxLength)
-    {
+    public static String truncateString(@Nullable String str, int maxLength) {
         if (str != null && str.length() > maxLength) {
             return str.substring(0, maxLength);
         }
         return str;
     }
 
-    public static boolean isEmptyTrimmed(@Nullable String str)
-    {
+    public static boolean isEmptyTrimmed(@Nullable String str) {
         return str == null || str.length() == 0 || str.trim().length() == 0;
     }
 
     @Nullable
-    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name)
-    {
+    public static <T extends Enum<T>> T valueOf(@NotNull Class<T> type, @Nullable String name) {
         return valueOf(type, name, false);
     }
 
     @Nullable
-    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, boolean underscoreSpaces)
-    {
+    public static <T extends Enum<T>> T valueOf(@Nullable Class<T> type, @Nullable String name, boolean underscoreSpaces) {
         if (name == null) {
             return null;
         }
@@ -441,8 +404,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T> T getItem(@NotNull Collection<T> collection, int index)
-    {
+    public static <T> T getItem(@NotNull Collection<T> collection, int index) {
         if (collection instanceof List) {
             return ((List<T>) collection).get(index);
         } else {
@@ -455,8 +417,7 @@ public class CommonUtils {
     }
 
     @NotNull
-    public static <T extends Enum<T>> T fromOrdinal(Class<T> enumClass, int ordinal)
-    {
+    public static <T extends Enum<T>> T fromOrdinal(Class<T> enumClass, int ordinal) {
         T[] enumConstants = enumClass.getEnumConstants();
         for (T value : enumConstants) {
             if (value.ordinal() == ordinal) {
