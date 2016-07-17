@@ -274,7 +274,7 @@
                             icon="icons/parameter_db.gif" 
                             description="Database Configuration"
                             visibleIf="object.dataSource.authorisedForDBCFG">
-                        <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="icons/configure.gif" navigable="false" virtual="true"/>
+                        <items label="%tree.parameter.node.name" path="parameter" property="dbParameters" icon="icons/parameter_db.gif" navigable="false" virtual="true"/>
                     </folder>
                     <folder type="org.jkiss.dbeaver.ext.db2.info.DB2Parameter" 
                             label="%tree.dbmparameters.node.name" 
