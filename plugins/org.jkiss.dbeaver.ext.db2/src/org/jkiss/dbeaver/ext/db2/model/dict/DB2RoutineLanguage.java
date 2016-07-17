@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
+ * Copyright (C) 2013-2016 Denis Forveille (titou10.titou10@gmail.com)
  * Copyright (C) 2010-2016 Serge Rieder (serge@jkiss.org)
  *
  * This program is free software; you can redistribute it and/or modify
@@ -26,6 +26,8 @@ package org.jkiss.dbeaver.ext.db2.model.dict;
 public enum DB2RoutineLanguage {
     C,
 
+    CLR,
+
     COBOL,
 
     JAVA,
@@ -33,6 +35,8 @@ public enum DB2RoutineLanguage {
     OLE,
 
     OLEDB,
+
+    R,
 
     SQL;
 }
