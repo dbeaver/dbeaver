@@ -18,10 +18,7 @@
 
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -33,7 +30,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
 
 
-public class ConfigImportWizardPageCustomDriver extends WizardPage implements ISelectionChangedListener {
+public class ConfigImportWizardPageCustomDriver extends WizardPage implements ISelectionChangedListener,IDoubleClickListener {
 
     private DriverDescriptor selectedDriver;
 
@@ -76,5 +73,16 @@ public class ConfigImportWizardPageCustomDriver extends WizardPage implements IS
         }
         getWizard().getContainer().updateButtons();
         getWizard().getContainer().updateMessage();
+    }
+
+    @Override
+    public void doubleClick(DoubleClickEvent event) {
+        if (selectedDriver != null) {
+            getWizard().getContainer().showPage(getWizard().getNextPage(this));
+        }
+    }
+
+    public DBPDriver getSelectedDriver() {
+        return selectedDriver;
     }
 }

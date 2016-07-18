@@ -18,19 +18,49 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizard;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+
+import java.io.File;
 
 public class ConfigImportWizardCustom extends ConfigImportWizard {
-	
+
+    private ConfigImportWizardPageCustomDriver pageDriver;
+    private ConfigImportWizardPageCustomSettings pageSettings;
+
+    enum ImportType {
+        CSV,
+        XML
+    }
+
     @Override
-    protected ConfigImportWizardPageCustomConnections createMainPage()
-    {
+    protected ConfigImportWizardPageCustomConnections createMainPage() {
         return new ConfigImportWizardPageCustomConnections();
     }
 
     @Override
     public void addPages() {
-        addPage(new ConfigImportWizardPageCustomDriver());
-        addPage(new ConfigImportWizardPageCustomSettings());
+        pageDriver = new ConfigImportWizardPageCustomDriver();
+        pageSettings = new ConfigImportWizardPageCustomSettings();
+
+        addPage(pageDriver);
+        addPage(pageSettings);
         super.addPages();
     }
+
+    public DBPDriver getDriver() {
+        return pageDriver.getSelectedDriver();
+    }
+
+    public ConfigImportWizardCustom.ImportType getImportType() {
+        return pageSettings.getImportType();
+    }
+
+    public File getInputFile() {
+        return pageSettings.getInputFile();
+    }
+
+    public String getInputFileEncoding() {
+        return pageSettings.getInputFileEncoding();
+    }
+
 }
