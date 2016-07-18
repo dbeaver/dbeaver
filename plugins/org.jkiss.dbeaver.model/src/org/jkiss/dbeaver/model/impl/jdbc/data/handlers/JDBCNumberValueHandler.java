@@ -64,6 +64,16 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
         if (value == null) {
             return DBUtils.getDefaultValueDisplayString(null, format);
         }
+        if (value instanceof Double) {
+            double dbl = ((Double) value).doubleValue();
+            if (dbl != dbl) {
+                return "NaN";
+            } else if (dbl == Double.POSITIVE_INFINITY) {
+                return "+Infinity";
+            } else if (dbl == Double.NEGATIVE_INFINITY) {
+                return "-Infinity";
+            }
+        }
         if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
             if (value instanceof BigDecimal) {
                 return ((BigDecimal) value).toPlainString();
@@ -129,7 +139,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     log.debug(e);
                 }
                 if (value == null && !gotValue) {
-                    if (type.getScale() > 0) {
+                    if (type.getScale() >= 0) {
                         value = resultSet.getDouble(index);
                     } else {
                         value = resultSet.getLong(index);
@@ -201,7 +211,7 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
                     }
                     break;
                 default:
-                    if (paramType.getScale() > 0) {
+                    if (paramType.getScale() >= 0) {
                         statement.setDouble(paramIndex, number.doubleValue());
                     } else {
                         statement.setLong(paramIndex, number.longValue());
