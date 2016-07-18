@@ -52,6 +52,7 @@ public class DB2Constants {
     public static final Double             DB2v10_5                    = 10.5;
     public static final Double             DB2v11_1                    = 11.1;
 
+    public static final String             TYPE_NAME_DECFLOAT          = "DECFLOAT";
     public static final int                EXT_TYPE_DECFLOAT           = -100001;                                                  // DB2Types.DECFLOAT
     public static final int                EXT_TYPE_CURSOR             = -100008;                                                  // DB2Types.CURSOR
 
@@ -125,5 +126,4 @@ public class DB2Constants {
     public static final DBDPseudoAttribute PSEUDO_ATTR_RID_BIT         = new DBDPseudoAttribute(DBDPseudoAttributeType.ROWID,
         "RID_BIT()", "RID_BIT($alias)", "rid_bit", "Unique physical row identifier", false);
 
-    public static final String TYPE_NAME_DECFLOAT = "DECFLOAT";
 }
