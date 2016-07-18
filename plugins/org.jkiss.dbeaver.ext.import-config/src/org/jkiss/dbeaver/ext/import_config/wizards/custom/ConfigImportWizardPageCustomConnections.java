@@ -19,26 +19,17 @@
 package org.jkiss.dbeaver.ext.import_config.wizards.custom;
 
 import au.com.bytecode.opencsv.CSVReader;
-import org.apache.commons.lang.ArrayUtils;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.import_config.Activator;
 import org.jkiss.dbeaver.ext.import_config.wizards.ConfigImportWizardPage;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportConnectionInfo;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.xml.XMLException;
-import org.jkiss.utils.xml.XMLUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
+import org.jkiss.utils.ArrayUtils;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 
 public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardPage {
