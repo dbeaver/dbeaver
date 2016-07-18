@@ -475,6 +475,7 @@
 
             <datasource id="db2"/>
 
+            <type name="DECFLOAT"/>
 <!--
             <type name="DATE"/>
             <type name="DATETIME"/>

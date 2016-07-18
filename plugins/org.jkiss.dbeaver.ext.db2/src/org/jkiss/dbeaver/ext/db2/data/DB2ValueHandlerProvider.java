@@ -18,6 +18,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.data;
 
+import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,6 +43,10 @@ public class DB2ValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
+        final String typeName = typedObject.getTypeName();
+        if (DB2Constants.TYPE_NAME_DECFLOAT.equals(typeName)) {
+            return new DB2DecFloatValueHandler(preferences.getDataFormatterProfile());
+        }
         return null;
     }
 }
