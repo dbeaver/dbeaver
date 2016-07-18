@@ -54,39 +54,39 @@ import java.util.Map;
  */
 public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DBPQualifiedObject {
 
-    private static final Log LOG = Log.getLog(DB2DataType.class);
+    private static final Log                   LOG              = Log.getLog(DB2DataType.class);
 
-    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>(32); // See init below
+    private static final Map<String, TypeDesc> PREDEFINED_TYPES = new HashMap<>(32);            // See init below
 
-    private DBSObject parentNode; // see below
+    private DBSObject                          parentNode;                                      // see below
 
-    private DB2Schema db2Schema;
+    private DB2Schema                          db2Schema;
 
-    private String fullyQualifiedName;
+    private String                             fullyQualifiedName;
 
-    private TypeDesc typeDesc;
+    private TypeDesc                           typeDesc;
 
-    private Integer db2TypeId;
+    private Integer                            db2TypeId;
 
-    private String ownerCol;
-    private DB2OwnerType ownerType;
+    private String                             ownerCol;
+    private DB2OwnerType                       ownerType;
 
-    private String sourceSchemaName;
-    private String sourceModuleName;
-    private String sourceName;
+    private String                             sourceSchemaName;
+    private String                             sourceModuleName;
+    private String                             sourceName;
 
-    private DB2DataTypeMetaType metaType;
+    private DB2DataTypeMetaType                metaType;
 
-    private Integer length;
-    private Integer scale;
+    private Integer                            length;
+    private Integer                            scale;
 
-    private Timestamp createTime;
-    private Timestamp alterTime;
-    private Timestamp lastRegenTime;
-    private String constraintText;
-    private String remarks;
+    private Timestamp                          createTime;
+    private Timestamp                          alterTime;
+    private Timestamp                          lastRegenTime;
+    private String                             constraintText;
+    private String                             remarks;
 
-    private DB2Module db2Module;
+    private DB2Module                          db2Module;
 
     // -----------------------
     // Constructors
@@ -249,7 +249,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @Nullable
     @Override
-    public Object geTypeExtension() {
+    public Object geTypeExtension()
+    {
         return metaType;
     }
 
@@ -281,7 +282,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     }
 
     @Override
-    public DBCLogicalOperator[] getSupportedOperators() {
+    public DBCLogicalOperator[] getSupportedOperators()
+    {
         return DBUtils.getDefaultOperators(this);
     }
 
@@ -416,10 +418,10 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
     // --------------
     private static final class TypeDesc {
         private final DBPDataKind dataKind;
-        private final Integer sqlType;
-        private final Integer precision;
-        private final Integer minScale;
-        private final Integer maxScale;
+        private final Integer     sqlType;
+        private final Integer     precision;
+        private final Integer     minScale;
+        private final Integer     maxScale;
 
         private TypeDesc(DBPDataKind dataKind, Integer sqlType, Integer precision, Integer minScale, Integer maxScale)
         {
@@ -439,10 +441,8 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         PREDEFINED_TYPES.put("BOOLEAN", new TypeDesc(DBPDataKind.BOOLEAN, Types.BOOLEAN, null, null, null));
         PREDEFINED_TYPES.put("CHARACTER", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 254, null, null));
         PREDEFINED_TYPES.put("CLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 2147483647, null, null));
-        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Constants.EXT_TYPE_CURSOR, null, null, null));
         PREDEFINED_TYPES.put("DATE", new TypeDesc(DBPDataKind.DATETIME, Types.DATE, 10, null, null));
         PREDEFINED_TYPES.put("DBCLOB", new TypeDesc(DBPDataKind.CONTENT, Types.CLOB, 1073741823, null, null));
-        PREDEFINED_TYPES.put("DECFLOAT", new TypeDesc(DBPDataKind.NUMERIC, DB2Constants.EXT_TYPE_DECFLOAT, 34, 0, 0));
         PREDEFINED_TYPES.put("DECIMAL", new TypeDesc(DBPDataKind.NUMERIC, Types.DECIMAL, 31, 0, 31));
         PREDEFINED_TYPES.put("DOUBLE", new TypeDesc(DBPDataKind.NUMERIC, Types.DOUBLE, 53, 0, 0));
         PREDEFINED_TYPES.put("GRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.CHAR, 127, null, null));
@@ -459,6 +459,10 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
         PREDEFINED_TYPES.put("VARCHAR", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 4000, null, null));
         PREDEFINED_TYPES.put("VARGRAPHIC", new TypeDesc(DBPDataKind.STRING, Types.VARCHAR, 16336, null, null));
         PREDEFINED_TYPES.put("XML", new TypeDesc(DBPDataKind.CONTENT, Types.SQLXML, null, null, null));
+
+        PREDEFINED_TYPES.put("CURSOR", new TypeDesc(DBPDataKind.UNKNOWN, DB2Constants.EXT_TYPE_CURSOR, null, null, null));
+        PREDEFINED_TYPES.put(DB2Constants.TYPE_NAME_DECFLOAT,
+            new TypeDesc(DBPDataKind.NUMERIC, DB2Constants.EXT_TYPE_DECFLOAT, 34, 0, 0));
     }
 
 }
