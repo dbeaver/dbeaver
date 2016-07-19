@@ -26,6 +26,10 @@ import org.jkiss.dbeaver.ext.import_config.wizards.ImportData;
 import org.jkiss.dbeaver.ext.import_config.wizards.ImportDriverInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.xml.XMLException;
+import org.jkiss.utils.xml.XMLUtils;
+import org.w3c.dom.*;
 
 import java.io.*;
 import java.util.HashMap;
@@ -85,26 +89,39 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
                 }
                 conProps.put(header[i], line[i]);
             }
-            importData.addConnection(makeConnectionFromProps(driver, conProps));
+            makeConnectionFromProps(importData, driver, conProps);
         }
     }
 
-    private void importXML(ImportData importData, ImportDriverInfo driver, Reader reader) {
-
+    private void importXML(ImportData importData, ImportDriverInfo driver, Reader reader) throws XMLException {
+        Document document = XMLUtils.parseDocument(reader);
+        for (Element conElement : XMLUtils.getChildElementList(document.getDocumentElement())) {
+            Map<String, String> conProps = new HashMap<>();
+            NamedNodeMap attrs = conElement.getAttributes();
+            for (int i = 0; i < attrs.getLength(); i++) {
+                Attr attr = (Attr) attrs.item(i);
+                conProps.put(attr.getName(), attr.getValue());
+            }
+            makeConnectionFromProps(importData, driver, conProps);
+        }
     }
 
-    private ImportConnectionInfo makeConnectionFromProps(ImportDriverInfo driver, Map<String, String> conProps) {
-        return new ImportConnectionInfo(
+    private void makeConnectionFromProps(ImportData importData, ImportDriverInfo driver, Map<String, String> conProps) {
+        String name = conProps.get("name");
+        if (CommonUtils.isEmpty(name)) {
+            return;
+        }
+        importData.addConnection(new ImportConnectionInfo(
             driver,
             conProps.get("id"),
-            conProps.get("name"),
+            name,
             conProps.get("url"),
             conProps.get("host"),
             conProps.get("port"),
             conProps.get("database"),
             conProps.get("user"),
             conProps.get("password")
-        );
+        ));
     }
 
 }
