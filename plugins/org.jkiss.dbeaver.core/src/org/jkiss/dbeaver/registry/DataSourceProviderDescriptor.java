@@ -415,4 +415,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         //Collection<TemplateVariableResolver>
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }
