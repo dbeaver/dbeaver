@@ -638,7 +638,7 @@ public class OracleDataSource extends JDBCDataSource
             // Add predefined types
             if (!CommonUtils.isEmpty(owner.activeSchemaName) && getCachedObject(owner.activeSchemaName) == null) {
                 cacheObject(
-                    new OracleSchema(owner, -1, owner.activeSchemaName));
+                    new OracleSchema(owner, 100, owner.activeSchemaName));
             }
         }
     }
