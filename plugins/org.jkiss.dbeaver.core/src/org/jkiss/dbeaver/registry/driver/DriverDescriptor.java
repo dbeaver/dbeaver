@@ -922,6 +922,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 localLibsExists = true;
             }
         }
+//        if (!CommonUtils.isEmpty(fileSources)) {
+//            for (DriverFileSource source : fileSources) {
+//                for (DriverFileSource.FileInfo fileInfo : source.getFiles()) {
+//                    DriverLibraryLocal libraryLocal = new DriverLibraryLocal(this, DBPDriverLibrary.FileType.jar, fileInfo.getName());
+//                    final File localFile = libraryLocal.getLocalFile();
+//                }
+//            }
+//        }
 
         boolean downloaded = false;
         if (!downloadCandidates.isEmpty() || (!localLibsExists && !fileSources.isEmpty())) {
