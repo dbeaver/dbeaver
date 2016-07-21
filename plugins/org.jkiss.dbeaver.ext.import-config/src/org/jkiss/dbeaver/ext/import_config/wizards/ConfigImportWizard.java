@@ -34,13 +34,16 @@ import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public abstract class ConfigImportWizard extends Wizard implements IImportWizard {
 	
 	private ConfigImportWizardPage mainPage;
+    private Map<String, DriverDescriptor> driverClassMap = new HashMap<>();
 
-	public ConfigImportWizard() {
+    public ConfigImportWizard() {
 		super();
 	}
 
@@ -99,16 +102,25 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         if (CommonUtils.isEmpty(sampleURL)) {
             throw new DBException("Cannot create driver '" + driverInfo.getName() + "' - no connection URL pattern specified");
         }
+        {
+            DriverDescriptor driver = driverClassMap.get(driverInfo.getDriverClass());
+            if (driver != null) {
+                connectionInfo.setDriver(driver);
+                return true;
+            }
+        }
         final DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
         List<DriverDescriptor> matchedDrivers = new ArrayList<>();
         for (DataSourceProviderDescriptor dataSourceProvider : registry.getDataSourceProviders()) {
             for (DriverDescriptor driver : dataSourceProvider.getEnabledDrivers()) {
-                if (driver.getDriverClassName().equals(driverInfo.getDriverClass())) {
+                final String driverClassName = driver.getDriverClassName();
+                if (driverClassName != null && driverClassName.equals(driverInfo.getDriverClass())) {
                     matchedDrivers.add(driver);
                 }
             }
         }
 
+        DriverDescriptor driver;
         if (matchedDrivers.isEmpty()) {
             // Create new driver
             final DataSourceProviderDescriptor genericProvider = registry.getDataSourceProvider("generic");
@@ -116,7 +128,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
                 throw new DBException("Generic datasource provider not found");
             }
 
-            DriverDescriptor driver = genericProvider.createDriver();
+            driver = genericProvider.createDriver();
             driver.setName(driverInfo.getName());
             driver.setDriverClassName(driverInfo.getDriverClass());
             driver.setSampleURL(driverInfo.getSampleURL());
@@ -131,17 +143,23 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             connectionInfo.setDriver(driver);
         } else if (matchedDrivers.size() == 1) {
             // Use the only found driver
-            connectionInfo.setDriver(matchedDrivers.get(0));
+            driver = matchedDrivers.get(0);
+            connectionInfo.setDriver(driver);
         } else {
             // Let user to choose correct driver
-            final DriverDescriptor driver = SelectObjectDialog.selectObject(
+            driver = SelectObjectDialog.selectObject(
                 getShell(), "Choose driver for connection '" + connectionInfo.getAlias() + "'", matchedDrivers);
             if (driver == null) {
                 return false;
             }
             connectionInfo.setDriver(driver);
         }
-        return true;
+
+        if (driver != null) {
+            driverClassMap.put(driver.getDriverClassName(), driver);
+            return true;
+        }
+        return false;
     }
 
     private void importConnection(ImportConnectionInfo connectionInfo) throws DBException
