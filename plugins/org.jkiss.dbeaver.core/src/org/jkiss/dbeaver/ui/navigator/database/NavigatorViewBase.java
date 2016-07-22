@@ -123,7 +123,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 TreeViewer viewer = tree.getViewer();
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
                 if (selection.size() == 1) {
-                    DBNNode node = (DBNNode)selection.getFirstElement();
+                    Object node = selection.getFirstElement();
                     if (node instanceof DBNLocalFolder ||
                         (node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder) ||
                         (node instanceof DBNDataSource &&
@@ -158,7 +158,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 OpenSQLEditorHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
                                 break;
                         }
-                    } else if (node instanceof DBNDatabaseNode && node.allowsOpen()) {
+                    } else if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode)node).allowsOpen()) {
                         NavigatorHandlerObjectOpen.openEntityEditor(
                             (DBNDatabaseNode) node,
                             null,
