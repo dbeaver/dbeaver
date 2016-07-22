@@ -23,6 +23,7 @@ import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,8 +46,9 @@ public class ActiveWizardDialog extends WizardDialog
         // Initialize wizard
         if (wizard instanceof IWorkbenchWizard) {
             if (selection == null) {
-                if (window.getSelectionService().getSelection() instanceof IStructuredSelection) {
-                    selection = (IStructuredSelection)window.getSelectionService().getSelection();
+                final ISelectionService selectionService = window.getSelectionService();
+                if (selectionService != null && selectionService.getSelection() instanceof IStructuredSelection) {
+                    selection = (IStructuredSelection) selectionService.getSelection();
                 }
             }
             ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
