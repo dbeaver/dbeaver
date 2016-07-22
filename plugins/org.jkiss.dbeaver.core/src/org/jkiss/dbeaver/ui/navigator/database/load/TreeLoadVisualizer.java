@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.navigator.database.load;
 
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -65,8 +66,12 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
     @Override
     public void completeLoading(Object[] children)
     {
+        final Control viewerControl = viewer.getControl();
+        if (viewerControl.isDisposed()) {
+            return;
+        }
         try {
-            viewer.getControl().setRedraw(false);
+            viewerControl.setRedraw(false);
 
             Widget widget = viewer.testFindItem(parent);
             if (widget != null && !widget.isDisposed()) {
@@ -86,7 +91,9 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         }
         finally {
             placeHolder.dispose(parent);
-            viewer.getControl().setRedraw(true);
+            if (!viewerControl.isDisposed()) {
+                viewerControl.setRedraw(true);
+            }
         }
     }
 
