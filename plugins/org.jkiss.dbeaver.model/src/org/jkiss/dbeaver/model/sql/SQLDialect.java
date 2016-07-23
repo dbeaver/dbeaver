@@ -255,4 +255,9 @@ public interface SQLDialect {
 
     DBDBinaryFormatter getNativeBinaryFormatter();
 
+    /**
+     * Should we quote column/table/etc names if they conflicts with reserved words?
+     */
+    boolean isQuoteReservedWords();
+
 }

@@ -43,6 +43,7 @@ public class GenericConstants {
     public static final String PARAM_EMBEDDED = "embedded";
     public static final String PARAM_DDL_DROP_COLUMN_SHORT = "ddl-drop-column-short";
     public static final String PARAM_LEGACY_DIALECT = "legacy-sql-dialect";
+    public static final String PARAM_QUOTE_RESERVED_WORDS = "quote-reserved-words";
 
     public static final String ENTITY_TYPE_CATALOG = "catalog";
     public static final String ENTITY_TYPE_SCHEMA = "schema";

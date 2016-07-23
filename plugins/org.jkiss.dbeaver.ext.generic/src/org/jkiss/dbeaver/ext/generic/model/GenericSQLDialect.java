@@ -46,6 +46,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private final String scriptDelimiter;
     private final boolean legacySQLDialect;
     private final boolean suportsUpsert;
+    private final boolean quoteReservedWords;
 
     public GenericSQLDialect(GenericDataSource dataSource, JDBCDatabaseMetaData metaData)
     {
@@ -56,6 +57,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         if (suportsUpsert) {
             addSQLKeyword("UPSERT");
         }
+        quoteReservedWords = CommonUtils.getBoolean(dataSource.getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_QUOTE_RESERVED_WORDS), true);
     }
 
     @NotNull
@@ -79,5 +81,10 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean supportsUpsertStatement() {
         return suportsUpsert;
+    }
+
+    @Override
+    public boolean isQuoteReservedWords() {
+        return quoteReservedWords;
     }
 }
