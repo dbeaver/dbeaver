@@ -571,7 +571,7 @@ public class DriverEditDialog extends HelpEnabledDialog
         driverPropertySource = new PropertySourceCustom(
             driver.getProviderDescriptor().getDriverProperties(),
             driver.getDriverParameters());
-        driverPropertySource.setDefaultValues(driver.getDefaultDriverParameters());
+        driverPropertySource.addDefaultValues(driver.getDefaultDriverParameters());
         parametersEditor.loadProperties(driverPropertySource);
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
