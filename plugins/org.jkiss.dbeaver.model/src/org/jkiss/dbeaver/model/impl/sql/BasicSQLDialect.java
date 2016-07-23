@@ -349,6 +349,11 @@ public class BasicSQLDialect implements SQLDialect {
         return BinaryFormatterHexNative.INSTANCE;
     }
 
+    @Override
+    public boolean isQuoteReservedWords() {
+        return true;
+    }
+
     protected boolean isStandardSQL() {
         return true;
     }
