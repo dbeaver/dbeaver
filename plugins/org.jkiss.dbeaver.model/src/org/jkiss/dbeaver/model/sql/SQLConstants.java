@@ -199,7 +199,7 @@ public class SQLConstants {
         "MINUTE",
         "MOD",
         "MODIFIES",
-        "MODULE",
+//        "MODULE", // too common for column names
         "MONTH",
         "MULTISET",
         "NATIONAL",
@@ -506,7 +506,7 @@ public class SQLConstants {
         "SOURCE",
         "SPACE",
 //        "SPECIFIC_NAME",
-        "STATE",
+//        "STATE", // too common for column names
         "STATEMENT",
         "STRUCTURE",
         "STYLE",
