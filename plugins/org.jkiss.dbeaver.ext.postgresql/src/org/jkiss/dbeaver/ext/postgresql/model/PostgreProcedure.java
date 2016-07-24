@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPOverloadedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -357,7 +358,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 if (hasParam) paramsSignature.append(',');
                 hasParam = true;
                 final PostgreDataType dataType = param.getParameterType();
-                paramsSignature.append(dataType.getName());
+                final PostgreSchema typeContainer = dataType.getParentObject();
+                if (typeContainer == null ||
+                    typeContainer == getContainer() ||
+                    typeContainer.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME))
+                {
+                    paramsSignature.append(dataType.getName());
+                } else {
+                    paramsSignature.append(dataType.getFullQualifiedName());
+                }
             }
             paramsSignature.append(")");
             return selfName + paramsSignature.toString();

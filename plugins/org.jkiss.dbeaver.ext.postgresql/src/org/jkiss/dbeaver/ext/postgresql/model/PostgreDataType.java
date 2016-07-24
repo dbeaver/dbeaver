@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
@@ -53,7 +54,7 @@ import java.util.Locale;
 /**
  * PostgreTypeType
  */
-public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass
+public class PostgreDataType extends JDBCDataType<PostgreSchema> implements PostgreClass, DBPQualifiedObject
 {
     private static final Log log = Log.getLog(PostgreDataType.class);
 
@@ -423,6 +424,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     public Object[] getEnumValues() {
         return enumValues;
+    }
+
+    @NotNull
+    @Override
+    public String getFullQualifiedName() {
+        final PostgreSchema owner = getParentObject();
+        if (owner == null) {
+            return getName();
+        } else {
+            return DBUtils.getQuotedIdentifier(owner) + "." + getName();
+        }
     }
 
     class AttributeCache extends JDBCObjectCache<PostgreDataType, PostgreDataTypeAttribute> {
