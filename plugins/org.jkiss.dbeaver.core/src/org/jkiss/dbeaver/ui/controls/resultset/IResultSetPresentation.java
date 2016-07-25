@@ -97,4 +97,6 @@ public interface IResultSetPresentation {
         String delimiter,
         DBDDisplayFormat format);
 
+    void printResultSet();
+
 }
