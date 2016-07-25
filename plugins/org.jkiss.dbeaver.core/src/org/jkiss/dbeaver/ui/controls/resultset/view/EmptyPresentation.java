@@ -151,5 +151,10 @@ public class EmptyPresentation implements IResultSetPresentation {
         return null;
     }
 
+    @Override
+    public void printResultSet() {
+
+    }
+
 
 }

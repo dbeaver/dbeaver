@@ -219,6 +219,11 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         false, false, true, null, DBDDisplayFormat.EDIT)
                 );
                 break;
+            case IWorkbenchCommandConstants.FILE_PRINT:
+                if (presentation != null) {
+                    presentation.printResultSet();
+                }
+                break;
             case ITextEditorActionDefinitionIds.SMART_ENTER:
                 if (presentation instanceof IResultSetEditor) {
                     ((IResultSetEditor) presentation).openValueEditor(false);

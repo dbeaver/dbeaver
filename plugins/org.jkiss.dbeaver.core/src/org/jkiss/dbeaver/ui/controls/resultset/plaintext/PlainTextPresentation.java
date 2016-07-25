@@ -24,18 +24,18 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.CaretEvent;
-import org.eclipse.swt.custom.CaretListener;
-import org.eclipse.swt.custom.StyleRange;
-import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.custom.*;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.printing.PrintDialog;
+import org.eclipse.swt.printing.Printer;
+import org.eclipse.swt.printing.PrinterData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.ScrollBar;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -93,8 +93,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
                     if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
                         !controller.isRecordMode() &&
-                        controller.isHasMoreData())
-                    {
+                        controller.isHasMoreData()) {
                         controller.readNextSegment();
                     }
                 }
@@ -110,7 +109,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
     private void applyThemeSettings() {
         IThemeManager themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
-        curLineColor =  themeManager.getCurrentTheme().getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
+        curLineColor = themeManager.getCurrentTheme().getColorRegistry().get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
     }
 
     private void onCursorChange(int offset) {
@@ -169,8 +168,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
             if (lineNum == lineCount - 1 &&
                 controller.isHasMoreData() &&
-                controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT))
-            {
+                controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT)) {
                 controller.readNextSegment();
             }
         }
@@ -413,6 +411,47 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     @Override
     public String copySelectionToString(boolean copyHeader, boolean copyRowNumbers, boolean cut, String delimiter, DBDDisplayFormat format) {
         return text.getSelectionText();
+    }
+
+    private static PrinterData fgPrinterData= null;
+
+    @Override
+    public void printResultSet() {
+        final Shell shell = getControl().getShell();
+        StyledTextPrintOptions options = new StyledTextPrintOptions();
+        options.printTextFontStyle = true;
+        options.printTextForeground = true;
+
+        if (Printer.getPrinterList().length == 0) {
+            UIUtils.showMessageBox(shell, "No printers", "Printers not found", SWT.ICON_ERROR);
+            return;
+        }
+
+        final PrintDialog dialog = new PrintDialog(shell, SWT.PRIMARY_MODAL);
+        dialog.setPrinterData(fgPrinterData);
+        final PrinterData data = dialog.open();
+
+        if (data != null) {
+            final Printer printer = new Printer(data);
+            final Runnable styledTextPrinter = text.print(printer, options);
+            new Thread("Printing") { //$NON-NLS-1$
+                public void run() {
+                    styledTextPrinter.run();
+                    printer.dispose();
+                }
+            }.start();
+
+			/*
+             * FIXME:
+			 * 	Should copy the printer data to avoid threading issues,
+			 *	but this is currently not possible, see http://bugs.eclipse.org/297957
+			 */
+            fgPrinterData = data;
+            fgPrinterData.startPage = 1;
+            fgPrinterData.endPage = 1;
+            fgPrinterData.scope = PrinterData.ALL_PAGES;
+            fgPrinterData.copyCount = 1;
+        }
     }
 
     @Override
