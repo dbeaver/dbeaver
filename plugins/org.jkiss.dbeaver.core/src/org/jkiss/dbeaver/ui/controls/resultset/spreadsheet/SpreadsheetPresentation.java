@@ -368,7 +368,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
     @Override
     public void restoreState(Object state) {
-        this.curAttribute = (DBDAttributeBinding) state;
+        this.curAttribute = controller.getModel().getAttributeBinding((DBDAttributeBinding) state);
         ResultSetRow curRow = controller.getCurrentRow();
         if (curRow != null && this.curAttribute != null) {
             GridCell cell = controller.isRecordMode() ?
