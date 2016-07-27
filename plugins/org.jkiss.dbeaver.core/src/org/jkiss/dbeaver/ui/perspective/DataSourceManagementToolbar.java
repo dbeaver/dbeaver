@@ -29,13 +29,13 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.internal.WorkbenchWindow;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -852,33 +852,14 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     private void createSyncToolbar(Composite comboGroup) {
-
-        ToolBar syncToolbar = new ToolBar(comboGroup, SWT.NONE);
-        ToolItem syncItem = new ToolItem(syncToolbar, SWT.DROP_DOWN);
-        syncItem.setImage(DBeaverIcons.getImage(UIIcon.LINK_TO_EDITOR));
-        syncItem.setToolTipText("Sync active connection with database navigator selection");
-
-        final MenuManager syncMenu = new MenuManager();
-        syncMenu.add(new Action("Auto-sync with database navigator", Action.AS_CHECK_BOX) {
-
-        });
-        syncMenu.add(new Separator());
-        syncMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, CoreCommands.CMD_LINK_EDITOR));
-
-        syncItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (e.detail == SWT.ARROW) {
-                    ToolItem item = (ToolItem) e.widget;
-                    Rectangle rect = item.getBounds();
-                    Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
-
-                    Menu contextMenu = syncMenu.createContextMenu(item.getParent());
-                    contextMenu.setLocation(pt.x, pt.y + rect.height);
-                    contextMenu.setVisible(true);
-                }
-            }
-        });
+        CommandContributionItem syncItem = new CommandContributionItem(new CommandContributionItemParameter(
+            workbenchWindow,
+            "org.jkiss.dbeaver.ui.editors.sql.sync",
+            CoreCommands.CMD_SYNC_CONNECTION,
+            CommandContributionItem.STYLE_PULLDOWN));
+        ToolBarManager syncToolbar = new ToolBarManager(SWT.NONE);
+        syncToolbar.add(syncItem);
+        syncToolbar.createControl(comboGroup);
     }
 
     public static class ToolbarContribution extends WorkbenchWindowControlContribution {

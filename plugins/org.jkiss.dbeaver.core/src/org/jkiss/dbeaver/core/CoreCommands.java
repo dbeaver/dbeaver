@@ -51,4 +51,6 @@ public interface CoreCommands
 
     String CMD_SQL_EDITOR_OPEN = "org.jkiss.dbeaver.core.sql.editor.open";
     String CMD_LINK_EDITOR = "org.jkiss.dbeaver.core.navigator.linkeditor";
+    String CMD_SYNC_CONNECTION = "org.jkiss.dbeaver.ui.editors.sql.sync.connection";
+
 }
