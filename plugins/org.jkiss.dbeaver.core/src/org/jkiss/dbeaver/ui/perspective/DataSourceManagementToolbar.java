@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -41,6 +42,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -57,10 +59,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -853,17 +852,18 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     }
 
     private void createSyncToolbar(Composite comboGroup) {
+
         ToolBar syncToolbar = new ToolBar(comboGroup, SWT.NONE);
         ToolItem syncItem = new ToolItem(syncToolbar, SWT.DROP_DOWN);
         syncItem.setImage(DBeaverIcons.getImage(UIIcon.LINK_TO_EDITOR));
         syncItem.setToolTipText("Sync active connection with database navigator selection");
 
-        final Menu syncMenu = new Menu(syncItem.getParent().getShell());
-        MenuItem autoSyncItem = new MenuItem(syncMenu, SWT.CHECK);
-        autoSyncItem.setText("Auto-sync with database navigator");
-        new MenuItem(syncMenu, SWT.SEPARATOR);
-        MenuItem showInNavigatorItem = new MenuItem(syncMenu, SWT.PUSH);
-        showInNavigatorItem.setText("Show active connection in navigator");
+        final MenuManager syncMenu = new MenuManager();
+        syncMenu.add(new Action("Auto-sync with database navigator", Action.AS_CHECK_BOX) {
+
+        });
+        syncMenu.add(new Separator());
+        syncMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, CoreCommands.CMD_LINK_EDITOR));
 
         syncItem.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -872,8 +872,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     ToolItem item = (ToolItem) e.widget;
                     Rectangle rect = item.getBounds();
                     Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
-                    syncMenu.setLocation(pt.x, pt.y + rect.height);
-                    syncMenu.setVisible(true);
+
+                    Menu contextMenu = syncMenu.createContextMenu(item.getParent());
+                    contextMenu.setLocation(pt.x, pt.y + rect.height);
+                    contextMenu.setVisible(true);
                 }
             }
         });
