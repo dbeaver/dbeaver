@@ -24,7 +24,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -48,8 +48,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -59,9 +58,12 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -78,7 +80,7 @@ import java.util.Locale;
 /**
  * DataSource Toolbar
  */
-public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, IPageListener, IPartListener, ISelectionListener {
+public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, IPageListener, IPartListener, ISelectionListener, INavigatorListener {
     private static final Log log = Log.getLog(DataSourceManagementToolbar.class);
 
     public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
@@ -94,6 +96,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     private final List<DBPDataSourceRegistry> handledRegistries = new ArrayList<>();
     private final List<DatabaseListReader> dbListReads = new ArrayList<>();
+    private IFile activeFile;
 
     private static class DatabaseListReader extends DataSourceJob {
         private final List<DBNDatabaseNode> nodeList = new ArrayList<>();
@@ -153,10 +156,13 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     public DataSourceManagementToolbar(IWorkbenchWindow workbenchWindow)
     {
         this.workbenchWindow = workbenchWindow;
+        DBeaverCore.getInstance().getNavigatorModel().addListener(this);
     }
 
     private void dispose()
     {
+        DBeaverCore.getInstance().getNavigatorModel().removeListener(this);
+
         IWorkbenchPage activePage = workbenchWindow.getActivePage();
         if (activePage != null) {
             pageClosed(activePage);
@@ -299,6 +305,12 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
             // Update controls and actions
             updateControls(true);
+        }
+        if (part != null) {
+            final IEditorInput editorInput = ((IEditorPart) part).getEditorInput();
+            activeFile = EditorUtils.getFileFromInput(editorInput);
+        } else {
+            activeFile = null;
         }
 
         UIUtils.updateMainWindowTitle(workbenchWindow);
@@ -868,6 +880,24 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         ToolBarManager syncToolbar = new ToolBarManager(SWT.NONE);
         syncToolbar.add(syncItem);
         syncToolbar.createControl(comboGroup);
+    }
+
+    @Override
+    public void nodeChanged(DBNEvent event) {
+        if (activeFile == null) {
+            return;
+        }
+        DBNNode node = event.getNode();
+        if (node instanceof DBNResource && activeFile.equals(((DBNResource) node).getResource())) {
+            final int selConnection = connectionCombo.getSelectionIndex();
+            if (selConnection > 0) {
+                DBPDataSourceContainer visibleContainer = (DBPDataSourceContainer) connectionCombo.getItem(selConnection).getData();
+                DBPDataSourceContainer newContainer = EditorUtils.getFileDataSource(activeFile);
+                if (newContainer != visibleContainer) {
+                    updateControls(true);
+                }
+            }
+        }
     }
 
     public static class ToolbarContribution extends WorkbenchWindowControlContribution {

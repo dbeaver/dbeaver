@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
@@ -100,19 +102,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 @Override
                 public void selectionChanged(SelectionChangedEvent event)
                 {
-                    IStructuredSelection structSel = (IStructuredSelection)event.getSelection();
-                    if (!structSel.isEmpty()) {
-                        lastSelection = structSel.getFirstElement();
-                        if (lastSelection instanceof DBNNode) {
-                            String desc = ((DBNNode)lastSelection).getNodeDescription();
-                            if (CommonUtils.isEmpty(desc)) {
-                                desc = ((DBNNode)lastSelection).getNodeName();
-                            }
-                            getViewSite().getActionBars().getStatusLineManager().setMessage(desc);
-                        }
-                    } else {
-                        lastSelection = null;
-                    }
+                    onSelectionChange((IStructuredSelection)event.getSelection());
                 }
             }
         );
@@ -175,6 +165,34 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         NavigatorUtils.addDragAndDropSupport(navigatorTree.getViewer());
 
         return navigatorTree;
+    }
+
+    protected void onSelectionChange(IStructuredSelection structSel) {
+        if (!structSel.isEmpty()) {
+            lastSelection = structSel.getFirstElement();
+            if (lastSelection instanceof DBNNode) {
+                String desc = ((DBNNode)lastSelection).getNodeDescription();
+                if (CommonUtils.isEmpty(desc)) {
+                    desc = ((DBNNode)lastSelection).getNodeName();
+                }
+                getViewSite().getActionBars().getStatusLineManager().setMessage(desc);
+            }
+        } else {
+            lastSelection = null;
+        }
+
+        if (lastSelection instanceof DBNDatabaseNode && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
+            final DBPDataSourceContainer ds = getDataSourceContainer();
+            if (ds != null) {
+                final IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+                if (activeEditor instanceof IDataSourceContainerProviderEx) {
+                    final DBPDataSourceContainer curDS = ((IDataSourceContainerProviderEx) activeEditor).getDataSourceContainer();
+                    if (curDS != ds) {
+                        ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(ds);
+                    }
+                }
+            }
+        }
     }
 
     protected int getTreeStyle()
