@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ui.navigator;
 
+import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
@@ -29,11 +30,9 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.TreeItem;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.eclipse.ui.part.IPageSite;
 import org.eclipse.ui.services.IServiceLocator;
@@ -57,6 +56,9 @@ import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -421,6 +423,23 @@ public class NavigatorUtils {
             }
         }
         return false;
+    }
+
+    public static NavigatorViewBase getActiveNavigatorView(ExecutionEvent event) {
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        if (activePart instanceof NavigatorViewBase) {
+            return (NavigatorViewBase) activePart;
+        }
+        final IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
+        activePart = activePage.findView(DatabaseNavigatorView.VIEW_ID);
+        if (activePart instanceof NavigatorViewBase && activePage.isPartVisible(activePart)) {
+            return (NavigatorViewBase) activePart;
+        }
+        activePart = activePage.findView(ProjectNavigatorView.VIEW_ID);
+        if (activePart instanceof NavigatorViewBase && activePage.isPartVisible(activePart)) {
+            return (NavigatorViewBase) activePart;
+        }
+        return null;
     }
 
 }
