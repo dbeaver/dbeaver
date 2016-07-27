@@ -24,6 +24,9 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 
 import java.util.Map;
@@ -37,15 +40,14 @@ public class SyncConnectionAutoHandler extends AbstractHandler implements IEleme
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
-        IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof SQLEditorBase) {
-
-        }
+        final DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
+        prefs.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE,
+            !prefs.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
         return null;
     }
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        element.setChecked(true);
+        element.setChecked(DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
     }
 }
