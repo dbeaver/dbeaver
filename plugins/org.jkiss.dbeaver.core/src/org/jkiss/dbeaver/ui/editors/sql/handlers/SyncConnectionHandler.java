@@ -20,11 +20,12 @@ package org.jkiss.dbeaver.ui.editors.sql.handlers;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 
 public class SyncConnectionHandler extends AbstractHandler {
 
@@ -35,9 +36,18 @@ public class SyncConnectionHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
+        final NavigatorViewBase navigatorView = NavigatorUtils.getActiveNavigatorView(event);
+        if (navigatorView == null) {
+            return null;
+        }
+        final DBPDataSourceContainer ds = navigatorView.getDataSourceContainer();
+        if (ds == null) {
+            return null;
+        }
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof SQLEditorBase) {
-
+        if (activeEditor instanceof IDataSourceContainerProviderEx) {
+            HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().activate(activeEditor);
+            ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(ds);
         }
         return null;
     }
