@@ -207,6 +207,9 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     @Nullable
     private static DBPDataSourceContainer getDataSourceContainer(IWorkbenchPart part)
     {
+        if (part == null) {
+            return null;
+        }
         if (part instanceof IDataSourceContainerProvider) {
             return ((IDataSourceContainerProvider)part).getDataSourceContainer();
         }
@@ -272,10 +275,15 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 part = part.getSite().getPage().getActiveEditor();
             }
         }
-        if (activePart != part || activePart == null) {
+        final int selConnection = connectionCombo.getSelectionIndex();
+        DBPDataSourceContainer visibleContainer = null;
+        if (selConnection > 0) {
+            visibleContainer = (DBPDataSourceContainer) connectionCombo.getItem(selConnection).getData();
+        }
+        DBPDataSourceContainer newContainer = getDataSourceContainer(part);
+        if (activePart != part || activePart == null || visibleContainer != newContainer) {
             // Update previous statuses
             DBPDataSourceContainer oldContainer = getDataSourceContainer(activePart);
-            DBPDataSourceContainer newContainer = getDataSourceContainer(part);
             activePart = part;
             if (oldContainer != newContainer) {
                 if (oldContainer != null) {

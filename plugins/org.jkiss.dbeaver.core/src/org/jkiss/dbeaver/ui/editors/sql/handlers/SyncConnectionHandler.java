@@ -46,8 +46,8 @@ public class SyncConnectionHandler extends AbstractHandler {
         }
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
         if (activeEditor instanceof IDataSourceContainerProviderEx) {
-            HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().activate(activeEditor);
             ((IDataSourceContainerProviderEx) activeEditor).setDataSourceContainer(ds);
+            HandlerUtil.getActiveWorkbenchWindow(event).getActivePage().activate(activeEditor);
         }
         return null;
     }

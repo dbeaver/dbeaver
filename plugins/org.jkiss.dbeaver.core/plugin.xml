@@ -899,7 +899,13 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SyncConnectionHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SyncConnectionHandler">
+            <enabledWhen>
+                <with variable="activeEditor">
+                    <instanceof type="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SyncConnectionAutoHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.export.data" class="org.jkiss.dbeaver.ui.editors.sql.handlers.ExportDataHandler">
             <enabledWhen>
