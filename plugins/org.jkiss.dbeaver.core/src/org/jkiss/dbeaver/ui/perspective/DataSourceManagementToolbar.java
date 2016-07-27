@@ -28,6 +28,8 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -54,22 +56,25 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CImageCombo;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.ref.SoftReference;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * DataSource Toolbar
@@ -739,7 +744,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         }
 
         Composite comboGroup = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(3, false);
+        GridLayout gl = new GridLayout(4, false);
         gl.marginWidth = 5;
         gl.marginHeight = 0;
         comboGroup.setLayout(gl);
@@ -799,6 +804,8 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
         });
 
+        createSyncToolbar(comboGroup);
+
         resultSetSize = new Text(comboGroup, SWT.BORDER);
         resultSetSize.setTextLimit(10);
         gd = new GridData();
@@ -843,6 +850,33 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         });
 
         return comboGroup;
+    }
+
+    private void createSyncToolbar(Composite comboGroup) {
+        ToolBar syncToolbar = new ToolBar(comboGroup, SWT.NONE);
+        ToolItem syncItem = new ToolItem(syncToolbar, SWT.DROP_DOWN);
+        syncItem.setImage(DBeaverIcons.getImage(UIIcon.LINK_TO_EDITOR));
+        syncItem.setToolTipText("Sync active connection with database navigator selection");
+
+        final Menu syncMenu = new Menu(syncItem.getParent().getShell());
+        MenuItem autoSyncItem = new MenuItem(syncMenu, SWT.CHECK);
+        autoSyncItem.setText("Auto-sync with database navigator");
+        new MenuItem(syncMenu, SWT.SEPARATOR);
+        MenuItem showInNavigatorItem = new MenuItem(syncMenu, SWT.PUSH);
+        showInNavigatorItem.setText("Show active connection in navigator");
+
+        syncItem.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.detail == SWT.ARROW) {
+                    ToolItem item = (ToolItem) e.widget;
+                    Rectangle rect = item.getBounds();
+                    Point pt = item.getParent().toDisplay(new Point(rect.x, rect.y));
+                    syncMenu.setLocation(pt.x, pt.y + rect.height);
+                    syncMenu.setVisible(true);
+                }
+            }
+        });
     }
 
     public static class ToolbarContribution extends WorkbenchWindowControlContribution {
