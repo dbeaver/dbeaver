@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
+import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.Parenthesis;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
 import net.sf.jsqlparser.parser.CCJSqlParserUtil;
@@ -115,7 +116,15 @@ public class SQLSemanticProcessor {
             }
             Table orderTable = tableAlias == null ? null : new Table(tableAlias);
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                Expression orderExpr = new Column(orderTable, DBUtils.getObjectFullName(co.getAttribute()));
+                Expression orderExpr;
+                String attrName = DBUtils.getObjectFullName(co.getAttribute());
+                if (CommonUtils.isEmpty(attrName)) {
+                    // Use column position
+                    orderExpr = new LongValue(co.getOrderPosition() + 1);
+                } else {
+                    orderExpr = new Column(orderTable, DBUtils.getObjectFullName(co.getAttribute()));
+                }
+
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
