@@ -42,8 +42,11 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -53,7 +56,19 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IWorkbenchPage activePage = HandlerUtil.getActiveWorkbenchWindow(event).getActivePage();
         final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        if (activeEditor == null) {
+            return null;
+        }
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        if (activePart == activeEditor) {
+            activePart = activePage.findView(DatabaseNavigatorView.VIEW_ID);
+            if (activePart == null || !activePage.isPartVisible(activePart)) {
+                activePart = activePage.findView(ProjectNavigatorView.VIEW_ID);
+                if (activePart == null || !activePage.isPartVisible(activePart)) {
+                    return null;
+                }
+            }
+        }
 
         if (activePart instanceof ProjectExplorerView) {
             if (activeEditor instanceof SQLEditor) {
@@ -67,11 +82,11 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                 showResourceInNavigator((NavigatorViewBase) activePart, editorFile);
             }
         } else if (activePart instanceof NavigatorViewBase) {
+            final NavigatorViewBase view = (NavigatorViewBase)activePart;
             if (activeEditor.getEditorInput() instanceof IDatabaseEditorInput) {
                 IDatabaseEditorInput editorInput = (IDatabaseEditorInput) activeEditor.getEditorInput();
                 DBNNode dbnNode = editorInput.getNavigatorNode();
                 if (dbnNode != null) {
-                    NavigatorViewBase view = (NavigatorViewBase)activePart;
                     view.showNode(dbnNode);
                 }
             } else if (activeEditor instanceof IDataSourceContainerProvider) {
@@ -95,13 +110,12 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                                 showObject = ((DBPDataSource) showObject).getContainer();
                             }
 
-                            DBNDatabaseNode objectNode = ((NavigatorViewBase) activePart).getModel().getNodeByObject(
+                            DBNDatabaseNode objectNode = view.getModel().getNodeByObject(
                                 monitor,
                                 showObject,
                                 true
                             );
                             if (objectNode != null) {
-                                NavigatorViewBase view = (NavigatorViewBase)activePart;
                                 view.showNode(objectNode);
                             }
                         }
