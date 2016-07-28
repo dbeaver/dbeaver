@@ -39,6 +39,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
 
     private Button editorSeparateConnectionCheck;
+    private Button connectOnActivationCheck;
+    private Button connectOnExecuteCheck;
 
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
@@ -102,13 +104,16 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite2, "Connections", 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-            editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, "Open separate connection for each editor", false);
+            editorSeparateConnectionCheck = UIUtils.createLabelCheckbox(connectionsGroup, "Open separate connection for each editor", false);
+
+            connectOnActivationCheck = UIUtils.createLabelCheckbox(connectionsGroup, "Connect on editor activation", false);
+            connectOnExecuteCheck = UIUtils.createLabelCheckbox(connectionsGroup, "Connect on query execute", false);
         }
 
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite2, "Auto-save", 2, GridData.FILL_HORIZONTAL, 0);
             autoSaveOnClose = UIUtils.createLabelCheckbox(connectionsGroup, "Auto-save editor on close", false);
-            saveOnQueryExecution = UIUtils.createLabelCheckbox(connectionsGroup, "Save editor on query execution", false);
+            saveOnQueryExecution = UIUtils.createLabelCheckbox(connectionsGroup, "Save editor on query execute", false);
         }
 
         // Content assistant
@@ -188,6 +193,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         try {
             editorSeparateConnectionCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION));
+            connectOnActivationCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE));
+            connectOnExecuteCheck.setSelection(store.getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE));
 
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
@@ -217,6 +224,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, editorSeparateConnectionCheck.getSelection());
+            store.setValue(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE, connectOnActivationCheck.getSelection());
+            store.setValue(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE, connectOnExecuteCheck.getSelection());
 
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
@@ -247,6 +256,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION);
+        store.setToDefault(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE);
+        store.setToDefault(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE);
 
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
