@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.core.application;
 
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceManager;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 import java.util.Calendar;
 import java.util.Random;
@@ -38,8 +40,7 @@ import java.util.Random;
  * This workbench advisor creates the window advisor, and specifies
  * the perspective id for the initial window.
  */
-public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
-{
+public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
     private static final String PERSPECTIVE_ID = "org.jkiss.dbeaver.core.perspective"; //$NON-NLS-1$
     public static final String DBEAVER_SCHEME_NAME = "org.jkiss.dbeaver.defaultKeyScheme"; //$NON-NLS-1$
 
@@ -57,20 +58,17 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     };
 
     @Override
-    public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer)
-    {
+    public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
         return new ApplicationWorkbenchWindowAdvisor(configurer);
     }
 
     @Override
-    public String getInitialWindowPerspectiveId()
-    {
+    public String getInitialWindowPerspectiveId() {
         return PERSPECTIVE_ID;
     }
 
     @Override
-    public void initialize(IWorkbenchConfigurer configurer)
-    {
+    public void initialize(IWorkbenchConfigurer configurer) {
         super.initialize(configurer);
         // make sure we always save and restore workspace state
         configurer.setSaveAndRestore(true);
@@ -82,18 +80,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     }
 
     @Override
-    public void preStartup()
-    {
+    public void preStartup() {
         super.preStartup();
     }
 
     @Override
-    public void postStartup()
-    {
+    public void postStartup() {
         super.postStartup();
 
         // Remove unneeded pref pages
-        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager( );
+        PreferenceManager pm = PlatformUI.getWorkbench().getPreferenceManager();
         for (String epp : EXCLUDE_PREF_PAGES) {
             pm.remove(epp);
         }
@@ -101,8 +97,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
         startVersionChecker();
     }
 
-    private void startVersionChecker()
-    {
+    private void startVersionChecker() {
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK)) {
             if (new Random().nextInt(4) != 0) {
                 // check for update with 25% chance
@@ -127,24 +122,43 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor
     }
 
     @Override
-    public boolean preShutdown()
-    {
+    public boolean preShutdown() {
         return saveAndCleanup() && super.preShutdown();
     }
 
     @Override
-    public void postShutdown()
-    {
+    public void postShutdown() {
         super.postShutdown();
     }
 
-    private boolean saveAndCleanup()
-    {
-        return closeActiveTransactions();
+    private boolean saveAndCleanup() {
+        try {
+            IWorkbenchWindow window = getWorkbenchConfigurer().getWorkbench().getActiveWorkbenchWindow();
+            if (window != null) {
+                if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
+                    return false;
+                }
+                // Close al content editors
+                // They are locks resources which are shared between other editors
+                // So we need to close em first
+                IWorkbenchPage workbenchPage = window.getActivePage();
+                IEditorReference[] editors = workbenchPage.getEditorReferences();
+                for (IEditorReference editor : editors) {
+                    IEditorPart editorPart = editor.getEditor(false);
+                    if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
+                        workbenchPage.closeEditor(editorPart, false);
+                    }
+                }
+            }
+
+            return closeActiveTransactions();
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return true;
+        }
     }
 
-    private boolean closeActiveTransactions()
-    {
+    private boolean closeActiveTransactions() {
         for (DataSourceDescriptor dataSourceDescriptor : DataSourceDescriptor.getAllDataSources()) {
             if (!DataSourceHandler.checkAndCloseActiveTransaction(dataSourceDescriptor)) {
                 return false;
