@@ -22,9 +22,6 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
@@ -34,17 +31,14 @@ import org.eclipse.ui.internal.progress.ProgressManagerUtil;
 import org.eclipse.ui.part.EditorInputTransfer;
 import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.project.DBPProjectListener;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
-import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 
 public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor implements DBPProjectListener {
     private static final Log log = Log.getLog(ApplicationWorkbenchWindowAdvisor.class);
@@ -53,6 +47,20 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         super(configurer);
 
         DBeaverCore.getInstance().getProjectRegistry().addProjectListener(this);
+    }
+
+    @Override
+    public void dispose() {
+        // Remove project listener
+        DBeaverCore core = DBeaverCore.getInstance();
+        if (core != null) {
+            ProjectRegistry projectRegistry = core.getProjectRegistry();
+            if (projectRegistry != null) {
+                projectRegistry.removeProjectListener(this);
+            }
+        }
+
+        super.dispose();
     }
 
     @Override
@@ -130,39 +138,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
                 }
             });
         }
-    }
-
-    @Override
-    public boolean preWindowShellClose() {
-        IWorkbenchWindow window = getWindowConfigurer().getWindow();
-
-        try {
-            if (!ConfirmationDialog.confirmAction(window.getShell(), DBeaverPreferences.CONFIRM_EXIT)) {
-                return false;
-            }
-            // Close al content editors
-            // They are locks resources which are shared between other editors
-            // So we need to close em first
-            IWorkbenchPage workbenchPage = window.getActivePage();
-            IEditorReference[] editors = workbenchPage.getEditorReferences();
-            for (IEditorReference editor : editors) {
-                IEditorPart editorPart = editor.getEditor(false);
-                if (editorPart != null && editorPart.getEditorInput() instanceof ContentEditorInput) {
-                    workbenchPage.closeEditor(editorPart, false);
-                }
-            }
-        } catch (Throwable e) {
-            e.printStackTrace();
-        }
-
-        // Remove project listener
-        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        if (projectRegistry != null) {
-            projectRegistry.removeProjectListener(this);
-        }
-
-        // Do its job
-        return super.preWindowShellClose();
     }
 
     @Override
