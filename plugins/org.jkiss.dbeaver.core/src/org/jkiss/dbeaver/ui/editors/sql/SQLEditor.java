@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.DefaultServerOutputReader;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
@@ -215,7 +216,8 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container, true);
         }
 
-        checkConnected();
+        checkConnected(false, null);
+        setPartName(getEditorName());
 
         onDataSourceChange();
 
@@ -387,16 +389,17 @@ public class SQLEditor extends SQLEditorBase implements
         return super.getAdapter(required);
     }
 
-    private boolean checkConnected()
+    private boolean checkConnected(boolean forceConnect, DBRProgressListener onFinish)
     {
         // Connect to datasource
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        if (dataSourceContainer != null) {
+        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        boolean doConnect = dataSourceContainer != null &&
+            (forceConnect || dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE));
+        if (doConnect) {
             if (!dataSourceContainer.isConnected()) {
-                DataSourceHandler.connectToDataSource(null, dataSourceContainer, null);
+                DataSourceHandler.connectToDataSource(null, dataSourceContainer, onFinish);
             }
         }
-        setPartName(getEditorName());
         return dataSourceContainer != null && dataSourceContainer.isConnected();
     }
 
@@ -768,24 +771,30 @@ public class SQLEditor extends SQLEditorBase implements
             // Nothing to process
             return;
         }
-        DBPDataSourceContainer container = getDataSourceContainer();
-        if (container != null && container.isConnectionReadOnly()) {
-/*
-            // Allow only selects
-            for (SQLQuery query : queries) {
-                if (query.getType() != SQLQueryType.SELECT && query.getType() != SQLQueryType.UNKNOWN) {
-                    UIUtils.showErrorDialog(
-                        getSite().getShell(),
-                        CoreMessages.editors_sql_error_cant_execute_query_title,
-                        "Read-only connection '" + container.getName() + "' restricts execution of non-select statements. " +
-                        "Query [" + query.getQuery() + "] is " + query.getType() + " and can't be processed");
-                    return;
-                }
-            }
-*/
-        }
+        final DBPDataSourceContainer container = getDataSourceContainer();
         try {
-            checkSession();
+            DBRProgressListener connectListener = new DBRProgressListener() {
+                @Override
+                public void onTaskFinished(IStatus status) {
+                    if (!status.isOK() || container == null || !container.isConnected()) {
+                        UIUtils.showErrorDialog(
+                            getSite().getShell(),
+                            CoreMessages.editors_sql_error_cant_obtain_session,
+                            null,
+                            status);
+                        return;
+                    }
+                    UIUtils.runInUI(null, new Runnable() {
+                        @Override
+                        public void run() {
+                            processQueries(queries, newTab, export);
+                        }
+                    });
+                }
+            };
+            if (!checkSession(connectListener)) {
+                return;
+            }
         } catch (DBException ex) {
             ResultSetViewer viewer = getActiveResultSetViewer();
             if (viewer != null) {
@@ -893,12 +902,22 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void checkSession()
+    private boolean checkSession(DBRProgressListener onFinish)
         throws DBException
     {
-        if (getDataSourceContainer() == null || !getDataSourceContainer().isConnected()) {
+        DBPDataSourceContainer ds = getDataSourceContainer();
+        if (ds == null) {
             throw new DBException("No active connection");
         }
+        if (!ds.isConnected()) {
+            boolean doConnect = ds.getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_CONNECT_ON_EXECUTE);
+            if (doConnect) {
+                return checkConnected(true, onFinish);
+            } else {
+                throw new DBException("Disconnected from database");
+            }
+        }
+        return true;
     }
 
     private void onDataSourceChange()

@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLIdentifierDetector;
 
 /**
- * DatabaseEditorPropertyTester
+ * SQLEditorPropertyTester
  */
 public class SQLEditorPropertyTester extends PropertyTester
 {
@@ -55,14 +55,14 @@ public class SQLEditorPropertyTester extends PropertyTester
         if (editorControl == null) {
             return false;
         }
-        boolean isFocused = editorControl.isFocusControl();
-        boolean isConnected = editor.getDataSourceContainer() != null && editor.getDataSourceContainer().isConnected();
+        //boolean isFocused = editorControl.isFocusControl();
+        boolean hasConnection = editor.getDataSourceContainer() != null;
         switch (property) {
             case PROP_CAN_EXECUTE:
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
-                return isConnected && isFocused/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/;
+                return hasConnection/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/;
             case PROP_CAN_EXPLAIN:
-                return isConnected && isFocused && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
+                return hasConnection && editor.hasActiveQuery() && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
             case PROP_CAN_NAVIGATE: {
                 // Check whether some word is under cursor
                 ISelectionProvider selectionProvider = editor.getSelectionProvider();
@@ -80,7 +80,7 @@ public class SQLEditorPropertyTester extends PropertyTester
                             .detectIdentifier(document, new Region(selection.getOffset(), selection.getLength())).isEmpty();
             }
             case PROP_CAN_EXPORT:
-                return isConnected && editor.hasActiveQuery();
+                return hasConnection && editor.hasActiveQuery();
         }
         return false;
     }
