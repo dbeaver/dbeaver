@@ -754,57 +754,59 @@ public class SQLEditor extends SQLEditorBase implements
             UIUtils.showErrorDialog(getSite().getShell(), "Bad query", "Can't execute query", e);
             return;
         }
-        processQueries(queries, newTab, false);
+        processQueries(queries, newTab, false, true);
     }
 
     public void exportDataFromQuery()
     {
         SQLQuery sqlQuery = extractActiveQuery();
         if (sqlQuery != null) {
-            processQueries(Collections.singletonList(sqlQuery), false, true);
+            processQueries(Collections.singletonList(sqlQuery), false, true, true);
         }
     }
 
-    private void processQueries(@NotNull final List<SQLQuery> queries, final boolean newTab, final boolean export)
+    private void processQueries(@NotNull final List<SQLQuery> queries, final boolean newTab, final boolean export, final boolean checkSession)
     {
         if (queries.isEmpty()) {
             // Nothing to process
             return;
         }
         final DBPDataSourceContainer container = getDataSourceContainer();
-        try {
-            DBRProgressListener connectListener = new DBRProgressListener() {
-                @Override
-                public void onTaskFinished(IStatus status) {
-                    if (!status.isOK() || container == null || !container.isConnected()) {
-                        UIUtils.showErrorDialog(
-                            getSite().getShell(),
-                            CoreMessages.editors_sql_error_cant_obtain_session,
-                            null,
-                            status);
-                        return;
-                    }
-                    UIUtils.runInUI(null, new Runnable() {
-                        @Override
-                        public void run() {
-                            processQueries(queries, newTab, export);
+        if (checkSession) {
+            try {
+                DBRProgressListener connectListener = new DBRProgressListener() {
+                    @Override
+                    public void onTaskFinished(IStatus status) {
+                        if (!status.isOK() || container == null || !container.isConnected()) {
+                            UIUtils.showErrorDialog(
+                                getSite().getShell(),
+                                CoreMessages.editors_sql_error_cant_obtain_session,
+                                null,
+                                status);
+                            return;
                         }
-                    });
+                        UIUtils.runInUI(null, new Runnable() {
+                            @Override
+                            public void run() {
+                                processQueries(queries, newTab, export, false);
+                            }
+                        });
+                    }
+                };
+                if (!checkSession(connectListener)) {
+                    return;
                 }
-            };
-            if (!checkSession(connectListener)) {
+            } catch (DBException ex) {
+                ResultSetViewer viewer = getActiveResultSetViewer();
+                if (viewer != null) {
+                    viewer.setStatus(ex.getMessage(), true);
+                }
+                UIUtils.showErrorDialog(
+                    getSite().getShell(),
+                    CoreMessages.editors_sql_error_cant_obtain_session,
+                    ex.getMessage());
                 return;
             }
-        } catch (DBException ex) {
-            ResultSetViewer viewer = getActiveResultSetViewer();
-            if (viewer != null) {
-                viewer.setStatus(ex.getMessage(), true);
-            }
-            UIUtils.showErrorDialog(
-                getSite().getShell(),
-                CoreMessages.editors_sql_error_cant_obtain_session,
-                ex.getMessage());
-            return;
         }
 
         if (sashForm.getMaximizedControl() != null) {
