@@ -267,6 +267,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     {
         if (!driver.isCustom()) {
             driver.setDisabled(true);
+            driver.setModified(true);
             return true;
         } else {
             return this.drivers.remove(driver);
