@@ -271,6 +271,9 @@ public class DBeaverApplication implements IApplication {
     }
 
     public static boolean executeCommandLineCommands(CommandLine commandLine, IInstanceController controller) throws Exception {
+        if (commandLine == null) {
+            return false;
+        }
         String[] files = commandLine.getOptionValues(DBeaverCommandLine.PARAM_FILE);
         String[] fileArgs = commandLine.getArgs();
         if (!ArrayUtils.isEmpty(files) || !ArrayUtils.isEmpty(fileArgs)) {
