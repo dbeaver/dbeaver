@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.dbeaver.model.DBPApplication;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -64,6 +65,10 @@ public class QMUtils {
 
     public static List<QMMetaEvent> getPastMetaEvents()
     {
-        return application.getQueryManager().getPastMetaEvents();
+        if (application == null) {
+            return Collections.emptyList();
+        }
+        QMController queryManager = application.getQueryManager();
+        return queryManager == null ? Collections.<QMMetaEvent>emptyList() : queryManager.getPastMetaEvents();
     }
 }
