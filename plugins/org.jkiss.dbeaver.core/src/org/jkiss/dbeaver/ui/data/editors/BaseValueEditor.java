@@ -19,14 +19,12 @@ package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -148,7 +146,6 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                  }
             }
         }
-
         control.addListener(SWT.Modify, new ControlModifyListener());
     }
 
@@ -157,7 +154,8 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         try {
             Object newValue = extractEditorValue();
             ((IMultiController) valueController).closeInlineEditor();
-            if (dirty) {
+            if (dirty || control instanceof Combo || control instanceof CCombo) {
+                // Combos are always dirty (because drop-down menu sets a selection)
                 valueController.updateValue(newValue);
             }
         } catch (DBException e) {
