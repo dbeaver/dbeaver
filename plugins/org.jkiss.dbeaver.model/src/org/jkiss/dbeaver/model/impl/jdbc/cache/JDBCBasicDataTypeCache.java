@@ -69,7 +69,7 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
         }
         int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
         // Check for bad value type for strings: #494
-        if (valueType == Types.BINARY && (name.contains("char") || name.contains("CHAR"))) {
+        if (valueType == Types.BINARY && (name.contains("varchar") || name.contains("VARCHAR"))) {
             log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to " + Types.VARCHAR);
             valueType = Types.VARCHAR;
         }
