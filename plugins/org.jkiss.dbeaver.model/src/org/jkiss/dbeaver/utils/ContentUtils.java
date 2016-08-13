@@ -25,10 +25,14 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPApplication;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import javax.activation.MimeType;
 import javax.activation.MimeTypeParseException;
@@ -417,6 +421,33 @@ public class ContentUtils {
     public static boolean isXML(DBDContent content)
     {
         return MimeTypes.TEXT_XML.equalsIgnoreCase(content.getContentType());
+    }
+
+    public static String getContentStringValue(DBRProgressMonitor monitor, DBDContent object) throws DBCException {
+        DBDContentStorage data = object.getContents(monitor);
+        if (data != null) {
+            if (data instanceof DBDContentCached) {
+                Object cachedValue = ((DBDContentCached) data).getCachedValue();
+                if (cachedValue instanceof String) {
+                    return (String) cachedValue;
+                }
+            }
+            try {
+                Reader contentReader = data.getContentReader();
+                if (contentReader != null) {
+                    try {
+                        StringWriter buf = new StringWriter();
+                        ContentUtils.copyStreams(contentReader, object.getContentLength(), buf, monitor);
+                        return buf.toString();
+                    } finally {
+                        IOUtils.close(contentReader);
+                    }
+                }
+            } catch (IOException e) {
+                log.debug("Can't extract string from content", e);
+            }
+        }
+        return object.toString();
     }
 
     public static void deleteTempFile(File tempFile) {
