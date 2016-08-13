@@ -902,7 +902,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SyncConnectionHandler">
             <enabledWhen>
                 <with variable="activeEditor">
-                    <instanceof type="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
+                    <instanceof value="org.jkiss.dbeaver.model.IDataSourceContainerProviderEx"/>
                 </with>
             </enabledWhen>
         </handler>
@@ -1764,7 +1764,7 @@
         <!-- SQL editor connection sync drop-down menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.ui.editors.sql.sync">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
-            <separator visible="true"/>
+            <separator name="linkeditor" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
