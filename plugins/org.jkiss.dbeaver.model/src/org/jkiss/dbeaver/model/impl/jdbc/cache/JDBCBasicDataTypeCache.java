@@ -20,9 +20,11 @@ package org.jkiss.dbeaver.model.impl.jdbc.cache;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -36,6 +38,9 @@ import java.sql.Types;
 import java.util.*;
 
 public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSDataType> {
+
+    private static final Log log = Log.getLog(JDBCBasicDataTypeCache.class);
+
     private final DBSObject owner;
     protected final Set<String> ignoredTypes = new HashSet<>();
 
@@ -62,10 +67,16 @@ public class JDBCBasicDataTypeCache extends JDBCObjectCache<JDBCDataSource, DBSD
         if (ignoredTypes.contains(name.toUpperCase(Locale.ENGLISH))) {
             return null;
         }
+        int valueType = JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE);
+        // Check for bad value type for strings: #494
+        if (valueType == Types.BINARY && (name.contains("char") || name.contains("CHAR"))) {
+            log.warn("Inconsistent string data type name/id: " + name + "(" + valueType + "). Setting to " + Types.VARCHAR);
+            valueType = Types.VARCHAR;
+        }
 
         return new JDBCDataType(
             this.owner,
-            JDBCUtils.safeGetInt(dbResult, JDBCConstants.DATA_TYPE),
+            valueType,
             name,
             JDBCUtils.safeGetString(dbResult, JDBCConstants.LOCAL_TYPE_NAME),
             JDBCUtils.safeGetBoolean(dbResult, JDBCConstants.UNSIGNED_ATTRIBUTE),
