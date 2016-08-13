@@ -19,12 +19,14 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 import java.sql.SQLException;
 
@@ -76,6 +78,8 @@ public class JDBCStringValueHandler extends JDBCAbstractValueHandler {
             return new String((char[])object);
         } else if (object instanceof byte[]) {
             return new String((byte[])object);
+        } else if (object instanceof DBDContent) {
+            return ContentUtils.getContentStringValue(session.getProgressMonitor(), (DBDContent) object);
         } else {
             log.debug("Unrecognized type '" + object.getClass().getName() + "' - can't convert to string");
             return object.toString();

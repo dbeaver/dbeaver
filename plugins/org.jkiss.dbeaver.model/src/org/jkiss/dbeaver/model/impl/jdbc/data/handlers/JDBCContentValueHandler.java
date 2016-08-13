@@ -99,6 +99,11 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler {
                     break;
             }
         }
+        if (value instanceof String) {
+            // If we have a string - do not try to convert it to a binary representation (#494)
+            // We need to convert only in case of some value transformations, not when getting it from DB
+            return new JDBCContentChars(session.getDataSource(), (String) value);
+        }
         return getValueFromObject(session, type, value, false);
     }
 
