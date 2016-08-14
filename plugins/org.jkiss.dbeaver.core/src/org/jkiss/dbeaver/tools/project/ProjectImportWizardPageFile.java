@@ -92,7 +92,7 @@ class ProjectImportWizardPageFile extends WizardPage {
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
                 fd.setText(CoreMessages.dialog_project_import_wizard_file_dialog_export_archive_text);
                 fd.setFilterPath(curFolder);
-                String[] filterExt = {"*.dbp", "*.*"}; //$NON-NLS-1$ //$NON-NLS-2$
+                String[] filterExt = {"*.dbp", "*"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = fd.open();
                 if (selected != null) {

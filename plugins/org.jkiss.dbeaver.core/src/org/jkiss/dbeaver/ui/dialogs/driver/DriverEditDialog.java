@@ -423,7 +423,7 @@ public class DriverEditDialog extends HelpEnabledDialog
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.MULTI);
                 fd.setText(CoreMessages.dialog_edit_driver_dialog_open_driver_library);
                 fd.setFilterPath(curFolder);
-                String[] filterExt = {"*.jar;*.zip", "*.dll;*.so", "*.*", "*"}; //$NON-NLS-1$ //$NON-NLS-2$
+                String[] filterExt = {"*.jar;*.zip", "*.dll;*.so", "*", "*.*"}; //$NON-NLS-1$ //$NON-NLS-2$
                 fd.setFilterExtensions(filterExt);
                 String selected = fd.open();
                 if (selected != null) {

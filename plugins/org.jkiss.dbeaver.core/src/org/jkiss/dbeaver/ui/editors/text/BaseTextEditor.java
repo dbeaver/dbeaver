@@ -206,7 +206,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
 
     public void loadFromExternalFile()
     {
-        final File loadFile = DialogUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*.*", "*"});
+        final File loadFile = DialogUtils.openFile(getSite().getShell(), new String[]{"*.sql", "*.txt", "*", "*.*"});
         if (loadFile == null) {
             return;
         }
@@ -243,7 +243,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         String fileName = curFile == null ? null : curFile.getName();
 
         final Document document = getDocument();
-        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*.*", "*"}, fileName);
+        final File saveFile = DialogUtils.selectFileForSave(getSite().getShell(), "Save SQL script", new String[]{"*.sql", "*.txt", "*", "*.*"}, fileName);
         if (document == null || saveFile == null) {
             return;
         }
