@@ -82,7 +82,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         privateKeyText = new TextWithOpenFile(
             pkControlGroup,
             CoreMessages.model_ssh_configurator_dialog_choose_private_key,
-            new String[] {"*.*", "*.ssh", "*.pem", "*"});
+            new String[] {"*", "*.ssh", "*.pem", "*.*"});
         privateKeyText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         pwdLabel = UIUtils.createControlLabel(composite, CoreMessages.model_ssh_configurator_label_password);
