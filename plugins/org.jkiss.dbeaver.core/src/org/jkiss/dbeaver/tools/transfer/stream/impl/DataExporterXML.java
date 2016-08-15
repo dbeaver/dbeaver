@@ -111,7 +111,9 @@ public class DataExporterXML extends StreamExporterAbstract {
                     DBDContentStorage cs = content.getContents(monitor);
                     if (cs != null) {
                         if (ContentUtils.isTextContent(content)) {
-                            writeCellValue(cs.getContentReader());
+                            try (Reader reader = cs.getContentReader()) {
+                                writeCellValue(reader);
+                            }
                         } else {
                             getSite().writeBinaryData(cs);
                         }
@@ -162,29 +164,25 @@ public class DataExporterXML extends StreamExporterAbstract {
 
     private void writeCellValue(Reader reader) throws IOException
     {
-        try {
-            // Copy reader
-            char buffer[] = new char[2000];
-            for (;;) {
-                int count = reader.read(buffer);
-                if (count <= 0) {
-                    break;
+        // Copy reader
+        char buffer[] = new char[2000];
+        for (;;) {
+            int count = reader.read(buffer);
+            if (count <= 0) {
+                break;
+            }
+            for (int i = 0; i < count; i++) {
+                if (buffer[i] == '<') {
+                    out.write("&lt;");
                 }
-                for (int i = 0; i < count; i++) {
-                    if (buffer[i] == '<') {
-                        out.write("&lt;");
-                    }
-                    else if (buffer[i] == '>') {
-                        out.write("&gt;");
-                    }
-                    if (buffer[i] == '&') {
-                        out.write("&amp;");
-                    }
+                else if (buffer[i] == '>') {
+                    out.write("&gt;");
+                } else if (buffer[i] == '&') {
+                    out.write("&amp;");
+                } else {
                     out.write(buffer[i]);
                 }
             }
-        } finally {
-            ContentUtils.close(reader);
         }
     }
 
