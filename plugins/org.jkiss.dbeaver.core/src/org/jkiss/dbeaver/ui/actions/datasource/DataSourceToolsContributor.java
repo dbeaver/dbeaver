@@ -18,10 +18,7 @@
 
 package org.jkiss.dbeaver.ui.actions.datasource;
 
-import org.eclipse.jface.action.ActionContributionItem;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IContributionItem;
-import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -78,10 +75,10 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             if (workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {
-                    Map<ToolGroupDescriptor, MenuManager> groupsMap = new HashMap<>();
+                    Map<ToolGroupDescriptor, IMenuManager> groupsMap = new HashMap<>();
                     for (ToolDescriptor tool : tools) {
                         hasTools = true;
-                        MenuManager parentMenu = null;
+                        IMenuManager parentMenu = null;
                         if (tool.getGroup() != null) {
                             parentMenu = getGroupMenu(menuItems, groupsMap, tool.getGroup());
                         }
@@ -106,12 +103,12 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         }
     }
 
-    private static MenuManager getGroupMenu(List<IContributionItem> rootItems, Map<ToolGroupDescriptor, MenuManager> groupsMap, ToolGroupDescriptor group) {
-        MenuManager item = groupsMap.get(group);
+    private static IMenuManager getGroupMenu(List<IContributionItem> rootItems, Map<ToolGroupDescriptor, IMenuManager> groupsMap, ToolGroupDescriptor group) {
+        IMenuManager item = groupsMap.get(group);
         if (item == null) {
             item = new MenuManager(group.getLabel(), null, group.getId());
             if (group.getParent() != null) {
-                MenuManager parentMenu = getGroupMenu(rootItems, groupsMap, group.getParent());
+                IMenuManager parentMenu = getGroupMenu(rootItems, groupsMap, group.getParent());
                 parentMenu.add(item);
             } else {
                 rootItems.add(item);
