@@ -929,6 +929,13 @@ public class UIUtils {
 
     public static void updateMainWindowTitle(IWorkbenchWindow window)
     {
+        if (window == null) {
+            return;
+        }
+        Shell shell = window.getShell();
+        if (shell == null) {
+            return;
+        }
         IProject activeProject = DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         IProduct product = Platform.getProduct();
         String title = product == null ? "Unknown" : product.getName(); //$NON-NLS-1$
@@ -942,7 +949,7 @@ public class UIUtils {
                 title += " - [ " + activeEditor.getTitle() + " ]";
             }
         }
-        window.getShell().setText(title);
+        shell.setText(title);
     }
 
     public static void showPreferencesFor(Shell shell, Object element, String defPageID)
