@@ -213,7 +213,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     {
         List<AttributePart> erdColumns = new ArrayList<>(source.getChildren());
         for (Iterator<AttributePart> iter = erdColumns.iterator(); iter.hasNext(); ) {
-            if (!columns.contains(iter.next().getColumn().getObject())) {
+            if (!columns.contains(iter.next().getAttribute().getObject())) {
                 iter.remove();
             }
         }

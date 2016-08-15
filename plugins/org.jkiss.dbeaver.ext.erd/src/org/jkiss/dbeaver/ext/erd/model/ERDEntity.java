@@ -276,7 +276,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                                 }
                                 break;
                             case KEYS:
-                                if (keyColumns == null || !keyColumns.contains(attribute)) {
+                                if (!keyColumns.contains(attribute)) {
                                     continue;
                                 }
                                 break;

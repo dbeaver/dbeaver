@@ -78,18 +78,12 @@ public class EntityPart extends NodePart
 		return getTable().getColumns();
 	}
 
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelSourceConnections()
-	 */
 	@Override
     protected List<ERDAssociation> getModelSourceConnections()
 	{
 		return getTable().getForeignKeyRelationships();
 	}
 
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractGraphicalEditPart#getModelTargetConnections()
-	 */
 	@Override
     protected List<ERDAssociation> getModelTargetConnections()
 	{
@@ -137,7 +131,7 @@ public class EntityPart extends NodePart
 
 	private boolean directEditHitTest(Point requestLoc)
 	{
-		EntityFigure figure = (EntityFigure) getFigure();
+		EntityFigure figure = getFigure();
 		EditableLabel nameLabel = figure.getNameLabel();
 		nameLabel.translateToRelative(requestLoc);
         return nameLabel.containsPoint(requestLoc);
@@ -150,7 +144,7 @@ public class EntityPart extends NodePart
 			ERDGraphicalViewer viewer = getViewer();
 			ValidationMessageHandler handler = viewer.getValidationHandler();
 
-			EntityFigure figure = (EntityFigure) getFigure();
+			EntityFigure figure = getFigure();
 			EditableLabel nameLabel = figure.getNameLabel();
 			manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(nameLabel),
 					nameLabel, new TableNameCellEditorValidator(handler));
@@ -160,7 +154,7 @@ public class EntityPart extends NodePart
 
 	public void handleNameChange(String value)
 	{
-		EntityFigure entityFigure = (EntityFigure) getFigure();
+		EntityFigure entityFigure = getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
 		label.setVisible(false);
 		refreshVisuals();
@@ -173,7 +167,7 @@ public class EntityPart extends NodePart
 	 */
 	public void revertNameChange()
 	{
-		EntityFigure entityFigure = (EntityFigure) getFigure();
+		EntityFigure entityFigure = getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
 		ERDEntity entity = getTable();
 		label.setText(entity.getObject().getName());
@@ -183,9 +177,6 @@ public class EntityPart extends NodePart
 
 	//******************* Miscellaneous stuff *********************/
 
-	/**
-	 * @see org.eclipse.gef.editparts.AbstractEditPart#toString()
-	 */
 	public String toString()
 	{
         return DBUtils.getObjectFullName(getTable().getObject());
@@ -199,7 +190,7 @@ public class EntityPart extends NodePart
 	@Override
     protected void commitNameChange(PropertyChangeEvent evt)
 	{
-		EntityFigure entityFigure = (EntityFigure) getFigure();
+		EntityFigure entityFigure = getFigure();
 		EditableLabel label = entityFigure.getNameLabel();
 		label.setText(getTable().getObject().getName());
 		label.setVisible(true);
@@ -212,7 +203,7 @@ public class EntityPart extends NodePart
 	 * Creates a figure which represents the table
 	 */
 	@Override
-    protected IFigure createFigure()
+    protected EntityFigure createFigure()
 	{
         final EntityFigure figure = new EntityFigure(getTable());
         final EntityDiagram diagram = ((DiagramPart) getParent()).getDiagram();
@@ -224,13 +215,18 @@ public class EntityPart extends NodePart
         return figure;
     }
 
+	@Override
+	public EntityFigure getFigure() {
+		return (EntityFigure)super.getFigure();
+	}
+
 	/**
 	 * Reset the layout constraint, and revalidate the content pane
 	 */
 	@Override
     protected void refreshVisuals()
 	{
-		EntityFigure entityFigure = (EntityFigure) getFigure();
+		EntityFigure entityFigure = getFigure();
 		Point location = entityFigure.getLocation();
 		DiagramPart parent = (DiagramPart) getParent();
 		Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
@@ -241,7 +237,7 @@ public class EntityPart extends NodePart
 	 * @return the Content pane for adding or removing child figures
 	 */
 	@Override
-    public IFigure getContentPane()
+    public EntityFigure getContentPane()
 	{
 //		EntityFigure figure = (EntityFigure) getFigure();
 //		return figure.getColumnsFigure();
@@ -281,7 +277,7 @@ public class EntityPart extends NodePart
     public void setSelected(int value)
 	{
 		super.setSelected(value);
-		EntityFigure entityFigure = (EntityFigure) getFigure();
+		EntityFigure entityFigure = getFigure();
 		if (value != EditPart.SELECTED_NONE)
 			entityFigure.setSelected(true);
 		else
