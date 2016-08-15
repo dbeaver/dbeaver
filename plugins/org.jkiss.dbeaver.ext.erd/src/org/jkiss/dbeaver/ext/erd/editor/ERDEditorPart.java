@@ -717,14 +717,20 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     }
 
-    public MenuManager createAttributeVisibilityMenu()
+    public void fillAttributeVisibilityMenu(IMenuManager menu)
     {
+        MenuManager asMenu = new MenuManager("Attribute Styles");
+        asMenu.add(new ChangeAttributePresentationAction("Show Icons"));
+        asMenu.add(new ChangeAttributePresentationAction("Show Data Type"));
+        asMenu.add(new ChangeAttributePresentationAction("Show Nullability"));
+        menu.add(asMenu);
+
         MenuManager avMenu = new MenuManager("Show Attributes");
         avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.ALL));
         avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.KEYS));
         avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.PRIMARY));
         avMenu.add(new ChangeAttributeVisibilityAction(ERDAttributeVisibility.NONE));
-        return avMenu;
+        menu.add(avMenu);
     }
 
     public void printDiagram()
@@ -776,6 +782,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     protected abstract void loadDiagram();
 
+    private class ChangeAttributePresentationAction extends Action {
+        public ChangeAttributePresentationAction(String text) {
+            super(text, AS_CHECK_BOX);
+        }
+    }
+
     private class ChangeAttributeVisibilityAction extends Action {
         private final ERDAttributeVisibility visibility;
 
@@ -796,7 +808,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         {
             getDiagram().setAttributeVisibility(visibility);
             refreshDiagram();
-            //this.setChecked(true);
         }
     }
 

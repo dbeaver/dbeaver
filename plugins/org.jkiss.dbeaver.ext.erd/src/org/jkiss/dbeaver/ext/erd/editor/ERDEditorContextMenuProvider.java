@@ -58,9 +58,9 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider
 
             menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
 
-            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new Separator());
-            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, editor.createAttributeVisibilityMenu());
-            menu.appendToGroup(IWorkbenchActionConstants.MB_ADDITIONS, new DiagramLayoutAction(editor));
+            menu.add(new Separator());
+            editor.fillAttributeVisibilityMenu(menu);
+            menu.add(new DiagramLayoutAction(editor));
         }
 	}
 }
