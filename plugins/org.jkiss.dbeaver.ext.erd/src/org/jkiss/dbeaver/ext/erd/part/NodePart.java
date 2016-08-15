@@ -33,33 +33,27 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
     /**
      * @return Returns the bounds.
      */
-    public Rectangle getBounds()
-    {
+    public Rectangle getBounds() {
         return bounds;
     }
 
     /**
      * Sets bounds without firing off any event notifications
      *
-     * @param bounds
-     *            The bounds to set.
+     * @param bounds The bounds to set.
      */
-    public void setBounds(Rectangle bounds)
-    {
+    public void setBounds(Rectangle bounds) {
         this.bounds = bounds;
     }
 
     /**
      * If modified, sets bounds and fires off event notification
      *
-     * @param bounds
-     *            The bounds to set.
+     * @param bounds The bounds to set.
      */
-    public void modifyBounds(Rectangle bounds)
-    {
+    public void modifyBounds(Rectangle bounds) {
         Rectangle oldBounds = this.bounds;
-        if (!bounds.equals(oldBounds))
-        {
+        if (!bounds.equals(oldBounds)) {
             this.bounds = bounds;
 
             Figure entityFigure = (Figure) getFigure();

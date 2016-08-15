@@ -21,6 +21,7 @@
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 /**
@@ -35,7 +36,10 @@ public class AttributeItemFigure extends EditableLabel
 	{
         super(attribute.getLabelText());
         this.attribute = attribute;
-        setIcon(DBeaverIcons.getImage(attribute.getLabelImage()));
+        DBPImage labelImage = attribute.getLabelImage();
+        if (labelImage != null) {
+            setIcon(DBeaverIcons.getImage(labelImage));
+        }
 
 	}
 

@@ -53,9 +53,6 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         return getParent() instanceof DiagramPart && ((DiagramPart) getParent()).getDiagram().isLayoutManualAllowed();
     }
 
-	/**
-	 * @see org.eclipse.gef.EditPart#activate()
-	 */
 	@Override
     public void activate()
 	{
@@ -64,9 +61,6 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		erdObject.addPropertyChangeListener(this);
 	}
 
-	/**
-	 * @see org.eclipse.gef.EditPart#deactivate()
-	 */
 	@Override
     public void deactivate()
 	{
@@ -75,9 +69,6 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
 		erdObject.removePropertyChangeListener(this);
 	}
 
-	/**
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-	 */
 	@Override
     public void propertyChange(PropertyChangeEvent evt)
 	{
