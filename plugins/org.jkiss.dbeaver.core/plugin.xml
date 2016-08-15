@@ -1764,7 +1764,7 @@
         <!-- SQL editor connection sync drop-down menu -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.ui.editors.sql.sync">
             <command commandId="org.jkiss.dbeaver.ui.editors.sql.sync.auto" style="toggle"/>
-            <separator name="linkeditor" visible="true"/>
+            <separator name="sync_additions" visible="true"/>
             <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor"/>
         </menuContribution>
 
