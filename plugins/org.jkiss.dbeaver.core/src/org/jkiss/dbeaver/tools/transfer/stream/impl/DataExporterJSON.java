@@ -103,7 +103,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
             String columnName = column.getName();
-            out.write("\t\t\"" + columnName + "\" : ");
+            out.write("\t\t\"" + escapeJsonString(columnName) + "\" : ");
             Object cellValue = row[i];
             if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
@@ -115,7 +115,11 @@ public class DataExporterJSON extends StreamExporterAbstract {
                     DBDContentStorage cs = content.getContents(monitor);
                     if (cs != null) {
                         if (ContentUtils.isTextContent(content)) {
-                            writeCellValue(cs.getContentReader());
+                            try (Reader in = cs.getContentReader()) {
+                                out.write("\"");
+                                writeCellValue(in);
+                                out.write("\"");
+                            }
                         } else {
                             getSite().writeBinaryData(cs);
                         }
@@ -154,7 +158,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            out.write("\"" + value + "\"");
+            out.write("\"" + escapeJsonString(value) + "\"");
         } else {
             out.write("null");
         }
@@ -162,19 +166,22 @@ public class DataExporterJSON extends StreamExporterAbstract {
 
     private void writeCellValue(Reader reader) throws IOException
     {
-        try {
-            // Copy reader
-            char buffer[] = new char[2000];
-            for (;;) {
-                int count = reader.read(buffer);
-                if (count <= 0) {
-                    break;
-                }
-                out.write(buffer, 0, count);
+        // Copy reader
+        char buffer[] = new char[2000];
+        for (;;) {
+            int count = reader.read(buffer);
+            if (count <= 0) {
+                break;
             }
-        } finally {
-            ContentUtils.close(reader);
+            out.write(escapeJsonString(new String(buffer, 0, count)));
         }
+    }
+
+    private static String escapeJsonString(String str) {
+        if (str == null) {
+            return null;
+        }
+        return str.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 
 }
