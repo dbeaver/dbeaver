@@ -879,7 +879,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             for (Map.Entry<DBSObject, Map<Class, List<SQLCompletionProposal>>> entry : containerMap.entrySet()) {
                 for (Map.Entry<Class, List<SQLCompletionProposal>> typeEntry : entry.getValue().entrySet()) {
                     DBSObjectFilter filter = dsContainer.getObjectFilter(typeEntry.getKey(), entry.getKey(), true);
-                    if (filter != null) {
+                    if (filter != null && filter.isEnabled()) {
                         for (SQLCompletionProposal proposal : typeEntry.getValue()) {
                             if (!filter.matches(proposal.getObject().getName())) {
                                 proposals.remove(proposal);
