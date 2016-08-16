@@ -282,17 +282,17 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
         private DB2ObjectReference(String objectName, DB2Schema db2Schema, DB2ObjectType objectType)
         {
-            super(objectName, db2Schema, null, objectType);
+            super(objectName, db2Schema, null, DB2Schema.class, objectType);
         }
 
         private DB2ObjectReference(String objectName, DB2Table db2Table, DB2ObjectType objectType)
         {
-            super(objectName, db2Table, null, objectType);
+            super(objectName, db2Table, null, DB2Table.class, objectType);
         }
 
         private DB2ObjectReference(String objectName, DB2View db2View, DB2ObjectType objectType)
         {
-            super(objectName, db2View, null, objectType);
+            super(objectName, db2View, null, DB2View.class, objectType);
         }
 
         @Override

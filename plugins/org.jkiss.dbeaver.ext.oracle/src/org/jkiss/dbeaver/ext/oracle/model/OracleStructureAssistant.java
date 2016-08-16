@@ -169,6 +169,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                         constrName,
                         dataSource.getSchema(session.getProgressMonitor(), schemaName),
                         null,
+                        type == DBSEntityConstraintType.FOREIGN_KEY ? OracleTableForeignKey.class : OracleTableConstraint.class,
                         type == DBSEntityConstraintType.FOREIGN_KEY ? OracleObjectType.FOREIGN_KEY : OracleObjectType.CONSTRAINT) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -258,7 +259,7 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                             log.debug("Schema '" + schemaName + "' not found. Probably was filtered");
                             continue;
                         }
-                        objects.add(new AbstractObjectReference(objectName, objectSchema, null, objectType) {
+                        objects.add(new AbstractObjectReference(objectName, objectSchema, null, objectType.getTypeClass(), objectType) {
                             @Override
                             public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                                 OracleSchema tableSchema = (OracleSchema) getContainer();

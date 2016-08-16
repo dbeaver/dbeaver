@@ -32,13 +32,15 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
     private final String name;
     private final DBSObject container;
     private final String description;
+    private final Class<?> objectClass;
     private final DBSObjectType type;
 
-    protected AbstractObjectReference(String name, DBSObject container, String description, DBSObjectType type)
+    protected AbstractObjectReference(String name, DBSObject container, String description, Class<?> objectClass, DBSObjectType type)
     {
         this.name = name;
         this.container = container;
         this.description = description;
+        this.objectClass = objectClass;
         this.type = type;
     }
 
@@ -52,6 +54,11 @@ public abstract class AbstractObjectReference implements DBSObjectReference {
     public DBSObject getContainer()
     {
         return container;
+    }
+
+    @Override
+    public Class<?> getObjectClass() {
+        return objectClass;
     }
 
     @Override

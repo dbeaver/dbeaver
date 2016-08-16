@@ -30,6 +30,8 @@ public interface DBSObjectReference extends DBPNamedObject, DBPQualifiedObject
 {
     DBSObject getContainer();
 
+    Class<?> getObjectClass();
+
     DBSObjectType getObjectType();
 
     String getObjectDescription();
