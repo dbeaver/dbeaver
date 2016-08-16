@@ -843,13 +843,50 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 } finally {
                     monitor.done();
                 }
-
+                applyFilters();
                 return Status.OK_STATUS;
             } catch (Throwable e) {
                 log.error(e);
                 return Status.CANCEL_STATUS;
             } finally {
                 finished = true;
+            }
+        }
+
+        private void applyFilters() {
+            DBPDataSource dataSource = editor.getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            DBPDataSourceContainer dsContainer = dataSource.getContainer();
+            Map<DBSObject, Map<Class, List<SQLCompletionProposal>>> containerMap = new HashMap<>();
+            for (SQLCompletionProposal proposal : proposals) {
+                DBSObject container = proposal.getObjectContainer();
+                DBPNamedObject object = proposal.getObject();
+                Map<Class, List<SQLCompletionProposal>> typeMap = containerMap.get(container);
+                if (typeMap == null) {
+                    typeMap = new HashMap<>();
+                    containerMap.put(container, typeMap);
+                }
+                Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectType().getTypeClass() : object.getClass();
+                List<SQLCompletionProposal> list = typeMap.get(objectType);
+                if (list == null) {
+                    list = new ArrayList<>();
+                    typeMap.put(objectType, list);
+                }
+                list.add(proposal);
+            }
+            for (Map.Entry<DBSObject, Map<Class, List<SQLCompletionProposal>>> entry : containerMap.entrySet()) {
+                for (Map.Entry<Class, List<SQLCompletionProposal>> typeEntry : entry.getValue().entrySet()) {
+                    DBSObjectFilter filter = dsContainer.getObjectFilter(typeEntry.getKey(), entry.getKey(), true);
+                    if (filter != null && filter.isEnabled()) {
+                        for (SQLCompletionProposal proposal : typeEntry.getValue()) {
+                            if (!filter.matches(proposal.getObject().getName())) {
+                                proposals.remove(proposal);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
