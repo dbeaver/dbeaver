@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
 
 import java.util.*;
 
@@ -189,9 +190,16 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     @NotNull
     protected String getObjectName(@NotNull OBJECT object) {
-        return caseSensitive ?
-            object.getName() :
-            object.getName().toUpperCase();
+        String name;
+        if (object instanceof DBSObjectUnique) {
+            name = ((DBSObjectUnique) object).getUniqueName();
+        } else {
+            name = object.getName();
+        }
+        if (!caseSensitive) {
+            return name.toUpperCase();
+        }
+        return name;
     }
 
     protected class CacheIterator implements Iterator<OBJECT> {

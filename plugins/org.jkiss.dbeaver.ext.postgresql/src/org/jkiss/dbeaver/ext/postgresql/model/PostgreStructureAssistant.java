@@ -169,7 +169,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
 
         // Load procedures
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT DISTINCT x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
+            "SELECT DISTINCT x.oid,x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
                 "WHERE x.proname LIKE ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (?)") +
                 " ORDER BY x.proname LIMIT " + maxResults)) {
@@ -185,13 +185,14 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     }
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
+                    final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final PostgreSchema procSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
                     objects.add(new AbstractObjectReference(procName, procSchema, null, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
-                            PostgreProcedure procedure = procSchema.getProcedure(monitor, procName);
+                            PostgreProcedure procedure = procSchema.getProcedure(monitor, procId);
                             if (procedure == null) {
-                                throw new DBException("Procedure '" + procName + "' not found in schema '" + procName + "'");
+                                throw new DBException("Procedure '" + procName + "' not found in schema '" + procSchema.getName() + "'");
                             }
                             return procedure;
                         }
