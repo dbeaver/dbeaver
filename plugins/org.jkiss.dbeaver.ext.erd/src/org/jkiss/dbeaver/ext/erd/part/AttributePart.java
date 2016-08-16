@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
@@ -66,10 +67,14 @@ public class AttributePart extends PropertyAwarePart
         AttributeItemFigure attributeFigure = new AttributeItemFigure(column);
 
         DiagramPart diagramPart = (DiagramPart) getParent().getParent();
+		boolean showNullability = diagramPart.getDiagram().hasAttributeStyle(ERDAttributeStyle.NULLABILITY);
         Font columnFont = diagramPart.getNormalFont();
         Color columnColor = diagramPart.getContentPane().getForegroundColor();
         if (column.isInPrimaryKey()) {
             columnFont = diagramPart.getBoldFont();
+            if (showNullability && !column.getObject().isRequired()) {
+                columnFont = diagramPart.getBoldItalicFont();
+            }
 /*
             if (!column.isInForeignKey()) {
                 columnFont = diagramPart.getBoldFont();
@@ -77,6 +82,10 @@ public class AttributePart extends PropertyAwarePart
                 columnFont = diagramPart.getBoldItalicFont();
             }
 */
+        } else {
+            if (showNullability && !column.getObject().isRequired()) {
+                columnFont = diagramPart.getItalicFont();
+            }
         }
         if (column.isInForeignKey()) {
             //columnColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
