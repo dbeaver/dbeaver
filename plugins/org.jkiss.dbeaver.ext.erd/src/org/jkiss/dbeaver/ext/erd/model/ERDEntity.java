@@ -283,7 +283,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
                             default:
                                 break;
                         }
-                        ERDEntityAttribute c1 = new ERDEntityAttribute(attribute, idColumns != null && idColumns.contains(attribute));
+                        ERDEntityAttribute c1 = new ERDEntityAttribute(diagram, attribute, idColumns != null && idColumns.contains(attribute));
                         erdEntity.addColumn(c1, false);
                     }
                 }

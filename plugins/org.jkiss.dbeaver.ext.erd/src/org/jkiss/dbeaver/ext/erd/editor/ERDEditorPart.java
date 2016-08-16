@@ -84,6 +84,7 @@ import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.FileOutputStream;
@@ -720,9 +721,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public void fillAttributeVisibilityMenu(IMenuManager menu)
     {
         MenuManager asMenu = new MenuManager("Attribute Styles");
-        asMenu.add(new ChangeAttributePresentationAction("Show Icons"));
-        asMenu.add(new ChangeAttributePresentationAction("Show Data Type"));
-        asMenu.add(new ChangeAttributePresentationAction("Show Nullability"));
+        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.ICONS));
+        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.TYPES));
+        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.NULLABILITY));
         menu.add(asMenu);
 
         MenuManager avMenu = new MenuManager("Show Attributes");
@@ -783,8 +784,24 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected abstract void loadDiagram();
 
     private class ChangeAttributePresentationAction extends Action {
-        public ChangeAttributePresentationAction(String text) {
-            super(text, AS_CHECK_BOX);
+        private final ERDAttributeStyle style;
+        public ChangeAttributePresentationAction(ERDAttributeStyle style) {
+            super("Show " + style.getTitle(), AS_CHECK_BOX);
+            this.style = style;
+        }
+        @Override
+        public boolean isChecked()
+        {
+            return ArrayUtils.contains(
+                ERDAttributeStyle.getDefaultStyles(ERDActivator.getDefault().getPreferenceStore()),
+                style);
+        }
+
+        @Override
+        public void run()
+        {
+            getDiagram().setAttributeStyle(style, !isChecked());
+            refreshDiagram();
         }
     }
 
