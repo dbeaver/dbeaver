@@ -868,7 +868,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     typeMap = new HashMap<>();
                     containerMap.put(container, typeMap);
                 }
-                Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectType().getTypeClass() : object.getClass();
+                Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectClass() : object.getClass();
                 List<SQLCompletionProposal> list = typeMap.get(objectType);
                 if (list == null) {
                     list = new ArrayList<>();
