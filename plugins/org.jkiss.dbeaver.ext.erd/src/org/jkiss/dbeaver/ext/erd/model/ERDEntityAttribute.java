@@ -25,7 +25,9 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Column entry in model Table
@@ -46,7 +48,9 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 	public String getLabelText()
 	{
         if (diagram.hasAttributeStyle(ERDAttributeStyle.TYPES)) {
-            return object.getName() + ": " + object.getTypeName();
+            String typeName = object.getTypeName();
+            return object.getName() + ": " + typeName +
+                CommonUtils.notEmpty(SQLUtils.getColumnTypeModifiers(object, typeName, object.getDataKind()));
         } else {
             return object.getName();
         }
