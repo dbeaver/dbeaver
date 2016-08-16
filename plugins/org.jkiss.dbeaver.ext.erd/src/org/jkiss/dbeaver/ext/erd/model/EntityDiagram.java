@@ -22,12 +22,15 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
+import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.*;
 
@@ -48,6 +51,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     private List<ERDNote> notes = new ArrayList<>();
     private boolean needsAutoLayout;
     private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
+    private ERDAttributeStyle[] attributeStyles = new ERDAttributeStyle[] { ERDAttributeStyle.ICONS };
 
     private List<String> errorMessages = new ArrayList<>();
 
@@ -57,9 +61,24 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		if (name == null)
 			throw new NullPointerException("Name cannot be null");
 		this.name = name;
-        this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(ERDActivator.getDefault().getPreferenceStore());
+        IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
+        this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
+        this.attributeStyles = ERDAttributeStyle.getDefaultStyles(store);
 	}
 
+    public boolean hasAttributeStyle(ERDAttributeStyle style) {
+        return ArrayUtils.contains(attributeStyles, style);
+    }
+
+    public void setAttributeStyle(ERDAttributeStyle style, boolean enable)
+    {
+        if (enable) {
+            attributeStyles = ArrayUtils.add(ERDAttributeStyle.class, attributeStyles, style);
+        } else {
+            attributeStyles = ArrayUtils.remove(ERDAttributeStyle.class, attributeStyles, style);
+        }
+        ERDAttributeStyle.setDefaultStyles(ERDActivator.getDefault().getPreferences(), attributeStyles);
+    }
 
     public ERDAttributeVisibility getAttributeVisibility()
     {
