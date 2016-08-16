@@ -232,6 +232,17 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return proceduresCache.getObject(monitor, this, procName);
     }
 
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long oid)
+        throws DBException
+    {
+        for (PostgreProcedure proc : proceduresCache.getAllObjects(monitor, this)) {
+            if (proc.getObjectId() == oid) {
+                return proc;
+            }
+        }
+        return null;
+    }
+
     @Override
     public Collection<PostgreTableReal> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
