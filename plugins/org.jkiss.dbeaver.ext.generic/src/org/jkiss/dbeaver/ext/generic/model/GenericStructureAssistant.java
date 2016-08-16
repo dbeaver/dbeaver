@@ -173,9 +173,9 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
 
     private abstract class ObjectReference extends AbstractObjectReference {
 
-        protected ObjectReference(GenericStructContainer container, String name, String description, DBSObjectType type)
+        protected ObjectReference(GenericStructContainer container, String name, String description, Class<?> objectClass, DBSObjectType type)
         {
-            super(name, container, description, type);
+            super(name, container, description, objectClass, type);
         }
 
         @Override
@@ -189,7 +189,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
 
         private TableReference(GenericStructContainer container, String tableName, String description)
         {
-            super(container, tableName, description, RelationalObjectType.TYPE_TABLE);
+            super(container, tableName, description, GenericTable.class, RelationalObjectType.TYPE_TABLE);
         }
 
         @Override
@@ -209,7 +209,7 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         private String uniqueName;
         private ProcedureReference(GenericStructContainer container, String catalogName, String procedureName, String uniqueName)
         {
-            super(container, procedureName, null, RelationalObjectType.TYPE_PROCEDURE);
+            super(container, procedureName, null, GenericProcedure.class, RelationalObjectType.TYPE_PROCEDURE);
             this.catalogName = catalogName;
             this.uniqueName = uniqueName;
         }

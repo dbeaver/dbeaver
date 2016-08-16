@@ -140,7 +140,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
 
         // Load tables
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT x.oid,x.relname,x.relnamespace FROM pg_catalog.pg_class x " +
+            "SELECT x.oid,x.relname,x.relnamespace,x.relkind FROM pg_catalog.pg_class x " +
                 "WHERE x.relkind in('r','v','m') AND x.relname LIKE ? " +
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (?)") +
                 " ORDER BY x.relname LIMIT " + maxResults)) {
@@ -157,8 +157,12 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "relnamespace");
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
+                    final PostgreClass.RelKind tableType = PostgreClass.RelKind.valueOf(JDBCUtils.safeGetString(dbResult, "relkind"));
                     final PostgreSchema tableSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
-                    objects.add(new AbstractObjectReference(tableName, tableSchema, null, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference(tableName, tableSchema, null,
+                        tableType == PostgreClass.RelKind.r ? PostgreTable.class :
+                            (tableType == PostgreClass.RelKind.v ? PostgreView.class : PostgreMaterializedView.class),
+                        RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             PostgreTableBase table = tableSchema.getTable(monitor, tableId);
@@ -198,7 +202,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final PostgreSchema procSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
-                    objects.add(new AbstractObjectReference(procName, procSchema, null, RelationalObjectType.TYPE_PROCEDURE) {
+                    objects.add(new AbstractObjectReference(procName, procSchema, null, PostgreProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             PostgreProcedure procedure = procSchema.getProcedure(monitor, procId);
@@ -238,7 +242,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
                     final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
-                    objects.add(new AbstractObjectReference(constrName, constrSchema, null, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference(constrName, constrSchema, null, PostgreTableConstraintBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             final PostgreTableConstraintBase constraint = PostgreUtils.getObjectById(monitor, constrSchema.constraintCache, constrSchema, constrId);
@@ -283,7 +287,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                         log.debug("Schema '" + schemaId + "' not found");
                         continue;
                     }
-                    objects.add(new AbstractObjectReference(attributeName, constrSchema, null, RelationalObjectType.TYPE_TABLE) {
+                    objects.add(new AbstractObjectReference(attributeName, constrSchema, null, PostgreTableBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             final PostgreTableBase table = PostgreUtils.getObjectById(monitor, constrSchema.tableCache, constrSchema, tableId);
