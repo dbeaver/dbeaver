@@ -21,7 +21,6 @@ package org.jkiss.dbeaver.ext.erd.editor;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.preference.PreferencePage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -35,8 +34,10 @@ import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.utils.ArrayUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * ERDPreferencePage
@@ -54,7 +55,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
     private Button snapCheck;
     private Spinner spinnerGridWidth;
     private Spinner spinnerGridHeight;
-    private java.util.List<Button> visibilityButtons = new ArrayList<>();
+    private List<Button> visibilityButtons = new ArrayList<>();
+    private List<Button> styleButtons = new ArrayList<>();
 
     @Override
     protected Control createContents(Composite parent)
@@ -65,7 +67,8 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
         createGridGroup(store, composite);
         createPrintGroup(store, composite);
-        createElementsGroup(store, composite);
+        createVisibilityGroup(store, composite);
+        createStyleGroup(store, composite);
 
         return composite;
     }
@@ -102,7 +105,7 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         spinnerMarginRight = UIUtils.createLabelSpinner(printGroup, ERDMessages.pref_page_erd_spinner_margin_right, store.getInt(ERDConstants.PREF_PRINT_MARGIN_RIGHT), 0, Short.MAX_VALUE);
     }
 
-    private void createElementsGroup(IPreferenceStore store, Composite composite)
+    private void createVisibilityGroup(IPreferenceStore store, Composite composite)
     {
         ERDAttributeVisibility defaultVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
 
@@ -119,10 +122,22 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
         }
     }
 
+    private void createStyleGroup(IPreferenceStore store, Composite composite)
+    {
+        ERDAttributeStyle[] enabledStyles = ERDAttributeStyle.getDefaultStyles(store);
 
-/* (non-Javadoc)
- * @see org.eclipse.ui.IWorkbenchPreferencePage#init(org.eclipse.ui.IWorkbench)
- */
+        Group elemsGroup = UIUtils.createControlGroup(composite, "Attribute styles", 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+        elemsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        for (ERDAttributeStyle style : ERDAttributeStyle.values()) {
+            Button check = new Button(elemsGroup, SWT.CHECK);
+            check.setData(style);
+            check.setText(style.getTitle());
+            if (ArrayUtils.contains(enabledStyles, style)) {
+                check.setSelection(true);
+            }
+            styleButtons.add(check);
+        }
+    }
 
     @Override
     public void init(IWorkbench workbench)
@@ -164,6 +179,13 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
             }
         }
+        List<ERDAttributeStyle> enabledStyles = new ArrayList<>();
+        for (Button check : styleButtons) {
+            if (check.getSelection()) {
+                enabledStyles.add((ERDAttributeStyle) check.getData());
+            }
+        }
+        ERDAttributeStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDAttributeStyle[enabledStyles.size()]));
 
         PrefUtils.savePreferenceStore(store);
 
