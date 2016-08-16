@@ -184,7 +184,6 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                         break;
                     }
                     final long schemaId = JDBCUtils.safeGetLong(dbResult, "pronamespace");
-                    final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final PostgreSchema procSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
                     objects.add(new AbstractObjectReference(procName, procSchema, null, RelationalObjectType.TYPE_PROCEDURE) {
