@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
@@ -102,6 +103,16 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                 final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), sn);
                 if (schema != null) {
                     nsList.add(schema);
+                }
+            }
+        } else {
+            // Limit object search with available schemas (use filters - #648)
+            DBSObjectFilter schemaFilter = dataSource.getContainer().getObjectFilter(PostgreSchema.class, database, true);
+            if (schemaFilter != null && schemaFilter.isEnabled()) {
+                for (PostgreSchema schema : database.getSchemas(session.getProgressMonitor())) {
+                    if (schemaFilter.matches(schema.getName())) {
+                        nsList.add(schema);
+                    }
                 }
             }
         }
