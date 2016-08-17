@@ -92,8 +92,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         pageControl = new ObjectEditorPageControl(parent, SWT.SHEET, this);
         pageControl.setShowDivider(true);
 
-        DBNNode node = getEditorInput().getNavigatorNode();
-
         Composite container = new Composite(pageControl, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         gl.verticalSpacing = 5;
@@ -104,9 +102,6 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         container.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        if (node == null) {
-            return;
-        }
         pageControl.createProgressPanel();
 
         createPropertyBrowser(container);
@@ -372,6 +367,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<TabbedFolderInfo> tabList)
     {
         final DBNDatabaseNode node = part.getEditorInput().getNavigatorNode();
+        if (node == null) {
+            return;
+        }
         final DBSObject object = node.getObject();
 
         if (!node.getMeta().isStandaloneNode()) {

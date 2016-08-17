@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Constructor;
@@ -126,6 +127,9 @@ public class DatabaseEditorInputFactory implements IElementFactory
                                         throw new DBException("Node '" + nodePath + "' not found");
                                     }
                                     Class<?> aClass = Class.forName(inputClass);
+                                    if (aClass == ErrorEditorInput.class) {
+                                        aClass = EntityEditorInput.class;
+                                    }
                                     Constructor<?> constructor = null;
                                     for (Class nodeType = node.getClass(); nodeType != null; nodeType = nodeType.getSuperclass()) {
                                         try {
