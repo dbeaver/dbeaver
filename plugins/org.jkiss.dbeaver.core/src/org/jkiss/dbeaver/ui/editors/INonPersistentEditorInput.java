@@ -19,18 +19,17 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IEditorInput;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPPropertySource;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.Collection;
 
 /**
  * Non persistent (in memory) editor input
  */
 public interface INonPersistentEditorInput extends IEditorInput {
+
+    @Nullable
+    Object getProperty(String name);
+
+    void setProperty(@NotNull String name, @Nullable Object value);
 
 }

@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -32,10 +31,11 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -85,13 +85,11 @@ public class OpenNewSQLEditorHandler extends BaseSQLEditorHandler {
         String sqlText)
     {
         StringEditorInput sqlInput = new StringEditorInput(name, sqlText, false, ContentUtils.DEFAULT_CHARSET);
+        EditorUtils.setInputDataSource(sqlInput, dataSourceContainer, false);
         try {
-            IEditorPart editor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
+            DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
                 sqlInput,
                 SQLEditor.class.getName());
-            if (editor instanceof SQLEditor) {
-                ((SQLEditor) editor).setDataSourceContainer(dataSourceContainer);
-            }
         } catch (PartInitException e) {
             UIUtils.showErrorDialog(workbenchWindow.getShell(), "Can't open editor", null, e);
         }

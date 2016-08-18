@@ -135,6 +135,8 @@ public class EditorUtils {
                 return object.getDataSource().getContainer();
             }
             return null;
+        } else if (editorInput instanceof INonPersistentEditorInput) {
+            return (DBPDataSourceContainer) ((INonPersistentEditorInput) editorInput).getProperty(PROP_SQL_DATA_SOURCE);
         } else {
             IFile file = getFileFromInput(editorInput);
             if (file != null) {
@@ -194,6 +196,7 @@ public class EditorUtils {
     public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
     {
         if (editorInput instanceof INonPersistentEditorInput) {
+            ((INonPersistentEditorInput) editorInput).setProperty(PROP_SQL_DATA_SOURCE, dataSourceContainer);
             return;
         }
         IFile file = getFileFromInput(editorInput);
