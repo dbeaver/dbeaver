@@ -1041,8 +1041,8 @@ public final class DBUtils {
     @NotNull
     public static String getObjectUniqueName(@NotNull DBSObject object)
     {
-        if (object instanceof DBSObjectUnique) {
-            return ((DBSObjectUnique) object).getUniqueName();
+        if (object instanceof DBPUniqueObject) {
+            return ((DBPUniqueObject) object).getUniqueName();
         } else {
             return object.getName();
         }
