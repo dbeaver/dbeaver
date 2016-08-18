@@ -26,6 +26,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IPersistableElement;
 import org.eclipse.ui.IStorageEditorInput;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -33,6 +35,8 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * StringEditorInput
@@ -45,6 +49,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
     private boolean readOnly;
     private IStorage storage;
     private Charset encoding;
+    private Map<String, Object> properties = new HashMap<>();
 
     public StringEditorInput(String name, CharSequence value, boolean readOnly, String encoding) {
         this.name = name;
@@ -127,6 +132,21 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         }
 		return null;
 	}
+
+    @Nullable
+    @Override
+    public Object getProperty(String name) {
+        return properties.get(name);
+    }
+
+    @Override
+    public void setProperty(@NotNull String name, @Nullable Object value) {
+        if (value == null) {
+            properties.remove(name);
+        } else {
+            properties.put(name, value);
+        }
+    }
 
     private class StringStorage implements IPersistentStorage, IEncodedStorage {
         @Override
