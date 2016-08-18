@@ -105,8 +105,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             }
         }
 /*
-        if (object instanceof DBSObjectUnique) {
-            String uniqueName = ((DBSObjectUnique) object).getUniqueName();
+        if (object instanceof DBPUniqueObject) {
+            String uniqueName = ((DBPUniqueObject) object).getUniqueName();
             if (!uniqueName.equals(objectName)) {
                 if (uniqueName.startsWith(objectName)) {
                     uniqueName = uniqueName.substring(objectName.length());

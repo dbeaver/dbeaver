@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.ResultSet;
@@ -28,7 +28,7 @@ import java.sql.ResultSet;
 /**
  * GenericProcedure
  */
-public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBSObjectUnique
+public class OracleProcedurePackaged extends OracleProcedureBase<OraclePackage> implements DBPUniqueObject
 {
     private Integer overload;
 

@@ -23,11 +23,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectUnique;
 
 import java.util.*;
 
@@ -191,8 +191,8 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @NotNull
     protected String getObjectName(@NotNull OBJECT object) {
         String name;
-        if (object instanceof DBSObjectUnique) {
-            name = ((DBSObjectUnique) object).getUniqueName();
+        if (object instanceof DBPUniqueObject) {
+            name = ((DBPUniqueObject) object).getUniqueName();
         } else {
             name = object.getName();
         }
