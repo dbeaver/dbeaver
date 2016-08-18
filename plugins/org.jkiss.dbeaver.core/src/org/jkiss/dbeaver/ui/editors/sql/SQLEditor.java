@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
@@ -650,7 +651,10 @@ public class SQLEditor extends SQLEditorBase implements
                 scriptPath = uri.toString();
             }
         } else {
-            scriptPath = "<not a file>";
+            scriptPath = editorInput.getName();
+            if (CommonUtils.isEmpty(scriptPath)) {
+                scriptPath = "<not a file>";
+            }
         }
         return
             "Script: " + scriptPath +
@@ -669,7 +673,7 @@ public class SQLEditor extends SQLEditorBase implements
             if (localFile != null) {
                 return localFile.getName();
             } else {
-                scriptName = "<object>";
+                scriptName = getEditorInput().getName();
             }
         }
 
@@ -1124,6 +1128,9 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        if (getEditorInput() instanceof StringEditorInput) {
+            return ISaveablePart2.NO;
+        }
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
             return ISaveablePart2.YES;
         }
