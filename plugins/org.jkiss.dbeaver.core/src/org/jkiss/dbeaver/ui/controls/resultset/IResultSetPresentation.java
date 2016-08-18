@@ -49,6 +49,8 @@ public interface IResultSetPresentation {
 
     void createPresentation(@NotNull IResultSetController controller, @NotNull Composite parent);
 
+    IResultSetController getController();
+
     Control getControl();
 
     void refreshData(boolean refreshMetadata, boolean append);
