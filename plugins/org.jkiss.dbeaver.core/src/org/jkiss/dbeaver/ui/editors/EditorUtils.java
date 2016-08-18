@@ -193,6 +193,9 @@ public class EditorUtils {
 
     public static void setInputDataSource(@NotNull IEditorInput editorInput, @Nullable DBPDataSourceContainer dataSourceContainer, boolean notify)
     {
+        if (editorInput instanceof INonPersistentEditorInput) {
+            return;
+        }
         IFile file = getFileFromInput(editorInput);
         if (file != null) {
             setFileDataSource(file, dataSourceContainer, notify);
@@ -209,7 +212,7 @@ public class EditorUtils {
                     PROP_SQL_DATA_SOURCE,
                     dataSourceContainer == null ? null : dataSourceContainer.getId());
             } else {
-                log.debug("Can't set datasource for input " + editorInput);
+                log.error("Can't set datasource for input " + editorInput);
             }
         }
     }

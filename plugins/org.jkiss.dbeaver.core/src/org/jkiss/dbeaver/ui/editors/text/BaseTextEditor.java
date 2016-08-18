@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.ui.ISingleControlEditor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;
@@ -286,4 +287,9 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
     {
         return null;
     }
+
+    protected boolean isNonPersistentEditor() {
+        return getEditorInput() instanceof INonPersistentEditorInput;
+    }
+
 }

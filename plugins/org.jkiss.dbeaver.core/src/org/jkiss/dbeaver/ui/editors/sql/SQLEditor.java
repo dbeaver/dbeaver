@@ -70,10 +70,7 @@ import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
-import org.jkiss.dbeaver.ui.CompositeSelectionProvider;
-import org.jkiss.dbeaver.ui.DynamicFindReplaceTarget;
-import org.jkiss.dbeaver.ui.IHelpContextIds;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -81,7 +78,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
@@ -650,6 +647,8 @@ public class SQLEditor extends SQLEditorBase implements
             } else {
                 scriptPath = uri.toString();
             }
+        } else if (editorInput instanceof INonPersistentEditorInput) {
+            scriptPath = "SQL Console";
         } else {
             scriptPath = editorInput.getName();
             if (CommonUtils.isEmpty(scriptPath)) {
@@ -661,6 +660,14 @@ public class SQLEditor extends SQLEditorBase implements
                 " \nConnection: " + dataSourceContainer.getName() +
                 " \nType: " + (dataSourceContainer.getDriver().getFullName()) +
                 " \nURL: " + dataSourceContainer.getConnectionConfiguration().getUrl();
+    }
+
+    @Override
+    public Image getTitleImage() {
+        if (isNonPersistentEditor()) {
+            return DBeaverIcons.getImage(UIIcon.SQL_CONSOLE);
+        }
+        return super.getTitleImage();
     }
 
     private String getEditorName() {
@@ -1128,7 +1135,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
-        if (getEditorInput() instanceof StringEditorInput) {
+        if (isNonPersistentEditor()) {
             return ISaveablePart2.NO;
         }
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
