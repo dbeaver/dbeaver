@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerConfigureFilter;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -80,7 +80,7 @@ public class ItemListControl extends NodeListControl
                 @Override
                 public void run()
                 {
-                    NavigatorHandlerConfigureFilter.configureFilters(getShell(), getRootNode());
+                    NavigatorHandlerFilterConfig.configureFilters(getShell(), getRootNode());
                 }
             });
         }
