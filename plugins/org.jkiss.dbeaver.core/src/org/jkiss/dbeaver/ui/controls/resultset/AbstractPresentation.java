@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -48,6 +47,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     protected IResultSetController controller;
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
 
+    @Override
     @NotNull
     public IResultSetController getController() {
         return controller;

@@ -49,10 +49,13 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
  */
 public class EmptyPresentation implements IResultSetPresentation {
 
+    private IResultSetController controller;
     private Composite placeholder;
 
     @Override
     public void createPresentation(@NotNull final IResultSetController controller, @NotNull Composite parent) {
+        this.controller = controller;
+
         UIUtils.createHorizontalLine(parent);
         placeholder = new Canvas(parent, SWT.NONE);
         placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -87,6 +90,11 @@ public class EmptyPresentation implements IResultSetPresentation {
             }
 
         });
+    }
+
+    @Override
+    public IResultSetController getController() {
+        return controller;
     }
 
     @Override
