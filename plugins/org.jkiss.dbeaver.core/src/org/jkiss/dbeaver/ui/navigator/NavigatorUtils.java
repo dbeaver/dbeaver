@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionSetActiveObject;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerRefresh;
 import org.jkiss.dbeaver.ui.dnd.DatabaseObjectTransfer;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
@@ -442,4 +444,36 @@ public class NavigatorUtils {
         return null;
     }
 
+    public static void filterSelection(final ISelection selection, boolean exclude)
+    {
+        if (selection instanceof IStructuredSelection) {
+            Map<DBNDatabaseFolder, DBSObjectFilter> folders = new HashMap<>();
+            for (Object item : ((IStructuredSelection)selection).toArray()) {
+                if (item instanceof DBNNode) {
+                    final DBNNode node = (DBNNode) item;
+                    DBNDatabaseFolder folder = (DBNDatabaseFolder) node.getParentNode();
+                    DBSObjectFilter nodeFilter = folders.get(folder);
+                    if (nodeFilter == null) {
+                        nodeFilter = folder.getNodeFilter(folder.getItemsMeta(), true);
+                        if (nodeFilter == null) {
+                            nodeFilter = new DBSObjectFilter();
+                        }
+                        folders.put(folder, nodeFilter);
+                    }
+                    if (exclude) {
+                        nodeFilter.addExclude(node.getNodeName());
+                    } else {
+                        nodeFilter.addInclude(node.getNodeName());
+                    }
+                    nodeFilter.setEnabled(true);
+                }
+            }
+            // Save folders
+            for (Map.Entry<DBNDatabaseFolder, DBSObjectFilter> entry : folders.entrySet()) {
+                entry.getKey().setNodeFilter(entry.getKey().getItemsMeta(), entry.getValue());
+            }
+            // Refresh all folders
+            NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
+        }
+    }
 }

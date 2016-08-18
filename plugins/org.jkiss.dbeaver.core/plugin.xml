@@ -206,7 +206,8 @@
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.delete" name="%command.org.jkiss.dbeaver.core.object.delete.name" description="%command.org.jkiss.dbeaver.core.object.delete.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.filter" name="%command.org.jkiss.dbeaver.core.object.filter.name" description="%command.org.jkiss.dbeaver.core.object.filter.description" categoryId="org.jkiss.dbeaver.core.database"/>
-        <command id="org.jkiss.dbeaver.core.object.filter.add" name="%command.org.jkiss.dbeaver.core.object.filter.add.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.filter.add.exclude" name="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.exclude.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.object.filter.add.include" name="%command.org.jkiss.dbeaver.core.object.filter.add.include.name" description="%command.org.jkiss.dbeaver.core.object.filter.add.include.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.goto" name="%command.org.jkiss.dbeaver.core.object.goto.name" description="%command.org.jkiss.dbeaver.core.object.goto.description" categoryId="org.jkiss.dbeaver.core.database"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -297,7 +298,8 @@
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
         <image commandId="org.jkiss.dbeaver.core.object.filter" icon="icons/misc/filter.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.filter.add" icon="icons/misc/filter_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" icon="icons/misc/filter_add.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.filter.add.include" icon="icons/misc/filter_add.png"/>
 
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="icons/sql/sql_exec.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="icons/sql/sql_exec_new.png"/>
@@ -707,7 +709,19 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.object.filter.add" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterObjects">
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.add.exclude" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterExclude">
+            <enabledWhen>
+                <with variable="selection">
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNNode"/>
+                            <test property="org.jkiss.dbeaver.core.object.canFilterObject"/>
+                        </and>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.object.filter.add.include" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterInclude">
             <enabledWhen>
                 <with variable="selection">
                     <iterate operator="and">
@@ -1559,9 +1573,6 @@
             <command commandId="org.jkiss.dbeaver.core.object.create">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.object.filter">
-                <visibleWhen checkEnabled="true"/>
-            </command>
 
             <command commandId="org.eclipse.ui.edit.copy">
                 <visibleWhen checkEnabled="true"/>
@@ -1578,9 +1589,17 @@
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command commandId="org.jkiss.dbeaver.core.object.filter.add">
-                <visibleWhen checkEnabled="true"/>
-            </command>
+            <menu label="Filter">
+                <command commandId="org.jkiss.dbeaver.core.object.filter">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.add.exclude">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.object.filter.add.include">
+                    <visibleWhen checkEnabled="true"/>
+                </command>
+            </menu>
 
             <command commandId="org.jkiss.dbeaver.core.sql.script.associate">
                 <visibleWhen checkEnabled="true"/>
