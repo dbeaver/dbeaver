@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverNature;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -668,6 +669,23 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
     public IProject getProject()
     {
         return project;
+    }
+
+    /**
+     * Find data source in all available registries
+     */
+    public static DataSourceDescriptor findDataSource(String dataSourceId) {
+        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
+        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
+            DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
+            if (dataSourceRegistry != null) {
+                DataSourceDescriptor dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
+                if (dataSourceContainer != null) {
+                    return dataSourceContainer;
+                }
+            }
+        }
+        return null;
     }
 
     private static class ParseResults {

@@ -46,20 +46,24 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
@@ -688,6 +692,13 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
+                IAction editorAction = new Action("Open in SQL console", DBeaverIcons.getImageDescriptor(UIIcon.SQL_CONSOLE)) {
+                    @Override
+                    public void run()
+                    {
+                        openSelectionInEditor();
+                    }
+                };
                 IAction copyAction = new Action(CoreMessages.controls_querylog_action_copy) {
                     @Override
                     public void run()
@@ -725,6 +736,17 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     }
                 };
 
+                boolean hasStatements = false;
+                for (TableItem item : logTable.getSelection()) {
+                    if (((QMMetaEvent)item.getData()).getObject() instanceof QMMStatementExecuteInfo) {
+                        hasStatements = true;
+                        break;
+                    }
+                }
+                if (hasStatements) {
+                    manager.add(editorAction);
+                    manager.add(new Separator());
+                }
                 manager.add(copyAction);
                 manager.add(copyAllAction);
                 manager.add(selectAllAction);
@@ -735,6 +757,42 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         menuMgr.setRemoveAllWhenShown(true);
         logTable.setMenu(menu);
         site.registerContextMenu(menuMgr, this);
+    }
+
+    private void openSelectionInEditor() {
+        DBPDataSourceContainer dsContainer = null;
+        StringBuilder sql = new StringBuilder();
+        TableItem[] items = logTable.getSelection();
+        for (TableItem item : items) {
+            QMMetaEvent event = (QMMetaEvent) item.getData();
+            QMMObject object = event.getObject();
+            if (object instanceof QMMStatementExecuteInfo) {
+                QMMStatementExecuteInfo stmtExec = (QMMStatementExecuteInfo) object;
+                if (dsContainer == null) {
+                    String containerId = stmtExec.getStatement().getSession().getContainerId();
+                    dsContainer = DataSourceRegistry.findDataSource(containerId);
+                }
+                String queryString = stmtExec.getQueryString();
+                if (!CommonUtils.isEmptyTrimmed(queryString)) {
+                    if (sql.length() > 0) {
+                        sql.append("\n");
+                    }
+                    queryString = queryString.trim();
+                    sql.append(queryString);
+                    if (!queryString.endsWith(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
+                        sql.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append("\n");
+                    }
+                }
+            }
+        }
+        if (sql.length() > 0) {
+            OpenNewSQLEditorHandler.openStringSQLEditor(
+                DBeaverUI.getActiveWorkbenchWindow(),
+                dsContainer,
+                "QueryManager",
+                sql.toString()
+                );
+        }
     }
 
     public void addDragAndDropSupport()
