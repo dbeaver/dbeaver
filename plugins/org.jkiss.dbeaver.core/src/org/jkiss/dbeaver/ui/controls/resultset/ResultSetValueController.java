@@ -45,7 +45,7 @@ import java.util.List;
 */
 public class ResultSetValueController implements IAttributeController, IRowController {
 
-    protected final IResultSetController controller;
+    protected final ResultSetViewer controller;
     protected final EditType editType;
     protected final Composite inlinePlaceholder;
     protected ResultSetRow curRow;
@@ -58,7 +58,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         @NotNull EditType editType,
         @Nullable Composite inlinePlaceholder)
     {
-        this.controller = controller;
+        this.controller = (ResultSetViewer) controller;
         this.binding = binding;
         this.curRow = row;
         this.editType = editType;
@@ -131,7 +131,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
             controller.getSite().getShell().getDisplay().syncExec(new Runnable() {
                 @Override
                 public void run() {
-                    controller.updateValueView();
+                    controller.updatePanelsContent();
                 }
             });
         }

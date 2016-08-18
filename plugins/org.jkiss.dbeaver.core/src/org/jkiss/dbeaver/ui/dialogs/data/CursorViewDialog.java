@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -77,7 +78,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
                         ConfirmationDialog.QUESTION) == IDialogConstants.YES_ID) {
                     globalPreferenceStore.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, true);
                     if (valueController.getValueSite().getPart() instanceof IResultSetContainer) {
-                        ResultSetViewer rsv = ((IResultSetContainer) valueController.getValueSite().getPart()).getResultSetViewer();
+                        IResultSetController rsv = ((IResultSetContainer) valueController.getValueSite().getPart()).getResultSetController();
                         if (rsv != null) {
                             rsv.refresh();
                         }
@@ -140,7 +141,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
 
     @Nullable
     @Override
-    public ResultSetViewer getResultSetViewer()
+    public ResultSetViewer getResultSetController()
     {
         return resultSetViewer;
     }

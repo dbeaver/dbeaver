@@ -131,6 +131,7 @@ public class ResultSetViewer extends Viewer
     private final DynamicFindReplaceTarget findReplaceTarget;
 
     // Presentation
+    @NotNull
     private IResultSetPresentation activePresentation;
     private ResultSetPresentationDescriptor activePresentationDescriptor;
     private List<ResultSetPresentationDescriptor> availablePresentations;
@@ -275,6 +276,19 @@ public class ResultSetViewer extends Viewer
         return DBeaverCore.getGlobalPreferenceStore();
     }
 
+    @NotNull
+    @Override
+    public Color getDefaultBackground() {
+        return filtersPanel.getEditControl().getBackground();
+    }
+
+    @NotNull
+    @Override
+    public Color getDefaultForeground() {
+        return filtersPanel.getEditControl().getForeground();
+    }
+
+
     private void persistConfig() {
         DBCExecutionContext context = getExecutionContext();
         if (context != null) {
@@ -282,71 +296,17 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    @Override
-    public Color getDefaultBackground() {
-        return filtersPanel.getEditControl().getBackground();
-    }
-
-    @Override
-    public Color getDefaultForeground() {
-        return filtersPanel.getEditControl().getForeground();
-    }
+    ////////////////////////////////////////
+    // Presentation & panels
 
     public List<ResultSetPresentationDescriptor> getAvailablePresentations() {
         return availablePresentations;
     }
 
     @Override
+    @NotNull
     public IResultSetPresentation getActivePresentation() {
         return activePresentation;
-    }
-
-    public boolean isActionsDisabled() {
-        return actionsDisabled;
-    }
-
-    @Override
-    public void lockActionsByControl(Control lockedBy) {
-        if (checkDoubleLock(lockedBy)) {
-            return;
-        }
-        actionsDisabled = true;
-        lockedBy.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                actionsDisabled = false;
-            }
-        });
-    }
-
-    @Override
-    public void lockActionsByFocus(final Control lockedBy) {
-        lockedBy.addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                checkDoubleLock(lockedBy);
-                actionsDisabled = true;
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                actionsDisabled = false;
-            }
-        });
-        lockedBy.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                actionsDisabled = false;
-            }
-        });
-    }
-
-    private boolean checkDoubleLock(Control lockedBy) {
-        if (actionsDisabled) {
-            log.error("Internal error: actions double-lock by [" + lockedBy + "]");
-            return true;
-        }
-        return false;
     }
 
     void updatePresentation(final DBCResultSet resultSet) {
@@ -516,6 +476,67 @@ public class ResultSetViewer extends Viewer
                 "Can't switch presentation",
                 e1);
         }
+    }
+
+    @Override
+    public IResultSetPanel[] getActivePanels() {
+        return new IResultSetPanel[0];
+    }
+
+    @Override
+    public void activatePanel(String id, boolean show) {
+
+    }
+
+    ////////////////////////////////////////
+    // Actions
+
+    public boolean isActionsDisabled() {
+        return actionsDisabled;
+    }
+
+    @Override
+    public void lockActionsByControl(Control lockedBy) {
+        if (checkDoubleLock(lockedBy)) {
+            return;
+        }
+        actionsDisabled = true;
+        lockedBy.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                actionsDisabled = false;
+            }
+        });
+    }
+
+    @Override
+    public void lockActionsByFocus(final Control lockedBy) {
+        lockedBy.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                checkDoubleLock(lockedBy);
+                actionsDisabled = true;
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                actionsDisabled = false;
+            }
+        });
+        lockedBy.addDisposeListener(new DisposeListener() {
+            @Override
+            public void widgetDisposed(DisposeEvent e) {
+                actionsDisabled = false;
+            }
+        });
+    }
+
+    private boolean checkDoubleLock(Control lockedBy) {
+        if (actionsDisabled) {
+            log.error("Internal error: actions double-lock by [" + lockedBy + "]");
+            return true;
+        }
+        return false;
     }
 
     @Nullable
@@ -1108,7 +1129,7 @@ public class ResultSetViewer extends Viewer
                     @Override
                     public void run() {
                         model.resetCellValue(attr, row);
-                        updateValueView();
+                        updatePanelsContent();
                     }
                 };
                 resetValueAction.setAccelerator(SWT.ESC);
@@ -1506,7 +1527,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void updateValueView() {
+    public void updatePanelsContent() {
         activePresentation.updateValueView();
         updateEditControls();
     }
@@ -2721,7 +2742,7 @@ public class ResultSetViewer extends Viewer
         if (entityEditor instanceof MultiPageEditorPart) {
             Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
             if (selectedPage instanceof IResultSetContainer) {
-                ResultSetViewer rsv = ((IResultSetContainer) selectedPage).getResultSetViewer();
+                ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
                 if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
                     // Set filter directly
                     rsv.refreshWithFilter(newFilter);
