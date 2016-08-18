@@ -394,12 +394,9 @@ public class PostgreUtils {
 
 
     public static void setArrayParameter(JDBCPreparedStatement dbStat, int index, List<? extends PostgreObject> objectList) throws SQLException {
-        StringBuilder arrayString = new StringBuilder();
-        for (PostgreObject o : objectList) {
-            if (arrayString.length() > 0) arrayString.append(" ");
-            arrayString.append(o.getObjectId());
+        for (int i = 0; i < objectList.size(); i++) {
+            dbStat.setLong(index + i, objectList.get(i).getObjectId());
         }
-        dbStat.setObject(index, arrayString.toString(), Types.OTHER);
     }
 
 }

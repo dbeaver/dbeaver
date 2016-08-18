@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
@@ -105,6 +107,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     nsList.add(schema);
                 }
             }
+            PostgreSchema pgCatalog = database.getSchema(session.getProgressMonitor(), PostgreConstants.CATALOG_SCHEMA_NAME);
+            if (pgCatalog != null) {
+                nsList.add(pgCatalog);
+            }
         } else {
             // Limit object search with available schemas (use filters - #648)
             DBSObjectFilter schemaFilter = dataSource.getContainer().getObjectFilter(PostgreSchema.class, database, true);
@@ -142,7 +148,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.oid,x.relname,x.relnamespace,x.relkind FROM pg_catalog.pg_class x " +
                 "WHERE x.relkind in('r','v','m') AND x.relname LIKE ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (?)") +
+                (CommonUtils.isEmpty(schema) ? "" : " AND x.relnamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.relname LIMIT " + maxResults)) {
             dbStat.setString(1, tableNameMask);
             if (!CommonUtils.isEmpty(schema)) {
@@ -186,7 +192,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT DISTINCT x.oid,x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
                 "WHERE x.proname LIKE ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (?)") +
+                (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.proname LIMIT " + maxResults)) {
             dbStat.setString(1, procNameMask);
             if (!CommonUtils.isEmpty(schema)) {
@@ -226,7 +232,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT x.oid,x.conname,x.connamespace FROM pg_catalog.pg_constraint x " +
                 "WHERE x.conname LIKE ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND x.connamespace IN (?)") +
+                (CommonUtils.isEmpty(schema) ? "" : " AND x.connamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.conname LIMIT " + maxResults)) {
             dbStat.setString(1, constrNameMask);
             if (!CommonUtils.isEmpty(schema)) {
@@ -267,7 +273,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
             "SELECT x.attname,x.attrelid,x.atttypid,c.relnamespace " +
                 "FROM pg_catalog.pg_attribute x, pg_catalog.pg_class c\n" +
                 "WHERE c.oid=x.attrelid AND x.attname LIKE ? " +
-                (CommonUtils.isEmpty(schema) ? "" : " AND c.relnamespace IN (?)") +
+                (CommonUtils.isEmpty(schema) ? "" : " AND c.relnamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.attname LIMIT " + maxResults)) {
             dbStat.setString(1, columnNameMask);
             if (!CommonUtils.isEmpty(schema)) {

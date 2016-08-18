@@ -577,4 +577,17 @@ public final class SQLUtils {
         }
         return slComment + " " + comment + GeneralUtils.getDefaultLineSeparator();
     }
+
+    public static String generateParamList(int paramCount) {
+        if (paramCount == 0) {
+            return "";
+        } else if (paramCount == 1) {
+            return "?";
+        }
+        StringBuilder sql = new StringBuilder("?");
+        for (int i = 0; i < paramCount - 1; i++) {
+            sql.append(",?");
+        }
+        return sql.toString();
+    }
 }
