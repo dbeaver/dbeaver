@@ -176,4 +176,5 @@ public class StringEditorInput implements IEditorInput, IStorageEditorInput {
             return encoding.name();
         }
     }
+
 }

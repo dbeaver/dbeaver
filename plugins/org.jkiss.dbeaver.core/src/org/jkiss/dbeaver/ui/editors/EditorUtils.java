@@ -33,7 +33,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -210,7 +209,7 @@ public class EditorUtils {
                     PROP_SQL_DATA_SOURCE,
                     dataSourceContainer == null ? null : dataSourceContainer.getId());
             } else {
-                log.error("Can't set datasource for input " + editorInput);
+                log.debug("Can't set datasource for input " + editorInput);
             }
         }
     }

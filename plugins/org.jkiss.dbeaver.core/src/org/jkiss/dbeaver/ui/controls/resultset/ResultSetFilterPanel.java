@@ -39,6 +39,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -59,6 +60,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenNewSQLEditorHandler;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -486,7 +488,15 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         Label iconLabel = new Label(panel, SWT.NONE);
         iconLabel.setImage(DBeaverIcons.getImage(getActiveObjectImage()));
+        iconLabel.setToolTipText("Click to open query in editor");
         iconLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        iconLabel.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_HAND));
+        iconLabel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseUp(MouseEvent e) {
+                openEditorForActiveQuery();
+            }
+        });
         Composite editorPH = new Composite(panel, SWT.NONE);
         editorPH.setLayoutData(new GridData(GridData.FILL_BOTH));
         editorPH.setLayout(new FillLayout());
@@ -520,6 +530,22 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         });
 
         return textWidget;
+    }
+
+    private void openEditorForActiveQuery() {
+        DBSDataContainer dataContainer = viewer.getDataContainer();
+        String editorName;
+        if (dataContainer instanceof DBSEntity) {
+            editorName = dataContainer.getName();
+        } else {
+            editorName = "Query";
+        }
+        OpenNewSQLEditorHandler.openStringSQLEditor(
+            DBeaverUI.getActiveWorkbenchWindow(),
+            dataContainer == null ? null : dataContainer.getDataSource().getContainer(),
+            editorName,
+            getActiveQueryText()
+        );
     }
 
     @Override
@@ -600,6 +626,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             if (popup != null) {
                 popup.dispose();
             }
+
+            if ((e.stateMask & SWT.CTRL) != 0) {
+                openEditorForActiveQuery();
+                return;
+            }
+
             popup = new Shell(getShell(), SWT.ON_TOP | SWT.RESIZE);
             popup.setLayout(new FillLayout());
             Control editControl;
