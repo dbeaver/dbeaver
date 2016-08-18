@@ -35,11 +35,11 @@ public interface IResultSetContainer {
     DBCExecutionContext getExecutionContext();
 
     /**
-     * Hosted results viewer
-     * @return viewer or null
+     * Hosted results controller
+     * @return controller or null
      */
     @Nullable
-    ResultSetViewer getResultSetViewer();
+    IResultSetController getResultSetController();
 
     /**
      * Data container (table or something).

@@ -181,7 +181,7 @@ public class StyledTextFindReplaceTarget implements IFindReplaceTarget, IFindRep
         final DBDAttributeBinding attr = (DBDAttributeBinding)(recordMode ? cell.row : cell.col);
         final ResultSetRow row = (ResultSetRow)(recordMode ? cell.col : cell.row);
         owner.getController().getModel().updateCellValue(attr, row, newValue);
-        owner.getController().updateValueView();
+        owner.getController().updatePanelsContent();
 */
     }
 

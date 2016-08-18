@@ -46,7 +46,7 @@ public class ResultSetPropertyTester extends PropertyTester
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-        ResultSetViewer rsv = ResultSetCommandHandler.getActiveResultSet((IWorkbenchPart)receiver);
+        ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet((IWorkbenchPart)receiver);
         return rsv != null && checkResultSetProperty(rsv, property, expectedValue);
     }
 

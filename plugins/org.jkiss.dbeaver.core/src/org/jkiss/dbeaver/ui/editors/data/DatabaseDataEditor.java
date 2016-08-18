@@ -103,7 +103,7 @@ public class DatabaseDataEditor extends AbstractDatabaseObjectEditor<DBSDataCont
 
     @Nullable
     @Override
-    public ResultSetViewer getResultSetViewer()
+    public ResultSetViewer getResultSetController()
     {
         return resultSetView;
     }

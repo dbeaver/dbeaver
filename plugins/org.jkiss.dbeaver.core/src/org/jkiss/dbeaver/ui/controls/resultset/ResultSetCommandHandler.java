@@ -85,9 +85,9 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
     public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
 
-    public static ResultSetViewer getActiveResultSet(IWorkbenchPart activePart) {
+    public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart instanceof IResultSetContainer) {
-            return ((IResultSetContainer) activePart).getResultSetViewer();
+            return ((IResultSetContainer) activePart).getResultSetController();
         } else if (activePart instanceof MultiPageAbstractEditor) {
             return getActiveResultSet(((MultiPageAbstractEditor) activePart).getActiveEditor());
         } else if (activePart != null) {
@@ -100,7 +100,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final ResultSetViewer rsv = getActiveResultSet(HandlerUtil.getActivePart(event));
+        final ResultSetViewer rsv = (ResultSetViewer) getActiveResultSet(HandlerUtil.getActivePart(event));
         if (rsv == null) {
             return null;
         }

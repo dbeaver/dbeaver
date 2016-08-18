@@ -34,7 +34,7 @@ public class ResultSetAdapterFactory implements IAdapterFactory
             if (adaptableObject instanceof ResultSetViewer) {
                 return adaptableObject;
             } else if (adaptableObject instanceof IResultSetContainer) {
-                return ((IResultSetContainer) adaptableObject).getResultSetViewer();
+                return ((IResultSetContainer) adaptableObject).getResultSetController();
             }
             if (adaptableObject instanceof IPageChangeProvider) {
                 return getAdapter(((IPageChangeProvider) adaptableObject).getSelectedPage(), ResultSetViewer.class);

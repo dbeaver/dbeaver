@@ -23,9 +23,9 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 import java.util.Map;
 
@@ -52,7 +52,7 @@ public class SpreadsheetTogglePreviewHandler extends SpreadsheetCommandHandler i
     {
         if (element.getServiceLocator() instanceof IWorkbenchPartSite) {
             IWorkbenchPartSite partSite = (IWorkbenchPartSite) element.getServiceLocator();
-            ResultSetViewer rsv = ResultSetCommandHandler.getActiveResultSet(partSite.getPart());
+            IResultSetController rsv = ResultSetCommandHandler.getActiveResultSet(partSite.getPart());
             if (rsv != null) {
                 IResultSetPresentation presentation = rsv.getActivePresentation();
                 if (presentation instanceof SpreadsheetPresentation && ((SpreadsheetPresentation) presentation).isPreviewVisible()) {

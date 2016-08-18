@@ -21,9 +21,9 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * Spreadsheet command handler.
@@ -40,7 +40,7 @@ public abstract class SpreadsheetCommandHandler extends AbstractHandler {
             return (Spreadsheet)control;
         }
 
-        ResultSetViewer rsv = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        IResultSetController rsv = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
         if (rsv != null) {
             IResultSetPresentation activePresentation = rsv.getActivePresentation();
             if (activePresentation instanceof SpreadsheetPresentation) {
