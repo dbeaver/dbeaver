@@ -365,6 +365,9 @@ public final class SQLUtils {
             StringBuilder conString = new StringBuilder();
             Object value = constraint.getValue();
             if (DBUtils.isNullValue(value)) {
+                if (operator.getArgumentCount() == 0) {
+                    return operator.getStringValue();
+                }
                 conString.append("IS ");
                 if (constraint.isReverseOperator()) {
                     conString.append("NOT ");
