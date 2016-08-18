@@ -37,7 +37,7 @@ import java.nio.charset.Charset;
 /**
  * StringEditorInput
  */
-public class StringEditorInput implements IEditorInput, IStorageEditorInput {
+public class StringEditorInput implements INonPersistentEditorInput, IStorageEditorInput {
 
     public static final IEditorInput EMPTY_INPUT = new StringEditorInput("<empty>", "", true, GeneralUtils.getDefaultFileEncoding());
     private String name;
