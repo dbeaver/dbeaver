@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.project.DBPResourceHandler;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -45,6 +46,7 @@ public class ObjectPropertyTester extends PropertyTester
     public static final String PROP_CAN_RENAME = "canRename";
     public static final String PROP_CAN_FILTER = "canFilter";
     public static final String PROP_CAN_FILTER_OBJECT = "canFilterObject";
+    public static final String PROP_HAS_FILTER = "hasFilter";
 
     public ObjectPropertyTester() {
         super();
@@ -158,6 +160,9 @@ public class ObjectPropertyTester extends PropertyTester
                 break;
             }
             case PROP_CAN_FILTER: {
+                if (node instanceof DBNDatabaseItem) {
+                    node = node.getParentNode();
+                }
                 if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
                     return true;
                 }
@@ -166,6 +171,16 @@ public class ObjectPropertyTester extends PropertyTester
             case PROP_CAN_FILTER_OBJECT: {
                 if (node.getParentNode() instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node.getParentNode()).getItemsMeta() != null) {
                     return true;
+                }
+                break;
+            }
+            case PROP_HAS_FILTER: {
+                if (node instanceof DBNDatabaseItem) {
+                    node = node.getParentNode();
+                }
+                if (node instanceof DBNDatabaseFolder && ((DBNDatabaseFolder) node).getItemsMeta() != null) {
+                    DBSObjectFilter filter = ((DBNDatabaseFolder) node).getNodeFilter(((DBNDatabaseFolder) node).getItemsMeta(), true);
+                    return filter != null && !filter.isEmpty() && filter.isEnabled();
                 }
                 break;
             }
