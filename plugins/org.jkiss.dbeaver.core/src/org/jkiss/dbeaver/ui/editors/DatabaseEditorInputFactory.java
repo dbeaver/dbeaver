@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.Log;
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -27,8 +24,11 @@ import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IElementFactory;
 import org.eclipse.ui.IMemento;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -36,10 +36,8 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.utils.CommonUtils;
 
@@ -82,17 +80,7 @@ public class DatabaseEditorInputFactory implements IElementFactory
         final String activePageId = memento.getString(TAG_ACTIVE_PAGE);
         final String activeFolderId = memento.getString(TAG_ACTIVE_FOLDER);
 
-        DataSourceDescriptor dataSourceContainer = null;
-        ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
-        for (IProject project : DBeaverCore.getInstance().getLiveProjects()) {
-            DataSourceRegistry dataSourceRegistry = projectRegistry.getDataSourceRegistry(project);
-            if (dataSourceRegistry != null) {
-                dataSourceContainer = dataSourceRegistry.getDataSource(dataSourceId);
-                if (dataSourceContainer != null) {
-                    break;
-                }
-            }
-        }
+        DataSourceDescriptor dataSourceContainer = DataSourceRegistry.findDataSource(dataSourceId);
         if (dataSourceContainer == null) {
             log.error("Can't find data source '" + dataSourceId + "'"); //$NON-NLS-2$
             return null;
